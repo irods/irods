@@ -1,0 +1,55 @@
+Function and file naming conventions in iRODS
+Sept 2007
+------------------------------------------------------------------------
+
+	** All naming conventions are recommendations only. **
+
+
+
+
+
+Function names
+------------------------------------------------------------------------
+All C functions in iRODS occupy the same namespace.  To avoid function
+name collisions, we recommend that:
+
+	* Function names use multiple descriptive words.
+		Example:  getMsParamByLabel
+
+	* Function names use camel-case to distinguish words:
+		Example:  printMsParam
+
+	* Microservice function names start with "msi":
+		Example:  msiDataObjGet
+
+	* Microservice helper function names start with "mh":
+
+	* Server function names start with "rs".
+
+	* Client function names start with "rc".
+
+
+
+
+
+File names
+------------------------------------------------------------------------
+General file purpose may be inferred by the location of the file in the
+iRODS directory tree.  For instance, those in the server/re/src directory
+are part of the rule engine, while those in the clients/icommands/src
+directory are command-line tools.  Beyond this, we recommend that:
+
+	* File names use multiple descriptive words.
+		Example:  rodsServer.c contains the iRODS server
+		main program.
+
+	* File names reflect the names of functions in the file.
+		Example:  msParam.c contains utility functions
+		that work with the msParam struct.
+
+	* File names use camel-case to distinguish words:
+		Example:  irodsReServer.c
+
+	* No two files in the same directory have names that
+	  differ only by case.  This causes problems with
+	  Windows and old Mac file systems.

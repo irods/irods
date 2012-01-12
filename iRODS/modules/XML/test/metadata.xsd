@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ <xs:element name="metadata">
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element name="AVU" minOccurs="0" maxOccurs="unbounded">
+     <xs:complexType>
+      <xs:sequence>
+      
+       <xs:element name="Target" minOccurs="0">
+        <xs:simpleType>
+         <xs:restriction base="xs:string">
+          <xs:maxLength value="1088"/>
+         </xs:restriction>
+        </xs:simpleType>
+       </xs:element>
+       
+       <xs:element name="Attribute">
+        <xs:simpleType>
+         <xs:restriction base="xs:string">
+          <xs:minLength value="1"/>
+          <xs:maxLength value="2700"/>
+         </xs:restriction>
+        </xs:simpleType>
+       </xs:element>
+        
+       <xs:element name="Value">
+        <xs:simpleType>
+         <xs:restriction base="xs:string">
+          <xs:maxLength value="2700"/>
+         </xs:restriction>
+        </xs:simpleType>
+       </xs:element>
+
+       <xs:element name="Unit">
+        <xs:simpleType>
+         <xs:restriction base="xs:string">
+          <xs:maxLength value="250"/>
+         </xs:restriction>
+        </xs:simpleType>
+       </xs:element>
+              
+      </xs:sequence>
+     </xs:complexType>
+    </xs:element>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+</xs:schema>

@@ -1,0 +1,3 @@
+SAA Test 1||msiFlagInfectedObjs(*scanResObj, *rescName, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")|nop
+*scanResObj=$1%*rescName=$2
+ruleExecOut

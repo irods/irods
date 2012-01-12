@@ -1,0 +1,3 @@
+getUserACL||msiGetUserACL(*Username,*BUF,*Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+*Username=%%
+ruleExecOut

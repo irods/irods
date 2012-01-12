@@ -1,0 +1,13 @@
+
+#include "sdssImgCutoutH.h"
+SOAP_NMAC struct Namespace sdssImgCutout_namespaces[] =
+{
+	{"SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/", "http://www.w3.org/*/soap-envelope", NULL},
+	{"SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/", "http://www.w3.org/*/soap-encoding", NULL},
+	{"xsi", "http://www.w3.org/2001/XMLSchema-instance", "http://www.w3.org/*/XMLSchema-instance", NULL},
+	{"xsd", "http://www.w3.org/2001/XMLSchema", "http://www.w3.org/*/XMLSchema", NULL},
+	{"ns2", "http://skyserver.sdss.org/ImgCutoutSoap", NULL, NULL},
+	{"ns1", "http://skyserver.sdss.org/", NULL, NULL},
+	{"ns3", "http://skyserver.sdss.org/ImgCutoutSoap12", NULL, NULL},
+	{NULL, NULL, NULL, NULL}
+};

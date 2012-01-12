@@ -1,0 +1,52 @@
+
+When the RuleExecInfo Structure is modified 
+in reGlobalsExtern.h, the following functions need to be modified
+to enable compatibility to the redefined structure.we need to change the
+copy and free routines for this structure.  This is a pain,
+and hopefully we will be able to automate this in the future.
+
+Also, if any structure in the RuleExecInfo Structure has its
+definition changed then  the maintennace routine need to be
+changed. 
+
+When the RuleExecInfo Structure is modified 
+in reGlobalsExtern.h, the following functions need to be modified
+to enable compatibility to the redefined structure. This is a pain,
+and hopefully we will be able to automate this in the future.
+
+In file reStruct.c 
+ 
+ 1. modify function copyRuleExecInfo
+ 2. modify function freeRuleExecInfoStruct
+
+In file reVariableMap.c
+
+ 1. modify function getValFromRuleExecInfo
+
+
+
+When the definition of an internal structure used in the
+RuleExecInfo Structure is modified, corresponding Get statements
+also need to be modified in the file reVariableMap.c
+IMPORTANT, this applies to any sub or sub-sub... structure
+that is changed underneath :-(
+
+For example assume that the collInfo_t struct is modified (objInfo.h)
+Then the following related functions need to be changed also to reflect 
+those changes:
+In file reStruct.c 
+ 
+ 1. modify function copyColljInfo
+ 2. modify function freeCollInfo
+
+In file reVariableMap.c
+
+ 1. modify function getValFromCollInfo
+
+Note that some of these functions may not be in reStruct.c or 
+reVariableMap.c but elsewhere.
+
+ 
+
+
+

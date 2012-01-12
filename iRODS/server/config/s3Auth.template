@@ -1,0 +1,5 @@
+# This file contains authentication info for the Amazon S3 driver
+# The first line contains the S3_ACCESS_KEY_ID and the second line 
+# contains S3_SECRET_ACCESS_KEY
+6VS85XMZVYQ54IW6DGR2
+9XLPtzvhTsXkIEoQK7UbwRm8g8PXQEZBlvYyMgPx

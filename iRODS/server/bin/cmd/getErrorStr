@@ -1,0 +1,13 @@
+#!/bin/sh
+text=`grep $1 ../../lib/core/include/rodsErrorTable.h`
+i=1
+for text1 in $text ; do
+   if [ $i -eq 2 ]
+   then
+     echo "$text1"
+   fi
+   i=`expr $i +  1`
+done
+exit 0
+
+

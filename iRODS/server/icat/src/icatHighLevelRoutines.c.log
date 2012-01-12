@@ -1,0 +1,1985 @@
+------------------------------------------------------------------------
+r3953 | schroede | 2011-04-25 14:13:35 -0700 (Mon, 25 Apr 2011) | 2 lines
+
+Some small fixes to avoid warning messages from g++
+
+------------------------------------------------------------------------
+r3916 | schroede | 2011-04-18 13:01:16 -0700 (Mon, 18 Apr 2011) | 6 lines
+
+Jason Coposky's (RENCI) mods to build with g++.
+
+Certain casts are needed to avoid errors.  
+These changes are fine whether it is being built with gcc or g++.
+
+
+------------------------------------------------------------------------
+r3824 | sekar | 2011-03-04 08:33:27 -0800 (Fri, 04 Mar 2011) | 2 lines
+
+changed database interaction for micro-service insertion into icat
+
+------------------------------------------------------------------------
+r3820 | schroede | 2011-03-01 11:33:22 -0800 (Tue, 01 Mar 2011) | 21 lines
+
+Additional cleanup/finish-up for ICAT functions added by Raja a few
+days ago.  Add tests to exercise the new SQL forms so tinderbox tests
+and 'irodsctl devtest' can succeed.  Fix a few bugs.
+
+icatHighLevelRoutines.h
+Add one of the new chl functions that was missing.
+
+test_chl.c:
+Add a few tests to exercise the new chl (ICAT high level) functions.
+
+icatMiscTest.pl:
+Run the new test_chl tests.
+
+icatHighLevelRoutines.c:
+Fix some bugs in string definitions and in some SQL column names.
+Eliminate compiler warnings.
+
+icatSysTables.sql.pp:
+Add a missing table.
+Fix a bug (typo) in R_MICROSRVC_MAIN.
+
+------------------------------------------------------------------------
+r3808 | sekar | 2011-02-25 12:48:04 -0800 (Fri, 25 Feb 2011) | 10 lines
+
+This is a massive checkin. Contains
+   large changes to XMessage code
+   large changes to rule engine code
+   large changes to rule base code
+     includes many new micro-services and functions
+       for rule base administration (many changes in icat part)
+   many changes to server code also
+     including new policy points
+
+
+------------------------------------------------------------------------
+r3801 | schroede | 2011-02-23 14:53:52 -0800 (Wed, 23 Feb 2011) | 5 lines
+
+Change the column name 'sql' for the specific-query to 'sqlStr' since
+MySQL does not allow columns by that name (apparently).  Also update
+the patch file comments from '---' to '-- ' as that's required by
+MySQL (sigh).
+
+------------------------------------------------------------------------
+r3788 | schroede | 2011-02-10 09:40:37 -0800 (Thu, 10 Feb 2011) | 32 lines
+
+Add aliases for Specific-Queries so the clients can more easily
+specify them.  Decided this was needed and wanted to get it in before
+the release.
+
+server/icat/src/icatSysInserts.sql
+server/icat/src/icatSysTables.sql.pp
+server/icat/src/icatSysTables.sql
+server/icat/patches/psg-patch-v2.4.1tov2.5.sql:
+Change the table definition to include an alias column.
+Remove unique from the sql index and add an index on the alias.
+
+clients/icommands/src/iadmin.c:
+Help text changes and add optional 2nd parameter (alias) for adding a
+specific query.
+
+clients/icommands/src/iquest.c:
+Add help text about aliases.
+Remove the built-in alias for 'ls' as that's in the table now.
+Handle determining Format a little differently, for aliases.
+
+server/icat/src/icatHighLevelRoutines.c
+Handle Aliases for the specific query, for add, delete, and execute.
+
+server/api/src/rsGeneralAdmin.c
+server/icat/include/icatHighLevelRoutines.h
+New Alias parameter for chlAddSpecificQuery
+The chlDelSpecificQuery parameter is either the SQL or Alias.
+
+server/test/bin/icatTest.pl:
+Add a test for the new SQL forms.
+
+
+------------------------------------------------------------------------
+r3779 | schroede | 2011-02-09 07:56:15 -0800 (Wed, 09 Feb 2011) | 7 lines
+
+Implement admin-mode (-M) for ichmod.  If the user is the iRODS admin
+and uses -M, they will be allowed to perform the ichmod operation.
+Altho it is also possible to alias as users and then ichmod, this is
+much more convenient for certion operations such as modifying large
+numbers of subcollections at the /zone/home level.  This was suggested
+by Edwin Skidmore of iPlant.
+
+------------------------------------------------------------------------
+r3757 | schroede | 2011-01-24 13:53:58 -0800 (Mon, 24 Jan 2011) | 5 lines
+
+Fix a bug related to rcModAccessControl (ichmod) so that setting
+access, recursive, will work even if the collection is empty of
+data-objects.  This was noticed by Mike Conway.
+
+
+------------------------------------------------------------------------
+r3729 | schroede | 2011-01-06 08:48:29 -0800 (Thu, 06 Jan 2011) | 4 lines
+
+Add a check to disallow blank SQL strings for specific-queries.  
+In chlAddSpecificQuery, check that the input SQL is a reasonable
+length.
+
+------------------------------------------------------------------------
+r3727 | schroede | 2011-01-05 15:14:44 -0800 (Wed, 05 Jan 2011) | 10 lines
+
+In chlModDataObjMeta, if a data_expiry_ts is being set, make sure it
+is of the iRODS standard time-stamp form (%011d).  This should solve a
+problem with DATA_EXPIRY where micro-service based query comparisons
+did not function properly, by making these expiry time-stamps 11
+digits long.  This was noticed and described by Giles Day on the
+recent irods-chat thread "acPurgeFiles and DATA_EXPIRY time
+operations".  Users will still need to be careful about pre-existing
+DATA_EXIRY values tho and to always use 11 digit time values as
+msiGetIcatTime does.
+
+------------------------------------------------------------------------
+r3703 | schroede | 2010-12-21 10:48:16 -0800 (Tue, 21 Dec 2010) | 65 lines
+
+This is the initial implementation of the SQL-based queries,
+a.k.a. the specific-query, the ability to pre-define some SQL
+queries that users can execute.
+
+Care must be taken when using these as they by-pass the access
+controls of the general-query and require detailed knowledge of the
+ICAT schema (where as the general-query does not).  For example, when
+there is a general-query on data-objects or collections, the various
+modes of access control are enforced via additional SQL, where as the
+specific-query will only do whatever the admin tells it to.  Another
+example is that the user passwords are not accessible at all via the
+general-query, but could easily be displayed via a specific query if
+the admin inadvertently allows it.
+
+But the specific-query may be useful in some cases where a site wants
+to execute some specific SQL to handle a particular case, working
+around some limitations of the general-query.
+
+The approach is as follows:
+
+1) There is new iadmin command to add and remove the allowed sql-query
+SQL strings, 'asq' and 'rsq', add and remove specific query.  See
+'iadmin h asq'.  The help text warns the admin to be careful about
+adding approved SQL strings as normal access controls are bypassed.
+
+2) These SQL strings are stored in a new ICAT table.
+server/icat/src/icatSysInserts.sql and icatSysTables.sql have been
+updated to create the new ICAT table, r_specific_query, and to set up
+the two built-in queries (to list the queries).
+
+3) The caller sends the SQL string and parameters (if any), and the
+server ICAT code makes sure the SQL string is in the allowed set.  It
+does this via a query on this new table (this makes each query do two
+queries, but the first one is trivial and so very fast).
+
+4) One of the sql-queries (preset) is one that returns all the allowed
+specific-query SQL strings. (see 'iquest --sql ls').
+
+5) Another one does some string matching on the SQL strings just a SQL
+doing a 'like' on a string (user can input wildcards (e.g. '%demo%')).
+
+6) The SQL form may include parameters as bind variables and this is
+in the Postgres format (using ? for each) and the ICAT code converts
+this to the Oracle format for Oracle ICATs.
+
+7) The results are returned in the same type of structure as the
+general-query, altho the attribute index is not stored since the
+specific-query ICAT code does not know them in this case.
+
+8) There is a new client-server ('api') call for this,
+rcSpecificQuery.
+
+9) An option to the iquest i-command has been added to support this, a
+new command line option, --sql.  See  'iquest h'.
+
+This commit also adds some tests to icatTest.pl so that the new SQL
+forms will be tested and the 'tinderbox' runs can succeed.
+
+There is also a new error code.
+
+It would be useful to add an option to use a format statement in
+'iquest --sql' so that the returned values could be formatted in a
+flexible manner.  But currently, it's just '--sql', the 'SQL
+statement' and, if needed, bind-variable arguments.
+
+------------------------------------------------------------------------
+r3687 | schroede | 2010-12-13 16:00:21 -0800 (Mon, 13 Dec 2010) | 5 lines
+
+If the mod resource freespace value starts with + or -, increment or
+decrement the freespace value by that amount via the appropriate SQL.
+This was requested by Alinga so they can do atomic freespace updates.
+
+
+------------------------------------------------------------------------
+r3685 | schroede | 2010-12-13 14:50:28 -0800 (Mon, 13 Dec 2010) | 6 lines
+
+Update an ICAT struct so that multiple DBRs on a host can be
+supported.  Move the DB user and password into the icatSessionStruct,
+instead of using pointers to them, so it will be easier to track
+these.  Previous code would not have allowed multiple DBRs on the same
+host and this is also cleaner interface for this.
+
+------------------------------------------------------------------------
+r3525 | schroede | 2010-11-04 09:13:59 -0700 (Thu, 04 Nov 2010) | 36 lines
+
+Substantially rework prelimary DBR/DBO code based on recent evolution
+of my ideas on how it should operate.  Rename/modify client/server
+calls, update the 'idbo' client, and supporting DBR/DBO and chl
+functions.  See 'DBR' wiki page for more.
+
+icatHighLevelRoutines.c and icatHighLevelRoutines.h:
+Remove chlDatabaseObjectAdmin as it is no longer needed.
+
+dboHighLevelRoutines.c and dboHighLevelRoutines.h:
+Various changes in how things work and are named.
+
+dbr.config:
+Rename dbo.config to dbr.config.
+
+rodsErrorTable.h and rodsLog.c:
+Revised error codes.
+
+apiNumber.h, apiHeaderAll.h, apiTable.h, apiPackTable.h, api.mk:
+Rename/Modify DBR/DBO client/server calls,
+    DatabaseObjectAdmin to DatabaseRescClose
+    DatabaseObjOpen to DatabaseRescOpen
+    DatabaseObjInfo to DatabaseObjControl
+Moved and modified:
+   databaseObjectAdmin.h to databaseRescClose.h
+   rcDatabaseObjectAdmin.c to rcDatabaseRescClose.c
+   rsDatabaseObjectAdmin.c to rsDatabaseRescClose.c
+
+   databaseObjOpen.h to databaseRescOpen.h
+   rcDatabaseObjOpen.c to rcDatabaseRescOpen.c
+   rsDatabaseObjOpen.c to rsDatabaseRescOpen.c
+
+   databaseObjInfo.h to databaseObjControl.h
+   rcDatabaseObjInfo.c to rcDatabaseObjControl.c
+   rsDatabaseObjInfo.c to rsDatabaseObjControl.c
+
+
+------------------------------------------------------------------------
+r3520 | schroede | 2010-11-01 10:51:19 -0700 (Mon, 01 Nov 2010) | 21 lines
+
+Support creation and basic setup of Database Resources (DBRs).  
+With this, 'iadmin' can create a resource of type 'database' (a DBR)
+and class of one of the DBMS types, the server will initialize an
+internal table with it, and this entry can then be used to route
+connections to the correct server.
+
+objInfo.h:
+rcGlobal.h:
+Define new tokens for DRBs class and types.
+
+iadmin.c:
+Document that DBRs do not need a Path.
+
+icatHighLevelRoutines.c:
+Allow DBRs to not have an associated Path.
+
+icatSysInserts.sql:
+Define new tokens for DRBs class and types.
+May want to create a patch file too for the next release.
+
+
+------------------------------------------------------------------------
+r3499 | schroede | 2010-10-22 10:09:33 -0700 (Fri, 22 Oct 2010) | 5 lines
+
+More for permissions on resources; changes and additions to chl.
+
+Forgot to include this with previous commit.
+
+
+------------------------------------------------------------------------
+r3008 | schroede | 2010-07-01 10:46:43 -0700 (Thu, 01 Jul 2010) | 9 lines
+
+Adjust chlSimpleQuery to old iadmin will work with new servers.
+
+Change the check on the input SQL to chlSimpleQuery 
+be case insensitive so that older versions iadmin will still be
+able to operate with the server even with the changes committed
+earlier today in which table names are always upper case.  The
+old iadmin inputs table names to chlSimpleQueyr in lower case.
+
+
+------------------------------------------------------------------------
+r3006 | schroede | 2010-07-01 08:26:15 -0700 (Thu, 01 Jul 2010) | 19 lines
+
+Consistently use uppercase names for tables, for MySQL, fix bug 22.
+
+In much of the code, we would use upper case names for the ICAT tables
+but in many cases we'd use lower.  This is fine for Postgres and Oracle and
+it works for MySQL when configured with	lower_case_table_names=1.
+
+With these changes, one can also run mySQL in the regular
+case-sensitive mode as requested in Bugzilla item to 22.  The tables
+are installed in upper case but the SQL consistently matches it.
+
+In testing, I found that if I tried to alter the MySQL ICAT tables to
+a different case, rows were lost (perhaps those added as the other
+case name).  So I am not sure this will work for existing MySQL ICATs
+(i.e. sites may need to continue to run with lower_case_table_names=1).  
+But for new installations, this seems to work.  At least the
+installation succeeds and the full ICAT test ('irodsctl devtest')
+completes successfully.
+
+
+------------------------------------------------------------------------
+r2953 | schroede | 2010-06-23 11:54:59 -0700 (Wed, 23 Jun 2010) | 2 lines
+
+MySQL needs the Oracle syntax for this SQL.
+
+------------------------------------------------------------------------
+r2948 | sekar | 2010-06-23 07:35:06 -0700 (Wed, 23 Jun 2010) | 3 lines
+
+tting many changes made to make Xmsg system to work as well as partial commits for the
+icat-based rule system. 
+
+------------------------------------------------------------------------
+r2941 | schroede | 2010-06-21 17:02:52 -0700 (Mon, 21 Jun 2010) | 23 lines
+
+icatHighLevelRoutines.c:
+For Database-Objects use some specific AVUs to hold DBO information
+(instead of the data-object comment column and perhaps the path) and
+instead of creating a special data-object as a DBO, just assign
+DBOness to data-objects.  This avoids reusing columns for multiple
+purposes, uses existing AVU access control, and allows the root object
+to be a normal data-object.
+
+And with that, we could store the results of the SQL (select) into the
+data-object, which might be quite useful.  We could have separate
+control to execute the SQL and then use normal iRODS access control
+for other users to access the results.  Longer term, we may be able to
+take this data stored in the data-object and insert it into another
+table.
+
+idbo.c:
+Optionally use the current-working-directory when specifying
+data-objects.
+
+rsDatabaseObjectAdmin.c:
+Remove some debug printf's.
+
+
+------------------------------------------------------------------------
+r2934 | schroede | 2010-06-21 11:52:05 -0700 (Mon, 21 Jun 2010) | 5 lines
+
+Add databaseObjectAdmin client/server call and the use of it. 
+I'm planning to change this quite a bit, but wanted to get this
+version into SVN first.  
+Also, fix some bugs in some of the other dbo code.
+
+------------------------------------------------------------------------
+r2908 | schroede | 2010-06-17 15:01:55 -0700 (Thu, 17 Jun 2010) | 15 lines
+
+Changes to complete the AVU metadata on resource-groups feature.
+
+icatTest.pl:
+Add some tests to exercise all the new SQL.
+
+icatHighLevelRoutines.c:
+Correct some SQL, fix a column name.
+
+icatGeneralQuery.c:
+Increase a table limit due to the greater number of links.
+
+imeta.c:
+Keep the help messages under 80 columns per line.
+
+
+------------------------------------------------------------------------
+r2906 | schroede | 2010-06-17 14:28:44 -0700 (Thu, 17 Jun 2010) | 8 lines
+
+Patches from Thomas Ledoux to support AVU metadata on resource-groups
+
+This is a fairly complete set of changes from Thomas Ledoux of the
+French National Library so that user defined meta-data (AVU triplets)
+can be defined and used on resource-groups (see 'imeta').  I'll commit
+a few additions following this to complete these changes.
+
+
+------------------------------------------------------------------------
+r2893 | schroede | 2010-06-15 14:24:46 -0700 (Tue, 15 Jun 2010) | 19 lines
+
+More additions for the chlInsRuleTable function added by
+Raja recently.
+
+icatHighLevelRoutines.c:
+Undo a temporary change so that the SQL test is required (under
+tinderbox and the 'irodsctl devtest').  Minor edits.
+
+icatSysTables.sql.pp:
+Remove the 'not null' constraint on rule_owner_name and
+rule_owner_zone, for now, as chlInsRuleTable does not set them.  Add
+and remove some other columns that I had missed in the last commit.
+
+test_chl.c:
+Add a test for chlInsRuleTable
+
+icatMiscTest.pl:
+Call the new test of chlInsRuleTable
+
+
+------------------------------------------------------------------------
+r2889 | schroede | 2010-06-14 16:38:15 -0700 (Mon, 14 Jun 2010) | 4 lines
+
+Changes to chlAddAVUMetadataWild (imeta addw) for Oracle, primarily
+use a table instead of one of the views since bind-variables cannot be
+used with views under Oracle.
+
+------------------------------------------------------------------------
+r2880 | schroede | 2010-06-10 14:33:45 -0700 (Thu, 10 Jun 2010) | 3 lines
+
+Temporary change to avoid checking on these SQL ops so the tinderbox
+tests can complete OK.
+
+------------------------------------------------------------------------
+r2877 | sekar | 2010-06-09 12:59:54 -0700 (Wed, 09 Jun 2010) | 5 lines
+
+This is a somewhat massive commit with changes to XMsgs system and the rule engine
+and some portions of rule in iCAT. 
+It also includes the Doxygen stuff for many of the micro-services whichI am supposed to do.
+
+
+------------------------------------------------------------------------
+r2680 | schroede | 2010-04-28 14:49:50 -0700 (Wed, 28 Apr 2010) | 32 lines
+
+Add the 'imeta addw' wildcard selection of data-objects capability.
+This was more involved than I expected (particularly for the access
+checks) but seems to work well and should scale well.  Users can
+create an AVU and associate it with many data-objects at one time,
+using wildcards in the collection and/or data-object name.
+
+Like similar operations, this is available for use from microservices
+too.  Note that the return code, if positive, is the number of objects
+to which the AVU was associated.
+
+icatHighLevelRoutines.c:
+Add the chlAddAVUMetadataWild function (see comments for descriptions).
+Refactor chlAddAVUMetadata to have a separate function, findOrInsertAVU, 
+which is used by both chlAddAVUMetadata and chlAddAVUMetadataWild.
+
+imeta.c:
+Add the 'addw' sub-command and its help informtion.
+
+rsModAVUMetadata.c:
+Handle the new 'addw' option; call the new
+chlAddAVUMetadataWild function.
+
+icatTest.pl:
+Add a basic test of 'imeta addw' so that the SQL will be exercised and
+the tinderbox test ('irodsctl devtest') can succeed.
+
+icatDefines.h:
+Add a new Audit type for use with chlAddAVUMetadataWild.
+
+icatHighLevelRoutines.h:
+Add a definition for the new chlAddAVUMetadataWild function
+
+------------------------------------------------------------------------
+r2648 | schroede | 2010-04-22 11:45:00 -0700 (Thu, 22 Apr 2010) | 3 lines
+
+In chlRegDataObj, save the chksum (data_checksum) value, if provided.
+Like other values, if the input is null the column will not be set.
+
+------------------------------------------------------------------------
+r2639 | schroede | 2010-04-20 15:35:57 -0700 (Tue, 20 Apr 2010) | 32 lines
+
+Fix for GSI authentication, connecting to non-IES, without irodsUserName.
+
+Some sites that use GSI authentication find it useful to dynamically
+map the GSI authentication id (DNs) to irodsUserNames rather than
+having the user specifying them or by maintaining a separate map file.
+There is a Rule that can be used for this, or if the DN is associated
+with exactly one irods user, the iRODS code will use that.  See
+server/api/src/rsGsiAuthRequest.c for more information on this.
+
+This has been working fine in previous versions, except when the
+client connects to an non ICAT-Enabled Server (non-IES) instead of the
+IES.  With these changes, connecting to the non-IES using GSI without
+specifying an irodsUserName works too.
+
+This problem was reported by Shunde (ARCS).
+
+
+icatHighLevelRoutines.c:
+In chlCheckAuth, if the rodsUserName is blank, instead of returning an
+error, allow basic access (the remote server has been authenticated so
+we can trust this).  This will allow some queries from the non-IES,
+including the one needed to get the DNs from the ICAT.
+
+
+rsGsiAuthRequest.c:
+If the rodsUserName was not previously set, but is now (via various
+methods), and this agent is not the ICAT-Enabled Server (IES),
+disconnect from the IES and reconnect.  This adds a little overhead,
+but cleanly and securely sets up the environment in the IES agent
+process for this user (and some sort of additional interaction is
+needed anyway).
+
+------------------------------------------------------------------------
+r2622 | schroede | 2010-04-15 13:15:00 -0700 (Thu, 15 Apr 2010) | 17 lines
+
+Add the capability of renaming a resource.
+
+icatHighLevelRoutines.c:
+Add logic to handle renaming a resource, updating the various tables
+that include a resc_name column.
+
+iadmin.c:
+Warn and prompt for confirmation when renaming a resource.
+Add 'name' to modresc description in the help text.
+
+icatTest.pl:
+Add a test for changing the name of a resource so that all the SQL
+forms will be tested.
+
+icatGeneralQuery.c:
+Correct a log message.
+
+------------------------------------------------------------------------
+r2603 | schroede | 2010-04-12 16:04:23 -0700 (Mon, 12 Apr 2010) | 30 lines
+
+Changes to avoid very slow response when deleting AVUs.
+
+icatHighLevelRoutines.c:
+Change how the cleanup of AVUs is done to be more efficient,
+particularly if there are more than a moderate number of AVUs defined
+(a few tens of thousands).
+
+1) By default, do not remove unused AVUs upon each object or
+AVU-association deletion.
+
+2) Switch to much more efficient SQL for Postgres and Oracle (but this
+is not available for mySQL).
+
+3) Add chlDelUnusedAVUs function to manually do this AVU cleanup (via
+'iadmin rum').
+
+
+icatHighLevelRoutines.h:
+Add def for chlDelUnusedAVUs
+
+rsGeneralAdmin.c:
+Add option for calling chlDelUnusedAVUs ('iadmin rum' command)
+
+icatTest.pl:
+Run 'iadmin rum' command so the new SQL will be run and so the
+tinderbox test runs can succeed.
+
+iadmin.c:
+Add a 'rum' sub-command (remove unused metadata) and its help info.
+
+------------------------------------------------------------------------
+r2571 | schroede | 2010-04-06 14:29:05 -0700 (Tue, 06 Apr 2010) | 5 lines
+
+In chlModDataObjMeta and chlRegDataObj, if the new NO_COMMIT_FLAG is
+set, skip the commit.  The caller will then later call either
+chlCommit or chlRollback after a set have been done.  This will be
+used in the bulk registration feature.
+
+------------------------------------------------------------------------
+r2532 | schroede | 2010-03-17 16:13:48 -0700 (Wed, 17 Mar 2010) | 10 lines
+
+When determining the user's type (and priv level), use the
+rsComm->clientUser.rodsZone zone instead of the zone from the username
+argument.  Without this change, inter-zone authentications (server to
+server) to a non-ICAT host would fail (with CAT_INVALID_USER) even
+when the user is valid.  This bug has existed for many versions,
+probably from the beginning of we added zone federation.  It's not
+triggered if the user is accessing resources on the ICAT host in a
+remote zone.
+
+
+------------------------------------------------------------------------
+r2513 | schroede | 2010-03-12 08:21:56 -0800 (Fri, 12 Mar 2010) | 5 lines
+
+Correct the previous update.  Need to return an error since the client
+user name remains unknown and subsequent access checks would fail.
+We'll need to update the protocol to handle this well, after 2.3.
+
+
+------------------------------------------------------------------------
+r2510 | schroede | 2010-03-11 09:47:38 -0800 (Thu, 11 Mar 2010) | 12 lines
+
+Avoid a connection failure in a GSI case noticed by Shunde.
+
+If using GSI, and if the client does not provide a user name, and is
+connecting to a non-IES, avoid a particular query (which would fail)
+and set the privilege level to local user.  This avoids a connection
+failure (and non-IES abort) in this case, but limits the users to
+non-admin operations.  It is still secure because the non-IES is
+authenticated and then verifies the client user via GSI.  Extensions
+could be made to the iRODS protocol, after the upcoming release (2.3),
+to also handle the admin case, via a new privileged client-server call
+to adjust the client user's privilege level.
+
+------------------------------------------------------------------------
+r2440 | schroede | 2010-02-19 09:57:22 -0800 (Fri, 19 Feb 2010) | 8 lines
+
+Changes to support Oracle ICATs when using Quotas.  In one case,
+needed a different SQL form to handle the update using multiple tables
+as input.  In another case, just removed a ; at the end of the SQL
+that was there in error (PG and MySQL are less 'picky').
+
+With these changes, 'irodsctl devtest' and quotaTest.pl complete
+successfully with Oracle as the ICAT DBMS.
+
+------------------------------------------------------------------------
+r2438 | schroede | 2010-02-18 15:23:25 -0800 (Thu, 18 Feb 2010) | 3 lines
+
+Small change in calculating quotas to handle the case where there are
+no irods files at all (seen on Ubuntu Laptop used for MySQL testing).
+
+------------------------------------------------------------------------
+r2436 | schroede | 2010-02-18 13:50:13 -0800 (Thu, 18 Feb 2010) | 5 lines
+
+Fix a bug in the previous commit for a particular SQL form.  This was
+noticed on tinderbox; did not notice in local testing that this SQL
+form was untested because of previous test records in the server log.
+
+
+------------------------------------------------------------------------
+r2434 | schroede | 2010-02-18 11:35:16 -0800 (Thu, 18 Feb 2010) | 18 lines
+
+Fix a couple quota bugs.
+
+In setQuota, when handling group qoutas on resources, change the SQL
+to also get the resource id and then use that when setting the values.
+The quotaTest.pl does catch this problem, so I'm pretty sure it was
+working properly perviously so another change seems to have caused
+this.  But this change seems to correct the problem and quotaTest.pl
+now succeeds.
+
+Also, change the way group quotas for total-usage is handled to avoid
+setting the over-quota too high in some cases.  Do it in separate SQL
+calls and only set the over-quota value when it is higher than
+previous settings (based on per-resource quotas).  This was a bug that
+Mike noticed in some of his testing.
+
+Also did a little code cleanup, including a simplier way to handle
+'cast' differences between the 3 DBMS types.
+
+------------------------------------------------------------------------
+r2424 | schroede | 2010-02-16 14:00:08 -0800 (Tue, 16 Feb 2010) | 5 lines
+
+Changes for Quotas with MySQL ICAT.  Found/debugged some SQL changes
+that are needed when using MySQL as the ICAT and doing some of the
+quota operations; somewhat different syntax needed in some cases.  The
+'irodsctl devtest' now completes OK with MySQL.
+
+------------------------------------------------------------------------
+r2422 | schroede | 2010-02-11 14:23:22 -0800 (Thu, 11 Feb 2010) | 27 lines
+
+For quotas, where it wasn't already handled, add logic to deal with
+optional zone names in user names.  As usual, default to the local
+zone.
+
+iquota.c:
+Parse out the optional zone on a username and use it, or the local
+zone, when doing queries.  Display zones as part of the output.
+Adjust the help text to match.
+
+iadmin.c:
+Change the simpleQuery SQL for 'lq' (list quotas) to include a zone
+and use either the entered zone or the localzone.  Also, include the
+zone in the display.  Update the 'lq' help text to match.
+
+icatHighLevelRoutines.c:
+Change the chlSimpleQuery SQL for quotas to include user zones.
+
+icatGeneralQuery.c:
+In the special query for quota enforcement, parse out an optional zone
+on the user name and use it, or the local zone.
+
+icatGeneralQuerySetup.c:
+Set up the new quota user-zone column.
+
+rodsGenQuery.h and rodsGenQueryNames.h:
+Add a new column for general queries on quotas for user-zones.
+
+------------------------------------------------------------------------
+r2396 | schroede | 2010-02-01 14:05:44 -0800 (Mon, 01 Feb 2010) | 6 lines
+
+In chlDelUserRE, also delete r_user_group rows where the group_user_id
+matches the user or group being deleted.  Previously, when groups were
+being deleted, if there were users that were part of the group, a row
+per such user would be left in the table.  This wouldn't really hurt
+anything, except make the table grow on occasion.
+
+------------------------------------------------------------------------
+r2380 | schroede | 2010-01-26 11:13:59 -0800 (Tue, 26 Jan 2010) | 27 lines
+
+Add code for a quota-query to be used by the server when enforcing
+quotas, and make some minor refinements in the quota system.
+
+icatGeneralQuery.c: 
+Add code to handle a specific query, when the new QUOTA_QUERY option
+is used, to efficiently get quota information, handling all the quota
+types in a single query (the group and individual quotas, per-resource
+and total-usage).  I decided to make this part of General-Query, since
+it is so similar, but it is specific.  See the comments and
+iTestGenQuery.c for more.
+
+iTestGenQuery.c:
+Add a test/example of the new QUOTA_QUERY for getting quota values.
+
+rodsGenQuery.h:
+Add special QUOTA_QUERY option.
+
+icatHighLevelRoutines.c:
+Re-enable the call to setOverQuota when setting a quota; I believe it
+will maintain consistency better and should always be quick.
+Do a little clean-up.
+
+quotaTest.pl:
+Adjust the test to match the above changes in icatHighLevelRoutines.c;
+'iadmin cu' is not needed before the new values are seen.
+
+
+------------------------------------------------------------------------
+r2363 | schroede | 2010-01-20 09:43:12 -0800 (Wed, 20 Jan 2010) | 19 lines
+
+Fixes for bugzilla bug 53 and 54, and related changes.
+
+In many cases, changed the size argument for some snprintf, strncpy,
+strncat, and rstrcpy calls to use 'sizeof' the target instead of
+defines or matching constants.  In almost all of these, the previous
+form was correct but the sizeof form is clearer and less error prone.
+The rare cases where these values were wrong, as described in bugs 53
+and 54, are corrected in this set of changes (in rsGeneralAdmin.c and
+some of icatHighLevelRoutines.c respectively).
+
+I checked many other cases of these types of calls too but did not
+change them as they appear to be correct and clear and there are so
+many (in my code and others').
+
+But I do recommend the sizeof form in new code and will tend to use
+it.  I may also modify other sections of source in this manner when I
+am working on them for other reasons.
+
+
+------------------------------------------------------------------------
+r2353 | schroede | 2010-01-13 15:52:25 -0800 (Wed, 13 Jan 2010) | 27 lines
+
+test_genq.c:
+  Add a test that calls chlGenQuery repeatedly (using an input count
+  from the command line).  This was used to check handling of closing
+  the SQL statements after returning all the rows, or when the caller
+  closes them out.  Seems to work fine.  This was to check this as
+  possibly related to a problem Jean-Yves is seeing.
+
+More Quota development:
+
+test_chl.c: 
+  For the chkQuotaTest, add two args (from the command line) to
+  provide the expected result values and check on these for setting
+  the exit value.  This makes the tests easier for the calling script.
+
+  Change the userQuota arg to chlCheckQuota to a long int.
+
+quotaTest.pl:
+  This is an initial version of a script to test ICAT quota
+  operations.  There is much more to add.
+
+icatHighLevelRoutines.c:
+  Forgot to make chlCheckQuota userQuota a long.
+
+icatHighLevelRoutines.h:
+  Change chlCheckQuota userQuota to a long.
+
+
+------------------------------------------------------------------------
+r2343 | schroede | 2010-01-12 11:22:18 -0800 (Tue, 12 Jan 2010) | 35 lines
+
+More refinements/additions for the optional quota system.
+
+icatGeneralMS.c:
+Add a micro-service, msiQuota, that calls chlCalcUsageAndQuota.
+
+runQuota.ir:
+Provide an example irule file for starting msiQuota to run
+periodically.
+
+reAction.table:
+Add msiQuota.
+
+icatHighLevelRoutines.c:
+Rename chlCalcUsage to chlCalcUsageAndQuota.
+Add a check in chlCalcUsageAndQuota that the client user has admin priv.
+Change chlCheckQuota to return two values: the quota and the status.
+
+icatHighLevelRoutines.h:
+Rename chlCalcUsage to chlCalcUsageAndQuota and add 2 arguments to
+chlCheckQuota.
+
+rsGeneralAdmin.c:
+Rename chlCalcUsage to chlCalcUsageAndQuota.
+
+server/test/src/test_chl.c
+Change call to chlCheckQuota for two returned values and 
+print the values.
+
+rodsQuota.h:
+New .h for some defines for use with a chl quota function.
+
+lib/core/include/rods.h:
+include the new rodsQuota.h
+
+
+------------------------------------------------------------------------
+r2331 | schroede | 2010-01-08 15:24:49 -0800 (Fri, 08 Jan 2010) | 36 lines
+
+icatHighLevelRoutines.c:
+
+  Change the SQL in the quota functions so it will set the quota_over
+  column to the highest value (of the possible 4 types of quotas)
+  instead of only if over-quota.
+
+  Remove the automatic call to setOverQuota when the admin changes 
+  user or group quotas.
+
+  Add function chlCheckQuota to determine the user's quota status on a
+  resource.  Handles all four types (user per-resource, user global,
+  group per-resource, and group global) in a single SQL.  Incomplete
+  (need to return results).
+
+iquota.c:
+
+  Update the help text to cover more and to explain the meaning of the
+  over values (which now can be negative).  Fix printNice to handle
+  negative numbers.
+
+
+icatHighLevelRoutines.h:
+
+  Add chlCheckQuota.
+
+test_chl.c:
+
+  Add a checkquota test to call chlCheckQuota.
+
+  From a while ago, added more comments about testRegDataMulti.
+
+icatMiscTest.pl:
+
+  Use 'test_chl checkquota' so all SQL forms are tested.
+
+
+------------------------------------------------------------------------
+r2323 | schroede | 2010-01-07 11:20:00 -0800 (Thu, 07 Jan 2010) | 8 lines
+
+iadmin.c:
+Add another function for the 'lq' sub-command to also display global
+quotas via two more simpleQueries.
+
+icatHighLevelRoutines.c:
+Add two more simpleQuery SQL forms for use by 'iadmin lq'.
+
+
+------------------------------------------------------------------------
+r2321 | schroede | 2010-01-06 14:36:52 -0800 (Wed, 06 Jan 2010) | 20 lines
+
+iquota.c:
+Made many changes and additions to display the various types of quota
+information in a nice form.  Still needs some improvements.
+
+icatGeneralQuery.c:
+1) Fix a bug dealing with 'cyclers' (only the new quota tables are
+   such) to handle an end-case where all the columns are in one a 
+   cycler table.  Need to start with cycler in that case.
+2) Allow a not ('!') condition test (now used in iquota).
+
+iadmin.c:
+Add a 'lq' command to list quotas via a simpleQuery.
+
+icatHighLevelRoutines.c:
+Add two new simpleQuery SQL forms for use by 'iadmin lq'
+
+icatTest.pl:
+Add 'iadmin lq' commands to test the 2 new simpleQuery calls so that
+all the SQL forms will be tested.
+
+------------------------------------------------------------------------
+r2275 | schroede | 2009-12-11 05:47:37 -0800 (Fri, 11 Dec 2009) | 11 lines
+
+icatTest.pl: 
+Fix a couple problems in the quota tests so that all SQL forms will be
+tested; primarily: make the quotas smaller and add the user to the
+test group.
+
+icatHighLevelRoutines.c:
+Reset the new quota SQL logging strings so that the test scripts will
+again check that all the new SQL forms are exercised.  Also, remove
+some debug log messages.
+
+
+------------------------------------------------------------------------
+r2274 | schroede | 2009-12-10 16:51:38 -0800 (Thu, 10 Dec 2009) | 2 lines
+
+Back off one more until tests can be extended.
+
+------------------------------------------------------------------------
+r2273 | schroede | 2009-12-10 16:43:51 -0800 (Thu, 10 Dec 2009) | 3 lines
+
+Back off some of the previous commit until I can develop a test for an
+initial installation, as done under our tinderbox system.
+
+------------------------------------------------------------------------
+r2272 | schroede | 2009-12-10 16:17:30 -0800 (Thu, 10 Dec 2009) | 7 lines
+
+icatTest.pl:
+Add some basic tests for quotas.
+
+icatHighLevelRoutines.c:
+Modify the new quota SQL logging strings so that the test scripts will
+check that these new SQL forms are exercised.
+
+------------------------------------------------------------------------
+r2270 | schroede | 2009-12-10 15:20:39 -0800 (Thu, 10 Dec 2009) | 30 lines
+
+First set of additions for the quota feature.  This is still
+incomplete, but enough that I want to get it into SVN.
+
+psg-patch-v2.2tov2.3.sql:
+New tables for quotas.
+
+icatSysTables.sql.pp:
+New tables for quotas.
+
+icatHighLevelRoutines.c:
+New functions for quotas; initial versions.
+
+icatGeneralQuerySetup.c:
+New tables/column definitions for quotas.
+
+rsGeneralAdmin.c:
+New sub-options for quotas.
+
+iadmin.c:
+New quota sub-commands: suq, sgq, cu.
+
+icatHighLevelRoutines.h:
+New functions for quotas.
+
+rodsGenQuery.h:
+New tables/column definitions for quotas.
+
+rodsGenQueryNames.h:
+New tables/column definitions for quotas.
+
+------------------------------------------------------------------------
+r2240 | schroede | 2009-11-23 14:42:13 -0800 (Mon, 23 Nov 2009) | 23 lines
+
+Add the 'Mod AVU' capability.
+
+imeta.c:
+Add input processing for new 'mod' sub-command, including 
+  calling modAVUMetadata with  "mod" option.
+Add another parameter to a function.
+Add help text for new 'mod' command.
+
+rsModAVUMetadata.c:
+Add the new 'mod' sub-command to call new chlModAVUMetadata.
+Add another argument to the chlDeleteAVUMetadata (to bypass commit).
+
+icatHighLevelRoutines.c:
+Add the chlModAVUMetadata function, which calls chlDeleteAVUMetadata
+(with a new option to not commit), and then calls chlAddAVUMetatdata.
+
+icatHighLevelRoutines.h:
+Add chlModAVUMetadata def.
+Add another argument to the chlDeleteAVUMetadata function
+
+icatTest.pl:
+Add some tests for the new 'imeta mod' command.
+
+------------------------------------------------------------------------
+r2204 | schroede | 2009-11-06 14:01:58 -0800 (Fri, 06 Nov 2009) | 33 lines
+
+Added 'groupadmin' capability.  Users of type 'groupadmin' can add and
+remove other users to/from groups they are members of themselves.
+
+iadmin.c:
+Add an option to the iadmin.c generalAdmin function to optionally also
+try rcUserAdmin, if rcGeneralAdmin fails with permission error.
+Invoke this option for 'atg' and 'rfg'.
+
+Add help text in 'atg' and 'rfg' for 'groupadmin'.
+
+
+rsUserAdmin.c:
+Add "modify" "group" option similar to the one in rsGeneralAdmin.
+This calls chlModGroup which checks acess (groupadmin).
+
+Made some cosmetic code changes to make it a little more readable, at
+least for me.
+
+icatHighLevelRoutines.c:
+In chlModGroup, if the caller is not LOCAL_PRIV_USER_AUTH (rodsadmin),
+check if the user is 'rodsgroup' and a member of the group by calling
+cmlCheckGroupAdminAccess.
+
+icatMidLevelRoutines.c:
+Add function cmlCheckGroupAdminAccess.
+
+icatMidLevelRoutines.h:
+Add definition for new cmlCheckGroupAdminAccess.
+
+icatTest.pl:
+Add a test to exercise the new SQL code for the 'groupadmin'
+capability.
+
+------------------------------------------------------------------------
+r2117 | schroede | 2009-09-30 07:32:15 -0700 (Wed, 30 Sep 2009) | 2 lines
+
+Remove a couple debug/test log messages (noticed by JY).
+
+------------------------------------------------------------------------
+r2049 | schroede | 2009-09-10 09:15:05 -0700 (Thu, 10 Sep 2009) | 14 lines
+
+icatHighLevelRoutines.c:
+When removing dataObjects, collections, resources, or users also
+remove user-defined-metadata from the metadata tables.  Remove the
+mapping info first and if that succeeds (if there were some), also
+remove any unused AVU rows.  There are comments describing an optional
+'define' to skip this last part if desired (as it might get slow).
+
+Also, when removing metadata from objects, also remove unused AVUs.
+As above, this can be skipped via the 'define'.
+
+icatTest.pl: 
+Add a test that removes a dataObject that has an AVU so that the new
+SQL will be exercised (this is needed to pass the test).
+
+------------------------------------------------------------------------
+r1999 | schroede | 2009-08-12 12:04:02 -0700 (Wed, 12 Aug 2009) | 7 lines
+
+In chlModDataObjMeta, if the keyword ALL_KW is included in the
+regParams, then apply the update to all of the replicas (of the
+specified data_id) instead of just the one specified in
+dataObjInfo->replNum.  When all replicas should be updated, this is
+much more efficient than calling chlModDataObjMeta for each replica.
+
+
+------------------------------------------------------------------------
+r1997 | schroede | 2009-08-12 10:08:22 -0700 (Wed, 12 Aug 2009) | 66 lines
+
+Allow multiple GSI DN and/or Kerberos Principal names to be associated
+with each user (instead of just one), as requested by some GSI sites.
+Remove table column distin_name and add a new table for the auth-names
+outside of the r_user_main table; set up General-query to handle new table;
+add some simple-query forms; add some generalAdmin options; update some
+chl functions; add options to iadmin.
+
+To use this version from SVN, if you're using an existing ICAT, you
+will need to apply the ICAT patch in
+server/icat/src/psg-patch-v2.1tov2.2.sql even if you are not using
+GSI or Kerberos (due to user table changes).
+
+
+
+clients/icommands/src/iadmin.c:
+Add new sub-commands lua, luan, aua, and rma; remove old moduser
+mod-DN option; and update/add help text.  Commands make use of new
+simpleQuery forms and new generalAdmin sub-options.
+
+server/icat/src/psg-patch-v2.1tov2.2.sql:
+Create a new table, copy existing user_distin_name to it, and remove
+user_distin_name from the user table.
+
+clients/icommands/src/iuserinfo.c:
+Add a general-query call for the auth-names (DN or Principal Names)
+and print them, if any.
+
+server/test/bin/icatTest.pl:
+Remove a test to for modify-user-DN (which no longer exists) and add
+tests add, remove, and list the new auth-names.
+
+server/icat/include/icatDefines.h:
+Add comment that AU_MOD_USER_DN is no longer used and add
+AU_ADD_USER_AUTH_NAME and AU_DELETE_USER_AUTH_NAME.
+
+server/icat/src/icatHighLevelRoutines.c:
+In chlDelUserRE, remove any r_user_auth rows of this user's.
+In chlSimpleQueryAdd, add 4 more SQL forms.
+In chlModUser, remove DN option and add 'addAuth' and 'rmAuth'
+In chlRegUserRE, call chlModUser if caller has included an authString.
+
+server/icat/src/icatSysTables.sql.pp:
+Remove user_distin_name from user table, add create of new r_user_auth
+table.
+
+server/icat/src/icatDropSysTables.sql:
+Also drop R_USER_AUTH.
+
+server/icat/src/icatGeneralQuerySetup.c:
+Add new definitions and links for the new r_user_auth table and remove
+old user_distin_name.
+
+server/icat/src/icatSysTables.sql:
+Remove user_distin_name from user table, add create of new r_user_auth
+table.
+
+lib/core/include/rodsGenQuery.h:
+Remove COL_USER_DN from the user table and add it to the new
+R_USER_AUTH table and add COL_USER_AUTH_ID.
+
+clients/icommands/test/iTestGenQuery.c:
+Add some tests for the new general-query for auth-names (still called
+COL_USER_DN).
+
+
+
+------------------------------------------------------------------------
+r1975 | schroede | 2009-07-31 08:50:41 -0700 (Fri, 31 Jul 2009) | 8 lines
+
+server/icat/src/icatHighLevelRoutines.c:
+In chlSimpleQuery, fix a bug in checking that the input SQL matches
+one of the pre-defined forms.
+
+server/test/bin/icatMiscTest.pl:
+Add a simpleQuery test to make sure a SQL request that is not
+a predefined form is rejected.
+
+------------------------------------------------------------------------
+r1969 | schroede | 2009-07-28 10:16:33 -0700 (Tue, 28 Jul 2009) | 30 lines
+
+clients/icommands/src/iadmin.c:
+Add help text for setting new resource status column.
+Setting and showing the new column is handled, via changes in other
+code.
+
+clients/icommands/src/ilsresc.c:
+Show the new resource status column.
+
+server/icat/src/icatHighLevelRoutines.c:
+In chlModResc, add update of the new resourse status column.
+
+server/icat/src/icatGeneralQuerySetup.c:
+Add initialization call to be able to query on the new resource status
+column.
+
+server/icat/src/icatSysTables.sql:
+Add resc_status to r_resc_main
+
+server/icat/src/psg-patch-v2.1tov2.2.sql:
+Patch to add the new resource status column.
+
+lib/core/include/rodsGenQueryNames.h:
+Add a name (for iquest) for the new resource status column.
+
+lib/core/include/rodsGenQuery.h:
+Add the new resource status column.
+
+server/test/bin/icatTest.pl:
+Add a test for setting the new resource status.
+
+------------------------------------------------------------------------
+r1953 | schroede | 2009-07-20 08:59:35 -0700 (Mon, 20 Jul 2009) | 3 lines
+
+In chlDelResc, also remove the resource from resource-groups (if any).
+This problem was noticed by Alinga Yeung and discussed on irods-chat.
+
+------------------------------------------------------------------------
+r1946 | schroede | 2009-07-15 15:56:31 -0700 (Wed, 15 Jul 2009) | 4 lines
+
+Trivial update to so the svn email log will be complete.  Two days
+ago, in testing, I did an svn commit on this to fix a very minor
+logging message mistake (function name).
+
+------------------------------------------------------------------------
+r1934 | schroede | 2009-07-13 10:53:56 -0700 (Mon, 13 Jul 2009) | 2 lines
+
+Fix a very minor logging message mistake (function name).
+
+------------------------------------------------------------------------
+r1927 | schroede | 2009-07-09 15:56:05 -0700 (Thu, 09 Jul 2009) | 3 lines
+
+Correct a rodsLog LOG_SQL call (used in testing) to have
+the right function name.
+
+------------------------------------------------------------------------
+r1912 | schroede | 2009-07-02 11:43:04 -0700 (Thu, 02 Jul 2009) | 6 lines
+
+In chlDebug and cmlDebug, add some additional control over enabling
+auditing for debug.  For tests, as before, when irodsDebug is set to
+CATSQL enable auditing.  But now for manual analysis, one can use
+CATsql to enable the other logging but without enabling auditing.
+Auditing can affect behavior.
+
+------------------------------------------------------------------------
+r1814 | schroede | 2009-06-15 08:50:33 -0700 (Mon, 15 Jun 2009) | 22 lines
+
+rsGeneralAdmin.c:
+Call the new replErrorStack to return the error stack if
+rcGeneralAdmin fails.  This returns the error stack messages if the
+user is connecting thru a non-ICAT-Enabled server.
+
+This is primarily for the new CAT_PASSWORD_ENCODING_ERROR which will
+happen if the admin-user has connected thru a non-ICAT server.  So
+this will give them a more detailed message about what is wrong and
+how to correct it.
+
+But this also helps for other admin functions, if the user happens to
+be connecting thru a non-IES since the iadmin interaction is designed
+to use the error-stack for additional assistance.
+
+Also made a minor logging change.
+
+
+icatHighLevelRoutines.c:
+
+Minor refinement to the error-stack text message returned for the case
+of CAT_PASSWORD_ENCODING_ERROR.
+
+------------------------------------------------------------------------
+r1809 | schroede | 2009-06-12 15:08:43 -0700 (Fri, 12 Jun 2009) | 26 lines
+
+Changes to the new password encoding system (V2) committed this
+morning.
+
+server/icat/src/icatHighLevelRoutines.c:
+1) Instead of calling getSessionSignitureServerside, handle the
+equivalent internally.
+
+2) Check for invalid password decoding and return an error for this
+case.  iadmin must connect directly to the IES for the encode/decode
+to work properly.
+
+
+clients/icommands/src/ipasswd.c:
+Change back to the original obfEncodeByKey so that if its connected
+thru a non-ICAT server, it will still work.  For users changing their
+own password, V2 isn't so necessary.
+
+
+lib/core/src/rcMisc.c:
+Remove the getSessionSignitureServerside function added earlier today
+as this can be done in the ICAT (chl) code.
+
+
+lib/core/include/rodsErrorTable.h  lib/core/src/rodsLog.c:
+New error code: CAT_PASSWORD_ENCODING_ERROR.
+
+------------------------------------------------------------------------
+r1804 | schroede | 2009-06-12 10:31:57 -0700 (Fri, 12 Jun 2009) | 47 lines
+
+This implements a new password encoding system (V2) which fixes a
+minor vunerability I noticed when reevaluating the algorithm and
+strengths it in a number of ways.  It is backward compatible because
+on the server side, it will detect it if V2 is not being used and
+fall-back to V1.  This aspect of the obfuscation system (both V1 and
+V2) is only used when sending a user's new password on the network (by
+'iadmin moduser User password Pw' and by ipasswd).
+
+
+clients/icommands/src/iadmin.c:
+Use the new password encoding function, obfEncodeByKeyV2, for
+concealing user passwords on the network.
+
+clients/icommands/src/ipasswd.c:
+Use the new password encoding function, obfEncodeByKeyV2, for
+concealing user passwords on the network.
+
+lib/core/include/obf.h:
+Add obfEncodeByKeyV2 and obfDecodeByKeyV2
+
+lib/core/src/obf.c:
+Add obfEncodeByKeyV2, obfDecodeByKeyV2, and obfGetMD5Hash.
+
+Version two is like the original but uses two key and a hash of them
+instead of the key itself (to keep the key itself even more
+undiscoverable).  The second key is a session signiture (based on the
+challenge) (not secret but known to both client and server and unique
+for each connection).  It also uses a quasi-cipher-block-chaining
+alrogithm and adds a random character (so the 'out' is different even
+with the same 'in' each time).
+
+lib/core/include/rcConnect.h:
+Add getSessionSignitureClientside().
+
+lib/core/src/clientLogin.c:
+Add function getSessionSignitureClientside.
+
+
+lib/core/src/rcMisc.c:
+Add function getSessionSignitureServerside.
+
+
+server/icat/src/icatHighLevelRoutines.c:
+Use the new obfDecodeByKeyV2 when updating users' passwords.  This
+should also work properly if the client is still using the original
+version.
+
+------------------------------------------------------------------------
+r1773 | schroede | 2009-06-04 10:22:27 -0700 (Thu, 04 Jun 2009) | 5 lines
+
+In chlMoveObject, correct one of the SQL checks for access permissions
+to handle the case of group access.  This seems to resolve the problem
+of removing collections when given group ownership when trash is
+enabled.
+
+------------------------------------------------------------------------
+r1768 | schroede | 2009-06-03 09:24:35 -0700 (Wed, 03 Jun 2009) | 15 lines
+
+server/icat/src/icatHighLevelRoutines.c:
+Correct a SQL call so that collections can deleted if the user has
+appropriate group access (but is not the original owner).  chlCheckDir
+does the correct check so the additional SQL condition was not needed.
+
+server/api/src/rsRmColl.c:
+Add a line in _rsPhyRmColl so that if svrUnregColl (via chlDellColl)
+returns an error, the client will receive that error.  This corrects a
+problem where the user would try to remove someone else's collection
+via irm and not see any error (even tho it was not removed).
+
+server/icat/src/icatLowLevelPostgres.c:
+Add additional optional often-useful logging: log some of the query
+results.
+
+------------------------------------------------------------------------
+r1671 | schroede | 2009-04-21 15:42:44 -0700 (Tue, 21 Apr 2009) | 3 lines
+
+Minor changes to avoid warnings using a different compiler
+(Ubuntu 8.10).
+
+------------------------------------------------------------------------
+r1638 | schroede | 2009-03-31 15:33:46 -0700 (Tue, 31 Mar 2009) | 4 lines
+
+Correct recently added SQL for MySQL case, no cast needed (and cast
+causes an error) and remove an extra ')'.  Passes 'irodsctl test'
+again.
+
+------------------------------------------------------------------------
+r1633 | schroede | 2009-03-25 11:27:21 -0700 (Wed, 25 Mar 2009) | 4 lines
+
+Add a few SQL calls in chlModAccessControl so that 'ichmod -r' will
+delete and add ACL items for the top-collection and sub-collections in
+addition to the data-objects (fix bugzilla item 16).
+
+------------------------------------------------------------------------
+r1617 | schroede | 2009-03-23 11:34:19 -0700 (Mon, 23 Mar 2009) | 6 lines
+
+Fix a bug in setting the client privilege when multiple servers are
+involved (user connects to a non-IES).  Need to query on the
+clientUser.userName, not the input name.  This was broken in the 1.37
+update but, fortunately, the server to server API-call restrictions
+were still operating correctly.
+
+------------------------------------------------------------------------
+r1600 | schroede | 2009-03-18 16:12:10 -0700 (Wed, 18 Mar 2009) | 9 lines
+
+Fixes to the previous commit so 'irodsctl test' can pass the
+catalog tests.
+
+icatHighLevelRoutines.c:
+Change a logging call.
+
+icatMidLevelRoutines.c:
+Add a basic call to the new function.
+
+------------------------------------------------------------------------
+r1598 | schroede | 2009-03-18 11:18:53 -0700 (Wed, 18 Mar 2009) | 16 lines
+
+icatHighLevelRoutines.c:
+In chlRegColl when handling the inheritance flag, if using Oracle no
+longer use the currval string in a where clause setting the
+inheritance column as this is not allowed under Oracle (the
+corresponding does work with Postgres).  Instead, get the current id
+via a new cmlGetCurrentSeqVal function and then use that.  This fixes
+a bug noticed by Jean-Yves (see irods-chat) when creating a collection
+that has inheritance set.  The collection would get created but
+without the inheritance flag set.
+
+For the postgres version, remove an unused bind variable.  This caused
+no error but was incorrect and misleading.
+
+icatMidLevelRoutines.c:
+Add a simple cmlGetCurrentSeqVal based on a similar function.
+
+------------------------------------------------------------------------
+r1579 | schroede | 2009-03-12 10:23:52 -0700 (Thu, 12 Mar 2009) | 5 lines
+
+Add a check in chlDelRuleExec.  In addition to allowing the admin (as
+before), also allow non-admin local users to delete their own delayed
+rules.  This check is also made by the called rsRuleExecDel but is at
+the ICAT level too in case it gets called differently.
+
+------------------------------------------------------------------------
+r1574 | schroede | 2009-03-11 14:54:30 -0700 (Wed, 11 Mar 2009) | 7 lines
+
+In the AVU functions, allow upper case -D, -C, -R, and -U for the
+object type (for data-object, collection, resource and user), in
+addition to the lower case options.  The i-commmands convert to lower
+case, but some microservices do not.  So it's easiest, and safe I
+think, to allow either here at the chl level, to avoid user-interface
+issues.
+
+------------------------------------------------------------------------
+r1556 | schroede | 2009-02-25 13:51:34 -0800 (Wed, 25 Feb 2009) | 4 lines
+
+Add four new functions for use by the Resource Monitoring System which
+Jean-Yves is developing. (Correct the log entry from previous commit a
+few minutes ago.)
+
+------------------------------------------------------------------------
+r1553 | schroede | 2009-02-25 13:44:17 -0800 (Wed, 25 Feb 2009) | 2 lines
+
+Minor fix.
+
+------------------------------------------------------------------------
+r1542 | schroede | 2009-02-24 11:14:03 -0800 (Tue, 24 Feb 2009) | 4 lines
+
+Add chlRegServerLoad and chlPurgeServerLoad functions.
+These are some preliminary functions for use by Jean-Yves
+with his Resource Monitoring System.
+
+------------------------------------------------------------------------
+r1523 | schroede | 2009-02-06 09:06:13 -0800 (Fri, 06 Feb 2009) | 17 lines
+
+Modifications from Andy Sainikov (SLAC) to support MySQL as the ICAT
+DBMS (when previously-installed).  This was successfully tested here
+at CA-DICE on Ubuntu and seems to work fine.  Other testing is
+on-going and we will probably want to extend the installation support
+and documentation and make some other refinements.
+
+The install scripts now include options for MySQL, altho Andy's
+procedure does not include irodssetup but instead some of the
+sub-scripts.  See INSTALL.txt for instructions.
+
+With these mods, the icatLowLevelPostgres.c code now works with both
+PostgreSQL and MySQL so we may rename it sometime.
+
+The two new .pp files are now run thru cpp to generate MySQL,
+Postgres, or Oracle versions (with slight differences), a nice way to
+handle this.
+
+------------------------------------------------------------------------
+r1424 | schroede | 2008-11-25 13:11:57 -0800 (Tue, 25 Nov 2008) | 12 lines
+
+icatHighLevelRoutines.c:
+In chlMoveObject, change some SQL and cml calls to use the user's zone
+when checking access; needed in some inter-zone operations when there
+are users by the name name but different zones.  Also fix some
+password operations to use zone too, altho probably not strictly
+required.  All calls to cmlGetStringValueFromSql and
+cmlGetStringsValueFromSql now have another argument (usually unused).
+
+icatMidLevelRoutines.c:
+Add another bind-variable argument to cmlGetStringValueFromSql and
+cmlGetStringsValueFromSql.
+
+------------------------------------------------------------------------
+r1388 | schroede | 2008-11-07 14:48:45 -0800 (Fri, 07 Nov 2008) | 8 lines
+
+icatHighLevelRoutines.c:
+Changes and additions to support inheritance (sticky bit), when
+registering dataObjects or collections and modifying collection
+inherit/not state (possibly recursively).
+
+icatMidLevelRoutines.c:
+Add function cmlCheckDirAndGetInheritFlag for inheritance feature.
+
+------------------------------------------------------------------------
+r1376 | schroede | 2008-11-05 16:25:46 -0800 (Wed, 05 Nov 2008) | 4 lines
+
+In chlModDataObjMeta, if the data_type is being updated, verify that
+the data_type value is valid.  Needed now that this is accessible via
+user command isysmeta.
+
+------------------------------------------------------------------------
+r1369 | schroede | 2008-11-04 11:26:46 -0800 (Tue, 04 Nov 2008) | 3 lines
+
+In chlCheckAuth, check for #zone at the end of the username and use it
+if present, else use localZone.
+
+------------------------------------------------------------------------
+r1362 | schroede | 2008-11-03 13:08:56 -0800 (Mon, 03 Nov 2008) | 4 lines
+
+In chlAddAVUMetadata, chlDeleteAVUMetadata, and chlCopyAVUMetadata
+accept optional '#zone' as part of the username.  If not provided,
+default to the local zone.
+
+------------------------------------------------------------------------
+r1343 | schroede | 2008-10-30 15:18:37 -0700 (Thu, 30 Oct 2008) | 6 lines
+
+In simpleQuery, change some SQL to return user names in the
+username#zonename form.
+
+In chlModUser and chlModGroup accept the UserName#ZoneName form of the
+username and make use of each username and zonename if provided.
+
+------------------------------------------------------------------------
+r1335 | schroede | 2008-10-30 10:26:24 -0700 (Thu, 30 Oct 2008) | 3 lines
+
+In chlCheckAuth, handle the case where the zone name is empty (use
+the local zone), to be backward compatible with 1.1 clients.
+
+------------------------------------------------------------------------
+r1311 | schroede | 2008-10-23 10:17:18 -0700 (Thu, 23 Oct 2008) | 3 lines
+
+In chlCheckAuth, accept new argument userZone and use it in various
+SQL calls to identify the user using both userName and userZone.
+
+------------------------------------------------------------------------
+r1301 | schroede | 2008-10-22 15:46:41 -0700 (Wed, 22 Oct 2008) | 7 lines
+
+icatLowLevelOracle.c:
+Fix a few memory leaks; the main one is to free column name fields
+when no results are found.
+
+icatHighLevelRoutines.c:
+Fix a bug in a recent change; removed an extra bind variable.
+
+------------------------------------------------------------------------
+r1258 | schroede | 2008-10-10 09:45:07 -0700 (Fri, 10 Oct 2008) | 5 lines
+
+Fix a bug revealed indirectly via other changes in icatTest.pl when
+the ICAT is recreated (as on tinderbox hosts, over night).  When
+adding an AVU with a null 'units' make sure a possible matching row
+also has NULL units, or else the subsequent deletion will fail.
+
+------------------------------------------------------------------------
+r1250 | schroede | 2008-10-09 09:45:06 -0700 (Thu, 09 Oct 2008) | 9 lines
+
+m2icat.pl:
+Use the new 'adda' imeta subcommand (privileged mode) for adding
+metadata.
+
+icatHighLevelRoutines.c:
+In chlAddAVUMetadata, add an adminMode argument that causes it to
+check that the user is Admin and bypasses the normal access checks on
+collections and dataObjs.
+
+------------------------------------------------------------------------
+r1240 | schroede | 2008-10-07 10:26:39 -0700 (Tue, 07 Oct 2008) | 30 lines
+
+icatHighLevelRoutines.c:
+In chlRegUserRE, chlDelUserRE chlRegCollByAdmin, and chlModGroup parse
+the user argument into possible user#zone and, if provided, use the
+zone portion.
+
+Change a number of functions to use the user's zone in setting and
+checking access permissions, etc.  Pass new zone arguments to cml
+functions.
+
+Change quite a few function calls to include new arguments (as needed
+for other changes).
+
+icatMidLevelRoutines.c:
+In cmlCheckDir, cmlCheckDirId, cmlCheckDirOwn, and cmlCheckDataObjOnly
+include a new userZone parameter and change the SQL for checking
+access to include the user's Zone.
+
+Change some functions and calls to functions to have an additional
+bind variable argument.
+
+icatLowLevelPostgres.c:
+In cllExecSqlWithResultBV, use the 5th bind variable if provided.
+
+icatGeneralQuery.c:
+When checking access, use the a zone if provided and the localZone by
+default.
+
+icatMidLevelHelpers.c:
+Change a cmlGetIntegerValueFromSql call to match a change to arguments.
+
+------------------------------------------------------------------------
+r1220 | schroede | 2008-10-02 11:04:55 -0700 (Thu, 02 Oct 2008) | 8 lines
+
+Add new functions chlRenameLocalZone (which updates various tables)
+and chlRenameColl (which is called to rename the /zoneName collection
+and calls chlRenameObject).
+
+In chlRenameObject, add a check for "/" as parent-collection
+special-case and handle the naming as needed for it (do not add
+another "/").
+
+------------------------------------------------------------------------
+r1212 | schroede | 2008-09-26 16:03:56 -0700 (Fri, 26 Sep 2008) | 43 lines
+
+Changes to support remote zones/federation:
+
+icatHighLevelRoutines.c:
+In lots of cases, use the zone provided in the user structure rather
+than defaulting to the local zone.
+
+In chlModZone, use the input zone name instead of defaulting to the
+local zone.
+
+In chlModGroup, accept new argument userZone and use it if not null
+(still default to local zone if it is).  Also, if the user is not
+found and the zone is not the local zone, return success rather than
+an error (so other processing can continue).
+
+In chlRegUserRE, use the userZone if provided, otherwise default
+to the local zone as before.
+
+
+iadmin.c:
+Change the add user command to have optional zone following, update
+help to match.  Remove (for now) suggestion on @department and #zone.
+
+Change the atg (add to group) and rfg (remove from group) commands to
+allow an optional userZone and update the help to match.
+
+
+icatAdminMS.c:
+Add the user's zone as an argument to chlModGroup.
+
+
+icatMidLevelRoutines.c:
+Remove a rodslog-LOG_SQL case in cmlAudit3 as it is no longer
+exercised (null zone).
+
+
+icatHighLevelRoutines.h:
+Add userZone as an argument to chlModGroup.
+
+
+rsGeneralAdmin.c:
+In the modify group command, pass another argument to chlModGroup (the
+zone).
+
+------------------------------------------------------------------------
+r1195 | schroede | 2008-09-23 16:42:11 -0700 (Tue, 23 Sep 2008) | 3 lines
+
+Fix a problem in the previous checkin; an audit call was failing
+causing error on subsequent runs.
+
+------------------------------------------------------------------------
+r1194 | schroede | 2008-09-23 15:38:52 -0700 (Tue, 23 Sep 2008) | 34 lines
+
+Added code for adding, modifying and removing remote zone definitions
+and to be able to access the info via the General-Query.  This is
+needed for our development of irods Federation.
+
+iadmin.c:
+Add mkzone, modzone, and rmzone commands and help text for each.
+
+rodsGenQuery.h:
+Add defs for COL_ZONE_TYPE, COL_ZONE_CONNECTION, and COL_ZONE_COMMENT.
+
+rodsGenQueryNames.h:
+Add defs for ZONE_TYPE, ZONE_CONNECTION, and COL_ZONE_COMMENT for use
+via iquest.
+
+rsGeneralAdmin.c:
+Add calls for mkzone, modzone, and rmzone
+
+icatDefines.h:
+Add defines for auditing the new register, modify, delete zone
+operations.
+
+icatHighLevelRoutines.h:
+Add prototypes for the new chlRegZone, chlModZone, and chlDelZone.
+
+icatGeneralQuerySetup.c:
+Add setup defs for COL_ZONE_TYPE, COL_ZONE_CONNECTION, and
+COL_ZONE_COMMENT.
+
+icatHighLevelRoutines.c:
+Add functions chlRegZone, chlModZone, and chlDelZone.
+
+icatTest.pl:
+Add tests for new mkzone, modzone, and rmzone commands and SQL.
+
+------------------------------------------------------------------------
+r1181 | schroede | 2008-09-17 14:24:14 -0700 (Wed, 17 Sep 2008) | 6 lines
+
+Added many more calls to _rollback in various functions to reset after
+SQL errors.  This will occasionally come into play after some errors
+that can occur in fairly typical situations, allowing subsequent SQLs
+to function properly.  Changed _rollback to only perform a rollback
+when using Postgres as it is not needed for Oracle.
+
+------------------------------------------------------------------------
+r1174 | schroede | 2008-09-16 14:45:45 -0700 (Tue, 16 Sep 2008) | 15 lines
+
+m2icat.pl:
+Add logic to convert user-defined metadata, both dataObjects and
+collections, from MCAT to ICAT.  Uses 'imeta' to add the metadata.
+
+
+icatHighLevelRoutines.c:
+Add an internal function, _rollback, to do rollbacks and log both
+success and failure (since it is doing error processing).  Change
+chlRegColl to use _rollback instead of doing it in-line.
+
+In chlAddAVUMetadata, add multiple calls to _rollback to recover after
+a SQL error (such as for a duplicate entry); needed for the next SQL
+to work since we now do Begin and End.  This was noticed during
+m2icat.pl testing.
+
+------------------------------------------------------------------------
+r1083 | schroede | 2008-08-18 11:00:48 -0700 (Mon, 18 Aug 2008) | 13 lines
+
+icatHighLevelRoutines.c:
+Update chlRegDataObj to handle new dataMode value (needed by Mike for FUSE).
+Update chlModDataObjMeta to handle new DATA_MODE_KW (dataMode) option.
+
+icatGeneralQuerySetup.c:
+Add COL_DATA_MODE.
+
+psg-patch-v1.1Tov1.2.sql:
+Patch for adding column data_mode to R_DATA_MAIN.
+
+icatSysTables.sql:
+Added column data_mode to R_DATA_MAIN.
+
+------------------------------------------------------------------------
+r1066 | schroede | 2008-08-12 13:42:55 -0700 (Tue, 12 Aug 2008) | 7 lines
+
+In chlRegColl, add a rollback call (to close the transaction) if the
+insert fails so that subsequent SQL calls can succeed.  Without this,
+multiple 'iput -rf's could fail with a CAT_SQL_ERR.  This problem was
+noticed by Leo.
+
+Also correct a log message in chlRegToken.
+
+------------------------------------------------------------------------
+r1010 | schroede | 2008-07-28 16:39:09 -0700 (Mon, 28 Jul 2008) | 20 lines
+
+icatLowLevelOracle.c:
+Add a cllConnectRda function to support RDA to Oracle (requested by
+Jean-Yves).
+
+server/icat/src/icatHighLevelRoutines.c:
+For the fix made to chlModAccessControl on July 10, make an change
+(ifdef) so that it will work on Oracle too.  Have to cast to integer
+with Oracle, bigint with Postgres.
+
+server/icat/src/rdaHighLevelRoutines.c
+Apparently, Oracle OCI does not correctly return the number of rows
+available from a select (cllGetRowCount), and does not have options
+to do so.  So, in rdaSqlWithResults, I added logic to handle this
+case, malloc'ing a buffer and re-malloc'ing if more rows are
+returned.
+
+This Oracle-cllGetRowCount problem may affect other callers of the
+general-Query too (when asking for total-rows), but this fix seems to
+solve the problem for the RDA interface for when using Oracle.
+
+------------------------------------------------------------------------
+r995 | schroede | 2008-07-22 10:58:18 -0700 (Tue, 22 Jul 2008) | 12 lines
+
+icatHighLevelRoutines.c:
+In chlAddToken, allow value1 to be null so users can do
+   at resc_type 'hpss file system'
+and not have to add a blank field:
+   at resc_type 'hpss file system' ' '
+
+rdaHighLevelRoutines.c:
+Minor change to avoid a warning.
+
+icatSysInserts.sql:
+Add a 'hpss file system' to the token table as another 'resc_type'.
+
+------------------------------------------------------------------------
+r976 | schroede | 2008-07-09 17:12:40 -0700 (Wed, 09 Jul 2008) | 6 lines
+
+Fix a error in chlModAccessControl, for a ichmod -r (recursive) when
+one or more dataObjects in the colletion have replicas.  The SQL needs
+'distinct' and due to that, also needs a 'cast'.
+
+This problem was noticed by Leo.
+
+------------------------------------------------------------------------
+r933 | schroede | 2008-07-03 09:07:25 -0700 (Thu, 03 Jul 2008) | 18 lines
+
+clients/icommands/src/ipasswd.c:
+New command for users to change their password.
+
+/clients/icommands/Makefile:
+Add ipasswd.
+
+server/api/src/rsModAVUMetadata.c:
+Add userpw sub-op for use with ipassword.
+This actually belongs in a new client/server call, but to keep
+changes minor we are adding it here for now.  Next major release
+we plan to create a new client/server call for user-level admin
+operations for this and others.
+
+server/icat/src/icatHighLevelRoutines.c:
+In chlModUser, allow regular irods users to set their own password
+(for use by ipasswd).  As before, for all other options the caller
+must be rodsadmin level (for use by iadmin).
+
+------------------------------------------------------------------------
+r883 | schroede | 2008-06-18 15:44:34 -0700 (Wed, 18 Jun 2008) | 3 lines
+
+Add more comments so that there is at least a brief description
+of each function.
+
+------------------------------------------------------------------------
+r756 | schroede | 2008-05-30 15:00:17 -0700 (Fri, 30 May 2008) | 18 lines
+
+
+icatLowLevelPostgres.c:
+
+Removed logic that was auto-committing on any disconnect (chlClose),
+and added code so that if Auditing-SQLs are pending, commit.  If only
+non-Audit SQLs are pending, log some warnings messages but don't
+commit.  Usual case is that nothing is pending, and so no commit is
+done.  'commit' or 'rollback' empty the pending list.
+
+icatMidLevelRoutines.c:
+When using Postgres, add calls to cllCheckPending to indicate
+auditing SQLs.
+
+
+icatHighLevelRoutines.c:
+Remove a LOG_SQL call (sql forms) that is no longer always exercised
+(auto-commit).
+
+------------------------------------------------------------------------
+r685 | schroede | 2008-05-05 09:04:11 -0700 (Mon, 05 May 2008) | 8 lines
+
+icatGeneralQuery.c:
+Include the table name in the 'order by' clause to avoid ambiguous SQL
+(fatal errors) in some cases.
+
+icatHighLevelRoutines.c:
+When registering a replica (chlRegReplica), set the create-time to
+now.  Previous version set modify-time to now, now both are set.
+
+------------------------------------------------------------------------
+r664 | schroede | 2008-04-25 14:12:06 -0700 (Fri, 25 Apr 2008) | 12 lines
+
+icatGeneralQuery.c:
+For anonymous user, always check if access is permitted (not just if
+GEN_QUERY_AC is enabled).
+
+icatHighLevelRoutines.c:
+In chlCheckAuth, for anonymous user, skip the authentication check.
+
+Changes for Collection ACL queries:
+change r_coll_tokn_accs to a non-cycler;
+add sColumn defs for new columns;
+correct a name in the link from r_coll_access to r_coll_tokn_accs.
+
+------------------------------------------------------------------------
+r595 | schroede | 2008-03-31 13:20:45 -0700 (Mon, 31 Mar 2008) | 11 lines
+
+icatGeneralQuery.c:
+Default to the local zone.  If the caller provides an zero-length
+zoneName, get the local zone and use that for checking access
+permissions.
+
+icatHighLevelRoutines.c:
+Add new function: chlGetLocalZone() which accesses an internal function.
+
+icatLowLevelOracle.c:
+A few improvements in the logging of the sql and bind variables.
+
+------------------------------------------------------------------------
+r578 | schroede | 2008-03-27 10:04:23 -0700 (Thu, 27 Mar 2008) | 3 lines
+
+In chlModUser, no longer allow modifying the user's name since it would
+require moving the user's home and trash/home collections too.
+
+------------------------------------------------------------------------
+r501 | schroede | 2008-02-29 14:38:00 -0800 (Fri, 29 Feb 2008) | 12 lines
+
+Add code to scramble/descramble user passwords stored in the ICAT.
+
+Recognizes non-scrambled (old) passwords and uses them unchanged.
+
+If environment variable irodsPKey is defined for the server, use that
+as the scramble/descramble key, otherwise use one defined in the
+source code.  Changing this, will cause scrambled keys to no long work
+right.
+
+Passwords and be set via sql as plain-text, which will work too.  A
+certain prefix string indicates when a password is scrambled.
+
+------------------------------------------------------------------------
+r493 | schroede | 2008-02-25 13:22:49 -0800 (Mon, 25 Feb 2008) | 11 lines
+
+icatLowLevelPostgres.c:
+Add to cllDisconnect to have it first do a 'commit' to automatically
+commit any changes pending (if any) that are not rolled-back.  This
+solves a problem with certain types of audit calls (where read access
+is granted) and also ensures a fail-safe mode for processes that
+properly disconnect.
+
+icatHighLevelRoutines.c:
+A minor change for the full ICAT test, to reflect the fact that
+cllDisconnect now performs a SQL call.
+
+------------------------------------------------------------------------
+r478 | schroede | 2008-02-14 12:22:11 -0800 (Thu, 14 Feb 2008) | 2 lines
+
+Remove a debug log message.
+
+------------------------------------------------------------------------
+r457 | mwan | 2008-02-08 09:03:32 -0800 (Fri, 08 Feb 2008) | 2 lines
+
+Minor comment changes
+
+------------------------------------------------------------------------
+r456 | mwan | 2008-02-08 08:28:32 -0800 (Fri, 08 Feb 2008) | 2 lines
+
+Add ability to delete collInfo1 and collInfo2
+
+------------------------------------------------------------------------
+r449 | schroede | 2008-02-04 13:13:33 -0800 (Mon, 04 Feb 2008) | 25 lines
+
+icatGeneralQuerySetup.c:
+
+Added setup calls for the newly-used r_objt_audit table and columns.
+
+server/icat/src/icatHighLevelRoutines.c:
+
+Added many calls to the new cmlAudit routines to record various
+actions; initial version.  These are currently off my default except
+in test (see icatMidLevelRoutines.c).
+
+icatMidLevelRoutines.c:
+
+Added cmlAudit1 thru 5, each of which records auditable actions into
+the r_objt_audit table.  Each function takes different input
+arguments, as available from the higher level callers.
+
+Auditing is off by default, but is enabled when cmlDebug is enabled
+('irodsctl test', for example) since it needs to be on to pass tests
+that check all SQL forms (since there are additional SQL types in the
+audit functions).
+
+icatLowLevelPostgres.c:
+
+Fix a compiler warning.
+
+------------------------------------------------------------------------
+r263 | schroede | 2007-11-15 10:19:05 -0800 (Thu, 15 Nov 2007) | 2 lines
+
+Fix a compiler warning message on Solaris.
+
+------------------------------------------------------------------------
+r146 | schroede | 2007-10-01 09:01:47 -0700 (Mon, 01 Oct 2007) | 6 lines
+
+Change the way various access checks are made so that access via
+user-groups are now also allowed.  Re-did each of the access-checking
+SQLs, changing the SQL form being used from subexpressions to larger
+joins in the process.  This now includes going thru the mapping in
+r_user_group.  Also, the code was consolidated/refactored a little.
+
+------------------------------------------------------------------------
+r131 | schroede | 2007-09-26 15:37:26 -0700 (Wed, 26 Sep 2007) | 2 lines
+
+Changes to avoid warning messages.
+
+------------------------------------------------------------------------
+r34 | arun | 2007-09-12 15:28:18 -0700 (Wed, 12 Sep 2007) | 3 lines
+
+This commit was generated by cvs2svn to compensate for changes in r33,
+which included commits to RCS files with non-trunk default branches.
+
+------------------------------------------------------------------------
+r33 | arun | 2007-09-12 15:28:18 -0700 (Wed, 12 Sep 2007) | 2 lines
+
+Importing the reorganized source tree for easier development and collaboration with more developers
+
+------------------------------------------------------------------------

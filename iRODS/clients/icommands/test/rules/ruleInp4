@@ -1,0 +1,10 @@
+#myTestRule||assign(*A, $userNameClient like r*s  )|nop
+#myTestRule||assign(*A, $userNameClient like r*w  )|nop
+#myTestRule||assign(*A, 200 + 300 )|nop
+#myTestRule||assign(*A,$rodsZoneClient)##assign($rodsZoneClient,$userNameClient)##assign(*B,$rodsZoneClient)|nop##nop##nop
+#myTestRule||assign(*A,$sysUidClient)##assign(*C, 200 + 300 )##assign($sysUidClient, 200 + 300 )##assign(*B,$sysUidClient)|nop##nop##nop
+#myTestRule||assign(*A,$sysUidClient)##assign(*C, *D )##assign($sysUidClient, *D )##assign(*B,$sysUidClient)|nop##nop##nop
+#myTestRule||assign(*A,$userNameClient)##assign(*B,$userNameProxy)##assign($userNameClient,alpha)##assign(*C,$userNameClient)##assign($userClient,$userProxy)##assign(*D,$userNameClient)##assign(*E,$userNameProxy)|nop##nop##nop##nop
+myTestRule||assign($userClient,$userProxy)##assign(*D,$userNameClient)|nop##nop
+*D=200 + 200
+*A%*B%*C%*D%*E

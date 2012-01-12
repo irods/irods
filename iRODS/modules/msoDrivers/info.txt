@@ -1,0 +1,8 @@
+Name:		msoDrivers
+Brief:		Microservices for accessing external resources through micro-services
+Description:	Microservices for different tyopes of external resources. To access one writes a set of microservices and these are called by iget and iput routines. 
+Dependencies:
+Enabled:	yes
+Creator:	Arcot Rajasekar 
+Created:	June 2011
+License:	BSD

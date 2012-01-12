@@ -1,0 +1,54 @@
+How to use a module's info.txt file
+Sept 2007
+------------------------------------------------------------------------
+
+The "info.txt" file in a module's top-level directory describes the module.
+It is intended for use by the iRODS Makefiles and configuration scripts.
+
+The file is a list of keyword-value pairs, one per line.  For instance:
+
+	Name:		sample
+	Brief:		A sample microservice module
+	Description:	This is a sample module description.
+	Dependencies:	example
+	Enabled:	yes
+	Creator:	University of California, San Diego
+	Created:	Sept 2007
+	License:	BSD
+
+
+Name:
+	The name of the module.  The name should match the module directory
+	name.  (currently unused)
+
+Brief:
+	A brief half-line description of the module.  The iRODS configure
+	script uses this value when printing help information about available
+	modules.
+
+Description:
+	A longer description of the module.  While the value must be on a
+	single line, it can be several sentences long.   (currently unused)
+
+Dependencies:
+	A list of module names upon which the module depends.  Names should
+	be space-separated and must match module directory names.  The iRODS
+	configure script uses this to insure that all modules that must be
+	enabled together are enabled together.
+
+Enabled:
+	The value "yes" or "no" to indicate if the module should be enabled
+	by default.  The iRODS configure script uses this to set defaults
+	on configuring iRODS.
+
+Creator:
+	The name of the principal individual or organization responsible
+	for creating the module.  (currently unused)
+
+Created:
+	The approximate creation date of the module.  (currently unused)
+
+License:
+	The license covering the module's source code.  Additional
+	information may be in the source files or in module documentation.
+	This value is only used as a general indicator.  (currently unused)

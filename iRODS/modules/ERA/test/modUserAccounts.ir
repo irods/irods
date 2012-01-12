@@ -1,0 +1,3 @@
+modUsers||msiLoadUserModsFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+*ObjPath=/tempZone/home/rods/user_mods.txt
+ruleExecOut

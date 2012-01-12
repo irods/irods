@@ -1,0 +1,8 @@
+Name:			integrityChecks
+Brief:			Microservices from a long list 
+Description:	Right now just operations on collections
+Dependencies:
+Enabled:		no
+Creator:		Susan Lindsey; University of California, San Diego
+Created:		July 2008
+License:		BSD

@@ -1,0 +1,41 @@
+<HTML>
+<HEAD>
+<TITLE>iRODS Rule Bases</TITLE>
+</HEAD>
+<body BGCOLOR=#FFFFFF>
+<CENTER> <B><FONT COLOR=#FF0000>iRODS Rule Base</FONT></B>
+<FORM METHOD="GET" ACTION="https://srb.npaci.edu/cgi-bin/ruleAdminRaja.cgi" TARGET=lbot>
+<input type=hidden name=func value=showRules>
+<TABLE CELLPADDING=0 CELLSPACING=0>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Rule Sets:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>
+  <OPTION>raja
+  <OPTION>raja2
+</SELECT></TD></TR>
+<TR><TD></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>
+  <OPTION>nvo
+</SELECT></TD></TR>
+<TR><TD></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>misc
+  <OPTION>
+</SELECT></TD></TR>
+<TR><TD></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>core
+  <OPTION>core2
+  <OPTION>
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Location of Configuration Files</FONT></TD><TD>
+<INPUT TYPE="TEXT" NAME ="configDir" VALUE="" >
+</TD></TR>
+
+<TR><TD ALIGN=RIGHT><INPUT TYPE=submit VALUE="Show Rules"></FORM></TD></TR>
+
+</TABLE></CENTER>
+</body>
+
+</HTML>

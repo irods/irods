@@ -1,0 +1,3 @@
+Extract metadata from XML file||msiLoadMetadataFromXml(*targetObjPath, *xmlObjPath)|nop
+*xmlObjPath=/tempZone/home/antoine/formattedDDI.xml%*targetObjPath=/tempZone/home/antoine/contact.txt
+ruleExecOut

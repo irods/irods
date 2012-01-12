@@ -1,0 +1,3 @@
+loadMetadata||msiGetSystemTime(*Start_time, null)##msiLoadMetadataFromDataObj(*ObjPath,*Status)##msiGetSystemTime(*End_time, null)##msiGetDiffTime(*Start_time, *End_time, human, *Duration)##writeLine(stdout,"")##writeLine(stdout, *Duration)|nop
+*ObjPath=/tempZone/home/narauser/tstColl.mdf
+ruleExecOut

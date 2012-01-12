@@ -1,0 +1,312 @@
+Basic descriptions of the Packing/Unpacking scheme used in iRODS
+----------------------------------------------------------------  
+The packStruct() and unpackStruct() routines in packStruct.c are used to
+pack and unpack arbitrary C structs. 
+
+1) pack/unpack Data Types
+
+The struct can contain the following data types:
+
+  "char" - 8 bit char
+  "bin" - 8 bit binary data. Syntactically, it is treated the same as "char".
+      But when it is used with the XML protocol, the binary data are encoded 
+      and decoded with base64 so that they are printable in the XML message. 
+  "str" - similar to char - null terminated string. 
+  "piStr" - packing instruction string. Syntactically, it is treated the same
+      as  "str". But this string is used as the packing instruction for
+      other elements. Using this string, a dependent type element "?" can
+      be used to store different data types.
+  "int" - 32 bits integer or float
+  "double" - 64 bit integer or float
+  "struct" - a struct within the struct
+  "?" - dependent type. The data type or packing instruction is dependent on 
+      the content of other "piStr" type string.
+
+For example:
+
+The struct to be packed in C is:
+
+struct foo1 {
+    int myint1;
+    int64_t myint64;
+};
+
+The packing instruction for this struct is:
+
+"int myint1; double myint64;"
+
+and as an example, this packing instruction is named as structFoo1_PI. e.g.,
+
+#deine structFoo1_PI "int myint1; double myint64;"
+
+Each packing instruction has a name and those that are used by iRODS 
+internally are defined in clientLib/include/packStruct.h. Each of these packing
+instruction are also included in the RodsPackTable[] table in rodsPackTable.h.
+So to add a new packing instruction to iRODS, you'll need to define the
+packing instruction in packStruct.h and then add an entry in the 
+RodsPackTable[] table in rodsPackTable.h. Typically, these are packing 
+instructions for the low level exchange protocol between the client and 
+server. For example, the StartupPack_PI is the packing instruction for the 
+struct startupPack_t, the startup packet sent from the client to the server 
+during the initial connection handshake.
+
+In addition, RODS recognizes the packing instructions for the API input/output
+structs. Each API has its own header file in the clientLib/include/api
+directory. For example, the rcGetMiscSvrInfo() API has a file named
+getMiscSvrInfo.h in this directory and MiscSvrInfo_PI in this file defines
+the packing instruction for the output struct of this call. Similarly,
+each one of these API packing instruction are included in the ApiPackTable[] 
+table in the apiPackTable.h file.
+
+In summary, the iRODS packing routines use the RodsPackTable[] table in 
+rodsPackTable.h and the ApiPackTable[] table in apiPackTable.h to resolve
+and execute the packing instruction.
+
+2) pack/unpack of structs within a struct
+
+We can also pack structs within a struct. For example, the struct to be packed
+in C is:
+
+struct foo2 {
+    char myChar;
+    int64_t myint64;
+    struct foo1 myStruct;
+};
+
+Note that "struct foo1" is the struct defined in the previous example and
+the packing instruction is structFoo1_PI. 
+
+The packing instruction for "struct foo2" is:
+
+#define structFoo2_PI "char myChar; double myint64; struct structFoo1_PI;" 
+
+3) pack/unpack of arrays
+
+The routines can also pack/unpack arrays of data types in a struct.
+For example, the struct to be packed in C is:
+
+struct foo3 {
+    char myChar[100];
+    int64_t myint64[200];
+    struct foo1 myStruct[5];
+};
+
+The packing instruction for this struct is:
+
+#define structFoo3_PI "char myChar[100]; int64_t myint64[200]; 
+struct structFoo1_PI[5];"
+
+4) pack/unpack of string
+
+The "str" type is a special case of "char". The "str" is assumed to be NULL
+terminated and the packing routine takes advantage of this to save space.
+
+For example:
+
+If the char array to be packed in C is,
+
+    char myChar[200];
+
+and if the packing instruction is,
+
+    "char myChar[200];"
+
+then whole 200 character will be packed.
+
+But if the packing instruction is, 
+
+    "str myChar[200];"
+
+then only the string up the the NULL character will be packed which can 
+potentially reduce the amount of bytes sent over the network. But the 
+unpacking routine will still unpacking the struct back to a char array of 
+200 bytes long (i.e., malloc 200 bytes even the strlen is shorter). 
+ 
+5) pack/unpack of pointers
+
+struct foo5 {
+    char *myChar;
+    char *myStr;
+    int *myint;
+    struct foo1 *myStruct;
+};
+
+Suppose this struct containing a char pointer, a NULL terminated string 
+pointer, an integer pointer and a pointer to struct foo1 and we set the 
+packing instruction as:
+
+#define structFoo5_PI "char *myChar; str *myStr; int *myint; 
+struct *structFoo1_PI;"
+
+For the element myStr, "str *" means it is a pointer to a NULL terminated 
+string. This has all the instructions needed to pack/unpack a string. 
+The characters pointed to by the pointer will be packed until a NULL
+character is encountered. 
+
+But in C, "char *myChar;" may  be used to declare a pointer to a single 
+character or an array of character, or similarly, "int *myint;" may mean a 
+pointer a single integer or an array of integer. So we need to give the  
+pack/unpack routine a hint as to the array size of the content represented
+by the pointer. We use an integer enclosed by () to represent the array
+size of the content. We named this integer the "hint dimension" of the
+pointer.
+
+Therefore, if the packing instruction for "struct foo5" is:
+
+#define structFoo5a_PI "char *myChar(10); str *myStr; int *myint(20); 
+struct *structFoo1_PI(30);"
+ 
+it means myChar is a pointer to an array of 10 characters, myint is a pointer
+to an array of 20 integers and myStruct is a pointer to an array of 30
+"struct foo1". If no hint is given, then it is a pointer to a single element.
+
+For strings, the packing instruction of "str *myStr(10)" means it is a pointer
+to a NULL terminated string with strlen of up to 9. The packing routine
+will pack only the string (including the NULL) in myStr and the unpacking
+routine will malloc exactly 10 bytes and then unpack the string. 
+
+Another string example - if the item to be packed in C is,
+
+    char *myStr;        /* pointer to an array of 5 strings stored in 200
+                         * bytes each */
+
+the packing instruction will be,
+
+    "str *myStr(5)(200);"
+
+
+6) pack/unpack with dependent array size
+
+Often times, the array size represented by a pointer is not fixed, but
+depends on the value of another integer in the struct.  
+
+For example, the struct to be packed is:
+
+struct foo6 {
+    int intLen;
+    int *myInt;	/* pointer to an array of integer with array size
+			 * equal to "intLen" */
+    int structLen;
+    struct foo1 *myStruct;  /* pointer to an array of struct with array size
+                             * equal to "structLen" */
+};
+
+where the array size of myInt and myStruct depend on the value of the intLen 
+integer.  The packing instruction for this case will be:
+
+#define structFoo6_PI "int intLen; int *myValue(intLen); int structLen; 
+     struct *structFoo1_PI(structLen)"
+
+The value of intLen will be evaluated at runtime and substituted in the
+packing instruction by the pack/unpacking routines. Note that the intLen
+element must be put before the myValue  element for the dependency to be 
+resolved.
+
+7) pack/unpack an array of pointers
+
+Within a struct, an array of pointer can be represented in one of the
+following two forms:
+
+struct foo7a {
+   int *myInt[100];	/* an array of 100 (fixed size) pointers embedded in
+			 * the struct */ 
+};
+
+or,
+
+struct foo7b {
+   int intLen 
+   int **myInt;	/* pointer to an array of "intLen" pointers (a single
+			 * pointer to an array of pointers */
+};
+
+We'll support only the second form ("struct foo7b") directly for now because 
+it is probably more common. The first form can be done with a little more
+work on the packing instruction.
+
+For the struct foo7b (2nd form), the packing instruction is:
+
+#define structFoo7b_PI "int intLen; int *myInt[intLen];"
+
+The string "int *myInt[intLen];" represents the packing instruction for
+a pointer to an array of "intLen" pointers. But what about the array size
+of the integer pointed to by each one these pointers ? In this case, the
+"hint dimension" can be used. e.g., if each pointer represents a pointer to 
+an array of 10 integer, the packing instruction will be:
+
+#define structFoo7b_PI "int intLen; int *myInt[intLen](10);"
+
+So, for pointers, the value enclosed by [] represents the array size of the
+pointer array and the value enclosed by () represents the array size of
+the content pointed to by each pointers.
+
+8) "?" - dependent type. This type allows a pointer in a struct to represent 
+different types of data types depending on the content of another "piStr" type 
+string. A "?" type and a "piStr" type always work in pairs with the "?" 
+specifying the pointer is a dependent type and the "piStr" element specifying
+what type of pointer the dependent type belongs.
+
+For example, the struct to be packed is:
+ 
+typedef struct MsParam {
+    char *label;
+    char *myType;         /* this is the name of a packing instruction in
+                           * rodsPackTable.h */
+    void *inOutStruct;    /* The pointer type depends on the content of
+			   * myType */
+    bytesBuf_t *inpOutBuf;
+} msParam_t;
+
+The packing instruction for this struct is:
+
+#define MsParam_PI "str *label; piStr *myType; ?myType *inOutStruct; struct *BytesBuf_PI;"
+
+Note that the string "?myType" here means that the data type of the pointer
+depends on the content of myType. Also, the "piStr" element must be put
+before the "?" element for the dependency to be resolved.
+
+Packing/unpacking processes
+---------------------------
+
+The packing process involves writing the contents of the C struct into 
+a buffer in the same order given in the Packing Instruction (PI) of the 
+struct. If the element is a pointer, the content pointed to by the pointer 
+is written. Multiple levels of struct-within-struct are handled by drilling
+down and packing the sub-struct whenever they are encountered. 
+
+As described in the commProtocol document, the struct can be packed using 
+the NATIVE_PROT protocol or the XML_PROT protocol, depending on the 
+communication protocol used for the session. 
+
+The NATIVE_PROT protocol which is the default protocol, packs everything
+without any tag or separator. Strings are copied directly from the
+C struct including the NULL character terminator. Integers and doubles
+are converted to the net format using ntol() first before copying.
+
+The packing algorithm for the XML_PROT protocol is the same except:
+
+1) Each item in the C struct is tagged with a XML tag. The name given for each 
+element in the PI is used as the tag name. For example, if the PI is:
+
+#define MyTest_PI "int myInt; str *myStr;", the output will look something 
+like:
+
+<MyTest_PI>
+<myInt>3</myInt>
+<myStr>This is a test</myStr>
+</MyTest_PI>
+
+2) Integers and doubles are converted into character strings as show in the 
+example above. 
+
+3) The way NULL pointers are handled - With XML, we could represent a
+NULL pointer as a tag with empty content. For example, if the pointer
+myStr given above is NULL, we could represent it in XML as:
+
+<myStr></myStr>
+
+But it is indistinguishable from a zero length string (i.e., the content of 
+a string contains a single null character).  To distinguish between the 
+two, a NULL pointer will NOT be packed at all and a tag with empty content 
+(e.g., <myStr></myStr>) represents a string with zero length.
+

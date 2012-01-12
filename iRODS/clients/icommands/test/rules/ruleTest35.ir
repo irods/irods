@@ -1,0 +1,3 @@
+myTestRule||writeXMsg(1,From Test35,*A)|nop
+*A=$TypeYourMessage
+*A

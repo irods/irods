@@ -1,0 +1,50 @@
+The following gives a brief description of the steps required to add a new
+type of file system to the iRODS. An examples of adding a new file system
+"xyzFs" is also given.
+
+1) Write the 22 I/O functions defined by the fileDriver_t in 
+fileDriver.h for the "xyzFs" file type. The unixFileDriver.c gives examples 
+of the functions for the UNIX file system type.
+
+2) Add an entry to the end of the FileDriverTable[] table in 
+fileDriverTable.h for the "xyzFs" which are basically the name of the 
+22 functions written in step 1). e.g.,
+
+    {XYZ_FILE_TYPE, xyzFileCreate, xyzFileOpen, xyzFileRead, xyzFileWrite,
+    xyzFileClose, xyzFileUnlink, xyzFileStat, xyzFileFstat, xyzFileLseek,
+    unxiFileFsync, xyzFileMkdir, xyzFileChmod, xyzFileRmdir, xyzFileOpendir,
+    xyzFileClosedir, xyzFileReaddir, xyzFileStage, xyzFileRename,
+    xyzFileGetFsFreeSpace, xyzFileTruncate, intNoSupport, intNoSupport},
+
+3) Add an entry in the fileDriverType_t struct in objInfo.h to define
+the XYZ_FILE_TYPE. e.g.,
+
+
+typedef enum {
+    UNIX_FILE_TYPE,
+    HPSS_FILE_TYPE,
+    NT_FILE_TYPE,
+    TEST_STAGE_FILE_TYPE,
+    XYZ_FILE_TYPE,
+} fileDriverType_t;
+
+4) Add a line in the RescTypeDef[] table in rcGlobal.h. e.g.,
+  {"xyzFs file system",      FILE_CAT, XYZ_FILE_TYPE,  DO_CHK_PATH_PERM},
+
+
+This table associates a physical resource name "xyzFs" with the XYZ_FILE_TYPE
+and the associated driver.
+
+5) Register the resource type "xyzFs file system" with iCat using the 
+"Add Token" sub-command of iadmin. e.g.,
+    admin at resc_type "xyzFs file system"
+
+The resource type "xyzFs file system" is now registered in the iCat.
+
+6) We can now create new resources using this resource type.
+ 
+7) If authentication is required for the iRODS servers to access data stored
+in "xyzFs" such as in the case of the HPSS system, a set of authentication
+routines for the "xyzFs" is required. These routines should be invoked
+during the iRODS agent startup by adding the routine in the initAgent()
+routine in initServer.c.  

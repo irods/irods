@@ -1,0 +1,3 @@
+continue test||assign(*ContInx, 1)##msiMakeGenQuery("DATA_NAME, COLL_NAME",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)##whileExec(*ContInx > 0,msiGetMoreRows(*GenQInp,*GenQOut,*ContInx)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut, "COLL_NAME",*DataObj)##writeString(stdout,*DataObj)##writeString(stdout,"/")##msiGetValByKey(*GenQOut, "DATA_NAME",*DataObj)##writeString(stdout,*DataObj)##writeLine(stdout,""), nop), nop)|nop
+*Condition= COLL_NAME like '/tempZone/home/antoine%%'
+ruleExecOut

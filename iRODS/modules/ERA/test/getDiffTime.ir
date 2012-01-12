@@ -1,0 +1,3 @@
+test||msiGetSystemTime(*Start_time, null)##msiSleep(3, 0)##msiGetSystemTime(*End_time, null)##msiGetDiffTime(*Start_time, *End_time, human, *Duration)##writeLine(stdout, *Duration)|nop
+null
+ruleExecOut

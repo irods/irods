@@ -1,0 +1,3 @@
+simple FTP get||msiFtpGet(*target, *destObj, *status)##writePosInt(stdout, *status)##writeLine(stdout, "")|nop
+*target=$1%*destObj=$2
+ruleExecOut

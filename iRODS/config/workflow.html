@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/> 
+<title>iRODS Documentation: Workflow Microservices</title> 
+<link href="tabs.css" rel="stylesheet" type="text/css"/> 
+<link href="doxygen.css" rel="stylesheet" type="text/css"/> 
+<style type="text/css">
+  span.grammar { font-family: courier, monospace; font-style: italic }
+</style>
+</head> 
+<body> 
+<div id="top"> 
+<div id="titlearea"> 
+<table cellspacing="0" cellpadding="0"> 
+ <tbody> 
+ <tr style="height: 56px;"> 
+  <td id="projectlogo"><img alt="Logo" src="irodslogo.png"/></td> 
+  <td style="padding-left: 0.5em;"> 
+   <div id="projectname">iRODS Documentation&#160;</div> 
+  </td> 
+ </tr> 
+ </tbody> 
+</table> 
+</div> 
+  <div id="navrow1" class="tabs"> 
+    <ul class="tablist"> 
+      <li><a href="index.html"><span>Main&#160;Page</span></a></li> 
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li> 
+      <li><a href="annotated.html"><span>Classes</span></a></li> 
+      <li><a href="files.html"><span>Files</span></a></li> 
+    </ul> 
+  </div> 
+  <div id="nav-path" class="navpath"> 
+    <ul> 
+      <li class="navelem"><a class="el" href="workflow.html">Rule Engine Workflow Microservices</a></li> 
+    </ul> 
+  </div> 
+</div> 
+<div class="contents"> 
+<table cellspacing="0" cellpadding="0" border="0"> 
+  <tr> 
+   <td valign="top">
+      <div class="navtab"> 
+        <table> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#nop">nop</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#cut">cut</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#succeed">succeed</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#fail">fail</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#errorcode">errorcode</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#applyAllRules">applyAllRules</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#if">if</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#while">while</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#for">for</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#foreach">foreach</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#break">break</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#assign">assign</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#writeString">writeString</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#writeLine">writeLine</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#delay">delay</a></td></tr> 
+          <tr><td class="navtab"><a class="qindex" href="workflow.html#remote">remote</a></td></tr> 
+        </table> 
+      </div> 
+   </td> 
+   <td valign="top" class="mempage"> 
+
+<a class="anchor" id="nop"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">nop</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>No action.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>This microservice is a placeholder, with no operation being performed (no-op).</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="cut"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">cut</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Tells the rule engine not to retry any other applicable rules for this action.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="succeed"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">succeed</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Succeed immediately.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="fail"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">fail</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Fail immediately. Recovery and retries are possible.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="errorcode"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">errorcode(<span class="grammar">action</span>)</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>This microservice traps the error code of an action.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>The rule engine
+    views the return value of most microservices as an integer
+    “errorcode”. If the return value of a microservice is less
+    than zero, the rule engine interprets it as a failure, rather than
+    an integer value; and if the return value is greater than zero, the
+    rule engine interprets it as an integer. Therefore, an expression
+    that compares whether the return value of a microservice is greater
+    than or equal to 0 either evaluates to true or fail, since when the
+    microservice returns a negative integer, the rule engine interprets
+    the value as a failure. In some applications, there is need for
+    capturing all possible return values as regular integers. The
+    “errorcode” microservice can be used to achieve this by putting
+    the action whose return value needs to be captured in <span class="grammar">action</span>.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="applyAllRules"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">applyAllRules(<span class="grammar">action</span>, <span class="grammar">expr</span>, <span class="grammar">expr</span>)</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>This microservice executes all applicable rules for a given <span class="grammar">action</span>.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>Normal operations of the rule engine is to stop after a rule (one of
+    the alternates) completes successfully. But in some cases, one may
+    want the rule engine to try all alternatives and succeed in as many
+    as possible. Then by firing that rule under this microservice all
+    alternatives are tried.
+    
+    The first <span class="grammar">expr</span>
+    is a parameter of type string or integer which is 0 or 1, the value
+    used to check if the rei structure needs to be saved at every rule
+    invocation inside the execution. This helps to save time if the rei
+    structure is known not to be changed when executing the underlying
+    rules.
+    
+    The second <span class="grammar">expr</span> is a parameter of
+    type string or integer which is 0 or 1, whether the “apply all rule”
+    condition applies only to the action or is recursively done at all
+    levels of invocation of every rule inside the execution.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="if"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">if( <span class="grammar">expr</span> ) { <span class="grammar">actions</span> } else { <span class="grammar">actions</span> }</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>The if-then-else construct in the rule language.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>
+    The <span class="grammar">expr</span> is a
+    conditional check. If the check is successful (true), the first
+    <span class="grammar">actions</span> will
+    be executed. If the check fails, then the second <span class="grammar">actions</span>
+    will be executed.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="while"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">while( <span class="grammar">expr</span> ) { <span class="grammar">actions</span> }</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>The while loop in the rule language.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>The <span class="grammar">expr</span> is a
+    condition that will be checked on each loop iteration. The <span class="grammar">actions</span>
+    are the body of the while loop and will be executed as long as the condition evaluates to true.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="for"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">for( <span class="grammar">expr</span>; <span class="grammar">expr</span>; <span class="grammar">expr</span> ) { <span class="grammar">actions</span> }</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>The for loop in the rule language.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>It is similar to the for
+    construct in C.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="foreach"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">foreach( <span class="grammar">var</span> ) { <span class="grammar">actions</span> }</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Performs a loop over a list of items given in different forms.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>The foreach loop, similar to C-type languages,
+    loops through the items in a list. It takes a
+    list (or a general query result), and for each item stored in the
+    variables, executes the <span class="grammar">actions</span> within the body of
+    the loop. The <span class="grammar">var</span>
+    specifies the variable that has the list (the same variable name is
+    used in the body of the loop to denote an item of the list!).</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="break"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">break</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Breaks out of while, for and
+    foreach loops.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="assign"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname"><span class="grammar">var</span> = <span class="grammar">expr</span></td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>The "=" operator assigns a value to a variable.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>It can be used to
+    assign values to * and $ variables.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="writeString"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">writeString(<span class="grammar">expr</span>, <span class="grammar">expr</span>)</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Appends a given string to
+    the given buffer.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>This microservice takes a given buffer string and
+    appends it to the end of a buffer (either stdout or stderr in
+    ruleExecOut parameter) or a local log file. This may be extended
+    later for writing into an iRODS file, too. The ruleExecOut is a
+    system MS-parameter (*variable) that is automatically available. The
+    first <span class="grammar">expr</span> is
+    a parameter of type string which is the buffer name in ruleExecOut.
+    Currently, “stdout”,  “stderr”, and “serverLog” are
+    supported. The second <span class="grammar">expr</span>
+    is a parameter of type string which is the string to be written into the named
+    buffer.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="writeLine"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">writeLine(<span class="grammar">expr</span>, <span class="grammar">expr</span>)</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Writes a given string and newline character into
+    the given buffer.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>This microservice takes a given buffer string and
+    appends it and a newline character to the end of a buffer (either stdout or stderr in
+    ruleExecOut parameter) or a local log file. This may be extended
+    later for writing into an iRODS file, too. The ruleExecOut is a
+    system MS-parameter (*variable) that is automatically available. The
+    first <span class="grammar">expr</span> is
+    a parameter of type string which is the buffer name in ruleExecOut.
+    Currently, “stdout”,  “stderr”, and “serverLog” are
+    supported. The second <span class="grammar">expr</span>
+    is a parameter of type string which is the string to be written into the named
+    buffer.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="delay"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">delay( <span class="grammar">expr</span> ) { <span class="grammar">actions</span> }</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Executes a set of operations later when certain conditions are met.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>This microservice can be used to perform periodic operations.
+    
+    The <span class="grammar">expr</span> is a
+    delay condition. The <span class="grammar">actions</span>
+    are a set of statements that will be delayed in execution until the
+    delay condition is true. The condition also supports repeating of
+    the body until success or until some other condition is satisfied.
+    The delay condition is a parameter of type string. It is tagged with
+    the following tags: 
+    </dd>
+    <ul>
+      <li><dd>
+      EA - execAddress - host where the delayed execution needs to be
+      performed 
+      </dd></li><li><dd>
+      ET - execTime - absolute time when it needs to be performed. 
+      </dd></li><li><dd>
+      PLUSET - relExeTime - relative to current time when it needs to
+      execute 
+      </dd></li><li><dd>
+      EF - execFreq - frequency (in time widths) it needs to be performed.
+        </dd></li><dd>
+      The EF value is of the format: nnnnU &lt;directive&gt; where nnnn is
+      a number, and U is the unit of the number
+      (s-sec,m-min,h-hour,d-day,y-year), The &lt;directive&gt; can be of
+      the form: 
+      </dd>
+      <ul><li><dd>
+        &lt;empty-directive&gt; - equal to REPEAT FOREVER 
+        </dd></li><li><dd>
+        REPEAT FOREVER 
+        </dd></li><li><dd>
+        REPEAT UNTIL SUCCESS 
+        </dd></li><li><dd>
+        REPEAT nnnn TIMES - where nnnn is an integer 
+        </dd></li><li><dd>
+        REPEAT UNTIL &lt;time&gt; - where &lt;time&gt; is of the time
+        format supported by checkDateFormat function below. 
+        </dd></li><li><dd>
+        REPEAT UNTIL SUCCESS OR UNTIL &lt;time&gt; 
+        </dd></li><li><dd>
+        REPEAT UNTIL SUCCESS OR nnnn TIMES 
+        </dd></li><li><dd>
+        DOUBLE FOREVER 
+        </dd></li><li><dd>
+        DOUBLE UNTIL SUCCESS - delay is doubled every time. 
+        </dd></li><li><dd>
+        DOUBLE nnnn TIMES 
+        </dd></li><li><dd>
+        DOUBLE UNTIL &lt;time&gt; 
+        </dd></li><li><dd>
+        DOUBLE UNTIL SUCCESS OR UNTIL &lt;time&gt; 
+        </dd></li><li><dd>
+        DOUBLE UNTIL SUCCESS OR nnnn TIMES 
+        </dd></li><li><dd>
+        DOUBLE UNTIL SUCCESS UPTO &lt;time&gt; 
+        </dd></li>
+      </ul>
+      </dl>
+    
+    
+    
+    
+    
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+<a class="anchor" id="remote"></a>
+<div class="memitem"> 
+  <div class="memproto">
+    <table class="memname"><tr><td class="memname">remote( <span class="grammar">expr</span>, <span class="grammar">expr</span> ) { <span class="grammar">actions</span> }</td></tr></table> 
+  </div>
+  <div class="memdoc">
+    <dl class="user"><dt><b>Description:</b></dt><dd>Executes a set of operations
+      later when certain conditions are met.</dd></dl> 
+    <dl class="note"><dt><b>Note:</b></dt><dd>This microservice takes a set of
+      <span class="grammar">actions</span>
+    that need to be executed at a remote iRODS server. The first
+    <span class="grammar">expr</span>
+    is a parameters of type string which is a host name of the server
+    where the body need to be executed. The second <span class="grammar">expr</span>
+    is a parameter of type string which is a delay condition about when
+    to execute the body. If there is no delay condition, the execution
+    is done immediately and synchronously with the result returning back
+    from the call.</dd></dl> 
+    <dl class="user"><dt><b>Example Usage:</b></dt><dd>See clients/icommands/test/rules3.0/</dd></dl>
+  </div>
+</div>
+
+
+
+
+
+    </td> 
+  </tr> 
+</table> 
+</div> 
+<hr class="footer"/><address class="footer"><small>Generated by&#160;
+<a href="http://www.doxygen.org/index.html"> 
+<img class="footer" src="doxygen.png" alt="doxygen"/></a></small></address> 
+</body> 
+</html>

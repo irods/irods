@@ -1,0 +1,3 @@
+myTestRule||msiGetQuote(*A,*B)|nop
+*A=$ORCL
+*A%*B

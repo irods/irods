@@ -1,0 +1,3 @@
+myTestRule||msiIp2location(*IpAddr,*License,*B)|nop
+*IpAddr=$132.249.32.95%*License=$02-G34B-H86A
+*B

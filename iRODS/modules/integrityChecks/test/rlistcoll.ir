@@ -1,0 +1,3 @@
+msiListColl||msiListColl(*Collection,*B)##writeBytesBuf(stdout,*B)##writeLine(stdout,"")|nop
+*Collection=/homeZone/home/rods
+ruleExecOut

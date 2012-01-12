@@ -1,0 +1,3 @@
+msiVerifySubCollAVU||msiVerifySubCollAVU(*Collection,*AVUname,*AVUvalue,*AVUattr,*Buf,*Status)##forEachExec(*Buf,writeLine(stdout,*Buf),nop)##writeLine(stdout,"")|nop
+*Collection=/homeZone/home/rods%*AVUvalue=buttername%*AVUvalue=buttervalue%*AVUattr=butterattr
+ruleExecOut

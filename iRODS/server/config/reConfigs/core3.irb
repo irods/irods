@@ -1,0 +1,13 @@
+# iRODS Rule Base
+# Each rule consists of four parts separated by  |
+# The four parts are: name, conditions, function calls, and recovery.
+# The calls and recoveries can be multiple ones, separated by ##.
+# For each rule, the number recovery calls should match the calls;
+# for example, if the 2nd call fails, the 2nd recover call is made.
+#
+acRegisterData||acGetResource##msiRegisterData|nop##recover_msiRegisterData
+acDeleteData|msiCheckPermission(delete)|msiDeleteData|recover_msiDeleteData
+acDeleteData|msiCheckOwner|msiDeleteData|recover_msiDeleteData
+acGetResource|$rescName != null|nop|nop
+acGetResource|$rescName == null|msiGetDefaultResourceForData|nop
+acSendMail||msiSendMail($ARG[0],$ARG[1],$ARG[2])|nop

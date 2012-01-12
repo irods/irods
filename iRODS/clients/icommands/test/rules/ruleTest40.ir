@@ -1,0 +1,3 @@
+myTestRule||delayExec(*delayCond,msiExecCmd(lsone,*stageDir,null,null,null,*lsOut)##forEachExec(*lsOut,msiPhyPathReg(*collName/*lsOut,demoResc2,*stageDir/*lsOut,null,*junk)##msiExecCmd(donecp,*stageDir *lsOut,null,null,null,*donemvOut)##msiDataObjPhymv(*collName/*lsOut,demoResc,null,null,null,*junk2) ,nop),nop)|nop
+*stageDir=/data1/sekar/iRODS/stageDIR%*collName=/tempZone/home/rods/testDIR%*delayCond=<PLUSET>1m</PLUSET><EF>1m</EF>
+ruleExecOut

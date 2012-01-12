@@ -1,0 +1,17 @@
+# This is an example of an input for the irule command for
+# testing the msiDboExec micro-service.  Run via irule -F
+# This first input line is the rule body
+# The second input line is the input parameter in the format of 
+# label=value. e.g., *A=/temp/home/rods/foo1
+# Multiple inputs can be specified using the '%' character as the separator.
+# The third input line is the output description. Multiple outputs can be
+# specified using the '%' character as the separator.    
+#
+# For testing, I was using an ICAT db (which normally one should not) and
+# the dbo7 contained these lines (without the # to comment them):
+#select user_name, zone_name from r_user_main where zone_name = ?
+#user_name=%s zone_name=%s
+#
+myTestRule||msiDboExec(*DBR,*DBO,"","",*P1,"","","","","")|nop
+*DBR=dbr2%*DBO=/newZone/home/rods/dbo7%*P1=newZone
+ruleExecOut

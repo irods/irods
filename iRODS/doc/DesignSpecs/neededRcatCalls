@@ -1,0 +1,78 @@
+
+
+
+
+
+************************************************************************
+The functions below line were once in the needed category, but are now
+somewhat "complete".  More refinement is needed, but they are largely
+ready for testing.
+************************************************************************
+
+All of these routine names begin with rhl (for RCAT High Level API)
+
+[This is rhlRegReplica, instead of _rsRegReplica]
+/* _rsRegReplica - register replica of a data object
+ * Input - rsComm_t *rsComm  - the server handle
+ *         dataObjInfo_t *srcDataObjInfo - contains info of the 
+ *	    original replica.
+ *	   dataObjInfo_t *destDataObjInfo - contains info of the replica
+ *         to be registered - relevant info are rescname and filePath.
+ */
+int
+_rsRegReplica (dataObjInfo_t *srcDataObjInfo, dataObjInfo_t *destDataObjInfo);
+
+
+[This is rhlUnregDataObj, instead of unregDataObj]
+/* unregDataObj - Unregister a new data object
+ * Input - rsComm_t *rsComm  - the server handle
+ *         dataObjInfo_t *dataObjInfo - contains info about the data object.
+ *	   keyValPair_t *condInput - not used now, but may contain condition
+ *	    such as "adminTrashRemove"
+ */
+int
+unregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
+keyValPair_t *condInput);
+
+
+
+[This is rhlRegDataObj, instead of regDataObj]
+/* regDataObj - Register a new data object 
+ * Input - rsComm_t *rsComm  - the server handle
+ *         dataObjInfo_t *dataObjInfo - contains info about the data object.
+ */
+int
+regDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+
+
+[This is rhlModDataObjMeta instead of modDataObjMeta]
+/* modDataObjMeta - Modify the metadata of an existing data object. 
+ * Input - rsComm_t *rsComm  - the server handle
+ *         dataObjInfo_t *dataObjInfo - contains info about this copy of
+ *	   a data object.
+ *	   keyValPair_t *regParam - the keyword/value pair of items to be
+ *	   modified. Valid keywords are given in char *dataObjCond[] in
+ *	   rcGlobal.h. 
+ *	   If the keyword "all" is used and if "dataSize" is specified,
+ *	   the replStatus of the copy specified by dataObjInfo 
+ *	   should be marked NEWLY_CREATED_COPY. All other copies should
+ *	   be marked OLD_COPY.  
+ */
+int
+modDataObjMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+keyValPair_t *regParam);
+
+[This is rhlRegColl instead of regColl]
+/* regColl - register a collection.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   collInp_t *collInp - generic coll input. Relevant items are:
+ *      collName - the collection to be registered.
+ *      condInput - condition input (optional) - currently not used.
+ *
+ * OutPut -
+ *   int status - status of the operation.
+ */
+int
+regColl (rsComm_t *rsComm, collInp_t *collCreateInp);
+

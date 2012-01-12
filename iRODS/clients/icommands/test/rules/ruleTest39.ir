@@ -1,0 +1,3 @@
+myTestRule||msiDataObjCreate(*A,null,*D_FD)##writeLine(stdout,aaaaaaaaaaaa)##writeLine(stdout,bbbbbbbb)##msiDataObjWrite(*D_FD,stdout,*W_LEN)##msiDataObjClose(*D_FD,*junk3)|nop
+*A=$/tempZone/home/rods/stdouttest2
+ruleExecOut%*W_LEN%*A

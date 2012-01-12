@@ -1,0 +1,3 @@
+deepMetaCopy||acGetIcatResults(list_files, COLL_NAME like '*SrcColl/%%',*B)##forEachExec(*B,acGetDataObjPathFromGenQOut(*B,*FilePath)##writeString(stdout,*FilePath)##writeLine(stdout,""),nop)##acGetIcatResults(list_colls, COLL_NAME like '*SrcColl/%%',*C)##forEachExec(*C,msiGetValByKey(*C, "COLL_NAME",*CollName)##writeLine(stdout,*CollName),nop)|nop##nop
+*SrcColl=/tempZone/home/testuser%*DestColl=/tempZone/home/testuser/dev
+*Action%*Condition%ruleExecOut

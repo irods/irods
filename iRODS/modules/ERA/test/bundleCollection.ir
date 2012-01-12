@@ -1,0 +1,3 @@
+Bundle a collection for export||msiStructFileBundle(*collPath, *bundleObjPath, null, *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+*collPath=/tempZone/home/rods/testcoll%*bundleObjPath=/tempZone/home/rods/testcoll.tar
+ruleExecOut

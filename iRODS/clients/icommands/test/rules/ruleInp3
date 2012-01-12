@@ -1,0 +1,10 @@
+# This is an example of an input for the irule command.
+# This first input line is the rule body
+# The second input line is the input parameter in the format of 
+# label=value. e.g., *A=/temp/home/rods/foo1
+# Multiple inputs can be specified using the '%' character as the separator.
+# The third input line is the output description. Multiple outputs can be
+# specified using the '%' character as the separator.    
+myTestRule||msiExecCmd(hello,x y x,null,null,null,*HELLO_OUT)##msiDataObjPut(*A,null,../bin/ils,*junk9)##msiCollCreate(*C,0,*junk10)##msiDataObjPut(*F,null,../bin/ils,*junk1)##msiDataObjChksum(*A,null,*CHKSUM)##msiDataObjPhymv(*A,demoResc7,null,null,null,*junk2)##msiDataObjRename(*A,*B,null,*junk3)##msiDataObjRepl(*B,demoLResc1,*junk4)##msiDataObjRepl(*B,demoLResc1,*junk5)##msiDataObjTrim(*B,demoResc8,null,null,null,*junk6)##msiRmColl(*C,forceFlag,*junk7)##msiPhyPathReg(*D,demoResc8,*E,null,*junk8)##msiObjStat(*D,*MY_STAT) 
+*F=/tempZone/home/rods/dir1/foo4%*A=/tempZone/home/rods/foo4%*B=/tempZone/home/rods/foo5%*C=/tempZone/home/rods/dir1%*D=/tempZone/home/rods/foo6%*E=/scratch/slocal/mwan/srb/irods/RODS/clients/icommands/test/foo6
+*CHKSUM%*MY_STAT%*HELLO_OUT

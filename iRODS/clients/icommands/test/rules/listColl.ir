@@ -1,0 +1,4 @@
+myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop##nop
+*Action=$list%*Condition=$ COLL_NAME = '/tempZone/home/rods/loopTest'%*K=--------HAHAHAHAH-------------
+*Action%*Condition%ruleExecOut
+

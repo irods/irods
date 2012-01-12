@@ -1,0 +1,3 @@
+mytest||msiGetAuditTrailInfoByUserID(10004, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+null
+ruleExecOut

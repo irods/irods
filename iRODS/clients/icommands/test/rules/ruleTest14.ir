@@ -1,0 +1,3 @@
+myTestRule||forEachExec(*A,writeLine(stdout,*A),nop)|nop
+*A=123,345,567,aa,bb,678
+*Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut

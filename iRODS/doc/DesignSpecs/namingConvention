@@ -1,0 +1,49 @@
+   I thought it will be useful for us to use the same name for some of the
+   commonly used entities (such as collection, resource) in our code so
+   that it will be easier to understand and cut and paste.
+
+
+   item         	name in code            comment
+   ---------------------------------------------------------------------------------------
+   user name    	userName                contains the foo@bar string
+   rcat zone    	rodsZone                The zone
+   collection   	collection
+   data name    	dataName
+   full Path    	logicalPath             collection/dataName
+   repl number  	replNum                 the replication number
+   resource     	resource                the name of the resource
+   logical ressource	logResource		for places where the
+   physical ressource	physResource		differentiation is needed
+   resource loc 	resourceLoc             the resource location
+   resource type   	resourceType            the resource type
+   resource class  	resourceClass
+   phys path    	physPath                the physical path
+   Auth scheme  	authScheme              the authentication scheme
+
+
+--------
+
+We are also planning to have .rodsEnv and .rodsAuth files in a ~/.rods
+subdirectory.
+
+The .rodsAuth file will have the password (or a scrambled form) and if
+it is not available, the Rinit command will prompt for the password.
+
+The .rodsEnv file will contain values for:
+  rodsHost
+  rodsPort
+  rodsHome
+  rodsCwd
+  rodsAuthScheme
+  rodsDefResource
+  rodsServerDn
+
+Any one of these can be overridden by an environment variable by
+the same name.
+
+The parsing of the .rodsEnv file and handling of the environment
+variables will be handled by a client library routine which will
+create a structure with the values.  This structure will be passed to
+the API routines.
+
+

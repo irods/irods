@@ -1,0 +1,7 @@
+acDataObjCreate||acSetCreateConditions##acDOC|nop##null
+acSetCreateConditions||msiGetNewObjDescriptor##acSetResourceList|recover_msiGetNewObjDescriptornop##nop
+acDOC||msiPhyDataObjCreate##acRegisterData##msiCommit|recover_msiPhyDataObjCreate##nop##msiRollback
+acSetResourceList||TTTTmsiSetResourceList|nop
+acRegisterData||msiRegisterData|msiRollback
+
+

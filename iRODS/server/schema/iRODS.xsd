@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 sp2 (http://www.altova.com) by Arun Jagatheesan (iRODS.org) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="iRODS_Request">
+		<xs:annotation>
+			<xs:documentation>Comment describing your root element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="messageHeader" type="messageHeader"/>
+				<xs:element name="requestBody" type="requestBody"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="iRODS_Response"/>
+	<xs:complexType name="messageHeader">
+		<xs:sequence>
+			<xs:element name="messageType" type="xs:string"/>
+			<xs:element name="messageLen" type="xs:int"/>
+			<xs:element name="errorLen" type="xs:int"/>
+			<xs:element name="binaryLen"/>
+			<xs:element name="intInfo"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="responseBody"/>
+	<xs:complexType name="requestBody">
+		<xs:choice/>
+	</xs:complexType>
+	<xs:complexType name="authRequest"/>
+</xs:schema>

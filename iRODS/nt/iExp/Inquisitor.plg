@@ -1,0 +1,103 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: Inquisitor - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\charliec\LOCALS~1\Temp\RSPCEDD.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GR /GX /Zi /Od /I "..\..\src\include" /I "..\..\src\catalog\include" /I "..\..\src\nt_util" /I "..\..\utilities\include" /I "..\..\java\src\glue" /I "..\SOB" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"Debug/" /Fp"Debug/Inquisitor.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\AccessCtrl.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\AccessCtrlUserAdd.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\Inquisitor.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorView.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\LeftView.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\MainFrm.cpp"
+"C:\mydev\SRB-CVS\SRB2\inQ\inQ\MetaView.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\charliec\LOCALS~1\Temp\RSPCEDD.tmp" 
+Creating temporary file "C:\DOCUME~1\charliec\LOCALS~1\Temp\RSPCEDE.tmp" with contents
+[
+SOB.lib ws2_32.lib shlwapi.lib Winmm.lib /nologo /subsystem:windows /profile /debug /machine:I386 /out:"Debug/inQ.exe" /libpath:"..\SOB\Debug" 
+".\Debug\AccessCtrl.obj"
+".\Debug\AccessCtrlUserAdd.obj"
+".\Debug\AddressBar.obj"
+".\Debug\CharlieCEdit.obj"
+".\Debug\GenericDialog.obj"
+".\Debug\HyperLink.obj"
+".\Debug\Inquisitor.obj"
+".\Debug\InquisitorDoc.obj"
+".\Debug\InquisitorView.obj"
+".\Debug\LeftView.obj"
+".\Debug\Login.obj"
+".\Debug\MainFrm.obj"
+".\Debug\MetadataDialog.obj"
+".\Debug\MetaView.obj"
+".\Debug\PathBar.obj"
+".\Debug\Query.obj"
+".\Debug\StdAfx.obj"
+".\Debug\WorkerThread.obj"
+".\Debug\Inquisitor.res"
+]
+Creating command line "link.exe @C:\DOCUME~1\charliec\LOCALS~1\Temp\RSPCEDE.tmp"
+<h3>Output Window</h3>
+Compiling...
+AccessCtrl.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\AccessCtrl.cpp(66) : warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\AccessCtrl.cpp(96) : warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\AccessCtrl.cpp(147) : warning C4800: 'int' : forcing value to bool 'true' or 'false' (performance warning)
+AccessCtrlUserAdd.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+Inquisitor.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+InquisitorDoc.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.cpp(1429) : error C2065: 'IID_IAsyncOperation' : undeclared identifier
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.cpp(1429) : error C2678: binary '==' : no operator defined which takes a left-hand operand of type 'const struct _GUID' (or there is no acceptable conversion)
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.cpp(1430) : error C2061: syntax error : identifier 'IAsyncOperation'
+InquisitorView.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+LeftView.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+MainFrm.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+MetaView.cpp
+C:\mydev\SRB-CVS\SRB2\inQ\inQ\InquisitorDoc.h(130) : error C2504: 'IAsyncOperation' : base class undefined
+Generating Code...
+Error executing cl.exe.
+Creating temporary file "C:\DOCUME~1\charliec\LOCALS~1\Temp\RSPCEDF.tmp" with contents
+[
+/nologo /o"Debug/Inquisitor.bsc" 
+".\Debug\StdAfx.sbr"
+".\Debug\AccessCtrl.sbr"
+".\Debug\AccessCtrlUserAdd.sbr"
+".\Debug\AddressBar.sbr"
+".\Debug\CharlieCEdit.sbr"
+".\Debug\GenericDialog.sbr"
+".\Debug\HyperLink.sbr"
+".\Debug\Inquisitor.sbr"
+".\Debug\InquisitorDoc.sbr"
+".\Debug\InquisitorView.sbr"
+".\Debug\LeftView.sbr"
+".\Debug\Login.sbr"
+".\Debug\MainFrm.sbr"
+".\Debug\MetadataDialog.sbr"
+".\Debug\MetaView.sbr"
+".\Debug\PathBar.sbr"
+".\Debug\Query.sbr"
+".\Debug\WorkerThread.sbr"]
+Creating command line "bscmake.exe @C:\DOCUME~1\charliec\LOCALS~1\Temp\RSPCEDF.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+inQ.exe - 11 error(s), 3 warning(s)
+</pre>
+</body>
+</html>

@@ -1,0 +1,3 @@
+Set Data Type for Object||msiSetDataType(*objID,null,Text,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+*objID=10140
+ruleExecOut

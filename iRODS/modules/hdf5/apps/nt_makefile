@@ -1,0 +1,78 @@
+# Makefile for building Windows islice.exe. 
+# Author: Bing Zhu, Ph.D.
+#         San DIego Supercomputer Center
+#         Oct 7, 2008
+
+# Modifier: Peter Cao
+#           The HDF Group
+#           Nov 6, 2008
+
+# iRODS home directory
+IRODS_HOME = ..\..\..
+
+# iRODS client library
+IRODS_LIB = G:\Projects\NCSA_iRODS\h5mod\irods_lib\iRODSLib.lib 
+IRODS_UTIL_LIB = G:\Projects\NCSA_iRODS\h5mod\irods_lib\iRODSNtUtilLib.lib 
+
+# the jpeg library
+JPEG_LIB = G:\HDF\lib_external\jpeg6_2005
+
+
+
+#####################################################################
+#      Do not change below this line unless you know what you do    #
+#####################################################################
+
+CC=cl.exe
+LINKER = link.exe
+
+CFLAGS = /Od  \
+/I "..\lib\include" \
+/I $(IRODS_HOME)"\nt\include" \
+/I $(IRODS_HOME)"\lib\core\include" \
+/I $(IRODS_HOME)"\lib\md5\include" \
+/I $(IRODS_HOME)"\lib\api\include" \
+/I $(IRODS_HOME)"\server\drivers\include" \
+/I $(IRODS_HOME)"\server\core\include" \
+/I $(IRODS_HOME)"\server\icat\include" \
+/I $(IRODS_HOME)"\server\re\include" \
+/I $(JPEG_LIB)"\include" \
+/D "_WIN32" \
+/D "windows_platform" \
+/D "_LARGEFILE_SOURCE" \
+/D "_FILE_OFFSET_BITS=64" \
+/D "_LARGEFILE64_SOURCE" \
+/D "_MBCS" \
+/D "_CRT_SECURE_NO_WARNINGS" \
+/Gm /EHsc /RTC1 /MTd /W3 /nologo /c /Wp64 /ZI /TP /errorReport:prompt
+
+LINK_FLAG = /INCREMENTAL /nologo /SUBSYSTEM:CONSOLE /machine:X86
+
+srcDir = .
+objDir = .
+binDir = .
+
+hdf5_libDir = ..\lib
+hd5f_OBJS = $(hdf5_libDir)\obj\clH5Dataset.obj $(hdf5_libDir)\obj\clH5File.obj \
+   $(hdf5_libDir)\obj\clH5Group.obj $(hdf5_libDir)\obj\h5ClHandler.obj \
+   $(hdf5_libDir)\obj\h5Ctor.obj $(hdf5_libDir)\obj\h5Dtor.obj
+
+
+MSDEV_LIBS= ws2_32.lib advapi32.lib winmm.lib \
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib \
+oleaut32.lib uuid.lib odbc32.lib odbccp32.lib  /NODEFAULTLIB:"libc.lib" /NODEFAULTLIB:"libcmt.lib"
+
+all: $(binDir)\islice.exe
+
+$(binDir)\islice.exe: $(objDir)\islice.obj
+	$(LINKER) /OUT:$@ $(objDir)\islice.obj $(hd5f_OBJS) $(LINK_FLAG) \
+    $(IRODS_LIB) $(IRODS_UTIL_LIB) $(JPEG_LIB)"\lib\libjpeg.lib" $(MSDEV_LIBS)
+
+
+$(objDir)\islice.obj: $(srcDir)\islice.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+clean:
+	@del islice.exe  islice.ilk  islice.obj  islice.pdb
+	@del vc80.idb  vc80.pdb
+

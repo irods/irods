@@ -1,0 +1,3 @@
+autorepl||msiAutoReplicateService(/tempZone/home/testuser/repl_test, true, 3, grpResc2, null)|nop
+null
+ruleExecOut

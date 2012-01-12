@@ -1,0 +1,17 @@
+#!/bin/bash 
+
+set -x
+
+uptime
+date
+time ./poundtests.sh 1
+date
+echo "======================================"
+uptime
+date
+time ./poundtests.sh 1
+date
+
+mail -s "Done" lindsey@sdsc.edu < /dev/null
+
+

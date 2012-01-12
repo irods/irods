@@ -1,0 +1,3 @@
+myTest||msiAdmAppendToTopOfCoreIRB(*A)|nop
+*A=core.irb.3
+*A

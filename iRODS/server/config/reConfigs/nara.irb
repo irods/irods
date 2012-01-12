@@ -1,0 +1,22 @@
+# iRODS Rule Base - Additional rules for NARA's Electronic Records Archives requirements.
+#
+# To enable these rules, edit server.config and add this file to the "reRuleSet" list.
+#
+# Each rule consists of four parts separated by  |
+# The four parts are: name, conditions, function calls, and recovery.
+# The calls and recoveries can be multiple ones, separated by ##.
+# For each rule, the number recovery calls should match the calls;
+# for example, if the 2nd call fails, the 2nd recover call is made.
+#
+##### NARA #####
+#
+acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list_files|msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query,*GenQOut)|nop##nop
+#
+acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list_colls|msiMakeQuery("COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
+#
+acGetDataObjPathFromGenQOut(*GenQOut,*DataObjPath)||msiGetValByKey(*GenQOut,"COLL_NAME",*ParentColl)##msiGetValByKey(*GenQOut,"DATA_NAME",*DataName)##assign(*DataObjPath,*ParentColl/*DataName)|nop##nop
+#
+acCopyDataObjInColl(*DestColl,*SrcColl,*SrcPath)||msiGetRelativeObjPath(*SrcPath,*SrcColl,*RelPath)##assign(*DestPath,*DestColl*RelPath)##msiDataObjCopy(*SrcPath,*DestPath,null,junk)|nop##nop
+#
+#
+################

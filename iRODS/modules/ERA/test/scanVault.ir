@@ -1,0 +1,3 @@
+ScanVault||msiExecCmd("scanvault.py",*VaultPath,*Resource,null,null,*CmdOut)##msiGetStdoutInExecCmdOut(*CmdOut,*StdoutStr)##msiGetSystemTime(*Time, human)##msiDataObjCreate(*OutputObj.*Time.txt,renci-vault1,*D_FD)##msiDataObjWrite(*D_FD,*StdoutStr,*W_LEN)##msiDataObjClose(*D_FD,*Status)##writeLine(stdout,*Status)|nop
+*VaultPath=/home/rodsdev/loadingVault/%*Resource=yellow.ils.unc.edu%*OutputObj=/renci/home/rods/loading/SCAN_RESULT
+ruleExecOut

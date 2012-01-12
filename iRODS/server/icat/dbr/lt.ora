@@ -1,0 +1,6 @@
+! This is an example of a database object (DBO) and can be a useful
+! addition to a DBR/DBO environment as it lists the tables within a
+! database resource (DBR).  First iput this file, set its attributes
+! appropriately (isysmeta mod lt.org datatype 'database object') and
+! then execute it on the DBR via idbo.  This version is for Oracle.
+select TABLE_NAME from tabs

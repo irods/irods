@@ -1,0 +1,19 @@
+/* reAction.h - header file for Actions that are 'called' when executing the rules by 
+ * the rule engine modules
+ */
+#ifndef RE_ACTION_H
+#define RE_ACTION_H
+
+#include "rodsUser.h"
+#include "rods.h"
+#include "rcGlobalExtern.h"
+#include "reDefines.h"
+#include "objInfo.h"
+#include "regExpMatch.h"
+#include "reSysDataObjOpr.h"
+#include "msiHelper.h"
+#include "reDataObjOpr.h"
+#include "reNaraMetaData.h"
+#include "reIn2p3SysRule.h"
+
+

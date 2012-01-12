@@ -1,0 +1,437 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: iRODSLib - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\charliec\LOCALS~1\Temp\RSP48E6.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "../clientlib/include" /I "../clientlib/include/api" /I "../clientLib\src\md5" /I "..\server\include" /I "..\nt\include" /D "_DEBUG" /D "_WIN32" /D "_MBCS" /D "_LIB" /D "windows_platform" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\clientLogin.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\cpUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\nt\src\dirent.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\getRodsEnv.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\nt\src\gettimeofday.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\getUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\lsUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\md5\md5c.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\md5\md5Checksum.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\miscUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\mkdirUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\obf.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\packStruct.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\parseCommandLine.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\procApiRequest.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\putUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcAuthCheck.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcAuthRequest.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcAuthResponse.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcChkNVPathPerm.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcCollCreate.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\rcConnect.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataCopy.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataGet.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjClose.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjCopy.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjCreate.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjGet.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjLseek.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjOpen.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjPut.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjRead.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjRepl.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjUnlink.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataObjWrite.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcDataPut.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileChksum.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileChmod.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileClose.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileClosedir.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileCreate.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileFstat.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileFsync.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileGet.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileGetFsFreeSpace.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileLseek.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileMkdir.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileOpen.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileOpendir.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFilePut.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileRead.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileReaddir.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileRename.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileRmdir.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileStage.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileStat.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileUnlink.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcFileWrite.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcGeneralAdmin.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcGenQuery.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcGetMiscSvrInfo.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\rcMisc.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcModAccessControl.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcModAVUMetadata.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcModDataObjMeta.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\rcPortalOpr.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcRegColl.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcRegDataObj.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcRegReplica.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcRmColl.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcSimpleQuery.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\api\rcUnregDataObj.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\replUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\rmUtil.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\rodsLog.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\rodsPath.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\sockComm.c"
+"C:\DOCUMENTS AND SETTINGS\CHARLIEC\DESKTOP\IRODS\LL\RODS\clientLib\src\stringOpr.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\charliec\LOCALS~1\Temp\RSP48E6.tmp" 
+Creating temporary file "C:\DOCUME~1\charliec\LOCALS~1\Temp\RSP48E7.tmp" with contents
+[
+/nologo /out:"Debug\iRODSLib.lib" 
+".\Debug\clientLogin.obj"
+".\Debug\cpUtil.obj"
+".\Debug\dirent.obj"
+".\Debug\getRodsEnv.obj"
+".\Debug\gettimeofday.obj"
+".\Debug\getUtil.obj"
+".\Debug\lsUtil.obj"
+".\Debug\md5c.obj"
+".\Debug\md5Checksum.obj"
+".\Debug\miscUtil.obj"
+".\Debug\mkdirUtil.obj"
+".\Debug\obf.obj"
+".\Debug\packStruct.obj"
+".\Debug\parseCommandLine.obj"
+".\Debug\procApiRequest.obj"
+".\Debug\putUtil.obj"
+".\Debug\rcAuthCheck.obj"
+".\Debug\rcAuthRequest.obj"
+".\Debug\rcAuthResponse.obj"
+".\Debug\rcChkNVPathPerm.obj"
+".\Debug\rcCollCreate.obj"
+".\Debug\rcConnect.obj"
+".\Debug\rcDataCopy.obj"
+".\Debug\rcDataGet.obj"
+".\Debug\rcDataObjClose.obj"
+".\Debug\rcDataObjCopy.obj"
+".\Debug\rcDataObjCreate.obj"
+".\Debug\rcDataObjGet.obj"
+".\Debug\rcDataObjLseek.obj"
+".\Debug\rcDataObjOpen.obj"
+".\Debug\rcDataObjPut.obj"
+".\Debug\rcDataObjRead.obj"
+".\Debug\rcDataObjRepl.obj"
+".\Debug\rcDataObjUnlink.obj"
+".\Debug\rcDataObjWrite.obj"
+".\Debug\rcDataPut.obj"
+".\Debug\rcFileChksum.obj"
+".\Debug\rcFileChmod.obj"
+".\Debug\rcFileClose.obj"
+".\Debug\rcFileClosedir.obj"
+".\Debug\rcFileCreate.obj"
+".\Debug\rcFileFstat.obj"
+".\Debug\rcFileFsync.obj"
+".\Debug\rcFileGet.obj"
+".\Debug\rcFileGetFsFreeSpace.obj"
+".\Debug\rcFileLseek.obj"
+".\Debug\rcFileMkdir.obj"
+".\Debug\rcFileOpen.obj"
+".\Debug\rcFileOpendir.obj"
+".\Debug\rcFilePut.obj"
+".\Debug\rcFileRead.obj"
+".\Debug\rcFileReaddir.obj"
+".\Debug\rcFileRename.obj"
+".\Debug\rcFileRmdir.obj"
+".\Debug\rcFileStage.obj"
+".\Debug\rcFileStat.obj"
+".\Debug\rcFileUnlink.obj"
+".\Debug\rcFileWrite.obj"
+".\Debug\rcGeneralAdmin.obj"
+".\Debug\rcGenQuery.obj"
+".\Debug\rcGetMiscSvrInfo.obj"
+".\Debug\rcMisc.obj"
+".\Debug\rcModAccessControl.obj"
+".\Debug\rcModAVUMetadata.obj"
+".\Debug\rcModDataObjMeta.obj"
+".\Debug\rcPortalOpr.obj"
+".\Debug\rcRegColl.obj"
+".\Debug\rcRegDataObj.obj"
+".\Debug\rcRegReplica.obj"
+".\Debug\rcRmColl.obj"
+".\Debug\rcSimpleQuery.obj"
+".\Debug\rcUnregDataObj.obj"
+".\Debug\replUtil.obj"
+".\Debug\rmUtil.obj"
+".\Debug\rodsLog.obj"
+".\Debug\rodsPath.obj"
+".\Debug\sockComm.obj"
+".\Debug\stringOpr.obj"
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\charliec\LOCALS~1\Temp\RSP48E7.tmp"
+<h3>Output Window</h3>
+Compiling...
+clientLogin.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\clientlogin.c(40) : warning C4101: 'pwBuf' : unreferenced local variable
+cpUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\cputil.c(229) : warning C4018: '<=' : signed/unsigned mismatch
+dirent.c
+getRodsEnv.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getrodsenv.c(109) : warning C4013: 'getppid' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getrodsenv.c(122) : warning C4101: 'i' : unreferenced local variable
+gettimeofday.c
+getUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getutil.c(196) : warning C4018: '<=' : signed/unsigned mismatch
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getutil.c(201) : warning C4020: 'mkdir' : too many actual parameters
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getutil.c(150) : warning C4101: 'myDirent' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getutil.c(151) : warning C4101: 'statbuf' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getutil.c(148) : warning C4101: 'dirPtr' : unreferenced local variable
+lsUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\lsutil.c(155) : warning C4101: 'status' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\lsutil.c(264) : warning C4101: 'status' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\lsutil.c(314) : warning C4101: 'srcChildPath' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\lsutil.c(313) : warning C4101: 'myDirent' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\lsutil.c(310) : warning C4101: 'i' : unreferenced local variable
+md5c.c
+md5Checksum.c
+miscUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\miscutil.c(106) : warning C4013: 'strtoll' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\miscutil.c(319) : warning C4244: '=' : conversion from 'double ' to 'float ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\miscutil.c(334) : warning C4244: '=' : conversion from 'double ' to 'float ', possible loss of data
+mkdirUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\mkdirutil.c(17) : warning C4101: 'dataObjInp' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\mkdirutil.c(16) : warning C4101: 'collInp' : unreferenced local variable
+obf.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(129) : warning C4013: 'irodsGetWindowsClientEnvDir' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(260) : warning C4013: 'iRODSNtGetUserPasswdInputInConsole' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(236) : warning C4101: 'statbuf' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(343) : warning C4013: 'iRODSNtFileOpen' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(763) : warning C4101: 'envVar' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(765) : warning C4101: 'i' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(764) : warning C4101: 'chr' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(784) : warning C4101: 'len' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\obf.c(861) : warning C4101: 'len' : unreferenced local variable
+packStruct.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\packstruct.c(806) : warning C4101: 'newOutLen' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\packstruct.c(905) : warning C4101: 'newOutLen' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\packstruct.c(1406) : warning C4101: 'newOutLen' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\packstruct.c(1609) : warning C4101: 'i' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\packstruct.c(1724) : warning C4101: 'newOutLen' : unreferenced local variable
+parseCommandLine.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\parsecommandline.c(94) : warning C4013: 'getopt' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\parsecommandline.c(185) : warning C4013: 'strtoll' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\parsecommandline.c(35) : warning C4101: 'j' : unreferenced local variable
+procApiRequest.c
+putUtil.c
+rcAuthCheck.c
+rcAuthRequest.c
+rcAuthResponse.c
+rcChkNVPathPerm.c
+Generating Code...
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\lsutil.c(94) : warning C4700: local variable 'status' used without having been initialized
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\getrodsenv.c(340) : warning C4716: 'createRodsEnvDefaults' : must return a value
+Compiling...
+rcCollCreate.c
+rcConnect.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcconnect.c(216) : warning C4101: 'status' : unreferenced local variable
+rcDataCopy.c
+rcDataGet.c
+rcDataObjClose.c
+rcDataObjCopy.c
+rcDataObjCreate.c
+rcDataObjGet.c
+rcDataObjLseek.c
+rcDataObjOpen.c
+rcDataObjPut.c
+rcDataObjRead.c
+rcDataObjRepl.c
+rcDataObjUnlink.c
+rcDataObjWrite.c
+rcDataPut.c
+rcFileChksum.c
+rcFileChmod.c
+rcFileClose.c
+rcFileClosedir.c
+Generating Code...
+Compiling...
+rcFileCreate.c
+rcFileFstat.c
+rcFileFsync.c
+rcFileGet.c
+rcFileGetFsFreeSpace.c
+rcFileLseek.c
+rcFileMkdir.c
+rcFileOpen.c
+rcFileOpendir.c
+rcFilePut.c
+rcFileRead.c
+rcFileReaddir.c
+rcFileRename.c
+rcFileRmdir.c
+rcFileStage.c
+rcFileStat.c
+rcFileUnlink.c
+rcFileWrite.c
+rcGeneralAdmin.c
+rcGenQuery.c
+Generating Code...
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\api\rcgenquery.c(42) : warning C4716: 'printGenQI' : must return a value
+Compiling...
+rcGetMiscSvrInfo.c
+rcMisc.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(271) : warning C4244: '=' : conversion from '__int64 ' to 'long ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(760) : warning C4101: 'i' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(872) : warning C4101: 'j' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(865) : warning C4101: 'len' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(867) : warning C4101: 'status' : unreferenced local variable
+rcModAccessControl.c
+rcModAVUMetadata.c
+rcModDataObjMeta.c
+rcPortalOpr.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(89) : warning C4244: 'function' : conversion from '__int64 ' to 'unsigned int ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(90) : warning C4244: '=' : conversion from '__int64 ' to 'int ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(276) : warning C4244: 'function' : conversion from '__int64 ' to 'long ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(292) : warning C4244: '=' : conversion from '__int64 ' to 'int ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(630) : warning C4244: 'function' : conversion from '__int64 ' to 'long ', possible loss of data
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(646) : warning C4244: '=' : conversion from '__int64 ' to 'int ', possible loss of data
+rcRegColl.c
+rcRegDataObj.c
+rcRegReplica.c
+rcRmColl.c
+rcSimpleQuery.c
+rcUnregDataObj.c
+replUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\replutil.c(153) : warning C4101: 'myDirent' : unreferenced local variable
+rmUtil.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rmutil.c(239) : warning C4018: '<' : signed/unsigned mismatch
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rmutil.c(140) : warning C4101: 'myDirent' : unreferenced local variable
+rodsLog.c
+rodsPath.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(165) : warning C4101: 'tmpPtr2' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(165) : warning C4101: 'tmpPtr1' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(209) : warning C4101: 'i' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(447) : warning C4020: 'mkdir' : too many actual parameters
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(469) : warning C4020: 'mkdir' : too many actual parameters
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(487) : warning C4020: 'mkdir' : too many actual parameters
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rodspath.c(521) : warning C4101: 'status' : unreferenced local variable
+sockComm.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(70) : warning C4013: 'random' undefined; assuming extern returning int
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(389) : warning C4133: 'function' : incompatible types - from 'int *' to 'const char *'
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(394) : warning C4133: 'function' : incompatible types - from 'int *' to 'const char *'
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(400) : warning C4133: 'function' : incompatible types - from 'int *' to 'const char *'
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(487) : warning C4101: 'flag' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(541) : warning C4047: 'function' : 'void (__stdcall *)(unsigned int ,unsigned int ,unsigned long ,unsigned long ,unsigned long )' differs in levels of indirection from 'int '
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(541) : warning C4024: 'timeSetEvent' : different types for formal and actual parameter 3
+stringOpr.c
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\stringopr.c(169) : warning C4101: 'c' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\stringopr.c(233) : warning C4101: 'c' : unreferenced local variable
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\stringopr.c(288) : warning C4101: 'i' : unreferenced local variable
+Generating Code...
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\stringopr.c(39) : warning C4700: local variable 'len' used without having been initialized
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\stringopr.c(298) : warning C4716: 'trimWS' : must return a value
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(75) : warning C4761: integral size mismatch in argument; conversion supplied
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\sockcomm.c(88) : warning C4761: integral size mismatch in argument; conversion supplied
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(89) : warning C4761: integral size mismatch in argument; conversion supplied
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(276) : warning C4761: integral size mismatch in argument; conversion supplied
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcportalopr.c(630) : warning C4761: integral size mismatch in argument; conversion supplied
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(53) : warning C4715: 'freeBBuf' : not all control paths return a value
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(117) : warning C4715: 'freeRError' : not all control paths return a value
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(755) : warning C4715: 'clearKeyVal' : not all control paths return a value
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(768) : warning C4715: 'clearInxIval' : not all control paths return a value
+c:\documents and settings\charliec\desktop\irods\ll\rods\clientlib\src\rcmisc.c(785) : warning C4715: 'clearInxVal' : not all control paths return a value
+Creating library...
+Creating temporary file "C:\DOCUME~1\charliec\LOCALS~1\Temp\RSP48EE.tmp" with contents
+[
+/nologo /o"Debug/iRODSLib.bsc" 
+".\Debug\clientLogin.sbr"
+".\Debug\cpUtil.sbr"
+".\Debug\dirent.sbr"
+".\Debug\getRodsEnv.sbr"
+".\Debug\gettimeofday.sbr"
+".\Debug\getUtil.sbr"
+".\Debug\lsUtil.sbr"
+".\Debug\md5c.sbr"
+".\Debug\md5Checksum.sbr"
+".\Debug\miscUtil.sbr"
+".\Debug\mkdirUtil.sbr"
+".\Debug\obf.sbr"
+".\Debug\packStruct.sbr"
+".\Debug\parseCommandLine.sbr"
+".\Debug\procApiRequest.sbr"
+".\Debug\putUtil.sbr"
+".\Debug\rcAuthCheck.sbr"
+".\Debug\rcAuthRequest.sbr"
+".\Debug\rcAuthResponse.sbr"
+".\Debug\rcChkNVPathPerm.sbr"
+".\Debug\rcCollCreate.sbr"
+".\Debug\rcConnect.sbr"
+".\Debug\rcDataCopy.sbr"
+".\Debug\rcDataGet.sbr"
+".\Debug\rcDataObjClose.sbr"
+".\Debug\rcDataObjCopy.sbr"
+".\Debug\rcDataObjCreate.sbr"
+".\Debug\rcDataObjGet.sbr"
+".\Debug\rcDataObjLseek.sbr"
+".\Debug\rcDataObjOpen.sbr"
+".\Debug\rcDataObjPut.sbr"
+".\Debug\rcDataObjRead.sbr"
+".\Debug\rcDataObjRepl.sbr"
+".\Debug\rcDataObjUnlink.sbr"
+".\Debug\rcDataObjWrite.sbr"
+".\Debug\rcDataPut.sbr"
+".\Debug\rcFileChksum.sbr"
+".\Debug\rcFileChmod.sbr"
+".\Debug\rcFileClose.sbr"
+".\Debug\rcFileClosedir.sbr"
+".\Debug\rcFileCreate.sbr"
+".\Debug\rcFileFstat.sbr"
+".\Debug\rcFileFsync.sbr"
+".\Debug\rcFileGet.sbr"
+".\Debug\rcFileGetFsFreeSpace.sbr"
+".\Debug\rcFileLseek.sbr"
+".\Debug\rcFileMkdir.sbr"
+".\Debug\rcFileOpen.sbr"
+".\Debug\rcFileOpendir.sbr"
+".\Debug\rcFilePut.sbr"
+".\Debug\rcFileRead.sbr"
+".\Debug\rcFileReaddir.sbr"
+".\Debug\rcFileRename.sbr"
+".\Debug\rcFileRmdir.sbr"
+".\Debug\rcFileStage.sbr"
+".\Debug\rcFileStat.sbr"
+".\Debug\rcFileUnlink.sbr"
+".\Debug\rcFileWrite.sbr"
+".\Debug\rcGeneralAdmin.sbr"
+".\Debug\rcGenQuery.sbr"
+".\Debug\rcGetMiscSvrInfo.sbr"
+".\Debug\rcMisc.sbr"
+".\Debug\rcModAccessControl.sbr"
+".\Debug\rcModAVUMetadata.sbr"
+".\Debug\rcModDataObjMeta.sbr"
+".\Debug\rcPortalOpr.sbr"
+".\Debug\rcRegColl.sbr"
+".\Debug\rcRegDataObj.sbr"
+".\Debug\rcRegReplica.sbr"
+".\Debug\rcRmColl.sbr"
+".\Debug\rcSimpleQuery.sbr"
+".\Debug\rcUnregDataObj.sbr"
+".\Debug\replUtil.sbr"
+".\Debug\rmUtil.sbr"
+".\Debug\rodsLog.sbr"
+".\Debug\rodsPath.sbr"
+".\Debug\sockComm.sbr"
+".\Debug\stringOpr.sbr"]
+Creating command line "bscmake.exe @C:\DOCUME~1\charliec\LOCALS~1\Temp\RSP48EE.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+iRODSLib.lib - 0 error(s), 83 warning(s)
+</pre>
+</body>
+</html>

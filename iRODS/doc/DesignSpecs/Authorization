@@ -1,0 +1,193 @@
+Authorization/access controls to the iRODS database
+
+Since the ICAT database contains the permanent information for the
+iRODS system, authorization for access and update of this metadata
+occurs in relation to CHL routines: within the CHL routines, in the
+calling code, and sometimes both.
+
+Since the interaction can be fairly complex, particularly with the use
+of the Rule Engine and multiple rule sets, how this all works needs to
+be well understood and maintained in a consistent manner.
+
+This document serves as a description and guide in this respect.
+
+The following is a summary of the authorization controls (access
+controls) for each of the ICAT Catalog High Level (CHL) API calls.
+Except for initialization, all ICAT access and updates go thru the CHL
+routines.
+
+Currently, many of the routines will check for user-group access in
+addition to individual user access.  This is sufficient for a member
+of a group to read, write and/or delete dataObjects if the group has
+the necessary access.
+
+Anything that is not completely OK is marked with a (L) or (*).  (L)
+indicates it is a lower priority and could wait until after the first
+release.  (*) indicates it is something we will fix shortly.
+
+
+chlGenQuery - There is now conditional input (genQueryInp.condInput)
+  that is used to verify that the user has access to the dataObj at
+  the requested level (routine checkCondInputAccess).  If a clientUser
+  has no access permission, an error is returned.  If a user has
+  permission, the query results are returned.
+
+  But there are no unavoidable access controls on queries.  We'll need
+  to add something to the SQL so that users can only access metadata
+  that they are authorized to.
+
+  (L) This is fairly large large task but is not a priority for now as
+  queries from the client are currently constrained on the client
+  code.  (Other programs using the API tho, could get access to all
+  metadata (except passwords)).
+
+  There is no access to the user passwords via chlGenQuery because
+  there are no definitions in the code to refer them.
+
+
+chlOpen - caller must pass in the DB password.
+
+chlClose - caller can only close a connection that is open.
+
+chlIsConnected - just returns the connected/not-connected status.
+
+chlModDataObjMeta - the SQL normally checks that the client user has
+  ACCESS_MODIFY_METADATA access to the file.  If IRODS_ADMIN_KW
+  is specified the code checks that the client user is
+  privileged instead of doing the SQL ACCESS_MODIFY_METADATA check.
+
+  If the call is to only change the chksum, the code checks that
+  the client user has ACCESS_READ_OBJECT (a lesser privilege) instead
+  of ACCESS_MODIFY_METADATA since we know this is called by server-side
+  code to set the checksum (during, for example, an irsync).
+
+  (*) TO BE DONE: In apiTable.h, the MOD_DATA_OBJ_META call has the
+  proxyUser required privilege set to REMOTE_PRIV_USER_AUTH preventing
+  direct calls by users.
+
+  Server code calls this chl routine with a restricted set of
+  parameters.  For example, the _rsDataObjClose routine calls
+  rsModDataObjMeta to set the dataObj size.
+
+chlRegDataObj - the SQL checks that the collection exists and the user
+  has ACCESS_MODIFY_OBJECT access to it.
+
+  (*) TO BE DONE: In apiTable.h, the call has the
+  proxyUser required privilege set to REMOTE_PRIV_USER_AUTH preventing
+  direct calls by users.  Or, if we want to allow client-level access, we'll
+  need to check the file path.
+
+  Server code calls this chl routine with a restricted set of
+  parameters.
+
+chlRegReplica - In non-admin mode, the SQL checks that the client user
+   has at least ACCESS_READ_OBJECT (this allows caching of data on
+   servers on a read). The proxyUser defined with the API is
+   REMOTE_PRIV_USER_AUTH so it can't be called directly by the user.
+
+   When in admin-mode (called with IRODS_ADMIN_KW), it checks that
+   the client is an admin user, but skips the ACCESS_READ_OBJECT
+   check.
+
+chlUnregDataObj - the SQL checks that the client user has
+   ACCESS_DELETE_OBJECT level access; no longer checks if
+   user has a particular access to the collection (we decided
+   against that).
+
+   (*) If called directly by nonprivileged proxyUser, routines that
+   call this will check for the existence of the file in the vault.
+   We don't want users to UnregDataObj with filePath in the vault
+   creating orphan files.
+
+   Can be called with a IRODS_ADMIN_KW in which case it checks that
+   the client is an admin user, checks that other replica(s)
+   exist, and then does the unreg (but skips the ACCESS_DELETE_OBJECT
+   check).
+
+chlRegResc - checks that the clientUser and proxyUser are 
+   LOCAL_PRIV_USER_AUTH.  Altho this is redundant with the
+   client/server API check, it doesn't hurt.
+
+chlDelResc - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.  Altho this is redundant with the
+   client/server API check, it doesn't hurt.
+
+chlRegUser - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.  Altho this is redundant with the
+   client/server API check, it doesn't hurt.
+ 
+chlRollback - aborts the preceeding sql updates.
+
+chlCommit - commits the preceeding sql updates.
+
+chlDelUserRE - Rule Engine version.  Checks that the clientUser and
+   proxyUser are LOCAL_PRIV_USER_AUTH.  Altho this is redundant with the
+   client/server API check, it doesn't hurt.
+
+chlDelUser - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.  Altho this is redundant with the
+   client/server API check, it doesn't hurt.
+   Calls _delColl as part of processing.
+
+chlRegCollByAdmin - checks that the clientUser and proxyUser are 
+   LOCAL_PRIV_USER_AUTH.
+   Also checks the the parent collection exists.
+
+chlRegColl - The sql checks that the parent collection exists and user
+   has write permission to it.
+
+chlSimpleQuery - checks that the clientUser and proxyUser are 
+   LOCAL_PRIV_USER_AUTH.  The code disallows "password"
+   to be selected.
+
+chlDelCollByAdmin - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.
+
+chlDelColl  -  calls _delColl
+
+_delColl - the sql checks that the the parent collection exists and
+  client user has write permission to it and also checks that the user
+  has at least delete permission to the collection.  This also does a
+  sql check to make sure the collection is empty of files and
+  subcollections.
+
+chlCheckAuth - checks an authentication response from a user.
+
+chlModUser - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.
+
+chlModGroup - checks that the clientUser and proxyUser are 
+   LOCAL_PRIV_USER_AUTH.
+
+chlModResc - checks that the clientUser and proxyUser are 
+   LOCAL_PRIV_USER_AUTH.
+
+chlModRescFreeSpace - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.
+
+chlModRescGroup - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.
+
+chlRegUserRE - checks that the clientUser and proxyUser are
+   LOCAL_PRIV_USER_AUTH.
+
+chlAddAVUMetadata - the SQL checks that the client user has sufficient
+   access to the dataobj, collection, user, or resource.
+
+chlDeleteAVUMetadata - the SQL checks that the client user has
+   sufficient access to the dataobj, collection, user, or resource.
+
+chlCopyAVUMetadata - the SQL checks that the client user has
+   sufficient access to the dataobj, collection, user, or resource
+   (ACCESS_READ_METADATA to the source and ACCESS_CREATE_METADATA to
+   the destination).
+
+chlModAccessControl - the SQL checks the the client user has
+   sufficient access to the dataobj or collection.
+
+chlRegRuleExec - checks are made by server code which calls this
+
+chlModRuleExec - checks are made by server code which calls this
+
+chlDelRuleExec - checks that the proxyUser is LOCAL_PRIV_USER_AUTH as
+   this is a server managed call.

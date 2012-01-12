@@ -1,0 +1,4 @@
+myTestRule||msiObjByName(*objName,*RA,*DEC,*TYPE)##msiSdssImgCutout_GetJpeg(*RA,*DEC,*Scale,*Width, *Height, *Opt, *OutImg)##msiDataObjCreate(*File,null,*D_FD)##msiDataObjWrite(*D_FD,*OutImg,*W_LEN)##msiDataObjClose(*D_FD,*junk2)|nop
+*objName=$m100%*Scale=$0.396127%*Width=$64%*Height=$64%*Opt=$GPST%*File=$/tempZone/home/rods/sdsscoimg.jpg
+*W_LEN
+

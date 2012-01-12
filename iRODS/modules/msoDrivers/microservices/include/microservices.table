@@ -1,0 +1,16 @@
+/* Properties module microservices */
+/* Service name			# args		Service function */
+{ "msiobjget_test",		4,		(funcPtr) msiobjget_test },
+{ "msiobjput_test",		3,		(funcPtr) msiobjput_test },
+{ "msiobjget_z3950",		4,		(funcPtr) msiobjget_z3950 },
+{ "msiobjput_z3950",		3,		(funcPtr) msiobjput_z3950 },
+{ "msiobjget_dbo",		4,		(funcPtr) msiobjget_dbo },
+{ "msiobjput_dbo",		3,		(funcPtr) msiobjput_dbo },
+{ "msiobjget_slink",		4,		(funcPtr) msiobjget_slink },
+{ "msiobjput_slink",		3,		(funcPtr) msiobjput_slink },
+{ "msiobjget_irods",		4,		(funcPtr) msiobjget_irods },
+{ "msiobjput_irods",		3,		(funcPtr) msiobjput_irods },
+{ "msiobjget_http",		4,		(funcPtr) msiobjget_http },
+{ "msiobjput_http",		3,		(funcPtr) msiobjput_http },
+{ "msiobjget_srb",		4,		(funcPtr) msiobjget_srb },
+{ "msiobjput_srb",		3,		(funcPtr) msiobjput_srb },

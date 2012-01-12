@@ -1,0 +1,71 @@
+################################### SAA.IRB ###################################
+#
+# iRODS Rule Base - Additional set of rules for SAA & NARA demo
+#
+# To enable these rules, edit server.config and add this file to the "reRuleSet" list.
+#
+#
+#
+##### TOP LEVEL ACTION #####
+#
+acApplySAAPolicies||acApplyChecksumPolicy##acApplyVirusScanPolicy##acApplyReplicationPolicy##acApplyRetentionPeriodPolicy|nop
+#
+#
+##### MAIN POLICY ACTIONS #####
+#
+## Checksum Policy ##
+acApplyChecksumPolicy||msiSplitPath($objPath,*CollName,*DataName)##acHasCollMetaAV(*CollName,PolicyDrivenService:SeriesAttributeMarkerAttribute,requireChecksum,*Status)##ifExec(*Status > 0,acFlagObjWithoutChecksum($objPath),nop,nop,nop)|nop
+#
+## Virus Scan Policy ##
+acApplyVirusScanPolicy||msiSplitPath($objPath,*CollName,*DataName)##acHasCollMetaAV(*CollName,PolicyDrivenService:SeriesAttributeMarkerAttribute,requireVirusScan,*Status)##ifExec(*Status > 0,acScanFileAndFlagObject($objPath,$filePath,$rescLoc),nop,nop,nop)|nop
+#
+## Replication Policy ##
+acApplyReplicationPolicy||msiSplitPath($objPath,*CollName,*DataName)##acHasCollMetaAV(*CollName,PolicyDrivenService:SeriesAttributeMarkerAttribute,requireReplication,*Status)##ifExec(*Status > 0,msiDataObjRepl($objPath,destRescName=renci-vault2,*ReplStatus),nop,nop,nop)|nop
+#
+## Retention Period Policy ##
+acApplyRetentionPeriodPolicy||msiSplitPath($objPath,*CollName,*DataName)##acHasCollMetaAV(*CollName,PolicyDrivenService:SeriesAttributeMarkerAttribute,retentionDays,*Status)##ifExec(*Status > 0,acGetRetentionDateAndFlagObj(*CollName,$objPath),nop,nop,nop)|nop
+#
+#
+##### SUPPORTING RULES (ACTIONS) #####
+#
+## Generic ##
+#
+acHasCollMetaAV(*Collection,*Attribute,*Value,*Status)||msiAddSelectFieldToGenQuery(META_COLL_ATTR_NAME,count,*GenQInp)##msiAddConditionToGenQuery(COLL_NAME,"=",*Collection,*GenQInp)##msiAddConditionToGenQuery(META_COLL_ATTR_NAME,"=",*Attribute,*GenQInp)##msiAddConditionToGenQuery(META_COLL_ATTR_VALUE,"=",*Value,*GenQInp)##msiExecGenQuery(*GenQInp,*GenQOut)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut,"META_COLL_ATTR_NAME",*Status),nop)|nop
+#
+acFlagObject(*Object,*Flag)||msiFlagDataObjwithAVU(*Object, *Flag, *Status)|nop
+#
+#
+## Checksums and Integrity ##
+#
+acCheckObjChecksum(*Object)||acFlagChecksumMatch(*Object)|acFlagChecksumMismatch(*Object)
+#
+acFlagObjWithoutChecksum(*Object)||msiSplitPath(*Object,*CollName,*DataName)##msiAddSelectFieldToGenQuery(DATA_CHECKSUM,COUNT,*GenQInp)##msiAddConditionToGenQuery(COLL_NAME,"=",*CollName,*GenQInp)##msiAddConditionToGenQuery(DATA_NAME,"=",*DataName,*GenQInp)##msiExecGenQuery(*GenQInp,*GenQOut)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut,"DATA_CHECKSUM",*count),nop)##ifExec(*count > 0,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"CHECKSUM_REGISTERED.*Time",*count)##msiAssociateKeyValuePairsToObj(*KVP,*Object,"-d"),nop,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"CHECKSUM_MISSING.*Time",*count)##msiAssociateKeyValuePairsToObj(*KVP,*Object,"-d"),nop)|nop
+#
+acFlagChecksumMismatch(*Object)||msiGetSystemTime(*TS, human)##acFlagObject(*Object, CHECKSUM_MISMATCH.*TS)|nop
+#
+acFlagChecksumMatch(*Object)||msiDataObjChksum(*Object, verifyChksum, *Chksm)##msiGetSystemTime(*TS, human)##acFlagObject(*Object, CHECKSUM_MATCH.*TS)|nop
+#
+#
+## Virus Check ##
+#
+acFlagInfectedColl(*collection)||msiAddSelectFieldToGenQuery(DATA_ID,COUNT,*GenQInp)##msiAddConditionToGenQuery(COLL_NAME,"=",*collection,*GenQInp)##msiAddConditionToGenQuery(META_DATA_ATTR_NAME,"like","VIRUS_SCAN_FAILED%",*GenQInp)##msiExecGenQuery(*GenQInp,*GenQOut)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut,"DATA_ID",*objCount),nop)##msiAddSelectFieldToGenQuery(DATA_ID,COUNT,*GenQInp1)##msiAddConditionToGenQuery(COLL_NAME,"like","*collection/%",*GenQInp1)##msiAddConditionToGenQuery(META_DATA_ATTR_NAME,"like","VIRUS_SCAN_FAILED%",*GenQInp1)##msiExecGenQuery(*GenQInp1,*GenQOut1)##forEachExec(*GenQOut1,msiGetValByKey(*GenQOut1,"DATA_ID",*objCount1),nop)##assign(*count,"*objCount + *objCount1")##ifExec(*count > 0,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"VIRUS_SCAN_FAILED.*Time",*count)##msiAssociateKeyValuePairsToObj(*KVP,*collection,"-C"),nop##nop##nop,nop,nop)|nop
+#
+acScanVaultAndFlagInfectedObjs||msiExecCmd("scanvault.py",/home/rodsdev/loadingVault/,yellow.ils.unc.edu,null,null,*CmdOut)##msiGetStdoutInExecCmdOut(*CmdOut,*StdoutStr)##msiGetSystemTime(*Time, human)##msiDataObjCreate(/renci/home/rods/logs/virus_scan_reports/SCAN_RESULT.*Time.txt,renci-vault1,*D_FD)##msiDataObjWrite(*D_FD,*StdoutStr,*W_LEN)##msiDataObjClose(*D_FD,*Status)##msiFlagInfectedObjs(/renci/home/rods/logs/virus_scan_reports/SCAN_RESULT.*Time.txt, loadingResc, *status)|nop
+#
+acScanLoadingRescAndFlagColl(*collection)||acScanVaultAndFlagInfectedObjs##acFlagInfectedColl(*collection)|nop
+#
+acScanFileAndFlagObject(*ObjPath,*FilePath,*Resource)||msiExecCmd("scanfile.py","'*FilePath'",*Resource,null,null,*CmdOut)##assign(*Status,$status)##msiGetStdoutInExecCmdOut(*CmdOut,*StdoutStr)##ifExec(*Status == 0,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"VIRUS_SCAN_PASSED.*Time",*StdoutStr)##msiAssociateKeyValuePairsToObj(*KVP,*ObjPath,"-d"),nop##nop##nop,ifExec(*Status == 344000,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"VIRUS_SCAN_FAILED.*Time",*StdoutStr)##msiAssociateKeyValuePairsToObj(*KVP,*ObjPath,"-d"),nop##nop##nop,nop,nop),nop)|nop
+#
+#
+## Retention Period ##
+#
+acGetRetentionDateAndFlagObj(*Collection,*Object)||msiAddSelectFieldToGenQuery(META_COLL_ATTR_UNITS,null,*GenQInp)##msiAddConditionToGenQuery(COLL_NAME,"=",*Collection,*GenQInp)##msiAddConditionToGenQuery(META_COLL_ATTR_NAME,"=","PolicyDrivenService:SeriesAttributeMarkerAttribute",*GenQInp)##msiAddConditionToGenQuery(META_COLL_ATTR_VALUE,"=","retentionDays",*GenQInp)##msiExecGenQuery(*GenQInp,*GenQOut)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut,"META_COLL_ATTR_UNITS",*RD),nop)##msiAddKeyVal(*KVP,"RETENTION_DATE",*RD)##msiAssociateKeyValuePairsToObj(*KVP,*Object,"-d")|nop
+#
+#
+## Misc ##
+#
+## Example of main policy trigger rule. This one would go to the PostProc4Put section of core.irb ##
+# acPostProcForPut|$objPath like /renci/home/saademo/archive_root/*|acApplySAAPolicies|nop
+#
+#
+################################### SAA.IRB ###################################

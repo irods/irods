@@ -1,0 +1,3 @@
+get audit trail info by timestamp||msiGetAuditTrailInfoByTimeStamp(01203636827, 01204678305, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+null
+ruleExecOut

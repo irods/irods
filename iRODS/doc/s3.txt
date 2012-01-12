@@ -1,0 +1,42 @@
+The following steps are needed to build and configure Amazon S3 enabled 
+servers.
+
+A. Building a S3 enabled server
+
+1) Download build the libs3 library from http://libs3.ischo.com/index.html
+
+2) Edit the config/config.mk file:
+    . uncomment the line AMAZON_S3=1, e.g.,
+        AMAZON_S3=1
+    . define the S3_LIB_DIR (the s3 libraries directory) and 
+      S3_HDR_DIR (the s3 header directory). e.g.,
+        S3_LIB_DIR=/data1/mwan/s3/libs3-1.4/build/lib
+        S3_HDR_DIR=/data1/mwan/s3/libs3-1.4/build/include
+3) cd to the irods home directory and type in "make" to re-make the server.
+
+B. Configurating a S3 enabled server
+
+1) cd to the server/config directory and use the file s3Auth.template 
+   as the template for the s3Auth file. e.g., 
+      cp s3Auth.template s3Auth
+
+   and edit the s3Auth file according to the instructions given in the file. 
+   The s3Auth file configures the S3 authentication for the driver.
+
+2) create a S3 resource - The S3 driver is implemented as a compound
+   class resource because of the S3 API. As explained in this link: 
+   https://www.irods.org/index.php/resource, the compound resource 
+   implementation requires a cache class resource to be configured in the 
+   same resource group as the compound resource. Data stored in the compound 
+   resource cannot be accessed directly but through the cache resource. 
+   The following gives an example of creating a S3 resource using iadmin:
+      iadmin mkresc s3Resc s3 compound nacho.sdsc.edu /home/irods/Vault 
+   
+3) Add the S3 and cache resources to a resource group. e.g.,
+      iadmain atrg myrescGroup s3Resc
+      iadmain atrg myrescGroup cacheResc
+
+   Note: the cacheResc resource must be on a S3 enabled server and does
+   not have to be on the same host as the s3Resc. This way, multiple
+   cache resources on different hosts can be used as the front-end for
+   the S3 resource.

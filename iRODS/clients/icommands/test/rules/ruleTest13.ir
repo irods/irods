@@ -1,0 +1,3 @@
+myTestRule||msiSendMail(sekar@sdsc.edu,irods test,mail sent by an msi.did you get this)|nop
+*A=1000%*D= (199 * 2) + 200
+*Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut

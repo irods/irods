@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Install Postgres for use by iRODS.
+#
+# Usage is:
+#	./installPostgres [options]
+#
+# This shell script automates the process of getting a
+# version of Postgres and ODBC source and compiling them for
+# use by iRODS.
+#
+# You do not need this script if you are building Postgres yourself
+# or using an existing Postgres installation.
+#
+runfile="installPostgres.pl"
+
+
+
+for dir in "./scripts" "." "../scripts" "../../scripts"; do
+	if [ -d $dir -a -f $dir/runperl -a -f $dir/perl/$runfile ]; then
+		$dir/runperl --script $dir/perl/$runfile $*
+		ExitCode="$?"
+		exit $ExitCode
+	fi
+done
+
+echo "Usage error:"
+echo "    Please run this script from the top-level directory"
+echo "    of the iRODS distribution."
+exit 1

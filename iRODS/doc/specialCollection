@@ -1,0 +1,131 @@
+Special collection is used to implement  mounted collection, mounted 
+structured file and soft linked collection.
+
+metadata:
+
+3 collection metadata are used to define special collections. They are;
+
+COL_COLL_TYPE, COL_COLL_INFO1 and COL_COLL_INFO2.
+
+resolveSpecCollType() in ./core/src/rcMisc.c resolves the collection type
+based on these 3 metadata.
+
+The following definitions in the objInfo.h file define the collection types
+(COL_COLL_TYPE):
+
+#define HAAW_STRUCT_FILE_STR            "haawStructFile"
+#define TAR_STRUCT_FILE_STR             "tarStructFile"
+#define MOUNT_POINT_STR         	"mountPoint"
+#define LINK_POINT_STR         		"linkPoint"
+Normal collection if COL_COLL_TYPE=""
+
+1) COL_COLL_TYPE == MOUNT_POINT_STR ==>mounted file directory
+COL_COLL_INFO1 = the mounted UNIX file directory
+COL_COLL_INFO2 = the resource where this directory is located
+
+2) COL_COLL_TYPE == TAR_STRUCT_FILE_STR ==> mounted tar file
+COL_COLL_INFO1 = The path of the tar file
+COL_COLL_INFO2 = caching info.  
+
+3) COL_COLL_TYPE == LINK_POINT_STR ==>collection softlink
+COL_COLL_INFO1 = The path of an existing collection being linked.
+
+handling these special collections on the client side:
+------------------------------------------------------
+
+Most APIs work well with object paths that are underneath Special Collections.
+For example, if the path /x/y/z is a mounted collection, using the path
+/x/y/z/myFile as the "objpath" for the rcDataObjPath API will work without
+modification. The only problem is when a client tries to list the
+data Objects and sub-collections (equivalent to opendir/readdir of UNIX)
+inside a Special Collection using something like rcGenQuery. Since there is 
+no metadata associated with objects underneath Special Collections, the 
+query will produce no result. 
+
+The following steps should be used to list the data objects and collections
+in a Special Collections:
+
+1) A query should be done on a collection to see if the collection is
+a special collection. The rcGenQuery can be used to check whether a collection
+is a Special Collection. e.g., the queryCollInColl() function in miscUtil.c 
+which queries all sub-collections in a collection using these 3 metadata:
+
+    addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_INFO1, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_INFO2, 1);
+ 
+The drawback of this approach is that the collection of interest could be a
+sub-collection in a Special Collection and it could require several queries
+up the collection path. e,g., if the path /x/y/z is a mounted collection,
+then it would requires 2 queries to determine whether the path /x/y/z/myColl
+is part of a Special Collection.   
+
+The rcObjStat API call is normally used where a client can make the query
+with a single call. The input of this call is a objPath. The output of 
+the call is a rodsObjStat_t struct: 
+
+typedef struct rodsObjStat {
+    rodsLong_t          objSize;        /* file size */
+    objType_t           objType;        /* DATA_OBJ_T or COLL_OBJ_T */
+    uint                 dataMode;
+    char                dataId[NAME_LEN];
+    char                chksum[NAME_LEN];
+    char                ownerName[NAME_LEN];
+    char                ownerZone[NAME_LEN];
+    char                createTime[TIME_LEN];
+    char                modifyTime[TIME_LEN];
+    specColl_t          *specColl;
+} rodsObjStat_t;
+
+The objType can be COLL_OBJ_T (collection), DATA_OBJ_T (data object) or
+UNKNOWN_OBJ_T (object does not exist).  If "specColl" is not NULL, the 
+input objPath is a Special Collection or in a Special Collection. If objType
+is UNKNOWN_OBJ_T and "specColl" is not NULL, the object does not exist
+but the objPath is in a Special Collection. The specColl_t is defined as:
+
+typedef struct SpecColl {
+    specCollClass_t collClass;
+    structFileType_t type;
+    char collection[MAX_NAME_LEN];  /* structured file or mounted collection */
+    char objPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-logical path of structFile
+                                      * MOUNTED_COLL - NA
+                                      */
+    char resource[NAME_LEN];         /* the resource */
+    char phyPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-the phyPath of structFile
+                                      * MOUNTED_COLL-the phyPath od mounted
+                                      * directory
+                                      */
+    char cacheDir[MAX_NAME_LEN];     /* STRUCT_FILE_COLL-the directory where
+                                      * the cache tree is kept
+                                      */
+    int cacheDirty;                  /* Whether the cache has been written */
+    int replNum;
+} specColl_t;
+
+Important items in the specColl_t are:
+
+    collClass - can be STRUCT_FILE_COLL (mounted structured file), 
+    MOUNTED_COLL (mounted collection) or LINKED_COLL (linked collection).
+
+    objPath - If collClass is LINKED_COLL, this is the translated path
+    for the input objPath. The client should use this path instead of 
+    the input "objPath" for further metadata query.
+
+2) If the collClass is MOUNTED_COLL or STRUCT_FILE_COLL,
+the rcQuerySpecColl should be used to query (drill down) the mounted 
+collections. Info on using rcQuerySpecColl:  
+int
+rcQuerySpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+genQueryOut_t **genQueryOut)
+
+dataObjInp->objPath - path of the collection in a special collection
+dataObjInp->openFlags - greater than 0 ==> continueInx 
+
+genQueryOut contains COL_COLL_NAME, COL_DATA_NAME, COL_D_CREATE_TIME,
+COL_D_MODIFY_TIME, COL_DATA_SIZE
+
+if it is a collection, COL_DATA_NAME = ""
+
+3) If the collClass is LINKED_COLL, replace the collection path with 
+the path given in specColl->objPath for further metadata query.
+

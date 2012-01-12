@@ -1,0 +1,101 @@
+ 
+// Commands (ID_* and IDM_*) 
+HID_VIEW_ARRANGE                        0x1007F
+HID_QUERY                               0x18003
+HID_UPLOAD                              0x18005
+HID_DOWNLOAD                            0x18006
+HID_BUTTON32775                         0x18007
+HID_BUTTON32776                         0x18008
+HID_COPY                                0x18009
+HID_BUTTON32778                         0x1800A
+HID_DELETE                              0x1800A
+HID_TREE_HOME                           0x18017
+HID_TREE_UP                             0x18018
+HID_BUTTON32793                         0x18019
+HID_BACK                                0x18019
+HID_BUTTON32794                         0x1801A
+HID_FORWARD                             0x1801A
+HID_STOP                                0x1802D
+HID_REFRESH                             0x18030
+HID_REPLICATE                           0x18037
+HID_SYNCHRONIZE                         0x18038
+HID_ACCESS_CTRL                         0x18039
+HID_NEW_COLLECTION                      0x1803A
+HID_BUTTON32827                         0x1803B
+HID_NEW_CONTAINER                       0x1803C
+HID_DISCONNECT                          0x1803E
+HID_METADATA                            0x18046
+HID_RENAME                              0x1804B
+HID_DEFAULT_RESOURCE                    0x1804D
+HID_COMMENT                             0x1804E
+HID_OPEN                                0x1804F
+HID_OPEN_WIDTH                          0x18050
+HID_CHANGE_PASSWORD                     0x18051
+HID_SELECT_ALL                          0x18052
+HID_INVERT_SELECTION                    0x18053
+HID_VIEW_WINIBAR                        0x18054
+HID_VIEW_QUICKBAR                       0x18055
+HID_VIEW_JUMPVIEWBAR                    0x18056
+HID_OPENTREE                            0x18058
+HID_BUTTON32894                         0x1807E
+HID_NEW_META                            0x18092
+HID_GETPATH                             0x18098
+HID_UPLOADFOLDER                        0x1809A
+HID_FOOFIGHTER                          0x1809F
+HID_UPLOAD_FILES                        0x180A0
+HID_UPLOAD_UPLOADAFOLDER                0x180A1
+HID_UPLOAD_UPLOADFILES                  0x180A2
+HID_VIEW_REFRESH                        0x180A3
+HID_IRODS_USERINFO                      0x180A4
+HID_Menu                                0x180A5
+HID_USER_ACCOUNT                        0x180A6
+HID_USER_INFO                           0x180A7
+HID_EDIT_COPYPATHTOCLIPBOARD            0x180A8
+HID_IRODS_PREFERENCE                    0x180A9
+HID_PREFERENCE_ALWAYSOVERRIDEWHENUPLOADINGFILE	0x180AA
+HID_STATUS_TEXT                         0x1EF14
+HID_STATUS_PBAR                         0x1EF18
+HID_DOWNLOAD_SUCCESSFUL                 0x1EF19
+HID_DOWNLOAD_FAILED                     0x1EF1A
+HID_UPLOAD_SUCCESSFUL                   0x1EF1D
+HID_UPLOAD_FAILED                       0x1EF1E
+HID_EXECUTE_SUCCESSFUL                  0x1EF1F
+HID_EXECUTE_FAILED                      0x1EF20
+ 
+// Prompts (IDP_*) 
+ 
+// Resources (IDR_*) 
+HIDR_ADDRESSBAR_TMPL                    0x20068
+HIDR_MAINFRAME                          0x20080
+HIDR_BLAH                               0x20080
+HIDR_INQUISTYPE                         0x20081
+HIDR_MAINFRAME2                         0x20081
+HIDR_TOOLBAR2                           0x20089
+HIDR_H                                  0x20089
+HIDR_LISTVIEWS                          0x20090
+HIDR_MAINFRAME1                         0x20091
+HIDR_LISTVIEWS1                         0x20092
+HIDR_MFCAVI                             0x20097
+HIDR_AVI1                               0x200B1
+HIDR_AVI2                               0x200B6
+ 
+// Dialogs (IDD_*) 
+HIDD_ABOUTBOX                           0x20064
+HIDD_DIALOGBAR2                         0x20067
+HIDD_DIALOGBAR4                         0x20067
+HIDD_DIALOGBAR                          0x20067
+HIDD_LOGIN                              0x2008D
+HIDD_DIALOGBAR1                         0x2008E
+HIDD_DIALOGBAR3                         0x2008F
+HIDD_QUERY                              0x2009A
+HIDD_GENERIC_DIALOG                     0x200B2
+HIDD_ACCESS_CTRL                        0x200BA
+HIDD_ACCESS_CTRL_USER_ADD               0x200BC
+HIDD_ACCESS_CTRL_GROUP_ADD              0x200BD
+HIDD_PROGRESS_DLG                       0x200C0
+HIDD_PROGRESSBAR                        0x200C1
+HIDD_DIALOG1                            0x200C3
+HIDD_METADATA                           0x200C3
+HIDD_DS                                 0x200CE
+ 
+// Frame Controls (IDW_*) 

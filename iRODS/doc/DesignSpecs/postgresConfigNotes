@@ -1,0 +1,35 @@
+These are some notes on postgresql configuration for authentication.
+
+pgsql/data/pg_hba.conf has line (from install):
+  host all all 132.249.32.192 255.255.255.255 trust
+which is needed for the ODBC connection to work.
+
+There is also a default setting:
+local   all         all                               trust
+which the comments indicate are for Unix domain sockets, and
+this applies to the psql command.
+
+Each time you change pg_hba.conf you need to start and restart the
+postgres server for it to take effect.
+
+To use password authentication on the connection, I tried 
+changing the host line to:
+host all all 132.249.32.192 255.255.255.255 password
+And then set the iRODS rodsDBUser and rodsDBUserPassword values in the
+env file (or env variables) which do seem to be passed in OK.
+
+I then set the password via sql:
+
+For new users, the doc says:
+CREATE USER foo WITH PASSWORD 'secret';
+but since 'schroede' is created with the install, the command is:
+alter user schroede with password 'secret';
+
+However, I haven't actually been able to get this to work,
+so I need to leave the line as:
+host all all 132.249.32.192 255.255.255.255 trust
+The username and password are being passed in OK, but the authentication
+fails.
+
+I wanted to try password (plain text transmission) and then try md5.
+For now at least, and with postgres, using 'trust' is fine.

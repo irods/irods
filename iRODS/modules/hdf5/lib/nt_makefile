@@ -1,0 +1,74 @@
+# Makefile for building Windows lib of iRODS-HDF5.
+# Author: Bing Zhu, Ph.D.
+#         San DIego Supercomputer Center
+#         Oct 7, 2008
+
+# Modifier: Peter Cao
+#           The HDF Group
+#           Nov 6, 2008
+
+# iRODS home directory
+IRODS_HOME = ..\..\..
+
+# Java home directory
+JAVA_HOME = D:\Java\jdk1.5.0
+
+# iRODS client library
+IRODS_LIB = G:\Projects\NCSA_iRODS\h5mod\irods_lib\iRODSLib.lib 
+IRODS_UTIL_LIB = G:\Projects\NCSA_iRODS\h5mod\irods_lib\iRODSNtUtilLib.lib 
+
+#####################################################################
+#      Do not change below this line unless you know what you do    #
+#####################################################################
+
+CC=cl.exe
+CFLAGS = /Od  \
+/I ".\include" \
+/I $(IRODS_HOME)"\nt\include" \
+/I $(IRODS_HOME)"\lib\core\include" \
+/I $(IRODS_HOME)"\lib\md5\include" \
+/I $(IRODS_HOME)"\lib\api\include" \
+/I $(IRODS_HOME)"\server\drivers\include" \
+/I $(IRODS_HOME)"\server\core\include" \
+/I $(IRODS_HOME)"\server\icat\include" \
+/I $(IRODS_HOME)"\server\re\include" \
+/D "_WIN32" /D "windows_platform" /D "_LARGEFILE_SOURCE" /D "_FILE_OFFSET_BITS=64" /D "_LARGEFILE64_SOURCE" \
+/D "_MBCS" \
+/Gm /EHsc /RTC1 /MTd /W3 /nologo /c /Wp64 /ZI /TP /errorReport:prompt
+
+
+srcDir = .\src
+objDir = .\obj
+
+SLICE_OBJS = $(objDir)/h5ClHandler.obj $(objDir)/clH5Dataset.obj \
+  $(objDir)/clH5File.obj $(objDir)/clH5Group.obj $(objDir)/h5Ctor.obj \
+  $(objDir)/h5Dtor.obj
+
+all: $(SLICE_OBJS)
+
+$(objDir)/h5ClHandler.obj:  $(srcDir)/h5ClHandler.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+$(objDir)/clH5Dataset.obj: $(srcDir)/clH5Dataset.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+$(objDir)/clH5File.obj: $(srcDir)/clH5File.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+$(objDir)/clH5Group.obj: $(srcDir)/clH5Group.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+$(objDir)/h5Ctor.obj: $(srcDir)/h5Ctor.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+$(objDir)/h5Dtor.obj: $(srcDir)/h5Dtor.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+clean:
+	@del vc80.idb  vc80.pdb
+	@del obj\clH5Dataset.obj  
+	@del obj\clH5File.obj  
+	@del obj\clH5Group.obj  
+	@del obj\h5ClHandler.obj  
+	@del obj\h5Ctor.obj  
+	@del obj\h5Dtor.obj

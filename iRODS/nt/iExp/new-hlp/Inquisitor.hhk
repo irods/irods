@@ -1,0 +1,48 @@
+<HTML>
+<!-- Sitemap 1.0 -->
+<OBJECT type="text/site properties">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Keyword" value="exit">
+		<param name="Name" value="File Exit command">
+		<param name="Local" value="html/afxc7d4k.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Keyword" value="files">
+		<param name="See Also" value="files">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Keyword" value="managing">
+			<param name="Name" value="File menu commands">
+			<param name="Local" value="html/afxc0c4l.htm">
+			<param name="Name" value="File New command">
+			<param name="Local" value="html/afxc72d3.htm">
+			<param name="Name" value="File Open command">
+			<param name="Local" value="html/afxc8rhq.htm">
+			<param name="Name" value="File Save command">
+			<param name="Local" value="html/afxc9y05.htm">
+			<param name="Name" value="File Close command">
+			<param name="Local" value="html/afxc45r9.htm">
+			<param name="Name" value="File Save As command">
+			<param name="Local" value="html/afxc30hf.htm">
+			<param name="Name" value="File 1, 2, 3, 4 command">
+			<param name="Local" value="html/afxc590x.htm">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Keyword" value="status bar">
+		<param name="Name" value="View Status Bar Command">
+		<param name="Local" value="html/afxc6tv6.htm">
+		<param name="Name" value="status bar">
+		<param name="Local" value="html/afxc72ya.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Keyword" value="toolbar">
+		<param name="Name" value="View Toolbar command">
+		<param name="Local" value="html/afxc8ble.htm">
+		<param name="Name" value="toolbar">
+		<param name="Local" value="html/afxc9jci.htm">
+		</OBJECT>
+</UL></HTML>

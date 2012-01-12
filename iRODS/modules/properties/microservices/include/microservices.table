@@ -1,0 +1,12 @@
+/* Properties module microservices */
+/* Service name			# args		Service function */
+{ "msiPropertiesNew",		1,		(funcPtr) msiPropertiesNew },
+{ "msiPropertiesClear",		1,		(funcPtr) msiPropertiesClear },
+{ "msiPropertiesClone",		2,		(funcPtr) msiPropertiesClone },
+{ "msiPropertiesAdd",		3,		(funcPtr) msiPropertiesAdd },
+{ "msiPropertiesRemove",	2,		(funcPtr) msiPropertiesRemove },
+{ "msiPropertiesGet",		3,		(funcPtr) msiPropertiesGet },
+{ "msiPropertiesSet",		3,		(funcPtr) msiPropertiesSet },
+{ "msiPropertiesExists",	3,		(funcPtr) msiPropertiesExists },
+{ "msiPropertiesToString",	2,		(funcPtr) msiPropertiesToString },
+{ "msiPropertiesFromString",	2,		(funcPtr) msiPropertiesFromString },

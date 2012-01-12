@@ -1,0 +1,14 @@
+#ACTION|CONDITIONS SEPARATED BY &&|CALL_FUNCTIONS SEPARATED BY ##|ROLLBACK_FUNCTIONS SEPARATED BY ##
+#|||
+register_data|$objPath like /home/collections.nvo/2mass/fits-images/*|cut##check_data_type(fits image)##get_resource(nvo-image-resource)##registerData##addACLForDataToUser(2massusers.nvo,write)##extractMetadataForFitsImage|nop##nop##nop##recover_registerData##recover_addACLForDataToUser##recover_extractMetadataForFitsImage
+register_data|$objPath like /home/collections.nvo/2mass/*|get_resource(2mass-other-resource)##registerData##addACLForDataToUser(2massusers.nvo,write)|nop##recover_registerData##recover_addACLForDataToUser
+register_data|$dataType like *image*|get_resource(null)##registerData##extract_metadata_for_image|nop##recover_registerData##nop
+register_data||get_resource(null)##registerData|nop##recover_registerData
+get_resource|$rescName != null|nop|nop
+get_resource|$ARG[0] != null|getInputResourceForData($ARG[0])|nop
+get_resource|$dataSize > 10000000 |get_resource(hpss-sdsc)|nop
+get_resource||getClosestResourceToClient|nop
+get_resource||getDefaultResourceForData|nop
+check_data_type|$ARG[0] == $dataType|nop|nop
+extract_metadata_for_image|$dataType == fits image|extractMetadataForFitsImage|recover_extractMetadataForFitsImage
+extract_metadata_for_image|$dataType == dicom image|extractMetadataForDicomData|recover_extractMetadataForDicomData

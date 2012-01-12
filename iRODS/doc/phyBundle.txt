@@ -1,0 +1,89 @@
+Usage : iphybun [-h] -R resource collection ... 
+iphybun allows system admin to physically bundle files in a collection into
+a number of tar files to make it more efficient to store these files on tape.
+The tar files are placed into the /myZone/bundle/.... collection with file
+names - collection.aRandomNumber. A new tar file will be created whenever
+the number of subfiles exceeds 512 or the total size of the subfiles
+exceeds 4 GBytes. A replica is registered for each bundled sub-files with
+a fictitious resource - 'bundleResc' and a physical file path pointing to
+the logical path of the tar bundle file. Whenever this copy of the subfile
+is accessed, the tar file is untarred and stages to the 'cache' resource
+Each extracted file is registered as a replica of its corresponding subfiles.
+ 
+A tar bundle file can be replicated or trimmed independently from its
+corresponding subfiles. But it cannot be renamed or moved to trash.
+It can be removed with the 'irm -f' command. But this  will trigger the 
+staging of the subfiles before the tar file is removed.
+The -R flag specifies the resource of the bundle tar file. This input is
+mandatory. The input resource must be a 'cache' type resource or a
+resource group that contains at least one 'cache' type resource.Options are:
+ -R  resource - The resource where the bundle file is located
+ -h  this help
+
+Implementation:
+
+1) add a resource class bundle
+2) mqke a resource bundleResc - unix type, bundle class, localhost, /tmp vault
+3) add a data type "tar bundle"
+rcPhyBundleColl - input collection, resource, optional input - bundle size,
+dataType = "tar bundle"
+default max num files - MAX_SUB_FILE_CNT - 512, MAX_BUNDLE_SIZE = 4 gbytes
+
+bundle file name = /myZone/bundle/collection.random
+mkdir phy dir in /vault/.../collection.random
+link phy files to /vault/.../collection.random/objID  
+tar the collection.random to collection.random
+rm phy file and register as bundleResc with phypath = /myZone/bundle/collection.random
+unlink collection and content
+chlRegReplica - src - srcDataObjInfo->objPath - only used for checking perm
+srcDataObjInfo->dataId,srcDataObjInfo->replNum,dstDataObjInfo->rescName,
+dstDataObjInfo->rescGroupName,dstDataObjInfo->filePath
+IRODS_ADMIN_KW for condInput
+
+typedef struct BunReplCache {
+    rodsLong_t  dataId;
+    char objPath[MAX_NAME_LEN];		/* optional for IRODS_ADMIN_KW */ 
+    int srcReplNum;
+    struct BunReplCache *next;
+} bunReplCache_t;
+
+typedef struct CurSubFileCond {
+    char collName[MAX_NAME_LEN];
+    char dataName[MAX_NAME_LEN];
+    rodsLong_t dataId;
+    char phyBunDir[MAX_NAME_LEN];
+    char subPhyPath[MAX_NAME_LEN];
+    char cachePhyPath[MAX_NAME_LEN];
+    int cacheReplNum;
+    rodsLong_t subFileSize;
+    int bundled;
+} curSubFileCond_t;
+
+typedef struct BunReplCacheHeader {
+    int numSubFiles;
+    rodsLong_t subFileSize;
+    bunReplCache_t *bunReplCacheHead;
+} bunReplCacheHeader_t;
+
+use 
+int
+tar_extract_glob(TAR *t, char *globname, char *prefix)
+toextract invividual file- prefix is the dir of output file
+
+Need to create resc_class token "bundle"
+
+iadmin at resc_class bundle
+
+need to create this resource:
+
+resource name: bundleResc
+resc id: 532221
+zone: tempZone
+type: unix file system
+class: bundle
+location: localhost
+vault: /tmp
+
+admin mkresc bundleResc "unix file system" bundle localhost /tmp
+
+

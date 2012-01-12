@@ -1,0 +1,3 @@
+myTest||admChangeCoreIRB(*A)|nop
+*A=core.irb.orig
+*A

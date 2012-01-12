@@ -1,0 +1,8 @@
+Name:			URL
+Brief:			Microservices for URL based file transfer.
+Description:	Set of microservices for transferring data using various protocols, starting with ftp and http. Requires libcurl (http://curl.haxx.se/libcurl/). See README.txt for cURL licence and copyright info.
+Dependencies:
+Enabled:		no
+Creator:		Antoine de Torcy; University of California, San Diego
+Created:		09-24-2008
+License:		BSD

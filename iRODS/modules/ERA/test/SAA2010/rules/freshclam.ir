@@ -1,0 +1,3 @@
+freshclam||msiExecCmd("freshclam",null,*Resource,null,null,*CmdOut)##msiGetStdoutInExecCmdOut(*CmdOut,*StdoutStr)##writeLine(stdout,*StdoutStr)|nop
+*Resource=yellow.ils.unc.edu
+ruleExecOut

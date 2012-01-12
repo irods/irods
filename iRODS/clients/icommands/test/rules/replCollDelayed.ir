@@ -1,0 +1,3 @@
+myTestRule||delayExec(<PLUSET>1m</PLUSET>,msiReplColl(*desc_coll,*desc_resc,backupMode,*outbuf),nop)|nop
+*desc_coll=/tempZone/home/rods/repl_test%*desc_resc=demoResc2
+ruleExecOut

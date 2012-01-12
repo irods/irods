@@ -1,0 +1,6 @@
+acRegisterData|$dataType like *image*|msiRegisterData##acExtractMetadata|recover_msiRegisterData##nop
+acRegisterData|$objPath like /home/raja@sdsc/myImportantFiles/* && $dataSize > 10000000 |msiRegisterData##msiQueue(msiReplicateData(hpss-sdsc))|recover_msiRegisterData##recover_msiReplicateData
+acRegisterData|$objPath like /home/raja@sdsc/myImportantFiles/*|msiRegisterData##msiReplicateData(unix-sdsc)|recover_msiRegisterData##recover_msiReplicateData
+acSetResourceList|$dataSize > 10000000 |msiSetResource(hpss-sdsc)|nop
+acExtractMetadata|$dataType == fits image|msiExtractMetadataForFitsImage|recover_msiExtractMetadataForFitsImage
+acExtractMetadata|$dataType == dicom image|msiExtractMetadataForDicomData|recover_msiExtractMetadataForDicomData

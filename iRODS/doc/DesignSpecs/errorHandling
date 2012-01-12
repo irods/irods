@@ -1,0 +1,91 @@
+Since error handling and reporting is critical in a complex and
+distributed system such as iRODS, we are designing multiple error
+handling mechanisms:
+
+1) error codes.  Much like how we did with SRB, each API call and many
+of the other C functions will return error codes as the functional
+value when something fails.  There will be a global set of error
+codes, which we will add to as we go.  There will be an i-command,
+somewhat like Serror, to display more detail about each error.
+
+2) An error stack.  Each of the client/server API calls will also have
+a set of error values and messages that will be returned to the
+caller.  This will provide additional information up the chain of
+servers and clients, each server adding an explaination of what went
+wrong.  The server that gets the first error will place an error code
+at the bottom of the stack, and others may place additional
+descriptions for their particular context.  We have some structures in
+place to handle these, and a little of this has been implemented.  The
+RCAT routine, rhlRegUser places error messages on the stack to provide
+more specific information on the error and iadmin displays them.
+
+3) A logging system.  The iRODS code will call rodsLog for various
+errors and messages, as needed.  The user and/or admin will control
+the display of this information.  The normal case, when nothing fails,
+is for nothing to be displayed.
+
+The rest of this document describes this logging system.
+
+The rodsLog routine has #defines that should be used for the first
+parameter.  When you write iRODS code, you should add many error
+checks and call rodsLog and return an error code if something is
+wrong.  When you call rodsLog, pick one of the #define levels based on
+what is most appropriate for the situation.
+
+These are arranged by severity level.  Users will see error messages
+at the tty or in the server log file and will be able to set the level
+of messages to see or record.  Normally, LOG_ERROR and above will be
+seen by the user (from client-side code), and LOG_SYS_WARNING and
+above will be noticed by the administrator.  If users ask for more
+verbose output, the lower levels, the NOTICEs and DEBUG messages will
+also be displayed or recorded.
+
+Many errors are caused by user input and may result in FATAL
+operations.  For example, a bad file name will fail to open.  When
+these are logged to the server log file, these will not use the string
+FATAL or WARNING since there is no system problem (and we don't want
+to alarm the admin).  So it will be logged with something more benign.
+
+The system-level errors, LOG_SYS_FATAL and LOG_SYS_WARNING, *will*
+include the WARNING and FATAL strings in the log to alert the admin.
+
+The following are the names that will be available (defined in
+rodsLog.h) and what they mean:
+
+#define LOG_SYS_FATAL 8
+
+  This means that the system (not just one server, client, or user)
+  cannot continue.  An example is when the server is unable to talk to
+  the database.
+
+#define LOG_SYS_WARNING 7
+
+  This means a system-level problem occurred that is not fatal to the
+  whole system (it can continue to run), but does indicate an internal
+  inconsistency of some kind.  An example is a file with a physical
+  size that is different than that recorded in the database.
+
+#define LOG_ERROR  6
+
+  This means that the function cannot complete what it was asked to
+  do, probably because of bad input from the user (an invalid host
+  name, for example).
+
+#define LOG_NOTICE  5
+
+  This is informational only, part of the normal operation but will
+  often be of interest.
+
+#define LOG_DEBUG   4
+#define LOG_DEBUG3  3
+#define LOG_DEBUG2  2
+#define LOG_DEBUG1  1
+
+  The DEBUG messages are for the software engineer to analyze and
+  debug operation.  These are typically added during development and
+  debug of the code, but can be left in place for possible future
+  use.  In many cases, one would be able start seeing these messages
+  via a command-line argument to adjust the rodsLog verbosity level.
+
+For logging the SQL strings, we may want to define another LOG_ value
+specific for those, since they are so important and commonly needed.

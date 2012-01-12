@@ -1,0 +1,76 @@
+# Makefile for building Windows JNI interface for iRODS-HDF5 integration.
+# Author: Bing Zhu, Ph.D.
+#         San DIego Supercomputer Center
+#         Oct 7, 2008
+
+# Modifier: Peter Cao
+#           The HDF Group
+#           Nov 6, 2008
+
+# iRODS home directory
+IRODS_HOME = ..\..\..
+
+# Java home directory
+JAVA_HOME = D:\Java\jdk1.5.0
+
+# iRODS client library
+IRODS_LIB = G:\Projects\NCSA_iRODS\h5mod\irods_lib\iRODSLib.lib 
+IRODS_UTIL_LIB = G:\Projects\NCSA_iRODS\h5mod\irods_lib\iRODSNtUtilLib.lib 
+
+#####################################################################
+#      Do not change below this line unless you know what you do    #
+#####################################################################
+
+
+CC=cl.exe
+LINKER = link.exe
+
+CFLAGS = \
+/I "..\lib\include" \
+/I $(IRODS_HOME)"\nt\include" \
+/I $(IRODS_HOME)"\lib\core\include" \
+/I $(IRODS_HOME)"\lib\md5\include" \
+/I $(IRODS_HOME)"\lib\api\include" \
+/I $(IRODS_HOME)"\server\drivers\include" \
+/I $(IRODS_HOME)"\server\core\include" \
+/I $(IRODS_HOME)"\server\icat\include" \
+/I $(IRODS_HOME)"\server\re\include" \
+/I $(JAVA_HOME)"\include" /I $(JAVA_HOME)"\include\win32" \
+/D "_WIN32" /D "windows_platform" /D "_LARGEFILE_SOURCE"  \
+/D "_MBCS" /U "__cplusplus" \
+/D "_CRT_SECURE_NO_WARNINGS" \
+/D "_WIN32" /D "windows_platform"  \
+/U "__cplusplus" \
+/nologo /W3 /EHsc /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FD /c /TP \
+
+LINK_FLAG = /nologo /dll /incremental:no /machine:i386
+
+
+srcDir = .
+objDir = .
+binDir = .
+
+hdf5_libDir = ..\lib
+hd5f_OBJS = $(hdf5_libDir)\obj\clH5Dataset.obj $(hdf5_libDir)\obj\clH5File.obj \
+   $(hdf5_libDir)\obj\clH5Group.obj $(hdf5_libDir)\obj\h5ClHandler.obj \
+   $(hdf5_libDir)\obj\h5Ctor.obj $(hdf5_libDir)\obj\h5Dtor.obj
+
+MSDEV_LIBS= ws2_32.lib advapi32.lib winmm.lib \
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib \
+oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:"libc.lib" /NODEFAULTLIB:"libcmt.lib"
+
+all: $(objDir)\jh5srb.obj
+	$(LINKER) /OUT:".\jh5srb.dll" $(LINK_FLAG) $(objDir)\jh5srb.obj $(hd5f_OBJS) $(IRODS_LIB) $(IRODS_UTIL_LIB) $(MSDEV_LIBS)
+
+$(objDir)\jh5srb.obj: $(srcDir)\jh5srb.c
+	$(CC) $(CFLAGS) /Fo$@ $?
+
+clean:
+	@del jh5srb.dll
+	@del jh5srb.lib
+	@del jh5srb.obj
+	@del vc80.idb
+	@del vc80.pdb
+	@del jh5srb.ilk
+	@del jh5srb.lib  jh5srb.pdb
+	@del jh5srb.exp

@@ -1,0 +1,34 @@
+Guidelines for implementing  header files for rods.
+
+When writing a module xyz.c, there should be a header file xyz.h
+associated with it.
+
+The xyz.h should contains all decorations assoicated with xyz.c including:
+
+	1) #define
+	2) typedef, enum, struct ... declorations
+	3) macros
+	4) prototypes of functions used in xyz.c
+
+and probably some more.
+
+That is, xyz.h will have everything that another modules need when
+they are calling routines in xyz.
+
+xyz.h will include all of the other include files that it depends on.
+Each .h file will have #ifdefs and #defines so that if it is included
+more than once, it will only be inserted once.  If xyz.c needs some
+include files that outside callers do not (i.e. they need not be in
+xyz.h), then those includes can go in the xyz.c source file.
+
+
+All global variables for the server should be declared in:
+	server/include/rsGlobal.h 
+	server/include/rsGlobalExtern.h
+
+and all global variables for the clientLib should be declared in:
+        clientLib/include/rcGlobal.h 
+        clientLib/include/rcGlobalExtern.h
+ 
+
+ 

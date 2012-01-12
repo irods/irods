@@ -1,0 +1,3 @@
+recursiveCollCopy||print_message(recursive copy of an iRODS collection)##msiRecursiveCollCopy(*DestColl,*SourceColl,*Status)|nop
+*SourceColl=/tempZone/home/testuser%*DestColl=/tempZone/home/antoine/copy/testuser
+ruleExecOut

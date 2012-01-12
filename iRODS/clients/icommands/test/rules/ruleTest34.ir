@@ -1,0 +1,4 @@
+myTestRule||writeXMsg(*A,*B,*C)##readXMsg(*A,,*D,*E,*F,*G,*H,*J)|nop
+*A=$1%*B=$Test%*C=$Message
+*A%*B%*C%*D%*E%*F%*G%*H%*J
+

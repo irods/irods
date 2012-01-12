@@ -1,0 +1,6 @@
+# This is the auth file for hpss login. This first line should be
+# the HPSS user ID and the next line should be the keytab file path
+# if the UNIX keytab or Kerberos keytab is used, or passwd if the 
+# HPSS_UNIX_PASSWD_AUTH switch is on.
+myuser
+/users/u4/myuser/hpssKeytab/ktb_myuser

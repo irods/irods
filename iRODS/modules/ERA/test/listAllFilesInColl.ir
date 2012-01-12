@@ -1,0 +1,3 @@
+myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiGetValByKey(*B, "COLL_NAME",*DataObj)##writeString(stdout,*DataObj)##writeString(stdout,"/")##msiGetValByKey(*B, "DATA_NAME",*DataObj)##writeString(stdout,*DataObj)##writeLine(stdout,""), nop)|nop##nop
+*Action=list%*Condition= COLL_NAME like '/tempZone/home/%%'
+*Action%*Condition%ruleExecOut

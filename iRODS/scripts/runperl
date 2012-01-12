@@ -1,0 +1,335 @@
+#!/bin/sh
+#
+# Run a Perl script for iRODS.
+#
+# Usage is:
+#	./runPerlScript [options]
+#
+# This shell script starts a Perl script set on the command-line.
+# It looks for Perl on the user's path and in standard locations
+# on UNIX and Windows Cygwin, then invokes Perl with the given
+# arguments.
+#
+# Options are:
+#	--script script		the name of the Perl script to run
+#	--dir directory		the name of the directory to run from
+#
+# All other options are passed to the Perl script unchanged.
+#
+
+
+
+
+
+#
+# @brief	Print error messages in red.
+#
+# The given text is printed in red using standard xterm/vt100
+# escape codes to set the text color.
+#
+# @param	text
+#	the text to print
+#
+printError( )
+{
+	echo "[31m$1[0m"
+}
+
+
+
+
+
+#
+# @brief	Find the path to Perl on this system.
+#
+# The system is searched for the Perl executable with the highest
+# version number.  When found, PERL_PATH is set.  Otherwise
+# PERL_PATH is the empty string.
+#
+PERLPATH=""
+
+findPerl( )
+{
+	# On many systems there is just one Perl installed.  But
+	# sometimes a system may have one version that came with
+	# the OS in /usr/bin, and a more recent version installed
+	# by the sysadmin in /usr/local.  We'd prefer to use the
+	# more recent version.
+
+	# Below we build a list of all Perls found in standard
+	# locations.  Each one is written to a temporary results
+	# file, one per row.  Each row starts with the version
+	# number reported by that Perl, followed by the path to it.
+
+	# When we're done searching, if there is only one entry
+	# in the file, we use it.  Otherwise the file is sorted
+	# numerically and we use the entry with the highest
+	# version number.
+	RESULTSFILE="/tmp/irods_$$.txt"
+
+	# While "perl -v" reports version information for the program,
+	# this is hard to parse.  Instead, we use the following
+	# one line program:
+	PERLPROG="'print $]'"
+
+	# Check standard top-level directories, such as /, /opt,
+	# /sw, and /cygwin.
+	#
+	# Then look in all the standard places.
+	#	UNIX standard directories:
+	#		/bin /sbin /usr/bin /usr/sbin
+	#		/usr/local /usr/local/bin
+	#		/usr/share /usr/share/bin
+	#	Solaris added directories:
+	#		/usr/ucb
+	#	MacPorts directories:
+	#		/opt/bin /opt/sbin /opt/usr/bin /opt/usr/sbin
+	#		/opt/usr/local/bin /opt/usr/share/bin
+	#	Fink directories:
+	#		/sw/bin /sw/sbin /sw/usr/bin /sw/usr/sbin /sw/usr/local/bin
+	#		/sw/usr/share/bin
+	#	Cygwin directories:
+	#		/cygwin/bin /cygwin/sbin /cygwin/usr/bin /cygwin/usr/sbin
+	#		/cygwin/usr/local/bin /cygwin/usr/share/bin
+	foundany="0"
+
+#
+# First, we include the user's prefered perl, in case it's the best.
+# This is needed at NMI B&T for example, where the path is adjusted to
+# select preferred versions of commands.
+#
+	foundWhich=`which perl`
+	if [ $? -eq 0 ]; then
+		PERL_PATH="$foundWhich"
+		# It's a file.  Runnable?
+		$PERL_PATH -v > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			# Record working perl
+			PERL_VERSION=`echo 'print $]' | $PERL_PATH`
+			echo "$PERL_VERSION	$PERL_PATH" >> $RESULTSFILE
+			foundany="1"
+		fi
+	fi
+#
+# Now we check other locations for more recent Perl's.
+#
+	for prefix in "/" "/opt" "/sw" "/cygwin"; do
+
+		if [ ! -d $prefix ]; then
+			continue	# No such prefix directory
+		fi
+
+		# Look in standard UNIX directories
+		for dir in "bin" "sbin" "usr/bin" "usr/sbin" "usr/udb" \
+			"usr/local" "usr/local/bin" "usr/share" "usr/share/bin" ; do
+
+			if [ ! -d $prefix/$dir ]; then
+				continue	# No such directory
+			fi
+
+			# Is $prefix/$dir/perl there?
+			PERL_PATH="$prefix/$dir/perl"
+			if [ -f $PERL_PATH ]; then
+				# It's a file.  Runnable?
+				$PERL_PATH -v > /dev/null 2>&1
+				if [ $? -eq 0 ]; then
+					# Record working perl
+					PERL_VERSION=`echo 'print $]' | $PERL_PATH`
+					echo "$PERL_VERSION	$PERL_PATH" >> $RESULTSFILE
+					foundany="1"
+				fi
+			fi
+
+			# Get all other perls ending with a number.  Often
+			# these are separate older versions of Perl, or
+			# directories for different Perl versions.
+			foundLocal=`ls -d $prefix/$dir/perl[0-9]* 2> /dev/null`
+			if [ $? -ne 0 ]; then
+				continue	# No perl in directory
+			fi
+
+			for found in $foundLocal; do
+				# Is it a file?
+				PERL_PATH="$found"
+				if [ -f $PERL_PATH ]; then
+					# It's a file.  Runnable?
+					$PERL_PATH -v > /dev/null 2>&1
+					if [ $? -eq 0 ]; then
+						# Record working perl
+						PERL_VERSION=`echo 'print $]' | $PERL_PATH`
+						echo "$PERL_VERSION	$PERL_PATH" >> $RESULTSFILE
+						foundany="1"
+					fi
+					continue
+				fi
+
+				# Is it a directory?
+				if [ -d $PERL_PATH ]; then
+					# It's a directory.  Contains 'perl'?
+					PERL_PATH="$found/perl"
+					if [ -f $PERL_PATH ]; then
+						# It's a file.  Runnable?
+						$PERL_PATH -v > /dev/null 2>&1
+						if [ $? -eq 0 ]; then
+							# Record working perl
+							PERL_VERSION=`echo 'print $]' | $PERL_PATH`
+							echo "$PERL_VERSION	$PERL_PATH" >> $RESULTSFILE
+							foundany="1"
+						fi
+					fi
+
+					# Contains 'bin/perl'?
+					PERL_PATH="$found/bin/perl"
+					if [ -f $PERL_PATH ]; then
+						# It's a file.  Runnable?
+						$PERL_PATH -v > /dev/null 2>&1
+						if [ $? -eq 0 ]; then
+							# Record working perl
+							PERL_VERSION=`echo 'print $]' | $PERL_PATH`
+							echo "$PERL_VERSION	$PERL_PATH" >> $RESULTSFILE
+							foundany="1"
+						fi
+					fi
+					continue
+				fi
+			done
+
+		done
+	done
+
+	# Were any found?
+	if [ "$foundany" -ne "0" ]; then
+		# Sort the results numerically.
+		SORTEDRESULTSFILE="/tmp/irods_$$_2.txt"
+		sort -rn $RESULTSFILE > $SORTEDRESULTSFILE
+		rm -f $RESULTSFILE
+
+		# Take the first one.  Use this loop approach
+		# to get the 2nd word in the file instead of
+		# using awk so that we don't require that awk
+		# be installed on this system.
+		gotfirst="0"
+		for word in `cat $SORTEDRESULTSFILE`; do
+			if [ "$gotfirst" -eq "0" ]; then
+				gotfirst="1"
+				continue
+			fi
+			PERL_PATH="$word"
+			rm -f $SORTEDRESULTSFILE
+			return
+		done
+		PERL_PATH=""
+		rm -f $SORTEDRESULTSFILE
+		return
+	fi
+	rm -f $RESULTSFILE
+
+	# Nope.  None of the standard directories had it.
+	# Perhaps the user has it on their path?
+
+	# Is Perl on the user's path?
+	perl -v > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		# Yup.  Use it.
+		PERL_PATH="perl"
+		return
+	fi
+
+	# Can 'which' find it?  Technically, this just searches the user's
+	# path, so it should be no better than the above.  However, it also
+	# looks at aliases and resets the path to that found in the user's
+	# .cshrc, so it can un-do changes caused to the user's current
+	# environment.  It's worth a try.
+	foundWhich=`which perl`
+	if [ $? -eq 0 ]; then
+		# Yup.  Use it.
+		PERL_PATH="$foundWhich"
+		return
+	fi
+
+	# Nothing.
+	PERL_PATH=""
+	return
+}
+
+
+
+# Parse the command-line and separate out arguments for
+# this script, and those for the Perl script to be invoked.
+PERL_SCRIPT=""
+PERL_RUN_DIRECTORY="."
+PERL_SCRIPT_ARGUMENTS=""
+THIS_SCRIPT="$0"
+THIS_COMMAND_LINE="$*"
+
+while [ $# -ne 0 ]; do
+	case $1 in
+	--script)	shift
+			PERL_SCRIPT=$1
+			;;
+	--dir)		shift
+			PERL_RUN_DIRECTORY=$1
+			;;
+	*)
+			PERL_SCRIPT_ARGUMENTS="$PERL_SCRIPT_ARGUMENTS $1"
+			;;
+	esac
+	shift
+done
+
+
+
+
+
+# Make sure the script and directory exist
+if [ ! -d "$PERL_RUN_DIRECTORY" ]; then
+	printError "Programmer error:"
+	printError "    The '$PERL_RUN_DIRECTORY' directory does not exist."
+	printError " "
+	printError "    The '$THIS_SCRIPT' script was probably invoked with a bad"
+	printError "    --dir argument."
+	printError "        Command line:  $THIS_SCRIPT $THIS_COMMAND_LINE"
+	printError " "
+	printError "Abort."
+	exit 1
+fi
+if [ ! -f "$PERL_SCRIPT" ]; then
+	if [ ! -f "$PERL_RUN_DIRECTORY/$PERL_SCRIPT" ]; then
+		printError "Programmer error:"
+		printError "    The '$PERL_SCRIPT' Perl script does not exist."
+		printError " "
+		printError "    The '$THIS_SCRIPT' script was probably invoked with a bad"
+		printError "    --script argument."
+		printError "        Command line:  $THIS_SCRIPT $THIS_COMMAND_LINE"
+		printError " "
+		printError "Abort."
+		exit 1
+	fi
+fi
+
+
+
+
+
+# Find perl
+findPerl
+if [ "$PERL_PATH" = "" ]; then
+	printError "Configuration problem:" 
+	printError "    This script requires Perl, but Perl cannot be found on"
+	printError "    your system.  You can get the latest version of Perl from:"
+	printError "        http://perl.org/"
+	printError " "
+	printError "Abort.  Please re-run this script after installing Perl."
+	exit 1
+fi
+
+
+
+
+
+
+# Run the script
+cd $PERL_RUN_DIRECTORY
+$PERL_PATH $PERL_SCRIPT $PERL_SCRIPT_ARGUMENTS
+ExitCode="$?"
+exit $ExitCode

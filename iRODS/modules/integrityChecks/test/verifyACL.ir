@@ -1,0 +1,3 @@
+msiVerifyACL||msiVerifyACL(*Collection,*User,*Auth,*NotFlag,*Buf,*Status)##writeBytesBuf(stdout,*Buf)##writeLine(stdout,"")|nop
+*Collection=/homeZone/home/rods%*User=rods%*Auth=own%*NotFlag=0
+ruleExecOut%*STATUS

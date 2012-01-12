@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# Set up and install iRODS.
+#
+# Usage is:
+#	./irodssetup
+#
+# This script is for upgrading an existing iRODS instance to a new
+# one, for example from iRODS 1.0 to 1.1.  It uses the same
+# irodssetup.pl script (and subscripts) as irodssetup but with
+# an argument to identify it as upgrade.  irodssetup.pl then
+# prompts differently and skips options that one would only 
+# want to do for a new installation.
+#
+if [ ! -f ./scripts/runperl ]; then
+	echo "Usage error:"
+	echo "    Please run this script from the top-level directory"
+	echo "    of the iRODS distribution."
+	exit 1
+fi
+./scripts/runperl --script scripts/perl/irodssetup.pl --upgrade $*
+ExitCode="$?"
+exit $ExitCode

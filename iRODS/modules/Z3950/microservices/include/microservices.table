@@ -1,0 +1,2 @@
+/* Service name       # args    Service function */
+{ "msiz3950Submit",   4,        (funcPtr) msiz3950Submit },

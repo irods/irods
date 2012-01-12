@@ -1,0 +1,3 @@
+Validate XML Doc against XSD schema in iRODS||msiXmlDocSchemaValidate(*xmlObj, *xsdObj, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")##writeBytesBuf(stdout,*status)|nop
+*xmlObj=/tempZone/home/antoine/XML_tests/example.xml%*xsdObj=/tempZone/home/antoine/XML_tests/example.xsd
+ruleExecOut

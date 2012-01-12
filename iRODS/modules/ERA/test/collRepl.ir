@@ -1,0 +1,3 @@
+Replicate an iRODS collection||msiCollRepl(*collPath, *Resc, *status)|nop
+*collPath=/tempZone/home/antoine/XML_tests%*Resc=phoResc
+ruleExecOut

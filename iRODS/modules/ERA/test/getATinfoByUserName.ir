@@ -1,0 +1,3 @@
+get audit trail info by username||msiMakeQuery(USER_ID,*Condition,*Query)##msiExecStrCondQuery(*Query, *Users)##writeLine(stdout,'<?xml version="1.0" encoding="ISO-8859-1"?>')##writeLine(stdout,"<audit_trail>")##forEachExec(*Users,msiGetValByKey(*Users, "USER_ID",*Uid)##msiGetAuditTrailInfoByUserID(*Uid, *BUF, *Status)##writeBytesBuf(stdout,*BUF), nop)##writeLine(stdout,"</audit_trail>")|nop
+*Condition= USER_NAME = 'user29' 
+ruleExecOut

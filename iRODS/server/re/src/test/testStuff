@@ -1,0 +1,293 @@
+use raja.core instead of core
+
+
+reTest -D /home/sekar@sdsc/foo.txt -R samfs -T text -H andal.sdsc.edu -S 100 -U sekar@sdsc "raja.core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:3 for Action:get_resource
++Executing Rule Number:3 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/sekar@sdsc/foo.txt
+     rescName= samfs
+     dataType= text
+     dataSize= 100
+----------------------------------
+reTest -D /home/sekar@sdsc/foo.txt -R samfs -T text -H andal.sdsc.edu -S 100 -U sekar@sdsc -n mwan@sdsc -z tzone -t sysadmin -p irods@sdsc -q pzone  core create_user
++Testing Rule Number:6 for Action:create_user
++Executing Rule Number:6 for Action:create_user
+...Performing Function:msiCreateUser
+     userName = mwan@sdsc
+     rodsZone= tzone
+     userType= sysadmin
+...Performing Action:create_default_collections
++Testing Rule Number:7 for Action:create_default_collections
++Executing Rule Number:7 for Action:create_default_collections
+...Performing Action:create_user_home_collections
++Testing Rule Number:8 for Action:create_user_home_collections
++Executing Rule Number:8 for Action:create_user_home_collections
+...Performing Action:create_coll_by_admin(/home,mwan@sdsc)
++Testing Rule Number:10 for Action:create_coll_by_admin
++Executing Rule Number:10 for Action:create_coll_by_admin
+...Performing Function:msiCreateCollByAdmin(/home,mwan@sdsc)
+  NewCollection =/home/mwan@sdsc
+...Performing Action:create_coll_by_admin(/trash/home,mwan@sdsc)
++Testing Rule Number:10 for Action:create_coll_by_admin
++Executing Rule Number:10 for Action:create_coll_by_admin
+...Performing Function:msiCreateCollByAdmin(/trash/home,mwan@sdsc)
+  NewCollection =/trash/home/mwan@sdsc
+...Performing Action:create_user_zone_collections
++Testing Rule Number:9 for Action:create_user_zone_collections
++Executing Rule Number:9 for Action:create_user_zone_collections
+...Performing Action:create_coll_by_admin(/pzone/home,mwan@sdsc)
++Testing Rule Number:10 for Action:create_coll_by_admin
++Executing Rule Number:10 for Action:create_coll_by_admin
+...Performing Function:msiCreateCollByAdmin(/pzone/home,mwan@sdsc)
+  NewCollection =/pzone/home/mwan@sdsc
+...Performing Action:create_coll_by_admin(/trash/pzone/home,mwan@sdsc)
++Testing Rule Number:10 for Action:create_coll_by_admin
++Executing Rule Number:10 for Action:create_coll_by_admin
+...Performing Function:msiCreateCollByAdmin(/trash/pzone/home,mwan@sdsc)
+  NewCollection =/trash/pzone/home/mwan@sdsc
+----------------------------------
+reTest -D /home/sekar@sdsc/foo.txt -R samfs -T text -H andal.sdsc.edu -S 999999999 -U sekar@sdsc "raja,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Testing Rule Number:6 for Action:register_data
++Executing Rule Number:6 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Executing Rule Number:2 for Action:get_resource
+...Performing Action:set_resource(hpss-sdsc)
++Testing Rule Number:11 for Action:set_resource
++Executing Rule Number:11 for Action:set_resource
+...Performing Function:msiSetResource(hpss-sdsc)
+...Performing Function:msiRegisterData
+     objPath = /home/sekar@sdsc/foo.txt
+     rescName= hpss-sdsc
+     dataType= text
+     dataSize= 999999999
+----------------------------------
+reTest -D /home/sekar@sdsc/foo.txt -R samfs -T "fits image"  -H andal.sdsc.edu -S 999999999 -U sekar@sdsc "raja,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Executing Rule Number:2 for Action:get_resource
+...Performing Action:set_resource(hpss-sdsc)
++Testing Rule Number:11 for Action:set_resource
++Executing Rule Number:11 for Action:set_resource
+...Performing Function:msiSetResource(hpss-sdsc)
+...Performing Function:msiRegisterData
+     objPath = /home/sekar@sdsc/foo.txt
+     rescName= hpss-sdsc
+     dataType= fits image
+     dataSize= 999999999
+...Performing Action:extract_metadata_for_image
++Testing Rule Number:4 for Action:extract_metadata_for_image
++Executing Rule Number:4 for Action:extract_metadata_for_image
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/sekar@sdsc/foo.txt -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "raja,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Testing Rule Number:9 for Action:get_resource
++Executing Rule Number:9 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/sekar@sdsc/foo.txt
+     rescName= samfs
+     dataType= fits image
+     dataSize= 99999
+...Performing Action:extract_metadata_for_image
++Testing Rule Number:4 for Action:extract_metadata_for_image
++Executing Rule Number:4 for Action:extract_metadata_for_image
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/sekar@sdsc/myProtectedFiles/bar.txt -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "raja,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Testing Rule Number:9 for Action:get_resource
++Executing Rule Number:9 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/sekar@sdsc/myProtectedFiles/bar.txt
+     rescName= samfs
+     dataType= fits image
+     dataSize= 99999
+...Performing Action:extract_metadata_for_image
++Testing Rule Number:4 for Action:extract_metadata_for_image
++Executing Rule Number:4 for Action:extract_metadata_for_image
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/raja@sdsc/myProtectedFiles/bar.txt -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "raja,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Testing Rule Number:9 for Action:get_resource
++Executing Rule Number:9 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/raja@sdsc/myProtectedFiles/bar.txt
+     rescName= samfs
+     dataType= fits image
+     dataSize= 99999
+...Performing Action:extract_metadata_for_image
++Testing Rule Number:4 for Action:extract_metadata_for_image
++Executing Rule Number:4 for Action:extract_metadata_for_image
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/raja@sdsc/myProtectedFiles/bar.txt -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "raja,misc,core" delete_data
++Testing Rule Number:1 for Action:delete_data
++Executing Rule Number:1 for Action:delete_data
+!!!Processing a cut
+ERROR: executeRuleAction Failed for fail Error: -1091000: FAIL_ACTION_ENCOUNTERED_ERR, 
+ERROR: reTest Failed: Error: -1089000: CUT_ACTION_PROCESSED_ERR, 
+----------------------------------
+reTest -D /home/collections.nvo/2mass/fits-images/f1.fits -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "raja,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Testing Rule Number:9 for Action:get_resource
++Executing Rule Number:9 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/fits-images/f1.fits
+     rescName= samfs
+     dataType= fits image
+     dataSize= 99999
+...Performing Action:extract_metadata_for_image
++Testing Rule Number:4 for Action:extract_metadata_for_image
++Executing Rule Number:4 for Action:extract_metadata_for_image
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/collections.nvo/2mass/fits-images/f1.fits -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "raja,nvo,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:2 for Action:get_resource
++Testing Rule Number:6 for Action:get_resource
++Testing Rule Number:13 for Action:get_resource
++Executing Rule Number:13 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/fits-images/f1.fits
+     rescName= samfs
+     dataType= fits image
+     dataSize= 99999
+...Performing Action:extract_metadata_for_image
++Testing Rule Number:8 for Action:extract_metadata_for_image
++Executing Rule Number:8 for Action:extract_metadata_for_image
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/collections.nvo/2mass/fits-images/f1.fits -R samfs -T "fits image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "nvo,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+!!!Processing a cut
+...Performing Action:check_data_type(fits image)
++Testing Rule Number:4 for Action:check_data_type
++Executing Rule Number:4 for Action:check_data_type
+...Performing Action:set_resource(nvo-image-resource)
++Testing Rule Number:12 for Action:set_resource
++Executing Rule Number:12 for Action:set_resource
+...Performing Function:msiSetResource(nvo-image-resource)
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/fits-images/f1.fits
+     rescName= nvo-image-resource
+     dataType= fits image
+     dataSize= 99999
+...Performing Function:msiAddACLForDataToUser(2massusers.nvo,write)
+...Performing Function:msiExtractMetadataForFitsImage
+----------------------------------
+reTest -D /home/collections.nvo/2mass/fits-images/f1.fits -R samfs -T "gif image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "nvo,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Executing Rule Number:0 for Action:register_data
+!!!Processing a cut
+...Performing Action:check_data_type(fits image)
++Testing Rule Number:4 for Action:check_data_type
+ERROR: executeRuleAction Failed for check_data_type(fits image) Error: -1090000: ACTION_FAILED_ERR, 
+ERROR: reTest Failed: Error: -1089000: CUT_ACTION_PROCESSED_ERR, 
+----------------------------------
+reTest -D /home/collections.nvo/2mass/other/f1.fits -R samfs -T "gif image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "nvo,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Testing Rule Number:1 for Action:register_data
++Executing Rule Number:1 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:3 for Action:get_resource
++Testing Rule Number:10 for Action:get_resource
++Executing Rule Number:10 for Action:get_resource
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/other/f1.fits
+     rescName= samfs
+     dataType= gif image
+     dataSize= 99999
+...Performing Function:msiAddACLForDataToUser(2massusers.nvo,write)
+----------------------------------
+reTest -D /home/collections.nvo/2mass/other/f1.fits -R null -T "gif image"  -H andal.sdsc.edu -S 99999 -U sekar@sdsc "nvo,misc,core" register_data
++Testing Rule Number:0 for Action:register_data
++Testing Rule Number:1 for Action:register_data
++Executing Rule Number:1 for Action:register_data
+...Performing Action:get_resource
++Testing Rule Number:3 for Action:get_resource
++Executing Rule Number:3 for Action:get_resource
+...Performing Function:msiGetClosestResourceToClient
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/other/f1.fits
+     rescName= closest-resource-to-andal.sdsc.edu
+     dataType= gif image
+     dataSize= 99999
+...Performing Function:msiAddACLForDataToUser(2massusers.nvo,write)
+----------------------------------
+----------------------------------
+----------------------------------
+----------------------------------
+----------------------------------
+----------------------------------
+----------------------------------
+----------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+reTest -D /home/collections.nvo/2mass/other/f1.fits -R null -T "gif image" -H andal.sdsc.edu -S 1100 -U sekar@sdsc "rajatest" "r2" aa bb "*C" "*D"
++Testing Rule Number:0 for Action:r2
++Executing Rule Number:0 for Action:r2
+...Performing Function:msitest1(*A,*B,*C)
+msitest1: In A=aa, In B=bb, Out C=msitest1 ValC
+...Performing Function:msitest2(*C,*D,*E)
+msitest2: In A=msitest1 ValC, Out B=msitest2 ValB, Out C=msitest2 ValC
+...Performing Function:msitest3(*A,*B,*D)
+msitest3: In A=aa, In B=bb, In C=msitest2 ValB
+Rule Initialization Time = 3.43 millisecs
+Rule Execution     Time = 3.91 millisecs
+----------------------------------
+reTest -D /home/collections.nvo/2mass/other/f1.fits -R null -T "gif image" -H andal.sdsc.edu -S 1100 -U sekar@sdsc "rajatest" "acRegisterData"
++Testing Rule Number:2 for Action:acRegisterData
++Executing Rule Number:2 for Action:acRegisterData
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/other/f1.fits
+     rescName= null
+     dataType= gif image
+     dataSize= 1100
+...Performing Action:acExtractMetadataForImageForRaja
+------Mapping Action:acExtractMetadataForImageForRaja  To acExtractMetadata
++Testing Rule Number:13 for Action:acExtractMetadata
++Testing Rule Number:14 for Action:acExtractMetadata
+ERROR: executeRuleAction Failed for acExtractMetadataForImageForRaja status = -1090000 ACTION_FAILED_ERR
+***RollingBack
+...Performing Function:recover_msiRegisterData
++Testing Rule Number:3 for Action:acRegisterData
++Testing Rule Number:4 for Action:acRegisterData
++Testing Rule Number:6 for Action:acRegisterData
++Testing Rule Number:7 for Action:acRegisterData
++Executing Rule Number:7 for Action:acRegisterData
+...Performing Action:acGetResource
++Testing Rule Number:9 for Action:acGetResource
++Testing Rule Number:10 for Action:acGetResource
++Executing Rule Number:10 for Action:acGetResource
+...Performing Function:msiGetClosestResourceToClient
+...Performing Function:msiRegisterData
+     objPath = /home/collections.nvo/2mass/other/f1.fits
+     rescName= closest-resource-to-andal.sdsc.edu
+     dataType= gif image
+     dataSize= 1100
+...Performing Function:msiAddACLForDataToUser(2massusers.nvo,write)
+Rule Initialization Time = 2.46 millisecs
+Rule Execution     Time = 3.96 millisecs

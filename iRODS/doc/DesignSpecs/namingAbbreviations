@@ -1,0 +1,37 @@
+The following is the list of abbreviations we will use for the more
+common terms.  Consistency throughout the code is important.
+
+Term       abbreviation
+----       ------------
+Collection     coll
+Directory      dir    (as in mkdir, but same as a coll)
+File(data obj) file
+Register       reg
+Resource       resc
+Replica        repl
+Logical        log
+Physical       phys
+Default        def
+Path           path
+User           user
+Group          grp
+Initialize     init
+DistinguishedName Dn
+Authentication auth
+
+We will also use common Unix abbreviations, such as mkdir, pwd, ls,
+etc.
+
+We are now calling the system iRODS, so the commands will be "i"
+commands.  Sample icommands:
+
+iregresc   Register resource
+imkdir     Make directory
+iinit      Initialize
+iexit
+ipwd
+ils
+ipwd
+iput
+iget
+

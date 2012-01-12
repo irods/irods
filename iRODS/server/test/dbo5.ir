@@ -1,0 +1,12 @@
+# This is an example of an input for the irule command for
+# testing the msiDboExec micro-service.  Run via irule -F
+# This first input line is the rule body
+# The second input line is the input parameter in the format of 
+# label=value. e.g., *A=/temp/home/rods/foo1
+# Multiple inputs can be specified using the '%' character as the separator.
+# The third input line is the output description. Multiple outputs can be
+# specified using the '%' character as the separator.    
+#
+myTestRule||msiDboExec(*DBR,*DBO,"","",*P1,"","","","","")|nop
+*DBR=dbr2%*DBO=/newZone/home/rods/dbo7%*P1=$
+ruleExecOut

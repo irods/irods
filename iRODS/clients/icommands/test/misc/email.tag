@@ -1,0 +1,17 @@
+<PRETAG>X-Mailer: </PRETAG>Mailer User<POSTTAG>
+</POSTTAG>
+<PRETAG>Date: </PRETAG>Sent Date<POSTTAG>
+</POSTTAG>
+<PRETAG>From: </PRETAG>Sender<POSTTAG>
+</POSTTAG>
+<PRETAG>To: </PRETAG>Primary Recepient<POSTTAG>
+</POSTTAG>
+<PRETAG>Cc: </PRETAG>Other Recepient<POSTTAG>
+</POSTTAG>
+<PRETAG>Subject: </PRETAG>Subject<POSTTAG>
+</POSTTAG>
+<PRETAG>Content-Type: </PRETAG>Content Type<POSTTAG>
+</POSTTAG>
+
+
+

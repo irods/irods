@@ -1,0 +1,8 @@
+Name:		XML
+Brief:		XML/XSLT related microservices
+Description:	Set of microservices for parsing and manipulating XML documents in iRODS. Requires libxml2 and libxslt (http://www.xmlsoft.org/). See comments in Makefile prior to enabling.
+Dependencies:
+Enabled:	no
+Creator:	Antoine de Torcy; University of California, San Diego
+Created:	05-29-2008
+License:	BSD

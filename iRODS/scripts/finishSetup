@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Finish setting up the iRODS installation.
+#
+# Usage is:
+#	./finishSetup [options]
+#
+# This shell script finishes the last phase of iRODS installation
+# by setting up the database with the needed schema and tables.
+#
+# Use --help to get a list of options.
+#
+runfile="finishSetup.pl"
+
+
+
+for dir in "./scripts" "." "../scripts" "../../scripts"; do
+	if [ -d $dir -a -f $dir/runperl -a -f $dir/perl/$runfile ]; then
+		$dir/runperl --script $dir/perl/$runfile $*
+		ExitCode="$?"
+		exit $ExitCode
+	fi
+done
+
+echo "Usage error:"
+echo "    Please run this script from the top-level directory"
+echo "    of the iRODS distribution."
+exit 1

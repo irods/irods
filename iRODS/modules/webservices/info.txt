@@ -1,0 +1,15 @@
+Name:		webservices
+Brief:		Microservices for accessing webservices
+Description:	Microservices for providing access to web services
+                It uses gsoap to make the libraries. These libraries
+                need to be built first and moved into lib directory
+                along with other needed include files
+                before the microservices are compiled and linked.
+                See HELP.txt for more details.
+Dependencies:
+Enabled:	no
+Creator:	Arcot Rajasekar; University of California, San Diego
+Created:	October 2007
+License:	BSD for the microservices files themselves
+                GPL for the gsoap gsoap files and libraries
+

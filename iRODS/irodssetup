@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# Set up and install iRODS.
+#
+# Usage is:
+#	./irodssetup
+#
+# This script automatically installs everything you need for iRODS
+# and sets up a default configuration.  It prompts for any information
+# it needs.
+#
+if [ ! -f ./scripts/runperl ]; then
+	echo "Usage error:"
+	echo "    Please run this script from the top-level directory"
+	echo "    of the iRODS distribution."
+	exit 1
+fi
+./scripts/runperl --script scripts/perl/irodssetup.pl $*
+ExitCode="$?"
+exit $ExitCode

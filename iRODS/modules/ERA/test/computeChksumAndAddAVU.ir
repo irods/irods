@@ -1,0 +1,3 @@
+Compute Checksum and Add as AVU||msiDataObjChksum(*objPath,null,*ChksumStr)##msiGetSystemTime(*Date, human)##msiString2KeyValPair(Checksum.*Date=*ChksumStr,*KVPair)##msiAssociateKeyValuePairsToObj(*KVPair,*objPath,-d)|nop
+*objPath=/tempZone/home/antoine/tmp.txt
+ruleExecOut

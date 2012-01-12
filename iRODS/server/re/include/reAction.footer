@@ -1,0 +1,6 @@
+};
+
+int NumOfAction = sizeof(MicrosTable) / sizeof(microsdef_t);
+
+#endif	/* RE_ACTION_H */
+

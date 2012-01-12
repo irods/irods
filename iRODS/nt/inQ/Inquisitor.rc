@@ -1,0 +1,746 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\Inquisitor.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_ADDRESSBAR_TMPL     ICON                    "sdi.ico"
+IDR_MAINFRAME           ICON                    "res\\icon18.ico"
+IDR_INQUISTYPE          ICON                    "res\\InquisitorDoc.ico"
+IDI_ICON23              ICON                    "res\\icon23.ico"
+IDI_ICON24              ICON                    "res\\icon24.ico"
+IDI_ICON25              ICON                    "res\\icon25.ico"
+IDI_ICON26              ICON                    "res\\icon26.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\toolbar1.bmp"
+IDB_VIEW_ICONS_LARGE    BITMAP                  "res\\bitmap1.bmp"
+IDR_LISTVIEWS           BITMAP                  "res\\bmp00002.bmp"
+IDB_VIEW_ICONS          BITMAP                  "res\\view_ico.bmp"
+IDB_BITMAP2             BITMAP                  "res\\Image4b.bmp"
+IDB_BITMAP7             BITMAP                  "res\\team3.bmp"
+IDB_VIEW_GREYED         BITMAP                  "res\\view_ico_greyed.bmp"
+IDB_VIEW_NORMAL         BITMAP                  "res\\view_ico_normal.bmp"
+IDB_VIEW_SELECTED       BITMAP                  "res\\view_ico_selected.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  35, 35
+BEGIN
+    BUTTON      ID_FOOFIGHTER
+    SEPARATOR
+    BUTTON      ID_BACK
+    BUTTON      ID_FORWARD
+    SEPARATOR
+    BUTTON      ID_REFRESH
+    BUTTON      ID_TREE_HOME
+    BUTTON      ID_TREE_UP
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_VIEW_LARGEICON
+    BUTTON      ID_VIEW_SMALLICON
+    BUTTON      ID_VIEW_LIST
+    BUTTON      ID_VIEW_DETAILS
+END
+
+IDR_LISTVIEWS TOOLBAR  35, 35
+BEGIN
+    BUTTON      ID_ACCESS_CTRL
+    BUTTON      ID_REPLICATE
+    BUTTON      ID_QUERY
+    BUTTON      ID_NEW_META
+    SEPARATOR
+    BUTTON      ID_UPLOAD
+    BUTTON      ID_UPLOADFOLDER
+    BUTTON      ID_DOWNLOAD
+    SEPARATOR
+    BUTTON      ID_NEW_COLLECTION
+    SEPARATOR
+    BUTTON      ID_DELETE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&WINI"
+    BEGIN
+        MENUITEM "&Open",                       ID_OPEN
+        MENUITEM "Op&en with...",               ID_OPEN_WIDTH
+        MENUITEM "Open Tree",                   ID_OPENTREE
+        MENUITEM SEPARATOR
+        MENUITEM "&Connect...\tCtrl+N",         ID_FILE_NEW
+        MENUITEM SEPARATOR
+        POPUP "Ne&w"
+        BEGIN
+            MENUITEM "&Collection",                 ID_NEW_COLLECTION
+            MENUITEM "C&ontainer",                  ID_NEW_CONTAINER
+            MENUITEM "&Query...",                   ID_QUERY
+        END
+        MENUITEM "&Delete",                     ID_DELETE
+        MENUITEM "Rena&me",                     ID_RENAME
+        MENUITEM "&Replicate",                  ID_REPLICATE
+        MENUITEM "S&ychronize",                 ID_SYNCHRONIZE
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        POPUP "&Set"
+        BEGIN
+            MENUITEM "&Access Control...",          ID_ACCESS_CTRL
+            MENUITEM "&Comment",                    ID_COMMENT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Do&wnload...",                ID_DOWNLOAD
+        MENUITEM "&Upload...",                  ID_UPLOAD
+        MENUITEM SEPARATOR
+        POPUP "User &Info"
+        BEGIN
+            MENUITEM "Change &Password...",         ID_CHANGE_PASSWORD
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Close",                      ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_SELECT_ALL
+        MENUITEM "&Invert Selection",           ID_INVERT_SELECTION
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "T&oolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&WINI Command Bar",           ID_VIEW_JUMPVIEWBAR
+        MENUITEM "S&tatus Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Lar&ge Icons",                ID_VIEW_LARGEICON
+        MENUITEM "S&mall Icons",                ID_VIEW_SMALLICON
+        MENUITEM "&List",                       ID_VIEW_LIST
+        MENUITEM "&Details",                    ID_VIEW_DETAILS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About inQ...",               ID_APP_ABOUT
+    END
+END
+
+IDR_ADDRESSBAR_TMPL MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About sd12...",              ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT
+    VK_F1,          ID_HELP,                VIRTKEY 
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 255, 91
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About WINI"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,102,70,50,14,WS_GROUP
+    CTEXT           "WINI for iRODS\nversion 0.5\n(Build 04.03.07)\n\nCopyright (C) 2007 by San Diego Supercomputer Center",IDC_STATIC,7,7,241,44
+    LTEXT           "http://www.irods.org",IDC_STATIC1111,7,55,85,8
+    LTEXT           "email: irods@sdsc.edu",IDC_STATIC0001,176,55,72,8
+END
+
+IDD_LOGIN DIALOGEX 0, 0, 350, 212
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Connect to:"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_LOGIN_NAME,55,7,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGIN_HOST,55,32,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGIN_ZONE,55,57,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGIN_PORT,55,82,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_LOGIN_PASSWORD,94,151,160,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Connect!",IDOK,95,174,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,149,174,50,14
+    PUSHBUTTON      "Add New Connection",IDC_LOGIN_NEW,82,102,90,14
+    PUSHBUTTON      "Remove Connection",IDC_LOGIN_REMOVE,176,102,90,14
+    CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_LIST | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,155,7,188,89
+    RTEXT           "Name",IDC_STATIC1,29,7,20,12,SS_CENTERIMAGE
+    RTEXT           "Host",IDC_STATIC2,33,32,16,12,SS_CENTERIMAGE
+    RTEXT           "Zone",IDC_STATIC3,25,57,25,12,SS_CENTERIMAGE
+    RTEXT           "Port",IDC_STATIC4,35,82,14,12,SS_CENTERIMAGE
+    CTEXT           "To login, enter the password for the selected connection",IDC_STATIC5,7,135,336,14,SS_CENTERIMAGE
+    PUSHBUTTON      "Demo!",IDC_LOGIN_DEMO,203,174,50,14
+    CTEXT           "WINI is Copyright (C) 2007 by San Diego Supercomputer Center",IDC_STATIC,7,197,336,8
+END
+
+IDD_DIALOGBAR1 DIALOG  0, 0, 130, 14
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_TREE_STACK,0,1,130,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOGBAR3 DIALOGEX 0, 0, 215, 12
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_RESOURCE,49,0,166,100,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Use Resource",IDC_STATIC10,0,2,46,8,SS_CENTERIMAGE
+END
+
+IDD_QUERY DIALOG  0, 0, 322, 110
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Query"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,107,89,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,164,89,50,14
+    COMBOBOX        IDC_QUERY_ATTRIBUTE,7,7,100,96,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_QUERY_VALUE,159,7,100,96,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_QUERY_OPERATION,108,7,50,96,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add",IDC_QUERY_ADD,265,7,50,14
+    PUSHBUTTON      "Remove",IDC_QUERY_REMOVE,265,26,50,14
+    LISTBOX         IDC_QUERY_LIST,7,28,252,50,LBS_SORT | LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "And",IDC_QUERY_AND,265,45,50,14
+    PUSHBUTTON      "Or",IDC_QUERY_OR,265,64,50,14,WS_DISABLED
+END
+
+IDD_GENERIC_DIALOG DIALOG  0, 0, 164, 47
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter new value:"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,29,26,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,84,26,50,14
+    EDITTEXT        IDC_EDIT1,7,7,150,14,ES_AUTOHSCROLL
+END
+
+IDD_ACCESS_CTRL DIALOGEX 0, 0, 200, 141
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Access Control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LISTBOX         IDC_ACCESS_CTRL_LIST,7,7,186,80,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add...",IDC_ACCESS_CTRL_ADD,89,91,50,14
+    PUSHBUTTON      "Remove",IDC_ACCESS_CTRL_REMOVE,143,91,50,14
+    COMBOBOX        IDC_ACCESS_CTRL_CONSTRAINT,7,93,78,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Ok",IDOK,143,120,50,14
+    CONTROL         "Recursive",IDC_RECURSIVEAC,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,112,76,10,WS_EX_RIGHT
+END
+
+IDD_ACCESS_CTRL_USER_ADD DIALOG  0, 0, 320, 114
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Add User"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,48,93,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,93,50,14
+    LISTBOX         IDC_USER_ADD_DOMAIN,129,7,90,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_USER_ADD_USER,223,7,90,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CONSTRAINT,49,73,102,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LISTZONE,7,7,116,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_METADATA DIALOG  0, 0, 342, 50
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Metadata"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,117,29,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,174,29,50,14
+    COMBOBOX        IDC_METADATA_DLG_ATTRIBUTE,41,7,130,80,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_METADATA_DLG_VALUE,205,7,130,80,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Attribute:",IDC_STATIC,7,7,29,12,SS_CENTERIMAGE
+    RTEXT           "Value:",IDC_STATIC,179,7,21,12,SS_CENTERIMAGE
+END
+
+IDD_DS DIALOG  0, 0, 200, 58
+STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,75,37,50,14
+    CONTROL         "Progress1",IDC_DS2_PROGRESS,"msctls_progress32",WS_BORDER | 0x1,7,18,186,14
+    LTEXT           "Static",IDC_DS_STATIC,7,7,186,8,SS_CENTERIMAGE
+END
+
+IDD_DIALOGBAR DIALOG  0, 0, 150, 14
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "HotKey1",IDC_HOTKEY1,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,0,0,150,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,3
+ PRODUCTVERSION 1,1,0,3
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "San Diego Supercomputer Center"
+            VALUE "FileDescription", "WINI Browser and Query Tool for iRODS"
+            VALUE "FileVersion", "1, 1, 0, 3"
+            VALUE "InternalName", "inQ"
+            VALUE "LegalCopyright", "Copyright (C) 2006"
+            VALUE "OriginalFilename", "inQ.exe"
+            VALUE "ProductName", "inQ"
+            VALUE "ProductVersion", "1, 1, 0, 3"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_LOGIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 343
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 205
+    END
+
+    IDD_QUERY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 315
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 103
+    END
+
+    IDD_GENERIC_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 157
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_ACCESS_CTRL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 134
+    END
+
+    IDD_ACCESS_CTRL_USER_ADD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 313
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+
+    IDD_METADATA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 335
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 43
+    END
+
+    IDD_DS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AVI
+//
+
+IDR_AVI1                AVI                     "res\\Animation6.avi"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "WINI 0.5 - (C) 2007 by SDSC \n\nWINI\n\n\nWINI.Document\nWINI Document"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "WINI"
+    AFX_IDS_IDLEMESSAGE     "For Help, press F1"
+    AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Connect to iRODS.\nConnect to iRODS"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Exit WINI\nClose"
+    ID_HELP_INDEX           "Opens Help\nHelp Topics"
+    ID_HELP_FINDER          "List Help topics\nHelp Topics"
+    ID_HELP_USING           "Display instructions about how to use help\nHelp"
+    ID_CONTEXT_HELP         "Display help for clicked on buttons, menus and windows\nHelp"
+    ID_HELP                 "Display help for current task or command\nHelp"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection.\nCopy"
+    ID_EDIT_CUT             "Cut the selection.\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Paste cut or copied items.\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+    ID_VIEW_AUTOARRANGE     "Arrange icons on a grid."
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    ID_STATUS_TEXT          " "
+    ID_STATUS_PBAR          "      "
+    ID_DOWNLOAD_SUCCESSFUL  "downloaded successfully."
+    ID_DOWNLOAD_FAILED      "failed to download."
+    IDS_DELETED             "deleted"
+    IDS_NOT_DELETED         "not deleted"
+    ID_UPLOAD_SUCCESSFUL    "uploaded successfully."
+    ID_UPLOAD_FAILED        "failed to upload."
+    ID_EXECUTE_SUCCESSFUL   "has been browsed"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_SMALLICON       "Display items by using small icons.\nSmall Icons"
+    ID_VIEW_LARGEICON       "Display items by using large icons.\nLarge Icons"
+    ID_VIEW_LIST            "Displays items in a list.\nList"
+    ID_VIEW_DETAILS         "Displays detailed information about each item in the window.\nDetails"
+    ID_VIEW_LINEUP          "Arranges icons in a grid."
+    ID_VIEW_BYNAME          "Sorts the icons alphabetically."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EXECUTE_FAILED       "failed to browse."
+    IDS_STATUS_COUNT        " "
+    IDS_ACCESS_CTRL_USERS   "Users"
+    IDS_ACCESS_CTRL_GROUPS  "Groups"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_TREE_HOME            "Jumps to your home collection.\nJump Home"
+    ID_TREE_UP              "Jumps up to the parent of this node.\nJump Up"
+    ID_BACK                 "Jumps back one in your history list.\nJump Back in History"
+    ID_FORWARD              "Jumps forward one in your history list.\nJump Forward in History"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_REFRESH              "Manually refresh your screen.\nRefresh Screen"
+    ID_REPLICATE            "Replicate dataset(s) in the default resource.\nReplicate"
+    ID_SYNCHRONIZE          "Synchronize datasets stored in container cache with container.\nSynchronize Container"
+    ID_ACCESS_CTRL          "Specify access control for selected item(s).\nAccess Control"
+    ID_NEW_COLLECTION       "Create a new collection.\nCreate Collection"
+    ID_BUTTON32827          "Create and modify metadata.\nMetadata"
+    ID_NEW_CONTAINER        "Create a new container in the default Resource.\nCreate Container"
+    ID_DISCONNECT           "Break connection to this Storage Resource Broker\nDisconnect"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_STOP                 "Stop an action currently being performed.\nStop"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_QUERY                "Create or modify a query.\nQuery"
+    ID_UPLOAD               "Upload files into WINI.\nUpload Files"
+    ID_DOWNLOAD             "Download items to your workstation.\nDownload"
+    ID_DELETE               "Delete an item.\nDelete"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_OPENTREE             "Opens the tree one level\nOpen Tree"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_RENAME               "Rename datasets and collections.\nRename"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEW_META             "Create new metadata for your collection or dataset.\nCreate Metadata"
+    ID_UPLOADFOLDER         "Upload a folder into iRODS.\nUpload Folder"
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_ADDRESSBAR_TMPL     "AddressBar\n\nAddres\nAddres Files (*.add)\n.add\nAddressBar.Document\nAddres Document"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\Inquisitor.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

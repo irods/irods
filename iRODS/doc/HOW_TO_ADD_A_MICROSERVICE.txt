@@ -1,0 +1,126 @@
+How to add a microservice to iRODS
+Sept 2007
+------------------------------------------------------------------------
+
+A "microservice" is a C function that executes within the iRODS servers.
+Microservices are typically invoked through standard or user-defined
+rules sent to the servers.
+
+
+
+
+
+How to write a microservice
+------------------------------------------------------------------------
+Microservices must be written as C functions.  These functions take a list
+of generic "msParam_t" arguments, and one "ruleExecInfo_t" argument at the
+end.  The function returns an integer status code.  For example:
+
+	int msiSample( msParam_t* arg1, msParam_t* arg2, ruleExecInfo_t* rei );
+
+Authors are encouraged to name microservices with "msi" at the start.
+For this and other naming conventions see the document
+"NAME_CONVENTIONS.txt".
+
+Each msParam_t provides a user-provided argument to the microservice, such
+as the name of a data object or collection, a numeric value, a string flag
+or option name, etc.  It's up to the microservice to define and parse its
+arguments.
+
+The ruleExecInfo_t provides a bundle information about the server.  A
+principal component is rei->rsComm, which provides the communications link
+to the server for logging messages and performing file operations.
+
+...Additional documention to be written...
+
+
+
+
+
+How to add microservice source files to iRODS
+------------------------------------------------------------------------
+Authors are encouraged to create a new module for custom microservices.
+See the document "HOW_TO_ADD_A_MODULE.txt".
+
+For iRODS system features, the microservices may be included in C source
+files in the iRODS server/re/src directory.  To compile these services they
+need to be listed in the server/Makefile.
+
+
+
+
+
+How to add microservices to the iRODS server's action table
+------------------------------------------------------------------------
+All microservice functions are discovered by the iRODS server by reading
+a master "action" table compiled into the server.  The action table is
+split into three files:
+
+	server/re/include/reAction.header
+	server/re/include/reAction.table
+	server/re/include/reAction.footer
+
+The iRODS Makefiles assemble these files, and those provided by modules,
+to build server/re/include/reAction.h.  That file contains:
+
+	* reAction.header
+	* The header for each microservice module.
+	* reAction.table
+	* The table entries for each microservice module.
+	* reAction.footer
+
+There are two ways to add a microservice:
+
+	1. For system microservices:
+		* Edit reAction.header to add function prototypes
+		* Edit reAction.table to add table initializations
+
+	2.  For module microservices:
+		* Create MODNAME/microservices/include/microservices.header.
+		* Edit this to add function prototypes.
+		* Create MODNAME/microservices/include/microservices.table.
+		* Edit this to add table initializations.
+
+Function prototypes declare the C microservice function.  While these
+can be added to the above files directly, authors are encouraged to use
+a separate include file and just add a #include of that file.  For instance,
+here's a typical microservices.header file for a module:
+
+	// Sample module microservices
+	#include "sampleMS.h"
+
+The reAction.table and each module's microservices.table file contains a
+C array initialization listing all available microservices.  Each line in
+the initialization looks like this:
+
+	// Sample module microservices
+	{ "sample", 2, (funcPtr) msiSample },
+
+There are three values, in order:
+
+	1.  The service name is the user-visible name of the microservice.
+	    It is a string using letters, numbers, and underbar.  It
+	    should be descriptive and need not match the microservice
+	    function name.
+
+	2.  The argument count is the number of msParam_t arguments for the
+	    function.  It does not include the ruleExecInfo_t argument.
+
+	3.  The function name is a pointer to the C function for the
+	    microservice.
+
+
+
+
+
+How to rebuild reAction.h
+------------------------------------------------------------------------
+The server's reAction.h action table is rebuilt automatically by the iRODS
+root Makefie if any include file in server/re/include or
+modules/*/microservices/include changes.
+
+To force reAction.h to be rebuilt, delete the existing file and run the
+"reaction" Makefile target:
+
+	rm server/re/include/reAction.h
+	make reaction

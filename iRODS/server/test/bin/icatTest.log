@@ -1,0 +1,517 @@
+running: ienv | grep irodsZone | tail -1 
+running: icd 
+running: rm -rf ~/.irods/.irodsEnv.* 
+running: irm -f TestFile1 
+ERROR: rmUtil: srcPath /tempZone/home/rods/TestFile1 does not exist
+running: iput TestFile1 
+running: imv TestFile1 TestFile1a 
+running: imv TestFile1a TestFile1b 
+running: imv TestFile1b TestFile1 
+running: imv TestFile1 TestFile1 
+ERROR: mvUtil: mv error for /tempZone/home/rods/TestFile1, status = -339000 status = -339000 SAME_SRC_DEST_PATHS_ERR
+running: irm -f TestFile1 
+running: irm -f -r directory1 
+ERROR: rmUtil: srcPath /tempZone/home/rods/directory1 does not exist
+running: imkdir directory1 
+running: iput TestFile1 directory1/TestFile1 
+running: imv directory1 directory1a 
+running: imv directory1a directory1b 
+running: imv directory1b directory1b 
+ERROR: mvUtil: mv error for /tempZone/home/rods/directory1b/directory1b, status = -837000 status = -837000 CAT_RECURSIVE_MOVE
+running: imv directory1b directory1 
+running: imv directory1 directory1 
+ERROR: mvUtil: mv error for /tempZone/home/rods/directory1/directory1, status = -837000 status = -837000 CAT_RECURSIVE_MOVE
+running: ils 
+running: irm -f directory1 
+ERROR: rmCollUtil: -r option must be used for collection /tempZone/home/rods/directory1
+ERROR: rmUtil: rm error for /tempZone/home/rods/directory1, status = -318000 status = -318000 USER_INPUT_OPTION_ERR
+running: irm -f -r directory1 
+running: ils 
+running: iput TestFile1 
+running: imeta add -d TestFile1 a b 
+running: irm -f TestFile1 
+running: iquest no-distinct "select RESC_ID"  
+running: iadmin modresc demoResc status down 
+running: iput -R demoResc TestFile1 
+ERROR: putUtil: put error for /tempZone/home/rods/TestFile1, status = -105000 status = -105000 SYS_RESC_IS_DOWN
+running: iadmin modresc demoResc status up 
+running: iput -R demoResc TestFile1 
+running: irm -f TestFile1 
+running: imkdir directory1 
+running: imkdir directory1 
+ERROR: mkdirUtil: mkColl of /tempZone/home/rods/directory1 error. status = -809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME
+running: irm -rf directory1 
+running: iput -rf  testIput_RF_repeat 
+running: ils -l testIput_RF_repeat 
+running: iput -rf  testIput_RF_repeat 
+running: iput -rf  testIput_RF_repeat 
+running: irm -rf testIput_RF_repeat 
+running: rm -rf testIput_RF_repeat 
+running: irm -rf directory04 
+ERROR: rmUtil: srcPath /tempZone/home/rods/directory04 does not exist
+running: imkdir directory04 
+running: ichmod inherit directory04 
+running: iput TestFile1 directory04/TestFile1 
+running: imkdir directory04/sub1 
+running: ils -A directory04 
+running: ichmod -r inherit directory04/sub1 
+running: irm -rf directory04 
+running: iadmin at user_type rodstest test 
+running: iadmin lt user_type 
+running: iadmin lt user_type rodstest 
+running: iadmin rt user_type rodstest 
+running: iadmin mkzone ATestZoneName remote host:1234 comment 
+running: iadmin mkzone ATestZoneName remote host:1234 comment 
+ERROR: rcGeneralAdmin failed with error -809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME 
+running: iadmin mkuser u3#ATestZoneName rodsuser 
+running: iadmin lu u3#ATestZoneName 
+running: iadmin luz ATestZoneName 
+running: iadmin rmuser u3#ATestZoneName 
+running: iadmin modzone ATestZoneName conn host2.foo:435 
+running: iadmin modzone ATestZoneName comment 'another comment' 
+running: iadmin modzone ATestZoneName name ADifTestZoneName 
+running: iadmin rmzone ATestZoneName 
+ERROR: rcGeneralAdmin failed with error -828000 CAT_INVALID_ZONE 
+running: iadmin rmzone ADifTestZoneName 
+running: iadmin rmzone tempZone 
+ERROR: Level 0: It is not permitted to remove the local zone
+ERROR: rcGeneralAdmin failed with error -816000 CAT_INVALID_ARGUMENT 
+running: echo yes | iadmin modzone tempZone name ADifTestZoneName 
+running: echo yes | iadmin modzone ADifTestZoneName name tempZone 
+running: iadmin rmuser u2 
+ERROR: Level 0: DEBUG: execMicroService3: error when executing microservice
+line 49, col 2, rule base core
+  msiDeleteCollByAdmin(*parColl,*childColl); }
+  ^
+
+ERROR: rcGeneralAdmin failed with error -806000 CAT_SQL_ERR 
+running: iadmin mkuser u2 invalidUserType 
+ERROR: Level 0: user_type 'invalidUserType' is not valid
+ERROR: Level 1: DEBUG: execMicroService3: error when executing microservice
+line 20, col 2, rule base core
+  msiCreateUser  :::  msiRollback;
+  ^
+
+ERROR: rcGeneralAdmin failed with error -820000 CAT_INVALID_USER_TYPE 
+running: iadmin mkuser u2 rodsuser 
+running: iput TestFile1 ../u2 
+ERROR: putUtil: put error for /tempZone/home/u2/TestFile1, status = -818000 status = -818000 CAT_NO_ACCESS_PERMISSION
+running: iput TestFile1 
+running: ichmod read u2 TestFile1 
+running: ichmod write u2 TestFile1 
+running: ichmod null u2 TestFile1 
+running: ichmod -M write u2 TestFile1 
+running: ichmod -M null u2 TestFile1 
+running: irm -f TestFile1 
+running: imkdir directory1 
+running: iput TestFile1 directory1/TestFile1 
+running: ichmod -r read u2 directory1 
+running: ichmod -r read u2 directory1a 
+ERROR: rcModAccessControl failure  status = -816000 CAT_INVALID_ARGUMENT
+ERROR: Level 0: Input path is not a collection and not a dataObj: /tempZone/home/rods/directory1a
+running: ichmod -r null u2 directory1 
+running: ichmod read u2 directory1 
+running: ichmod null u2 directory1 
+running: irm -f -r directory1 
+running: irm -rf direct003 
+ERROR: rmUtil: srcPath /tempZone/home/rods/direct003 does not exist
+running: imkdir direct003 
+running: imkdir direct003/subA 
+running: imkdir direct003/suB 
+running: imkdir direct003/suA 
+running: imkdir direct003/subAD 
+running: imkdir direct003/subE 
+running: iput TestFile1 direct003/TestFile1 
+running: iput TestFile1 direct003/subA/TestFile1 
+running: iput TestFile1 direct003/suB/TestFile1 
+running: iput TestFile1 direct003/suA/TestFile1 
+running: iput TestFile1 direct003/subAD/TestFile1 
+running: iput TestFile1 direct003/subE/TestFile1 
+running: iput TestFile1 direct003/subE/TestFile2 
+running: ichmod -r read u2 direct003 
+running: sleep 1 
+running: ils -Ar direct003 | grep u2 | grep read | wc -l 
+running: irm -rf direct003 
+running: iput -k TestFile1 
+running: iput -f TestFile1 
+running: iput -fK TestFile1 
+running: irm -f TestFile1 
+running: irm -f TestFile3 
+ERROR: rmUtil: srcPath /tempZone/home/rods/TestFile3 does not exist
+running: iput TestFile3 
+running: irm -fr directory1 
+ERROR: rmUtil: srcPath /tempZone/home/rods/directory1 does not exist
+running: irm -fr DIR2 
+ERROR: rmUtil: srcPath /tempZone/home/rods/DIR2 does not exist
+running: imkdir directory1 
+running: imkdir DIR2 
+running: iput TestFile1 
+running: imeta add -d TestFile1 a b c 
+running: imeta ls -d TestFile1 
+running: imeta qu -d a = b 
+running: imeta qu -d a = b | wc 
+running: imeta qu -d a = c | grep 'No rows found' 
+running: imeta cp -d TestFile1 -d TestFile3 
+running: imeta rm -d TestFile3 a b c 
+running: imeta rm -d TestFile1 a b c 
+running: imeta adda -d TestFile1 x y z 
+running: imeta rm -d TestFile1 x y z 
+running: imeta add -d TestFile1 testAVUnumber 14 
+running: imeta qu -d testAVUnumber '<' 6 | wc -l 
+running: imeta qu -d testAVUnumber 'n<' 6 | grep 'No rows found' 
+running: imeta rm -d TestFile1 testAVUnumber 14 
+running: irm -f TestFile3 
+running: imeta add -C directory1 a b c 
+running: imeta ls -C directory1 
+running: imeta cp -C directory1 -C DIR2 
+running: imeta rm -C DIR2 a b c 
+running: imeta qu -C a = b 
+running: imeta qu -C a = b | wc 
+running: imeta qu -C a = c | grep 'No rows found' 
+running: imeta rm -C directory1 a b c 
+running: imeta adda -C directory1 x y z 
+running: imeta rm -C directory1 x y z 
+running: irm -rf DIR2 
+running: imeta add -u u2 d e f 
+running: imeta ls -u u2 
+running: imeta cp -u u2 -u rods 
+running: imeta rm -u rods d e f 
+running: imeta cp -u u2 -d TestFile1 
+running: imeta rm -d TestFile1 d e f 
+running: imeta cp -u u2 -r demoResc 
+running: imeta rm -r demoResc d e f 
+running: imeta qu -u d = e 
+running: imeta qu -u d = e | wc 
+running: imeta qu -d a = c | grep 'No rows found' 
+running: imeta rm -u u2 d e f 
+running: imeta add -R demoResc a b c 
+running: imeta ls -R demoResc 
+running: imeta qu -R a = b 
+running: imeta qu -R a = b | wc 
+running: imeta qu -R a = c | grep 'No rows found' 
+running: imeta rm -R demoResc a b c 
+running: imeta add -R demoResc x y 
+running: imeta rm -R demoResc x y 
+running: imeta add -R demoResc 9253133.40243261 5210949.01855097 
+running: imeta rm -R demoResc 9253133.40243261 5210949.01855097 
+running: imeta add -R demoResc 9253133.40243261 5210949.01855097 8507349.41609363 
+running: imeta rm -R demoResc 9253133.40243261 5210949.01855097 8507349.41609363 
+running: imeta rmw -r demoResc % % % 
+ERROR: rcModAVUMetadata failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: imeta add -r demoResc attr aaabbb 
+running: imeta add -r demoResc attr_a test 
+running: imeta add -r demoResc attr_ test2 
+running: imeta ls -r demoResc | grep attribute | wc -l 
+running: imeta ls -r demoResc attr | grep attribute | wc -l 
+running: imeta ls -r demoResc attr_ | grep attribute | wc -l 
+running: imeta lsw -r demoResc attr_ | grep attribute | wc -l 
+running: imeta lsw -r demoResc attr_% | grep attribute | wc -l 
+running: imeta add -r demoResc a b ccc 
+running: imeta rmw -r demoResc a % cc% 
+running: imeta rmw -r demoResc attr% % % 
+running: imeta ls -r demoResc | grep attribute | wc -l 
+running: imkdir directory1 
+ERROR: mkdirUtil: mkColl of /tempZone/home/rods/directory1 error. status = -809000 CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME
+running: imeta rmw -c directory1 % % % 
+ERROR: rcModAVUMetadata failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: imeta add -c directory1 attr aaabbb 
+running: imeta add -c directory1 attr_a test 
+running: imeta add -c directory1 attr_ test2 
+running: imeta ls -c directory1 | grep attribute | wc -l 
+running: imeta ls -c directory1 attr | grep attribute | wc -l 
+running: imeta ls -c directory1 attr_ | grep attribute | wc -l 
+running: imeta lsw -c directory1 attr_ | grep attribute | wc -l 
+running: imeta lsw -c directory1 attr_% | grep attribute | wc -l 
+running: imeta rm -c directory1 attr_ test2 
+running: imeta ls -c directory1 | grep attribute | wc -l 
+running: imeta rmw -c directory1 attr% % % 
+running: imeta ls -c directory1 | grep attribute | wc -l 
+running: imeta rmw -u rods % % % 
+ERROR: rcModAVUMetadata failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: imeta add -u rods role archivist 
+running: imeta add -u rods role_a test 
+running: imeta add -u rods role_ test2 
+running: imeta ls -u rods | grep attribute | wc -l 
+running: imeta ls -u rods#tempZone | grep attribute | wc -l 
+running: imeta ls -u rods role | grep attribute | wc -l 
+running: imeta ls -u rods role_ | grep attribute | wc -l 
+running: imeta lsw -u rods role_ | grep attribute | wc -l 
+running: imeta lsw -u rods role_% | grep attribute | wc -l 
+running: imeta rmw -u rods role% % % 
+running: imeta ls -u rods | grep attribute | wc -l 
+running: imeta rmw -d TestFile1 % % % 
+ERROR: rcModAVUMetadata failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: imeta add -d TestFile1 miles 10 
+running: imeta add -d TestFile1 miles% 11 
+running: imeta add -d TestFile1 miles_a 12 
+running: imeta ls -d TestFile1 
+running: imeta ls -d TestFile1 badName 
+running: imeta ls -d TestFile1 | grep attribute | wc -l 
+running: imeta rm -d TestFile1 miles% 11 
+running: imeta ls -d TestFile1 | grep attribute | wc -l 
+running: imeta add -d TestFile1 miles% 11 
+running: imeta ls -d TestFile1 | grep attribute | wc -l 
+running: imeta rmw -d TestFile1 miles% 11 
+running: imeta ls -d TestFile1 | grep attribute | wc -l 
+running: imeta add -d TestFile1 miles% 11 
+running: imeta ls -d TestFile1 miles | grep attribute | wc -l 
+running: imeta ls -d TestFile1 miles% | grep attribute | wc -l 
+running: imeta lsw -d TestFile1 miles% | grep attribute | wc -l 
+running: imeta rmw -d TestFile1 miles% % 
+running: imeta ls -d TestFile1 | grep attribute | wc -l 
+running: imeta add -d TestFile1 a b c 
+running: echo 'test
+ls -d TestFile1
+quit' > icatTest.infile.24085 
+running: imeta < icatTest.infile.24085 
+running: echo 'test
+rmi -d TestFile1 12018
+quit' > icatTest.infile.24085 
+running: imeta < icatTest.infile.24085 
+running: imeta add -d TestFile1 a b c 
+running: imeta mod -d TestFile1 a b c v:b2 
+running: imeta mod -d TestFile1 a b2 c n:a2 
+running: imeta mod -d TestFile1 a2 b2 c u:c2 
+running: imeta mod -d TestFile1 a2 b2 c2 n:a3 v:b3 u:c3 
+running: imeta rm -d TestFile1 a3 b3 c3 
+running: imeta add -u rods aaaaa bbbbb ccccc 
+running: imeta mod -u rods aaaaa bbbbb ccccc v:b222 
+running: imeta rm -u rods aaaaa b222 ccccc 
+running: imeta add -c directory1 aaaaa bbbbb ccccc 
+running: imeta mod -c directory1 aaaaa bbbbb ccccc v:b222 
+running: imeta rm -c directory1 aaaaa b222 ccccc 
+running: imeta add -r demoResc aaaaa bbbbb 
+running: imeta mod -r demoResc aaaaa bbbbb n:a1 
+running: imeta rm -r demoResc aaaaa bbbbb 
+ERROR: rcModAVUMetadata failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: imeta rm -r demoResc a1 bbbbb 
+running: imeta addw -d TestFile1 a4 b4 c4 
+running: imeta rm -d TestFile1 a4 b4 c4 
+running: irm -f TestFile1 
+running: irm -f -r directory1 
+running: iadmin moduser u2 type badUserType 
+ERROR: Level 0: user_type 'badUserType' is not valid
+ERROR: rcGeneralAdmin failed with error -820000 CAT_INVALID_USER_TYPE 
+running: iadmin moduser u2 type rodsadmin 
+running: iadmin moduser u2 type rodsuser 
+running: iadmin aua u2 asdfsadfsadf/dfadsf/dadf/d/ 
+running: iadmin lua u2 
+running: iadmin lua u2#tempZone 
+running: iadmin lua 
+running: iadmin luan asdfsadfsadf/dfadsf/dadf/d/ 
+running: iadmin rua u2 asdfsadfsadf/dfadsf/dadf/d/ 
+running: iadmin moduser u2 zone tempZone 
+running: iadmin moduser u2 comment 'this is a comment' 
+running: iadmin moduser u2 comment '' 
+running: iadmin moduser u2 info 'this is Info field' 
+running: iadmin moduser u2 info '' 
+running: iadmin moduser u2 password 'abc' 
+running: iadmin moduser u2 password '1234' 
+running: iadmin moduser u2a password '1234' 
+ERROR: rcGeneralAdmin failed with error -827000 CAT_INVALID_USER 
+running: iadmin moduser u2 type groupadmin 
+running: mv /home/jasonc/.irods/.irodsA TestFile2 
+running: iinit 1234 
+rcAuthResponse failed with error -826000 CAT_INVALID_AUTHENTICATION 
+running: iinit 1234 
+running: iadmin atg g1 user3 
+ERROR: rcGeneralAdmin and rcUserAdmin failed with error -830000 CAT_INSUFFICIENT_PRIVILEGE_LEVEL 
+running: ichmod -R write rods demoResc 
+ERROR: rcModAccessControl failure  status = -818000 CAT_NO_ACCESS_PERMISSION
+running: iexit full 
+running: mv TestFile2 /home/jasonc/.irods/.irodsA 
+running: ils 
+running: iadmin rmgroup group1 
+ERROR: Level 0: DEBUG: execMicroService3: error when executing microservice
+line 49, col 2, rule base core
+  msiDeleteCollByAdmin(*parColl,*childColl); }
+  ^
+
+ERROR: rcGeneralAdmin failed with error -806000 CAT_SQL_ERR 
+running: iadmin mkgroup group1 
+running: iadmin atg group1 u2a 
+ERROR: rcGeneralAdmin failed with error -827000 CAT_INVALID_USER 
+running: iadmin atg group1a u2a 
+ERROR: rcGeneralAdmin failed with error -827000 CAT_INVALID_USER 
+running: iadmin rfg group1 u2 
+ERROR: rcGeneralAdmin failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: iadmin atg group1 u2 
+running: iadmin rfg group1 u2a 
+ERROR: rcGeneralAdmin failed with error -827000 CAT_INVALID_USER 
+running: iadmin rfg group1 u2 
+running: iadmin rfg group1 u2 
+ERROR: rcGeneralAdmin failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: iadmin rmgroup group1 
+running: irm -f TestFile1 
+ERROR: rmUtil: srcPath /tempZone/home/rods/TestFile1 does not exist
+running: iput TestFile1 
+running: iadmin suq rods demoResc 10 
+running: iadmin rmgroup group1 
+ERROR: Level 0: DEBUG: execMicroService3: error when executing microservice
+line 49, col 2, rule base core
+  msiDeleteCollByAdmin(*parColl,*childColl); }
+  ^
+
+ERROR: rcGeneralAdmin failed with error -806000 CAT_SQL_ERR 
+running: iadmin mkgroup group1 
+running: iadmin atg group1 rods 
+running: iadmin sgq group1 demoResc 10 
+running: iadmin cu 
+running: iadmin suq rods total 20 
+running: iadmin sgq group1 total 20 
+running: iadmin cu 
+running: iadmin suq rods total 0 
+running: iadmin sgq group1 total 0 
+running: iadmin suq rods demoResc 0 
+running: iadmin sgq group1 demoResc 0 
+running: iadmin lq 
+running: iadmin lq rods 
+running: iadmin rmgroup group1 
+running: irm -f TestFile1 
+running: iadmin lr demoResc | grep resc_net: 
+hostName: Fermat.renci.org
+running: iadmin rmresc Resc2 
+ERROR: rcGeneralAdmin failed with error -808000 CAT_NO_ROWS_FOUND 
+running: echo yes | iadmin modresc demoResc name Resc2 
+running: echo yes | iadmin modresc Resc2 name demoResc 
+running: iadmin mkresc Resc2 
+ERROR: Level 0: resource_type '' is not valid
+ERROR: rcGeneralAdmin failed with error -810000 CAT_INVALID_RESOURCE_TYPE 
+running: iadmin mkresc Resc2 badType 
+ERROR: Level 0: resource_type 'badType' is not valid
+ERROR: rcGeneralAdmin failed with error -810000 CAT_INVALID_RESOURCE_TYPE 
+running: iadmin mkresc Resc2 'unix file system' 
+ERROR: rcGeneralAdmin failed with error -811000 CAT_INVALID_RESOURCE_CLASS 
+running: iadmin mkresc Resc2 'unix file system' badClass 
+ERROR: rcGeneralAdmin failed with error -811000 CAT_INVALID_RESOURCE_CLASS 
+running: iadmin mkresc Resc2 'unix file system' cache 
+ERROR: rcGeneralAdmin failed with error -812000 CAT_INVALID_RESOURCE_NET_ADDR 
+running: iadmin mkresc Resc2 'unix file system' cache  Fermat.renci.org 
+ERROR: rcGeneralAdmin failed with error -813000 CAT_INVALID_RESOURCE_VAULT_PATH 
+running: iadmin mkresc Resc2 'unix file system' cache  Fermat.renci.org /tmp/Vault 
+running: iadmin modresc Resc2 comment 'this is a comment' 
+running: iadmin modresc Resc2 freespace 123456789 
+running: iadmin modresc Resc2 info 'this is info field' 
+running: iadmin modresc Resc2 class 'badClass' 
+ERROR: Level 0: resource_class 'badClass' is not valid
+ERROR: rcGeneralAdmin failed with error -811000 CAT_INVALID_RESOURCE_CLASS 
+running: iadmin modresc Resc2 class 'archive' 
+running: iadmin modresc Resc2 class cache 
+running: iadmin modresc Resc2 type 'badType' 
+ERROR: Level 0: resource_type 'badType' is not valid
+ERROR: rcGeneralAdmin failed with error -810000 CAT_INVALID_RESOURCE_TYPE 
+running: iadmin modresc Resc2 type 'unix file system' 
+running: iadmin modresc Resc2 path /tmp/v1 
+running: iadmin modresc Resc2 path /tmp/Vault 
+running: iadmin modresc Resc2 status up 
+running: iadmin lr Resc2 
+running: iput -R Resc2 TestFile1 
+running: irepl -R demoResc TestFile1 
+running: irm -f TestFile1 
+running: imkdir directory1 
+running: icd directory1 
+running: iput TestFile1 
+running: iput TestFile2 
+running: ipwd 
+running: icd 
+running: irepl -r -R Resc2 directory1 
+running: irm -f -r directory1 
+running: iadmin atrg Resource_group demoResc 
+running: iadmin lrg Resource_group 
+running: iadmin atrg Resource_group Resc2 
+running: iadmin atrg Resource_group Resc2a 
+ERROR: rcGeneralAdmin failed with error -831000 CAT_INVALID_RESOURCE 
+running: iadmin rfrg Resource_group demoResc 
+running: imeta add -g Resource_group 1111 2222 
+running: imeta cp -g Resource_group -r demoResc 
+running: imeta rm -g Resource_group 1111 2222 
+running: imeta rm -r demoResc 1111 2222 
+running: iadmin rfrg Resource_group Resc2 
+running: iadmin lrg Resource_group 
+running: iadmin pv 2030-12-31 
+running: iqstat | grep msiVacuum 
+running: iqdel 244393 
+rcRuleExecDel failed with error -819000 CAT_SUCCESS_BUT_WITH_NO_INFO 
+running: iqmod 12069 exeAddress test 
+running: iqdel 12069 
+running: iadmin lt 
+running: iadmin lt zone_type 
+running: iadmin lt zone_type local 
+running: iadmin lr 
+running: iadmin lr demoResc 
+running: iadmin lz 
+running: iadmin lz tempZone 
+running: iadmin lg 
+running: iadmin lg rodsadmin  
+running: iadmin lgd rodsadmin 
+running: iadmin lf 10009 
+running: iadmin ls 
+running: iadmin lu 
+running: iadmin lu rods 
+running: iadmin lrg 
+running: iadmin dspass 123 
+running: iput TestFile1 
+running: ichmod null rods TestFile1 
+running: iget TestFile1 
+ERROR: getUtil: get error for ./TestFile1 status = -818000 CAT_NO_ACCESS_PERMISSION
+running: ichmod own rods TestFile1 
+running: iget TestFile1 
+running: irm TestFile1 
+running: irmtrash 
+running: imkdir directory1 
+running: iput TestFile1 directory1 
+running: irm directory1/TestFile1 
+running: ichmod read rods directory1 
+running: iput TestFile1 directory1 
+ERROR: putUtil: put error for /tempZone/home/rods/directory1/TestFile1, status = -818000 status = -818000 CAT_NO_ACCESS_PERMISSION
+running: ichmod write rods directory1 
+running: iput TestFile1 directory1 
+running: irm directory1/TestFile1 
+running: ichmod own rods directory1 
+running: irm -rf directory1 
+running: irmtrash 
+running: ichmod -R write u2 demoResc 
+running: ichmod -R null u2 demoResc 
+running: irm -fr dir1 
+ERROR: rmUtil: srcPath /tempZone/home/rods/dir1 does not exist
+running: irm -rf dir% 
+ERROR: rmUtil: srcPath /tempZone/home/rods/dir% does not exist
+running: imkdir dir1 
+running: imkdir dir% 
+running: imkdir dir1/s1 
+running: iput TestFile1 dir% 
+running: iput TestFile1 dir1/s1 
+running: iput TestFile1 dir1/s2 
+running: ichmod -r read u2 dir1 
+running: sleep 1 
+running: ils -rA dir1 dir% | grep read | wc -l 
+running: ichmod -r null u2 dir1 
+running: sleep 1 
+running: ils -rA dir1 dir% | grep read | wc -l 
+running: ichmod -r read u2 dir% 
+running: sleep 1 
+running: ils -rA dir1 dir% | grep read | wc -l 
+running: ichmod -r read u2 dir% 
+running: ichmod -r read u2 dir% 
+running: sleep 1 
+running: ils -rA dir1 dir% | grep read | wc -l 
+running: ichmod -r null u2 dir% 
+running: sleep 1 
+running: ils -rA dir1 dir% | grep read | wc -l 
+running: irm -fr dir1 
+running: irm -rf dir% 
+running: iadmin asq 'select user_name from R_USER_MAIN' 
+running: iquest --sql 'select user_name from R_USER_MAIN' 
+running: iadmin rsq 'select user_name from R_USER_MAIN' 
+running: iadmin asq 'select user_name from R_USER_MAIN' testAlias 
+running: iquest --sql testAlias 
+running: iadmin rsq testAlias 
+running: iquest "select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')" 
+running: iquest "select USER_NAME where USER_ID between '10000' '10110'" 
+running: iadmin rum 
+running: iadmin modresc Resc2 host foo.sdsc.edu 
+running: iadmin lr Resc2 
+running: iadmin rmresc Resc2 
+running: rm -rf /tmp/Vault 
+running: iadmin rmuser u2 
+Success

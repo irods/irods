@@ -1,0 +1,152 @@
+iRODS Session Variables
+
+More Information on Session Variables
+The availability of each Session Variable within Rule hooks (which are defined 
+in the core.irb file) depends on the nature of the operation when the Rule 
+is invoked. For example, when the iRODS Server is performing operations on
+a data object when the Rule is invoked, data object type Session Variables 
+will generally be available for the micro-services handling the Rule. 
+
+The available Session Variables can be grouped into five sets - SuserAndConn,
+SdataObj1, SdataObj2, SrescInfo, and Scollection.
+
+SuserAndConn are Session Variables relating to information on the client
+user and the current client/server connection. This set of Session Variables
+should be available in all Rules.
+
+SdataObj1 contains just one Session Variable - objPath. It is available in
+pre-processing Rules before a data object is created.
+
+SdataObj2 contains Session Variables relating to information on a data object.
+
+SrescInfo contains Session Variables relating to information on a data 
+storage resource.
+
+Scollection contains Session Variables relating to information on a 
+Collection.
+
+SuserAdmin contains Session Variables relating to information on users
+for administration purposes.
+
+The Session Variables for each set are defined below:
+
+SuserAndConn:
+userNameClient, rodsZoneClient, privClient, authStrClient, 
+userAuthSchemeClient, userNameProxy, rodsZoneProxy, privProxy, authStrProxy, 
+userAuthSchemeProxy, otherUser, connectCnt, connectSock, connectOption, 
+connectStatus, connectApiTnx
+
+SdataObj1:
+----------
+objPath
+
+SdataObj2:
+----------
+objPath, dataType, dataSize, chksum, version, filePath, replNum, replStatus, 
+writeFlag, dataOwner, dataOwnerZone, dataComments, dataAccess, 
+dataAccessInx, dataId, collId, statusString, destRescName, backupRescName
+
+SrescInfo:
+----------
+rescName, rescGroupName, zoneName, rescLoc, rescType, rescTypeInx, 
+rescClass, rescClassInx, rescVaultPath, rescMaxObjSize, freeSpace, 
+freeSpaceTimeStamp, rescInfo, rescId, rescComments 
+
+Scollection:
+------------
+collName, collParentName
+
+SuserAdmin1:
+------------
+otherUserName
+otherUserZone
+otherUserType
+
+SuserAdmin2:
+------------
+otherUserName
+otherUserZone
+
+The Session Variable sets that are available for each Rule are:
+----------------------------------------------
+
+1) acSetRescSchemeForCreate - SdataObj1 and SuserAndConn
+2) acPreprocForDataObjOpen - SdataObj2 and SrescInfo and SuserAndConn
+3) acSetMultiReplPerResc - SuserAndConn
+4) acPostProcForPut - SdataObj2 and SrescInfo and SuserAndConn
+5) acPostProcForCopy - SdataObj2 and SrescInfo and SuserAndConn
+6) acPostProcForFilePathReg - SdataObj2 and SrescInfo and SuserAndConn
+7) acPostProcForCreate - SdataObj2 and SrescInfo and SuserAndConn
+8) acPostProcForOpen - SdataObj2 and SrescInfo and SuserAndConn
+9) acSetNumThreads - SuserAndConn
+10) acDataDeletePolicy - SdataObj2 and SrescInfo and SuserAndConn
+11) acPostProcForDelete - SdataObj2 and SrescInfo and SuserAndConn
+12) acNoChkFilePathPerm - SdataObj2 and SrescInfo and SuserAndConn
+13) acTrashPolicy - SdataObj1 and SuserAndConn
+14) acSetPublicUserPolicy - SuserAndConn
+15) acSetPublicUserPolicy - SuserAndConn
+16) acSetVaultPathPolicy - SdataObj2 and SrescInfo and SuserAndConn
+17) acSetReServerNumProc - SuserAndConn
+18) acPreprocForCollCreate - Scollection and SuserAndConn
+19) acPostProcForCollCreate - Scollection and SuserAndConn
+20) acPretProcForRmColl - Scollection and SuserAndConn
+21) acPostProcForRmColl - Scollection and SuserAndConn
+22) acPreProcForModifyUser - SuserAndConn
+23) acPostProcForModifyUser - SuserAndConn
+24) acPreProcForModifyAVUmetadata - SuserAndConn
+25) acPostProcForModifyAVUmetadata - SuserAndConn
+26) acPreProcForCreateUser - SuserAndConn
+27) acPostProcForCreateUser - SuserAndConn
+28) acPreProcForDeleteUser - SuserAndConn
+29) acPostProcForDeleteUser - SuserAndConn
+28) acPreProcForCreateResource - SuserAndConn
+29) acPostProcForCreateResource - SuserAndConn
+30) acPreProcForCreateToken - SuserAndConn
+31) acPostProcForCreateToken - SuserAndConn
+32) acPreProcForModifyUserGroup - SuserAndConn
+33) acPostProcForModifyUserGroup - SuserAndConn
+34) acPreProcForDeleteResource - SuserAndConn
+35) acPostProcForDeleteResource - SuserAndConn
+36) acPreProcForDeleteToken - SuserAndConn
+37) acPostProcForDeleteToken - SuserAndConn
+38) acPreProcForModifyResource - SuserAndConn
+39) acPostProcForModifyResource - SuserAndConn
+40) acPreProcForModifyResourceGroup - SuserAndConn
+41) acPostProcForModifyResourceGroup - SuserAndConn
+42) acPreProcForModifyCollMeta - Scollection and SuserAndConn
+43) acPostProcForModifyCollMeta - Scollection and SuserAndConn
+44) acPreProcForModifyDataObjMeta - SdataObj1 and SuserAndConn
+43) acPostProcForModifyDataObjMeta - SdataObj1 and SuserAndConn
+44) acPreProcForModifyAccessControl - SuserAndConn
+45) acPostProcForModifyAccessControl - SuserAndConn
+46) acPreProcForObjRename - SdataObj1 and SuserAndConn
+47) acPostProcForObjRename - SdataObj1 and SuserAndConn
+48) acPreProcForGenQuery - SuserAndConn
+49) acPostProcForGenQuery - SuserAndConn
+
+Session Variable sets for Administrative Rules:
+
+acCreateUser - SuserAdmin and SuserAndConn 
+acCreateUserF1 - SuserAdmin1 and SuserAndConn 
+acVacuum - SuserAndConn
+acCreateDefaultCollections - SuserAdmin1 and SuserAndConn 
+acCreateUserZoneCollections - SuserAdmin1 and SuserAndConn 
+acCreateCollByAdmin - SuserAndConn 
+acDeleteUser - SuserAdmin2 and SuserAndConn 
+acDeleteUserF1 - SuserAdmin2 and SuserAndConn 
+acDeleteDefaultCollections - SuserAdmin2 and SuserAndConn 
+acDeleteUserZoneCollections - SuserAndConn
+acDeleteCollByAdmin - SuserAndConn
+acRenameLocalZone - SuserAndConn
+acGetUserByDN - SuserAndConn
+acAclPolicy - None
+
+When micro-services are executed using the irule command, only the 
+SuserAndConn set will be available for these micro-services.
+
+Note: The msiGetSessionVarValue can be used to list all available
+Session Variables for each Rule in the log file. e.g.,
+acPostProcForRmColl||msiGetSessionVarValue(all,all)|nop
+
+
+

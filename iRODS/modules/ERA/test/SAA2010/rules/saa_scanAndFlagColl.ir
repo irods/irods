@@ -1,0 +1,3 @@
+scanAndFlag||acScanLoadingRescAndFlagColl(*collection)|nop
+*collection=$1
+ruleExecOut

@@ -1,0 +1,5 @@
+acRegisterData|$dataType like *image*|msiRegisterData##acExtractMetadataForImageForRaja|nop##recover_msiRegisterData##nop
+acRegisterData|$objPath like /home/raja@sdsc/myImportantFiles* && $dataSize > 10000000 |msiRegisterData##msiQueue(msiReplicateData(hpss-sdsc))|recover_msiRegisterData##recover_msiReplicateData
+acRegisterData|$objPath like /home/raja@sdsc/myImportantFiles*|msiRegisterData##msiReplicateData(unix-sdsc)|recover_msiRegisterData##recover_msiReplicateData
+acDeleteData|$objPath like /home/raja@sdsc/myProtectedFiles*|cut##fail|nop##nop
+acGetResource|$dataSize > 10000000 |msiSetResource(hpss-sdsc)|nop

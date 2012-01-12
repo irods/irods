@@ -1,0 +1,3 @@
+exportRecursiveCollMeta||msiExportRecursiveCollMeta(*Source_Path, *BUF)##writeBytesBuf(stdout,*BUF)|nop
+*Source_Path=/tempZone/home/antoine
+ruleExecOut

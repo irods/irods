@@ -1,0 +1,3 @@
+Merge Collections||msiCollectionSpider(*Collection, *Objects, msiMergeDataCopies(*Objects, *Collection, *MasterColl, *Status)##writeLine(stdout, *Objects)##writePosInt(stdout, *Status)##writeLine(stdout, ""), *globStatus)##writeLine(stdout, "--Done--")|nop
+*Collection=/tempZone/home/rods/othercoll%*MasterColl=/tempZone/home/rods/mastercoll
+ruleExecOut

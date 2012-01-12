@@ -1,0 +1,4 @@
+myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiDataObjTrim(*B,tgReplResc,null,1,null,*C),nop)|nop##nop
+*Action=trim%*Condition= COLL_NAME = '/tempZone/home/rods/loopTest'
+*Action%*Condition%ruleExecOut
+

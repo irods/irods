@@ -1,0 +1,3 @@
+myTestRule||msiExecStrCondQuery(*A 'foo%' ,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop
+*A=SELECT DATA_NAME , DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE  %*K=--------HAHAHAHAH-------------
+*Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut%*K

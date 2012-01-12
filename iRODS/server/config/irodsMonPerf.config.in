@@ -1,0 +1,7 @@
+# The configuration file irodsMonPerf.config is used by the monitoring and load balancing system.
+# If you want to monitor all your physical resources, it is not needed.
+# If you want to monitor only a subset of servers, then you should:
+#        1- rename this file irodsMonPerf.config.in into irodsMonPerf.config
+#        2- list them below: 1 server per line. # is for commented lines.
+# 
+#irodsserver.foo1.foo2

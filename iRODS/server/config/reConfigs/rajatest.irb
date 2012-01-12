@@ -1,0 +1,23 @@
+pvacuum(*arg1,*arg2)||delayExecNew(msiTest,*arg2)|nop
+r2(*A,*B,*C,*D)||msitest1(*A,*B,*C)##msitest2(*C,*D,*E)##msitest3(*A,*B,*D)|nop##nop##nop
+r1||delayExec(aa(x,y,z),<UN>sekar</UN><EA>andal.sdsc.edu</EA>)|nop
+acRegisterData|$dataType like *image*|msiRegisterData##acExtractMetadataForImageForRaja|nop##recover_msiRegisterData##nop
+acRegisterData|$objPath like /home/raja@sdsc/myImportantFiles* && $dataSize > 10000000 |msiRegisterData##msiQueue(msiReplicateData(hpss-sdsc))|recover_msiRegisterData##recover_msiReplicateData
+acRegisterData|$objPath like /home/raja@sdsc/myImportantFiles*|msiRegisterData##msiReplicateData(unix-sdsc)|recover_msiRegisterData##recover_msiReplicateData
+acDeleteData|$objPath like /home/raja@sdsc/myProtectedFiles*|cut##fail|nop##nop
+acRegisterData|$objPath like /home/collections.nvo/2mass/fits-images/*|cut##acCheckDataType(fits image)##msiSetResource(nvo-image-resource)##msiRegisterData##msiAddACLForDataToUser(2massusers.nvo,write)##msiExtractMetadataForFitsImage|nop##nop##nop##recover_msiRegisterData##recover_msiAddACLForDataToUser##recover_msiExtractMetadataForFitsImage
+acRegisterData|$objPath like /home/collections.nvo/2mass/*|acGetResource##msiRegisterData##msiAddACLForDataToUser(2massusers.nvo,write)|nop##recover_msiRegisterData##recover_msiAddACLForDataToUser
+acDeleteData|$objPath like /home/collections.nvo/2mass/*|cut##msiCheckPermission(curate)##msiDeleteData|nop##nop##recover_msiDeleteData
+acGetResource|$dataSize > 10000000 |msiSetResource(hpss-sdsc)|nop
+acGetResource|$rescName == null|msiGetClosestResourceToClient|nop
+acGetResource||nop|nop
+acCheckDataType|$ARG[0] == $dataType|nop|nop
+acExtractMetadata|$dataType == fits image|msiExtractMetadataForFitsImage|recover_msiExtractMetadataForFitsImage
+acExtractMetadata|$dataType == dicom image|msiExtractMetadataForDicomData|recover_msiExtractMetadataForDicomData
+acDataObjCreate||acSetCreateConditions##acDOC|nop##null
+acSetCreateConditions||msiGetNewObjDescriptor##acSetResourceList|recover_msiGetNewObjDescriptornop##nop
+acDOC||msiPhyDataObjCreate##acRegisterData##msiCommit|recover_msiPhyDataObjCreate##nop##msiRollback
+acSetResourceList||msiSetResourceList|nop
+acSetCopyNumber||msiSetCopyNumber|nop
+acRegisterData||msiRegisterData|msiRollback
+acPostProcForPut||delayExec(msiReplDataObj(demoResc8),nop)|nop

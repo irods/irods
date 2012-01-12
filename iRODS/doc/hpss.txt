@@ -1,0 +1,47 @@
+The following steps are needed to build and configure HPSS enabled servers.
+
+A. Building a HPSS enabled server
+
+1) Edit the config/config.mk file:
+    . uncomment the line HPSS=1, e.g.,
+        HPSS=1
+    . define the HPSS_LIB_DIR (the hpss libraries directory) and 
+      HPSS_HDR_DIR (the hpss header directory). e.g.,
+        HPSS_LIB_DIR=/opt/hpss/lib
+        HPSS_HDR_DIR=/opt/hpss/include
+    . If the the UNix password authentication is to be used instead of the
+      default of using the keytab file, uncomment the line the 
+	 HPSS_UNIX_PASSWD_AUTH=1
+2) cd to the irods home directory and type in "make" to re-make the server.
+
+B. Configurating a HPSS enabled server
+
+1) cd to the server/config directory and use the template files 
+   hpssAuth.template and hpssCosConfig.template for the hpssAuth and
+   hpssCosConfig files. e.g., 
+      cp hpssAuth.template hpssAuth
+      cp hpssCosConfig.template hpssCosConfig
+
+   and edit the hpssAuth and hpssCosConfig files according to the instructions
+   given in these files. The hpssAuth file configures the HPSS authentication
+   for the driver and the hpssCosConfig configures the COS (class of services)
+   for the driver.
+
+2) create a HPSS resource - The HPSS driver is implemented as a compound
+   class resource because of the parallel transfer mode of HPSS. As explained
+   in this link: https://www.irods.org/index.php/resource, the compound
+   resource implementation requires a cache class resource to be configured 
+   in the same resource group as the compound resource. Data stored in 
+   the compound resource cannot be accessed directly but through the cache 
+   resource. The following gives an example of creating a HPSS resource 
+   using iadmin:
+      iadmin mkresc hpssResc hpss compound nacho.sdsc.edu /home/irods/Vault 
+   
+3) Add the HPSS and cache resources to a resource group. e.g.,
+      iadmain atrg myrescGroup hpssResc
+      iadmain atrg myrescGroup cacheResc
+
+   Note: the cacheResc resource must be on a HPSS enabled server and does
+   not have to be on the same host as the hpssResc. This way, multiple
+   cache resources on different hosts can be used as the front-end for
+   the HPSS resource.

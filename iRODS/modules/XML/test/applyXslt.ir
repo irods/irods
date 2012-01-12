@@ -1,0 +1,3 @@
+Apply XSLT Stylesheet||msiXsltApply(*xsltObjPath, *xmlObjPath, *BUF)##writeBytesBuf(stdout,*BUF)|nop
+*xmlObjPath=/tempZone/home/antoine/AIP/XML/I0024590A_jpg.xml%*xsltObjPath=/tempZone/home/antoine/AIP/templates/AIPtoDIP.xsl
+ruleExecOut

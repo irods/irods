@@ -1,0 +1,13 @@
+# This is the HPSS COS (class of service) configuration file. This file
+# is needed only if this iRods server is HPSS enabled (i.e., HPSS defined)
+# in the config.mk file. The COS definition should be entered one COS
+# per line. Each line should have two or three entries. The first entry
+# is the Class of Service ID followed by the Maximum file size in 
+# KBytes of this COS. The optional third entry may contain the keyword 
+# "default_cos" which indicates that this COS is the default COS. i.e., the 
+# "size" input of the Create call is unknown (-1), this class will be 
+# chosen.
+4        256
+502        8194			# small 2 copies. Size is in KBytes.
+510       921600	default_cos
+520       204800000

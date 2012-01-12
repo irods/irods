@@ -1,0 +1,23 @@
+#Demo about ingesting into different collections
+#acPostProcForPut|$objPath like /tempZone/home/rods/nara/*|msiSendMail(mark.conrad@nara.gov, new file notification, A new file$objPath has been added to collection)|nop
+#acPostProcForPut|($objPath like /tempZone/home/rods/sizetest/*) && ($dataSize < 1000)| acWriteLine(serverLog,"using small resource")|nop
+#acPostProcForPut|($objPath like /tempZone/home/rods/sizetest/*) && ($dataSize >= 1000)| acWriteLine(serverLog,"using large resource")|nop
+acPostProcForPut|$objPath like /tempZone/home/rods/versiontest/*|msiGetIcatTime(*Time,icat)##msiDataObjCopy($objPath,$objPath.V*Time,nvoReplResc,*JStat)|nop
+acPostProcForPut|$objPath like *.email|mDExtract(/tempZone/home/rods/MDtest/email.tag,$objPath)| nop
+acPostProcForPut|$objPath like /tempZone/home/rods/mytest/*|delayExec(<PLUSET>1m</PLUSET>,acWriteLine(serverLog,"delayed by a minute message1")##acWriteLine(serverLog,"delayed by a minute message2"),nop)|nop
+acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
+acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(tgReplResc,null)|nop
+mDExtract(*A,*B)||openObj(*A,*T_FD)##readObj( *T_FD, 10000,*R1_BUF)##getTagsForKV( *R1_BUF, *TSP)##closeObj(*T_FD,*J1)##openObj( *B,*M_FD)##readObj( *M_FD, 10000, *R2_BUF)##getKVPairsUsingTags( *R2_BUF,*TSP, *KVP)##closeObj(*T_FD,*J1)##closeObj(*M_FD,*J2)##findObjType( *B,*OTYP)##ingestBulkMD( *KVP, *B, *OTYP)|nop
+#approval flag workflow rules
+approvalFlagA(*MailTo)||msiMakeQuery(COLL_NAME,META_COLL_ATTR_NAME = 'AFlag' and META_COLL_ATTR_VALUE = '1',*QueryC)##msiExecStrCondQuery(*QueryC,*GenCOut)##forEachExec(*GenCOut,msiGetValByKey(*GenCOut,COLL_NAME,*C)##msiMakeQuery(DATA_NAME,COLL_NAME = '*C' ,*QueryD)##msiExecStrCondQuery(*QueryD,*GenDOut)##forEachExec(*GenDOut,msiGetValByKey(*GenDOut,DATA_NAME,*D)##msiDataObjRepl(*C/*D,nvoReplResc,*junk1)##writeLine(stdout,Replicated *C/*D)##msiString2KeyValPair(AFlag=1,*KVPD)##msiAssociateKeyValuePairsToObj(*KVPD,*C/*D,-d),nop##nop##nop##nop##nop)##msiString2KeyValPair(BFlag=1,*KVPC)##msiAssociateKeyValuePairsToObj(*KVPC,*C,-c)##writeLine(stdout,Set BFlag = 1 for *C),nop##nop##nop##nop##nop##nop##nop)##sendStdoutAsEmail(*MailTo,ApprovalFlagA Results)|nop##nop
+approvalFlagA(*MailTo)||nop|nop
+approvalFlagB(*TagFile,*MailTo)||msiMakeQuery(COLL_NAME,META_COLL_ATTR_NAME = 'BFlag' and META_COLL_ATTR_VALUE = '1',*QueryC)##msiExecStrCondQuery(*QueryC,*GenCOut)##forEachExec(*GenCOut,msiGetValByKey(*GenCOut,COLL_NAME,*C)##msiMakeQuery(DATA_NAME,COLL_NAME = '*C',*QueryD)##msiExecStrCondQuery(*QueryD,*GenDOut)##forEachExec(*GenDOut,msiGetValByKey(*GenDOut,DATA_NAME,*D)##assign(*DataVal,*C/*D)##mDExtract(*TagFile,*DataVal)##writeLine(stdout,Metadata Extracted for *C/*D)##msiString2KeyValPair(BFlag=1,*KVPD)##msiAssociateKeyValuePairsToObj(*KVPD,*C/*D,-d),nop##nop##nop##nop##nop)##msiString2KeyValPair(CFlag=1,*KVP)##msiAssociateKeyValuePairsToObj(*KVP,*C,-c)##writeLine(stdout,Set CFlag = 1 for *C),nop##nop##nop##nop##nop##nop)##sendStdoutAsEmail(*MailTo,ApprovalFlagB Results)|nop##nop
+approvalFlagB(*TagFile,*MailTo)||nop|nop
+acStringBufferPut(*File,*Buffer,*Resc)||msiDataObjCreate(*File,*Resc,*D_FD)##msiDataObjWrite(*D_FD,*Buffer,*WLen)##msiDataObjClose(*D_FD,*junk2)|nop
+acStringBufferPut(*File,*Buffer,*Resc)||msiDataObjOpen(*File,*D_FD)##msiDataObjLseek(*D_FD,0,SEEK_END,*junk1)##msiDataObjWrite(*D_FD,*Buffer,*WLen)##msiDataObjClose(*D_FD,*junk2)|nop
+acMakeVersionOnPut||msiGetIcatTime(*Time,icat)##msiDataObjCopy($objPath,$objPath.V*Time,nvoReplResc,*JStat)|nop
+aatest(*A,*B)|(*A == one) %% (*A == two) | assign(*B,100)|nop
+aatest(*A,*B)|(*A == three) | assign(*B,200)|nop
+aatest(*A,*B)|(*A > 100) && (*A < 300) | assign(*B,500)|nop
+aatest(*A,*B)|| assign(*B,9999)|nop
+acWriteLine(*A,*B)||writeLine(*A,*B)|nop

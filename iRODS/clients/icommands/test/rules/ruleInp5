@@ -1,0 +1,25 @@
+myTestRule||assign(*A,0)##whileExec( *A < 20 , assign(*A, *A + 4), nop)|nop##nop 
+###myTestRule||forExec(assign(*A,0), *A < *D , assign(*A,*A + 4), print_hello_arg(*A),nop)|nop
+###myTestRule||ifExec(*A > *D,assign(*A,*D),nop,assign(*D,*A),nop)|nop
+###myTestRule||writeString(stdout,alpha beta gamma)##writeString(stdout,alpha beta gamma)##writeString(stderr,Error:blah)|nop
+###myTestRule||writeLine(stdout,alpha beta gamma)##writeLine(stdout,alpha beta gamma)##writeLine(stderr,Error:blah)|nop
+###myTestRule||msiSendMail(moore@sdsc.edu,irods test,mail sent by an msi.did you get this)|nop
+###myTestRule||msiSendMail(sekar@sdsc.edu,irods test,mail sent by an msi.did you get this)|nop
+###myTestRule||delayExec(<PLUSET>2m</PLUSET>,msiSendMail(sekar@sdsc.edu,irods test,mail sent by an msi.did you get this),nop)|nop
+###myTestRule||forEachExec(*A,writeLine(stdout,*A),nop)|nop
+###myTestRule||msiExecStrCondQuery(*A 'foo%' ,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop
+###myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*DEP),nop)|nop##nop
+###myTestRule||msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*DEP),nop)|nop##nop
+###myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiDataObjRepl(*B,testresource,*Junk),nop)|nop##nop
+###myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiDataObjTrim(*B,testresource,null,1,null,*C),nop)|nop##nop
+###*DEP=--------HAHAHAHAH-------------%*Action=list%*Condition= COLL_NAME = '/tempZone/home/rods'
+###*Action=trim%*Condition= COLL_NAME = '/tempZone/home/rods'
+###*Action=replicate%*Condition=%*K=---------------------
+###*Action=replicate%*Condition= COLL_NAME = '/tempZone/home/rods'%*K=---------------------
+###*A=SELECT DATA_NAME , DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE  %*K=--------HAHAHAHAH-------------
+*A=1000%*D= (199 * 2) + 200
+###*A=123,345,567,678
+###*A="123%234%333"
+###*A="aaa%bbb%ccc%ddd"
+*Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut
+

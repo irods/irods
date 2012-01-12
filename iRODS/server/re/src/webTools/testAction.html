@@ -1,0 +1,125 @@
+<HTML>
+<HEAD>
+<TITLE>iRODS - Rule Administrator</TITLE>
+</HEAD>
+<body BGCOLOR=#FFFFFF>
+<FORM METHOD="GET" ACTION="https://srb.npaci.edu/cgi-bin/ruleAdminRaja.cgi">
+<input type=hidden name=func value=applyRule>
+<TABLE CELLPADDING=0 CELLSPACING=0>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Rule Sets:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>
+  <OPTION>raja
+  <OPTION>raja2
+</SELECT></TD></TR>
+<TR><TD></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>
+  <OPTION>nvo
+</SELECT></TD></TR>
+<TR><TD></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>misc
+  <OPTION>
+</SELECT></TD></TR>
+<TR><TD></TD><TD>
+<SELECT SIZE=1 NAME=ruleSet>
+  <OPTION SELECTED>core
+  <OPTION>core2
+  <OPTION>
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Action:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=action>
+  <OPTION SELECTED>acDataObjCreate
+  <OPTION>register_data
+  <OPTION>delete_data
+  <OPTION>get_resource
+  <OPTION>check_data_type
+  <OPTION>extract_metadata_for_image
+  <OPTION>create_user
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$objPath:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=objPath>
+  <OPTION SELECTED>/home/collections.nvo/2mass/images/foo
+  <OPTION>/home/collections.scec/socal/images/foo
+  <OPTION>/home/collections.nvo/2mass/fits-images/foo
+  <OPTION>/home/sekar@sdsc/foo.txt
+  <OPTION>/home/sekar@sdsc/myProtectedFiles/bar.txt
+  <OPTION>/home/raja@sdsc/testColl/t2.fits
+  <OPTION>/home/raja@sdsc/myImportantFiles/t5.txt
+  <OPTION>/home/raja@sdsc/testColl/t2.fits
+  <OPTION>/home/raja@sdsc/foo.txt
+  <OPTION>/home/raja@sdsc/myImportantFiles/images/foo.gif
+  <OPTION>/home/raja@sdsc/myProtectedFiles/images/foo.gif
+  <OPTION>/home/raja@sdsc/myNonProtectedFiles/images/foo.gif
+  <OPTION>/home/collections.nvo/2mass/fits-images/f1.fits
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$rescName:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=rescName>
+  <OPTION SELECTED>unix-sdsc
+  <OPTION>null
+  <OPTION>samfs
+  <OPTION>umiacs-hpss
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$dataType:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=dataType>
+  <OPTION SELECTED>fits image
+  <OPTION>jpeg image
+  <OPTION>text
+  <OPTION>dicom image
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$hostClient:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=hostClient>
+  <OPTION SELECTED>multivac.sdsc.edu
+  <OPTION>andol.sdsc.edu
+  <OPTION>mimsy.umiacs.edu
+  <OPTION>save.nara.gov
+  <OPTION>null
+  <OPTION>
+</SELECT></TD></TR></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$dataSize:</FONT></TD><TD>
+<input type=text name=dataSize value=100></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$dataOwner:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=dataOwner>
+  <OPTION SELECTED>raja@sdsc|z1
+  <OPTION>
+  <OPTION>moore@sdsc|z1
+  <OPTION>mike@sdsc|z1
+  <OPTION>chadduck@nara|z2
+  <OPTION>jaja@umiacs|z3
+  <OPTION>mike@umiacs|z3
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$dataUser:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=dataUser>
+  <OPTION SELECTED>raja@sdsc|z1
+  <OPTION>
+  <OPTION>moore@sdsc|z1
+  <OPTION>mike@sdsc|z1
+  <OPTION>chadduck@nara|z2
+  <OPTION>jaja@umiacs|z3
+  <OPTION>mike@umiacs|z3
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>$dataAccess:</FONT></TD><TD>
+<SELECT SIZE=1 NAME=dataAccess>
+  <OPTION SELECTED>read
+  <OPTION>
+  <OPTION>write
+  <OPTION>delete
+  <OPTION>own
+  <OPTION>curate
+</SELECT></TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Show Rule Execution Trace</FONT></TD><TD>
+<INPUT TYPE="RADIO" NAME ="retestflag" VALUE="2" CHECKED>
+</TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Show microServices Only</FONT></TD><TD>
+<INPUT TYPE="RADIO" NAME ="retestflag" VALUE="4" >
+</TD></TR>
+<TR><TD ALIGN=RIGHT><FONT COLOR=#0000FF>Location of Configuration Files</FONT></TD><TD>
+<INPUT TYPE="TEXT" NAME ="configDir" VALUE="" >
+</TD></TR>
+
+<TR><TD ALIGN=RIGHT><INPUT TYPE=submit VALUE="Action"></FORM></TD></TR>
+</TABLE>
+</body>
+
+</HTML>

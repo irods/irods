@@ -1,0 +1,4 @@
+z3950Rule||msiz3950Submit(*server,*query,*recordSyntax,*out)|nop
+*server=z3950.loc.gov:7090/Voyager%*query=@attr 1=1003 Marx%*recordSyntax=USMARC
+*out%ruleExecOut
+

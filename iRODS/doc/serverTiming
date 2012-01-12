@@ -1,0 +1,70 @@
+Sequence of tasks performed during connection from clients:
+-----------------------------------------------------------
+
+1) iRodsServer listen on a well known port 
+2) Client connects to the well-known port.
+3) Client sends the startup Packet (info on userName, zone, version, 
+protocol ...)
+4) iRodsServer read the startup Packet
+5) iRodsServer forks a child to handling the connection.
+6) The child exec iRodsAgent.
+7) iRodsAgent calls initAgent to initialize the irods data structures 
+including querying the iCat for resource and zone information.
+8) iRodsAgent calls sendVersion to send a short massage to the client
+including the version of the server to inform the client the connection
+has been established.
+9) client makes AUTH_REQUEST and AUTH_RESPONSE calls to authenticate,
+
+Timing Results
+---------------
+All values are given in milliseconds - average(min-max) of 10 timing runs.
+
+Process: iRodsServer
+
+Tasks             IES(one.ucsd.edu)   IES(srbbrick8)        non-IES(srbbrick7)
+-----------------------------------------------------------------------------
+read StartupPack  0.14(0.13-0.15)     0.41(0.35-0.78) 	    0.39(0.38 - 0.41)
+fork agent 	  2.0(1.9-2.2) 	      4.01(0.50-5.60)       2.7(2.6-2.8)
+
+
+Process: iRodsAgent
+
+Tasks             IES(one.ucsd.edu)   IES(srbbrick8)        non-IES(srbbrick7)
+-----------------------------------------------------------------------------
+fork (2)         0.05(0.04-0.09)     0.12(0.09-0.29)        0.11(0.10-0.13) 
+exec             1.0 (1.0 - 1.0)     12.0 (10.4 - 25.8)     1.97 (1.89 - 2.10)
+initAgent        76.7(71.0-98.7)     122.0(118.8-128.0)     33.3(27.8-35.3) 
+sendVersion      0.22(0.17-0.38)     0.28( 0.26- 0.40)      0.23(0.22-0.23)
+challenge/response 2.5(2.3-4.0)      7.3(6.8-10.4)          4.53(4.46-4.64) 
+
+Notes:
+
+1) one.ucsd.edu is a Intel dual core system. srbbrick8 and srbbrick7 are
+relatively old SRB bricks with Intel Celeron processors.
+2) For the irodsAgent, the timing for forking represents the time between
+the parent (iRodsServer) issues the fork call and the child executes its 
+first instruction.
+
+Under heavy load conditions
+---------------------
+Scripts to run multiple ils concurrently. Can have up to 50 agent processes 
+running at a time. All runs for IES(one.ucsd.edu).
+
+Process: iRodsServer
+
+Tasks             Light load          Heavy load
+-----------------------------------------------------------------------------
+read StartupPack  0.14(0.13-0.15)     0.12 (0.10-0.15)
+fork agent        2.0(1.9-2.2)        51.0(43.2-57.6)
+
+
+Process: iRodsAgent
+
+Tasks             Light load          Heavy load
+-----------------------------------------------------------------------------
+fork (2)          0.05(0.04-0.09)     3.2(0.4-5.2)
+exec              1.0 (1.0 - 1.0)     5.8 (1.2-29.8)
+initAgent         76.7(71.0-98.7)     192.0(164.17-202.5)
+sendVersion       0.22(0.17-0.38)     14.0(9.1-17.9)
+challenge/response 2.5(2.3-4.0)       11.7(9.8-16.7)
+

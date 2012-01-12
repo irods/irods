@@ -1,0 +1,153 @@
+#
+# iRODS Postgres installation configuration file
+#	This file has important configuration settings for selecting,
+#	downloading, and installing a version of the Postgres database
+#	for use by iRODS.
+#
+# 	** Ignore this file if Postgres is already installed **
+#
+
+# Variables you may use when setting these values
+# 	$IRODS_HOME is the iRODS home directory.
+#
+# 	$thisUser is your user name.
+#
+# 	$thisDate is the current date, with spaces
+# 	replaced with underbars.
+#
+
+
+
+
+
+# Download files
+#	$POSTGRES_SOURCE is the name of the Postgres source
+#	file to download from the Postgres FTP site.
+#
+#	$ODBC_SOURCE is the name of the ODBC driver source
+#	file to download and install for Postgres.
+#	If this name starts with 'unixODBC', it will be
+#	downloaded from the UNIX ODBC FTP site, otherwise
+#	it will be downloaded from the Postgres FTP site.
+#
+# Defaults:
+# 	There are none.
+#
+# Examples:
+#	$POSTGRES_SOURCE = "postgresql-8.2.5.tar.gz";
+#	$ODBC_SOURCE = "psqlodbc-07.03.0200.tar.gz";
+#   or
+#	$POSTGRES_SOURCE = "postgresql-8.4.4.tar.gz";
+#	$ODBC_SOURCE = "unixODBC-2.2.12.tar.gz";
+#
+# These values must be set in this file.
+$POSTGRES_SOURCE = "postgresql-9.0.3.tar.gz";
+$ODBC_SOURCE     = "unixODBC-2.2.12.tar.gz";
+
+
+
+
+
+# Install directories
+#	$POSTGRES_SRC_DIR is the name of the directory into which
+#	to place Postgres source as a subdirectory.  Relative
+#	paths are relative to the iRODS home directory.
+#
+#	$POSTGRES_HOME is the name of the home directory for the
+#	installed Postgres.  Relative paths are relative to
+#	the iRODS home directory.
+#
+#	$DOWNLOAD_DIR is the name of the temporary directory in which
+#	to place the downloaded files before they are moved to the
+#	above directories.  The default depends upon your OS, but it
+#	is often /tmp, /usr/tmp, or /var.  This is usually left as
+#	the default.
+#
+# Defaults:
+#	$POSTGRES_SRC_DIR = "../iRodsPostgres";
+#	$POSTGRES_HOME = "../iRodsPostgres/pgsql";
+#	$DOWNLOAD_DIR = OS dependent, but often /tmp
+#
+# Examples:
+# 	$POSTGRES_SRC_DIR = "/usr/share/Postgres";
+# 	$POSTGRES_HOME = "/usr/share/Postgres/pgsql";
+# 	$DOWNLOAD_DIR = "/var";
+#
+# Normally, none of these values are set here.  Use the defaults.
+
+
+
+
+
+# Postgres access
+#	$POSTGRES_PORT is the port number for Postgres to listen to.
+#	This defaults to '5432'.
+#
+#	$POSTGRES_ADMIN_NAME is the name of the user account for
+#	Postgres administration.  This defaults to your user name.
+#
+#	$POSTGRES_ADMIN_PASSWORD is the database password for the
+#	administrator account.  If this is not set here, it will
+#	be prompted for during installation.
+#
+# Defaults:
+#	$POSTGRES_PORT = "5432";
+#	$POSTGRES_ADMIN_NAME = $thisUser;
+#	$POSTGRES_ADMIN_PASSWORD = no default, prompted for
+#
+# Examples:
+#	$POSTGRES_PORT = "5432";
+#	$POSTGRES_ADMIN_NAME = "myname";
+#	$POSTGRES_ADMIN_PASSWORD = "mypassword";
+#
+# Normally, none of these values are set here.  Use the defaults.
+
+
+
+
+
+# FTP access
+# 	$POSTGRES_FTP_HOST is Postgres FTP host name to download from.
+#
+# 	$POSTGRES_FTP_ACCOUNT_NAME is the name of the FTP account to
+# 	use when downloading Postgres source.
+#
+# 	$POSTGRES_FTP_ACCOUNT_PASSWORD is the password for the FTP account to
+# 	use when downloading Postgres source.
+#
+# 	$POSTGRES_FTP_POSTGRES_DIR is the directory path for Postgres source
+# 	at the Postgres FTP site.
+#
+# 	$POSTGRES_FTP_ODBC_DIR is the directory path for Postgres ODBC source
+# 	at the Postgres FTP site.
+#
+#
+# 	$UNIXODBC_FTP_HOST is UNIX ODBC FTP host name to download from.
+#
+# 	$UNIXODBC_FTP_ACCOUNT_NAME is the name of the FTP account to
+# 	use when downloading UNIX ODBC source.
+#
+# 	$UNIXODBC_FTP_ACCOUNT_PASSWORD is the password for the FTP account to
+# 	use when downloading UNIX ODBC source.
+#
+# 	$UNIXODBC_FTP_ODBC_DIR is the directory path for UNIX ODBC source
+# 	at the UNIX ODBC FTP site.
+#
+# Defaults (set in scripts/perl/installPostgres.pl):
+# 	$POSTGRES_FTP_HOST = "ftp10.us.postgresql.org";
+# 	$POSTGRES_FTP_ACCOUNT_NAME = "anonymous";
+# 	$POSTGRES_FTP_ACCOUNT_PASSWORD = "anonymous@";
+# 	$POSTGRES_FTP_POSTGRES_DIR = "postgresql/source";
+# 	$POSTGRES_FTP_ODBC_DIR = "postgresql/odbc/versions/src";
+# 
+# 	$UNIXODBC_FTP_HOST = "ftp.unixodbc.org";
+# 	$UNIXODBC_FTP_ACCOUNT_NAME = "anonymous";
+# 	$UNIXODBC_FTP_ACCOUNT_PASSWORD = "anonymous@";
+# 	$UNIXODBC_FTP_ODBC_DIR = "pub/unixODBC";
+#
+# Normally, none of these values are set here.  Use the defaults.
+
+
+
+
+

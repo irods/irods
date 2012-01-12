@@ -1,0 +1,4 @@
+msiChkDataType.ir||msiChkDataType(*Source_Path,*SizeMin,*SizeMax,*B)##writeLine(stdout,*B)|nop
+*Source_Path=$1%*SizeMin=$2%*SizeMax=$3
+ruleExecOut
+

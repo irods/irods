@@ -1,0 +1,3 @@
+myTestRule||msiGetRulesFromDBIntoStruct(*BaseName,*VersionStr, *CS)##msiAdmWriteRulesFromStructIntoFile(*FileName,*CS)|nop
+*FileName=$newalpha%*BaseName=$alpha%*VersionStr=$0
+*FileName%*BaseName%*VersionStr

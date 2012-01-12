@@ -1,0 +1,3 @@
+myTestRule||assign(*A, 200 + 300 )|nop
+*D=200 + 200
+*A%*B%*C%*D%*E

@@ -1,0 +1,18 @@
+# This file defines the configurations for connection control.
+# The first input line should contain the keyword "maxConnections" followed
+# by an integer which specifies the maximum number of connections allowed
+# for this server. For example,
+# maxConnections     100
+# If this line is not input, no control on the number of connections is 
+# assumed. If the input value is 0, no connection is allowed.
+# The second line should contain the keyword "allowUserList" or 
+# "disallowUserList" if connection control by user is to be enforced. 
+# No keyword line means there is no connection control by user.
+# This file cannot contain both keywords. 
+# The keyword line should be followed by a list of users, one user per line.
+# For example: 
+# allowUserList
+# rods#tempZone
+# john#sdscZone
+#
+

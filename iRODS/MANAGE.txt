@@ -1,0 +1,94 @@
+		    Scripts for managing iRODS servers
+			Last updated September 2009
+
+
+The iRODS distribution includes shell/Perl scripts to manage iRODS
+after it has been installed (see INSTALL.txt).
+
+
+
+
+
+1.  Start and stop the servers
+------------------------------------------------------------------------
+
+1.1.  Starting the iRODS and database servers
+
+Run:
+	./irodsctl start
+
+If the database server was configured as dedicated for iRODS use, this
+will start the database server as well.
+
+You can also start the iRODS and database servers individually:
+
+	./irodsctl dbstart
+	./irodsctl istart
+
+
+1.2.  Stopping the iRODS and database servers
+
+Run:
+	./irodsctl stop
+
+If the database server was configured as dedicated for iRODS use, this
+will stop the database server as well.
+
+You can also stop the iRODS and database servers individually:
+
+	./irodsctl istop
+	./irodsctl dbstop
+
+
+
+1.3.  Restarting the iRODS and database servers
+
+Run:
+	./irodsctl restart
+
+This is the same as running 'stop' then 'start'.
+
+You can also restart the iRODS and database servers individually:
+
+	./irodsctl irestart
+	./irodsctl dbrestart
+
+
+
+1.4.  Checking if the servers are running
+
+Run:
+	./irodsctl status
+
+This lists the iRODS and database servers running, and their process IDs.
+
+
+
+
+
+2.  Testing the servers
+------------------------------------------------------------------------
+
+Normally, a simple iput and iget is all you need to run to test much
+of the irods installation.  This will verify that the clients and
+servers can communicate, that the server can communicate with the
+DBMS, and that other infrastructure is in place and set up properly.
+
+
+Run:
+	iinit
+	ls > testfile
+	iput testfile
+	ils -l
+	rm testfile
+	iget testfile
+	irm testfile
+	irmtrash
+
+
+There is also a 'irodsctl devtest' which runs an extensive set of
+tests but normally you do not need to run this.  It will completely
+succeed only on the ICAT-Enabled Server host and only if a number of
+default settings are used (resource names, etc).  We run the 'irodsctl
+devtest' test suite as part of our continuous build/test system to
+verify that the current code base builds and runs properly.

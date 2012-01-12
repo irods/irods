@@ -1,0 +1,107 @@
+A compound resource is a class where the POSIX type I/O calls such as open, 
+read, write, lseek, close, etc are not readily available. Instead,
+it uses put and get calls to transfer entire files. Examples of the 
+compound resource class are FTP, gridFTP, the HPSS parallel I/O and UK's ADS. 
+The compound resource implementation in iRODS requires a cache class resource 
+to be configured in the same resource group as the compound resource. 
+Data stored in the compound resource cannot be accessed directly but through 
+the cache resource with staging and synchronizing using the put/get driver 
+functions.  The compound resource implementation makes it easier to integrate
+HPSS, FTP and ADS type resources into iRODS. 
+
+The iRODS "compound" resource implementation is different than the SRB
+implementation. In SRB, a compound resource actually contains 2 resources -
+a cache resource and a tape resource. In iRODS, a compound resource
+contains only one resource, but it must be used in a resource group
+containing a "cache" resource on the same host as the compound resource.
+e.g., a HPSS resource can be configured as a compound resource. 
+
+The following gives an example of compound resource configuration:
+
+1) create a compound resource class token:
+iadmin at resc_class compound
+
+2) create a "test stage file system" resource type token (this is my test
+resource type with its own put/get driver): 
+iadmin at resc_type "test stage file system"
+
+3) create a compound resource - stageResc:
+iadmin mkresc stageResc "test stage file system" compound srbbrick8.sdsc.edu /data/mwan/rods/stageVault
+
+4) create a cache resource on the same host as stageResc: 
+iadmin mkresc demoResc "unix file system" compound srbbrick8.sdsc.edu /data/mwan/rods/RODS/Vault
+
+5) add stageResc and demoResc to resource group stageRescGrp:
+iadmin atrg stageRescGrp stageResc
+iadmin atrg stageRescGrp demoResc
+
+6) Now we need to build a set of driver routines for "test stage file system" 
+type resource:
+
+    a) Add a line to the RescTypeDef[] table in lib/core/include/rcGlobal.h
+         {"test stage",FILE_CAT, TEST_STAGE_FILE_TYPE, DO_CHK_PATH_PERM},
+       You don't have to do that since there is already a line for HPSS.
+	
+    b) Add a line in the table in server/drivers/include/fileDriverTable.h:
+    {TEST_STAGE_FILE_TYPE,intNoSupport,intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, unixFileUnlink, unixFileStat, unixFileFstat, longNoSupport,
+    intNoSupport, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
+    unixFileClosedir, unixFileReaddir, intNoSupport, unixFileRename,
+    unixFileGetFsFreeSpace, intNoSupport, unixStageToCache, unixSyncToArch},
+
+      unixStageToCache is the "get" function that get a file from the
+      compound resource and put it in the local cache. unixSyncToArch
+      is the "put" function which put a file from the local cache
+      and store it in the compound resource.
+      Note that many of the functions such as open, read, write, close, etc 
+      are not supported in TEST_STAGE_FILE_TYPE. Instead we have 
+      unixStageToCache (stage a file from compound to cache) and
+      unixSyncToArch (sync a file from cache to compound). For HPSS,
+      you can use the HPSS parallel I/O to do the staging and syncing. 
+      Please read the code for unixStageToCache() and unixSyncToArch () 
+      in server/drivers/src/unixFileDriver.c.
+
+Testing
+-------
+
+After you have done that, you can do the following tests
+
+1) iput a file into stageResc:
+
+srbbrick8-616% iput -RstageResc xy
+ERROR: putUtil: put error for /tempZone/home/rods/xy, status = -95000 status = -95000 SYS_CANT_CREATE_IN_COMPOUND_RESC
+
+You get this error because you cannot put a file directly into a compound
+resource. You have to do it through stageRescGrp.
+
+2) iput a file into stageRescGrp:  
+
+srbbrick8-617% iput -RstageRescGrp xy
+srbbrick8-618% ils -l xy
+  rods              0 demoResc                       93 2009-03-02.16:42 & xy
+
+You see that the file is put into the cache resource demoResc.
+
+3) sync the file into the compound resource:
+
+srbbrick8-619% irepl -RstageResc xy
+srbbrick8-621% ils -l xy
+  rods              0 demoResc                       93 2009-03-02.16:42 & xy
+  rods              1 stageResc                      93 2009-03-02.16:44 & xy
+
+4) rm the cache copy
+srbbrick8-622% itrim -N1 -SdemoResc xy
+srbbrick8-623% ils -l xy
+  rods              1 stageResc                      93 2009-03-02.16:44 & xy
+
+Now, only the copy in the compound resource exist.
+5) iget the file
+srbbrick8-626% iget xy xx
+srbbrick8-627% ils -l xy
+  rods              1 stageResc                      93 2009-03-02.16:44 & xy
+  rods              2 demoResc                       93 2009-03-02.16:48 & xy
+
+See that the file was staged to the cache resource before sending to the
+client. 
+
+

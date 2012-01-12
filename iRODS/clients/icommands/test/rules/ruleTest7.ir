@@ -1,0 +1,3 @@
+myTestRule||assign(*A,$userNameClient)##assign(*B,$userNameProxy)##assign($userNameClient,alpha)##assign(*C,$userNameClient)##assign($userClient,$userProxy)##assign(*D,$userNameClient)##assign(*E,$userNameProxy)|nop##nop##nop##nop
+*D=200 + 200
+*A%*B%*C%*D%*E

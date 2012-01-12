@@ -1,0 +1,153 @@
+How to add a module in iRODS
+Sept 2007
+------------------------------------------------------------------------
+
+A "module" is a bundle of optional features for iRODS.  Typically, a module
+provides specialized microservices.  Modules also may provide new rules,
+library functions, commands, and even servers.
+
+
+
+
+
+How to create a module
+------------------------------------------------------------------------
+Once you have developed the software to perform a new iRODS function,
+add your software as a new iRODS module:
+
+	1.  Create a directory named for the module:
+
+		mkdir modules/MODNAME
+
+	2.  Move into that directory:
+
+		cd modules/MODNAME
+
+	3.  Create one or more subdirectories for components being added
+	    to iRODS:
+
+		mkdir microservices
+		mkdir rules
+		mkdir lib
+		mkdir clients
+		mkdir servers
+
+	    For the rest of these instructinos, we'll assume you're adding
+	    microservices, but similar instructions apply for other additions.
+
+	4.  Create source, include, and object subdirectories:
+
+		mkdir microservices/src
+		mkdir microservices/include
+		mkdir microservices/obj
+
+	5.  Add source and include files to the "src" and "include"
+	    directories.
+
+	6.  Create a Makefile by copying one from an existing module, such
+	    as "properties":
+
+		cp ../properties/Makefile .
+
+	7.  Edit the Makefile to list your source files and add any special
+	    compile flags or libraries you may need.
+
+	    The Makefile must respond to a set of standard targets:
+
+		all		build everything
+		microservices	build new microservices
+		client		build new clients
+		server		build new servers
+		rules		build new rules
+		clean		remove built objects, etc.
+
+		client_cflags	compile flags for building clients
+		client_ldflags	link flags for building clients
+
+		server_cflags	compile flags for building servers
+		server_ldflags	link flags for building servers
+
+	    The microservices, client, and server targets should compile your
+	    code.  The client and server targets should link your custom
+	    clients and servers.  If your module doesn't have one or more of
+	    these, the target should exist but do nothing.
+
+	    The client and server flag targets should echo to stdout the
+	    compiler or linker flags needed on *other* clients and servers
+	    that use the module.  The "cflags" echos should list -I include
+	    paths and specific include files.  The "ldflags" echos should
+	    list -L link paths, -l library names, and specific library or
+	    object files.
+
+	8.  Create an info.txt file by copying one from an existing module:
+
+		cp ../properties/info.txt .
+
+	9.  Edit the info.txt file to include information about your module.
+	    The file must contain:
+
+		Name:		the name of the module
+		Brief:		a short description of the module
+		Description:	a longer description of the module
+		Dependencies:	a list of modules this module needs
+		Enabled:	whether the module is enabled by default
+
+	    Each of these must be on a single (possibly long) line.
+
+	    For dependencies, list module names separated by white-space.
+	    Module names must match exactly the directory name of other
+	    modules.  Case matters.
+
+
+
+
+
+How to add a microservice
+------------------------------------------------------------------------
+Please see the document "HOW_TO_ADD_A_MICROSERVICE.txt".
+
+
+
+
+
+How to enable a module
+------------------------------------------------------------------------
+There are three ways you can enable a module:
+
+	1.  Edit the module's info.txt file and set "Enabled: yes".  This
+	    makes the iRODS configuration default to enabling the module.
+
+	2.  Edit the module by running the iRODS configure script:
+
+		./configure --enable-MODNAME
+
+	    This enables the module for your installation.  The script sets
+	    the MODULES variable in config/config.mk.
+
+	3.  Edit config/config.mk directly (discouraged) and add your module's
+	    name to the MODULES variable.
+
+
+
+
+
+How to test the "cflags" and "ldflags" echos
+------------------------------------------------------------------------
+From the iRODS root directory:
+
+	make test_flags
+
+This target prints the cflags and ldflags values collected for all enabled
+modules.
+
+
+
+
+
+How to build a module
+------------------------------------------------------------------------
+Fro the iRODS root directory:
+
+	make modules
+
+This target builds all enabled modules.

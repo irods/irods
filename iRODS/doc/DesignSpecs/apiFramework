@@ -1,0 +1,249 @@
+Note that we are developing a script that will handle most of this
+more automatically.  We will define items in the call's include file,
+and the script will handle most of the rest of the steps, 1 through 7,
+to add the new API call into the system.
+
+
+1) Each API call should have a apiNumber number in 
+clientLib/include/apiNumber.h.
+
+A) The struct apidef_t defined in clientLib/include/apiHandler.h defines
+the Rods API structure.  This is defined once, and used for each
+of the API calls.
+
+typedef struct {
+    int apiNumber;              /* the API number */
+    char *apiVersion;           /* The API version of this call */
+    int clientUserAuth;         /* Client user authentication level.
+                                 * NO_USER_AUTH, REMOTE_USER_AUTH,
+                                 * LOCAL_USER_AUTH, REMOTE_PRIV_USER_AUTH or
+                                 * LOCAL_PRIV_USER_AUTH */
+    int proxyUserAuth;          /* same for proxyUser */
+    packInstruct_t inPackInstruct;  /* the packing instruct for the input
+                                     * struct */
+    int inBsFlag;               /* input bytes stream flag. 0 ==> no input
+                                 * byte stream. 1 ==> we have an input byte
+                                 * stream */
+    packInstruct_t outPacknstruct;  /* the packing instruction for the
+                                     * output struct */
+    int outBsFlag;              /* output bytes stream. 0 ==> no output byte
+                                 * stream. 1 ==> we have an output byte stream
+                                 */
+    funcPtr svrHandler;   /* the server handler. should be defined NULL for
+                           * client */
+
+} apidef_t;
+
+typedef struct {
+    int len;
+    char *bytes;
+} byteStream_t;
+
+Each API can have an input struct and an input byteStream_t. The inPackInstruct
+in apidef_t gives the packing instruction for the input struct. If there is no 
+input struct, a NULL should be given. The inBsFlag is used to indicate whether
+there is an input byteStream_t for this API. Similarly, each API can have
+an output struct and an output byteStream_t. The outPacknstruct and outBsFlag
+specify the packing instruction and byte stream flag, respectively for the  
+output.
+
+2) The global RsApiTable[]/RcApiTable[] in the 
+clientLib/include/apiTable.h file is a table of apidef_t. Each API 
+has an entry in this table. For example,
+
+/* need a line for each API */
+
+#if defined(RODS_SERVER)
+apidef_t RsApiTable[] = {
+#else   /* client */
+apidef_t RcApiTable[] = {
+#endif
+    {GET_MISC_SVR_INFO_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH, NULL,
+      0, MiscSvrInfo_PI, 0, (funcPtr) RS_GET_MISC_SVR_INFO},
+};
+
+RS_GET_MISC_SVR_INFO is the server handling function for this API which
+is defined in getMiscSvrInfo.h.
+
+3) Need a header file for each API.
+
+For example, the getMiscSvrInfo() API has a header file in 
+clientLib/include/api/getMiscSvrInfo.h
+
+Info needed in the header file:
+
+a) Input and output struct declaration. For example, the getMiscSvrInfo()
+API does not have an input struct, but the output struct is defined
+in getMiscSvrInfo.h:
+
+/* miscSvrInfo_t is the output struct */
+
+typedef struct {
+    int serverType;
+    char relVersion[NAME_LEN];
+    char apiVersion[NAME_LEN];
+    char rodsZone[NAME_LEN];
+} miscSvrInfo_t;
+
+b) packing instruction definitions for the input and output struct. 
+For example, packing instruction for the output struct of the getMiscSvrInfo()
+API is:
+
+#define MiscSvrInfo_PI "int serverType; char relVersion[NAME_LEN]; char apiVersion[NAME_LEN]; char rodsZone[NAME_LEN];"
+
+Note that for each API packing instruction, we need to add an entry in the 
+ApiPackTable[] table in the apiPackTable.h file as described in the
+"PackingInstruction" doc.
+
+c) prototype of the server handling function for this API. For example:
+
+#if defined(RODS_SERVER)
+#define RS_GET_MISC_SVR_INFO rsGetMiscSvrInfo
+/* prototype for the server handler */
+int
+rsGetMiscSvrInfo (rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo);
+#else
+#define RS_GET_MISC_SVR_INFO NULL
+#endif
+
+d) prototype of the client API function. For example,
+
+/* prototype for the client call */
+int
+rcGetMiscSvrInfo (rcComm_t *conn, miscSvrInfo_t **outSvrInfo);
+
+**** Note that if inBsFlag or outBsFlag is 0, then no corresponding
+input or output byteStream input parameters are needed in the
+prototype of the server handling function and the client API function. 
+  
+4) need to include each API header file in the
+clientLib/include/api/apiHeaderAll.h file. For example, for the 
+getMiscSvrInfo() API call, add the line: 
+
+#include "getMiscSvrInfo.h"
+
+in the apiHeaderAll.h file.
+
+5) the client API function.
+
+Each client API function has a .c file in the clientLib/src/api directory.
+Each API function makes a single call to the procApiRequest() function
+to issue the request and receive output returned from the server.
+
+The prototype of the procApiRequest() is:
+
+/* procApiRequest - This is the main function used by the client API
+ * function to issue API requests and receive output returned from
+ * the server.
+ * rcComm_t *conn - the client communication handle.
+ * int apiNumber - the API number of this call defined in apiNumber.h.
+ * void *inputStruct - pointer to the input struct of this API. If there
+ *     is no input struct, a NULL should be entered
+ * bytesBuf_t *inputBsBBuf - pointer to the input byte stream. If there
+ *     is no input byte stream, a NULL should be entered
+ * void **outStruct - Pointer to pointer to the output struct. The outStruct 
+ *     will be allocated by this function and the pointer to this struct is
+ *     passed back to the caller through this pointer. If there
+ *     is no output struct, a NULL should be entered
+ * bytesBuf_t *outBsBBuf - pointer to the output byte stream. If there
+ *     is no output byte stream, a NULL should be entered
+ *
+ */
+
+int
+procApiRequest (rcComm_t *conn, int apiNumber, void *inputStruct,
+bytesBuf_t *inputBsBBuf, void **outStruct, bytesBuf_t *outBsBBuf)
+
+
+For example, the following is the rcGetMiscSvrInfo function (the client API 
+function for the getMiscSvrInfo() call) in rcGetMiscSvrInfo.c:
+
+int
+rcGetMiscSvrInfo (rcComm_t *conn, miscSvrInfo_t **outSvrInfo)
+{
+    int status;
+
+    status = procApiRequest (conn, GET_MISC_SVR_INFO_AN, NULL, NULL,
+      (void **) outSvrInfo, NULL);
+
+    return (status);
+}
+
+6) The server API handling function
+
+Each server API handling function has a .c file in the server/src/api directory.
+The underlying server infrastructure will automatically unpack the input
+struct and the input byte stream and pass them to the handling function and 
+pack the output struct and output byte stream from the handling function when
+the function returns.
+
+For example, the following is the handling function (the server API
+handling function for the getMiscSvrInfo() call) in rsGetMiscSvrInfo.c:
+
+int
+rsGetMiscSvrInfo (rsComm_t *rsComm, miscSvrInfo_t **outSvrInfo)
+{
+    miscSvrInfo_t *myOutSvrInfo;
+
+    myOutSvrInfo = *outSvrInfo = malloc (sizeof (miscSvrInfo_t));
+
+    memset (myOutSvrInfo, 0, sizeof (miscSvrInfo_t));
+
+/* user written code */
+#ifdef RODS_MCAT
+    myOutSvrInfo->serverType = RCAT_ENABLED;
+#else
+    myOutSvrInfo->serverType = RCAT_NOT_ENABLED;
+#endif
+    rstrcpy (myOutSvrInfo->relVersion, RODS_REL_VERSION, NAME_LEN);
+    rstrcpy (myOutSvrInfo->apiVersion, RODS_API_VERSION, NAME_LEN);
+
+    rstrcpy (myOutSvrInfo->rodsZone, rsComm->thisUserEnv.rodsZone, NAME_LEN);
+
+    return (0);
+}
+
+Note that input parameters for input struct, input bytes stream and output
+byte stream are not present because they are not used for this API.
+
+For the output struct - outSvrInfo, the server handler needs to malloc
+this struct and fill in the content. This struct and its content will
+be freed by the server infrastructure when the function returns and the 
+struct has been packed and sent to the client.
+
+7) Add the client API function and the server API handling function to the
+make by adding two lines to the mk/mk.api file. e.g.,
+
+SVR_API_OBJS += $(svrObjDir)/rsGetMiscSvrInfo.o
+
+CLI_API_OBJS += $(clObjDir)/rcGetMiscSvrInfo.o
+
+
+In summary, to add an API, you need to:
+
+1) add a new API number in clientLib/include/apiNumber.h
+
+2) add a apidef_t entry in the global RsApiTable[]/RcApiTable[] table in
+clientLib/include/apiTable.h
+
+3) Add a header file for each API in the clientLib/include/api directory.
+This header file should contain :
+
+a) Input and output struct declaration.
+b) packing instruction definitions for the input and output struct.
+Note that each packing instruction defined here should also be entered
+into the ApiPackTable[] table in the apiPackTable.h file.
+c) prototype of the server handling function for this API.
+d) prototype of the client API function.
+
+4) include each API header file in the
+clientLib/include/api/apiHeaderAll.h file
+
+5) The client API function in a .c file in the clientLib/src/api directory.
+
+6) The server API handling function in a .c file in the server/src/api 
+directory.
+
+7) Add the client API function and the server API handling function to the
+make by adding two lines to the mk/mk.api file.
+

@@ -1,0 +1,15 @@
+iRODS includes additional copyrighted open-source software contributed
+by other developers.  There are no representations concerning either
+the merchantability of this software or the suitability of this
+software for any particular purpose. It is provided "as is" without
+express or implied warranty of any kind.  These include:
+
+The MD5 message-digest calculation is derived from the RSA Data
+Security, Inc. MD5 Message-Digest Algorithm.
+
+The regular expression comparator (regExpMatch.c) is republished under
+Open Content License with a reference to
+http://www.Planet-Source-Code.com/xq/ASP/txtCodeId.711/
+lngWId.3/qx/vb/scripts/ShowCode.htm
+
+The test script, testiCommands.pl, contributed by CCIN2P3.

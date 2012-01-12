@@ -1,0 +1,4 @@
+acRegisterData|$objPath like /home/collections.nvo/2mass/fits-images/*|cut##acCheckDataType(fits image)##msiSetResource(nvo-image-resource)##msiRegisterData##msiAddACLForDataToUser(2massusers.nvo,write)##msiExtractMetadataForFitsImage|nop##nop##nop##recover_msiRegisterData##recover_msiAddACLForDataToUser##recover_msiExtractMetadataForFitsImage
+acRegisterData|$objPath like /home/collections.nvo/2mass/*|acGetResource##msiRegisterData##msiAddACLForDataToUser(2massusers.nvo,write)|nop##recover_msiRegisterData##recover_msiAddACLForDataToUser
+acDeleteData|$objPath like /home/collections.nvo/2mass/*|cut##msiCheckPermission(curate)##msiDeleteData|nop##nop##recover_msiDeleteData
+acGetResource|$rescName == null|msiGetClosestResourceToClient|nop

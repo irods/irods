@@ -1,0 +1,41 @@
+In 2.1, some input API data structures regarding data object and 
+collection operations have been consolidated into 3 : dataObjInp_t, 
+openedDataObjInp_t and collInp_t. The consolidation makes it easier 
+to write micro-services and helper routines for micro-services. 
+The server can be configured to be backward compatible with 2.0.1 clients.
+
+Configuring the server to support 2.0.1 clients
+-----------------------------------------------
+By default, the config/config.mk file is configured to enable the 
+server to be compatible with 2.0.1 clients by setting the following
+line in config/config.mk:
+
+COMPAT_201=1
+
+Commenting out the line will make the server to be incompatible with
+with 2.0.1 clients.
+
+Converting existing 2.0.1 client and micro-service C codes to 2.1
+-----------------------------------------------------------------
+For the rcDataObjRead and rsDataObjRead functions, replace dataObjReadInp_t
+with openedDataObjInp_t. The elements in dataObjReadInp_t are compatible
+with openedDataObjInp_t.
+
+For the rcDataObjWrite and rsDataObjWrite functions, replace dataObjWriteInp_t
+with openedDataObjInp_t. The elements in dataObjWriteInp_t are compatible
+with openedDataObjInp_t.
+
+For the rcDataObjClose and rsDataObjClose functions, replace dataObjCloserInp_t
+with openedDataObjInp_t. The elements in dataObjCloserInp_t are compatible
+with openedDataObjInp_t.
+
+For the rcDataObjLseek and rsDataObjLseek functions, replace the input
+fileLseekInp_t with openedDataObjInp_t. The elements in fileLseekInp_t are 
+compatible with openedDataObjInp_t except one. All references to
+dataObjLseekInp->fileInx should be replace with dataObjLseekInp->l1descInx.
+
+For the rcCollRepl and rsCollRepl functions, replace dataObjInp_t
+with collInp_t. The elements in dataObjInp_t are compatible with collInp_t 
+except one. All references to collReplInp->objPth should be replace with 
+collReplInp->collName.
+

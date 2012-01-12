@@ -1,0 +1,3 @@
+myRule||acCheckObjChecksum(*Object)|nop
+*Object=$1
+ruleExecOut

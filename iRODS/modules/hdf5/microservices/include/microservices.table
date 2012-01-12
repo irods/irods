@@ -1,0 +1,7 @@
+/* HDF% module microservices */
+/* Service name                 # args          Service function */
+{ "msiH5File_open",             3,              (funcPtr) msiH5File_open },
+{ "msiH5File_close",      	2,              (funcPtr) msiH5File_close },
+{ "msiH5Dataset_read",      	2,              (funcPtr) msiH5Dataset_read },
+{ "msiH5Dataset_read_attribute",2,              (funcPtr) msiH5Dataset_read_attribute },
+{ "msiH5Group_read_attribute",	2,              (funcPtr) msiH5Group_read_attribute },

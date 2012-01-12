@@ -1,0 +1,2 @@
+/* Image module microservices */
+#include "imageMS.h"

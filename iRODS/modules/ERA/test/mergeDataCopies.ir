@@ -1,0 +1,3 @@
+Merge Data Copies||msiMergeDataCopies(*ObjPath, *CurrentColl, *MasterColl, *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+*CurrentColl=/tempZone/home/rods/othercoll%*MasterColl=/tempZone/home/rods/mastercoll%*ObjPath=/tempZone/home/rods/othercoll/stresstest.dir/file.0
+ruleExecOut

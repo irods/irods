@@ -1,0 +1,5 @@
+# m h  dom mon dow   command
+# example crontab file for the notify.pl script.  Use your full path names for
+# the files and update notify.pl files (top of script) for full path names too.
+0 * * * * /home/schroeder/cron/notify.pl >> /home/schroeder/cron/notify_cron.log 2>&1
+

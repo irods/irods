@@ -1,0 +1,179 @@
+X   [clients/fuse/src/iFuseLib.c:791]: (error) Memory leak: mybuf
+X   [lib/core/src/getRodsEnv.c:304]: (error) Memory leak: tmpStr2
+X   [lib/core/src/miscUtil.c:519]: (error) Memory leak: tmpStr
+X   [lib/core/src/osauth.c:215]: (error) Memory leak: keybuf
+X   [lib/core/src/rcMisc.c:4345]: (error) Memory leak: myBuf
+X   [lib/core/src/rcMisc.c:4367]: (error) Memory leak: myBuf
+X   [lib/test/src/l1test.c:575]: (error) Memory leak: dataObjWriteInpBBuf.buf
+X   [lib/test/src/lowlevtest.c:449]: (error) Memory leak: fileWriteInpBBuf.buf
+
+X   [modules/ERA/microservices/src/auditMS.c:72]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/auditMS.c:162]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/auditMS.c:252]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/auditMS.c:342]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/collInfoMS.c:570]: (error) Memory leak: res
+X   [modules/ERA/microservices/src/eraMS.c:1199]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/eraMS.c:1279]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/eraMS.c:1355]: (error) Memory leak: mybuf
+X   [modules/ERA/microservices/src/eraMS.c:1743]: (error) Memory leak: mybuf
+
+X   [modules/XML/microservices/src/xmlMS.c:423]: (error) Memory leak: errBuf
+X   [modules/XML/microservices/src/xmlMS.c:423]: (error) Memory leak: errBuf.buf
+
+X   [modules/integrityChecks/microservices/src/icCollUtil.c:41]: (error) Memory leak: gqout
+X   [modules/integrityChecks/microservices/src/icCollUtil.c:246]: (error) Memory leak: mybuf
+X   [modules/integrityChecks/microservices/src/icutils.c:46]: (error) Memory leak: gqout
+X   [modules/integrityChecks/microservices/src/icutils.c:79]: (error) Memory leak: collname
+X   [modules/integrityChecks/microservices/src/icutils.c:178]: (error) Memory leak: thisowner
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:168]: (error) Memory leak: collname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:129]: (error) Memory leak: thisowner
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:162]: (error) Memory leak: firstowner
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:156]: (error) Memory leak: thisowner
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:381]: (error) Memory leak: collname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:385]: (error) Memory leak: collid
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:283]: (error) Memory leak: notflag
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:477]: (error) Memory leak: gqout
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:537]: (error) Memory leak: collname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:477]: (error) Memory leak: mybuf
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:477]: (error) Memory leak: inputtime
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:537]: (error) Memory leak: querytype
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:655]: (error) Memory leak: gqout2
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:655]: (error) Memory leak: mybuf
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:748]: (error) Memory leak: collname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:748]: (error) Memory leak: inputattrname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:748]: (error) Memory leak: inputattrvalue
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:748]: (error) Memory leak: inputattrunits
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:699]: (error) Memory leak: q1thisdataname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:738]: (error) Memory leak: thisdataattrname
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:738]: (error) Memory leak: thisdataattrvalue
+X   [modules/integrityChecks/microservices/src/integrityChecksMS.c:738]: (error) Memory leak: thisdataattrunits
+
+X   [modules/msoDrivers/microservices/src/irods/msoIrodsMS.c:87]: (error) Memory leak: str
+X   [modules/msoDrivers/microservices/src/srb/msoSrbMS.c:100]: (error) Memory leak: str
+
+X   [server/api/src/rsDataObjRepl.c:747]: (error) Memory leak: cacheDataObjInfo
+X   [server/api/src/rsDataObjRepl.c:1046]: (error) Memory leak: dataBBuf.buf
+X   [server/api/src/rsExecCmd.c:243]: (error) Memory leak: myStr
+X   [server/api/src/rsGsiAuthRequest.c:196]: (error) Memory leak: myBuf
+X   [server/core/src/resource.c:1295]: (error) Memory leak: tmpStr
+X   [server/core/src/xmsgLib.c:773]: (error) Memory leak: outXmsgTicketInfo
+X   [server/drivers/src/testWos.c:26]: (error) Memory leak: tmpStr
+X   [server/drivers/src/wosFunctPP.cpp:141]: (error) Memory leak: myBuf
+X   [server/icat/src/dboHighLevelRoutines.c:965]: (error) Memory leak: myOutBuf
+X   [server/icat/src/rdaHighLevelRoutines.c:323]: (error) Memory leak: myBuf
+X   [server/icat/src/rodsEnvInitLib.c:658]: (error) Memory leak: attr_info
+X   [server/icat/src/rodsEnvInitLib.c:679]: (error) Memory leak: graph_info
+X   [server/icat/src/rodsEnvInitLib.c:1012]: (error) Memory leak: in_rsrcid
+X   [server/icat/src/rodsEnvInitLib.c:1104]: (error) Memory leak: in_rsrcid
+X   [server/re/src/genQueryMS.c:658]: (error) Memory leak: rawQuery
+X   [server/re/src/nre.genQueryMS.c:564]: (error) Memory leak: rawQuery
+X   [server/re/src/nre.reLib1.c:772]: (error) Memory leak: ruleHead
+X   [server/re/src/nre.reLib1.c:772]: (error) Memory leak: ruleCondition
+X   [server/re/src/nre.reLib1.c:772]: (error) Memory leak: ruleAction
+X   [server/re/src/nre.reLib1.c:772]: (error) Memory leak: ruleRecovery
+X   [server/re/src/reAutoReplicateService.c:611]: (error) Memory leak: pReplicaStatus
+X   [server/re/src/reAutoReplicateService.c:978]: (error) Memory leak: new_truct_path
+X   [server/re/src/reAutoReplicateService.c:885]: (error) Memory leak: new_obj_path
+X   [server/re/src/reLib1.c:833]: (error) Memory leak: ruleBase
+X   [server/re/src/reLib1.c:833]: (error) Memory leak: ruleHead
+X   [server/re/src/reLib1.c:784]: (error) Memory leak: ruleAction
+X   [server/re/src/reLib1.c:783]: (error) Memory leak: ruleRecovery
+X   [server/re/src/reStruct.c:544]: (error) Memory leak: delayCondition
+X   [server/re/src/ruleAdmin.c:415]: (error) Allocation with makeword, sprintf doesn't release it.
+X   [server/re/src/ruleAdminMS.c:1606]: (error) Memory leak: coreMsrvcStrct
+X   [server/re/src/sysBackupMS.c:420]: (error) Memory leak: myKeyVal
+X   [server/re/src/sysBackupMS.c:484]: (error) Memory leak: dbPath
+X   [server/test/src/test_chl.c:876]: (error) Memory leak: Comm
+X   [server/test/src/test_rda.c:62]: (error) Memory leak: Comm
+
+// =-=-=-=-=-=-=-
+
+X   [server/re/src/parser.c:1040]: (error) syntax error
+
+// =-=-=-=-=-=-=-
+
+X   [clients/fuse/src/iFuseLib.c:1803]: (error) Resource leak: fd
+X   [lib/core/src/miscUtil.c:1845]: (error) Resource leak: dirPtr
+X   [lib/core/src/osauth.c:222]: (error) Resource leak: key_fd
+X   [modules/msoDrivers/microservices/src/http/msoHttpMS.c:118]: (error) Resource leak: destFd
+X   [modules/msoDrivers/microservices/src/slink/msoSlinkMS.c:291]: (error) Resource leak: srcFd
+X   [modules/msoDrivers/microservices/src/srb/msoSrbMS.c:393]: (error) Resource leak: srcFd
+X   [server/drivers/src/tarStructFileDriver.c:812]: (error) Resource leak: dp
+X   [server/drivers/src/unixFileDriver.c:634]: (error) Resource leak: inFd
+X   [server/icat/src/m2icatd.c:335]: (error) Resource leak: FI
+X   [server/icat/src/rdaHighLevelRoutines.c:409]: (error) Resource leak: fptr
+X   [server/re/src/reIn2p3SysRule.c:392]: (error) Resource leak: fp
+X   [server/test/s3/irodss3/src/gets3.c:121]: (error) Resource leak: fd
+
+// =-=-=-=-=-=-=-
+
+X   [clients/fuse/src/iFuseOper.c:100]: (error) Possible null pointer dereference: rodsObjStatOut - otherwise it is redundant to check if rodsObjStatOut is null at line 104
+X   [lib/core/src/rcPortalOpr.c:1212]: (error) Possible null pointer dereference: packedBBuf - otherwise it is redundant to check if packedBBuf is null at line 1215
+X   [lib/core/src/rcPortalOpr.c:294]: (error) Possible null pointer dereference: myInput - otherwise it is redundant to check if myInput is null at line 296
+X   [lib/core/src/rcPortalOpr.c:853]: (error) Possible null pointer dereference: myInput - otherwise it is redundant to check if myInput is null at line 855
+X   [modules/URL/microservices/src/ftpMS.c:61]: (error) Possible null pointer dereference: dataObjFtpInp - otherwise it is redundant to check if dataObjFtpInp is null at line 41
+X   [modules/URL/microservices/src/ftpMS.c:66]: (error) Possible null pointer dereference: dataObjFtpInp - otherwise it is redundant to check if dataObjFtpInp is null at line 41
+X   [modules/hdf5/lib/src/clH5File.c:30]: (error) Possible null pointer dereference: outf - otherwise it is redundant to check if outf is null at line 34
+X   [server/api/src/rsDataObjCopy.c:200]: (error) Possible null pointer dereference: srcDataObjInfo - otherwise it is redundant to check if srcDataObjInfo is null at line 194
+X   [server/api/src/rsRegColl.c:26]: (error) Possible null pointer dereference: rodsObjStatOut - otherwise it is redundant to check if rodsObjStatOut is null at line 30
+X   [server/core/src/dataObjOpr.c:1360]: (error) Possible null pointer dereference: dataObjInfoHead - otherwise it is redundant to check if dataObjInfoHead is null at line 1350
+X   [server/core/src/miscServerFunct.c:804]: (error) Possible null pointer dereference: myInput - otherwise it is redundant to check if myInput is null at line 806
+X   [server/core/src/miscServerFunct.c:1337]: (error) Possible null pointer dereference: myInput - otherwise it is redundant to check if myInput is null at line 1339
+X   [server/core/src/miscServerFunct.c:1449]: (error) Possible null pointer dereference: myInput - otherwise it is redundant to check if myInput is null at line 1451
+
+// =-=-=-=-=-=-=-
+
+X   [clients/icommands/src/ihelp.c:131]: (error) Dangerous usage of 'myExe' (strncpy doesn't always 0-terminate it)
+OK  [lib/core/src/obf.c:903]: (error) Dangerous usage of 'myKey' (strncpy doesn't always 0-terminate it)
+OK  [lib/core/src/obf.c:1017]: (error) Dangerous usage of 'myKey' (strncpy doesn't always 0-terminate it)
+X   [modules/ERA/microservices/src/eraUtil.c:1658]: (error) Dangerous usage of 'buf0' (strncpy doesn't always 0-terminate it)
+X   [server/icat/src/icatHighLevelRoutines.c:6153]: (error) Dangerous usage of 'myAccessStr' (strncpy doesn't always 0-terminate it)
+X   [server/icat/src/m2icatd.c:120]: (error) Dangerous usage of 'matchStr' (strncpy doesn't always 0-terminate it)
+X   [server/test/src/test_chl.c:222]: (error) Dangerous usage of 'userNameAndZone' (strncpy doesn't always 0-terminate it)
+
+// =-=-=-=-=-=-=-
+
+X   [lib/core/src/rcPortalOpr.c:1302]: (error) Deallocating a deallocated pointer: fd
+
+// =-=-=-=-=-=-=-
+
+X   [lib/core/src/sockComm.c:43]: (error) Invalid number of character ({) when these macros are defined: 'USE_BOOST_ASIO'.
+X   [lib/core/src/sockComm.c:43]: (error) Invalid number of character ({) when these macros are defined: 'USE_BOOST_ASIO;aix_platform'.
+X   [lib/core/src/sockComm.c:43]: (error) Invalid number of character ({) when these macros are defined: 'USE_BOOST_ASIO;windows_platform'.
+X   [server/api/src/rsExecCmd.c:176]: (error) Invalid number of character ({) when these macros are defined: 'windows_platform'.
+
+// =-=-=-=-=-=-=-
+
+X   [server/icat/src/icatLowLevelOracle.c:990]: (error) Data is allocated but not initialized: pUb4
+X   [lib/md5/src/md5Checksum.c:21]: (error) Uninitialized variable: i
+X   [modules/integrityChecks/microservices/src/icutils.c:199]: (error) Uninitialized variable: status
+X   [modules/integrityChecks/microservices/src/icutils.c:205]: (error) Uninitialized variable: status
+X   [server/re/src/icatGeneralMS.c:885]: (error) Uninitialized variable: rsComm
+X   [server/re/src/reRDA.c:225]: (error) Uninitialized variable: rsComm
+
+// =-=-=-=-=-=-=-
+
+X   [modules/hdf5/test/test_h5File.c:45]: (error) Buffer overrun possible for long cmd-line args
+
+// =-=-=-=-=-=-=-
+
+X   [server/api/src/rsStructFileExtAndReg.c:118]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1188]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1191]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1193]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1194]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1197]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1199]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1220]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1223]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1225]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1226]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1229]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1231]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1254]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1257]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1283]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+X   [server/icat/src/rodsEnvInitLib.c:1286]: (error) Undefined behavior: variable is used as parameter and destination in s[n]printf().
+
+
+

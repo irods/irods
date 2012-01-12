@@ -1,0 +1,8 @@
+Name:		ERA
+Brief:		Implementation of NARA's ERA requirements
+Description:	Set of microservices and utilities for implementing a preservation environment as described in NARA's Electronic Records Archives capability list. This module may later be broken down into separate modules (eg: metadata, preservation, audit, etc...).
+Dependencies:
+Enabled:	no
+Creator:	Antoine de Torcy; University of California, San Diego
+Created:	09-26-2007
+License:	BSD

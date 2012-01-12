@@ -1,0 +1,10 @@
+# This is an example of an input for the irule command.
+# This first input line is the rule body
+# The second input line is the input parameter in the format of 
+# label=value. e.g., *A=/temp/home/rods/foo1
+# Multiple inputs can be specified using the '%' character as the separator.
+# The third input line is the output description. Multiple outputs can be
+# specified using the '%' character as the separator.    
+myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,null,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF)##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy(*B,*C,null,*junk4)##delayExec(<PLUSET>2m</PLUSET>,msiDataObjRepl(*C,*Resource,*junk5),nop)|nop
+*A=/tempZone/home/rods/foo1%*B=/tempZone/home/rods/foo2%*C=/tempZone/home/rods/foo3%*Resource=nvoReplResc
+*R_BUF%*W_LEN%*A

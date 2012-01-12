@@ -1,0 +1,353 @@
+-- Table: ext_audit_actions
+
+-- DROP TABLE ext_audit_actions;
+
+CREATE TABLE ext_audit_actions
+(
+  action_name character varying(200) NOT NULL,
+  action_id bigint NOT NULL,
+  CONSTRAINT pk_ext_audit_actions PRIMARY KEY (action_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ext_audit_actions OWNER TO rodsbuild;
+
+-- Index: idx_ext_audit1
+
+-- DROP INDEX idx_ext_audit1;
+
+CREATE UNIQUE INDEX idx_ext_audit1
+  ON ext_audit_actions
+  USING btree
+  (action_name);
+  
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Access Granted', 1000);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Data', 2010);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Replica', 2011);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Delete Data', 2012);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Resource', 2030);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Delete Resource', 2031);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Collection (Admin)', 2050);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Collection', 2051);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Delete Collection (Admin)', 2060);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Delete Collection', 2061);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Delete Zone', 2062);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Zone', 2064);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Create Metadata', 2110);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Delete Metadata', 2111);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Copy Metadata', 2112);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Rename Data', 2130);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Rename Collection', 2131);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Move Data', 2140);
+INSERT INTO ext_audit_actions (action_name, action_id) VALUES ('Move Collection', 2141);
+  
+-- Table: ext_coll_historical
+
+-- DROP TABLE ext_coll_historical;
+
+CREATE TABLE ext_coll_historical
+(
+  coll_id bigint NOT NULL,
+  parent_coll_name character varying(2700) NOT NULL,
+  coll_name character varying(2700) NOT NULL,
+  coll_owner_name character varying(250) NOT NULL,
+  coll_owner_zone character varying(250) NOT NULL,
+  coll_map_id bigint DEFAULT 0,
+  coll_inheritance character varying(1000),
+  coll_type character varying(250) DEFAULT '0'::character varying,
+  coll_info1 character varying(2700) DEFAULT '0'::character varying,
+  coll_info2 character varying(2700) DEFAULT '0'::character varying,
+  coll_expiry_ts character varying(32),
+  r_comment character varying(1000),
+  create_ts character varying(32),
+  modify_ts character varying(32)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ext_coll_historical OWNER TO rodsbuild;
+
+-- Index: idx_ext_coll1
+
+-- DROP INDEX idx_ext_coll1;
+
+CREATE INDEX idx_ext_coll1
+  ON ext_coll_historical
+  USING btree
+  (coll_id);
+
+-- Index: idx_ext_coll2
+
+-- DROP INDEX idx_ext_coll2;
+
+CREATE INDEX idx_ext_coll2
+  ON ext_coll_historical
+  USING btree
+  (parent_coll_name, coll_name);
+
+-- Index: idx_ext_coll3
+
+-- DROP INDEX idx_ext_coll3;
+
+CREATE INDEX idx_ext_coll3
+  ON ext_coll_historical
+  USING btree
+  (coll_name);
+  
+  -- Table: ext_data_historical
+
+-- DROP TABLE ext_data_historical;
+
+CREATE TABLE ext_data_historical
+(
+  data_id bigint NOT NULL,
+  coll_id bigint NOT NULL,
+  data_name character varying(1000) NOT NULL,
+  data_repl_num integer NOT NULL,
+  data_version character varying(250) DEFAULT '0'::character varying,
+  data_type_name character varying(250) NOT NULL,
+  data_size bigint NOT NULL,
+  resc_group_name character varying(250),
+  resc_name character varying(250) NOT NULL,
+  data_path character varying(2700) NOT NULL,
+  data_owner_name character varying(250) NOT NULL,
+  data_owner_zone character varying(250) NOT NULL,
+  data_is_dirty integer DEFAULT 0,
+  data_status character varying(250),
+  data_checksum character varying(1000),
+  data_expiry_ts character varying(32),
+  data_map_id bigint DEFAULT 0,
+  data_mode character varying(32),
+  r_comment character varying(1000),
+  create_ts character varying(32),
+  modify_ts character varying(32)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ext_data_historical OWNER TO rodsbuild;
+
+-- Index: idx_ext_data1
+
+-- DROP INDEX idx_ext_data1;
+
+CREATE INDEX idx_ext_data1
+  ON ext_data_historical
+  USING btree
+  (data_id);
+
+-- Index: idx_ext_data2
+
+-- DROP INDEX idx_ext_data2;
+
+CREATE INDEX idx_ext_data2
+  ON ext_data_historical
+  USING btree
+  (coll_id, data_name, data_repl_num, data_version);
+
+-- Table: ext_resc_historical
+
+-- DROP TABLE ext_resc_historical;
+
+CREATE TABLE ext_resc_historical
+(
+  resc_id bigint NOT NULL,
+  resc_name character varying(250) NOT NULL,
+  zone_name character varying(250) NOT NULL,
+  resc_type_name character varying(250) NOT NULL,
+  resc_class_name character varying(250) NOT NULL,
+  resc_net character varying(250) NOT NULL,
+  resc_def_path character varying(1000) NOT NULL,
+  free_space character varying(250),
+  free_space_ts character varying(32),
+  resc_info character varying(1000),
+  r_comment character varying(1000),
+  resc_status character varying(32),
+  create_ts character varying(32),
+  modify_ts character varying(32)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ext_resc_historical OWNER TO rodsbuild;
+
+-- Index: idx_ext_resc1
+
+-- DROP INDEX idx_ext_resc1;
+
+CREATE INDEX idx_ext_resc1
+  ON ext_resc_historical
+  USING btree
+  (resc_id);
+
+-- Index: idx_ext_resc2
+
+-- DROP INDEX idx_ext_resc2;
+
+CREATE INDEX idx_ext_resc2
+  ON ext_resc_historical
+  USING btree
+  (zone_name, resc_name);
+  
+  -- Table: ext_zone_historical
+
+-- DROP TABLE ext_zone_historical;
+
+CREATE TABLE ext_zone_historical
+(
+  zone_id bigint NOT NULL,
+  zone_name character varying(250) NOT NULL,
+  zone_type_name character varying(250) NOT NULL,
+  zone_conn_string character varying(1000),
+  r_comment character varying(1000),
+  create_ts character varying(32),
+  modify_ts character varying(32)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE ext_zone_historical OWNER TO rodsbuild;
+
+-- Index: idx_ext_zone1
+
+-- DROP INDEX idx_ext_zone1;
+
+CREATE UNIQUE INDEX idx_ext_zone1
+  ON ext_zone_historical
+  USING btree
+  (zone_id);
+
+-- Index: idx_ext_zone2
+
+-- DROP INDEX idx_ext_zone2;
+
+CREATE INDEX idx_ext_zone2
+  ON ext_zone_historical
+  USING btree
+  (zone_name);
+
+-- Function: tg_ext_audit_delete()
+
+-- DROP FUNCTION tg_ext_audit_delete();
+
+CREATE LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION tg_ext_audit_delete()
+  RETURNS trigger AS
+$BODY$BEGIN
+	IF (TG_OP = 'DELETE') THEN
+		IF (TG_RELNAME = 'r_data_main') THEN
+			INSERT INTO ext_data_historical SELECT OLD.*;
+			RETURN NULL;
+		ELSIF (TG_RELNAME = 'r_coll_main') THEN
+			INSERT INTO ext_coll_historical SELECT OLD.*;
+			RETURN NULL;
+		ELSIF (TG_RELNAME = 'r_resc_main') THEN
+			INSERT INTO ext_resc_historical SELECT OLD.*;
+			RETURN NULL;
+		END IF;
+	END IF;
+	RETURN NULL;
+END;$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+ALTER FUNCTION tg_ext_audit_delete() OWNER TO rodsbuild;
+
+-- View: vw_ext_data
+
+-- DROP VIEW vw_ext_data;
+
+CREATE OR REPLACE VIEW vw_ext_data AS
+	SELECT 	data.data_id, data.data_owner_name, coll.coll_name || '/' || data.data_name AS object_name, 
+			to_timestamp(to_number(data.create_ts::text, '09999999999'::text)::double precision) AS create_date,
+			to_timestamp(to_number(data.modify_ts::text, '09999999999'::text)::double precision) AS modify_date,
+			data.is_deleted
+	FROM 	r_coll_main coll, 
+			(SELECT *, FALSE AS is_deleted FROM r_data_main
+			UNION ALL
+			SELECT *, TRUE AS is_deleted FROM ext_data_historical) data
+	WHERE	data.coll_id = coll.coll_id;
+	
+ALTER TABLE vw_ext_data OWNER TO rodsbuild;
+
+-- View: vw_ext_coll
+
+-- DROP VIEW vw_ext_coll;
+
+CREATE OR REPLACE VIEW vw_ext_coll AS 
+	SELECT 	coll.coll_id, coll.coll_owner_name, coll.coll_name,
+			to_timestamp(to_number(coll.create_ts::text, '09999999999'::text)::double precision) AS create_date,
+			to_timestamp(to_number(coll.modify_ts::text, '09999999999'::text)::double precision) AS modify_date,
+			coll.is_deleted
+	FROM 	(SELECT *, FALSE AS is_deleted FROM r_coll_main
+			UNION ALL
+			SELECT *, TRUE AS is_deleted FROM ext_coll_historical) coll;
+
+ALTER TABLE vw_ext_coll OWNER TO rodsbuild;
+
+-- View: vw_ext_resc
+
+-- DROP VIEW vw_ext_resc;
+
+CREATE OR REPLACE VIEW vw_ext_resc AS 
+	SELECT	resc.resc_id, resc.resc_name,
+			to_timestamp(to_number(resc.create_ts::text, '09999999999'::text)::double precision) AS create_date, 
+			to_timestamp(to_number(resc.modify_ts::text, '09999999999'::text)::double precision) AS modify_date, 
+			resc.is_deleted
+	FROM	(SELECT *, false AS is_deleted
+			FROM r_resc_main
+			UNION ALL 
+			SELECT *, true AS is_deleted
+			FROM ext_resc_historical) resc;
+
+ALTER TABLE vw_ext_resc OWNER TO rodsbuild;
+
+-- View: vw_ext_audit
+
+-- DROP VIEW vw_ext_audit;
+
+CREATE OR REPLACE VIEW vw_ext_audit AS
+	SELECT 	coll.coll_id AS object_id, ext_aud.action_name, aud.r_comment AS action_description, usr.user_name, 
+to_timestamp(to_number(aud.create_ts::text, '09999999999'::text)::double precision) AS audit_date
+	FROM 	vw_ext_coll coll, ext_audit_actions ext_aud, r_objt_audit aud, r_user_main usr
+	WHERE 	coll.coll_id = aud.object_id AND aud.action_id = ext_aud.action_id AND aud.user_id = usr.user_id
+	UNION ALL 
+	SELECT 	data.data_id AS object_id, ext_aud.action_name, aud.r_comment AS action_description, usr.user_name, 
+to_timestamp(to_number(aud.create_ts::text, '09999999999'::text)::double precision) AS audit_date
+	FROM 	vw_ext_data data, ext_audit_actions ext_aud, r_objt_audit aud, r_user_main usr
+	WHERE 	data.data_id = aud.object_id AND aud.action_id = ext_aud.action_id AND aud.user_id = usr.user_id
+	UNION ALL 
+	SELECT 	resc.resc_id AS object_id, ext_aud.action_name, aud.r_comment AS action_description, usr.user_name, 
+to_timestamp(to_number(aud.create_ts::text, '09999999999'::text)::double precision) AS audit_date
+	FROM 	vw_ext_resc resc, ext_audit_actions ext_aud, r_objt_audit aud, r_user_main usr
+	WHERE 	resc.resc_id = aud.object_id AND aud.action_id = ext_aud.action_id AND aud.user_id = usr.user_id;
+
+ALTER TABLE vw_ext_audit OWNER TO rodsbuild;
+
+CREATE TRIGGER tg_ext_data_delete
+  AFTER DELETE
+  ON r_data_main
+  FOR EACH ROW
+  EXECUTE PROCEDURE tg_ext_audit_delete();
+  
+CREATE TRIGGER tg_ext_coll_delete
+  AFTER DELETE
+  ON r_coll_main
+  FOR EACH ROW
+  EXECUTE PROCEDURE tg_ext_audit_delete();
+
+CREATE TRIGGER tg_ext_resc_delete
+  AFTER DELETE
+  ON r_resc_main
+  FOR EACH ROW
+  EXECUTE PROCEDURE tg_ext_audit_delete();
+
+CREATE TRIGGER tg_ext_zone_delete
+  AFTER DELETE
+  ON r_zone_main
+  FOR EACH ROW
+  EXECUTE PROCEDURE tg_ext_audit_delete();
+
+  
+

@@ -1,0 +1,3 @@
+postThis||msiPostThis(*url,*data,*status)##writePosInt(stdout,*status)##writeLine(stdout,"")|nop
+*url=$1%*data=$2
+ruleExecOut

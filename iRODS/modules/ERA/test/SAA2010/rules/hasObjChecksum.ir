@@ -1,0 +1,3 @@
+hasObjChecksum||msiSplitPath(*Object,*CollName,*DataName)##msiAddSelectFieldToGenQuery(DATA_CHECKSUM,COUNT,*GenQInp)##msiAddConditionToGenQuery(COLL_NAME,"=",*CollName,*GenQInp)##msiAddConditionToGenQuery(DATA_NAME,"=",*DataName,*GenQInp)##msiExecGenQuery(*GenQInp,*GenQOut)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut,"DATA_CHECKSUM",*count),nop)##ifExec(*count > 0,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"CHECKSUM_REGISTERED.*Time",*count)##msiAssociateKeyValuePairsToObj(*KVP,*Object,"-d"),nop##nop##nop,msiGetSystemTime(*Time,human)##msiAddKeyVal(*KVP,"CHECKSUM_MISSING.*Time",*count)##msiAssociateKeyValuePairsToObj(*KVP,*Object,"-d"),nop)|nop
+*Object=/renci/home/rods/loading/isCollClean.r
+ruleExecOut

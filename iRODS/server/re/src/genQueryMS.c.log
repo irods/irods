@@ -1,0 +1,150 @@
+------------------------------------------------------------------------
+r3939 | terrell | 2011-04-18 18:50:15 -0700 (Mon, 18 Apr 2011) | 1 line
+
+keep doxygen in sync with g++ changes
+------------------------------------------------------------------------
+r3918 | schroede | 2011-04-18 13:37:42 -0700 (Mon, 18 Apr 2011) | 8 lines
+
+More of Jason Coposky's mods to build with g++.
+
+Certain casts are needed to avoid errors.  
+In some cases a (void *) needs to be (void **) to match usage.
+These changes are should be fine whether it is being built with gcc or
+g++.
+
+
+------------------------------------------------------------------------
+r3175 | antoine | 2010-07-22 09:52:49 -0700 (Thu, 22 Jul 2010) | 2 lines
+
+Doxygen update
+
+------------------------------------------------------------------------
+r3021 | sekar | 2010-07-02 13:01:57 -0700 (Fri, 02 Jul 2010) | 3 lines
+
+dded comments in Doxygen for micro-services
+
+
+------------------------------------------------------------------------
+r3018 | antoine | 2010-07-02 07:33:49 -0700 (Fri, 02 Jul 2010) | 3 lines
+
+Doxygen update, no mod in the actual code
+
+
+------------------------------------------------------------------------
+r2877 | sekar | 2010-06-09 12:59:54 -0700 (Wed, 09 Jun 2010) | 5 lines
+
+This is a somewhat massive commit with changes to XMsgs system and the rule engine
+and some portions of rule in iCAT. 
+It also includes the Doxygen stuff for many of the micro-services whichI am supposed to do.
+
+
+------------------------------------------------------------------------
+r2830 | schroede | 2010-06-02 14:27:16 -0700 (Wed, 02 Jun 2010) | 6 lines
+
+Patches to msiExecStrCondQueryWithOptions provided by Luc of the
+French National Library.  This patch had recent changes from the
+msiExecStrCondQuery function put into the
+msiExecStrCondQueryWithOptions function.  In addition, I removed some
+commentted out code from the patch and did some minor formatting.
+
+------------------------------------------------------------------------
+r2563 | terrell | 2010-04-04 20:47:20 -0700 (Sun, 04 Apr 2010) | 1 line
+
+doxygen for jeanyves msiSetACL and raja msiPrintGenQueryInp
+------------------------------------------------------------------------
+r2301 | terrell | 2009-12-17 19:36:49 -0800 (Thu, 17 Dec 2009) | 1 line
+
+slight formatting, and linking in Antoine's changes from earlier tonight
+------------------------------------------------------------------------
+r2297 | antoine | 2009-12-17 14:20:36 -0800 (Thu, 17 Dec 2009) | 8 lines
+
+Minor maintenance and three new query microservices:
+
+int msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei);
+int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
+int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
+
+
+
+------------------------------------------------------------------------
+r2140 | terrell | 2009-10-08 10:57:16 -0700 (Thu, 08 Oct 2009) | 1 line
+
+put code blocks in documentation in 'pre' tags for clean html and pdf rendering
+------------------------------------------------------------------------
+r2139 | terrell | 2009-10-08 10:49:18 -0700 (Thu, 08 Oct 2009) | 1 line
+
+documentation around the new msiGetContInxFromGenQueryOut - with example
+------------------------------------------------------------------------
+r2124 | sekar | 2009-10-01 08:11:11 -0700 (Thu, 01 Oct 2009) | 2 lines
+
+msiGetContInxFromGenQueryOut has been added so that the continuation index can be obtained after msiExecGenQuery has been run. This enables using the msiGetMoreRows with the continuation index in a natural way
+
+------------------------------------------------------------------------
+r2052 | terrell | 2009-09-10 18:14:45 -0700 (Thu, 10 Sep 2009) | 1 line
+
+doxygen notes for msiExecStrCondQuery and msiExecStrCondQueryWithOptions
+------------------------------------------------------------------------
+r1915 | schroede | 2009-07-02 16:10:42 -0700 (Thu, 02 Jul 2009) | 8 lines
+
+
+This is a large set of new Doxygen microservice documentation (comment
+blocks) from Terrell Russell, Jewel Ward and Ketan Palshikar of
+UNC-CH.  In other source files, they also made changes to consistently
+use 'iRODS' instead of 'iRods'.  I undid a few of these (in some .pl,
+.c, .html, or config files) so the system would be unaffected (it
+could break something).
+
+------------------------------------------------------------------------
+r1905 | sekar | 2009-06-30 11:58:14 -0700 (Tue, 30 Jun 2009) | 9 lines
+
+added
+> int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+>                                  msParam_t* zeroResultsIsOK,
+>                                  msParam_t* maxReturnedRowsParam,
+>                                  msParam_t* genQueryOutParam,
+>                                  ruleExecInfo_t *rei)
+
+from Romain Guinot
+
+------------------------------------------------------------------------
+r1847 | sekar | 2009-06-19 16:37:09 -0700 (Fri, 19 Jun 2009) | 2 lines
+
+added a new micro-service msiPrintGenQueryInp
+
+------------------------------------------------------------------------
+r1204 | antoine | 2008-09-24 13:00:05 -0700 (Wed, 24 Sep 2008) | 2 lines
+
+type of query continuation index changed to INT_MS_T
+
+------------------------------------------------------------------------
+r1196 | antoine | 2008-09-23 20:27:06 -0700 (Tue, 23 Sep 2008) | 2 lines
+
+Modified msiGetMoreRows to return continuation index as a STR_MS_T, for use in conditional expressions.
+
+------------------------------------------------------------------------
+r1189 | antoine | 2008-09-19 21:43:35 -0700 (Fri, 19 Sep 2008) | 2 lines
+
+Added msiMakeGenQuery to use before msiExecGenQuery, and msiGetMoreRows to continue an unfinished query.
+
+------------------------------------------------------------------------
+r162 | sekar | 2007-10-03 15:01:14 -0700 (Wed, 03 Oct 2007) | 2 lines
+
+changes so that warning messages do not occur when compiling
+
+------------------------------------------------------------------------
+r153 | schroede | 2007-10-02 12:42:48 -0700 (Tue, 02 Oct 2007) | 2 lines
+
+Changes to avoid warning messages.
+
+------------------------------------------------------------------------
+r34 | arun | 2007-09-12 15:28:18 -0700 (Wed, 12 Sep 2007) | 3 lines
+
+This commit was generated by cvs2svn to compensate for changes in r33,
+which included commits to RCS files with non-trunk default branches.
+
+------------------------------------------------------------------------
+r33 | arun | 2007-09-12 15:28:18 -0700 (Wed, 12 Sep 2007) | 2 lines
+
+Importing the reorganized source tree for easier development and collaboration with more developers
+
+------------------------------------------------------------------------

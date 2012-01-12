@@ -1,0 +1,3 @@
+myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop##nop
+*Action=trim%*Condition= COLL_NAME = '/tempZone/home/rods'%*K=---------------------
+*Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut

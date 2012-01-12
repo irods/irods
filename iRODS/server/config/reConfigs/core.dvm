@@ -1,0 +1,153 @@
+# Data Variable Mapping
+# DVN provides a mapping from an external variable name (logical)
+# to  an internal variable name in the Session Memory $
+# Each mapping consists of three parts separated by  |
+# The three parts are: external variable name, action-list, and internal variable name
+# The action-list can be empty. If not, then the mapping is used when
+# action that invokes this mapping is in the list.
+# The mappings are searched top-down in a file.
+#
+status||rei->status
+objPath||rei->doi->objPath
+objPath||rei->doinp->objPath
+dataType||rei->doi->dataType
+dataSize||rei->doi->dataSize
+dataSize||rei->doinp->dataSize
+chksum||rei->doi->chksum
+version||rei->doi->version
+filePath||rei->doi->filePath
+replNum||rei->doi->replNum
+replStatus||rei->doi->replStatus
+writeFlag||rei->doi->writeFlag
+dataOwner||rei->doi->dataOwnerName
+dataOwnerZone||rei->doi->dataOwnerZone
+dataExpiry||rei->doi-dataExpiry
+dataComments||rei->doi->dataComments
+dataCreate||rei->doi-dataCreate
+dataModify||rei->doi-dataModify
+dataAccess||rei->doi->dataAccess
+dataAccessInx||rei->doi->dataAccessInx
+dataId||rei->doi->dataId
+collId||rei->doi->collId
+statusString||rei->doi->statusString
+# dataMapId||rei->doi->dataMapId
+destRescName||rei->doi->destRescName
+backupRescName||rei->doi->backupRescName
+rescName||rei->doi->rescName
+rescName||rei->rgi->rescInfo->rescName
+rescGroupName||rei->doi->rescGroupName
+rescGroupName||rei->rgi->rescGroupName
+zoneName||rei->doi->rescInfo->zoneName
+zoneName||rei->rgi->rescInfo->zoneName
+rescLoc||rei->doi->rescInfo->rescLoc
+rescLoc||rei->rgi->rescInfo->rescLoc
+rescType||rei->doi->rescInfo->rescType
+rescType||rei->rgi->rescInfo->rescType
+rescTypeInx||rei->doi->rescInfo->rescTypeInx
+rescTypeInx||rei->rgi->rescInfo->rescTypeInx
+rescClass||rei->doi->rescInfo->rescClass
+rescClass||rei->rgi->rescInfo->rescClass
+rescClassInx||rei->doi->rescInfo->rescClassInx
+rescClassInx||rei->rgi->rescInfo->rescClassInx
+rescVaultPath||rei->doi->rescInfo->rescVaultPath
+rescVaultPath||rei->rgi->rescInfo->rescVaultPath
+rescMaxObjSize||rei->rgi->rescInfo->rescMaxObjSize
+freeSpace||rei->doi->rescInfo->freeSpace
+freeSpace||rei->rgi->rescInfo->freeSpace
+freeSpaceTime||rei->doi->rescInfo->freeSpaceTime
+freeSpaceTime||rei->rgi->rescInfo->freeSpaceTime
+freeSpaceTimeStamp||rei->doi->rescInfo->freeSpaceTimeStamp
+freeSpaceTimeStamp||rei->rgi->rescInfo->freeSpaceTimeStamp
+rescInfo||rei->doi->rescInfo->rescInfo
+rescInfo||rei->rgi->rescInfo->rescInfo
+rescStatus||rei->doi->rescInfo->rescStatus
+# paraOpr||rei->doi->rescInfo->paraOpr
+rescId||rei->doi->rescInfo->rescId
+# gateWayAddr||rei->doi->rescInfo->gateWayAddr
+rescMaxObjSize||rei->doi->rescInfo->rescMaxObjSize
+rescComments||rei->doi->rescInfo->rescComments
+rescCreate||rei->doi->rescInfo-rescCreate
+rescModify||rei->doi->rescInfo-rescModify
+# user info coming directly
+userClient||rei->uoic
+userClient||rei->rsComm->clientUser
+userNameClient||rei->uoic->userName
+userNameClient||rei->rsComm->clientUser->userName
+rodsZoneClient||rei->uoic->rodsZone
+rodsZoneClient||rei->rsComm->clientUser->rodsZone
+# userTypeClient||rei->uoic->userType
+# userTypeClient||rei->rsComm->clientUser->userType
+sysUidClient||rei->uoic->sysUid
+sysUidClient||rei->rsComm->clientUser->sysUid
+privClient||rei->uoic->authInfo->authFlag
+privClient||rei->rsComm->clientUser->authInfo->authFlag
+# hostClient||rei->uoic->authInfo->host
+# hostClient||rei->rsComm->clientUser->authInfo->host
+clientAddr||rei->rsComm->clientAddr
+authStrClient||rei->uoic->authInfo->authStr
+authStrClient||rei->rsComm->clientUser->authInfo->authStr
+userAuthSchemeClient||rei->uoic->authInfo->authScheme
+userAuthSchemeClient||rei->rsComm->clientUser->authInfo->authScheme
+userInfoClient||rei->uoic->userOtherInfo->userInfo
+userInfoClient||rei->rsComm->clientUser->userOtherInfo->userInfo
+userCommentClient||rei->uoic->userOtherInfo->userComments
+userCommentClient||rei->rsComm->clientUser->userOtherInfo->userComments
+userCreateClient||rei->uoic->userOtherInfo->userCreate
+userCreateClient||rei->rsComm->clientUser->userOtherInfo->userCreate
+userModifyClient||rei->uoic->userOtherInfo->userModify
+userModifyClient||rei->rsComm->clientUser->userOtherInfo->userModify
+userProxy||rei->uoip
+userProxy||rei->rsComm->proxyUser
+userNameProxy||rei->uoip->userName
+userNameProxy||rei->rsComm->proxyUser->userName
+rodsZoneProxy||rei->uoip->rodsZone
+rodsZoneProxy||rei->rsComm->proxyUser->rodsZone
+# userTypeProxy||rei->uoip->userType
+# userTypeProxy||rei->rsComm->proxyUser->userType
+# sysUidProxy||rei->uoip->sysUid
+# sysUidProxy||rei->rsComm->proxyUser->sysUid
+privProxy||rei->uoip->authInfo->authFlag
+privProxy||rei->rsComm->proxyUser->authInfo->authFlag
+# hostProxy||rei->uoip->authInfo->host
+# hostProxy||rei->rsComm->proxyUser->authInfo->host
+authStrProxy||rei->uoip->authInfo->authStr
+authStrProxy||rei->rsComm->proxyUser->authInfo->authStr
+userAuthSchemeProxy||rei->uoip->authInfo->authScheme
+userAuthSchemeProxy||rei->rsComm->proxyUser->authInfo->authScheme
+userInfoProxy||rei->uoip->userOtherInfo->userInfo
+userInfoProxy||rei->rsComm->proxyUser->userOtherInfo->userInfo
+userCommentProxy||rei->uoip->userOtherInfo->userComments
+userCommentProxy||rei->rsComm->proxyUser->userOtherInfo->userComments
+userCreateProxy||rei->uoip->userOtherInfo->userCreate
+userCreateProxy||rei->rsComm->proxyUser->userOtherInfo->userCreate
+userModifyProxy||rei->uoip->userOtherInfo->userModify
+userModifyProxy||rei->rsComm->proxyUser->userOtherInfo->userModify
+# collection info
+collName||rei->coi->collName
+collParentName||rei->coi->collParentName
+collOwnername||rei->coi->collOwnerName
+collExpiry||rei->coi-collExpiry
+collComments||rei->coi->collComments
+collCreate||rei->coi-collCreate
+collModify||rei->coi-collModify
+collAccess||rei->coi->collAccess
+collAccessInx||rei->coi->collAccessInx
+# collMapId||rei->coi->collMapId
+collInheritance||rei->coi->collInheritance
+otherUser||rei->uoio
+otherUserName||rei->uoio->userName
+otherUserZone||rei->uoio->rodsZone
+otherUserType||rei->uoio->userType
+# otherSysUidClient||rei->uoio->sysUid
+connectCnt||rei->rsComm->connectCnt
+connectSock||rei->rsComm->sock
+connectOption||rei->rsComm->option
+connectStatus||rei->rsComm->status
+connectApiTnx||rei->rsComm->apiInx
+KVPairs||rei->condInputData
+# connectWindowSize||rei->rsComm->windowSize
+# connectReconnFlag||rei->rsComm->reconnFlag
+# connectReconnSock||rei->rsComm->reconnSock
+# connectReconnPort||rei->rsComm->reconnPort
+# connectReconnAddr||rei->rsComm->reconnAddr
+# ConnectCookie||rei->rsComm->cookie

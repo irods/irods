@@ -1,0 +1,1133 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\Inquisitor.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON33              ICON                    "res\\icon33.ico"
+IDR_ADDRESSBAR_TMPL     ICON                    "sdi.ico"
+IDR_MAINFRAME           ICON                    "res\\icon18.ico"
+IDR_INQUISTYPE          ICON                    "res\\InquisitorDoc.ico"
+IDI_ICON23              ICON                    "res\\icon23.ico"
+IDI_ICON24              ICON                    "res\\icon24.ico"
+IDI_ICON25              ICON                    "res\\icon25.ico"
+IDI_ICON26              ICON                    "res\\icon26.ico"
+IDI_ICON34              ICON                    "res\\icon34.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\toolbar1.bmp"
+IDB_VIEW_ICONS_LARGE    BITMAP                  "res\\bitmap1.bmp"
+IDR_LISTVIEWS           BITMAP                  "res\\bmp00002.bmp"
+IDB_VIEW_ICONS          BITMAP                  "res\\view_ico.bmp"
+IDB_BITMAP2             BITMAP                  "res\\Image4b.bmp"
+IDB_VIEW_GREYED         BITMAP                  "res\\view_ico_greyed.bmp"
+IDB_VIEW_NORMAL         BITMAP                  "res\\view_ico_normal.bmp"
+IDB_VIEW_SELECTED       BITMAP                  "res\\view_ico_selected.bmp"
+IDR_MAINFRAME1          BITMAP                  "res\\mainfram.bmp"
+IDB_BITMAP_ABOUT        BITMAP                  "res\\irodsweb.bmp"
+IDB_BITMAP_IRODS_ROCKET BITMAP                  "res\\irodsrocket.bmp"
+IDR_LISTVIEWS1          BITMAP                  "res\\listview.bmp"
+IDR_TOOLBAR1            BITMAP                  "res\\bmp00001.bmp"
+IDR_TOOLBAR3            BITMAP                  "res\\toolbar3.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  35, 35
+BEGIN
+    BUTTON      ID_FOOFIGHTER
+    SEPARATOR
+    BUTTON      ID_BACK
+    BUTTON      ID_FORWARD
+    SEPARATOR
+    BUTTON      ID_REFRESH
+    BUTTON      ID_TREE_HOME
+    BUTTON      ID_TREE_UP
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_VIEW_LARGEICON
+    BUTTON      ID_VIEW_SMALLICON
+    BUTTON      ID_VIEW_LIST
+    BUTTON      ID_VIEW_DETAILS
+END
+
+IDR_LISTVIEWS TOOLBAR  35, 35
+BEGIN
+    BUTTON      ID_ACCESS_CTRL
+    BUTTON      ID_REPLICATE
+    BUTTON      ID_QUERY
+    BUTTON      ID_NEW_META
+    SEPARATOR
+    BUTTON      ID_UPLOAD
+    BUTTON      ID_UPLOADFOLDER
+    BUTTON      ID_DOWNLOAD
+    SEPARATOR
+    BUTTON      ID_NEW_COLLECTION
+    SEPARATOR
+    BUTTON      ID_DELETE
+END
+
+IDR_MAINFRAME1 TOOLBAR  35, 35
+BEGIN
+    BUTTON      ID_NEW_COLLECTION
+    BUTTON      ID_ACCESS_CTRL
+    BUTTON      ID_REPLICATE
+    BUTTON      ID_VIEW_REFRESH
+    SEPARATOR
+    BUTTON      ID_TREE_UP
+END
+
+IDR_LISTVIEWS1 TOOLBAR  35, 35
+BEGIN
+    BUTTON      ID_EDIT_METADATA
+    SEPARATOR
+    BUTTON      ID_DOWNLOAD
+    BUTTON      ID_UPLOAD_UPLOADFILES
+    BUTTON      ID_UPLOAD_UPLOADAFOLDER
+END
+
+IDR_TOOLBAR3 TOOLBAR  20, 20
+BEGIN
+    BUTTON      ID_NEW_COLLECTION
+    BUTTON      ID_ACCESS_CTRL
+    BUTTON      ID_REPLICATE
+    BUTTON      ID_VIEW_REFRESH
+    BUTTON      ID_TREE_UP
+    SEPARATOR
+    BUTTON      ID_EDIT_METADATA_USERMETADATA
+    BUTTON      ID_DOWNLOAD
+    BUTTON      ID_UPLOAD_UPLOADFILES
+    BUTTON      ID_UPLOAD_UPLOADAFOLDER
+    SEPARATOR
+    BUTTON      ID_EDIT_SEARCH
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&iRODS"
+    BEGIN
+        POPUP "Ne&w"
+        BEGIN
+            MENUITEM "&Collection...",              ID_NEW_COLLECTION
+        END
+        MENUITEM "&Delete",                     ID_DELETE
+        MENUITEM "Rena&me...",                  ID_RENAME
+        MENUITEM "&Replicate",                  ID_REPLICATE
+        POPUP "&Set"
+        BEGIN
+            MENUITEM "&Access Control...",          ID_ACCESS_CTRL
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Do&wnload...",                ID_DOWNLOAD
+        POPUP "&Upload"
+        BEGIN
+            MENUITEM "Upload Files ...",            ID_UPLOAD_UPLOADFILES
+            MENUITEM "Upload a Folder ...",         ID_UPLOAD_UPLOADAFOLDER
+        END
+        MENUITEM SEPARATOR
+        POPUP "User Account"
+        BEGIN
+            MENUITEM "User Info",                   ID_USER_INFO
+            MENUITEM "Change Password ...",         ID_USERACCOUNT_CHANGEPASSWORD
+        END
+        MENUITEM "Preferences ...",             ID_IRODS_PREFERENCES
+        MENUITEM SEPARATOR
+        MENUITEM "&Close",                      ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "Copy iRODS Path to Clipboard", ID_EDIT_COPYPATHTOCLIPBOARD
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_SELECT_ALL
+        MENUITEM SEPARATOR
+        POPUP "Metadata"
+        BEGIN
+            MENUITEM "System Metadata in iCAT ...", ID_EDIT_METADATA_SYSMETADATA
+            MENUITEM "User Metadata in iCAT ...",   ID_EDIT_METADATA_USERMETADATA
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Search ...",                  ID_EDIT_SEARCH
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "T&oolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "S&tatus Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Refresh",                     ID_VIEW_REFRESH
+    END
+    POPUP "Rule"
+    BEGIN
+        MENUITEM "Submit an iRODS Rule ...",    ID_RULE_SUBMITANIRODSRULE
+        MENUITEM "Check Status of Pending Rule(s) ...", ID_RULE_CHECKSTATUSOFPENDINGRULE
+        MENUITEM "Delete Pending Rule(s) ...",  ID_RULE_DELETEPENDINGRULE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About iRODS Explorer...",    ID_APP_ABOUT
+    END
+END
+
+IDR_ADDRESSBAR_TMPL MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About sd12...",              ID_APP_ABOUT
+    END
+END
+
+IDR_MAINFRAME2 MENU 
+BEGIN
+    POPUP "&iRODS"
+    BEGIN
+        POPUP "Ne&w"
+        BEGIN
+            MENUITEM "&Collection...",              ID_NEW_COLLECTION
+            MENUITEM "&Query...",                   ID_QUERY
+        END
+        MENUITEM "&Delete",                     ID_DELETE
+        MENUITEM "Rena&me",                     ID_RENAME
+        MENUITEM "&Replicate",                  ID_REPLICATE
+        MENUITEM "S&ychronize",                 ID_SYNCHRONIZE, INACTIVE
+        POPUP "&Set"
+        BEGIN
+            MENUITEM "&Access Control...",          ID_ACCESS_CTRL
+            MENUITEM "&Comment",                    ID_COMMENT, INACTIVE
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Do&wnload...",                ID_DOWNLOAD
+        POPUP "&Upload"
+        BEGIN
+            MENUITEM "Upload Files ...",            ID_UPLOAD_UPLOADFILES
+            MENUITEM "Upload a Folder ...",         ID_UPLOAD_UPLOADAFOLDER
+        END
+        MENUITEM SEPARATOR
+        POPUP "User &Info"
+        BEGIN
+            MENUITEM "Change &Password...",         ID_CHANGE_PASSWORD
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Close",                      ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT, INACTIVE
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_SELECT_ALL
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "T&oolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "S&tatus Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Lar&ge Icons",                ID_VIEW_LARGEICON, INACTIVE
+        MENUITEM "S&mall Icons",                ID_VIEW_SMALLICON, INACTIVE
+        MENUITEM "&List",                       ID_VIEW_LIST, INACTIVE
+        MENUITEM "&Details",                    ID_VIEW_DETAILS
+        MENUITEM SEPARATOR
+        MENUITEM "Refresh",                     ID_VIEW_REFRESH
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About iRODS Explorer...",    ID_APP_ABOUT
+    END
+END
+
+IDR_MENU_METASEARCDLG MENU 
+BEGIN
+    POPUP "file"
+    BEGIN
+        MENUITEM "Download ...",                ID_METASEARCHDLG_DOWNLOAD
+        MENUITEM "Metadata ...",                ID_METASEARCHDLG_METADATA
+        MENUITEM "Copy iRODS Path to Clipboard", ID_METASEARCHDLG_COPYTOCLIPBOARD
+        MENUITEM "Delete",                      ID_METASEARCHDLG_DELETE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT
+    VK_F1,          ID_HELP,                VIRTKEY 
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 313, 161
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About iRODS Explorer"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,135,140,50,14,WS_GROUP
+    CTEXT           "iRODS Explorer\nversion 2.2d\n(Build 01.22.2010)",IDC_STATIC_VERSION,234,20,64,26
+    LTEXT           "http://www.irods.org",IDC_STATIC1111,235,70,68,8
+    LTEXT           "email: irods@irods.org",IDC_STATIC0001,232,55,72,8
+    CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,221,127
+END
+
+IDD_LOGIN DIALOGEX 0, 0, 380, 212
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "iRODS Login"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_LOGIN_NAME,45,23,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGIN_HOST,45,47,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGIN_ZONE,45,73,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGIN_PORT,45,98,96,100,CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_LOGIN_PASSWORD,45,140,160,14,ES_PASSWORD | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Connect!",IDOK,45,167,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,99,167,50,14
+    PUSHBUTTON      "Add  >>",IDC_LOGIN_NEW,157,24,32,14
+    PUSHBUTTON      "Remove",IDC_LOGIN_REMOVE,156,41,33,14
+    CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,192,22,181,90
+    LTEXT           "Name",IDC_STATIC1,19,23,20,12,SS_CENTERIMAGE
+    LTEXT           "Host",IDC_STATIC2,19,49,16,12,SS_CENTERIMAGE
+    LTEXT           "Zone",IDC_STATIC3,19,73,20,12,SS_CENTERIMAGE
+    LTEXT           "Port",IDC_STATIC4,19,98,14,12,SS_CENTERIMAGE
+    LTEXT           "To login, enter the password for the selected connection",IDC_STATIC5,45,126,194,14,SS_CENTERIMAGE
+    PUSHBUTTON      "Demo!",IDC_LOGIN_DEMO,153,167,50,14,WS_DISABLED
+    CTEXT           "www.irods.org",IDC_STATIC,307,174,55,8
+    CONTROL         266,IDC_STATIC,"Static",SS_BITMAP,305,124,64,44
+    CONTROL         "Previous Logins:",IDC_CHECK_PRELOGINS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,193,10,80,10
+END
+
+IDD_DIALOGBAR1 DIALOGEX 0, 0, 130, 14
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_TREE_STACK,0,1,130,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOGBAR3 DIALOGEX 0, 0, 400, 15
+STYLE DS_SETFONT | WS_CHILD | WS_BORDER
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_RESOURCE,69,1,159,100,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "...",IDC_BUTTON_DBAR3_STORAGE_RSOURCE,229,1,18,12
+    LTEXT           "Storage Resource:",IDC_STATIC_DBAR3_SR,1,3,61,9
+    CONTROL         "",IDC_PROGRESS_DLGBAR3,"msctls_progress32",0x1,289,1,110,12,WS_EX_CLIENTEDGE
+END
+
+IDD_QUERY DIALOG  0, 0, 322, 110
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Query"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,107,89,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,164,89,50,14
+    COMBOBOX        IDC_QUERY_ATTRIBUTE,7,7,100,96,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_QUERY_VALUE,159,7,100,96,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_QUERY_OPERATION,108,7,50,96,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add",IDC_QUERY_ADD,265,7,50,14
+    PUSHBUTTON      "Remove",IDC_QUERY_REMOVE,265,26,50,14
+    LISTBOX         IDC_QUERY_LIST,7,28,252,50,LBS_SORT | LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "And",IDC_QUERY_AND,265,45,50,14
+    PUSHBUTTON      "Or",IDC_QUERY_OR,265,64,50,14,WS_DISABLED
+END
+
+IDD_GENERIC_DIALOG DIALOG  0, 0, 164, 47
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter new value:"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,29,26,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,84,26,50,14
+    EDITTEXT        IDC_EDIT1,7,7,150,14,ES_AUTOHSCROLL
+END
+
+IDD_ACCESS_CTRL DIALOGEX 0, 0, 286, 191
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Access Control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LISTBOX         IDC_ACCESS_CTRL_LIST,7,44,203,76,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add",IDC_ACCESS_CTRL_ADD,7,125,50,14
+    PUSHBUTTON      "Remove",IDC_ACCESS_CTRL_REMOVE,219,46,50,14
+    PUSHBUTTON      "Close",IDOK,229,169,50,14
+    CONTROL         "Recursive",IDC_ACCESSCONTROL_RECURSIVE_CHECK,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,149,127,48,10,WS_EX_RIGHT
+    LTEXT           "Collection",IDC_STATIC_CD_CAPTION,7,5,84,10
+    LTEXT           "Static",IDC_STATIC_CD_DATA,7,18,264,12,WS_BORDER
+    LTEXT           "Current Permission:",IDC_STATIC,7,33,174,10
+    COMBOBOX        IDC_ACL_USERS_COMBO,77,146,130,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ACL_PERMISSION_COMBO,78,162,129,17,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Users:",IDC_STATIC,43,148,28,9
+    RTEXT           "Permission:",IDC_STATIC,31,164,40,10
+END
+
+IDD_ACCESS_CTRL_USER_ADD DIALOG  0, 0, 320, 114
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Add User"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,48,93,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,102,93,50,14
+    LISTBOX         IDC_USER_ADD_DOMAIN,129,7,90,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_USER_ADD_USER,223,7,90,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CONSTRAINT,49,73,102,49,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_LISTZONE,7,7,116,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_METADATA DIALOG  0, 0, 342, 50
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Metadata"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,117,29,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,174,29,50,14
+    COMBOBOX        IDC_METADATA_DLG_ATTRIBUTE,41,7,130,80,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_METADATA_DLG_VALUE,205,7,130,80,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Attribute:",IDC_STATIC,7,7,29,12,SS_CENTERIMAGE
+    RTEXT           "Value:",IDC_STATIC,179,7,21,12,SS_CENTERIMAGE
+END
+
+IDD_DS DIALOG  0, 0, 200, 58
+STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,75,37,50,14
+    CONTROL         "Progress1",IDC_DS2_PROGRESS,"msctls_progress32",WS_BORDER | 0x1,7,18,186,14
+    LTEXT           "Static",IDC_DS_STATIC,7,7,186,8,SS_CENTERIMAGE
+END
+
+IDD_DIALOGBAR DIALOG  0, 0, 150, 14
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "HotKey1",IDC_HOTKEY1,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,0,0,150,14
+END
+
+IDD_PREFERENCE_DIALOG DIALOGEX 0, 0, 316, 191
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "User Preference Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,189,169,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,257,169,50,14
+    CONTROL         "Always override existing objects when uploading local file(s)/folder",ID_PREF_UPLOAD_OVERRIDE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,25,226,12
+    GROUPBOX        "Upload Local File(s)/Folder",IDC_STATIC,7,7,302,42
+    CONTROL         "Delete data/collection permanently",IDC_PREF_DELETE_PERM,
+                    "Button",BS_AUTORADIOBUTTON,25,92,236,11
+    CONTROL         "Delete data/collection into trash area first",IDC_PERF_DELETE_TOTRASH,
+                    "Button",BS_AUTORADIOBUTTON,25,74,187,9
+    GROUPBOX        "Delete iRODS Objects",IDC_STATIC,7,59,301,52
+    CONTROL         "Always override existing objects",IDC_PREF_COPY_CHECK_OVERRIDE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,143,239,10
+    GROUPBOX        "Paste Buffered iRODS data (via Copy operation)",IDC_STATIC,7,121,300,38
+    PUSHBUTTON      "Clean Trash",IDC_BUTTON_PREF_CLEAN_TRASH,225,71,73,14
+END
+
+IDD_DIALOG_METADATA DIALOGEX 0, 0, 385, 241
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Metadata Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Close",IDCANCEL,328,224,50,14
+    CONTROL         "",IDC_LIST_METADATA_DLG,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,15,61,266,143
+    EDITTEXT        IDC_EDIT_CD_METADLG,63,7,315,16,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Collection:",IDC_STATIC_CD_LABEL_METADLG,7,7,54,12
+    PUSHBUTTON      "Detele",IDC_BUTTON_DELETE_METADATA_DLG,305,49,73,15
+    CONTROL         "",IDC_TAB_MEDATA_DLG,"SysTabControl32",0x0,7,36,281,175,WS_EX_TRANSPARENT
+    LTEXT           "Attribute:",IDC_STATIC_MDLG_ATT,31,70,37,8
+    EDITTEXT        IDC_EDIT_MDLG_ATT,75,68,204,13,ES_AUTOHSCROLL
+    LTEXT           "Value:",IDC_STATIC_MDLG_VAL,31,89,33,10
+    EDITTEXT        IDC_EDIT_MDLG_VAL,75,91,203,81,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    LTEXT           "Unit:",IDC_STATIC_MDLG_UNIT,31,179,31,10
+    EDITTEXT        IDC_EDIT_MDLG_UNIT,75,179,203,13,ES_AUTOHSCROLL
+    LTEXT           "msg",IDC_STATIC_METADLG_MSG,7,220,218,11
+    PUSHBUTTON      "View as HTML",IDC_BUTTON_VIEWHTML_METADAT_DLG,305,73,73,15
+END
+
+IDD_DIALOG_DISPTEXT DIALOGEX 0, 0, 285, 126
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,113,110,50,14
+    EDITTEXT        IDC_EDIT_DLG_DISPTEXT,12,8,262,99,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+END
+
+IDD_DIALOG_CHANGE_PASSWD DIALOGEX 0, 0, 254, 126
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Change Password Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,131,105,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,197,105,50,14
+    LTEXT           "Current Password:",IDC_STATIC,39,20,62,12
+    EDITTEXT        IDC_EDIT_CPW,119,19,116,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "New Password:",IDC_STATIC,46,44,55,9
+    EDITTEXT        IDC_EDIT_NPW,120,43,116,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Re-type the New Password:",IDC_STATIC,9,68,92,10
+    EDITTEXT        IDC_EDIT_RE_NPW,119,66,116,12,ES_PASSWORD | ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_SUBMIT_RULE DIALOGEX 0, 0, 360, 198
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Submit an iRODS Rule Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Submit",IDOK,244,177,50,14
+    PUSHBUTTON      "Close",IDCANCEL,302,177,50,14
+    LTEXT           "Rule:",IDC_STATIC,49,7,18,12
+    LTEXT           "Input Parameters:",IDC_STATIC,7,71,61,10
+    EDITTEXT        IDC_EDIT_INPUT_PARAM,72,70,227,45,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
+    LTEXT           "Output Parameters:",IDC_STATIC,7,126,66,10
+    EDITTEXT        IDC_EDIT_OUTPUT_PARAM,72,126,227,41,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
+    EDITTEXT        IDC_EDIT_RULE,72,7,227,56,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
+    PUSHBUTTON      "Import...",IDC_BUTTON1,305,7,47,14
+END
+
+IDD_DIALOG_RULE_STATUS DIALOGEX 0, 0, 304, 262
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Rule Status"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Close",IDCANCEL,247,241,50,14
+    GROUPBOX        "Submit Query",IDC_STATIC,7,7,290,54
+    GROUPBOX        "Status of Pending Rules",IDC_STATIC,8,72,288,167
+    LTEXT           "Rule Name:",IDC_STATIC,25,24,39,11
+    LTEXT           "User Name:",IDC_STATIC,24,42,42,10
+    EDITTEXT        IDC_EDIT_RULE_NAME,84,20,107,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_USER_NAME,84,40,107,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Find Pending Rules",IDC_BUTTON1,206,18,80,15
+    COMBOBOX        IDC_COMBO_PENDING_RULES,79,89,161,13,CBS_DROPDOWNLIST | CBS_SORT | CBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Pending Rules:",IDC_STATIC,20,91,49,9
+    EDITTEXT        IDC_EDIT_RULE_STATUS,18,120,269,111,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    LTEXT           "Status:",IDC_STATIC,20,109,55,8
+    PUSHBUTTON      "Delete",IDC_BUTTON2,250,88,39,15
+END
+
+IDD_DIALOG_META_SEARCH DIALOGEX 0, 0, 345, 324
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Search iRODS"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Search",IDOK,288,7,50,14
+    PUSHBUTTON      "Close",IDCANCEL,288,26,50,14
+    LTEXT           "Attribute Name:",IDC_STATIC_METASRH_ATT1,27,36,53,10
+    COMBOBOX        IDC_COMBO_METASRH_ATT1,81,32,56,38,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_ATT1,151,33,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Value:",IDC_STATIC_METASRH_VAL1,27,49,52,11
+    COMBOBOX        IDC_COMBO_METASRH_VAL1,82,49,56,15,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_VAL1,151,49,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Name:",IDC_STATIC_METASRH_ATT2,27,78,53,10
+    COMBOBOX        IDC_COMBO_METASRH_ATT2,81,75,56,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_ATT2,151,76,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Value:",IDC_STATIC_METASRH_VAL2,27,92,52,11
+    COMBOBOX        IDC_COMBO_METASRH_VAL2,81,91,56,15,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_VAL2,151,92,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Name:",IDC_STATIC_METASRH_ATT3,27,121,53,10
+    COMBOBOX        IDC_COMBO_METASRH_ATT3,82,120,56,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_ATT3,151,118,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Value:",IDC_STATIC_METASRH_VAL3,27,134,52,11
+    COMBOBOX        IDC_COMBO_METASRH_VAL3,82,136,56,15,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_VAL3,151,134,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Name:",IDC_STATIC_METASRH_ATT4,27,164,53,10
+    COMBOBOX        IDC_COMBO_METASRH_ATT4,83,163,56,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_ATT4,151,164,102,14,ES_AUTOHSCROLL
+    LTEXT           "Attribute Value:",IDC_STATIC_METASRH_VAL4,27,182,52,11
+    COMBOBOX        IDC_COMBO_METASRH_VAL4,83,179,56,15,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_METASRH_VAL4,151,180,102,14,ES_AUTOHSCROLL
+    GROUPBOX        "",IDC_STATIC_METASRH_F4,17,153,238,42,0,WS_EX_TRANSPARENT
+    GROUPBOX        "",IDC_STATIC_METASRH_F3,18,110,238,42,0,WS_EX_TRANSPARENT
+    GROUPBOX        "",IDC_STATIC_METASRH_F2,17,65,238,42,0,WS_EX_TRANSPARENT
+    GROUPBOX        "",IDC_STATIC_METASRH_F1,17,22,238,42,0,WS_EX_TRANSPARENT
+    LTEXT           "Search Results for collection:",IDC_STATIC_METASRH_RESULT,7,214,96,8
+    EDITTEXT        IDC_EDIT_METASRH_TOP_COLL,104,212,234,13,ES_AUTOHSCROLL
+    CONTROL         "Recursive Seach",IDC_CHECK_METASRH_RECURSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,271,201,67,9
+    LISTBOX         IDC_LIST_METASEARCH_RESULTS,7,227,331,90,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_TAB_METASRH,"SysTabControl32",0x0,7,7,255,192,WS_EX_TRANSPARENT
+    LTEXT           "The Advanced search is based on 'iquest'. Please complete the conditional statement in the edit box. \n\n SELECT COLL_NAME, DATA_NAME WHERE ",IDC_STATIC_ADVANCED_SRH,20,29,229,34
+    EDITTEXT        IDC_EDIT_ADVANCED_SRH,20,63,229,62,ES_MULTILINE
+END
+
+IDD_DIALOG_WEBDISPLAY DIALOGEX 0, 0, 325, 261
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,134,246,50,14
+    CONTROL         "",IDC_WEBDISP_EXPLORER,
+                    "{8856F961-340A-11D0-A96B-00C04FD705A2}",WS_TABSTOP,0,0,325,243
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,3
+ PRODUCTVERSION 1,1,0,3
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "iRODS"
+            VALUE "FileDescription", "iRODS Explorer and Query Tool for iRODS System"
+            VALUE "FileVersion", "1, 1"
+            VALUE "InternalName", "irodsexp"
+            VALUE "OriginalFilename", "irodsexp.exe"
+            VALUE "ProductName", "irodsexp"
+            VALUE "ProductVersion", "1, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 306
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 154
+    END
+
+    IDD_LOGIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 373
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 205
+    END
+
+    IDD_DIALOGBAR3, DIALOG
+    BEGIN
+        RIGHTMARGIN, 399
+        BOTTOMMARGIN, 14
+    END
+
+    IDD_QUERY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 315
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 103
+    END
+
+    IDD_GENERIC_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 157
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_ACCESS_CTRL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 279
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 183
+    END
+
+    IDD_ACCESS_CTRL_USER_ADD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 313
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+
+    IDD_METADATA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 335
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 43
+    END
+
+    IDD_DS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 193
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+
+    IDD_PREFERENCE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 184
+    END
+
+    IDD_DIALOG_METADATA, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 378
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 238
+    END
+
+    IDD_DIALOG_DISPTEXT, DIALOG
+    BEGIN
+        RIGHTMARGIN, 284
+    END
+
+    IDD_DIALOG_CHANGE_PASSWD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 247
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+    END
+
+    IDD_DIALOG_SUBMIT_RULE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 352
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 191
+    END
+
+    IDD_DIALOG_RULE_STATUS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 297
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 255
+    END
+
+    IDD_DIALOG_META_SEARCH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 338
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 317
+    END
+
+    IDD_DIALOG_WEBDISPLAY, DIALOG
+    BEGIN
+        RIGHTMARGIN, 323
+        BOTTOMMARGIN, 260
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AVI
+//
+
+IDR_AVI1                AVI                     "res\\Animation6.avi"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_DIALOG_WEBDISPLAY DLGINIT
+BEGIN
+    IDC_WEBDISP_EXPLORER, 0x376, 160, 0
+0x0000, 0x0000, 0x004c, 0x0000, 0x3270, 0x0000, 0x28d3, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x004c, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001, 
+0x0000, 0xd0e0, 0x0057, 0x3573, 0x11cf, 0x69ae, 0x0008, 0x2e2b, 0x6212, 
+0x0008, 0x0000, 0x0000, 0x0000, 0x004c, 0x0000, 0x1401, 0x0002, 0x0000, 
+0x0000, 0x00c0, 0x0000, 0x0000, 0x4600, 0x0080, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "iRODS Explorer"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "iRODS"
+    AFX_IDS_IDLEMESSAGE     "For Help, press F1"
+    AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Connect to iRODS.\nConnect to iRODS"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Exit\nClose"
+    ID_HELP_INDEX           "Opens Help\nHelp Topics"
+    ID_HELP_FINDER          "List Help topics\nHelp Topics"
+    ID_HELP_USING           "Display instructions about how to use help\nHelp"
+    ID_CONTEXT_HELP         "Display help for clicked on buttons, menus and windows\nHelp"
+    ID_HELP                 "Display help for current task or command\nHelp"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection.\nCopy"
+    ID_EDIT_CUT             "Cut the selection.\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Paste cut or copied items.\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+    ID_VIEW_AUTOARRANGE     "Arrange icons on a grid."
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    ID_STATUS_TEXT          " "
+    ID_STATUS_PBAR          "      "
+    ID_DOWNLOAD_SUCCESSFUL  "downloaded successfully."
+    ID_DOWNLOAD_FAILED      "failed to download."
+    IDS_DELETED             "deleted"
+    IDS_NOT_DELETED         "not deleted"
+    ID_UPLOAD_SUCCESSFUL    "uploaded successfully."
+    ID_UPLOAD_FAILED        "failed to upload."
+    ID_EXECUTE_SUCCESSFUL   "has been browsed"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_SMALLICON       "Display items by using small icons.\nSmall Icons"
+    ID_VIEW_LARGEICON       "Display items by using large icons.\nLarge Icons"
+    ID_VIEW_LIST            "Displays items in a list.\nList"
+    ID_VIEW_DETAILS         "Displays detailed information about each item in the window.\nDetails"
+    ID_VIEW_LINEUP          "Arranges icons in a grid."
+    ID_VIEW_BYNAME          "Sorts the icons alphabetically."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EXECUTE_FAILED       "failed to browse."
+    IDS_STATUS_COUNT        " "
+    IDS_ACCESS_CTRL_USERS   "Users"
+    IDS_ACCESS_CTRL_GROUPS  "Groups"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_TREE_HOME            "Jumps to your home collection.\nJump Home"
+    ID_TREE_UP              "Jumps up to the parent of this node.\nJump to Parent"
+    ID_BACK                 "Jumps back one in your history list.\nJump Back in History"
+    ID_FORWARD              "Jumps forward one in your history list.\nJump Forward in History"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_REFRESH              "Manually refresh your screen.\nRefresh Screen"
+    ID_REPLICATE            "Replicate dataset(s) in the default resource.\nReplicate"
+    ID_SYNCHRONIZE          "Synchronize datasets stored in container cache with container.\nSynchronize Container"
+    ID_ACCESS_CTRL          "Specify access control for selected item(s).\nAccess Control"
+    ID_NEW_COLLECTION       "Create a new collection.\nCreate Collection"
+    ID_BUTTON32827          "Create and modify metadata.\nMetadata"
+    ID_NEW_CONTAINER        "Create a new container in the default Resource.\nCreate Container"
+    ID_DISCONNECT           "Break connection to this Storage Resource Broker\nDisconnect"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_STOP                 "Stop an action currently being performed.\nStop"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_QUERY                "Create or modify a query.\nQuery"
+    ID_DOWNLOAD             "Download items to your workstation.\nDownload"
+    ID_DELETE               "Delete an item.\nDelete"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_OPENTREE             "Opens the tree one level\nOpen Tree"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_RENAME               "Rename datasets and collections.\nRename"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEW_META             "Create new metadata for your collection or dataset.\nCreate Metadata"
+    ID_UPLOADFOLDER         "Upload a folder into iRODS.\nUpload Folder"
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_ADDRESSBAR_TMPL     "AddressBar\n\nAddres\nAddres Files (*.add)\n.add\nAddressBar.Document\nAddres Document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_UPLOAD_UPLOADAFOLDER "Upload a local folder into iRODS\nUpload Folder"
+    ID_UPLOAD_UPLOADFILES   "Upload local files into iRODS\nUpload File(s)"
+    ID_VIEW_REFRESH         "Refresh\nRefresh"
+    ID_EDIT_METADATA        "View or edit metadata\nMetadata"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_SEARCH          "Search \nSearch"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_METADATA_USERMETADATA 
+                            "User Defined Metadata\nUser Defined Metadata"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\Inquisitor.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

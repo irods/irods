@@ -1,0 +1,25 @@
+A number of admin level iCat calls are needed for for users with 
+LOCAL_PRIV_USER_AUTH privileges. For these calls, the only 
+permission needs to be checked is :
+
+rsComm->clientUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH
+
+There is no need for checking specific permission for each individual file.
+
+1) backup files - allow admin to make replica of files. This is a
+special version of chlRegReplica.
+
+2) Moving a data file from one resource to another. This is similar to
+the chlModDataObjMeta call. The items being modified are data_path,
+resc_name and resc_group_name, Currently, resc_group_name is not
+an item that can be modified with the chlModDataObjMeta call. This
+item need to be added to implement the iphymv command.
+
+3) purging the cache copies - this allows admin to delete a replica as
+long as there is another replica. This call should fail if this is the
+last copy. This is similar to the chlUnregDataObj call except for
+the special checking.
+
+4) Delete files in trash. Allow admin users to delete files in the
+/myZone/trash directory. This is similar to the chlUnregDataObj call.
+ 

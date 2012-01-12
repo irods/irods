@@ -1,0 +1,332 @@
+/*** needs nvoReplResc, tgReplResc apart from default resource ***/
+
+
+/* SETUP */
+iinit
+icd
+ils
+ilsresc
+irm -rf loopTest
+irm -rf loopTest2
+imkdir  loopTest
+imkdir loopTest2
+icd loopTest
+iput ../src/ipwd.c
+iput ../src/iquest.c
+iput ../src/ils.c
+ils -l 
+
+/* LISTING AND CHECKSUM */
+irule -F ../test/listColl.ir
+irule -F ../test/showicatchksumColl.ir
+
+ichksum -r .
+irule -F ../test/showicatchksumColl.ir
+
+   /** use the following to change a file under iRODS
+           iquest "select DATA_PATH where DATA_NAME = 'iquest.c'"
+           vi 
+    **/
+irule -F ../test/showicatchksumColl.ir
+irule -F ../test/verifychksumColl.ir
+irule -F ../test/forcechksumColl.ir
+irule -F ../test/showicatchksumColl.ir
+
+irm -f iquest.c
+iput ../src/iquest.c
+
+/* COPYING */
+
+ils -l 
+ils -l ../loopTest2
+irule -F ../test/copyColl.ir
+ils -l ../loopTest2
+
+/* REPLICATING AND TRIMMING */
+ils -l 
+irule -F ../test/replColl.ir
+ils -l 
+irule -F ../test/trimColl.ir
+ils -l
+
+/* SEND EMAIL     IMPORTANT - modify *MailTo variable appropriately  --  sends checksums*/
+ichksum -r .
+irule -F ../test/sendMailColl.ir
+
+
+/* periodically verify the checksums of files in loopTest and send it via email */
+
+irule -F ../test/periodicChksumColl.ir
+iqstat -l
+iqstat
+iqdel "<id>"
+
+
+
+/* purging files that are past a dead line
+needs to change the expiry-time for a file
+
+
+irule -F ../test/purgeCollAndEmail.ir
+
+
+/* iput rule example */
+
+
+irule -F ../test/showCore.ir|more
+icd
+irm -f tg/imkdir.c
+irm -f nvo/imkdir.c
+ils -l tg
+iput ../src/imkdir.c tg
+ils -l tg
+
+ils -l nvo
+iput ../src/imkdir.c nvo
+ils -l nvo
+iqstat -l
+iqstat
+ils -l nvo
+
+/* irule tests */
+/**  assign *A = 1 **/
+more        ../test/ruleTest1.ir
+irule -v -F ../test/ruleTest1.ir
+
+/** assign *A = 0 **/
+more        ../test/ruleTest2.ir
+irule -v -F ../test/ruleTest2.ir
+
+/** addition and assign *A = 500 **/
+more        ../test/ruleTest3.ir
+irule -v -F ../test/ruleTest3.ir
+
+/** assign for $var *A = tempZone, *B = rods **/
+more        ../test/ruleTest4.ir
+irule -v -F ../test/ruleTest4.ir
+
+/** assign for $var  *A = 0, *B = 500, *C = 500**/
+more        ../test/ruleTest5.ir
+irule -v -F ../test/ruleTest5.ir
+
+/** assign for $var   *A = 0, *B = 400, *C = 400 **/
+more        ../test/ruleTest6.ir
+irule -v -F ../test/ruleTest6.ir
+
+/** more assign  *A = *B = *D = *E rods, *C = alpha **/
+more        ../test/ruleTest7.ir
+irule -v -F ../test/ruleTest7.ir
+
+/** whileExec  A = 20 **/
+more        ../test/ruleTest8.ir
+irule -v -F ../test/ruleTest8.ir
+
+/** forExec -llop from 4,8,12,...,596 **/
+more        ../test/ruleTest9.ir
+irule -v -F ../test/ruleTest9.ir
+
+/** ifExec if *A > *D then *A = *D **/
+more        ../test/ruleTest10.ir
+irule -v -F ../test/ruleTest10.ir
+/** ifExec if *A < *D  then *D =  *A  **/
+irule -v -F ../test/ruleTest10.ir
+
+
+/** writeString  strerr = Error:blah, stdout = alpha beta gammaalpha beta gamma **/
+more        ../test/ruleTest11.ir
+irule -v -F ../test/ruleTest11.ir
+
+/** writeLine strerr = Error:blah\n, stdout = alpha beta gamma\nalpha beta delta\n **/
+more        ../test/ruleTest12.ir
+irule -v -F ../test/ruleTest12.ir
+
+/** sendMail  Subject: irods test, mail sent by an msi.did you get this**/
+more        ../test/ruleTest13.ir
+irule -v -F ../test/ruleTest13.ir
+
+/** print a given list  123\n345\n567\naa\nbb\n678\n**/
+more        ../test/ruleTest14.ir
+irule -v -F ../test/ruleTest14.ir
+
+/** icat query given a query  DATA_NAME = foo*  **/
+more        ../test/ruleTest15.ir
+irule -v -F ../test/ruleTest15.ir
+
+/** icat query for an operation COLL_NAME = '/tempZone/home/rods'  **/
+more        ../test/ruleTest16.ir
+irule -v -F ../test/ruleTest16.ir
+
+/** show rules, add something and show again  1000..., 0-4.., 1000...**/
+more        ../test/ruleTest17.ir
+irule  -F ../test/ruleTest17.ir |more
+
+/** show variable maps, add something and show again 1000..., 0-94.., 1000... **/
+more        ../test/ruleTest18.ir
+irule  -F ../test/ruleTest18.ir |more
+
+/** show function maps, add something and show again  1000..., 0-10.., 1000... **/
+more        ../test/ruleTest19.ir
+irule  -F ../test/ruleTest19.ir |more
+
+/** remoteExec  **/
+/****
+         begin
+         just write in srbbrick1
+         remote write in andal
+         remote write again in andal
+         remote write in srbbrick1
+         remote write again and again in andal
+         again remote write in srbbrick1
+         remote write third in andal
+         second remote write in srbbrick1
+         third remote write in srbbrick1
+         again just write in srbbrick1
+end
+****/
+more        ../test/ruleTest20.ir
+irule -v -F ../test/ruleTest20.ir
+
+/** remote remote remoteExec with sleep  and   **/
+/****  AFTER ABOUT 30 seconds
+         begin
+         open remote write in andal
+         remote of a remote write in srbbrick1
+         remote of a remote of a remote write in andal
+         close remote write in andal
+         end
+****/
+more        ../test/ruleTest21.ir
+irule -v -F ../test/ruleTest21.ir
+
+/** remote remote remoteExec inside forEach exec  and   **/
+more        ../test/ruleTest22.ir
+irule -v -F ../test/ruleTest22.ir
+
+/**  remoteExec  for checksum where checksum is done at location of file **/
+more        ../test/ruleTest23.ir
+irule -v -F ../test/ruleTest23.ir
+
+/**  medata extraction through tag files - see onMicroServices.ppt for more info **/
+icd
+irm -rf MDtest
+imkdir MDtest
+icd MDtest
+iput ../test/sample.email
+iput ../test/email.tag
+ils -l
+iget email.tag -
+iget sample.email -
+imeta ls -d sample.email
+
+more        ../test/ruleTest24.ir
+irule -F ../test/ruleTest24.ir
+
+imeta ls -d sample.email
+
+/** test for running all the rule definitions when applying a rule
+    normally only one rule definition succeeds   
+    1 = use all rules
+    0 = one level 
+**/
+more        ../test/ruleTest25.ir
+irule -F ../test/ruleTest25.ir
+
+
+/**  web services  - get stock quote for a single symbol **/
+more        ../test/ruleTest226.ir
+irule -v -F ../test/ruleTest26.ir
+
+
+/**  web services  - get ip address **/
+more        ../test/ruleTest27.ir
+irule -v -F ../test/ruleTest27.ir
+
+/**  web services  - currency conversion **/
+more        ../test/ruleTest28.ir
+irule -v -F ../test/ruleTest28.ir
+
+/** web services  - matrix of stock values in different currencies  **/
+more        ../test/ruleTest29.ir
+irule -v -F ../test/ruleTest29.ir
+
+
+
+/** web services  - for NVO -get RA,DEC, Type for an object using NED **/
+more        ../test/ruleTest30.ir
+irule -v -F ../test/ruleTest30.ir
+
+
+/** web services  - for NVO -given RA,DEC get image cutout for an object SDSS cutout **/
+more        ../test/ruleTest31.ir
+irule -v -F ../test/ruleTest31.ir
+
+/** web services  - for NVO -given image cutout for an object given name 
+     combination of two web services - 30 and 31  **/
+more        ../test/ruleTest32.ir
+irule -v -F ../test/ruleTest32.ir
+
+/** break in while loop test **/
+more        ../test/ruleTest33.ir
+irule -v -F ../test/ruleTest33.ir
+
+/**** approval flags ****/
+irm -rf ApprovalColl1
+iqstat
+imkdir ApprovalColl1
+iput ../test/sample.email ApprovalColl1
+iput ../test/sample2.email ApprovalColl1
+imeta rmw -d ApprovalColl1/sample.email % %
+imeta rmw -d ApprovalColl1/sample2.email % %
+   (the above two rmw are needed as one of the rules
+    automatically extracts metadata from files ending
+    with *.email extension)
+imeta ls -C  ApprovalColl1
+imeta ls -d ApprovalColl1/sample.email
+imeta ls -d ApprovalColl1/sample2.email
+iqstat
+irule -v -F ../rulegen/approvalFlagA.ir
+irule -v -F ../rulegen/approvalFlagB.ir
+iqstat -l
+
+
+imeta add -C ApprovalColl1 AFlag 1
+<wait>
+ils -l ApprovalColl1
+imeta ls -C  ApprovalColl1
+imeta ls -d ApprovalColl1/sample.email
+imeta ls -d ApprovalColl1/sample2.email
+iqstat
+iqdel xxxx
+iqdel xxxx
+
+
+
+
+
+/** stress test - 10x1000 file **/
+cd ../test
+stresstest1.sh 1 10
+
+/** stress test - 1 GN file test **/
+cd ../test
+stresstest.sh 
+
+
+
+
+/**   **/
+more        ../test/ruleTest.ir
+irule -v -F ../test/ruleTest.ir
+
+/**   **/
+more        ../test/ruleTest.ir
+irule -v -F ../test/ruleTest.ir
+
+
+
+
+
+/* END */
+
+iexit
+

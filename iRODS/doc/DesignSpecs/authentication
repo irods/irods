@@ -1,0 +1,69 @@
+This is a brief description on how iRODS handles the authentication,
+both of clients and for server to server connections.
+
+When a client connects, a structure is filled out on both client and
+server side with the username of who the client claims to be.  There
+are two items: client and proxy (discussed below).  Initially, the
+authentication flag for both of these is 0 (NO_USER_AUTH, or none).
+
+client - real end-user
+proxy  - real end-user or, for server to server calls, the irods
+         admin user the server is running as (for example 'irods').
+
+The Client/Server API table indicates the required level of
+authentication for both the Client and Proxy users.  A few of the API
+calls require no privileges (0), and this includes the authenticate
+call.
+
+The values for the auth flags, in order of power, are:
+no_user_auth(0), remote_user_auth(1), local_user_auth(2),
+remote_priv_user_auth(3), and local_priv_user_auth(4).  Local and
+remote refer to local or remote zones.  "priv" or not indicates
+whether or not the user is an iRODS admin.  Thus the admin of the
+local zone has complete power, the admin account of a remote zone a
+little less, and so on.
+
+In this example, we have a client (C), a Non-iCAT-Enabled Server
+(NCES), and an iCAT-Enabled-Server (CES).
+
+A C first connects to a server, say a NCES.  Both the client and proxy
+usernames are filled in with the C user name.  When the C does an
+authenticate call to that NCES, the NCES will generate the challenge
+and send it back, and the C will generate the response and send it to
+the NCES.  The NCES makes a call to the CES to check the
+challenge/response and return whether it is valid.  At that point, the
+NCES sets the proxy and client authentication flags in its own memory
+(that is, it now "knows" that the client is OK).  But the CES still
+has both the proxy and client authentication flags set to zero.
+
+If the C then performs an API call that requires some privilege, the
+NCES first does an authenticate call to the CES.* In a NCES to CES
+connection, the proxy user is the iRODS admin user and the client user
+is the end-user (C user).  So the CES generates a challenge, the NCES
+sends the response using the admin password, and if valid, the CES
+sets the proxy auth flag to privileged (either remote_priv_user_auth
+or local_priv_user_auth).  The client auth flag is set by the NCES (on
+both the CES and NCES sides).  The way the API Permission checks are
+made, the CES will "trust" the client id provided by the NCES if (and
+only if) the CES is privileged.  If both client and proxy user names
+are the same, then they have the privilege of the proxy user.  It is
+the proxy user that is authenticated.
+
+* [It might make sense for the NCES to do it's admin authentication
+call to the CES right after (or as part of) the Client authentication
+sequence.  It is likely to be needed.]
+
+Since the call to the CES to check a challenge-response is
+non-privileged (and needs to be), we needed to implement something to
+prevent a brute-force attack, where some program would rapidly try a
+serces of passwords until it succeeds.  Currently, the code checks for
+multiple authentication failures and sleeps before returning if this
+has occurred.  To guard against multiple connections, we may need
+something more (someday).
+
+If an intruder records and retransmits the a challenge-response
+exchange between the NCES and the CES, it will be able to repeat the
+acknowledgement from the CES that the user's response is authentic,
+but that would do it no good.  The CES does not change the
+authentication flags in it's own memory for that call.  It is the NCES
+that "knows" the user is authentic at that point.

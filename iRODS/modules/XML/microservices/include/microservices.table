@@ -1,0 +1,5 @@
+// XML module microservices
+// Service name				# args		Service function
+{"msiXsltApply",			3,		(funcPtr) msiXsltApply},
+{"msiLoadMetadataFromXml",		2,		(funcPtr) msiLoadMetadataFromXml},
+{"msiXmlDocSchemaValidate",		3,		(funcPtr) msiXmlDocSchemaValidate},

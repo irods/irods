@@ -1,0 +1,3 @@
+Flag test||msiFlagDataObjwithAVU(*Object, *Flag, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+*Object=/tempZone/home/rods/doc/driver.txt%*Flag=TST_FLAG_ON
+ruleExecOut

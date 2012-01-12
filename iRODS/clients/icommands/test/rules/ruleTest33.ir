@@ -1,0 +1,3 @@
+myTestRule||assign(*A,0)##whileExec( *A < 20 , ifExec(*A > 10, assign(*A,400)##break,nop,nop,nop)##assign(*A, *A + 4), nop)|nop##nop 
+*A=1000%*D= (199 * 2) + 200
+*Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut

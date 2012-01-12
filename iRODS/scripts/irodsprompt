@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Prompt to configure the iRODS installation.
+#
+# Usage is:
+#	./irodsprompt [options]
+#
+# This shell script prompts for configuration choices for of
+# iRODS installation.
+#
+runfile="irodsprompt.pl"
+
+
+
+for dir in "./scripts" "." "../scripts" "../../scripts"; do
+	if [ -d $dir -a -f $dir/runperl -a -f $dir/perl/$runfile ]; then
+		$dir/runperl --script $dir/perl/$runfile $*
+		ExitCode="$?"
+		exit $ExitCode
+	fi
+done
+
+echo "Usage error:"
+echo "    Please run this script from the top-level directory"
+echo "    of the iRODS distribution."
+exit 1

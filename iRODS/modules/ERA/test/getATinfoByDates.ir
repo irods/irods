@@ -1,0 +1,3 @@
+get audit trail info between two dates||msiHumanToSystemTime(*Start_date, *Start_TS)##msiHumanToSystemTime(*End_date, *End_TS)##writeLine(stdout,'<?xml version="1.0" encoding="ISO-8859-1"?>')##writeLine(stdout,"<audit_trail>")##msiGetAuditTrailInfoByTimeStamp(*Start_TS, *End_TS, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"</audit_trail>")|nop
+*Start_date=2008-01-01-00.00.00%*End_date=2008-07-31-23.59.59
+ruleExecOut

@@ -1,0 +1,8 @@
+#*A is the tag file. 
+# a sample copy for email (email.tag) this can be found in the icommands/test directory
+#*B is an email file
+#*C is the same as *B in this case
+mDExtract(*A,*B,*C) || openObj(*A,*T_FD)##readObj( *T_FD, 10000, *R1_BUF)##getTagsForKV( *R1_BUF, *TSP)##closeObj(*T_FD,*J1)##openObj( *B, *M_FD)##readObj( *M_FD, 10000, *R2_BUF)##getKVPairsUsingTags( *R2_BUF, *TSP, *KVP)##closeObj(*T_FD,*J1)##closeObj(*M_FD,*J2)##findObjType( *C, *OTYP)##ingestBulkMD( *KVP, *C, *OTYP)|nop
+#
+*A=/tempZone/home/rods/MDtest/email.tag%*B=/tempZone/home/rods/MDtest/mc.email%*C=/tempZone/home/rods/MDtest/mc.email
+*A%*B%*C%*D%*R1_BUF%*R2_BUF%*T_FD%*M_FD%*J1%*J2%*KVP%*OTYP

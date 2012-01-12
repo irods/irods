@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://voservices.net/ned" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://voservices.net/ned" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This is an &lt;b&gt;XML Web Services&lt;/b&gt; interface to &lt;b&gt;NED&lt;/b&gt; written by Tamas Budavari &amp;lt;budavari@jhu.edu&amp;gt;&lt;hr&gt;It is a client to the official NED services at tcp://ned.ipac.caltech.edu:10011. It supports SOAP, HttpGet and HttpPost protocols and returns the results in XML format. The data structures are true translations of the C structs of the original client library by Xiuqin Wu (1993).</wsdl:documentation>
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://voservices.net/ned">
+      <s:element name="ObjByName">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="objname" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ObjByNameResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ObjByNameResult" type="tns:ObjInfo" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ObjInfo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="ArrayOfCrossID" type="tns:ArrayOfCrossID" />
+          <s:element minOccurs="1" maxOccurs="1" name="dist" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="no_ref" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="no_note" type="s:int" />
+          <s:element minOccurs="1" maxOccurs="1" name="no_photom" type="s:int" />
+          <s:element minOccurs="0" maxOccurs="1" name="objtype" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="ra" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="dec" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="unc_maj" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="unc_min" type="s:double" />
+          <s:element minOccurs="1" maxOccurs="1" name="unc_ang" type="s:double" />
+          <s:element minOccurs="0" maxOccurs="1" name="refcode" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ArrayOfMoreData" type="tns:ArrayOfMoreData" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfCrossID">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="CrossID" nillable="true" type="tns:CrossID" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="CrossID">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="objname" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="objtype" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfMoreData">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="MoreData" nillable="true" type="tns:MoreData" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="MoreData">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="data_typec" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="data" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="ObjNearName">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="objname" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="radius" type="s:double" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ObjNearNameResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ObjNearNameResult" type="tns:ArrayOfObjInfo" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfObjInfo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="ObjInfo" nillable="true" type="tns:ObjInfo" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="ObjNearPosn">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ra" type="s:double" />
+            <s:element minOccurs="1" maxOccurs="1" name="dec" type="s:double" />
+            <s:element minOccurs="1" maxOccurs="1" name="radius" type="s:double" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ObjNearPosnResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ObjNearPosnResult" type="tns:ArrayOfObjInfo" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Revisions">
+        <s:complexType />
+      </s:element>
+      <s:element name="RevisionsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RevisionsResult" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="ObjInfo" nillable="true" type="tns:ObjInfo" />
+      <s:element name="ArrayOfObjInfo" nillable="true" type="tns:ArrayOfObjInfo" />
+      <s:element name="ArrayOfString" nillable="true" type="tns:ArrayOfString" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="ObjByNameSoapIn">
+    <wsdl:part name="parameters" element="tns:ObjByName" />
+  </wsdl:message>
+  <wsdl:message name="ObjByNameSoapOut">
+    <wsdl:part name="parameters" element="tns:ObjByNameResponse" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearNameSoapIn">
+    <wsdl:part name="parameters" element="tns:ObjNearName" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearNameSoapOut">
+    <wsdl:part name="parameters" element="tns:ObjNearNameResponse" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearPosnSoapIn">
+    <wsdl:part name="parameters" element="tns:ObjNearPosn" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearPosnSoapOut">
+    <wsdl:part name="parameters" element="tns:ObjNearPosnResponse" />
+  </wsdl:message>
+  <wsdl:message name="RevisionsSoapIn">
+    <wsdl:part name="parameters" element="tns:Revisions" />
+  </wsdl:message>
+  <wsdl:message name="RevisionsSoapOut">
+    <wsdl:part name="parameters" element="tns:RevisionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ObjByNameHttpGetIn">
+    <wsdl:part name="objname" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ObjByNameHttpGetOut">
+    <wsdl:part name="Body" element="tns:ObjInfo" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearNameHttpGetIn">
+    <wsdl:part name="objname" type="s:string" />
+    <wsdl:part name="radius" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearNameHttpGetOut">
+    <wsdl:part name="Body" element="tns:ArrayOfObjInfo" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearPosnHttpGetIn">
+    <wsdl:part name="ra" type="s:string" />
+    <wsdl:part name="dec" type="s:string" />
+    <wsdl:part name="radius" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearPosnHttpGetOut">
+    <wsdl:part name="Body" element="tns:ArrayOfObjInfo" />
+  </wsdl:message>
+  <wsdl:message name="RevisionsHttpGetIn" />
+  <wsdl:message name="RevisionsHttpGetOut">
+    <wsdl:part name="Body" element="tns:ArrayOfString" />
+  </wsdl:message>
+  <wsdl:message name="ObjByNameHttpPostIn">
+    <wsdl:part name="objname" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ObjByNameHttpPostOut">
+    <wsdl:part name="Body" element="tns:ObjInfo" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearNameHttpPostIn">
+    <wsdl:part name="objname" type="s:string" />
+    <wsdl:part name="radius" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearNameHttpPostOut">
+    <wsdl:part name="Body" element="tns:ArrayOfObjInfo" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearPosnHttpPostIn">
+    <wsdl:part name="ra" type="s:string" />
+    <wsdl:part name="dec" type="s:string" />
+    <wsdl:part name="radius" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ObjNearPosnHttpPostOut">
+    <wsdl:part name="Body" element="tns:ArrayOfObjInfo" />
+  </wsdl:message>
+  <wsdl:message name="RevisionsHttpPostIn" />
+  <wsdl:message name="RevisionsHttpPostOut">
+    <wsdl:part name="Body" element="tns:ArrayOfString" />
+  </wsdl:message>
+  <wsdl:portType name="NEDSoap">
+    <wsdl:operation name="ObjByName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Resolves an object name to J2000 coordinates (ra,dec) and a lot more&lt;br&gt;&lt;b&gt;Input:&lt;/b&gt; Object name (string), e.g. m100&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo)</wsdl:documentation>
+      <wsdl:input message="tns:ObjByNameSoapIn" />
+      <wsdl:output message="tns:ObjByNameSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds all objects in NED around a specified object&lt;br&gt;&lt;b&gt;Input 1:&lt;/b&gt; Object name (string), e.g. m100&lt;br&gt;&lt;b&gt;Input 2:&lt;/b&gt; Radius in degrees (double), e.g. 0.4&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo array)</wsdl:documentation>
+      <wsdl:input message="tns:ObjNearNameSoapIn" />
+      <wsdl:output message="tns:ObjNearNameSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds all objects in NED around specified position&lt;br&gt;&lt;b&gt;Input 1:&lt;/b&gt; RA in degrees (double)&lt;br&gt;&lt;b&gt;Input 2:&lt;/b&gt; Dec in degrees (double)&lt;br&gt;&lt;b&gt;Input 3:&lt;/b&gt; Radius in degrees (double)&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo array)</wsdl:documentation>
+      <wsdl:input message="tns:ObjNearPosnSoapIn" />
+      <wsdl:output message="tns:ObjNearPosnSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns current revision numbers of components</wsdl:documentation>
+      <wsdl:input message="tns:RevisionsSoapIn" />
+      <wsdl:output message="tns:RevisionsSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="NEDHttpGet">
+    <wsdl:operation name="ObjByName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Resolves an object name to J2000 coordinates (ra,dec) and a lot more&lt;br&gt;&lt;b&gt;Input:&lt;/b&gt; Object name (string), e.g. m100&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo)</wsdl:documentation>
+      <wsdl:input message="tns:ObjByNameHttpGetIn" />
+      <wsdl:output message="tns:ObjByNameHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds all objects in NED around a specified object&lt;br&gt;&lt;b&gt;Input 1:&lt;/b&gt; Object name (string), e.g. m100&lt;br&gt;&lt;b&gt;Input 2:&lt;/b&gt; Radius in degrees (double), e.g. 0.4&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo array)</wsdl:documentation>
+      <wsdl:input message="tns:ObjNearNameHttpGetIn" />
+      <wsdl:output message="tns:ObjNearNameHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds all objects in NED around specified position&lt;br&gt;&lt;b&gt;Input 1:&lt;/b&gt; RA in degrees (double)&lt;br&gt;&lt;b&gt;Input 2:&lt;/b&gt; Dec in degrees (double)&lt;br&gt;&lt;b&gt;Input 3:&lt;/b&gt; Radius in degrees (double)&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo array)</wsdl:documentation>
+      <wsdl:input message="tns:ObjNearPosnHttpGetIn" />
+      <wsdl:output message="tns:ObjNearPosnHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns current revision numbers of components</wsdl:documentation>
+      <wsdl:input message="tns:RevisionsHttpGetIn" />
+      <wsdl:output message="tns:RevisionsHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="NEDHttpPost">
+    <wsdl:operation name="ObjByName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Resolves an object name to J2000 coordinates (ra,dec) and a lot more&lt;br&gt;&lt;b&gt;Input:&lt;/b&gt; Object name (string), e.g. m100&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo)</wsdl:documentation>
+      <wsdl:input message="tns:ObjByNameHttpPostIn" />
+      <wsdl:output message="tns:ObjByNameHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds all objects in NED around a specified object&lt;br&gt;&lt;b&gt;Input 1:&lt;/b&gt; Object name (string), e.g. m100&lt;br&gt;&lt;b&gt;Input 2:&lt;/b&gt; Radius in degrees (double), e.g. 0.4&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo array)</wsdl:documentation>
+      <wsdl:input message="tns:ObjNearNameHttpPostIn" />
+      <wsdl:output message="tns:ObjNearNameHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Finds all objects in NED around specified position&lt;br&gt;&lt;b&gt;Input 1:&lt;/b&gt; RA in degrees (double)&lt;br&gt;&lt;b&gt;Input 2:&lt;/b&gt; Dec in degrees (double)&lt;br&gt;&lt;b&gt;Input 3:&lt;/b&gt; Radius in degrees (double)&lt;br&gt;&lt;b&gt;Output:&lt;/b&gt; All the relevant information (ObjInfo array)</wsdl:documentation>
+      <wsdl:input message="tns:ObjNearPosnHttpPostIn" />
+      <wsdl:output message="tns:ObjNearPosnHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns current revision numbers of components</wsdl:documentation>
+      <wsdl:input message="tns:RevisionsHttpPostIn" />
+      <wsdl:output message="tns:RevisionsHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="NEDSoap" type="tns:NEDSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ObjByName">
+      <soap:operation soapAction="http://voservices.net/ned/ObjByName" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <soap:operation soapAction="http://voservices.net/ned/ObjNearName" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <soap:operation soapAction="http://voservices.net/ned/ObjNearPosn" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <soap:operation soapAction="http://voservices.net/ned/Revisions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="NEDSoap12" type="tns:NEDSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ObjByName">
+      <soap12:operation soapAction="http://voservices.net/ned/ObjByName" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <soap12:operation soapAction="http://voservices.net/ned/ObjNearName" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <soap12:operation soapAction="http://voservices.net/ned/ObjNearPosn" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <soap12:operation soapAction="http://voservices.net/ned/Revisions" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="NEDHttpGet" type="tns:NEDHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="ObjByName">
+      <http:operation location="/ObjByName" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <http:operation location="/ObjNearName" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <http:operation location="/ObjNearPosn" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <http:operation location="/Revisions" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="NEDHttpPost" type="tns:NEDHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="ObjByName">
+      <http:operation location="/ObjByName" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearName">
+      <http:operation location="/ObjNearName" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ObjNearPosn">
+      <http:operation location="/ObjNearPosn" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Revisions">
+      <http:operation location="/Revisions" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="NED">
+    <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">This is an &lt;b&gt;XML Web Services&lt;/b&gt; interface to &lt;b&gt;NED&lt;/b&gt; written by Tamas Budavari &amp;lt;budavari@jhu.edu&amp;gt;&lt;hr&gt;It is a client to the official NED services at tcp://ned.ipac.caltech.edu:10011. It supports SOAP, HttpGet and HttpPost protocols and returns the results in XML format. The data structures are true translations of the C structs of the original client library by Xiuqin Wu (1993).</wsdl:documentation>
+    <wsdl:port name="NEDSoap" binding="tns:NEDSoap">
+      <soap:address location="http://voservices.net/NED/ws_v2_0/NED.asmx" />
+    </wsdl:port>
+    <wsdl:port name="NEDSoap12" binding="tns:NEDSoap12">
+      <soap12:address location="http://voservices.net/NED/ws_v2_0/NED.asmx" />
+    </wsdl:port>
+    <wsdl:port name="NEDHttpGet" binding="tns:NEDHttpGet">
+      <http:address location="http://voservices.net/NED/ws_v2_0/NED.asmx" />
+    </wsdl:port>
+    <wsdl:port name="NEDHttpPost" binding="tns:NEDHttpPost">
+      <http:address location="http://voservices.net/NED/ws_v2_0/NED.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

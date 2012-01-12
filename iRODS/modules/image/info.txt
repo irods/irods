@@ -1,0 +1,8 @@
+Name:		image
+Brief:		Microservices for manipulating images
+Description:	Microservices for reading and writing images, converting between image formats, extracting image properties, generating thumbnails, resizing images, compositing images, and adding watermarks.
+Dependencies:	properties
+Enabled:	no
+Creator:	David Nadeau; University of California, San Diego
+Created:	September 2007
+License:	BSD

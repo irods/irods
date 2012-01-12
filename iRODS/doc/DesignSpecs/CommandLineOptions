@@ -1,0 +1,83 @@
+RODS Command Line Options Specification document
+Last revised: July 24, 2006
+
+This document describes all the options that the iRODS unix commands
+(iCommands) may use.  Each command will use a subset of these, but
+whenever they use an option, they will follow this standard list.  The
+meaning of any option is the same (or similar) in each command.  In
+each case, there many be an associated parameter with any option.
+
+When new options are needed, the developer update the library routine
+to ensure that the new option is globally consistent (and update this
+document).
+
+There are three sets of options: 1) single characters, 2) single
+characters with associated --word forms, and 3) --word forms only.
+The first is for those that are most commonly used and are more
+mnemonic.  The second type are a little less common and less mnemonic
+because the character has little or no relationshop to the meaning; so
+we include a --word for an easy-to-remember (although longer)
+alternative.  The third type are --word form only, because we'll run
+out of single characters.
+
+The commands will use getopt for the single-character options so that
+standard combinations usage patterns will be allowed.  Of course,
+existing iCommand code (once developed) will serve as templates for
+new commands.  (At this point, it looks like the GNU getopt_long is
+not available on all platforms, so we will need to develop something
+similar, although it doesn't need to be a library.)
+
+Here are the currently defined options of the single character type
+and their meanings.  The ':' character after the option indicates that
+there is an argument following, for example '-n 4':
+  -a all
+  -A admin
+  -b bulk
+  -c:condition
+  -C:collection
+  -d dataObjects
+  -D:dataType
+  -f force
+  -F file
+  -g global
+  -h help
+  -i input - read data from standard input
+  -k checksum
+  -K verify checksum
+  -l long
+  -m metadata
+  -n:number-replica
+  -N:number
+  -p:physical-path
+  -P parallel
+  -q query
+  -r recursive
+  -R:resource
+  -s: size
+  -S serial
+  -t:ticket
+  -T:ticketFile
+  -u:user
+  -v verbose
+  -V veryVerbose
+  -z zone
+
+Currently defined type two options:
+  -x  --verify
+  -W  --version
+  -Y:  --retries number
+
+Currently defined type three options:
+  --parallel
+  --serial
+  --server-initiated
+  --client-initiated 
+  --master-mcat
+
+Examples:
+  rods put -n 4 foo                        (4 replicas)
+  rods put --client-initiated -n 4 foo      
+  rods ls -lc "COPY = 0"
+  rods ls -l --condition "COPY = 0"
+  rods ls -V --master-mcat
+

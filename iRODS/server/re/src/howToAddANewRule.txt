@@ -1,0 +1,4 @@
+For current information on how to add a micro-service, see the 'Micro
+Services' page on the irods web site, the 'How to interface a
+micro-service' section in particular:
+https://www.irods.org/index.php/Micro-Services#How_to_interface_a_micro-service

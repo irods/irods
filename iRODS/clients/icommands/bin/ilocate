@@ -1,0 +1,94 @@
+#!/bin/bash
+# ilocate - simple script to emulate functionality of GNU's [m]locate command for iRODS
+# Authored by Scott Sinno, NASA NCCS, scott.s.sinno@nasa.gov
+#
+#Todo : 
+#	Add functionality for case-insensitive search, preferably by way of 
+# adding support for it in iquest.
+#					
+
+
+if [ $# -eq 0 ] || [ "$1" == "-h" ]
+then
+	echo "Usage : ilocate [options] searchPattern [searchPattern] [searchPattern] ..."
+	echo 
+	echo "Search through your current iRODS zone for data-object(s) OR collections (i.e. "
+	echo "filenames and directories) which match the provided search pattern.  Use '%' "
+	echo "as a wildcard (emulates sql 'like' operand).  If you need to express \% to express"
+	echo "% as a literal, you must encapsulate the search pattern with quotes."
+	echo 
+	echo "Options are :"
+	echo "-0  Separate output via NULL characters instead of newlines (like find -print0)" 
+	echo "-t  Also show objects in trash"
+#	echo "-i  Ignore case"
+	exit 0
+fi
+
+iQuestQry ()  # $1 == query_column, $2 == inputstr
+{
+		sql_output=`iquest --no-page "select COLL_NAME,DATA_NAME WHERE $1 $operand '$2'" 2> /dev/null`
+		if [ $? -eq 0 ]
+		then
+			echo "$sql_output" | egrep "^[A-Z]+_NAME = " | sed -e '/COLL_NAME/ s/$/\//' | awk '{print $3}' | sed -e :a -e '/$/N; s/\n/\ /; ta' | sed -e 's/\/ /\//g' | sed -e 's/ /\n/g' 
+			return 0
+		else
+			return 1
+		fi
+
+}
+
+trashfilter="trash"; print0=0; like_operand="like"
+
+until [ `echo "$1" | egrep -q "^-"; echo $? ` -ne 0 ]
+do
+	case "$1" in
+		"-t")
+			trashfilter=""
+			;;
+		"-0")
+			print0=1
+			;;
+#		"-i")
+#			like_operand="ilike"	
+#			;;
+		*) 
+			echo "ERROR: Unknown option $1 passed.  Use 'ilocate -h' to view available options. "  
+			exit 2
+			;;
+	esac
+	shift
+done
+
+for inputstr in $*
+do
+	echo "$inputstr" | egrep -q "[^\]%|^%"  # egrep ensures '%' isn't meant as a literal
+	if [ $? -eq 0 ]
+	then
+		operand=$like_operand
+	else
+		operand="="
+	fi
+	collection_output=`iQuestQry "COLL_NAME" "$inputstr"`
+	dataObj=`basename "$inputstr"`
+	#massage the inferred collection below for egrep parsing
+	collection=`dirname "$inputstr" | sed -e 's/[^\]%/\.\*/g' | sed -e 's/^%/\.\*/' | sed -e 's/^\.$/\/\.\*/' `	
+	dataObj_output=`iQuestQry "DATA_NAME" "$dataObj" | egrep "^$collection/" ` 
+	
+	output=`echo -e "$dataObj_output\n$collection_output" | egrep -v "^[[:space:]]*$" | sort | uniq`
+	if [ -n "$output" ]
+	then
+		if [ $print0 -eq 0 ]
+		then
+			echo "$output" | egrep -v "/[[:alnum:]]+/$trashfilter/" 
+		else
+			echo "$output" | egrep -v "/[[:alnum:]]+/$trashfilter/" | sed -e :a -e "/$/N; s/\n/\x00/; ta" | tr -s "\n" "\000"
+		fi
+	else
+		echo "ERROR: Couldn't locate $inputstr"
+		exit 1
+	fi
+
+done
+
+exit 0
+

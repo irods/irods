@@ -1,0 +1,12 @@
+#for testing all rule application
+aa||writeLine(stdout,doing Rule aa definition 1)##writeLine(stdout,' aa calls bb')##bb##writeLine(stdout,' aa calls cc')##cc|nop
+aa||writeLine(stdout,doing Rule aa definition 2)|nop
+aa|1 == 2|writeLine(stdout,doing Rule aa definition 3)|nop
+aa||writeLine(stdout,doing Rule aa definition 4)|nop
+bb||writeLine(stdout,'  doing Rule bb definition 1')##writeLine(stdout,'   bb calls dd')##dd|nop
+bb||writeLine(stdout,'  doing Rule bb definition 2')|nop
+cc||writeLine(stdout,'  doing Rule cc definition 1')|nop
+cc|1 == 2|writeLine(stdout,'  doing Rule cc definition 2')|nop
+cc||writeLine(stdout,'  doing Rule cc definition 3')|nop
+dd||writeLine(stdout,'    doing Rule dd definition 1')|nop
+dd||writeLine(stdout,'    doing Rule dd definition 2')|nop

@@ -1,0 +1,3 @@
+myTestRule||test41(*A,*B)|nop
+*A=$jut.ima%*B=aaaaaa
+*A%*B

@@ -1,0 +1,8 @@
+Name:		guinot
+Brief:		Microservices contributed by Romain Guinot
+Description:	Microservices (some of them will be assimilated into core) for use  by iRODS system at the  French National Libraries
+Dependencies:
+Enabled:	no
+Creator:	Romain Guinot
+Created:	November 2008
+License:	BSD

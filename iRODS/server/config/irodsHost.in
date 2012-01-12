@@ -1,0 +1,12 @@
+# This is the optional host configuration file for configuring the
+# equivalent host address used by the iRODS server. The server uses
+# the gethostbyname() call to get the network address of each host but
+# this call may not be able to get all the special network addresses
+# configured for this host. In this case, a line should be added in
+# this file for each host that requires clarification. Each line
+# should list all the hostnames and addresses (separated by spaces)
+# for a given host. If the host is the local host, the first entry
+# must be the keyword "localhost" followed by all the local host
+# addresses,
+# e.g. :
+# localhost foo.sdsc.edu srbbrick7

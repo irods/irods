@@ -1,0 +1,34 @@
+## The Beginning of a Mega Collection of tests designed to pound,
+## hammer, bludgeon and just generally test the heck out of iRODS.
+
+Invoke the test like so:
+
+./poundtests.sh <numtests>
+
+In the ResourcesToTest file, list your resources, one per line.
+Currently no comments are allowed in this file.
+
+The above will initiate 3 sets of tests pounding on
+the resources listed in the ResourcesToTest file
+
+Currently, 'poundtests' only calls the 'putget' script.
+For each test subdirectory created in 'poundtests', putget puts
+an individual file, adds meta data, mv's the files to another
+irods directory, get's the same file and compares the meta data.
+
+The subdirectories created by poundtests are created on the fly.
+They are:
+
+zerofiles - contains 1000 zero length files  
+smallfiles - contains 100 smallish (32byte or something) files
+bigfiles - contains 10 big files
+
+The 'bigfile' used is now created by the writebigfile.c program
+in the src directory which is built.
+
+If putget has any trouble getting or retrieving anything it
+bails and so does poundtest.
+
+These tests now run concurrently, so there are many i-commands and
+agents running at the same time.  This creates a reasonably good test
+of iRODS/ICAT/DBMS concurrency processing, even on just one host.

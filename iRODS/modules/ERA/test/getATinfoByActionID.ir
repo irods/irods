@@ -1,0 +1,3 @@
+get audit trail info by action ID||msiGetAuditTrailInfoByActionID(1000, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+null
+ruleExecOut

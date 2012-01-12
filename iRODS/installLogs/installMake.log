@@ -1,0 +1,54 @@
+Module properties
+------------------------------------------------------------------------
+Compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+ 
+Module msoDrivers
+------------------------------------------------------------------------
+Compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+ 
+Libraries
+------------------------------------------------------------------------
+Compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+MD5-only compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201 -O3
+ 
+I-Commands
+------------------------------------------------------------------------
+Compile flags:
+    -g  -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+Link flags:
+    /home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/obj/libRodsAPIs.a  -lm -lpthread 
+ 
+Module properties
+------------------------------------------------------------------------
+Compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+ 
+Module msoDrivers
+------------------------------------------------------------------------
+Compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+ 
+Libraries
+------------------------------------------------------------------------
+Compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+MD5-only compile flags:
+     -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201 -O3
+ 
+Server
+------------------------------------------------------------------------
+Compile flags:
+    -DRODS_SERVER -DRODS_CAT -DNEW_ODBC -DRULE_ENGINE -DRULE_ENGINE_N -DCACHE_ENABLE -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+Link flags:
+    -L/home/jasonc/dev/irods/Clean3.0/database/pgsql/lib -lodbc -lnsl -lm -lm -lpthread -lrt /home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/obj/libRodsAPIs.a
+ 
+Tests
+------------------------------------------------------------------------
+Compile flags:
+    -DRODS_SERVER -DRODS_CAT -DNEW_ODBC -DRULE_ENGINE -DRULE_ENGINE_N -DCACHE_ENABLE -Wno-write-strings -g -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -DADDR_64BITS -DPARA_OPR=1 -Dlinux_platform -Wall -DTAR_STRUCT_FILE -DTAR_EXEC_PATH="/bin/tar" -DRBUDP_TRANSFER -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/api/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/md5/include -I/home/jasonc/dev/irods/Clean3.0/iRODS/lib/rbudp/include -DCOMPAT_201
+Link flags:
+    -L/home/jasonc/dev/irods/Clean3.0/database/pgsql/lib -lodbc -lnsl -lm -lm -lpthread -lrt /home/jasonc/dev/irods/Clean3.0/iRODS/lib/core/obj/libRodsAPIs.a

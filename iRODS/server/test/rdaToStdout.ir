@@ -1,0 +1,13 @@
+# This is an example of an input for the irule command.
+# This first input line is the rule body
+# The second input line is the input parameter in the format of 
+# label=value. e.g., *A=/temp/home/rods/foo1
+# Multiple inputs can be specified using the '%' character as the separator.
+# The third input line is the output description. Multiple outputs can be
+# specified using the '%' character as the separator. 
+#
+# This rule tests the RDA msiRdaToStdout microservice.
+#
+myTestRule||msiRdaToStdout(*rda,*sql,null,null,null,null)|nop
+*rda=RDA%*sql=select * from t2
+ruleExecOut

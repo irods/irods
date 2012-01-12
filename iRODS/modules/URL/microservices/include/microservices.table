@@ -1,0 +1,5 @@
+// URL module microservices
+// Service name				# args		Service function
+{"msiFtpGet",				3,		(funcPtr) msiFtpGet},
+{"msiTwitterPost",			4,		(funcPtr) msiTwitterPost},
+{"msiPostThis",				3,		(funcPtr) msiPostThis},

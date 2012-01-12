@@ -1,0 +1,4 @@
+myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop##nop
+*Action=list%*Condition= COLL_NAME like '/tempZone/home/testuser/%%'%*K=--------------------------
+*Action%*Condition%ruleExecOut
+

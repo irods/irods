@@ -1,0 +1,225 @@
+This file defines the list of first class objects (FCOs) about which 
+information is stored in the RODS Catalog - also knows as RCAT.
+These first class objects have unique identifiers and associated meta 
+information. This file also  details these information.
+This file also defines derived objects based on the FCOs and  ontologies
+maintained by the RCAT system.
+
+
+In version 1, we will keep the list of meta attributes to the minimum.
+
+
+First Class Objects:
+Note: All first class objects have internal identifiers. These identifiers are
+all generated from the same sequence numbering scheme.
+
+
+FC01 : Zone
+   R_ZONE_ID          - internal identifier. 
+   R_ZONE_NAME        - the name of the RCAT. Unique globally.
+   R_ZONE_TYPE        - type of zone - local|remote|other
+   R_ZONE_CONN_STRING - connection information to (remote) zone. 
+			This a tagged list with elements of the form:
+			<PASSWORD>RPS1<PASSWORD><GSI>DISTNAME</GSI>
+			<PASSWORD>system</PASSWORD>...
+   R_ZONE_COMMENT     - information about the zone
+   R_ZONE_CRT_TIME    - creation timestamp
+   R_ZONE_MOD_TIME    - last modification timestamp
+
+FC02 : User
+   R_USER_ID          - internal identifier 
+   R_USER_NAME        - a string of the form 'name@domain'
+   R_USER_ZONE        - native zone of user (from R_ZONE_NAME)
+                        An RCAT can register users from foreign zones.
+   R_USER_TYPE        - user-type: rodsAdmin, normal, group, public, ...  
+   R_USER_PASS        - password probably scrambled
+   R_USER_DISTIN_NAME - any external name of the user. This is a tagged
+			list with elements of the form:
+			<authType>distinguishedName</authType>
+   R_USER_INFO        - information. This a tagged list with 
+			elements of the form:
+			<EMAIL>user@sdsc.edu</EMAIL><PHOBNE>5555555555</PHONE>..
+   R_USER_CRT_TIME    - creation timestamp
+   R_USER_MOD_TIME    - last modification timestamp
+
+FC03 : Resource
+   R_RSRC_ID          - internal identifier 
+   R_RSRC_NAME        - the name of the resource
+   R_RSRC_ZONE        - native zone of resource (from R_ZONE_NAME).
+                        An RCAT can register resources from foreign zones.
+   R_RSRC_TYPE        - rsrc-type: hpss, samfs, database, orb,...
+   R_RSRC_CLASS       - rsrc-class: primary, secondary, archival, ...
+   R_RSRC_NET         - internet address of the resource host
+   R_RSRC_DEF_PATH    - default path used by the resouce 
+   R_FREESPACE        - free space available on resource
+   R_RSRC_INFO        - infomation. This is a tagged list with 
+			elements of the form:
+                        <MAX_OBJ_SIZE>2GB</MAX_OBJ_SIZE>
+			<MIN_LATENCY>1msec</MIN_LATENCY>...
+   R_RSRC_CRT_TIME    - creation timestamp
+   R_RSRC_MOD_TIME    - last modification timestamp
+
+FC04 : Collection
+   R_COLL_ID          - internal identifier 
+   R_COLL_NAME        - data objects are clustered into collections.
+			Each collection name is unique in the RCAT. 
+			It also has the format /R_ZONE_NAME/....
+   R_INHERITANCE      - Information about what is inherited by the objects and 
+			sub-collections: ACL, metadata, pins, locks,
+   R_COLL_OWNER       - collection owner
+   R_COLL_COMMENTS    - comments about the collection
+   R_COLL_CRT_TIME    - creation timestamp
+   R_COLL_MOD_TIME    - last modification timestamp
+   
+FCO5 : Data - Accessible Digital Objects stored in RODS 
+   R_DATA_ID          - internal identifier 
+   R_DATA_NAME        - logical name of the digital object  (see also DCO2)
+   R_REPLICA          - a replica number given to the physical instance
+			of the digital object. This is an integer.
+			Replica numbers start at 1 and increase over time.
+			For a given digital objecy, the replica number is not
+			reused.
+   R_VERSION          - a version string given to the physical instance
+			of the digital object.  A replica can have
+			more than one version. Older version of a replica
+			will have a negative R_REPLICA number. For access,
+			when no version is specified, positive R_REPLICA
+			is selected. 
+   R_PDATA_ID         - internal identifier.  The combination:
+                        (R_ZONE_NAME, R_COLL_NAME, R_DATA_NAME,
+			 R_REPLICA, R_VERSION)
+                        uniquely identifies one physical copy of the 
+			digital object. We refer to  this combination as  PDATA.
+   R_PDATA_TYPE       - data-type: jpeg image, PDF doc,....
+
+   R_PDATA_SIZE       - size of the digital object in bytes
+   R_PDATA_RSRC       - resource-name where the copy of the digital object
+                        is stored.  
+   R_PDATA_PATH       - access path for the object in the resource
+   R_PDATA_OWNER      - user who  created the object
+   R_PDATA_IS_DIRTY   - dirty status of the object - used for synch. 
+   R_PDATA_STATUS     -  status: locked, is-deleted,pinned,hide, ...
+   R_PDATA_CHECKSUM   - checksum. This is a tagged list with 
+			elements of the form:
+                         <BINHEX>12344</BINHEX><MD5>22234422</MD5>...
+   R_PDATA_EXPIRY     - sunset date for the object
+   R_PDATA_COMMENTS   - comments about the physical object
+   R_PDATA_CRT_TIME   - creation timestamp
+   R_PDATA_MOD_TIME   - last modification timestamp
+
+
+FC06 : Attribute-Value Metadata
+   R_META_ID          - internal identifier. 
+   R_META_NAMESPACE   - Namespace in which attribute is located
+   R_META_ATTR        - attribute name of the metadata
+   R_META_VALUE       - attribute value of the metadata
+   R_META_UNIT        - unit of the value: cms, mph, deg. cel.,...
+   R_META_OWNER       - user who created the metadata
+   R_META_COMMENTS    - any comments about the metadata
+   R_META_CRT_TIME    - creation timestamp
+   R_META_MOD_TIME    - last modification timestamp   
+
+FC07: Rules
+   R_RULE_ID          - internal identifier.
+   R_RULE_NAME        - name of the rule - normally the head predicate.
+   R_RULE_SEQ         - sequence number of rule (an enumeration that
+			is used to set priority of execution)
+   R_RULE_OBJ_TYP     - First class object type to which the rule applies.
+  			collection, data, zone,...
+   R_RULE_EVENT       - event on which to trigger the rule
+   R_RULE_CONDITION   - conditions to be checked to trigger the rule
+                        this check should not have any side effects
+   R_RULE_BODY        - body of the rule. execution may have side effects
+			and hence if the rule fails somewhere in the middle,
+			there should be recovery to the state before the
+			rule body execution (transaction: all or none)
+   R_RULE_EXEC_TYPE   - when the rule-body needs to be executed.
+			immediate, delayed, background,...
+   R_RULE_OWNER       - user who created the metadata
+   R_RULE_COMMENTS    - any comments about the rule
+   R_RULE_CRT_TIME    - creation timestamp
+   R_RULE_MOD_TIME    - last modification timestamp   
+
+FC0D87: Tokens
+   R_TOKEN_NAMESPACE  - namespace of the token, eg. data_type
+   R_TOKEN_NAME       - a value in the name space. eg. 'gif image'
+   R_TOKEN_ID         - exposed internal identifier for the token_name
+   R_TOKEN_VALUE      - (possibly) null string for other purposes 
+			
+Derived Class Objects:
+
+DC01 :  Collection hierarchy - child can be in more than one parent 
+   R_PARENT_COLL_ID   - internal identifier for parent collection
+   R_CHILD_COLL_ID    - internal identifier for child collection
+   R_COLL_COLL_MAP    - type of parentage: direct, soft link
+
+DC02:   Data collection mapping - data can be in more than one coll.
+   R_COLL_ID          - internal identifier for collection
+   R_DATA_ID          - internal identifier for data in collection
+   R_DATA_COLL_MAP    - type of mapping: direct, soft link
+
+DCO3 :  User Group
+   R_GROUP_USER_ID    - internal identifier of user-group.
+   R_MEMBER_USER_ID   - internal identifier of user
+
+DC04:   Resource Group mapping
+   R_RSRC_GROUP_NAME  - name of logical resource.
+   R_RSRC_ID          - internal identifier for physical resource.
+
+DC05 : Metadata mapping
+   R_OBJ_ID           - internal identifier. Note that all internal identifiers
+                        are generated from same sequence. metadata can be 
+			attached to any first class object including other 
+			metadata! The OBJ_ID is used internally. 
+			But the client	will access from the FCO's name.
+   R_META_ID          - identifier of the metadata.
+
+DC06 :   Access Control List
+   R_OBJ_ID           - internal identifier. Note that all internal identifiers
+                        are generated from same sequence. access control can
+			be attached to any first class object.
+			The OBJ_ID is used internally. But the client
+                        will access from the FCO's name.
+   R_USER_ID          - user or group-user identifier 
+   R_ACCESS_TYPE      - access allowed for the user: r,w,x,....
+
+DC07 :   Deny Access Control List
+   R_OBJ_ID           - internal identifier. Note that all internal identifiers
+                        are generated from same sequence. access control can
+			be attached to any first class object.
+			The OBJ_ID is used internally. But the client
+                        will access from the FCO's name.
+   R_USER_ID          - user or group-user identifier 
+   R_ACCESS_TYPE      - access allowed for the user: r,w,x,....
+
+DC08 :   Audit Information
+   R_OBJ_ID           - internal identifier. Note that all internal identifiers
+                        are generated from same sequence. 
+			The OBJ_ID is used internally. But the client
+                        will access from the FCO's name.
+   R_USER_ID          - user identifier 
+   R_ACTION_TYPE      - action being performed
+   R_COMMENT          - information about the action
+   R_AUDIT_CRT_TIME   - creation timestamp
+
+DC09 :   User Session Info
+   R_USER_NAME        - user_name
+   R_SESSION_KEY      - session key generated for the session
+   R_SESSION_INFO     - information about host:ppid - can be any string that 
+			uniquely identifies the session for that user.
+                        this string is sent by client.
+   R_SESSION_EXPIRY   - time at which the session expires
+
+Independent Ontologies maintained by RCAT:
+
+IO1 :   R_ZONE_TYPE
+IO2 :   R_RSRC_TYPE
+IO3 :   R_RSRC_CLASS   
+IO4 :   R_USER_TYPE
+IO5 :   R_DATA_TYPE
+IO6 :   R_ACTION_TYPE
+IO7 :   R_RULE_EXEC_TYPE
+IO8 :   R_ACCESS_TYPE
+IO9 :   R_DATA_COLL_MAP
+   
+

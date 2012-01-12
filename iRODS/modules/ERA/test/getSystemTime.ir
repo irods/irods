@@ -1,0 +1,3 @@
+getLocalTime||msiGetSystemTime(*Time, human)##writeLine(stdout, *Time)|nop
+null
+ruleExecOut
