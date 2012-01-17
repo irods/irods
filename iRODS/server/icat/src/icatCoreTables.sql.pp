@@ -1,7 +1,7 @@
 
 /*******************************************************************************
   These are the Core Tables in the RODS Catalog 
-    RSYSOCORE_SCHEMAS        - Schemas defines in the RODS catalog
+    RCORE_SCHEMAS        - Schemas defines in the RODS catalog
     RCORE_TABLES         - Tables in the RCORE_SCHEMAS
     RCORE_ATTRIBUTES     - ATtributes in RCORE_TABLES
     RCORE_FK_RELATIONS   - Relationships across two tables
@@ -13,7 +13,7 @@
     dates              - varchar(32)
     short strings      - varchar(250)
     long strings       - varchar(1000)
-    very long strings  - varchar(2700)
+    very long strings  - varchar(2700) (postgres/oracle), TEXT (mysql)
 
 *******************************************************************************/
 
@@ -21,6 +21,17 @@
 #define INT64TYPE bigint
 #else
 #define INT64TYPE integer
+#endif
+
+/* We use a TEXT field for very long strings in MySQL due to a
+   combination of UTF8 encoding making every character 3 bytes
+   instead of 1 and a table length limit of 65,535 bytes.
+   http://dev.mysql.com/doc/refman/5.0/en/column-count-limit.html
+*/
+#if defined(mysql)
+#define VERYLONGSTRING TEXT
+#else
+#define VERYLONGSTRING varchar(2700)
 #endif
 
 #if defined(mysql)
