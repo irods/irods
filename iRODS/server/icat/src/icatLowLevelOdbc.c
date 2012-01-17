@@ -195,6 +195,9 @@ cllConnect(icatSessionStruct *icss) {
 	 into NOT NULL column does not produce error. */
       cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
       cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+      cllExecSqlNoResult ( icss, "SET character_set_client = utf8" ) ;
+      cllExecSqlNoResult ( icss, "SET character_set_results = utf8" ) ;
+      cllExecSqlNoResult ( icss, "SET character_set_connection = utf8" ) ;
    }
 
    return(0);
