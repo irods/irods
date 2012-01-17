@@ -16,7 +16,7 @@
     dates              - varchar(32)
     short strings      - varchar(250)
     long strings       - varchar(1000)
-    very long strings  - varchar(2700)
+    very long strings  - varchar(2700) (postgres/oracle), TEXT (mysql)
 
   R_TOKN_MAIN table is like a meta table for holding all
     reserved keywords/tokens/systemic ontologies that are used by
@@ -55,7 +55,7 @@
     (token_namespace, token_name, token_value) is checked for uniqueness 
     before being added.
 
-    Wheneever a token value is filled in any other table, it is checked 
+    Whenever a token value is filled in any other table, it is checked 
     against the R_TOKN_MAIN table for validity.
 *******************************************************/
 
@@ -63,6 +63,17 @@
 #define INT64TYPE bigint
 #else
 #define INT64TYPE integer
+#endif
+
+/* We use a TEXT field for very long strings in MySQL due to a
+   combination of UTF8 encoding making every character 3 bytes
+   instead of 1 and a table length limit of 65,535 bytes.
+   http://dev.mysql.com/doc/refman/5.0/en/column-count-limit.html
+*/
+#if defined(mysql)
+#define VERYLONGSTRING TEXT
+#else
+#define VERYLONGSTRING varchar(2700)
 #endif
 
 #if defined(mysql)
@@ -113,15 +124,15 @@ create table R_RESC_MAIN
 create table R_COLL_MAIN
  (
    coll_id             INT64TYPE not null,
-   parent_coll_name    varchar(2700) not null,
-   coll_name           varchar(2700) not null,
+   parent_coll_name    VERYLONGSTRING not null,
+   coll_name           VERYLONGSTRING not null,
    coll_owner_name     varchar(250) not null,
    coll_owner_zone     varchar(250) not null,
    coll_map_id         INT64TYPE DEFAULT 0,
    coll_inheritance    varchar(1000),
    coll_type	       varchar(250) DEFAULT '0',
-   coll_info1          varchar(2700) DEFAULT '0',
-   coll_info2          varchar(2700) DEFAULT '0',
+   coll_info1          VERYLONGSTRING,
+   coll_info2          VERYLONGSTRING,
    coll_expiry_ts      varchar(32),
    r_comment           varchar(1000),
    create_ts           varchar(32),
@@ -143,7 +154,7 @@ create table R_DATA_MAIN
    data_size           INT64TYPE not null,
    resc_group_name     varchar(250),
    resc_name           varchar(250) not null,
-   data_path           varchar(2700) not null,
+   data_path           VERYLONGSTRING not null,
    data_owner_name     varchar(250) not null,
    data_owner_zone     varchar(250) not null,
    data_is_dirty       INTEGER  DEFAULT 0,
@@ -161,8 +172,8 @@ create table R_META_MAIN
  (
    meta_id             INT64TYPE not null,
    meta_namespace      varchar(250),
-   meta_attr_name      varchar(2700) not null,
-   meta_attr_value     varchar(2700) not null,
+   meta_attr_name      VERYLONGSTRING not null,
+   meta_attr_value     VERYLONGSTRING not null,
    meta_attr_unit      varchar(250),
    r_comment           varchar(1000),
    create_ts           varchar(32),
@@ -187,21 +198,21 @@ create table R_RULE_MAIN
    rule_id             INT64TYPE not null,
    rule_version        varchar(250) DEFAULT '0',
    rule_base_name      varchar(250) not null,
-   rule_name           varchar(2700) not null,
-   rule_event          varchar(2700) not null,
-   rule_condition      varchar(2700),
-   rule_body           varchar(2700) not null,
-   rule_recovery       varchar(2700) not null,
+   rule_name           VERYLONGSTRING not null,
+   rule_event          VERYLONGSTRING not null,
+   rule_condition      VERYLONGSTRING,
+   rule_body           VERYLONGSTRING not null,
+   rule_recovery       VERYLONGSTRING not null,
    rule_status         INT64TYPE DEFAULT 1,
    rule_owner_name     varchar(250) not null,
    rule_owner_zone     varchar(250) not null,
-   rule_descr_1        varchar(2700),
-   rule_descr_2        varchar(2700),
-   input_params        varchar(2700),
-   output_params       varchar(2700),
-   dollar_vars         varchar(2700),
-   icat_elements       varchar(2700),
-   sideeffects         varchar(2700),
+   rule_descr_1        VERYLONGSTRING,
+   rule_descr_2        VERYLONGSTRING,
+   input_params        VERYLONGSTRING,
+   output_params       VERYLONGSTRING,
+   dollar_vars         VERYLONGSTRING,
+   icat_elements       VERYLONGSTRING,
+   sideeffects         VERYLONGSTRING,
    r_comment           varchar(1000),
    create_ts           varchar(32),
    modify_ts           varchar(32)
@@ -226,8 +237,8 @@ create table R_RULE_DVM
    dvm_version varchar(250) DEFAULT '0',
    dvm_base_name varchar(250) not null,
    dvm_ext_var_name varchar(250) not null,
-   dvm_condition varchar(2700),
-   dvm_int_map_path varchar(2700) not null,
+   dvm_condition VERYLONGSTRING,
+   dvm_int_map_path VERYLONGSTRING not null,
    dvm_status INTEGER DEFAULT 1,
    dvm_owner_name varchar(250) not null,
    dvm_owner_zone varchar(250) not null,
@@ -254,7 +265,7 @@ create table R_RULE_FNM
    fnm_version varchar(250) DEFAULT '0',
    fnm_base_name varchar(250) not null,
    fnm_ext_func_name varchar(250) not null,
-   fnm_int_func_name varchar(2700) not null,
+   fnm_int_func_name VERYLONGSTRING not null,
    fnm_status INTEGER DEFAULT 1,
    fnm_owner_name varchar(250) not null,
    fnm_owner_zone varchar(250) not null,
@@ -280,7 +291,7 @@ create table R_MICROSRVC_MAIN
    msrvc_id INT64TYPE not null,
    msrvc_name varchar(250) not null,
    msrvc_module_name  varchar(250) not null,
-   msrvc_signature varchar(2700) not null,
+   msrvc_signature VERYLONGSTRING not null,
    msrvc_doxygen varchar(2500) not null,
    msrvc_variations varchar(2500) not null,
    msrvc_owner_name varchar(250) not null,
@@ -309,8 +320,8 @@ create table R_MICROSRVC_VER
 create table R_RULE_EXEC
  (
    rule_exec_id        INT64TYPE not null,
-   rule_name           varchar(2700) not null,
-   rei_file_path       varchar(2700),
+   rule_name           VERYLONGSTRING not null,
+   rei_file_path       VERYLONGSTRING,
    user_name           varchar(250),
    exe_address         varchar(250),
    exe_time            varchar(32),
@@ -454,14 +465,19 @@ create table R_QUOTA_USAGE
 create table R_SPECIFIC_QUERY
 (
    alias varchar(1000),
-   sqlStr varchar(2700),
+   sqlStr VERYLONGSTRING,
    create_ts varchar(32)
 );
 
 
 #ifdef mysql
 
-#define VARCHAR_MAX_IDX_SIZE (767)
+/* The max size for a MySQL InnoDB index prefix is 767 bytes,
+   but since utf8 characters each take up three bytes,
+   the max is 255 utf8 characters (255x3=765)
+   http://dev.mysql.com/doc/refman/5.0/en/create-index.html 
+*/
+#define VARCHAR_MAX_IDX_SIZE (255)
 
 /* For MySQL we provide an emulation of the sequences using the 
    auto-increment field in a special table
@@ -535,5 +551,5 @@ create index idx_tokn_main1 on R_TOKN_MAIN (token_id);
 create index idx_tokn_main2 on R_TOKN_MAIN (token_name);
 create index idx_tokn_main3 on R_TOKN_MAIN (token_value);
 create index idx_tokn_main4 on R_TOKN_MAIN (token_namespace);
-create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr);
+create index idx_specific_query1 on R_SPECIFIC_QUERY (sqlStr VARCHAR_MAX_IDX_SIZE);
 create index idx_specific_query2 on R_SPECIFIC_QUERY (alias);
