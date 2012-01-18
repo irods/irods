@@ -65,6 +65,16 @@
 #define INT64TYPE integer
 #endif
 
+/* We attempt to set all data for iRODS to use UTF8 encoding */
+#if defined(mysql)
+#define SETCHARACTERSET character set utf8 collate utf8_general_ci
+#else
+/* set to blank for postgres and oracle
+   (do not support table level charsets)
+*/
+#define SETCHARACTERSET
+#endif
+
 /* We use a TEXT field for very long strings in MySQL due to a
    combination of UTF8 encoding making every character 3 bytes
    instead of 1 and a table length limit of 65,535 bytes.
@@ -89,7 +99,7 @@ create table R_ZONE_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_USER_MAIN
  (
@@ -101,7 +111,7 @@ create table R_USER_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_RESC_MAIN
  (
@@ -119,7 +129,7 @@ create table R_RESC_MAIN
    resc_status          varchar(32),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_COLL_MAIN
  (
@@ -137,7 +147,7 @@ create table R_COLL_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 /* 
   The data_is_dirty column is replStatus in the DataObjStatus structure.
@@ -166,7 +176,7 @@ create table R_DATA_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_META_MAIN
  (
@@ -178,7 +188,7 @@ create table R_META_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_TOKN_MAIN
  (
@@ -191,7 +201,7 @@ create table R_TOKN_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_RULE_MAIN
  (
@@ -216,7 +226,7 @@ create table R_RULE_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_RULE_BASE_MAP
  (
@@ -229,10 +239,10 @@ create table R_RULE_BASE_MAP
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_RULE_DVM
-(
+ (
    dvm_id               INT64TYPE not null,
    dvm_version          varchar(250) DEFAULT '0',
    dvm_base_name        varchar(250) not null,
@@ -245,7 +255,7 @@ create table R_RULE_DVM
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
-);
+ ) SETCHARACTERSET;
 
 create table R_RULE_DVM_MAP
  (
@@ -257,10 +267,10 @@ create table R_RULE_DVM_MAP
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_RULE_FNM
-(
+ (
    fnm_id               INT64TYPE not null,
    fnm_version          varchar(250) DEFAULT '0',
    fnm_base_name        varchar(250) not null,
@@ -272,7 +282,7 @@ create table R_RULE_FNM
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
-);
+ ) SETCHARACTERSET;
 
 create table R_RULE_FNM_MAP
  (
@@ -284,7 +294,7 @@ create table R_RULE_FNM_MAP
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_MICROSRVC_MAIN
  (
@@ -299,7 +309,7 @@ create table R_MICROSRVC_MAIN
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_MICROSRVC_VER
  (
@@ -315,7 +325,7 @@ create table R_MICROSRVC_VER
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_RULE_EXEC
  (
@@ -333,7 +343,7 @@ create table R_RULE_EXEC
    exe_status           varchar(32),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_USER_GROUP
  (
@@ -341,7 +351,7 @@ create table R_USER_GROUP
    user_id              INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_USER_SESSION_KEY
  (
@@ -352,7 +362,7 @@ create table R_USER_SESSION_KEY
    session_expiry_ts    varchar(32) not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_USER_PASSWORD
  (
@@ -361,7 +371,7 @@ create table R_USER_PASSWORD
    pass_expiry_ts       varchar(32) not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 
 
@@ -372,7 +382,7 @@ create table R_RESC_GROUP
    resc_id              INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_OBJT_METAMAP
  (
@@ -380,7 +390,7 @@ create table R_OBJT_METAMAP
    meta_id              INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_OBJT_ACCESS
  (
@@ -389,7 +399,7 @@ create table R_OBJT_ACCESS
    access_type_id       INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_OBJT_DENY_ACCESS
  (
@@ -398,7 +408,7 @@ create table R_OBJT_DENY_ACCESS
    access_type_id       INT64TYPE not null,
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_OBJT_AUDIT
  (
@@ -408,67 +418,66 @@ create table R_OBJT_AUDIT
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table R_SERVER_LOAD
-(
-    host_name           varchar(250) not null,
-    resc_name           varchar(250) not null,
-    cpu_used            INTEGER,
-    mem_used            INTEGER,
-    swap_used           INTEGER,
-    runq_load           INTEGER,
-    disk_space          INTEGER,
-    net_input           INTEGER,
-    net_output          INTEGER,
-    create_ts           varchar(32)
- );
+ (
+   host_name            varchar(250) not null,
+   resc_name            varchar(250) not null,
+   cpu_used             INTEGER,
+   mem_used             INTEGER,
+   swap_used            INTEGER,
+   runq_load            INTEGER,
+   disk_space           INTEGER,
+   net_input            INTEGER,
+   net_output           INTEGER,
+   create_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 create table R_SERVER_LOAD_DIGEST
-(
-    resc_name           varchar(250) not null,
-    load_factor         INTEGER,
-    create_ts           varchar(32)
-);
+ (
+   resc_name            varchar(250) not null,
+   load_factor          INTEGER,
+   create_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 /*
  Optional user authentication information,
  GSI DN(s) or Kerberos Principal name(s)
 */
 create table R_USER_AUTH
-(
+ (
    user_id              INT64TYPE not null,
    user_auth_name       varchar(1000),
    create_ts            varchar(32)
-);
+ ) SETCHARACTERSET;
 
 
 
 
 create table R_QUOTA_MAIN
-(
+ (
    user_id              INT64TYPE,
    resc_id              INT64TYPE,
    quota_limit          INT64TYPE,
    quota_over           INT64TYPE,
    modify_ts            varchar(32)
-);
+ ) SETCHARACTERSET;
 
 create table R_QUOTA_USAGE
-(
+ (
    user_id              INT64TYPE,
    resc_id              INT64TYPE,
    quota_usage          INT64TYPE,
    modify_ts            varchar(32)
-);
+ ) SETCHARACTERSET;
 
 create table R_SPECIFIC_QUERY
-(
+ (
    alias                varchar(1000),
    sqlStr               VERYLONGSTRING,
    create_ts            varchar(32)
-);
-
+ ) SETCHARACTERSET;
 
 #ifdef mysql
 
@@ -485,7 +494,7 @@ create table R_SPECIFIC_QUERY
 delimiter %%
 
 drop table if exists R_ObjectId_seq_tbl %%
-create table R_ObjectId_seq_tbl ( nextval bigint not null primary key auto_increment ) engine = MyISAM %%
+create table R_ObjectId_seq_tbl ( nextval bigint not null primary key auto_increment ) engine = MyISAM SETCHARACTERSET %%
 alter table R_ObjectId_seq_tbl AUTO_INCREMENT = 10000 %%
 
 drop function if exists R_ObjectId_nextval %%

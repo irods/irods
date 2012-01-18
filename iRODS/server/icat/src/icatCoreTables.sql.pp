@@ -23,6 +23,16 @@
 #define INT64TYPE integer
 #endif
 
+/* We attempt to set all data for iRODS to use UTF8 encoding */
+#if defined(mysql)
+#define SETCHARACTERSET character set utf8 collate utf8_general_ci
+#else
+/* set to blank for postgres and oracle
+   (do not support table level charsets)
+*/
+#define SETCHARACTERSET
+#endif
+
 /* We use a TEXT field for very long strings in MySQL due to a
    combination of UTF8 encoding making every character 3 bytes
    instead of 1 and a table length limit of 65,535 bytes.
@@ -40,44 +50,44 @@ SET SESSION storage_engine='InnoDB';
 
 create table RCORE_SCHEMAS
  (
-  schema_name           varchar(250) not null,
-  schema_subject        varchar(250),
-  schema_owner          INT64TYPE not null,
-  r_comment             varchar(1000),
-  create_ts             varchar(32),
-  modify_ts             varchar(32)
- );
+   schema_name          varchar(250) not null,
+   schema_subject       varchar(250),
+   schema_owner         INT64TYPE not null,
+   r_comment            varchar(1000),
+   create_ts            varchar(32),
+   modify_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 create table RCORE_TABLES
  (
-  table_id              INT64TYPE not null,
-  table_name            varchar(250) not null,
-  database_name         varchar(250) not null,
-  schema_name           varchar(250) not null,
-  dbschema_name         varchar(250),
-  table_resc_id         INT64TYPE not null,
-  r_comment             varchar(1000),
-  create_ts             varchar(32),
-  modify_ts             varchar(32)
- );
+   table_id             INT64TYPE not null,
+   table_name           varchar(250) not null,
+   database_name        varchar(250) not null,
+   schema_name          varchar(250) not null,
+   dbschema_name        varchar(250),
+   table_resc_id        INT64TYPE not null,
+   r_comment            varchar(1000),
+   create_ts            varchar(32),
+   modify_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 create table RCORE_ATTRIBUTES
  (
-  attr_id               INT64TYPE not null,
-  table_id              INT64TYPE not null,
-  attr_name             varchar(250) not null,
-  attr_data_type        varchar(250) not null,
-  attr_iden_type        varchar(10) not null,
-  external_attr_name    varchar(250) not null,
-  default_value         varchar(1000),
-  attr_expose           INT64TYPE not null,
-  attr_presentation     varchar(1000),
-  attr_units            varchar(250),
-  maxsize               INTEGER,
-  r_comment             varchar(1000),
-  create_ts             varchar(32),
-  modify_ts             varchar(32)
- );
+   attr_id              INT64TYPE not null,
+   table_id             INT64TYPE not null,
+   attr_name            varchar(250) not null,
+   attr_data_type       varchar(250) not null,
+   attr_iden_type       varchar(10) not null,
+   external_attr_name   varchar(250) not null,
+   default_value        varchar(1000),
+   attr_expose          INT64TYPE not null,
+   attr_presentation    varchar(1000),
+   attr_units           varchar(250),
+   maxsize              INTEGER,
+   r_comment            varchar(1000),
+   create_ts            varchar(32),
+   modify_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 create table RCORE_FK_RELATIONS
  (
@@ -86,24 +96,24 @@ create table RCORE_FK_RELATIONS
    r_comment            varchar(1000),
    create_ts            varchar(32),
    modify_ts            varchar(32)
- );
+ ) SETCHARACTERSET;
 
 create table RCORE_USER_SCHEMAS
  (
-  user_schema_name      varchar(250) not null,
-  uschema_owner         INT64TYPE not null,
-  r_comment             varchar(1000),
-  create_ts             varchar(32),
-  modify_ts             varchar(32)
- );
+   user_schema_name     varchar(250) not null,
+   uschema_owner        INT64TYPE not null,
+   r_comment            varchar(1000),
+   create_ts            varchar(32),
+   modify_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 create table RCORE_USCHEMA_ATTR
  (
-  user_schema_name      varchar(250) not null,
-  attr_id               INT64TYPE not null,
-  r_comment             varchar(1000),
-  create_ts             varchar(32),
-  modify_ts             varchar(32)
- );
+   user_schema_name     varchar(250) not null,
+   attr_id              INT64TYPE not null,
+   r_comment            varchar(1000),
+   create_ts            varchar(32),
+   modify_ts            varchar(32)
+ ) SETCHARACTERSET;
 
 
