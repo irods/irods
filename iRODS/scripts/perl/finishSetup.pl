@@ -2767,7 +2767,8 @@ sub Postgres_CreateDatabase()
 		my $tmpPassword = createTempFilePath( "create" );
 		printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 		chmod( 0600, $tmpPassword );
-		($status,$output) = run( "$createdb $DB_NAME < $tmpPassword" );
+		$pgencoding = "-E UTF8"; # force UTF8
+		($status,$output) = run( "$createdb $pgencoding $DB_NAME < $tmpPassword" );
 		unlink( $tmpPassword );
 
 		if ( $status != 0 )

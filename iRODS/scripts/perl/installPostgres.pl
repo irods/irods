@@ -2093,12 +2093,13 @@ sub setupPostgres
 		my $output = "";
 		my $status = 0;
 		my $initdb = File::Spec->catfile( $postgresBinDir, "initdb" );
+		my $pgencoding = "-E UTF8"; # force UTF8
 		if ( $thisOS =~ /Darwin/i )	# Mac OS X
 		{
 			# The initdb option "lc-collate=C" used for other
 			# OSes is not needed on a Mac.  It also can cause
 			# problems with not enough shared memory.
-			$output = `$initdb -D $postgresDataDir 2>&1`;
+			$output = `$initdb $pgencoding -D $postgresDataDir 2>&1`;
 			$status = $?;
 		}
 		else
@@ -2106,7 +2107,7 @@ sub setupPostgres
 			# Add the "lc-collate=C" option to insure that
 			# Postgres returns sorted items in the order
 			# needed.
-			$output = `$initdb --lc-collate=C -D $postgresDataDir 2>&1`;
+			$output = `$initdb $pgencoding --lc-collate=C -D $postgresDataDir 2>&1`;
 			$status = $?;
 		}
 		if ( $status != 0 )
