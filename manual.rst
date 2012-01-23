@@ -9,6 +9,12 @@ iRODS-E 3.0 Manual
 ReStructuredText
 ----------------
 
+Needs python modules::
+
+ easy_install docutils==0.7.0
+ easy_install roman
+ easy_install rst2pdf
+
 Some links for learning in place:
 
  http://docutils.sourceforge.net/docs/index.html
@@ -25,10 +31,12 @@ Some links for learning in place:
  
  http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
 
-Generate HTML:
+Generate HTML::
+
  rst2html.py -stg manual.rst > manual.html
 
-Generate PDF:
+Generate PDF::
+
  rst2pdf manual.rst -o manual.pdf
 
 --------
@@ -45,17 +53,19 @@ Installation
 
 iRODS-E is released in binary form.  RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for your combination of platform, operating system, and database type.
 
-Installation of the x86-Ubuntu-Postgres RPM:
+Installation of the x86-Ubuntu-Postgres RPM::
+
  rpm -i irodse-3.0-x86-ubuntu-postgres.rpm
 
-Installation of the x86-CentOS-MySQL DEB:
+Installation of the x86-CentOS-MySQL DEB::
+
  dpkg -i irodse-3.0-x86-centos-mysql.deb
 
 ----------
 Quickstart
 ----------
 
-Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The i-command `ils` will list your administrator's empty home directory in the iRODS virtual filesystem::
+Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The i-command `ils` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
  $ ils
  /tempZone/home/rods:
