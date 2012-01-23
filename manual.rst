@@ -150,7 +150,7 @@ This glossary attempts to cover most of the terms you may encounter when first i
     The specification of the controls on procedures applied to records in a collection. Management policies lead to required Metadata, leading to iRODS Rules to generate and verify this Metadata.
 
 :Metadata:
-    Metadata is data about data.  In iRODS metadata includes system and user-defined attributes associated with a Data-Object, Collection, Resource, etc, stored in the iCAT database. To implement a persistent archives, preservation policies require approximately 200 metadata attributes.  
+    Metadata is data about data.  In iRODS, metadata can include system or user-defined attributes associated with a Data-Object, Collection, Resource, etc., stored in the iCAT database.  The metadata stored in the iCAT database are in the form of AVUs (attribute-value-unit tuples).
 
 :Metadata Harvesting:
     Extraction of Metadata from a remote information resource and addition to metadata catalog, e.g. iCAT.
@@ -161,7 +161,7 @@ Small, well-defined procedures/functions that perform a certain server-side task
 The task that is performed by a micro-service can be quite small or very involved. We leave it to the micro-service developer to choose the proper level of granularity for their task differentiation. A good rule of thumb would be to divide a large task into sub-tasks with well-defined interfaces and make each into a micro-service.
 
 :Migration:
-    Process of moving digital Collections to new hardware and software as technology evolves; see also Transformative Migration. 
+    The process of moving digital Collections to new hardware and/or software as technology evolves.  Separately, this may be used to mean the process of manipulating a Data-Object into a new format (e.g. gif to png) for preservation purposes.
 
 :Name Space:
     Logical identifiers applied to Digital Objects in a Data Grid. The identifiers can be logically organized into a collection hierarchy. iRODS uses a unique name for each digital entity, allowing a global Namespace and unified virtual collections that can span multiple storage systems and organizations.  See [[logical name space]].
@@ -173,13 +173,13 @@ The task that is performed by a micro-service can be quite small or very involve
     The information generated when a micro-service is executed, managed persistently across all operations. Implies persistent Name Spaces. 
 
 :Physical Resource:
-    Storage system into which Digital Data may be deposited. iRODS supports a wide range of tape and disk storage. See Driver. 
+    A storage system onto which Data-Objects may be deposited. iRODS supports a wide range of disk, tape, and remote storage resources.
 
 :Resource:
-    A resource, or storage resource, is a software/hardware system that stores digital data. Currently iRODS can use a Unix file system as a resource. As other iRODS drivers are written, additional types of resources will be included. iRODS clients can operate on local or remote data stored on different types of resources, through a common interface. 
+    A resource, or storage resource, is a software/hardware system that stores digital data. Resources can be classified as cache, archive, or compound (a virtual type consisting of a cache resource affiliated with an archive resource).  iRODS clients can operate on local or remote data stored on different types of resources through a common interface.
 
 :Rules:
-    Rules are a major innovation in iRODS that let users automate data management tasks, essential as data collections scale to petabytes in hundreds of millions of files. Rules allow users to automate enforcement of complex Management Policies (workflows), controlling the server-side execution (as micro-services) of all data access and manipulation operations, with the capability of verifying these operations.
+    Rules are a major innovation in iRODS that let users automate data management tasks, essential as data collections scale to petabytes across hundreds of millions of files. Rules allow users to automate enforcement of complex Management Policies (workflows), controlling the server-side execution (as micro-services) of all data access and manipulation operations, with the capability of verifying these operations.
 
 :Rule Engine:
     The Rule Engine interprets Rules following the iRODS rule syntax (see Rules). The Rule Engine, which runs on all iRODS Servers, is invoked by server-side procedure calls and selects, prioritizes, and applies Rules and their corresponding Micro-services (link). The Rule Engine can apply recovery procedures if a Micro-service or Action fails.
