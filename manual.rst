@@ -76,7 +76,7 @@ Installation of the x86-CentOS-MySQL DEB::
 Quickstart
 ----------
 
-Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The i-command ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
+Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
  $ ils
  /tempZone/home/rods:
@@ -91,6 +91,19 @@ iRODS-E enforces that the database in use (Postgres, MySQL, etc.) is configured 
 -------------
 Configuration
 -------------
+
+There are a number of configuration files that control how an iRODS server behaves.  The following is a comprehensive listing of the configuration files in a binary-only iRODS-E installation.
+
+~/.irods/.irodsA
+
+~/.irods/.irodsEnv
+
+~/.irods/.odbc.ini
+
+iRODS/config/irods.config
+
+iRODS/server/config/server.config
+
 
 
 
@@ -144,7 +157,7 @@ IES (iCAT-Enabled Server)
     A machine that runs both an iRODS server and the iCAT database for a particular Zone.
 
 iCommands
-    iCommands are Unix and Windows utilities that give users a command-line interface to operate on data in the iRODS system. There are commands related to the logical hierarchical filesystem, metadata, data object information, administration, rules, and the rule engine. iCommands provide the most comprehensive set of client-side standard iRODS manipulation functions.
+    iCommands are Unix utilities that give users a command-line interface to operate on data in the iRODS system. There are commands related to the logical hierarchical filesystem, metadata, data object information, administration, rules, and the rule engine. iCommands provide the most comprehensive set of client-side standard iRODS manipulation functions.
 
 Logical Name
     The identifier used by iRODS to uniquely name a Data Object, Collection, Resource, or User. These identifiers enable global namespaces that are capable of spanning distributed storage and multiple administrative domains for shared Collections or a unified virtual Collection.
