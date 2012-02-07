@@ -1,6 +1,9 @@
-==================
-iRODS-E 3.0 Manual
-==================
+=================================
+Enterprise iRODS (E-iRODS) Manual
+=================================
+
+:Author: Renaissance Computing Institute (RENCI)
+:Version: 3.0 beta
 
 .. contents:: Table of Contents
 .. section-numbering::
@@ -43,7 +46,7 @@ Generate PDF::
 Overview
 --------
 
-This manual attempts to provide standalone documentation for iRODS-E as packaged by the Renaissance Computing Institute (RENCI).
+This manual attempts to provide standalone documentation for E-iRODS as packaged by the Renaissance Computing Institute (RENCI).
 
 Additional documentation is available on the iRODS wiki and in the two books published by the iRODS team:
 
@@ -62,7 +65,7 @@ Additional documentation is available on the iRODS wiki and in the two books pub
 Installation
 ------------
 
-iRODS-E is released in binary form.  RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for your combination of platform, operating system, and database type.
+E-iRODS is released in binary form.  RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for your combination of platform, operating system, and database type.
 
 Installation of the x86-Ubuntu-Postgres RPM::
 
@@ -86,25 +89,37 @@ Successful installation will complete and leave a running iRODS server.  If you 
 Assumptions
 -----------
 
-iRODS-E enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and the tables inherit this setting.
+E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and the tables inherit this setting.
 
 -------------
 Configuration
 -------------
 
-There are a number of configuration files that control how an iRODS server behaves.  The following is a comprehensive listing of the configuration files in a binary-only iRODS-E installation.
+There are a number of configuration files that control how an iRODS server behaves.  The following is a listing of the configuration files in a binary-only E-iRODS installation.
 
-~/.irods/.irodsA
 
-~/.irods/.irodsEnv
+Client and Server
+-----------------
 
-~/.irods/.odbc.ini
+~/.odbc.ini
 
 iRODS/config/irods.config
 
 iRODS/server/config/server.config
 
 
+Client Only
+-----------
+
+~/.irods/.irodsA
+    This is the scrambled password file that is saved after an ``iinit`` is run.  If this file does not exist, then each iCommand will prompt for a password before authenticating with the iRODS server.  If this file does exist, then each iCommand will read this file and use the contents as a cached password token and skip the password prompt.  This file can be deleted manually or can be removed by running ``iexit full``.
+
+~/.irods/.irodsEnv
+    This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
+
+
+Other Environment Variables
+---------------------------
 
 
 --------
