@@ -69,11 +69,11 @@ E-iRODS is released in binary form.  RPM and DEB formats are available for both 
 
 Installation of the x86-Ubuntu-Postgres RPM::
 
- $ rpm -i irodse-3.0-x86-ubuntu-postgres.rpm
+ $ rpm -i e-irods-3.0-x86-ubuntu-postgres.rpm
 
 Installation of the x86-CentOS-MySQL DEB::
 
- $ dpkg -i irodse-3.0-x86-centos-mysql.deb
+ $ dpkg -i e-irods-3.0-x86-centos-mysql.deb
 
 ----------
 Quickstart
