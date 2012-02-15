@@ -21,7 +21,6 @@
 #include "rsApiHandler.h"
 #include "propertiesMS.h"
 
-/* LCOV_EXCL_START */
 
 
 /**
@@ -527,4 +526,3 @@ msiPropertiesFromString( msParam_t *stringParam, msParam_t* listParam, ruleExecI
 	return 0;
 }
 
-/* LCOV_EXCL_STOP */
