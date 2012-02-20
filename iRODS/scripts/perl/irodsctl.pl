@@ -957,7 +957,10 @@ sub doTestIcat
 
 	# Enable CATSQL debug mode in Server by changing user's env file
 	$homeDir=$ENV{'HOME'};
-	$userEnvFile=  $homeDir . "/.irods/.irodsEnv";
+	$userEnvFile=$ENV{'irodsEnvFile'};
+	if ($userEnvFile eq "") {
+	    $userEnvFile=  $homeDir . "/.irods/.irodsEnv";
+	}
 	$originalEnvText = `cat $userEnvFile`;
 	appendToFile( $userEnvFile, 
 		      "\nirodsDebug CATSQL\n" );
