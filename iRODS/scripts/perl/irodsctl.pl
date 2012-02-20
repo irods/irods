@@ -641,7 +641,7 @@ sub doDrop
 {
 	if ( isPrintVerbose( ) )
 	{
-		printNotice( "Droping the iCAT database tables will destroy all metadata about files\n" );
+		printNotice( "Dropping the iCAT database tables will destroy all metadata about files\n" );
 		printNotice( "stored by iRODS.  This cannot be undone.\n" );
 		printNotice( "\n" );
 		if ( askYesNo( "    Continue (yes/no)?  " ) == 0 )
