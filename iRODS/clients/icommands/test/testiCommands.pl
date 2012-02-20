@@ -39,6 +39,7 @@ my $username;
 my @words;
 
 my $dir_w        = cwd();
+my $myssize;
 my $host         = hostname();
 if ( $host =~ '.' ) {
 	@words = split( /\./, $host );
@@ -218,33 +219,33 @@ runCmd( "iexecmd hello", "", "LIST", "Hello world" );
 runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
-runCmd( "iput -K -N 2 $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
-runCmd( "ils $irodshome/test/foo1", "", "LIST", "foo1" );
+runCmd( "iput -K -N 2 $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
+runCmd( "ils $irodshome/icmdtest/foo1", "", "LIST", "foo1" );
 runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
-runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "$username#$irodszone:own" );
-runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
-runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" );
-runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
-runCmd( "itrim -S testresource -N1 $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "testresource" );
-runCmd( "iphymv -R testresource $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "testresource" );
-runCmd( "imeta add -d $irodshome/test/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta1 180 cm" );
-runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,180,cm" );
-runCmd( "icp -K $irodshome/test/foo1 $irodshome/test/foo2", "", "", "", "irm $irodshome/test/foo2" );
-runCmd( "ils $irodshome/test/foo2", "", "LIST", "foo2" );
-runCmd( "imv $irodshome/test/foo2 $irodshome/test/foo4" );
-runCmd( "ils -l $irodshome/test/foo4", "", "LIST", "foo4" );
-runCmd( "imv $irodshome/test/foo4 $irodshome/test/foo2" );
-runCmd( "ils -l $irodshome/test/foo2", "", "LIST", "foo2" );
-runCmd( "ichksum $irodshome/test/foo2", "", "LIST", "foo2" );
-runCmd( "imeta add -d $irodshome/test/foo2 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo2 testmeta1 180 cm" );
-runCmd( "imeta add -d $irodshome/test/foo1 testmeta2 hello", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta2 hello"  );
-runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,hello" );
+runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "$username#$irodszone:own" );
+runCmd( "ichmod read testuser1 $irodshome/icmdtest/foo1" );
+runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "testuser1#$irodszone:read" );
+runCmd( "irepl -B -R testresource $irodshome/icmdtest/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "1 testresource" );
+runCmd( "itrim -S testresource -N1 $irodshome/icmdtest/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "negtest", "LIST", "testresource" );
+runCmd( "iphymv -R testresource $irodshome/icmdtest/foo1" );
+runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "testresource" );
+runCmd( "imeta add -d $irodshome/icmdtest/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/icmdtest/foo1 testmeta1 180 cm" );
+runCmd( "imeta ls -d $irodshome/icmdtest/foo1", "", "LIST", "testmeta1,180,cm" );
+runCmd( "icp -K $irodshome/icmdtest/foo1 $irodshome/icmdtest/foo2", "", "", "", "irm $irodshome/icmdtest/foo2" );
+runCmd( "ils $irodshome/icmdtest/foo2", "", "LIST", "foo2" );
+runCmd( "imv $irodshome/icmdtest/foo2 $irodshome/icmdtest/foo4" );
+runCmd( "ils -l $irodshome/icmdtest/foo4", "", "LIST", "foo4" );
+runCmd( "imv $irodshome/icmdtest/foo4 $irodshome/icmdtest/foo2" );
+runCmd( "ils -l $irodshome/icmdtest/foo2", "", "LIST", "foo2" );
+runCmd( "ichksum $irodshome/icmdtest/foo2", "", "LIST", "foo2" );
+runCmd( "imeta add -d $irodshome/icmdtest/foo2 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/icmdtest/foo2 testmeta1 180 cm" );
+runCmd( "imeta add -d $irodshome/icmdtest/foo1 testmeta2 hello", "", "", "", "imeta rm -d $irodshome/icmdtest/foo1 testmeta2 hello"  );
+runCmd( "imeta ls -d $irodshome/icmdtest/foo1", "", "LIST", "testmeta1,hello" );
 runCmd( "imeta qu -d testmeta1 = 180", "", "LIST", "foo1" );
 runCmd( "imeta qu -d testmeta2 = hello", "", "dataObj:", "foo1" );
-runCmd( "iget -f -K -N 2 $irodshome/test/foo1 $dir_w/targetTest.txt" );
+runCmd( "iget -f -K -N 2 $irodshome/icmdtest/foo1 $dir_w/targetTest.txt" );
 if ( -e "$dir_w/targetTest.txt" ) {
 	print( "    $dir_w/targetTest.txt is present (now will be removed). OK.\n" );
 	unlink( "$dir_w/targetTest.txt" );
@@ -265,12 +266,12 @@ $rc = makeRuleFile();
 if ( $rc ) {
 	print( "Problem with makeRuleFile. Rc = $rc\n" );
 } else {
-	runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/test/foo3" );
+	runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/icmdtest/foo3" );
 }
 
-runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
-runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
-runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
+runCmd( "irsync $ruletestfile i:$irodshome/icmdtest/foo1" );
+runCmd( "irsync i:$irodshome/icmdtest/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/icmdtest/foo1 i:$irodshome/icmdtest/foo2" );
 
 #-- Execute rollback commands
 
@@ -505,7 +506,7 @@ sub makeRuleFile {
 	print( FILE2 "# This is an example of an input for the irule command.\n" );
 	print( FILE2 "# This first input line is the rule body.\n" );
 	print( FILE2 "# The second input line is the input parameter in the format of:\n" );
-	print( FILE2 "#   label=value. e.g., *A=$irodshome/test/foo1\n" );
+	print( FILE2 "#   label=value. e.g., *A=$irodshome/icmdtest/foo1\n" );
 	print( FILE2 "# Multiple inputs can be specified using the \'\%\' character as the seperator.\n" );
 	print( FILE2 "# The third input line is the output description. Multiple outputs can be specified\n" );
 	print( FILE2 "# using the \'\%\' character as the seperator.\n" );
@@ -521,7 +522,7 @@ sub makeRuleFile {
 #	print( FILE2 "##delayExec(msiDataObjRepl(*C,$irodsdefresource,*junk5),<A></A>)" );
 	print( FILE2 "##msiDataObjUnlink(*B,*junk6)|null" );
 	print( FILE2 "\n" );
-	print( FILE2 "*A=\"$irodshome/test/foo1\"\%*B=\"$irodshome/test/foo4\"\%*C=\"$irodshome/test/foo3\"" );
+	print( FILE2 "*A=\"$irodshome/icmdtest/foo1\"\%*B=\"$irodshome/icmdtest/foo4\"\%*C=\"$irodshome/icmdtest/foo3\"" );
 	print( FILE2 "\n" );
 	print( FILE2 "*R_BUF\%*W_LEN" );
 	print( FILE2 "\n" );
