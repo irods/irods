@@ -290,10 +290,10 @@ $nsuccess = @successlist;
 $nfailure = @failureList;
 
 open( FILE, "> $outputfile" ) or die "unable to open $outputfile for writing\n";
-print( FILE "===========================================\n" );
-print( FILE "number of successfull tested commands = $nsuccess\n" );
-print( FILE "number of failed tested commands      = $nfailure\n" );
-print( FILE "===========================================\n\n" );
+print( FILE "============================================\n" );
+print( FILE "number of successfully tested commands = $nsuccess\n" );
+print( FILE "number of failed tested commands       = $nfailure\n" );
+print( FILE "============================================\n\n" );
 print( FILE "Summary of the consecutive commands which have been tested:\n\n" );
 
 $i = 1;
@@ -301,7 +301,7 @@ foreach $line ( @summarylist ) {
   print( FILE "$i - $line\n" );
   $i++;
 }
-print( FILE "\n\nList of successfull tests:\n\n" );
+print( FILE "\n\nList of successful tests:\n\n" );
 foreach $line ( @successlist ) { print( FILE "$line" ); }
 print( FILE "\n\nList of failed tests:\n\n" );
 foreach $line ( @failureList ) { print( FILE "$line" ); }
