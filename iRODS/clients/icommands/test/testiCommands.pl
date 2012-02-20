@@ -44,7 +44,13 @@ if ( $host =~ '.' ) {
 	@words = split( /\./, $host );
 	$host  = $words[0];
 }
-my $irodsfile    = "$ENV{HOME}/.irods/.irodsEnv";
+my $irodsfile;
+my $irodsEnvFile = $ENV{'irodsEnvFile'};
+if ($irodsEnvFile) {
+    $irodsfile = $irodsEnvFile;
+} else {
+    $irodsfile    = "$ENV{HOME}/.irods/.irodsEnv";
+}
 my $ntests       = 0;
 my $progname     = $0;
 
