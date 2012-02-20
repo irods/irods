@@ -190,6 +190,7 @@ runCmd( "iadmin rfg testgroup testuser2" );
 runCmd( "iadmin lg testgroup", "negtest", "LIST", "testuser1,testuser2" );
 runCmd( "iadmin rfg testgroup testuser1" );
 runCmd( "iadmin mkresc testresource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
+runCmd( "iadmin mkresc compresource \"unix file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin lr testresource", "", "resc_name:", "testresource", "irmtrash" );
 runCmd( "iadmin lr testresource", "", "resc_type_name:", "unix file system" );
 runCmd( "iadmin lr testresource", "", "resc_net:", "$irodshost" );
@@ -198,14 +199,24 @@ runCmd( "iadmin lr testresource", "", "r_comment:", "Modify by me $username" );
 runCmd( "iadmin mkgroup resgroup", "", "", "", "iadmin rmgroup resgroup" );
 runCmd( "iadmin atg resgroup $username", "", "", "", "iadmin rfg resgroup $username" );
 runCmd( "iadmin atrg resgroup testresource", "", "", "", "iadmin rfrg resgroup testresource" );
-runCmd( "iadmin atrg resgroup $irodsdefresource", "", "", "", "iadmin rfrg resgroup $irodsdefresource" );
-runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,$irodsdefresource" );
+runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
+runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,compresource" );
 
 #-- basic clients commands.
 
-runCmd( "ilsresc" );
+$myssize = stat ($progname)->size;
+runCmd( "ilsresc", "", "LIST", "compresource,testresource");
+runCmd( "ilsresc -l",  "", "LIST", "compresource,testresource");
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );
+runCmd( "ienv" );
+runCmd( "icd $irodshome" );
+runCmd( "ipwd",  "", "LIST", "home" );
+runCmd( "ihelp ils" );
+runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
+runCmd( "iexecmd hello", "", "LIST", "Hello world" );
+runCmd( "ips -v", "", "LIST", "ips" );
+runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
 runCmd( "iput -K -N 2 $progname $irodshome/test/foo1", "", "", "", "irm $irodshome/test/foo1" );
 runCmd( "ils $irodshome/test/foo1", "", "LIST", "foo1" );
