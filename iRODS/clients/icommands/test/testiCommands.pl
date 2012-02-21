@@ -204,6 +204,11 @@ runCmd( "iadmin atrg resgroup testresource", "", "", "", "iadmin rfrg resgroup t
 runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
 runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,compresource" );
 
+# Simple test to increase coverage; run each of the i-commands with -h
+runCmd( "ihelp -a" );
+# and also run the ihelp usage function
+runCmd( "ihelp -h" );
+
 #-- basic clients commands.
 
 $myssize = stat ($progname)->size;
