@@ -83,8 +83,15 @@ void appendRuleIntoExtIndex(RuleDesc *rule, int i, Region *r) {
 
 		insertIntoHashTable(ruleEngineConfig.extFuncDescIndex->current, RULE_NAME(rule->node), fd);
 	} else {
-		rd = FD_RULE_INDEX_LIST(fd);
-		appendRuleNodeToRuleIndexList(rd, i ,r);
+		if(getNodeType(fd)==N_FD_RULE_INDEX_LIST) {
+			rd = FD_RULE_INDEX_LIST(fd);
+			appendRuleNodeToRuleIndexList(rd, i ,r);
+		} else if(getNodeType(fd) == N_FD_EXTERNAL) {
+			/* combine N_FD_EXTERNAL with N_FD_RULE_LIST */
+			updateInHashTable(ruleEngineConfig.extFuncDescIndex->current, RULE_NAME(rule->node), newRuleIndexListFD(newRuleIndexList(RULE_NAME(rule->node), i, r),fd->exprType, r));
+		} else {
+			/* todo error handling */
+		}
 	}
 }
 

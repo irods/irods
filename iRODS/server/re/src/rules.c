@@ -262,21 +262,26 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
     Res *res = NULL;
     /* add rules into rule index */
 	int i;
-	for(i=0;i<ruleEngineConfig.extRuleSet->len;i++) {
-		appendRuleIntoExtIndex(ruleEngineConfig.extRuleSet->rules[i], i, r);
+	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
+		if(ruleEngineConfig.extRuleSet->rules[i]->ruleType == RK_FUNC || ruleEngineConfig.extRuleSet->rules[i]->ruleType == RK_REL) {
+			appendRuleIntoExtIndex(ruleEngineConfig.extRuleSet->rules[i], i, r);
+		}
 	}
 
 	for(i=tempLen;i<ruleEngineConfig.extRuleSet->len;i++) {
-	    Hashtable *varTypes = newHashTable2(10, r);
+		if(ruleEngineConfig.extRuleSet->rules[i]->ruleType == RK_FUNC || ruleEngineConfig.extRuleSet->rules[i]->ruleType == RK_REL) {
+			Hashtable *varTypes = newHashTable2(10, r);
 
-	    List *typingConstraints = newList(r);
-	    Node *errnode;
-	    ExprType *type = typeRule(ruleEngineConfig.extRuleSet->rules[i], ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
+			List *typingConstraints = newList(r);
+			Node *errnode;
+			ExprType *type = typeRule(ruleEngineConfig.extRuleSet->rules[i], ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, &errnode, r);
 
-	    if(getNodeType(type)==T_ERROR) {
-	        rescode = TYPE_ERROR;
-	        RETURN;
-	    }
+			if(getNodeType(type)==T_ERROR) {
+/*				rescode = TYPE_ERROR;     #   TGR, since renamed to RE_TYPE_ERROR */
+				rescode = TYPE_ERROR;
+				RETURN;
+			}
+		}
 	}
 
     /* exec the first rule */
