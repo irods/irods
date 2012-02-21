@@ -235,14 +235,14 @@ main(int argc, char **argv)
 
 void usage (char *prog)
 {
-  fprintf(stderr, "Creates a file containing your iRODS password in a scrambled form,\n");
-  fprintf(stderr, "to be used automatically by the icommands.\n");
-  fprintf(stderr, "Usage: %s [-ehvVl]\n", prog);
-  fprintf(stderr, " -e  echo the password as you enter it (normally there is no echo)\n");
-  fprintf(stderr, " -l  list the iRODS environment variables (only)\n");
-  fprintf(stderr, " -v  verbose\n");
-  fprintf(stderr, " -V  Very verbose\n");
-  fprintf(stderr, " -h  this help\n");
+  printf("Creates a file containing your iRODS password in a scrambled form,\n");
+  printf("to be used automatically by the icommands.\n");
+  printf("Usage: %s [-ehvVl]\n", prog);
+  printf(" -e  echo the password as you enter it (normally there is no echo)\n");
+  printf(" -l  list the iRODS environment variables (only)\n");
+  printf(" -v  verbose\n");
+  printf(" -V  Very verbose\n");
+  printf(" -h  this help\n");
   printReleaseInfo("iinit");
 }
 

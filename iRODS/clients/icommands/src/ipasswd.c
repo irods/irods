@@ -182,15 +182,15 @@ main(int argc, char **argv)
 
 void usage (char *prog)
 {
-   fprintf(stderr, "Changes your irods password and, like iinit, stores your new iRODS\n");
-   fprintf(stderr, "password in a scrambled form to be used automatically by the icommands.\n");
-   fprintf(stderr, "Prompts for your old and new passwords.\n");
-   fprintf(stderr, "Usage: %s [-hvVl]\n", prog);
-   fprintf(stderr, " -v  verbose\n");
-   fprintf(stderr, " -V  Very verbose\n");
-   fprintf(stderr, " -l  long format (somewhat verbose)\n");
-   fprintf(stderr, " -e  echo the password as entered\n");
-   fprintf(stderr, " -f  force: do not ask user to reenter the new password\n");
-   fprintf(stderr, " -h  this help\n");
+   printf("Changes your irods password and, like iinit, stores your new iRODS\n");
+   printf("password in a scrambled form to be used automatically by the icommands.\n");
+   printf("Prompts for your old and new passwords.\n");
+   printf("Usage: %s [-hvVl]\n", prog);
+   printf(" -v  verbose\n");
+   printf(" -V  Very verbose\n");
+   printf(" -l  long format (somewhat verbose)\n");
+   printf(" -e  echo the password as entered\n");
+   printf(" -f  force: do not ask user to reenter the new password\n");
+   printf(" -h  this help\n");
    printReleaseInfo("ipasswd");
 }
