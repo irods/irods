@@ -93,10 +93,10 @@ main(int argc, char **argv) {
 	int status;
 	rodsArguments_t myRodsArgs;
 	char *optStr;
+	char myExe[100];
+	int i;
 	
-	
-	optStr = "h";
-	
+	optStr = "ah";
 	status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 	
 	if (status < 0) {
@@ -108,13 +108,22 @@ main(int argc, char **argv) {
 	   usage();
 	   exit(0);
 	}
+
+	if (myRodsArgs.all==True) {
+	   for (i=0;;i++) {
+	      if (strlen(icmds[i])==0) break;
+	      strncpy(myExe, icmds[i], 40);
+	      strncat(myExe, " -h", 40);
+	      status =system(myExe);
+	      if (status) printf("error %d running %s\n",status, myExe);
+	   }
+	   exit(0);
+	}
  
         if (argc==1) {
 	   printMainHelp();
 	}
 	if (argc==2) {
-	   char myExe[100];
-	   int i;
 	   int OK=0;
 	   for (i=0;;i++) {
 	      if (strlen(icmds[i])==0) break;
@@ -140,10 +149,11 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage : ihelp [-h] [icommand]",
+"Usage : ihelp [-ah] [icommand]",
 "Display i-commands synopsis or a particular i-command help text",
 "Options are:",
 " -h  this help",
+" -a  print the help text for all the i-commands",
 " ",
 "Run with no options to display a synopsis of the i-commands",
 ""};
