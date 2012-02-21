@@ -127,7 +127,7 @@ main(int argc, char **argv) {
 	      printf("%s is not an i-command\n", argv[1]);
 	   }
 	   else {
-	      strncpy(myExe, argv[1], 40);  myExe[ strlen( argv[1] )-1 ] = '\0'; // JMC cppcheck
+	      strncpy(myExe, argv[1], 40);  myExe[ strlen( argv[1] ) ] = '\0'; // JMC cppcheck
 	      strncat(myExe, " -h", 40);
 	      status =system(myExe);
 	      if (status) printf("error %d running %s\n",status, myExe);
