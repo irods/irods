@@ -13,6 +13,7 @@
 use strict;
 use Cwd;
 use Sys::Hostname;
+use File::stat;
 
 #-- Initialization
 
@@ -218,10 +219,10 @@ runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
 runCmd( "iexecmd hello", "", "LIST", "Hello world" );
 runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
-runCmd( "imkdir $irodshome/test", "", "", "", "irm -r $irodshome/test" );
+runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 runCmd( "iput -K -N 2 $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
 runCmd( "ils $irodshome/icmdtest/foo1", "", "LIST", "foo1" );
-runCmd( "iadmin ls $irodshome/test", "", "LIST", "foo1" );
+runCmd( "iadmin ls $irodshome/icmdtest", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "$username#$irodszone:own" );
 runCmd( "ichmod read testuser1 $irodshome/icmdtest/foo1" );
 runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "testuser1#$irodszone:read" );
@@ -252,7 +253,7 @@ if ( -e "$dir_w/targetTest.txt" ) {
 } else {
 	print( "No $dir_w/targetTest.txt file.\n" );
 }
-runCmd( "iget -r $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
+runCmd( "iget -r $irodshome/icmdtest $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
 runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
