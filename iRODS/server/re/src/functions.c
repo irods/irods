@@ -408,6 +408,14 @@ Res *smsi_listapprules(Node **params, int n, Node *node, ruleExecInfo_t *rei, in
     }
     return coll;
 }
+Res *smsi_listextrules(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    Res *coll = newCollRes(ruleEngineConfig.extRuleSet->len, newSimpType(T_STRING, r), r);
+    int i;
+    for(i=0;i<ruleEngineConfig.extRuleSet->len;i++) {
+        coll->subtrees[i] = newStringRes(r, ruleEngineConfig.extRuleSet->rules[i]->node->subtrees[0]->text);
+    }
+    return coll;
+}
 Res *smsi_true(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
         return newBoolRes(r, 1);
 }
@@ -1915,6 +1923,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));
     insertIntoHashTable(ft, "listapprules", newFunctionFD("->list string", smsi_listapprules, r));
+    insertIntoHashTable(ft, "listextrules", newFunctionFD("->list string", smsi_listextrules, r));
     /*insertIntoHashTable(ft, "true", newFunctionFD("boolean", smsi_true, r));
     insertIntoHashTable(ft, "false", newFunctionFD("boolean", smsi_false, r));*/
     insertIntoHashTable(ft, "time", newFunctionFD("->time", smsi_time, r));
