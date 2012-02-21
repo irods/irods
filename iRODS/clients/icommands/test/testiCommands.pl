@@ -208,6 +208,9 @@ runCmd( "iadmin lrg resgroup", "", "LIST", "testresource,compresource" );
 runCmd( "ihelp -a" );
 # and also run the ihelp usage function
 runCmd( "ihelp -h" );
+# run base command and with bad icommand
+runCmd( "ihelp" );
+runCmd( "ihelp notanicommand" );
 
 #-- basic clients commands.
 
@@ -219,7 +222,6 @@ runCmd( "iuserinfo", "", "name:", $username );
 runCmd( "ienv" );
 runCmd( "icd $irodshome" );
 runCmd( "ipwd",  "", "LIST", "home" );
-runCmd( "ihelp ils" );
 runCmd( "ierror -14000", "", "LIST", "SYS_API_INPUT_ERR" );
 runCmd( "iexecmd hello", "", "LIST", "Hello world" );
 runCmd( "ips -v", "", "LIST", "ips" );
