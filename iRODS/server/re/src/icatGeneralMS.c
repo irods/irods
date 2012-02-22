@@ -258,6 +258,7 @@ This documentation is generated from the iRODS code.
   - #msiFlagDataObjwithAVU - Flags a data object with an AVU
   - #msiGetCollectionContentsReport - Returns the number of objects in a collection by data type
   - #msiGetCollectionSize - Returns the object count and total disk usage of a collection
+  - #msiGetObjectPath - Returns the path of an iRODS object
   - #msiCollectionSpider - Applies a microservice sequence to all data objects in a collection, recursively
   - #msiIsColl - Checks if an iRODS path is a collection. For use in workflows
   - #msiIsData - Checks if an iRODS path is a data object (an iRODS file). For use in workflows
