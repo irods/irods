@@ -899,7 +899,7 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
    t = rsGenQuery(rsconn, &genQueryInp, &genQueryOut);
    if(t < 0) {
       if(t == CAT_NO_ROWS_FOUND) {
-         rodsLog(LOG_ERROR, "msiDataObjAutoMove: The desitnation collection'%s' does not exist.", dest_coll);
+         rodsLog(LOG_ERROR, "msiDataObjAutoMove: The destination collection '%s' does not exist.", dest_coll);
       }
       else {
          rodsLog(LOG_ERROR, "msiDataObjAutoMove: rsGenQuery() failed. errStatus=%d", t);
