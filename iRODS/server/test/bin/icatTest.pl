@@ -466,7 +466,7 @@ runCmd(0, "ienv | grep irodsAuthFileName | tail -1");
 chomp($cmdStdout);
 $ix = index($cmdStdout,"=");
 $envAuth=substr($cmdStdout, $ix+1);
-$envAuth=$ENV{'irodsAuthFileName'};
+#$envAuth=$ENV{'irodsAuthFileName'};
 if ($envAuth ne "") {
     $authFile=$envAuth;
 }
