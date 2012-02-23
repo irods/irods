@@ -476,6 +476,8 @@ $ENV{'irodsUserName'}=$U2;
 runCmd(0, "iinit 1234");
 runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
 runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
+runCmd(0, "echo '1234\nabcd\nabcd' | ipasswd"); # change the password
+runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
 runCmd(0, "iexit full");
 runCmd(0, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
@@ -681,9 +683,27 @@ runCmd(0, "iadmin asq 'select user_name from R_USER_MAIN' testAlias");
 runCmd(0, "iquest --sql testAlias");
 runCmd(0, "iadmin rsq testAlias");
 
-# Queries with between and in
+# Queries with between and in, null and not null
 runCmd(0, "iquest \"select RESC_NAME where RESC_CLASS_NAME IN ('bundle','archive')\"");
 runCmd(0, "iquest \"select USER_NAME where USER_ID between '10000' '10110'\"");
+runCmd(0, "iadmin moduser $U2 info 'this is Info field'"); # in Oracle 0-len is null
+runCmd(0, "iquest \"select USER_NAME, USER_INFO where USER_INFO IS NOT NULL\"");
+runCmd(0, "iquest \"select USER_NAME, USER_INFO where USER_INFO IS NULL\"");
+
+# Queries with min, max, sum, avg, and count
+runCmd(1, "irm -f $F1");
+runCmd(0, "iput $F1");
+runCmd(0, "iput $F2");
+runCmd(0, "ipwd");
+chomp($cmdStdout);
+$iHome=$cmdStdout;
+runCmd(0, "iquest \"select min(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select max(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select avg(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select sum(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
+runCmd(0, "irm -f $F2");
+runCmd(0, "irm -f $F1");
 
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none
