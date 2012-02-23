@@ -9,5 +9,5 @@ myTestRule {
    msiTarFileCreate(*File,*Coll,*Resc,*Flag);
    writeLine("stdout","Created tar file *File for collection *Coll on resource *Resc");
  }
-INPUT *File="/tempZone/home/rods/test/testcoll.tar", *Coll="/tempZone/home/rods/ruletest/sub", *Resc="demoResc", *Flag=""
+INPUT *File="/tempZone/home/rods/test/testcoll.tar", *Coll="/tempZone/home/rods/sub1", *Resc="demoResc", *Flag=""
 OUTPUT ruleExecOut

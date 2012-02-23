@@ -10,5 +10,5 @@ myTestRule {
 #  Image buffer
   msiSdssImgCutout_GetJpeg(*RA, *DEC, *Scale, *Width, *Height, *Opt, *OutImg);
 }
- INPUT *RA=$"185.72", *DEC=$"15.82", *Scale=$"0.396127", *Width=$"64", *Height=$"64", *Opt=$"GPST" 
+INPUT *RA=$"185.72", *DEC=$"15.82", *Scale=$"0.396127", *Width=$"64", *Height=$"64", *Opt=$"GPST" 
 OUTPUT ruleExecOut

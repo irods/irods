@@ -7,5 +7,5 @@ myTestRule {
   msiFreeBuffer(*Buf);
   writeLine("stdout","Freed buffer");
 }
-INPUT *Flags="objPath=/tempZone/home/rods/sub1/foo1", *Len="100"
+INPUT *Flags="objPath=/tempZone/home/rods/sub1/freebuffer", *Len="100"
 OUTPUT ruleExecOut

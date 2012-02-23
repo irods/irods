@@ -9,9 +9,9 @@ myTestRule {
 #Output parameter is:
 #  Status
 #Output from running the example is:
-#  Replica number 1 of file /tempZone/home/rods/sub1/foo3 is removed
+#  Replica number 1 of file /tempZone/home/rods/sub1/objunlink2 is removed
   msiDataObjUnlink("objPath=*SourceFile++++replNum=1",*Status);
   writeLine("stdout","Replica number 1 of file *SourceFile is removed");
 }
-INPUT *SourceFile="/tempZone/home/rods/sub1/foo3"
+INPUT *SourceFile="/tempZone/home/rods/sub1/objunlink2"
 OUTPUT ruleExecOut

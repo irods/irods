@@ -6,10 +6,10 @@ myTestRule {
 #   iRODS owner of the destination collection
 #   Flag for whether checksum is computed, value is "true" to compute checksum
 # Output from running the example is:
-#   File /tempZone/home/rods/sub1/foo1 is moved to collection /tempZone/home/rods/ruletest/sub1
+#   File /tempZone/home/rods/sub1/automove is moved to collection /tempZone/home/rods/ruletest
    msiSplitPath(*Path, *Coll, *File);
    msiDataObjAutoMove(*Path, *Coll, *Destination, *Owner, "true");
    writeLine("stdout","File *Path is moved to collection *Destination");
  }
-INPUT *Path="/tempZone/home/rods/sub1/foo1", *Destination="/tempZone/home/rods/ruletest/sub1", *Owner="rods"
+INPUT *Path="/tempZone/home/rods/sub1/automove", *Destination="/tempZone/home/rods/ruletest", *Owner="rods"
 OUTPUT ruleExecOut

@@ -742,8 +742,12 @@ sub doTest
 	setPrintVerbose( 1 );
 
 	# Test iCommands
-	printSubtitle( "Testing iCommands...\n" );
+	printSubtitle( "\nTesting iCommands...\n" );
 	doTestIcommands( );
+
+	# Test irules
+	printSubtitle( "\nTesting irules...\n" );
+	doTestIrules( );
 
 	# Check if this host is ICAT-enabled.
 	# Note that the tests assume i-commands are in the path so we can too.
@@ -838,6 +842,100 @@ sub doTestPound
 
 
 #
+# @brief	Test the irules.
+#
+# Test the irules in rules3.0
+#
+sub doTestIrules
+{
+	# Create input for the iCommands test.
+	#	The test script asks for two items of user input:
+	#		The path to the iCommands.
+	#		The user password.
+	#
+	#	An empty answer for the first one assumes that the
+	#	commands are on the PATH environment variable.
+	#	Earlier, setupEnvironment() has done this.
+	#
+	#	The user's password is added now.  To keep things
+	#	a bit secure, the temp file is chmod-ed to keep
+	#	it closed.  It's deleted when the tests are done.
+	my $program     = File::Spec->catfile( $icommandsTestDir, "testallrules.pl" );
+	my $passwordTmp = File::Spec->catfile( $icommandsTestDir, "irods_test_$$.tmp" );
+
+# Use the same technique to get the hostname as testiCommands.pl
+# (instead of hostname( )) so that this name will be the same on all
+# hosts (was a problem on NMI AIX (perhaps others)).
+	my $hostname2 = hostname();
+	if ( $hostname2 =~ '.' ) {
+	@words = split( /\./, $hostname2 );
+	$hostname2  = $words[0];
+}
+	my $logFile     = File::Spec->catfile( $icommandsTestDir, "testallrules_" . $hostname2 . ".log" );
+	my $outputFile  = File::Spec->catfile( $icommandsTestDir, "testallrules_" . $hostname2 . ".txt" );
+
+	printToFile( $passwordTmp, "\n$IRODS_ADMIN_PASSWORD\n" );
+	chmod( 0600, $passwordTmp );
+
+
+	# Run the irules test.
+	# 	The test writes a "testSurvey" to the current
+	# 	directory, along with some temp files.  To
+	# 	avoid cluttering up wherever this script lives,
+	# 	we move to a temp directory first and run the
+	# 	script there.
+	my $startDir = cwd( );
+	chdir( $icommandsTestDir );
+	my $output = `$perl $program < $passwordTmp 2>&1`;
+	unlink( $passwordTmp );
+	chdir( $startDir );
+	printToFile( $outputFile, $output );
+
+
+	# Count failed tests:
+	#	The log lists all successful and failed tests.
+	#	Failures are too cryptic to repeat here, but we
+	#	can count the failures and let the user know
+	#	there's more information in the log file.
+	my $failsFound = 0;
+	my $lineCount = 0;
+	open( LOG, "<$logFile" );
+	foreach $line ( <LOG> )
+	{
+		if ( $line =~ /error code/ )
+		{
+			++$failsFound;
+		}
+		++$lineCount;
+	}
+	close( LOG );
+
+	if ( $failsFound )
+	{
+		printError( "$failsFound tests failed.  Check log files for details:\n" );
+		printError( "    Log:     $logFile\n" );
+		printError( "    Output:  $outputFile\n" );
+		$doTestExitValue++;
+	}
+	else
+	{
+	    if ( $lineCount ) {
+		printStatus( "All testallrules.pl tests were successful.\n" );
+		printStatus( "Check log files for details:\n" );
+		printStatus( "    Log:     $logFile\n" );
+		printStatus( "    Output:  $outputFile\n" );
+	    }
+	    else {
+		printError( "Test failure.  Log file is empty\n" );
+		printError( "    Log:     $logFile\n" );
+		printError( "    Output:  $outputFile\n" );
+		$doTestExitValue++;
+	    }
+	}
+}
+
+
+#
 # @brief	Test the iCommands.
 #
 # Test the iCommands.
@@ -890,7 +988,7 @@ sub doTestIcommands
 
 
 	# Count failed tests:
-	#	The log lists all successfull and failed tests.
+	#	The log lists all successful and failed tests.
 	#	Failures are too cryptic to repeat here, but we
 	#	can count the failures and let the user know
 	#	there's more information in the log file.

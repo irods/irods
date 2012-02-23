@@ -8,9 +8,9 @@ myTestRule {
 # Output parameters are:
 #   Status
 # Output from running the example is:
-#  Replica number 0 of file /tempZone/home/rods/sub1/foo1 is moved from resource demoResc to resource testResc
+#  Replica number 0 of file /tempZone/home/rods/forphymv/phymvfile is moved from resource demoResc to resource testResc
   msiDataObjPhymv(*SourceFile,*DestResource,*SourceResource,*ReplicaNumber,"null",*Status);
   writeLine("stdout","Replica number *ReplicaNumber of file *SourceFile is moved from resource *SourceResource to resource *DestResource");
 }
-INPUT *SourceFile="/tempZone/home/rods/sub1/foo1", *DestResource="testResc", *SourceResource="demoResc", *ReplicaNumber="0"
+INPUT *SourceFile="/tempZone/home/rods/forphymv/phymvfile", *DestResource="testResc", *SourceResource="demoResc", *ReplicaNumber="0"
 OUTPUT ruleExecOut

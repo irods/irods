@@ -6,5 +6,5 @@ myTestRule {
   msiSendStdoutAsEmail(*Address,*Subject);
   writeLine("stdout","Sent e-mail to *Address about *Subject");
 }
-INPUT *Address="irod-chat@googlegroups.com", *Subject="Test message"
+INPUT *Address="tgr@renci.org", *Subject="Test message"
 OUTPUT ruleExecOut

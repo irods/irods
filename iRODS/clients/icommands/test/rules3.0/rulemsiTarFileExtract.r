@@ -10,5 +10,5 @@ myTestRule {
    msiTarFileExtract(*File,*Coll,*Resc,*Status);
    writeLine("stdout","Extract files from a tar file *File into collection *Coll on resource *Resc");
  }
-INPUT *File="/tempZone/home/rods/test/testcoll.tar", *Coll="/tempZone/home/rods/ruletest/sub", *Resc="demoResc"
+INPUT *File="/tempZone/home/rods/test/testcoll.tar", *Coll="/tempZone/home/rods/ruletest/fromtar", *Resc="demoResc"
 OUTPUT ruleExecOut

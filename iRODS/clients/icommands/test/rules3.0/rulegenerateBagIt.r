@@ -118,5 +118,5 @@ generateBagIt {
   ### - writes to rodsLog
   msiWriteRodsLog("BagIt bag created: *NEWBAGITROOT <- *BAGITDATA",*Status);
 }
-INPUT *BAGITDATA=$"/tempZone/home/rods/sub1", *NEWBAGITROOT=$"/tempZone/home/rods/bagit"
+INPUT *BAGITDATA="/tempZone/home/rods/sub1", *NEWBAGITROOT="/tempZone/home/rods/bagit"
 OUTPUT ruleExecOut

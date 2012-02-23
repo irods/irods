@@ -401,7 +401,7 @@ unlink($IN_FILE);
 runCmd(0, "echo 'test\nls -d $F1\nquit' > $IN_FILE");
 runCmd(1, "imeta < $IN_FILE");
 $ix = index($cmdStdout,"id: ");
-$metaId=substr($cmdStdout, $ix+4, 5);
+$metaId=substr($cmdStdout, $ix+4, 6);
 chomp($metaId);
 unlink($IN_FILE);
 runCmd(0, "echo 'test\nrmi -d $F1 $metaId\nquit' > $IN_FILE");

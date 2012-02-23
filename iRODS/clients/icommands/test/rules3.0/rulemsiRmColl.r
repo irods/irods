@@ -5,9 +5,9 @@ myTestRule {
 # Output parameter is:
 #   Status flag for the operation
 # Output from running the example is:
-#  Removed collection /tempZone/home/rods/ruletest/sub
+#  Removed collection /tempZone/home/rods/ruletest/subforrmcoll
    msiRmColl(*Coll,*Flag,*Status);
    writeLine("stdout","Removed collection *Coll");
  }
-INPUT *Coll="/tempZone/home/rods/ruletest/sub", *Flag="forceFlag="
+INPUT *Coll="/tempZone/home/rods/ruletest/subforrmcoll", *Flag="forceFlag="
 OUTPUT ruleExecOut

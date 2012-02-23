@@ -25,5 +25,5 @@ myTestRule {
   msiDataObjWrite(*D_FD,*outBuf,*W_len);
   msiDataObjClose(*D_FD,$Status1);
 }
-INPUT *xmlObj="/tempZone/home/rods/XML/sample.xml", *xsltObj-"/tempZone/home/rods/XML/sample.xsl", *Path="/tempZone/home/rods/XML/sample-processed.xml", *OFlag="destRescName=demoResc++++forceFlag="
+INPUT *xmlObj="/tempZone/home/rods/XML/sample.xml", *xsltObj="/tempZone/home/rods/XML/sample.xsl", *Path="/tempZone/home/rods/XML/sample-processed.xml", *OFlag="destRescName=demoResc++++forceFlag="
 OUTPUT ruleExecOut

@@ -17,7 +17,7 @@ myTestRule {
 
   # write integer into stdout
   writePosInt("stdout",*Status);
-  writeLine("stdout",:"");
+  writeLine("stdout","");
 }
 INPUT *xmlObj="/tempZone/home/rods/XML/sample.xml", *xsdObj="/tempZone/home/rods/XML/sample.xsd"
 OUTPUT ruleExecOut

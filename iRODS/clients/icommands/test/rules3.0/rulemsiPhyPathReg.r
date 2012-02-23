@@ -15,5 +15,5 @@ myTestRule {
    msiPhyPathReg(*DestCollection,*Resource,*SourceDirectory,"mountPoint",*Stat);
    writeLine("stdout","The local collection *SourceDirectory is mounted under the logical collection *DestCollection");
 }
-INPUT *DestCollection="/tempZone/home/rods/irods-rules", *SourceDirectory="/home/reagan/irods-scripts/ruletest", *Resource="demoResc"
+INPUT *DestCollection="/tempZone/home/rods/test/phypathreg", *SourceDirectory="./misc", *Resource="demoResc"
 OUTPUT ruleExecOut

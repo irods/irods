@@ -18,5 +18,5 @@ myTestRule {
   msiExecStrCondQuery("SELECT COLL_NAME where COLL_NAME = '*Path'", *QOut);
   foreach(*QOut) { msiPrintKeyValPair("stdout",*QOut); }
 }
-INPUT *Path="/tempZone/home/rods/ruletest/sub1"
+INPUT *Path="/tempZone/home/rods/ruletest/collCreate"
 OUTPUT ruleExecOut

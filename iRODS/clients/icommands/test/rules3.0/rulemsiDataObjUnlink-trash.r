@@ -11,7 +11,7 @@ myTestRule {
 #Output from running the example is:
 #  Files in trash are removed
   msiDataObjUnlink("objPath=*Path++++irodsAdminRmTrash=",*Status);
-  writeLine("stdout","File in trash are removed");
+  writeLine("stdout","Files in trash are removed");
 }
-INPUT *Path="/tempZone/trash/home/rods/sub2"
+INPUT *Path="/tempZone/trash/home/rods/sub1/objunlink1"
 OUTPUT ruleExecOut
