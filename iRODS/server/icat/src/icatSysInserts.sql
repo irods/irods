@@ -210,7 +210,7 @@ insert into R_COLL_MAIN values (9003,'/','/','rods','tempZone',0,'','','','','',
 insert into R_OBJT_ACCESS values (9003,9001,1130,'1170000000','1170000000');
 insert into R_OBJT_ACCESS values (9003,9002,1200,'1170000000','1170000000');
 
-insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/bundle', '', '', '', '', '', '1250100000','1250100000');
 
 insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('ls', 'select alias,sqlStr from R_SPECIFIC_QUERY', '01292940000');
 insert into R_SPECIFIC_QUERY (alias, sqlStr, create_ts) values ('lsl', 'select alias,sqlStr from R_SPECIFIC_QUERY where sqlStr like ?', '01292940000');
