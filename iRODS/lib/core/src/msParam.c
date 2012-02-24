@@ -976,7 +976,9 @@ getStdoutInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
     if (strcmp (inpExecCmdOut->type, ExecCmdOut_MS_T) == 0) {
 	execCmdOut = (execCmdOut_t *) inpExecCmdOut->inOutStruct;
 	if (execCmdOut == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
-	*outStr = (char *)execCmdOut->stdoutBuf.buf;
+	*outStr = (char *) malloc(execCmdOut->stdoutBuf.len + 1);
+	memcpy(*outStr, (char *)execCmdOut->stdoutBuf.buf, execCmdOut->stdoutBuf.len);
+	(*outStr)[execCmdOut->stdoutBuf.len] = '\0';
 	return 0;
     } else {
         rodsLog (LOG_ERROR,
@@ -1000,7 +1002,9 @@ getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
     if (strcmp (inpExecCmdOut->type, ExecCmdOut_MS_T) == 0) {
         execCmdOut = (execCmdOut_t *) inpExecCmdOut->inOutStruct;
         if (execCmdOut == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
-        *outStr = (char *)execCmdOut->stderrBuf.buf;
+        *outStr = (char *) malloc(execCmdOut->stderrBuf.len + 1);
+        memcpy(*outStr, (char *)execCmdOut->stderrBuf.buf, execCmdOut->stderrBuf.len);
+        (*outStr)[execCmdOut->stderrBuf.len] = '\0';
         return 0;
     } else {
         rodsLog (LOG_ERROR,
