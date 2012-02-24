@@ -3180,8 +3180,6 @@ ovStrcpy (char *outStr, char *inStr)
     int i;
     int len = strlen (inStr);
     
-    if (len <= 0) return len;
-
     for (i = 0; i < len + 1; i++) {
 	*outStr = *inStr;
 	inStr++;
