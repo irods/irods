@@ -3384,7 +3384,7 @@ keyValToString( keyValPair_t* list, char** string )
 		nv = strlen( list->value[i] );
 
 		/* <keyword>value</keyword> */
-		nBytes += 1 + nk + 1 +   nv   + 2 + nk + 1;
+		nBytes += 1 + nk + 1 +   nv   + 2 + nk + 1 + 1;
 	}
 	nBytes++;
 
