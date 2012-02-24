@@ -1,5 +1,5 @@
-myTestRule(*arg1) {
-  delayExec (*arg1) {
+myTestRule {
+  delay (*arg1) {
     msiDeleteUnusedAVUs;
   }
 }

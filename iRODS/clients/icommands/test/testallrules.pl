@@ -204,9 +204,6 @@ foreach $rulefile (@rules) {
   # skipping for now, not sure why it's throwing a stacktrace at the moment
   if ($rulefile =~ /rulemsiPropertiesToString/) { print "----- skipping b/c of stacktrace -- $rulefile\n"; next; }
 
-  # type error - can be exercised with 'iadmin rum'
-  if ($rulefile =~ /rulemsiDeleteUnusedAVUs/) { print "----- skipping  -- $rulefile\n"; next; }
-
   # skip rules that touch our core re
   if ($rulefile =~ /rulemsiAdmAppendToTopOfCoreIRB/) { print "----- skipping RE -- $rulefile\n"; next; }
   if ($rulefile =~ /rulemsiAdmAppendToTopOfCoreRE/) { print "----- skipping RE -- $rulefile\n"; next; }
