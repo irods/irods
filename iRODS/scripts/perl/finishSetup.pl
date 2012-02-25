@@ -1670,7 +1670,7 @@ sub configureIrodsUser
 	chmod( 0600, $userIrodsFile );
 
 	# sleep, to make sure any possibly NFS mounts catch up
-	sleep(2);
+	sleep(10);
 
 	# Start iRODS.
 	printStatus( "Starting iRODS server...\n" );
