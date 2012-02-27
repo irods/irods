@@ -65,6 +65,7 @@ END_POSTREMOVE
 d 755 eirods eirods ${HOME_DIR}/packaging -
 f 755 eirods eirods ${HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 eirods eirods ${HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
+f 755 eirods eirods /etc/init.d/e-irods ./packaging/e-irods
 
 d 755 eirods eirods ${IRODS_HOME}/scripts -
 f 755 eirods eirods ${IRODS_HOME}/scripts/finishSetup ./iRODS/scripts/finishSetup

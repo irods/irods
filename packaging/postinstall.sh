@@ -48,6 +48,10 @@ touch $9/.odbc.ini
 chown $5:$5 $9/.odbc.ini
 
 # =-=-=-=-=-=-=-
+# symlink init.d script to rc0.d
+ln -s /etc/init.d/e-irods /etc/rc0.d/K15e-irods
+
+# =-=-=-=-=-=-=-
 # run setup script to configure database, users, default resource, etc.
 cd $1
 sudo -H -u $5 perl ./scripts/perl/eirods_setup.pl $2 $3 $4 $5 $6

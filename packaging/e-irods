@@ -1,0 +1,27 @@
+#!/bin/sh -e
+
+set -e
+
+IRODS_HOME=/usr/share/eirods/iRODS
+IRODS_CTL=./irodsctl
+
+cd $IRODS_HOME
+
+
+case $1 in
+status)
+    $IRODS_CTL status
+    ;;
+start)
+    sudo -u eirods $IRODS_CTL start
+    ;;
+stop)
+    sudo -u eirods $IRODS_CTL stop
+    ;;
+restart)
+    sudo -u eirods $IRODS_CTL restart
+    ;;
+*)
+    echo "/etc/init.d/e-eirods :: $1 is not supported."
+    exit 1
+esac
