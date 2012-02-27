@@ -70,6 +70,14 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 
 static int didBegin=0;
 
+// =-=-=-=-=-=-=-
+// JMC :: Needed to add this due to crash issues with the SQLBindCol + SQLFetch
+//     :: combination where the fetch fails if a var is not passed to the bind for
+//     :: the result data size
+static const short MAX_NUMBER_ICAT_COLUMS = 32;
+static SQLLEN resultDataSizeArray[ MAX_NUMBER_ICAT_COLUMS ];
+
+
 /*
   call SQLError to get error information and log it
  */
@@ -768,8 +776,8 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
       }
       /*  printf("colName='%s' precision=%d\n",colName, precision); */
       columnLength[i]=precision;
-      stat = SQLColAttributes(hstmt, i+1, SQL_COLUMN_DISPLAY_SIZE, 
-			      NULL, 0, NULL, &displaysize);
+      stat = SQLColAttribute(hstmt, i+1, SQL_COLUMN_DISPLAY_SIZE, 
+			      NULL, 0, NULL, &displaysize); // JMC :: fixed for odbc
       if (stat != SQL_SUCCESS) {
 	 rodsLog(LOG_ERROR, 
 		 "cllExecSqlWithResult: SQLColAttributes failed: %d",
@@ -789,18 +797,23 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 
       strcpy((char *)myStatement->resultValue[i],"");
 
-#if NEW_ODBC
-      stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
-			columnLength[i], NULL);
-      /* The last argument could be resultDataSize (a SQLINTEGER
-         location), which will be returned later via the SQLFetch.
-         Since unused now, passing in NULL tells ODBC to skip it */
+#if 1
+	  // =-=-=-=-=-=-=-
+	  // JMC :: added static array to catch the result set size.  this was necessary to 
+      stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], columnLength[i], &resultDataSizeArray[ i ] );
 #else
-      /* The old ODBC needs a non-NULL value */
-      stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
-			columnLength[i], &resultDataSize);
+	#if NEW_ODBC
+		  stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
+				columnLength[i], NULL);
+		  /* The last argument could be resultDataSize (a SQLINTEGER
+			 location), which will be returned later via the SQLFetch.
+			 Since unused now, passing in NULL tells ODBC to skip it */
+	#else
+		  /* The old ODBC needs a non-NULL value */
+		  stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
+				columnLength[i], &resultDataSize);
+	#endif
 #endif
-
       if (stat != SQL_SUCCESS) {
 	 rodsLog(LOG_ERROR, 
 		 "cllExecSqlWithResult: SQLColAttributes failed: %d",
@@ -1018,8 +1031,8 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       }
       /*  printf("colName='%s' precision=%d\n",colName, precision); */
       columnLength[i]=precision;
-      stat = SQLColAttributes(hstmt, i+1, SQL_COLUMN_DISPLAY_SIZE, 
-			      NULL, 0, NULL, &displaysize);
+      stat = SQLColAttribute(hstmt, i+1, SQL_COLUMN_DISPLAY_SIZE, 
+			      NULL, 0, NULL, &displaysize); // JMC :: changed to SQLColAttribute for odbc update
       if (stat != SQL_SUCCESS) {
 	 rodsLog(LOG_ERROR, 
 		 "cllExecSqlWithResultBV: SQLColAttributes failed: %d",
@@ -1038,17 +1051,22 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
       myStatement->resultValue[i] = (char*)malloc((int)columnLength[i]);
 
       strcpy((char *)myStatement->resultValue[i],"");
-
-#ifdef NEW_ODBC
-      stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
-			columnLength[i], NULL);
-      /* The last argument could be resultDataSize (a SQLINTEGER
-         location), which will be returned later via the SQLFetch.
-         Since unused now, passing in NULL tells ODBC to skip it */
+#if 1
+	  // =-=-=-=-=-=-=-
+	  // JMC :: added static array to catch the result set size.  this was necessary to 
+      stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], columnLength[i], &resultDataSizeArray[i] );
 #else
-      /* The old ODBC needs a non-NULL value */
-      stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
-			columnLength[i], &resultDataSize);
+		#ifdef NEW_ODBC
+		  stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
+				columnLength[i], NULL);
+		  /* The last argument could be resultDataSize (a SQLINTEGER
+			 location), which will be returned later via the SQLFetch.
+			 Since unused now, passing in NULL tells ODBC to skip it */
+		#else
+		  /* The old ODBC needs a non-NULL value */
+		  stat = SQLBindCol(hstmt, i+1, SQL_C_CHAR, myStatement->resultValue[i], 
+				columnLength[i], &resultDataSize);
+		#endif
 #endif
 
       if (stat != SQL_SUCCESS) {
