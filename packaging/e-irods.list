@@ -1,6 +1,6 @@
 %product iRODS Enterprise
-%copyright 2012 by Rennaissance Computing Institute, All Rights Reserved.
-%vendor Rennaissance Computing Institute
+%copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
+%vendor Renaissance Computing Institute
 %license COPYING
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Storage system
@@ -12,7 +12,7 @@
 
 # =-=-=-=-=-=-=-
 # variables for configuring the install
-# NOTE :: we need to consider wether the install
+# NOTE :: we need to consider whether the install
 #      :: scripts should take these values and
 #      :: modify the config/irods.config values
 #      :: to match or we assume that they do.
