@@ -30,6 +30,14 @@ if [ -n "$USER" ]; then
   deluser $2
 fi
 
+rm /etc/init.d/e-irods
+rm /etc/rc0.d/K15e-irods
+rm /etc/rc2.d/S95e-irods
+rm /etc/rc3.d/S95e-irods
+rm /etc/rc4.d/S95e-irods
+rm /etc/rc5.d/S95e-irods
+rm /etc/rc6.d/K15e-irods
+
 # =-=-=-=-=-=-=-
 # exit with success
 exit 0

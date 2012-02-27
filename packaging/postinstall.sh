@@ -48,8 +48,27 @@ touch $9/.odbc.ini
 chown $5:$5 $9/.odbc.ini
 
 # =-=-=-=-=-=-=-
-# symlink init.d script to rc0.d
-ln -s /etc/init.d/e-irods /etc/rc0.d/K15e-irods
+# symlink init.d script to rcX.d
+PWD=`pwd`
+cd /etc/rc0.d
+ln -s ../init.d/e-irods ./K15e-irods
+
+cd /etc/rc2.d
+ln -s ../init.d/e-irods ./S95e-irods
+
+cd /etc/rc3.d
+ln -s ../init.d/e-irods ./S95e-irods
+
+cd /etc/rc4.d
+ln -s ../init.d/e-irods ./S95e-irods
+
+cd /etc/rc5.d
+ln -s ../init.d/e-irods ./S95e-irods
+
+cd /etc/rc6.d
+ln -s ../init.d/e-irods ./K15e-irods
+
+cd $PWD
 
 # =-=-=-=-=-=-=-
 # run setup script to configure database, users, default resource, etc.
