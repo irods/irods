@@ -1,4 +1,4 @@
-%product iRODS Enterprise
+%product Enterprise iRODS
 %copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
 %vendor Renaissance Computing Institute
 %license COPYING
@@ -271,7 +271,7 @@ f 644 eirods eirods ${IRODS_HOME}/config/workflow.html ./iRODS/config/workflow.h
 f 644 eirods eirods ${IRODS_HOME}/config/doxygen.config ./iRODS/config/doxygen.config
 f 644 eirods eirods ${IRODS_HOME}/config/common.mk ./iRODS/config/common.mk
 f 644 eirods eirods ${IRODS_HOME}/config/platform.mk.template ./iRODS/config/platform.mk.template
-f 644 eirods eirods ${IRODS_HOME}/COPYING ./iRODS/COPYING
+f 644 eirods eirods ${IRODS_HOME}/../COPYING ./iRODS/COPYING
 f 700 eirods eirods ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
 d 755 eirods eirods ${IRODS_HOME}/clients -
 d 755 eirods eirods ${IRODS_HOME}/clients/icommands -
