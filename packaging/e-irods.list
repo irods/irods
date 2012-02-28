@@ -332,6 +332,67 @@ f 755 eirods eirods ${IRODS_HOME}/clients/icommands/bin/imkdir ./iRODS/clients/i
 f 644 eirods eirods ${IRODS_HOME}/clients/icommands/bin/runQuota.r ./iRODS/clients/icommands/bin/runQuota.r
 f 755 eirods eirods ${IRODS_HOME}/clients/icommands/bin/iscan ./iRODS/clients/icommands/bin/iscan
 
+l 700 eirods eirods /usr/bin/irodsctl            ./iRODS/irodsctl
+
+l 644 eirods eirods /usr/bin/chgCoreToCore1.ir   ./iRODS/clients/icommands/bin/chgCoreToCore1.ir
+l 644 eirods eirods /usr/bin/chgCoreToCore2.ir   ./iRODS/clients/icommands/bin/chgCoreToCore2.ir
+l 644 eirods eirods /usr/bin/chgCoreToOrig.ir    ./iRODS/clients/icommands/bin/chgCoreToOrig.ir
+l 644 eirods eirods /usr/bin/delUnusedAVUs.ir    ./iRODS/clients/icommands/bin/delUnusedAVUs.ir
+l 755 eirods eirods /usr/bin/genOSAuth           ./iRODS/clients/icommands/bin/genOSAuth
+l 755 eirods eirods /usr/bin/iadmin              ./iRODS/clients/icommands/bin/iadmin
+l 755 eirods eirods /usr/bin/ibun                ./iRODS/clients/icommands/bin/ibun
+l 755 eirods eirods /usr/bin/icd                 ./iRODS/clients/icommands/bin/icd
+l 755 eirods eirods /usr/bin/ichksum             ./iRODS/clients/icommands/bin/ichksum
+l 755 eirods eirods /usr/bin/ichmod              ./iRODS/clients/icommands/bin/ichmod
+l 755 eirods eirods /usr/bin/icp                 ./iRODS/clients/icommands/bin/icp
+l 755 eirods eirods /usr/bin/idbo                ./iRODS/clients/icommands/bin/idbo
+l 755 eirods eirods /usr/bin/idbug               ./iRODS/clients/icommands/bin/idbug
+l 755 eirods eirods /usr/bin/ienv                ./iRODS/clients/icommands/bin/ienv
+l 755 eirods eirods /usr/bin/ierror              ./iRODS/clients/icommands/bin/ierror
+l 755 eirods eirods /usr/bin/iexecmd             ./iRODS/clients/icommands/bin/iexecmd
+l 755 eirods eirods /usr/bin/iexit               ./iRODS/clients/icommands/bin/iexit
+l 755 eirods eirods /usr/bin/ifsck               ./iRODS/clients/icommands/bin/ifsck
+l 755 eirods eirods /usr/bin/iget                ./iRODS/clients/icommands/bin/iget
+l 755 eirods eirods /usr/bin/igetwild.sh         ./iRODS/clients/icommands/bin/igetwild.sh
+l 755 eirods eirods /usr/bin/ihelp               ./iRODS/clients/icommands/bin/ihelp
+l 755 eirods eirods /usr/bin/iinit               ./iRODS/clients/icommands/bin/iinit
+l 755 eirods eirods /usr/bin/ilocate             ./iRODS/clients/icommands/bin/ilocate
+l 755 eirods eirods /usr/bin/ils                 ./iRODS/clients/icommands/bin/ils
+l 755 eirods eirods /usr/bin/ilsresc             ./iRODS/clients/icommands/bin/ilsresc
+l 755 eirods eirods /usr/bin/imcoll              ./iRODS/clients/icommands/bin/imcoll
+l 755 eirods eirods /usr/bin/imeta               ./iRODS/clients/icommands/bin/imeta
+l 755 eirods eirods /usr/bin/imiscsvrinfo        ./iRODS/clients/icommands/bin/imiscsvrinfo
+l 755 eirods eirods /usr/bin/imkdir              ./iRODS/clients/icommands/bin/imkdir
+l 755 eirods eirods /usr/bin/imv                 ./iRODS/clients/icommands/bin/imv
+l 755 eirods eirods /usr/bin/ipasswd             ./iRODS/clients/icommands/bin/ipasswd
+l 755 eirods eirods /usr/bin/iphybun             ./iRODS/clients/icommands/bin/iphybun
+l 755 eirods eirods /usr/bin/iphymv              ./iRODS/clients/icommands/bin/iphymv
+l 755 eirods eirods /usr/bin/ips                 ./iRODS/clients/icommands/bin/ips
+l 755 eirods eirods /usr/bin/iput                ./iRODS/clients/icommands/bin/iput
+l 755 eirods eirods /usr/bin/ipwd                ./iRODS/clients/icommands/bin/ipwd
+l 755 eirods eirods /usr/bin/iqdel               ./iRODS/clients/icommands/bin/iqdel
+l 755 eirods eirods /usr/bin/iqmod               ./iRODS/clients/icommands/bin/iqmod
+l 755 eirods eirods /usr/bin/iqstat              ./iRODS/clients/icommands/bin/iqstat
+l 755 eirods eirods /usr/bin/iquest              ./iRODS/clients/icommands/bin/iquest
+l 755 eirods eirods /usr/bin/iquota              ./iRODS/clients/icommands/bin/iquota
+l 755 eirods eirods /usr/bin/ireg                ./iRODS/clients/icommands/bin/ireg
+l 755 eirods eirods /usr/bin/irepl               ./iRODS/clients/icommands/bin/irepl
+l 755 eirods eirods /usr/bin/irm                 ./iRODS/clients/icommands/bin/irm
+l 755 eirods eirods /usr/bin/irmtrash            ./iRODS/clients/icommands/bin/irmtrash
+l 755 eirods eirods /usr/bin/irsync              ./iRODS/clients/icommands/bin/irsync
+l 755 eirods eirods /usr/bin/irule               ./iRODS/clients/icommands/bin/irule
+l 755 eirods eirods /usr/bin/iscan               ./iRODS/clients/icommands/bin/iscan
+l 755 eirods eirods /usr/bin/isysmeta            ./iRODS/clients/icommands/bin/isysmeta
+l 755 eirods eirods /usr/bin/itrim               ./iRODS/clients/icommands/bin/itrim
+l 755 eirods eirods /usr/bin/iuserinfo           ./iRODS/clients/icommands/bin/iuserinfo
+l 755 eirods eirods /usr/bin/ixmsg               ./iRODS/clients/icommands/bin/ixmsg
+l 644 eirods eirods /usr/bin/runQuota.ir         ./iRODS/clients/icommands/bin/runQuota.ir
+l 644 eirods eirods /usr/bin/runQuota.r          ./iRODS/clients/icommands/bin/runQuota.r
+l 644 eirods eirods /usr/bin/showCore.ir         ./iRODS/clients/icommands/bin/showCore.ir
+
+
+
+
 
 d 755 eirods eirods ${IRODS_HOME}/clients/icommands/test -
 f 755 eirods eirods ${IRODS_HOME}/clients/icommands/test/testallrules.pl ./iRODS/clients/icommands/test/testallrules.pl
