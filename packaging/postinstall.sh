@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # =-=-=-=-=-=-=-
-# clean up any stray irods files in /tmp which will cause problems
+# clean up any stray iRODS files in /tmp which will cause problems
 if [ -f /tmp/irodsServer.* ]; then
   rm /tmp/irodsServer.*
 fi
@@ -39,7 +39,7 @@ if [ -n "$DB" ]; then
 fi
 
 # =-=-=-=-=-=-=-
-# set permisions on the installed files
+# set permissions on the installed files
 chown -R $5:$5 $1
 
 # =-=-=-=-=-=-=-

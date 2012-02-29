@@ -170,7 +170,7 @@ $AUDIT_EXT = '0';
 # 32-bit, or both be 64-bit.  If they don't match, the build will fail.
 #
 # Please see the documentation for your database to see how to build or
-# aquire a 64-bit ODBC library.  For Postgres, you can set flags on the
+# acquire a 64-bit ODBC library.  For Postgres, you can set flags on the
 # build to make it 64-bit.  iRODS does not set these flags itself.
 #
 #$CC = '';
