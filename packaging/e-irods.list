@@ -27,8 +27,8 @@ $DATABASE_ROLE=postgres
 $DATABASE=ICAT
 
 # =-=-=-=-=-=-=-
-# variables for the installation of irods 
-# NOTE :: these need to match whats is in config/irods.config
+# variables for the installation of iRODS
+# NOTE :: these need to match the values in config/irods.config
 $DB_TYPE=postgres
 $DB_PORT=5432
 $DB_HOST=localhost
@@ -52,10 +52,10 @@ $DB_PASS=SOMEPASSWORD
 # =-=-=-=-=-=-=-
 # remove the install directory if necessary
 if [ -d $HOME_DIR -a "$$1" = 'remove' ]; then
-	echo "Removing Service Account Directory " $HOME_DIR
-	rm -rf $HOME_DIR
+  echo "Removing Service Account Directory " $HOME_DIR
+  rm -rf $HOME_DIR
 else
-	echo "Not removing Service Account Directory " $HOME_DIR
+  echo "Not removing Service Account Directory " $HOME_DIR
 fi 
 END_POSTREMOVE
 
