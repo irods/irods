@@ -67,6 +67,8 @@ f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/postinstall.sh ./packaging/posti
 f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 755 $SVC_ACCT $SVC_ACCT /etc/init.d/e-irods ./packaging/e-irods
 
+d 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/installLogs -
+
 d 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/scripts -
 f 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/scripts/finishSetup ./iRODS/scripts/finishSetup
 f 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/scripts/runperl ./iRODS/scripts/runperl
