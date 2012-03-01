@@ -332,8 +332,6 @@ f 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/clients/icommands/bin/imkdir ./iRODS/cli
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.r ./iRODS/clients/icommands/bin/runQuota.r
 f 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/clients/icommands/bin/iscan ./iRODS/clients/icommands/bin/iscan
 
-l 700 $SVC_ACCT $SVC_ACCT /usr/bin/irodsctl            ${IRODS_HOME}/irodsctl
-
 l 644 $SVC_ACCT $SVC_ACCT /usr/bin/chgCoreToCore1.ir   ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir
 l 644 $SVC_ACCT $SVC_ACCT /usr/bin/chgCoreToCore2.ir   ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir
 l 644 $SVC_ACCT $SVC_ACCT /usr/bin/chgCoreToOrig.ir    ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir
