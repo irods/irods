@@ -1,0 +1,32 @@
+
+
+###########################
+#
+# The iCommands have been installed into your path
+# 
+# They require your environment to be configured
+# for communication with the iRODS server.
+#
+# Place the following configuration information into
+# your .irodsEnv file, normally located in:
+#
+#    ~/.irods/.irodsEnv
+#
+###########################
+
+# iRODS server host name:
+irodsHost 'rodstest1'
+# iRODS server port number:
+irodsPort 1247
+# Zone:
+irodsZone 'tempZone'
+# Account name:
+irodsUserName 'rods'
+# Default storage resource name:
+irodsDefResource 'demoResc'
+# Home directory in iRODS:
+irodsHome '/tempZone/home/rods'
+# Current directory in iRODS:
+irodsCwd '/tempZone/home/rods'
+
+

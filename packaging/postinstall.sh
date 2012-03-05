@@ -135,6 +135,10 @@ ln -s ${1}/clients/icommands/bin/runQuota.r           /usr/bin/runQuota.r
 ln -s ${1}/clients/icommands/bin/showCore.ir          /usr/bin/showCore.ir
 
 # =-=-=-=-=-=-=-
+# give user some guidance regarding .irodsEnv
+cd $1
+cat ../packaging/user_help.txt
+
+# =-=-=-=-=-=-=-
 # exit with success
 exit 0
-

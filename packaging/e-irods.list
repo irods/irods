@@ -65,6 +65,7 @@ END_POSTREMOVE
 d 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging -
 f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
+f 644 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/user_help.txt ./packaging/user_help.txt
 f 755 $SVC_ACCT $SVC_ACCT /etc/init.d/e-irods ./packaging/e-irods
 
 d 755 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/installLogs -
