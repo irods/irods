@@ -4,6 +4,7 @@
 # stop any running E-iRODS Processes
 echo "*** Running Pre-Remove Script ***"
 echo "Stopping iRODS :: $1/irodsctl stop"
+cd $1
 sudo -u $2 $1/irodsctl stop
 
 # =-=-=-=-=-=-=-
