@@ -22,6 +22,6 @@ restart)
     sudo -u eirods $IRODS_CTL restart
     ;;
 *)
-    echo "/etc/init.d/e-eirods :: $1 is not supported."
+    echo "/etc/init.d/e-irods :: [$1] is not supported."
     exit 1
 esac
