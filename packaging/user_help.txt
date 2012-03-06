@@ -1,21 +1,21 @@
 
 
-###########################
+###########################################################
 #
-# The iCommands have been installed into your path
+# The iCommands have been installed into your path.
 # 
 # They require your environment to be configured
 # for communication with the iRODS server.
 #
-# Place the following configuration information into
-# your .irodsEnv file, normally located in:
+# Place the following default administrator configuration
+# information into your .irodsEnv file:
 #
 #    ~/.irods/.irodsEnv
 #
-###########################
+###########################################################
 
 # iRODS server host name:
-irodsHost 'rodstest1'
+irodsHost 'localhost'
 # iRODS server port number:
 irodsPort 1247
 # Zone:
