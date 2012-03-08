@@ -13,13 +13,13 @@ status)
     $IRODS_CTL status
     ;;
 start)
-    sudo -u eirods $IRODS_CTL start
+    setuid eirods $IRODS_CTL start
     ;;
 stop)
-    sudo -u eirods $IRODS_CTL stop
+    setuid eirods $IRODS_CTL stop
     ;;
 restart)
-    sudo -u eirods $IRODS_CTL restart
+    setuid eirods $IRODS_CTL restart
     ;;
 *)
     echo "/etc/init.d/e-irods :: [$1] is not supported."
