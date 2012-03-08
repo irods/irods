@@ -49,7 +49,7 @@
 # 	include the database's libraries, applications, configuration 
 #       files, and data storage.
 #
-# 	$DATABASE_LIB the subdirectories uder $DATABASE_HOME for the
+# 	$DATABASE_LIB the subdirectories under $DATABASE_HOME for the
 #       libraries.  Sometimes for Oracle, this is something other 
 #       than lib.
 # 
@@ -67,7 +67,7 @@
 $DATABASE_TYPE = 'postgres';
 $DATABASE_ODBC_TYPE = 'unix';
 $DATABASE_EXCLUSIVE_TO_IRODS = '0';
-$DATABASE_HOME = '/usr/lib/postgresql/9.1/';
+$DATABASE_HOME = '/usr/lib/postgresql/EIRODSPOSTGRESVERSION/';
 $DATABASE_LIB = '';
 
 $DATABASE_HOST = 'localhost';
