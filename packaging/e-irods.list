@@ -6,7 +6,7 @@
 %description Enterprise edition of the Integrated Rule Oriented Storage system
 %version 3.0b1 300001
 
-%requires postgresql 
+%requires postgresql 8.4
 %requires unixodbc
 %requires odbc-postgresql
 
