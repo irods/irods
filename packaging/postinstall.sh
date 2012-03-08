@@ -1,6 +1,13 @@
 #!/bin/sh
 
 # =-=-=-=-=-=-=-
+# detect database version and update installed irods.config accordingly
+EIRODSPOSTGRESVERSION=$(`which psql` --version | head -n1 | awk '{print $3}' | cut -d'.' -f1,2 )
+echo "Detecting PostgreSQL Version: [$EIRODSPOSTGRESVERSION]"
+sed -e s/EIRODSPOSTGRESVERSION/$EIRODSPOSTGRESVERSION/ $1/config/irods.config > /tmp/irods.config.tmp
+mv /tmp/irods.config $1/config/irods.config
+
+# =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
 if [ -f /tmp/irodsServer.* ]; then
   rm /tmp/irodsServer.*
