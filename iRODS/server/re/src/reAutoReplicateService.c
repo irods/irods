@@ -652,7 +652,7 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
    t = rsGenQuery (conn, &genQueryInp, &genQueryOut);
    if( NULL == genQueryOut ) { // JMC cppecheck - nullptr
 	   rodsLog( LOG_ERROR, "get_resource_path :: genQueryOut is NULL" );
-	   return 0
+	   return 0;
    }
 
    if(t < 0)

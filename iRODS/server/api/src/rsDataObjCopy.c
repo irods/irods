@@ -169,10 +169,6 @@ transferStat_t **transStat)
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: destDataObjInfo is NULL" );
 		return -1;
 	}
-    if( srcL1descInx == NULL ) { // JMC cppcheck - null ptr ref
-        rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcL1descInx is NULL" );
-		return -1;
-	}
     if( srcDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
         rodsLog( LOG_ERROR, "_rsDataObjCopy: :: srcDataObjInp is NULL" );
 		return -1;

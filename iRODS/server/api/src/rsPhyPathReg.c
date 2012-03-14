@@ -359,7 +359,7 @@ rescInfo_t *rescInfo)
 	  MAX_NAME_LEN);
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
-	if (status < 0 || NULL == collCreateInp ) return status; // JMC cppcheck - nullptr
+	if (status < 0 ) return status;
     } else if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
@@ -683,7 +683,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 	/* have to remove FILE_PATH_KW because getFullPathName will use it */
 	rmKeyVal (&dataObjInp.condInput, FILE_PATH_KW);
 	myStatus = rsDataObjCreate (rsComm, &dataObjInp);
-	if (myStatus < 0 || NULL == dataObjInp ) { // JMC cppcheck - nullptr
+	if (myStatus < 0 ) { 
             rodsLog (LOG_ERROR,
               "structFileReg: Problem with open/create structFilePath %s, status = %d",
               dataObjInp.objPath, status);

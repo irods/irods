@@ -409,7 +409,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 logicalDirName, 0, 0, 0, 0, &icss);
 
       if (status != 0) {
-	 int i;
+	 //int i; JMC unused
 	 char errMsg[105];
 	 snprintf(errMsg, 100, "collection '%s' is unknown", 
 	       logicalDirName);
@@ -603,7 +603,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
 		      rsComm->clientUser.rodsZone, 
 		      ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
    if (iVal < 0) {
-      int i;
+      int i; 
       char errMsg[105];
       if (iVal==CAT_UNKNOWN_COLLECTION) {
 	 snprintf(errMsg, 100, "collection '%s' is unknown", 
@@ -2237,7 +2237,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModColl");
 
    if( NULL == collInfo ) { // JMC cppcheck - nullptr
-	   rodsLog( LOG_ERR, "chlModColl :: null input parameter collInfo" );
+	   rodsLog( LOG_ERROR, "chlModColl :: null input parameter collInfo" );
 	   return -1;
    }
 

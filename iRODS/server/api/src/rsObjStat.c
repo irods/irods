@@ -30,7 +30,7 @@ rodsObjStat_t **rodsObjStatOut)
     *rodsObjStatOut = NULL;
     status = getAndConnRcatHost (rsComm, SLAVE_RCAT, dataObjInp->objPath,
       &rodsServerHost);
-    if (status < 0 || NULL = rodsServerHost ) { // JMC cppcheck - nullptr
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {
