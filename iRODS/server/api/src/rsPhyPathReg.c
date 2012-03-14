@@ -248,7 +248,7 @@ rescInfo_t *rescInfo)
         return (status);
     }
     status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, NULL, 0);
-    if (status < 0) return status;
+    if (status < 0 || NULL == dataObjInfoHead ) return status; // JMC cppcheck - nullptr
 
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy (destDataObjInfo.filePath, filePath, MAX_NAME_LEN);
@@ -353,13 +353,13 @@ rescInfo_t *rescInfo)
     int forceFlag;
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
         memset (&collCreateInp, 0, sizeof (collCreateInp));
         rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, 
 	  MAX_NAME_LEN);
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
-	if (status < 0) return status;
+	if (status < 0 || NULL == collCreateInp ) return status; // JMC cppcheck - nullptr
     } else if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
@@ -467,7 +467,7 @@ rescInfo_t *rescInfo)
     rodsObjStat_t *rodsObjStatOut = NULL;
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-    if (status < 0) return status;
+    if (status < 0 || NULL == rodsObjStatOut ) return status; // JMC cppcheck - nullptr
 
     if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
@@ -570,7 +570,7 @@ unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     rodsObjStat_t *rodsObjStatOut = NULL;
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
         return status;
     } else if (rodsObjStatOut->specColl == NULL) {
         freeRodsObjStat (rodsObjStatOut);
@@ -654,7 +654,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     }
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-    if (status < 0) return status;
+    if (status < 0 || NULL == rodsObjStatOut ) return status; // JMC cppcheck - nullptr
  
     if (rodsObjStatOut->specColl != NULL) {
 	freeRodsObjStat (rodsObjStatOut);
@@ -676,14 +676,14 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     /* user need to have write permission */
     dataObjInp.openFlags = O_WRONLY;
     status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp, &dataObjInfo);
-    if (status < 0) {
+    if (status < 0 || NULL == dataObjInfo) { // JMC cppcheck - nullptr
 	int myStatus;
 	/* try to make one */
 	dataObjInp.condInput = phyPathRegInp->condInput;
 	/* have to remove FILE_PATH_KW because getFullPathName will use it */
 	rmKeyVal (&dataObjInp.condInput, FILE_PATH_KW);
 	myStatus = rsDataObjCreate (rsComm, &dataObjInp);
-	if (myStatus < 0) {
+	if (myStatus < 0 || NULL == dataObjInp ) { // JMC cppcheck - nullptr
             rodsLog (LOG_ERROR,
               "structFileReg: Problem with open/create structFilePath %s, status = %d",
               dataObjInp.objPath, status);
@@ -843,12 +843,13 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
              return status;
         }
         status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-	if (status < 0) return status;
+	if (status < 0 ) return status; 
 
     }
 
-    if (rodsObjStatOut->specColl != NULL && 
-      rodsObjStatOut->specColl->collClass != LINKED_COLL) {
+    if ( rodsObjStatOut && // JMC cppcheck - nullptr
+		rodsObjStatOut->specColl != NULL && 
+	  rodsObjStatOut->specColl->collClass != LINKED_COLL) {
         freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "linkCollReg: link collection %s in a spec coll path", 

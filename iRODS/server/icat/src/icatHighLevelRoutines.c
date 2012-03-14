@@ -287,7 +287,7 @@ chlGetLocalZone() {
 int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 		      keyValPair_t *regParam) {
    int i, j, status, upCols;
-   rodsLong_t iVal;
+   rodsLong_t iVal = 0; // JMC cppcheck - uninit var
    int status2;
 
    int mode=0;
@@ -446,7 +446,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 theVal = getValByKey(regParam, ACL_COLLECTION_KW);
 	 if (theVal != NULL && dataObjInfo->objPath != NULL &&
 	     upCols==1 && strcmp(updateCols[0],"data_path")==0) {
-	    int len, iVal;
+	    int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
 /*
  In this case, the user is doing a 'imv' of a collection but one of
  the sub-files is not owned by them.  We decided this should be
@@ -2235,6 +2235,11 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    char iValStr[60];
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModColl");
+
+   if( NULL == collInfo ) { // JMC cppcheck - nullptr
+	   rodsLog( LOG_ERR, "chlModColl :: null input parameter collInfo" );
+	   return -1;
+   }
 
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);

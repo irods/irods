@@ -21,7 +21,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 
     status = getAndConnRcatHost (rsComm, SLAVE_RCAT, 
       chkObjPermAndStatInp->objPath, &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {

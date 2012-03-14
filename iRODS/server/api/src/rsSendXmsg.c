@@ -21,7 +21,7 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
     status = getTicketMsgStructByTicket (sendXmsgInp->ticket.rcvTicket, 
       &ticketMsgStruct);
 
-    if (status < 0) {
+    if (status < 0 || NULL == ticketMsgStruct ) { // JMC cppcheck - nullptr
 	clearSendXmsgInfo (&sendXmsgInp->sendXmsgInfo);
 	return status;
     }

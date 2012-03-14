@@ -2197,6 +2197,10 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     {
     	/* Get extended info of current and master objects */
     	rei->status = getDataObjInfo(rei->rsComm, currentObjInp, &currentDataObjInfo, ACCESS_READ_OBJECT, 0);
+		if( NULL == currentDataObjInfo ) { // JMC cppcheck - nullptr
+			rodsLog( LOG_ERROR, "msiMergeDataCopies :: null &currentDataObjInfo from getDataObjInfo" );
+			return rei->status;
+		}
     	rei->status = getDataObjInfo(rei->rsComm, &masterObjInp, &masterDataObjInfo, ACCESS_READ_OBJECT, 0);
     	
     

@@ -42,7 +42,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     status = getAndConnRcatHost (rsComm, MASTER_RCAT,
      dataObjUnlinkInp->objPath, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return (status);
     } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
         int retval;

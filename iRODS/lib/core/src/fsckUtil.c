@@ -172,7 +172,7 @@ chkObjConsistency (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, c
 	addInxVal (&genQueryInp.sqlCondInp, COL_R_LOC, condStr);
 	
 	status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-	if (status != CAT_NO_ROWS_FOUND) {
+	if (status != CAT_NO_ROWS_FOUND && NULL != genQueryOut ) {
 		objName = genQueryOut->sqlResult[0].value;
 		objPath = genQueryOut->sqlResult[1].value;
 		objSize = atoi(genQueryOut->sqlResult[2].value);

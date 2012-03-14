@@ -345,7 +345,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	seekParam_of_another_color.whence = SEEK_END;
 	
 	status = rsDataObjLseek( rsComm, &seekParam_of_another_color, &seekResult );
-	if ( status < 0 )
+	if ( status < 0 || NULL == seekResult ) // JMC cppcheck - nullptr
 	{
 		rodsLogAndErrorMsg( LOG_ERROR, &rsComm->rError, status,
 			"%s:  could not seek to end of file, status = %d",

@@ -16,7 +16,7 @@ scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 #ifndef USE_BOOST_FS
 	struct stat sbuf;
 #endif
-	int lenInpPath, status;
+	int lenInpPath = 0, status = 0; // JMC cppcheck - return uninit var
 	
 	if ( rodsPathInp->numSrc == 1 ) {
 		inpPathO = rodsPathInp->srcPath[0].outPath;

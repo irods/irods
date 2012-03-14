@@ -240,6 +240,11 @@ rodsRestart_t *rodsRestart)
     char *tmpStr;
 #endif  /* RBUDP_TRANSFER */
 
+    if (rodsArgs == NULL) { // JMC cppcheck - nullptr
+        rodsLog( LOG_ERROR, "initCondForPut :: NULL rodsArgs" );
+	    return (-1);
+    }
+
     if (dataObjOprInp == NULL) {
        rodsLog (LOG_ERROR,
           "initCondForPut: NULL dataObjOprInp input");
@@ -264,10 +269,6 @@ rodsRestart_t *rodsRestart)
     }
 
     dataObjOprInp->oprType = PUT_OPR;
-
-    if (rodsArgs == NULL) {
-	return (0);
-    }
 
     if (rodsArgs->all == True) {
 	addKeyVal (&dataObjOprInp->condInput, ALL_KW, "");

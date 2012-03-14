@@ -419,9 +419,11 @@ printGraphPathEntrySet(rcat_metadata_graph_entry graph_info[],
 int
 allocAttrEntrySet(rcat_metadata_attr_entry **attr_info,  int max_entries)
 {
+  if (attr_info == NULL) return (MEMORY_ALLOCATION_ERROR); // JMC cppcheck - nullptr
+
   *attr_info = (rcat_metadata_attr_entry *) 
                malloc(max_entries * sizeof(rcat_metadata_attr_entry));
-  if (attr_info == NULL) return (MEMORY_ALLOCATION_ERROR);
+  if (*attr_info == NULL) return (MEMORY_ALLOCATION_ERROR); // JMC cppcheck - nullptr
   else return (RCAT_SUCCESS);
 			   
 }
@@ -430,9 +432,10 @@ allocAttrEntrySet(rcat_metadata_attr_entry **attr_info,  int max_entries)
 int
 allocFkrelEntrySet(rcat_metadata_fkrel_entry **fkrel_info,  int max_entries)
 {
+  if (fkrel_info == NULL) return (MEMORY_ALLOCATION_ERROR); // JMC cppcheck - nullptr
   *fkrel_info = (rcat_metadata_fkrel_entry *) 
                malloc(max_entries * sizeof(rcat_metadata_fkrel_entry));
-  if (fkrel_info == NULL) return (MEMORY_ALLOCATION_ERROR);
+  if (*fkrel_info == NULL) return (MEMORY_ALLOCATION_ERROR); // JMC cppcheck - nullptr
   else return (RCAT_SUCCESS);
 			   
 }
@@ -443,9 +446,10 @@ int
 allocGraphPathEntrySet(rcat_metadata_graph_entry **graph_info,
 		       int max_entries)
 {
+  if (graph_info == NULL) return (MEMORY_ALLOCATION_ERROR); // JMC cppcheck - nullptr
   *graph_info = (rcat_metadata_graph_entry *) 
                malloc(max_entries * sizeof(rcat_metadata_graph_entry));
-  if (graph_info == NULL) return (MEMORY_ALLOCATION_ERROR);
+  if (*graph_info == NULL) return (MEMORY_ALLOCATION_ERROR); // JMC cppcheck - nullptr
   else return (RCAT_SUCCESS);
 			   
 }
@@ -1041,7 +1045,7 @@ updateAttrValue(int cd,
 
   for ( i = 0; i < attr_cnt; i++) {
 	  iisAttrVal[i] = malloc(sizeof(char) * (strlen(attr_value[i])*4 +3));
-	  if (iisAttrVal == NULL) { free( in_rsrcid ); return(MEMORY_ALLOCATION_ERROR); } // JMC cppcheck
+	  if (iisAttrVal[i] == NULL) { free( in_rsrcid ); return(MEMORY_ALLOCATION_ERROR); } // JMC cppcheck
 	  strcpy(iisAttrVal[i],attr_value[i]);
 	}
   ii = castDimension(cd, updDimen, iisAttrVal, attr_id, attr_cnt);
@@ -1143,7 +1147,7 @@ insertIntoSchema(int cd,
 
   for ( i = 0; i < attr_cnt; i++) {
 	  iisAttrVal[i] = malloc(sizeof(char) * (strlen(attr_value[i])*4 +3));
-	  if (iisAttrVal == NULL) { free( in_rsrcid ); return(MEMORY_ALLOCATION_ERROR); } // JMC cppcheck - leak
+	  if (iisAttrVal[i] == NULL) { free( in_rsrcid ); return(MEMORY_ALLOCATION_ERROR); } // JMC cppcheck - leak
 	  strcpy(iisAttrVal[i],attr_value[i]);
 	}
   ii = castDimension(cd, insDimen, iisAttrVal, attr_id, attr_cnt);
@@ -1193,7 +1197,7 @@ insertIntoSchema(int cd,
 
 // =-=-=-=-=-=-=-
 // JMC :: build query for physical table using STL string vs char* & sprintf
-const char* buildInsertIntoPhyiscalTableQuery( char **attr_name,
+const char* buildPhyiscalTableQuery( char **attr_name,
 							  				   char **attr_val,
 							  				   char  *dbschema_name, 
 							  				   char  *table_name, 
@@ -1219,7 +1223,13 @@ const char* buildInsertIntoPhyiscalTableQuery( char **attr_name,
 
 	sqlq += ")";
 
-	return sqlq.c_str();
+
+	char* ret = new char[ sqlq.len()+1 ];
+	strncpy( ret, sqlq.c_str(), sqlq.len() );
+	ret[ sqlq.len() +1 ] = '\0';
+
+	return ret;
+
 } // buildPhyiscalTableQuery
 
 // =-=-=-=-=-=-=-
@@ -1259,6 +1269,8 @@ insertIntoPhysicalTable(char **attr_name,
 	failure = METADATA_INSERTION_ERROR;
       return(METADATA_INSERTION_ERROR);
     }
+
+  delete sqlq;
   return(RCAT_SUCCESS);
 }
 insertIntoPhysicalTableDontCare(char **attr_name,
@@ -1292,6 +1304,7 @@ insertIntoPhysicalTableDontCare(char **attr_name,
     {
       return(METADATA_INSERTION_ERROR);
     }
+  delete sqlq;
   return(RCAT_SUCCESS);
 }
 
@@ -3650,8 +3663,8 @@ getDBResourceInfo(char *resourceName,
     return(RCAT_SUCCESS);    
   }
 
-  sprintf(sqlq,"select distinct t0.rsrc_id, t0.database_name from %srcore_ar_db_rsrc t0 where t0.rsrc_name = '%s'",
-	  resourceName);
+  sprintf(sqlq,"select distinct t0.rsrc_id, t0.database_name from %s rcore_ar_db_rsrc t0 where t0.rsrc_name = '%s'",
+	  databaseName, resourceName); // JMC cppcheck - missing first parameter ( presumed db name ? )
   colcount = 2;
   i = get_row_from_query(cval, &colcount,sqlq);
   if (failure != 0 || i < 0) {

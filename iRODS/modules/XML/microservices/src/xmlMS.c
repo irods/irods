@@ -181,7 +181,10 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 	/* Get size of XML file */
 	rei->status = rsObjStat (rsComm, &xmlDataObjInp, &rodsObjStatOut);
-
+	if( NULL == rodsObjStatOut ) { // JMC cppcheck  nullptr ref
+		rodsLog( LOG_ERROR, "msiXmlDocSchemaValidate: null &rodsObjStatOut" );
+		return ( rei->status );
+	}
 
 	/* xmlBuf init */
 	/* memory for xmlBuf->buf is allocated in rsFileRead() */
@@ -451,7 +454,11 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 	/* Get size of XML file */
 	rei->status = rsObjStat (rsComm, &xmlObjInp, &rodsObjStatOut);
-
+	if( NULL == rodsObjStatOut ) { // JMC cppcheck  nullptr ref
+		rodsLog( LOG_ERROR, "msiXmlDocSchemaValidate: null &rodsObjStatOut" );
+		free( errBuf ); // JMC cppcheck - leak
+		return ( rei->status );
+	}
 
 	/* xmlBuf init */
 	/* memory for xmlBuf->buf is allocated in rsFileRead() */

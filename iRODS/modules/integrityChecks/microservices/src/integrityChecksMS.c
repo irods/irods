@@ -53,14 +53,14 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut = NULL;
 	char condStr[MAX_NAME_LEN];
-	rsComm_t *rsComm;
-	char* collname;
-	char* ownerlist;
+	rsComm_t *rsComm = NULL;
+	char* collname = NULL;
+	char* ownerlist = NULL;
 	int i,j;
 	sqlResult_t *dataName;
 	sqlResult_t *dataOwner;
 	char delims[]=",";
-	char* word;
+	char* word = NULL;
 	char** olist=NULL;
 	bytesBuf_t*	stuff=NULL;
 	
@@ -109,7 +109,15 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
 
 			/* Construct a list of owners*/
 			for (word=strtok(ownerlist, delims); word; word=strtok(NULL, delims)) {
-				olist = (char**) realloc (olist, sizeof (char*) * (ownercount));  
+				// JMC cppcheck - realloc failure case
+				char** tmp_list = 0;
+				tmp_list = (char**) realloc (olist, sizeof (char*) * (ownercount));  
+				if( !tmp_list ) { 
+					rodsLog( LOG_ERROR, "msiVerifyOwner - realloc failure" );
+					continue;
+				} else {
+					olist = tmp_list;
+				}
 				olist[ownercount] = strdup (word);
 				ownercount++;
 			}
@@ -165,11 +173,13 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
             free( firstowner ); // JMC cppcheck - leak 
 		
 		}	
+
+		free( olist ); // JMC cppcheck - leak
 	} 
 
 	fillBufLenInMsParam (bufout, stuff->len, stuff);
 	fillIntInMsParam (statout, rei->status);
- 
+	free( ownerlist ); // JMC cppcheck - leak 
     free( collname ); // JMC cppcheck - leak 
 	return(rei->status);
 

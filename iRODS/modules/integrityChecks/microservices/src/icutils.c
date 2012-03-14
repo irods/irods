@@ -162,7 +162,15 @@ int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf) 
 
 	/* Construct a list of owners from our input parameter*/
 	for (word=strtok(ownerlist, delims); word; word=strtok(NULL, delims)) {
-		olist = (char**) realloc (olist, sizeof (char*) * (ownercount));
+		// JMC cppcheck - trap realloc failure
+		char** tmp_list = 0;  
+		tmp_list = (char**) realloc (olist, sizeof (char*) * (ownercount));
+		if( !tmp_list ) {
+			rodsLog( LOG_ERROR, "verifyCollOwners :: realloc failure" );
+			continue;
+		} else {
+			olist = tmp_list;
+		}
 		olist[ownercount] = strdup (word);
 		ownercount++;
 	}
@@ -187,7 +195,7 @@ int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf) 
 			appendToByteBuf (mybuf, tmpstr);
 		}
 	}
-
+	free( olist ); // jmc cppcheck
 	return (0);
 }
 

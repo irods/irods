@@ -824,7 +824,7 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	
 		
 	/* Read our collection one object at a time */
-	while ((rei->status = rsReadCollection (rei->rsComm, &handleInx, &collEnt)) >= 0) 
+	while ( ((rei->status = rsReadCollection (rei->rsComm, &handleInx, &collEnt)) >= 0) && NULL != collEnt )  // JMC cppcheck - nullptr
 	{
 		
 		/* Skip collection entries */
@@ -846,10 +846,10 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 
 		
 		/* Free collEnt only. Content will be freed by rsCloseCollection() */
-		if (collEnt)
-		{
+		//if (collEnt) // JMC cppcheck - redundant nullptr test
+		//{
 			free(collEnt);	    
-		}
+		//}
 	}
 	
 			

@@ -423,7 +423,7 @@ sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
     /* XXXXX a tmp fix to increase no. of resource to 2560 */
     genQueryInp.maxRows = MAX_SQL_ROWS * 10;
     status =  rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-    if ( status == 0 ) {
+    if ( status == 0 && NULL != genQueryOut) { // JMC cppcheck - nullptr
         nresc = genQueryOut->rowCnt;
         for (i=0; i<genQueryOut->attriCnt; i++) {
             for (j=0; j<nresc; j++) {
@@ -607,7 +607,7 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
 
         /* no input rescGrp. Try to find one that matches rescInfo. */
         status = getRescGrpOfResc (rsComm, memberRescInfo, &myRescGrpInfo);
-        if (status < 0) {
+        if (status < 0 || NULL == myRescGrpInfo ) { // JMC cppcheck - nullptr
             rodsLog (LOG_NOTICE,
               "getCacheRescInGrp:getRescGrpOfResc err for %s. stat=%d",
               memberRescInfo->rescName, status);

@@ -23,9 +23,14 @@ int clH5Dataset_read(rcComm_t *conn, H5Dataset* d)
     d->opID = H5DATASET_OP_READ;
 
     ret_value = _clH5Dataset_read (conn, d, &outd);
+	if( NULL == outd ) { // JMC cppcheck nullptr ref
+		rodsLog( LOG_ERROR, "clH5Dataset_read :: outd is null" );
+		return 0;
+	}
 
     if (ret_value < 0) 
     return (ret_value);
+
 
     /* psss on the value */
     d->nvalue = outd->nvalue;
@@ -101,6 +106,10 @@ int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
     ind->opID = H5DATASET_OP_READ_ATTRIBUTE;
 
     ret_value = _clH5Dataset_read_attribute (conn, ind, &outd);
+	if( NULL == outd ) { // JMC cppcheck nullptr ref
+		rodsLog( LOG_ERROR, "clH5Dataset_read :: outd is null" );
+		return 0;
+	}
 
     if (ret_value < 0)
         return (ret_value);

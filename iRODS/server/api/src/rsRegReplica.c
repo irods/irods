@@ -19,7 +19,7 @@ rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, srcDataObjInfo->objPath,
       &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {

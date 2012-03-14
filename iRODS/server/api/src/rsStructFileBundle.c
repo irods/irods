@@ -60,7 +60,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
     /* borrow conInput */
     dataObjInp.condInput = structFileBundleInp->condInput;
     status = getRescGrpForCreate (rsComm, &dataObjInp, &rescGrpInfo);
-    if (status < 0) return status;
+    if (status < 0 || NULL == rescGrpInfo ) return status; // JMC cppcheck - nullptr
 #endif
 
     bzero (&rescAddr, sizeof (rescAddr));
@@ -156,6 +156,10 @@ structFileExtAndRegInp_t *structFileBundleInp)
     collLen = strlen (collInp.collName);
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
+		if( NULL == collEnt ) { // JMC cppcheck - nullptr
+			rodsLog( LOG_ERROR, "rsStructFileBundle: collEnt is NULL" );
+			continue; 
+		}
         if (collEnt->objType == DATA_OBJ_T) {
             if (collEnt->collName[collLen] == '\0') {
                 snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",

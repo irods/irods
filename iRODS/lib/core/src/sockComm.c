@@ -378,7 +378,7 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
     status = packStruct ((void *) myHeader, &headerBBuf,
       "MsgHeader_PI", RodsPackTable, 0, XML_PROT);
 
-    if (status < 0) {
+    if (status < 0 || NULL == headerBBuf ) { // JMC cppcheck - nullptr
         rodsLogError (LOG_ERROR, status,
          "writeMsgHeader: packStruct error, status = %d", status);
         return status;

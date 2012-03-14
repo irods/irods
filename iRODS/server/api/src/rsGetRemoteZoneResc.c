@@ -36,7 +36,7 @@ rodsHostAddr_t **rescAddr)
 
     if (strcmp (remoteOprType, REMOTE_CREATE) == 0) {
 	status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-        if (status < 0) return status;
+        if (status < 0 || NULL == myRescGrpInfo ) return status; // JMC cppcheck - nullptr
 	    rescInfo = myRescGrpInfo->rescInfo;
     } else if (strcmp (remoteOprType, REMOTE_OPEN) == 0) {
         status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, 
@@ -44,7 +44,7 @@ rodsHostAddr_t **rescAddr)
 	if (status < 0) {
 	    /* does not exist */
 	    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-            if (status < 0) return status;
+            if (status < 0 || NULL == myRescGrpInfo ) return status; // JMC cppcheck - nullptr
 	    rescInfo = myRescGrpInfo->rescInfo;
 	} else {
 	    int writeFlag;
@@ -55,7 +55,7 @@ rodsHostAddr_t **rescAddr)
 	    if (status < 0) return status;
             status = applyPreprocRuleForOpen (rsComm, dataObjInp, 
 	     &dataObjInfoHead);
-	    if (status < 0) {
+	    if (status < 0 || NULL == dataObjInfoHead ) { // JMC cppcheck - nullptr
 		freeAllDataObjInfo (dataObjInfoHead);
 		return status;
 	    } else {	

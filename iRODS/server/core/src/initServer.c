@@ -998,7 +998,7 @@ disconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
 
     status = getRcatHost (rcatType, rcatZoneHint, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return (status);
     }
 
@@ -1027,7 +1027,7 @@ resetRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
 
     status = getRcatHost (rcatType, rcatZoneHint, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return (status);
     }
 
@@ -1711,6 +1711,10 @@ logFileOpen (int runMode, char *logDir, char *logFileName)
     }
 
     getLogfileName (&logFile, logDir, logFileName);
+	if( NULL == logFile ) { // JMC cppcheck - nullptr
+		fprintf( stderr, "logFileOpen: unable to open log file" );
+		return -1;
+	}
 
 #ifndef IRODS_SYSLOG
     logFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0666);
@@ -1933,7 +1937,7 @@ rodsServerHost_t **rodsServerHost)
     status = getRcatHost (MASTER_RCAT, srcDataObjInp->objPath, 
       &srcIcatServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == srcIcatServerHost ) { // JMC cppcheck - nullptr
         rodsLog (LOG_ERROR,
           "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
           srcDataObjInp->objPath);
@@ -1948,7 +1952,7 @@ rodsServerHost_t **rodsServerHost)
     status = getRcatHost (MASTER_RCAT, destDataObjInp->objPath,
       &destIcatServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == destIcatServerHost ) { // JMC cppcheck - nullptr
         rodsLog (LOG_ERROR,
           "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
           destDataObjInp->objPath);
@@ -1982,7 +1986,7 @@ isLocalZone (char *zoneHint)
 
     status = getRcatHost (MASTER_RCAT, zoneHint, &icatServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
         return (0);
     }
 
@@ -2022,7 +2026,7 @@ rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
 
     status = getRcatHost (MASTER_RCAT, dataObjInp->objPath, &icatServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == icatServerHost ) { // JMC cppcheck - nullptr
         return (status);
     }
 

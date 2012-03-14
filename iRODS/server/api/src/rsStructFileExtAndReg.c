@@ -187,7 +187,7 @@ rodsObjStat_t **rodsObjStatOut)
 	}
     }
 
-    if (status < 0) {
+    if (status < 0 || NULL == myRodsObjStat ) { // JMC cppcheck - nullptr
         rodsLog (LOG_ERROR,
           "chkCollForExtAndReg: collStat of %s error. status = %d",
           dataObjInp.objPath, status);

@@ -462,7 +462,7 @@ dataObjInfo_t **dataObjInfoHead)
     }
 
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-    if (status < 0) return status;
+    if (status < 0 || myRescGrpInfo == NULL ) return status; // JMC cppcheck
 
     myDataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     *myDataObjInfo = *(*dataObjInfoHead);

@@ -16,6 +16,10 @@ int clH5Group_read_attribute(rcComm_t *conn, H5Group* ing)
     ing->opID = H5GROUP_OP_READ_ATTRIBUTE;
 
     ret_value = _clH5Group_read_attribute (conn,  ing, &outg);
+	if( NULL == &outg ) { // JMC cppcheck - nullptr ref
+		rodsLog( LOG_ERROR, "clH5Group_read_attribute :: failed to initialize outg" );
+		return 0;
+	}
 
     if (ret_value < 0)
         return (ret_value);

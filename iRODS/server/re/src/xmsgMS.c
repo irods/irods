@@ -415,7 +415,7 @@ int msiRcvXmsg(msParam_t* inConnParam,
     rcvXmsgInp.msgNumber = (uint) CAST_PTR_INT inMsgNumber->inOutStruct;
   
   status = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
-  if (status < 0) {
+  if (status < 0 || rcvXmsgOut == NULL ) { // JMC cppcheck
     rodsLog (LOG_ERROR, "msiRcvXmsg: rcRcvXmsg failed:%i", status);
     return(status);
   }
@@ -570,7 +570,7 @@ int _readXMsg(int streamId, char *condRead, int *msgNum, int *seqNum,
   rcvXmsgInp.msgNumber = 0;
   strncpy(rcvXmsgInp.msgCondition, condRead, MAX_NAME_LEN);
   i = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
-  if (i < 0) {
+  if (i < 0 || rcvXmsgOut == NULL ) { // JMC cppcheck
     /*  rcDisconnect(conn); */
     rodsLog (LOG_NOTICE,"_readXmsg: Unable to receive message from stream  %i\n", streamId);
     return(i);

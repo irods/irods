@@ -100,8 +100,8 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
 	foutput = fopen(fname, "a");
 	if (foutput != NULL) {
 		fprintf(foutput, "time=%i %s", timestamp, msg);
+	    fclose(foutput); // JMC cppcheck - nullptr
 	}
-	fclose(foutput);
 	
 	rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
 	rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
@@ -958,6 +958,10 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   addInxIval(&genQueryInp.selectInp, COL_SL_CREATE_TIME, SELECT_MAX);
   genQueryInp.maxRows = MAX_SQL_ROWS;
   status =  rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+  if( NULL == genQueryOut ) { // JMC cppcheck - nullptr
+ 	rodsLog( LOG_ERROR, "msiDigestMonStat :: &genQueryOut is NULL" );
+    return rei->status;	
+  }
   if ( status == 0 ) {
     nresc = genQueryOut->rowCnt;
     for (i=0; i<genQueryOut->attriCnt; i++) {

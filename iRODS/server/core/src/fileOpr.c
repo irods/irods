@@ -388,7 +388,7 @@ filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo)
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
-    if (status < 0) return status;
+    if (status < 0 || NULL == myStat ) return status; // JMC cppcheck - nullptr
     if (myStat->st_mode & S_IFREG) {
 	free (myStat);
 	return LOCAL_FILE_T;

@@ -437,7 +437,7 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
         rstrcpy (myDataObjInp.objPath, newPath, MAX_NAME_LEN);
 
         status = collStat (rsComm, &myDataObjInp, &rodsObjStatOut);
-        if (status >= 0) {      /* a collection */
+        if (status >= 0 && NULL != rodsObjStatOut ) {      /* a collection */ // JMC cppcheck - nullptr
             myDataObjInfo = *dataObjInfo =
               (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
             memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));

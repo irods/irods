@@ -781,7 +781,7 @@ initServer ( rsComm_t *svrComm)
 
     status = getRcatHost (MASTER_RCAT, NULL, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return (status);
     }
 

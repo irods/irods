@@ -238,6 +238,13 @@ showColl(char *name, char *attrName, int wild)
 	 rstrcat(fullName, name, LONG_NAME_LEN);
       }
    }
+  
+   // JMC cppcheck - dangerous use of strcpy : need a explicit null term 
+   if( ( strlen( name ) + 1 ) < BIG_STR ) 
+	   fullName[ strlen( name ) ] = '\0';
+   else
+	   rodsLog( LOG_ERROR, "showColl :: error - fullName could not be explicitly null terminated" );
+
    i2a[0]=COL_COLL_NAME;
    sprintf(v1,"='%s'",fullName);
    condVal[0]=v1;

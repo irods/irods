@@ -558,7 +558,7 @@ intChkRechkRecompChkSum4DatObjVol2  (rsComm_t * rsComm, char *strFullDataPath,
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut;
   sqlResult_t *chksumStr, *modTimVal, *creaTimVal, *sqltColDataSize;
-  char *objPath;
+  char *objPath = 0;
   int iIterSqlQuery = 0;
   char *tmpChksumStr, *strModTime, *strCreaTime;
   char collQCond[MAX_NAME_LEN];
@@ -921,15 +921,24 @@ int intAddChkSumDateAvuMetadataVol2 (rsComm_t * rsComm, char *objPath, time_t t1
   char mytime[256], *chrPtr1;
 
   chrPtr1 = strrchr (objPath, '/');
+  if( NULL == chrPtr1 ) { // JMC cppcheck - nullptr ref 
+	  rodsLog( LOG_ERROR, "intAddChkSumDateAvuMetadataVol2 :: failed to find separator in objPath" );
+	  return -1;
+  }
+
   printf
     ("GJK-P P.1.0.1. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), objPath=(%s)\n",
      chrPtr1, objPath);
-  if (chrPtr1 != NULL && *chrPtr1 == '/'
-      && chrPtr1[strlen (chrPtr1) - 1] == '/')
+  if (chrPtr1 != NULL && *chrPtr1 == '/' && chrPtr1[strlen (chrPtr1) - 1] == '/')
     *chrPtr1 = 0;		// replace '/' in /myzone/foo/'
-  printf
-    ("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), objPath=(%s)\n",
-     chrPtr1, objPath);
+
+  if( NULL == chrPtr1 ) { // JMC cppcheck - nullptr ref 
+	  rodsLog( LOG_ERROR, "intAddChkSumDateAvuMetadataVol2 :: failed to find separator in objPath" );
+	  return -1;
+  }
+  printf("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), objPath=(%s)\n",chrPtr1, objPath);
+    
+     
 
   memset (&modAVUMetadataInp, 0, sizeof (modAVUMetadataInp));
 
@@ -1217,9 +1226,11 @@ intGetDataObjChksumsTimeStampsFromAVUVol2 (collInp_t * ptrInpColl,
   */
 
   // spatne !!!if (chrPtr1 != NULL && *chrPtr1 == '/' &&)    *chrPtr1 = 0;              // replace '/' in /myzone/foo/'
-  printf
-    ("GJK-P P.21.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
-     chrPtr1, ptrInpColl->collName);
+  if( NULL != chrPtr1 ) { // JMC cppcheck nullptr
+  	printf("GJK-P P.21.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol2(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",chrPtr1, ptrInpColl->collName);
+  }
+    
+     
 
   if ((iI = isData (rei->rsComm, ptrInpColl->collName, NULL)) >= 0)
     {

@@ -1393,6 +1393,10 @@ packItem_t *myPackedItem)
 	myInPtr = (char *) *inPtr;
         xmlLen = strToXmlStr ((char *) myInPtr, &xmlStr);
     }
+	if( NULL == xmlStr ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "packXmlString :: null xmlStr" );
+		return -1;
+	}
 
     if (maxStrLen >= 0 && myStrlen >= maxStrLen) {
         return (USER_PACKSTRUCT_INPUT_ERR);

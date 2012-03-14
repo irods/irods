@@ -1480,7 +1480,7 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
         }
 #ifdef PARA_DEBUG
 	printf ("locToRemPartialCopy:thread %d header offset %lld, len %lld",
-	  myHeader.offset, myHeader.length);
+	  myInput->threadNum, myHeader.offset, myHeader.length); // JMC cppcheck - missing first parameter
 #endif
 
         if (myHeader.offset != curOffset) {

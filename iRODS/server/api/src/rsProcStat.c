@@ -70,7 +70,7 @@ genQueryOut_t **procStatOut)
       != NULL) {
 	rescGrpInfo_t *rescGrpInfo = NULL;
         status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
-        if (status < 0) {
+        if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
             rodsLog (LOG_ERROR,
               "_rsProcStat: _getRescInfo of %s error. stat = %d",
               tmpStr, status);

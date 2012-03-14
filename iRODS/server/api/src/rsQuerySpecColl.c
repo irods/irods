@@ -78,7 +78,7 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
       UNKNOW_COLL_PERM, 0, &dataObjInfo);
 #endif
 
-    if (status < 0) {
+    if (status < 0 || NULL == dataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog (LOG_NOTICE,
           "rsQuerySpecColl: resolveSpecColl error for %s, status = %d",
           dataObjInp->objPath, status);

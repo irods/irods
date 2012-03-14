@@ -32,7 +32,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
       &collCreateInp->condInput);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
                                 &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
        return(status);
     }
 

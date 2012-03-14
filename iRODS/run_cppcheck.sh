@@ -1,2 +1,5 @@
 #!/bin/sh
-cppcheck -I/usr/include -I./nt/include -I./lib/md5/include -I./lib/rbudp/include -I./lib/api/include -I./lib/core/include -I./lib/isio/include -I./server/re/include -I./server/drivers/include -I./server/core/include -I./server/icat/include -i nt/ -i modules/msoDrivers/ -i modules/webservices/ -i boost_irods/ -i clients/icommands/rulegen/ . | grep error
+
+H="~/dev/irods/E-iRODS/e-irods/iRODS/"
+
+~/bin/cppcheck -j 8 -f -I/usr/include -I$H/nt/include -I$H/lib/md5/include -I$H/lib/rbudp/include -I$H/lib/api/include -I$H/lib/core/include -I$H/lib/isio/include -I$H/server/re/include -I$H/server/drivers/include -I$H/server/core/include -I$H/server/icat/include -i nt/ -i modules/msoDrivers/ -i modules/webservices/ -i boost_irods/ -i clients/icommands/rulegen/ . | grep error

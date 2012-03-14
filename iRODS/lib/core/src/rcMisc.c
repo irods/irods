@@ -3365,12 +3365,16 @@ rodsObjStat_t *rodsObjStatOut)
 int
 keyValToString( keyValPair_t* list, char** string )
 {
+	if( NULL == list || NULL == string ) { // JMC cppcheck - nullptr
+		rodsLog( LOG_ERROR, "keyValToString :: null input parameter" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
 	int nBytes = 0;
 	int nKeys = list->len;
 	int i;
 
-	if ( list == NULL )
-		return SYS_INTERNAL_NULL_INPUT_ERR;
+	//if ( list == NULL ) // JMC cppcheck - nullptr
+		//return SYS_INTERNAL_NULL_INPUT_ERR;
 
 	/* Scan the list to figure out how much space we need. */
 	for ( i=0; i<nKeys; i++ )

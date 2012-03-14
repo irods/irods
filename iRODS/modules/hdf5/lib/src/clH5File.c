@@ -115,6 +115,10 @@ int clH5File_close (rcComm_t *conn, H5File* f)
     inf.opID = f->opID;
  
     ret_value = _clH5File_close (conn, &inf, &outf);
+	if( NULL == outf ) { // JMC cppcheck nullptr ref
+		rodsLog( LOG_ERROR, "clH5File_close :: outf is null" );
+		return 0;
+	}
 
     if (ret_value < 0) 
     return (ret_value);

@@ -51,7 +51,7 @@ char **outHost)
     }
 
     status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
-    if (status >= 0) {
+    if (status >= 0 && NULL != specCollCache) { // JMC cppcheck - nullptr
 	if (specCollCache->specColl.collClass == MOUNTED_COLL) {
             status = resolveResc (specCollCache->specColl.resource, 
 	      &myRescInfo);

@@ -63,7 +63,7 @@ bytesBuf_t *bulkOprInpBBuf)
     inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath, &myRodsObjStat);
-    if (status < 0) return status;
+    if (status < 0 || myRodsObjStat == NULL ) return status; // JMC cppcheck
 
     /* query rcat for resource info and sort it */
 
@@ -81,7 +81,7 @@ bytesBuf_t *bulkOprInpBBuf)
 	}
     } else {
         status = getRescGrpForCreate (rsComm, &dataObjInp, &myRescGrpInfo);
-        if (status < 0) {
+        if (status < 0 || myRescGrpInfo == NULL ) { // JMC cppcheck
 	    freeRodsObjStat (myRodsObjStat);
 	    return status;
 	}

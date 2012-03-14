@@ -205,6 +205,10 @@ specCollSubCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     status = resolvePathInSpecColl (rsComm, dataObjInp->objPath, 
       WRITE_COLL_PERM, 0, &dataObjInfo);
+	if( dataObjInfo == NULL ) { // JMC cppcheck
+		rodsLog( LOG_ERROR, "specCollSubCreate :: dataObjInp is null" );
+		return status;
+	}
     if (status >= 0) {
         rodsLog (LOG_ERROR,
           "specCollSubCreate: phyPath %s already exist", 
@@ -263,7 +267,7 @@ rescInfo_t *rescInfo, char *rescGroupName)
 	rstrcpy (myRescGroupName, rescGroupName, NAME_LEN);
         status = getCacheRescInGrp (rsComm, myRescGroupName, rescInfo, 
 	  &cacheResc);
-        if (status < 0) {
+        if (status < 0 || cacheResc == NULL ) { // JMC cppcheck
             rodsLog (LOG_ERROR,
              "DataObjCreateWithResInfo:getCacheRescInGrp %s err for %s stat=%d",
              rescGroupName, dataObjInfo->objPath, status);

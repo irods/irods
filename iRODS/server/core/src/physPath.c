@@ -335,7 +335,7 @@ getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     status = l3Stat (rsComm, dataObjInfo, &myStat);
 
-    if (status < 0) {
+    if (status < 0 || NULL == myStat) { // JMC cppcheck - nullptr
 	rodsLog (LOG_DEBUG,
 	  "getSizeInVault: l3Stat error for %s. status = %d",
 	  dataObjInfo->filePath, status);
@@ -1084,7 +1084,7 @@ getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath)
 
     tmpPtr ++;
     status = getLocalZoneInfo (&tmpZoneInfo);
-    if (status < 0) return status;
+    if (status < 0 || NULL == tmpZoneInfo ) return status; // JMC cppcheck - nullptr
 
     len = strlen (tmpZoneInfo->zoneName);   
     if (strncmp (tmpZoneInfo->zoneName, tmpPtr, len) == 0 &&

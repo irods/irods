@@ -572,7 +572,7 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
     genQueryInp.maxRows=1;
 
     status =  rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
-    if (status != 0) return(0);
+    if (status != 0 || genQueryOut == NULL ) return(0);
 
     rodsLog (LOG_NOTICE,
 	     "query status %d rowCnt=%d",status, genQueryOut->rowCnt);

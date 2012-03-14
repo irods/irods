@@ -100,6 +100,11 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
         return (rei->status);
     }     
 
+	if( NULL == inf ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "msiH5File_open :: null inOutStruct for file param" );
+		return rei->status;
+	}
+
     inpFlag = parseMspForPosInt (inpFlagParam);
     if (inpFlag < 0) {
 	inpFlag = 0;
@@ -267,6 +272,11 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+	if( NULL == inf ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "msiH5File_close :: null inOutStruct for file param" );
+		return rei->status;
+	}
+
     l1descInx = getL1descInxByFid (inf->fid);
     if (l1descInx < 0) {
 	rei->status = SYS_BAD_FILE_DESCRIPTOR;
@@ -382,6 +392,11 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+	if( NULL == ind ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "msiH5File_read :: null inOutStruct for file param" );
+		return rei->status;
+	}
+
     l1descInx = getL1descInxByFid (ind->fid);
     if (l1descInx < 0) {
         rei->status = SYS_BAD_FILE_DESCRIPTOR;
@@ -488,6 +503,11 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
 	  inpH5DatasetParam->type);
         return (rei->status);
     }
+
+	if( NULL == ind ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "msiH5File_read_attribute :: null inOutStruct for file param" );
+		return rei->status;
+	}
 
     l1descInx = getL1descInxByFid (ind->fid);
     if (l1descInx < 0) {
@@ -600,6 +620,11 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
 	  inpH5GroupParam->type);
         return (rei->status);
     }
+
+	if( NULL == ing ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "msiH5File_read_attribute :: null inOutStruct for file param" );
+		return rei->status;
+	}
 
     l1descInx = getL1descInxByFid (ing->fid);
     if (l1descInx < 0) {

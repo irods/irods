@@ -50,7 +50,7 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
 	return SYS_INVALID_ZONE_NAME;
     }
     status = _getRescInfo (rsComm, destRescName, &rescGrpInfo);
-    if (status < 0) {
+    if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
 	 rodsLog (LOG_ERROR,
           "rsPhyBundleColl: _getRescInfo of %s error for %s. stat = %d",
           destRescName, phyBundleCollInp->collection, status);

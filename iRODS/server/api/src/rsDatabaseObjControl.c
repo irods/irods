@@ -44,7 +44,7 @@ rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjCont
     rescGrpInfo_t *rescGrpInfo = NULL;
 
     status = _getRescInfo (rsComm, databaseObjControlInp->dbrName, &rescGrpInfo);
-    if (status < 0) {
+    if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
 	 rodsLog (LOG_ERROR,
 		  "rsDatabaseObjControl: _getRescInfo of %s error, stat = %d",
 		  databaseObjControlInp->dbrName, status);

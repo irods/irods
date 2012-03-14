@@ -27,7 +27,7 @@ genQueryOut_t **bulkDataObjRegOut)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, objPath->value,
       &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
        return(status);
     }
 

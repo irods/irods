@@ -1357,10 +1357,11 @@ keyValPair_t *condInput)
 				*dataObjInfoHead = NULL;
 		} else {
 			/* don't trim anything */
-			if (dataObjInfoHead != NULL ) 
+			if (dataObjInfoHead != NULL ) {
 				freeAllDataObjInfo (*dataObjInfoHead);
+				*dataObjInfoHead = NULL; // JMC cppcheck - nullptr
+			}
 			freeAllDataObjInfo (oldDataObjInfoHead);
-			*dataObjInfoHead = NULL;
 			return (0);
 		}
     }

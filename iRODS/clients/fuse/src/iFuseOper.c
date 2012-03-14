@@ -162,6 +162,10 @@ off_t offset, struct fuse_file_info *fi)
     }
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rclOpenCollection (iFuseConn->conn, collPath, 0, &collHandle);
 
     if (status < 0) {
@@ -254,6 +258,10 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     irodsPath[0] = '\0';
 #endif 	/* CACHE_FILE_FOR_NEWLY_CREATED */
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     if (status < 0) {
 	status = dataObjCreateByFusePath (iFuseConn->conn, (char *) path, 
 	  mode, irodsPath);
@@ -287,6 +295,10 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
       (char *) path);
     relIFuseConn (iFuseConn);
     addNewlyCreatedToCache ((char *) path, descInx, mode, &tmpPathCache);
+	if( NULL == tmpPathCache ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsMknod :: addNewlyCreatedToCache Failed" );
+		return -ENOENT;
+	}
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
     tmpPathCache->locCachePath = strdup (cachePath);
     tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
@@ -323,6 +335,11 @@ irodsMkdir (const char *path, mode_t mode)
     }
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rcCollCreate (iFuseConn->conn, &collCreateInp);
 
     if (status < 0) {
@@ -374,6 +391,10 @@ irodsUnlink (const char *path)
     addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rcDataObjUnlink (iFuseConn->conn, &dataObjInp);
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
@@ -421,6 +442,10 @@ irodsRmdir (const char *path)
     addKeyVal (&collInp.condInput, FORCE_FLAG_KW, "");
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rcRmColl (iFuseConn->conn, &collInp, 0);
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
@@ -503,6 +528,10 @@ irodsRename (const char *from, const char *to)
       dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rcDataObjRename (iFuseConn->conn, &dataObjRenameInp);
 
     if (status == CAT_NAME_EXISTS_AS_DATAOBJ || 
@@ -587,6 +616,10 @@ irodsChmod (const char *path, mode_t mode)
     modDataObjMetaInp.dataObjInfo = &dataObjInfo;
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rcModDataObjMeta(iFuseConn->conn, &modDataObjMetaInp);
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
@@ -659,6 +692,10 @@ irodsTruncate (const char *path, off_t size)
     dataObjInp.dataSize = size;
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
     status = rcDataObjTruncate (iFuseConn->conn, &dataObjInp);
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
@@ -720,6 +757,10 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
     }
 #endif
     getIFuseConnByPath (&iFuseConn, (char *) path, &MyRodsEnv);
+	if( NULL == iFuseConn ) { // JMC :: cppcheck
+		rodsLog( LOG_ERROR, "irodsReaddir :: getIFuseConn Failed" );
+		return -ENOENT;
+	}
 #ifdef CACHE_FILE_FOR_READ
     if ((descInx = irodsOpenWithReadCache (iFuseConn, 
       (char *) path, fi->flags)) > 0) {

@@ -689,7 +689,7 @@ dataObjOpenForRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *inpSrcDataObjInfo, rescInfo_t *destRescInfo,
 char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 {
-    dataObjInfo_t *myDestDataObjInfo, *srcDataObjInfo;
+    dataObjInfo_t *myDestDataObjInfo, *srcDataObjInfo = NULL;
     rescInfo_t *myDestRescInfo;
     int destL1descInx;
     int srcL1descInx;
@@ -757,6 +757,10 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
         srcDataObjInfo = cacheDataObjInfo;
     }
 
+	if( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
+		rodsLog( LOG_ERROR, "dataObjOpenForRepl - srcDataObjInfo is NULL" );
+		return -1;	
+	}
     /* open the dest */
 #if 0
     dataObjInp->dataSize = inpSrcDataObjInfo->dataSize;
@@ -944,7 +948,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 	    /* copy from local to remote */
 	    /* preProcParaPut to establish portalOprOut without data transfer */
 	    status = preProcParaPut (rsComm, destL1descInx, &portalOprOut);
-           if (status < 0) {
+           if (status < 0 || NULL == portalOprOut ) { // JMC cppcheck - nullptr
                 rodsLog (LOG_NOTICE,
                   "dataObjCopy: preProcParaPut error for %s",
                   L1desc[srcL1descInx].dataObjInfo->objPath);
@@ -964,7 +968,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         if (L1desc[l1descInx].dataObjInp->numThreads > 0) {
 	    /* preProcParaGet to establish portalOprOut without data transfer */
             status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
-            if (status < 0) {
+            if (status < 0 || NULL == portalOprOut ) { // JMC cppcheck - null ptr
                 rodsLog (LOG_NOTICE,
                   "dataObjCopy: preProcParaGet error for %s",
                   L1desc[srcL1descInx].dataObjInfo->objPath);
@@ -984,7 +988,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 	if (L1desc[l1descInx].dataObjInp->numThreads > 0) {
             status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
 
-           if (status < 0) {
+           if (status < 0 || NULL == portalOprOut ) { // JMC cppcheck - null ptr
                 rodsLog (LOG_NOTICE,
                   "dataObjCopy: preProcParaGet error for %s", 
 	          L1desc[srcL1descInx].dataObjInfo->objPath);

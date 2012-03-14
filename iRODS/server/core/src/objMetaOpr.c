@@ -101,7 +101,7 @@ isCollAllKinds (rsComm_t *rsComm, char *objName, rodsLong_t *collId)
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, objName, MAX_NAME_LEN);
     status = collStatAllKinds (rsComm, &dataObjInp, &rodsObjStatOut);
-    if (status >= 0 && collId != NULL) {
+    if (status >= 0 && collId != NULL && NULL != rodsObjStatOut) { // JMC cppcheck - nullptr
         *collId = strtoll (rodsObjStatOut->dataId, 0, 0);
     }
     if (rodsObjStatOut != NULL)

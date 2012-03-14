@@ -49,7 +49,7 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, 
      srcDataObjInp->objPath, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) {
         return (status);
     } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
         status = rcDataObjRename (rodsServerHost->conn, dataObjRenameInp);
@@ -192,7 +192,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
      if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
 	status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
           ACCESS_DELETE_OBJECT, 0);
-	if (status >= 0) {
+	if (status >= 0 || NULL != dataObjInfoHead ) {
 	    srcId = dataObjInfoHead->dataId;
         } else {
             rodsLog (LOG_ERROR,
@@ -554,7 +554,7 @@ dataObjInp_t *destDataObjInp)
           srcDataObjInfo->filePath, myRodsDirent.d_name);
 
         status = l3Stat (rsComm, &subSrcDataObjInfo, &fileStatOut);
-        if (status < 0) {
+        if (status < 0 || fileStatOut == NULL ) { // JMC cppcheck
             rodsLog (LOG_ERROR,
              "moveMountedCollCollObj: l3Stat for %s error, status = %d",
              subSrcDataObjInfo.filePath, status);
@@ -580,10 +580,10 @@ dataObjInp_t *destDataObjInp)
              "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
              subSrcDataObjInfo.objPath, status);
 	}
-	if (fileStatOut != NULL) {
+	//if (fileStatOut != NULL) {
 	    free (fileStatOut);
 	    fileStatOut = NULL;
-	}
+	//}
     }
     l3Rmdir (rsComm, srcDataObjInfo);
     return savedStatus;

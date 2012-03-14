@@ -14,7 +14,7 @@ rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, modCollInp->collName,
                                 &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {

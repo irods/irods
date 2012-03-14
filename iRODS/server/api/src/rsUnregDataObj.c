@@ -19,7 +19,7 @@ rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
       &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost) { // JMC cppcheck - nullptr
        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {

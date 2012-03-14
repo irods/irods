@@ -29,7 +29,7 @@ collOprStat_t **collOprStat)
     status = getAndConnRcatHost (rsComm, MASTER_RCAT,
      rmCollInp->collName, &rodsServerHost);
 
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost )  { // JMC cppcheck - nullptr
         return (status);
     } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
 	int retval;
@@ -326,7 +326,7 @@ svrUnregColl (rsComm_t *rsComm, collInp_t *rmCollInp)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, rmCollInp->collName,
                                 &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
        return(status);
     }
 

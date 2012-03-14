@@ -126,7 +126,10 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 	/* Get size of XSLT file */
 	rei->status = rsObjStat (rsComm, &xsltDataObjInp, &rodsObjStatOut);
-
+	if( NULL == rodsObjStatOut ) { // JMC cppcheck  nullptr ref
+		rodsLog( LOG_ERROR, "msiXsltApply:: null &rodsObjStatOut" );
+		return ( rei->status );
+	}
 
 	/* xsltBuf init */
 	/* memory for xsltBuf->buf is allocated in rsFileRead() */

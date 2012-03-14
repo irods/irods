@@ -20,7 +20,7 @@ dataObjInfo_t **outDataObjInfo)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
       &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
        return(status);
     }
     
@@ -70,7 +70,7 @@ svrRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
       &rodsServerHost);
-    if (status < 0) {
+    if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
        return(status);
     }
 
@@ -84,7 +84,7 @@ svrRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         dataObjInfo_t *outDataObjInfo = NULL;
         status = rcRegDataObj (rodsServerHost->conn, dataObjInfo,
           &outDataObjInfo);
-        if (status >= 0) {
+        if (status >= 0 && NULL != outDataObjInfo ) { // JMC cppcheck - nullptr
             dataObjInfo->dataId = outDataObjInfo->dataId;
             free (outDataObjInfo);
         }

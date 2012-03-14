@@ -52,7 +52,7 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
       rcDisconnect(rodsServerHost->conn);
       rodsServerHost->conn = NULL;
    }
-   if (status < 0) {
+   if (status < 0 || authCheckOut == NULL ) { // JMC cppcheck 
       rodsLog (LOG_NOTICE,
             "rsAuthResponse: rxAuthCheck failed, status = %d", status);
       return (status);

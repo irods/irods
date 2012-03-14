@@ -273,7 +273,14 @@ getmultipartword( entry *iEntry, char **stquery, char *boundary, int length)
 	 if(ll==wsize) {
 	     word[ll+1] = '\0';
 	     wsize+=102400;
-	     word = (char *)realloc(word,sizeof(char)*(wsize+1));
+		 // JMC cppcheck - realloc failure check
+		 char* tmp_ch = 0;
+	     tmp_ch = (char *)realloc(word,sizeof(char)*(wsize+1));
+		 if( !tmp_ch ) {
+			 rodsLog( LOG_ERROR, "fmakeword :: realloc failed" );
+		 } else {
+			 word = tmp_ch;
+		 }
 	 }
 	 --(*cl);
 	 if((word[ll] == stop) || (feof(f)) || (!(*cl))) {

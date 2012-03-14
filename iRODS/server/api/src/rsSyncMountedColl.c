@@ -25,7 +25,7 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
     rodsServerHost_t *rodsServerHost;
 
     status = collStat (rsComm, syncMountedCollInp, &rodsObjStatOut);
-    if (status < 0) return status;
+    if (status < 0 || NULL == rodsObjStatOut) return status; // JMC cppcheck - nullptr
 
     if (rodsObjStatOut->specColl == NULL) {
         freeRodsObjStat (rodsObjStatOut);

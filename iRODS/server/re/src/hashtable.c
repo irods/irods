@@ -32,11 +32,14 @@ struct bucket *newBucket2(char* key, void* value, Region *r) {
  */
 Hashtable *newHashTable(int size) {
 	Hashtable *h = (Hashtable *)malloc(sizeof (Hashtable));
+    if( NULL == h ) { // JMC cppcheck - nullptr ref
+		return 0;
+	}
 	memset(h, 0, sizeof(Hashtable));
 
-	if(h==NULL) {
-		return NULL;
-	}
+//	if(h==NULL) {
+//		return NULL;
+//	}
 	h->dynamic = 0;
 	h->bucketRegion = NULL;
 	h->size = size;
@@ -56,11 +59,14 @@ Hashtable *newHashTable(int size) {
 Hashtable *newHashTable2(int size, Region *r) {
 
 	Hashtable *h = (Hashtable *)region_alloc(r, sizeof (Hashtable));
+    if( NULL == h ) { // JMC cppcheck - nullptr ref
+		return 0;
+	}
 	memset(h, 0, sizeof(Hashtable));
 
-	if(h==NULL) {
-		return NULL;
-	}
+//	if(h==NULL) {
+//		return NULL;
+//	}
 	h->dynamic = 1;
 	h->bucketRegion = r;
 	h->size = size;

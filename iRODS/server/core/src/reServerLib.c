@@ -709,11 +709,15 @@ freeReThr (reExec_t *reExec, int thrInx)
 {
     bytesBuf_t *packedReiAndArgBBuf;
 
+	if( NULL == reExec ) { // JMC cppcheck - nullptr 
+		rodsLog( LOG_ERROR, "freeReThr :: NULL reExec ptr" );
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
 #ifdef RE_SERVER_DEBUG
     rodsLog (LOG_NOTICE,
       "freeReThr: thrInx %d, pid %d",thrInx, reExec->reExecProc[thrInx].pid);
 #endif
-    if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+    //if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR; // JMC cppcheck - redundant nullptr test
     if (thrInx < 0 || thrInx >= reExec->maxRunCnt) {
         rodsLog (LOG_ERROR, "freeReThr: Bad input thrInx %d", thrInx);
 	return (SYS_BAD_RE_THREAD_INX);
@@ -743,10 +747,10 @@ runRuleExec (reExecProc_t *reExecProc)
     ruleExecInfoAndArg_t *reiAndArg = NULL;
     rsComm_t *reComm;
 
-    if (reExecProc == NULL) {
+    if (reExecProc == NULL) { // JMC cppcheck - nullptr
 	rodsLog (LOG_ERROR, "runRuleExec: NULL reExecProc input");
-	reExecProc->status = SYS_INTERNAL_NULL_INPUT_ERR;
-	return reExecProc->status;
+	//reExecProc->status = SYS_INTERNAL_NULL_INPUT_ERR;
+	return SYS_INTERNAL_NULL_INPUT_ERR;//reExecProc->status;
     }
 	
     reComm = &reExecProc->reComm;
@@ -755,7 +759,7 @@ runRuleExec (reExecProc_t *reExecProc)
     reExecProc->status = unpackReiAndArg (reComm, &reiAndArg,
       myRuleExec->packedReiAndArgBBuf);
 
-    if (reExecProc->status < 0) {
+    if (reExecProc->status < 0 || NULL == reiAndArg ) { // JMC cppcheck - nullptr
         rodsLog (LOG_ERROR,
           "runRuleExec: unpackReiAndArg of id %s failed, status = %d",
               myRuleExec->ruleExecId, reExecProc->status);

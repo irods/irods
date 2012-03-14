@@ -368,7 +368,7 @@ int whence)
     fileLseekInp.whence = whence;
     status = rsFileLseek (rsComm, &fileLseekInp, &fileLseekOut);
 
-    if (status < 0) {
+    if (status < 0 || NULL == fileLseekOut ) { // JMC cppcheck - nullptr
         return ((rodsLong_t) status);
     } else {
         rodsLong_t offset = fileLseekOut->offset;
@@ -1127,7 +1127,7 @@ irodsTarOpen (char *pathname, int oflags, int mode)
     /* the upper most 4 bits of mode is the structFileInx */ 
     decodeIrodsTarfd (mode, &structFileInx, &myMode); 
     status = verifyStructFileDesc (structFileInx, pathname, &specColl);
-    if (status < 0) return -1;	/* tar lib looks for -1 return */
+    if (status < 0 || NULL == specColl ) return -1;	/* tar lib looks for -1 return */ // JMC cppcheck - nullptr
 
     rescInfo = StructFileDesc[structFileInx].rescInfo;
     rescTypeInx = rescInfo->rescTypeInx;
@@ -1464,7 +1464,7 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
     status = rsFileStat (rsComm, &fileStatInp, &fileStatOut);
 
-    if (status < 0) {
+    if (status < 0 || NULL == fileStatOut ) { // JMC cppcheck - nullptr
        rodsLog (LOG_ERROR,
           "syncCacheDirToTarfile: rsFileStat error for %s, status = %d",
           specColl->phyPath, status);

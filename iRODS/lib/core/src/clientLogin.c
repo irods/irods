@@ -98,7 +98,7 @@ int clientLoginKrb(rcComm_t *Conn)
    static int KRB_debug=0;
 
    status = ikrbSetupCreds(Conn, NULL, NULL, &myName);
-   if (status) {
+   if (status || NULL == myName ) { // JMC cppcheck - nullptr
       printError(Conn, status, "ikrbSetupCreds");
       return(status);
    }
@@ -215,7 +215,7 @@ clientLogin(rcComm_t *Conn)
 #endif
 
    status = rcAuthRequest(Conn, &authReqOut);
-   if (status) {
+   if (status || NULL == authReqOut ) { // JMC cppcheck - nullptr
       printError(Conn, status, "rcAuthRequest");
       return(status);
    }
@@ -293,10 +293,10 @@ clientLogin(rcComm_t *Conn)
    }
 
    /* free the array and structure allocated by the rcAuthRequest */
-   if (authReqOut != NULL) {
+   //if (authReqOut != NULL) { // JMC cppcheck - redundant nullptr check
       if (authReqOut->challenge != NULL) {
          free(authReqOut->challenge);
-      }
+   //   }
       free(authReqOut);
    }
 
@@ -340,7 +340,7 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
       return (0);
    }
    status = rcAuthRequest(Conn, &authReqOut);
-   if (status) {
+   if (status || NULL == authReqOut ) { // JMC cppcheck - nullptr
       printError(Conn, status, "rcAuthRequest");
       return(status);
    }
@@ -361,12 +361,12 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    }
 
    /* free the array and structure allocated by the rcAuthRequest */
-   if (authReqOut != NULL) {
+   //if (authReqOut != NULL) { // JMC cppcheck - redundant nullptr check
       if (authReqOut->challenge != NULL) {
          free(authReqOut->challenge);
       }
       free(authReqOut);
-   }
+   //}
 
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */

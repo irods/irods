@@ -38,7 +38,7 @@ rsDatabaseRescOpen (rsComm_t *rsComm, databaseRescOpenInp_t *databaseRescOpenInp
     rescGrpInfo_t *rescGrpInfo = NULL;
 
     status = _getRescInfo (rsComm, databaseRescOpenInp->dbrName, &rescGrpInfo);
-    if (status < 0) {
+    if (status < 0 || NULL ==  rescGrpInfo ) { // JMC cppcheck - nullptr
 	 rodsLog (LOG_ERROR,
 		  "rsDatabaseRescOpen: _getRescInfo of %s error, stat = %d",
 		  databaseRescOpenInp->dbrName, status);

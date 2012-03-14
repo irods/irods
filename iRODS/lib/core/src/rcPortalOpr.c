@@ -1219,10 +1219,10 @@ writeLfRestartFile (char *infoFile, fileRestartInfo_t *info)
     status = write (fd, packedBBuf->buf, packedBBuf->len);
     close (fd);
 
-    if (packedBBuf != NULL) {
+    //if (packedBBuf != NULL) { // JMC cppcheck - redundant nullptr test
         clearBBuf (packedBBuf);
         free (packedBBuf);
-    }
+    //}
     if (status < 0) {
         status = UNIX_FILE_WRITE_ERR - errno;
         rodsLog (LOG_ERROR,

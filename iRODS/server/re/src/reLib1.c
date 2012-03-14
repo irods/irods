@@ -394,6 +394,10 @@ _applyRule(char *inAction, msParamArray_t *inMsParamArray,
   ruleInx = -1; /* new rule */
 
 
+  if( NULL == rei ) { // JMC cppcheck
+	  rodsLog( LOG_ERROR, "" );
+	  return -1;
+  }
 
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)

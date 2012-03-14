@@ -1937,36 +1937,43 @@ getNewlyCreatedDescByPath (char *path)
 int
 renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to)
 {
-    int descInx;
-    int status;
-    pathCache_t *tmpPathCache = NULL;
+	int descInx;
+	int status;
+	pathCache_t *tmpPathCache = NULL;
 
-    if ((descInx = getNewlyCreatedDescByPath (
-      (char *)fromPathCache->filePath)) >= 3) {
-        rmPathFromCache ((char *) to, PathArray);
-        rmPathFromCache ((char *) to, NonExistPathArray);
-	addPathToCache ((char *) to, PathArray, &fromPathCache->stbuf, 
-	  &tmpPathCache);
-        tmpPathCache->locCachePath = fromPathCache->locCachePath;
-	fromPathCache->locCachePath = NULL;
-        tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
-	fromPathCache->locCacheState = NO_FILE_CACHE;
-	if (IFuseDesc[descInx].objPath != NULL) 
-	    free (IFuseDesc[descInx].objPath);
-	IFuseDesc[descInx].objPath = (char *) malloc (MAX_NAME_LEN);
-        status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv,
-          IFuseDesc[descInx].objPath);
-        if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-              "renmeOpenedIFuseDesc: parseRodsPathStr of %s error", to);
-            return -ENOTDIR;
-        }
-	if (IFuseDesc[descInx].localPath != NULL) 
-	    free (IFuseDesc[descInx].localPath);
-        IFuseDesc[descInx].localPath = strdup (to);
-	return 0;
-    } else {
-	return -ENOTDIR;
-    }
+	if( ( descInx = getNewlyCreatedDescByPath ((char *)fromPathCache->filePath)) >= 3 ) {
+	
+		rmPathFromCache( (char *) to, PathArray);
+		rmPathFromCache( (char *) to, NonExistPathArray);
+		addPathToCache(  (char *) to, PathArray, &fromPathCache->stbuf, &tmpPathCache);
+		if( NULL == tmpPathCache ) {
+			rodsLogError (LOG_ERROR, status,"renmeOpenedIFuseDesc: addPathToCache Failed for path [ %s ]", to);
+			return -ENOTDIR;
+		}
+		
+		tmpPathCache->locCachePath = fromPathCache->locCachePath;
+		fromPathCache->locCachePath = NULL;
+		tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
+		fromPathCache->locCacheState = NO_FILE_CACHE;
+		
+		if (IFuseDesc[descInx].objPath != NULL) 
+			free (IFuseDesc[descInx].objPath);
+
+		IFuseDesc[descInx].objPath = (char *) malloc (MAX_NAME_LEN);
+		status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv,
+		IFuseDesc[descInx].objPath);
+		
+		if (status < 0) {
+			rodsLogError (LOG_ERROR, status,"renmeOpenedIFuseDesc: parseRodsPathStr of %s error", to);
+			return -ENOTDIR;
+		}
+
+		if (IFuseDesc[descInx].localPath != NULL) 
+			free (IFuseDesc[descInx].localPath);
+		IFuseDesc[descInx].localPath = strdup (to);
+		return 0;
+	} else {
+		return -ENOTDIR;
+	}
 }
 

@@ -26,7 +26,7 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     status = resolveAndQueResc (rescName, NULL, &rescGrpInfo);
-    if (status < 0) {
+    if (status < 0|| NULL == rescGrpInfo) { // JMC cppcheck - nullptr
         rodsLog (LOG_NOTICE,
           "rsUnbunAndRegPhyBunfile: resolveAndQueRescerror for %s, status = %d",
           rescName, status);
