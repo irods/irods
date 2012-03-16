@@ -28,19 +28,19 @@ fi
 
 # =-=-=-=-=-=-=-
 # determine if the database role already exists
-ROLE=$(sudo -u $7 psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$5'")
+ROLE=$(setuid $7 psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$5'")
 if [ $ROLE ]; then
   echo "WARNING :: Role $5 Already Exists in Database."
 else
   # =-=-=-=-=-=-=-
   # create the database role
   echo "Creating Database Role: $5 As $7"
-  sudo -u $7 createuser -s $5
+  setuid $7 createuser -s $5
 fi
 
 # =-=-=-=-=-=-=-
 # determine if the database already exists
-DB=$(sudo -u $7 psql --list  | grep $8 )
+DB=$(setuid $7 psql --list  | grep $8 )
 if [ -n "$DB" ]; then
   echo "WARNING :: Database $8 Already Exists"
 fi
