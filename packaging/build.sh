@@ -29,6 +29,7 @@ cd $DIR/../iRODS
 
 # set up own temporary configfile
 TMPCONFIGFILE=/tmp/$USER/irods.config.epm
+mkdir -p $(dirname $TMPCONFIGFILE)
 
 # set up variables for icat configuration
 if [ $1 == "icat" ] ; then
