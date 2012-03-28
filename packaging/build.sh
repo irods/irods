@@ -27,6 +27,8 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/../iRODS
 
+# set up own temporary configfile
+TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 
 # set up variables for icat configuration
 if [ $1 == "icat" ] ; then
@@ -35,7 +37,7 @@ if [ $1 == "icat" ] ; then
   EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
   echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
 
-  sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > /tmp/irods.config.epm
+  sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
 
 
 # set up variables for resource configuration
@@ -44,7 +46,7 @@ else
   EPMFILE=../packaging/irods.config.resource.epm
   ICATIP=$2
 
-  sed -e s,REMOTEICATIPADDRESS,$ICATIP, $EPMFILE > /tmp/irods.config.epm
+  sed -e s,REMOTEICATIPADDRESS,$ICATIP, $EPMFILE > $TMPCONFIGFILE
 
 fi
 
@@ -53,10 +55,10 @@ fi
 # run configure to create Makefile, config.mk, platform.mk, etc.
 ./scripts/configure
 # overwrite with our values
-cp /tmp/irods.config.epm ./config/irods.config
+cp $TMPCONFIGFILE ./config/irods.config
 # run with our updated irods.config
 ./scripts/configure
 # again to reset IRODS_HOME
-cp /tmp/irods.config.epm ./config/irods.config
+cp $TMPCONFIGFILE ./config/irods.config
 # go!
 make -j
