@@ -1,13 +1,6 @@
 #!/bin/sh
 
 # =-=-=-=-=-=-=-
-# detect database version and update installed irods.config accordingly
-EIRODSPOSTGRESVERSION=$(`which psql` --version | head -n1 | awk '{print $3}' | cut -d'.' -f1,2 )
-echo "Detecting PostgreSQL Version: [$EIRODSPOSTGRESVERSION]"
-sed -e s,.*/usr/lib/postgresql/.*,"\$DATABASE_HOME = '/usr/lib/postgresql/$EIRODSPOSTGRESVERSION';", $1/config/irods.config > /tmp/irods.config.tmp
-mv /tmp/irods.config.tmp $1/config/irods.config
-
-# =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
 if [ -f /tmp/irodsServer.* ]; then
   rm /tmp/irodsServer.*
@@ -27,32 +20,8 @@ else
 fi
 
 # =-=-=-=-=-=-=-
-# determine if the database role already exists
-ROLE=$(setuid $7 psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$5'")
-if [ $ROLE ]; then
-  echo "WARNING :: Role $5 Already Exists in Database."
-else
-  # =-=-=-=-=-=-=-
-  # create the database role
-  echo "Creating Database Role: $5 As $7"
-  setuid $7 createuser -s $5
-fi
-
-# =-=-=-=-=-=-=-
-# determine if the database already exists
-DB=$(setuid $7 psql --list  | grep $8 )
-if [ -n "$DB" ]; then
-  echo "WARNING :: Database $8 Already Exists"
-fi
-
-# =-=-=-=-=-=-=-
 # set permissions on the installed files
 chown -R $5:$5 $1
-
-# =-=-=-=-=-=-=-
-# touch odbc file so it exists for the install script to update 
-touch $9/.odbc.ini
-chown $5:$5 $9/.odbc.ini
 
 # =-=-=-=-=-=-=-
 # symlink init.d script to rcX.d
@@ -140,6 +109,11 @@ ln -s ${1}/clients/icommands/bin/ixmsg                /usr/bin/ixmsg
 ln -s ${1}/clients/icommands/bin/runQuota.ir          /usr/bin/runQuota.ir
 ln -s ${1}/clients/icommands/bin/runQuota.r           /usr/bin/runQuota.r
 ln -s ${1}/clients/icommands/bin/showCore.ir          /usr/bin/showCore.ir
+
+# =-=-=-=-=-=-=-
+# prompt for resource server configuration information
+cd $1
+../packaging/setup_resource.sh.txt | sed -e s/localhost/`hostname`/
 
 # =-=-=-=-=-=-=-
 # give user some guidance regarding .irodsEnv

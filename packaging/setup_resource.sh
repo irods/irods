@@ -3,7 +3,7 @@
 STATUS="firstpass"
 echo "==================================================================="
 echo ""
-echo "You have installed an E-iRODS resource server.  Resource servers"
+echo "You are installing an E-iRODS resource server.  Resource servers"
 echo "cannot be started until they have been properly configured to"
 echo "communicate with a live iCAT server."
 echo ""
