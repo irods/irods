@@ -3,23 +3,13 @@
 SCRIPTNAME=`basename $0`
 
 # check arguments
-if [ $# -ne 1 -a $# -ne 2 ] ; then
-  echo "Usage: $SCRIPTNAME icat   OR   $SCRIPTNAME resource {icatip}"
+if [ $# -ne 2 ] ; then
+  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource {icatip}"
   exit 1
 fi
 
 if [ $1 != "icat" -a $1 != "resource" ] ; then
-  echo "Usage: $SCRIPTNAME icat   OR   $SCRIPTNAME resource {icatip}"
-  exit 1
-fi
-
-if [ $1 == "icat" -a $# -eq 2 ] ; then
-  echo "Usage: $SCRIPTNAME icat   OR   $SCRIPTNAME resource {icatip}"
-  exit 1
-fi
-
-if [ $1 == "resource" -a $# -eq 1 ] ; then
-  echo "Usage: $SCRIPTNAME icat   OR   $SCRIPTNAME resource {icatip}"
+  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource {icatip}"
   exit 1
 fi
 
@@ -33,20 +23,23 @@ mkdir -p $(dirname $TMPCONFIGFILE)
 
 # set up variables for icat configuration
 if [ $1 == "icat" ] ; then
+
+  DBTYPE=$2
   EPMFILE=../packaging/irods.config.icat.epm
-  EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
-  EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
-  echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
-
-  sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
-
+  if [ "$DBTYPE" == "postgres" ] ; then
+    EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
+    EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
+    echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
+    sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
+  else
+    echo "TODO: irods.config for DBTYPE other than postgres"
+  fi
 
 # set up variables for resource configuration
 else
 
-  EPMFILE=../packaging/irods.config.resource.epm
   ICATIP=$2
-
+  EPMFILE=../packaging/irods.config.resource.epm
   sed -e s,REMOTEICATIPADDRESS,$ICATIP, $EPMFILE > $TMPCONFIGFILE
 
 fi
@@ -63,3 +56,17 @@ cp $TMPCONFIGFILE ./config/irods.config
 cp $TMPCONFIGFILE ./config/irods.config
 # go!
 make -j
+
+# bake SQL files for different database types
+if [ $1 == "icat" ] ; then
+  if [ "$DBTYPE" == "postgres" ] ; then
+    echo "TODO: SQL for postgres"
+  else
+    echo "TODO: SQL for DBTYPE other than postgres"
+  fi
+fi
+
+# run epm for all packages we're producing
+# need to set environment variable?  so epm knows whether icat or resource?
+sudo epm -f deb e-irods ../packaging/e-irods.list
+sudo epm -f rpm e-irods ../packaging/e-irods.list
