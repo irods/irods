@@ -1,34 +1,42 @@
 #!/bin/bash
 
+IRODS_HOME=$1
+SVC_ACCT=$2
+SERVERTYPE=$3
+DATABASE_ROLE=$4
+DATABASE=$5
+
 # =-=-=-=-=-=-=-
 # stop any running E-iRODS Processes
 echo "*** Running Pre-Remove Script ***"
-echo "Stopping iRODS :: $1/irodsctl stop"
-cd $1
-sudo -u $2 $1/irodsctl stop
+echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
+cd $IRODS_HOME
+sudo -u $SVC_ACCT $IRODS_HOME/irodsctl stop
 
-# =-=-=-=-=-=-=-
-# determine if the database already exists
-DB=$(sudo -u $3 psql --list  | grep $4 )
-if [ -n "$DB" ]; then
-  echo "Removing Database $4"
-  sudo -u $3 dropdb $4
-fi
+if [ "$SERVERTYPE" == "icat" ] ; then
+  # =-=-=-=-=-=-=-
+  # determine if the database already exists
+  DB=$(sudo -u $SVC_ACCT psql --list  | grep $DATABASE )
+  if [ -n "$DB" ]; then
+    echo "Removing Database $DATABASE"
+    sudo -u $DATABASE_ROLE dropdb $DATABASE
+  fi
 
-# =-=-=-=-=-=-=-
-# determine if the database role already exists
-ROLE=$(sudo -u $3 psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$2'")
-if [ $ROLE ]; then
-  echo "Removing Database Role $2"
-  sudo -u $3 dropuser $2
+  # =-=-=-=-=-=-=-
+  # determine if the database role already exists
+  ROLE=$(sudo -u $SVC_ACCT psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DATABASE_ROLE'")
+  if [ $ROLE ]; then
+    echo "Removing Database Role $DATABASE_ROLE"
+    sudo -u $SVC_ACCT dropuser $DATABASE_ROLE
+  fi
 fi
 
 # =-=-=-=-=-=-=-
 # determine if the service account already exists
-USER=$( grep $2 /etc/passwd )
+USER=$( grep $SVC_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
-  echo "Removing Service Account $2"
-  deluser $2
+  echo "Removing Service Account $SVC_ACCT"
+  deluser $SVC_ACCT
 fi
 
 # =-=-=-=-=-=-=-

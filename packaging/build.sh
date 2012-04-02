@@ -13,19 +13,26 @@ if [ $1 != "icat" -a $1 != "resource" ] ; then
   exit 1
 fi
 
+
+
 # get into the correct directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/../iRODS
+
+
 
 # set up own temporary configfile
 TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 mkdir -p $(dirname $TMPCONFIGFILE)
 
+
+
 # set up variables for icat configuration
 if [ $1 == "icat" ] ; then
 
+  SERVERTYPE="ICAT"
   DBTYPE=$2
-  EPMFILE=../packaging/irods.config.icat.epm
+  EPMFILE="../packaging/irods.config.icat.epm"
   if [ "$DBTYPE" == "postgres" ] ; then
     EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
     EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
@@ -38,8 +45,9 @@ if [ $1 == "icat" ] ; then
 # set up variables for resource configuration
 else
 
+  SERVERTYPE="RESOURCE"
   ICATIP=$2
-  EPMFILE=../packaging/irods.config.resource.epm
+  EPMFILE="../packaging/irods.config.resource.epm"
   sed -e s,REMOTEICATIPADDRESS,$ICATIP, $EPMFILE > $TMPCONFIGFILE
 
 fi
@@ -57,16 +65,20 @@ cp $TMPCONFIGFILE ./config/irods.config
 # go!
 make -j
 
+
+
 # bake SQL files for different database types
 if [ $1 == "icat" ] ; then
   if [ "$DBTYPE" == "postgres" ] ; then
-    echo "TODO: SQL for postgres"
+    echo "TODO: bake SQL for postgres"
   else
-    echo "TODO: SQL for DBTYPE other than postgres"
+    echo "TODO: bake SQL for DBTYPE other than postgres"
   fi
 fi
 
-# run epm for all packages we're producing
-# need to set environment variable?  so epm knows whether icat or resource?
-sudo epm -f deb e-irods ../packaging/e-irods.list
-sudo epm -f rpm e-irods ../packaging/e-irods.list
+
+
+# run epm for all package types we're producing
+sudo epm -f deb e-irods $SERVERTYPE=true DEB=true ../packaging/e-irods.list
+sudo epm -f rpm e-irods $SERVERTYPE=true RPM=true ../packaging/e-irods.list
+  
