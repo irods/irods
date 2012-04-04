@@ -40,7 +40,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
       # =-=-=-=-=-=-=-
       # create the database role
       echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
-      su --shell=/bin/sh --session-command="createuser -s $DB_USER" $DB_ADMIN_ROLE
+      su --shell=/bin/bash --session-command="createuser -s $DB_USER" $DB_ADMIN_ROLE
     fi
 
     # =-=-=-=-=-=-=-
