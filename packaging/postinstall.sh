@@ -14,8 +14,8 @@ DB_PASS=$10
 if [ "$SERVERTYPE" == "icat" ] ; then
   # =-=-=-=-=-=-=-
   # detect database path and update installed irods.config accordingly
-  cd $IRODS_HOME
-  EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
+  PSQL=`$HOME_DIR/packaging/find_postgres.sh`
+  EIRODSPOSTGRESPATH=`$HOME_DIR/packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
   EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
   echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
   sed -e ,^\$DATABASE_HOME,s,^.*$,"\$DATABASE_HOME = '$EIRODSPOSTGRESPATH';", $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
@@ -30,33 +30,34 @@ fi
 
 # =-=-=-=-=-=-=-
 # determine if the service account already exists
-USER=$( grep $SVC_ACCT /etc/passwd )
-if [ -n "$USER" ]; then 
-  echo "WARNING :: Service Account $SVC_ACCT Already Exists."
-else
-  # =-=-=-=-=-=-=-
-  # create the service account
-  echo "Creating Service Account: $SVC_ACCT At $HOME_DIR"
-  useradd -m -d $HOME_DIR $SVC_ACCT
-  chown $SVC_ACCT:$SVC_ACCT $HOME_DIR
-fi
+# NOTE:: now handled in the list file with an embedded preinstall script 
+#USER=$( grep $SVC_ACCT /etc/passwd )
+#if [ -n "$USER" ]; then 
+#  echo "WARNING :: Service Account $SVC_ACCT Already Exists."
+#else
+#  # =-=-=-=-=-=-=-
+#  # create the service account
+#  echo "Creating Service Account: $SVC_ACCT At $HOME_DIR"
+#  useradd -m -d $HOME_DIR $SVC_ACCT
+#  chown $SVC_ACCT:$SVC_ACCT $HOME_DIR
+#fi
 
 if [ "$SERVERTYPE" == "icat" ] ; then
   # =-=-=-=-=-=-=-
   # determine if the database role already exists
-  ROLE=$(setuid $DATABASE_ROLE psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$SVC_ACCT'")
+  ROLE=$( su --shell=/bin/sh --session-command="$PSQL $DATABASE_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$SVC_ACCT'\"" $DATABASE_ROLE )
   if [ $ROLE ]; then
     echo "WARNING :: Role $SVC_ACCT Already Exists in Database."
   else
     # =-=-=-=-=-=-=-
     # create the database role
-    echo "Creating Database Role: $SVC_ACCT As $DATABASE_ROLE"
-    setuid $DATABASE_ROLE createuser -s $SVC_ACCT
+    echo "Creating Database Role: $SVC_ACCT as $DATABASE_ROLE"
+    su --shell=/bin/sh --session-command="createuser -s $SVC_ACCT" $DATABASE_ROLE
   fi
 
   # =-=-=-=-=-=-=-
   # determine if the database already exists
-  DB=$(setuid $DATABASE_ROLE psql --list  | grep $DATABASE )
+  DB=$( su --shell=/bin/bash --session-command="$PSQL --list" $DATABASE_ROLE  | grep $DATABASE )
   if [ -n "$DB" ]; then
     echo "WARNING :: Database $DATABASE Already Exists"
   fi
