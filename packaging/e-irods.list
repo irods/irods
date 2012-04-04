@@ -301,9 +301,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatPurgeRec
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuerySetup.c ./iRODS/server/icat/src/icatGeneralQuerySetup.c
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/convertSql.pl ./iRODS/server/icat/src/convertSql.pl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config -
-#f 600 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/installPostgres.config ./iRODS/config/installPostgres.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk ./iRODS/config/platform.mk
-f 600 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/EUCASTARTSH_DEBUG ./iRODS/config/EUCASTARTSH_DEBUG
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen-msi.config ./iRODS/config/doxygen-msi.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/irodsEnv.boot ./iRODS/config/irodsEnv.boot
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/installPostgres.config.template ./iRODS/config/installPostgres.config.template
