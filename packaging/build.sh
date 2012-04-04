@@ -30,10 +30,10 @@ mkdir -p $(dirname $TMPCONFIGFILE)
 # set up variables for icat configuration
 if [ $1 == "icat" ] ; then
 
-  SERVERTYPE="ICAT"
-  DBTYPE=$2
+  SERVER_TYPE="ICAT"
+  DB_TYPE=$2
   EPMFILE="../packaging/irods.config.icat.epm"
-  if [ "$DBTYPE" == "postgres" ] ; then
+  if [ "$DB_TYPE" == "postgres" ] ; then
     EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
     EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
@@ -45,7 +45,7 @@ if [ $1 == "icat" ] ; then
 # set up variables for resource configuration
 else
 
-  SERVERTYPE="RESOURCE"
+  SERVER_TYPE="RESOURCE"
   ICATIP=$2
   EPMFILE="../packaging/irods.config.resource.epm"
   sed -e s,REMOTEICATIPADDRESS,$ICATIP, $EPMFILE > $TMPCONFIGFILE
@@ -69,7 +69,7 @@ make -j
 
 # bake SQL files for different database types
 if [ $1 == "icat" ] ; then
-  if [ "$DBTYPE" == "postgres" ] ; then
+  if [ "$DB_TYPE" == "postgres" ] ; then
     echo "TODO: bake SQL for postgres"
   else
     echo "TODO: bake SQL for DBTYPE other than postgres"
@@ -79,6 +79,6 @@ fi
 
 
 # run epm for all package types we're producing
-sudo epm -f deb e-irods $SERVERTYPE=true DEB=true ../packaging/e-irods.list
-sudo epm -f rpm e-irods $SERVERTYPE=true RPM=true ../packaging/e-irods.list
+sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ../packaging/e-irods.list
+sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ../packaging/e-irods.list
   

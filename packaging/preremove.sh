@@ -1,43 +1,54 @@
 #!/bin/bash
 
-IRODS_HOME=$1
-SVC_ACCT=$2
-SERVERTYPE=$3
-DATABASE_ROLE=$4
-DATABASE=$5
+EIRODS_HOME_DIR=$1
+OS_EIRODS_ACCT=$2
+DB_TYPE=$3
+DB_ADMIN_ROLE=$4
+DB_NAME=$5
+DB_USER=$6
+
+IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 
 # =-=-=-=-=-=-=-
 # stop any running E-iRODS Processes
 echo "*** Running Pre-Remove Script ***"
 echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
-cd $IRODS_HOME
-sudo -u $SVC_ACCT $IRODS_HOME/irodsctl stop
+su --shell=/bin/bash --session-command="$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT
 
-if [ "$SERVERTYPE" == "icat" ] ; then
-  # =-=-=-=-=-=-=-
-  # determine if the database already exists
-  DB=$(sudo -u $SVC_ACCT psql --list  | grep $DATABASE )
-  if [ -n "$DB" ]; then
-    echo "Removing Database $DATABASE"
-    sudo -u $DATABASE_ROLE dropdb $DATABASE
+if [ "$SERVER_TYPE" == "icat" ] ; then
+
+  if [ "$DB_TYPE" == "postgres" ] ; then
+    # =-=-=-=-=-=-=-
+    # determine if the database already exists
+    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres.sh`
+    DB=$( su --shell=/bin/bash --session-command="$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
+    if [ -n "$DB" ]; then
+      echo "Removing Database $DB_NAME"
+      su --shell=/bin/bash --session-command="dropdb $DB_NAME" $DB_ADMIN_ROLE
+    fi
+
+    # =-=-=-=-=-=-=-
+    # determine if the database role already exists
+    ROLE=$( su --shell=/bin/bash --session-command="$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $OS_EIRODS_ACCT )
+    if [ $ROLE ]; then
+      echo "Removing Database Role $DB_USER"
+      su --shell=/bin/bash --session-command="dropuser $DB_USER" $DB_ADMIN_ROLE
+    fi
+  else
+    # expand this for each type of database
+    echo "TODO: remove non-postgres database"
+    echo "TODO: remove non-postgres user"
   fi
 
-  # =-=-=-=-=-=-=-
-  # determine if the database role already exists
-  ROLE=$(sudo -u $SVC_ACCT psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DATABASE_ROLE'")
-  if [ $ROLE ]; then
-    echo "Removing Database Role $DATABASE_ROLE"
-    sudo -u $SVC_ACCT dropuser $DATABASE_ROLE
-  fi
 fi
 
 # =-=-=-=-=-=-=-
 # determine if the service account already exists
-USER=$( grep $SVC_ACCT /etc/passwd )
+USER=$( grep $OS_EIRODS_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
-  echo "Removing Service Account $SVC_ACCT"
+  echo "Removing Service Account $OS_EIRODS_ACCT"
   cd /tmp
-  userdel $SVC_ACCT
+  userdel $OS_EIRODS_ACCT
 fi
 
 # =-=-=-=-=-=-=-

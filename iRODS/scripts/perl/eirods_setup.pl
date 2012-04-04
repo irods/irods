@@ -486,8 +486,8 @@ if( scalar(@ARGV) == 0 ) {
 	$DATABASE_ADMIN_PASSWORD = promptIdentifier( "Password", $DATABASE_ADMIN_PASSWORD );
 } else {
 	$DATABASE_TYPE           = $ARGV[0];
-	$DATABASE_PORT		 = $ARGV[1];
-	$DATABASE_HOST           = $ARGV[2];
+	$DATABASE_HOST           = $ARGV[1];
+	$DATABASE_PORT           = $ARGV[2];
 	$DATABASE_ADMIN_NAME     = $ARGV[3];
 	$DATABASE_ADMIN_PASSWORD = $ARGV[4];
 }
