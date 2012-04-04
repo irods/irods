@@ -79,6 +79,7 @@ fi
 
 
 # run epm for all package types we're producing
-sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ../packaging/e-irods.list
-sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ../packaging/e-irods.list
-  
+cd $DIR/../
+sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
+sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+
