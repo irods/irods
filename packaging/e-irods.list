@@ -6,10 +6,27 @@
 %description Enterprise edition of the Integrated Rule Oriented Storage system
 %version 3.0b1 300001
 
+%if DEB
+
 %requires postgresql 8.4
 %requires unixodbc
 %requires odbc-postgresql
+%requires perl
 %requires super
+
+%elseif RPM
+
+%requires postgresql 
+%requires postgresql-server
+%requires postgresql-odbc
+%requires unixODBC
+%requires perl
+%requires authd
+
+%endif
+
+
+%format all
 
 # =-=-=-=-=-=-=-
 # variables for configuring the install
@@ -37,7 +54,25 @@ $DB_PASS=SOMEPASSWORD
 
 # =-=-=-=-=-=-=-
 # preinstall directives 
-# disabled 
+# =-=-=-=-=-=-=-
+# determine if the service account already exists                                                                       
+%preinstall << END_PREINSTALL
+
+USER=$$( grep $SVC_ACCT /etc/passwd )
+if [ -n "$$USER" ]; then                                                                                                 
+	echo "WARNING :: Service Account $SVC_ACCT Already Exists."                                                                  
+else                                                                                                                    
+# =-=-=-=-=-=-=-                                                                                                      
+# create the service account
+	echo Creating Service Account: $SVC_ACCT At $HOME_DIR
+	/usr/sbin/useradd -m -d $HOME_DIR $SVC_ACCT
+
+	ACCT=$SVC_ACCT
+	chown $$ACCT:$$ACCT $HOME_DIR
+fi
+
+
+END_PREINSTALL
 
 # =-=-=-=-=-=-=-
 # post install
@@ -64,6 +99,8 @@ END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # files, and more files...
 d 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging -
+f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/find_postgres.sh ./packaging/find_postgres.sh
+f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
 f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 644 $SVC_ACCT $SVC_ACCT ${HOME_DIR}/packaging/user_help.txt ./packaging/user_help.txt
@@ -271,7 +308,6 @@ f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/api.mk ./iRODS/config/api.mk
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/directories.mk ./iRODS/config/directories.mk
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/config.mk ./iRODS/config/config.mk
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/config.mk.in ./iRODS/config/config.mk.in
-f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/irods.config.template ./iRODS/config/irods.config.template
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/workflow.html ./iRODS/config/workflow.html
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/doxygen.config ./iRODS/config/doxygen.config
 f 644 $SVC_ACCT $SVC_ACCT ${IRODS_HOME}/config/common.mk ./iRODS/config/common.mk
