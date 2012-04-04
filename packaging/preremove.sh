@@ -36,7 +36,7 @@ fi
 USER=$( grep $SVC_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
   echo "Removing Service Account $SVC_ACCT"
-  deluser $SVC_ACCT
+  userdel $SVC_ACCT
 fi
 
 # =-=-=-=-=-=-=-
