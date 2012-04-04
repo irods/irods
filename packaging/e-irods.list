@@ -75,11 +75,10 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 # post install
 %if ICAT
-  INSTALL_PARAMETERS="$EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER $DB_PASS"
+%postinstall $HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER $DB_PASS
 %else
-  INSTALL_PARAMETERS="$EIRODS_HOME_DIR $OS_EIRODS_ACCT resource"
+%postinstall $HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
-%postinstall $HOME_DIR/packaging/postinstall.sh $INSTALL_PARAMETERS
 
 # =-=-=-=-=-=-=-
 # preremove
