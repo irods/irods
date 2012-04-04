@@ -126,7 +126,9 @@ runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
 $ENV{'irodsDebug'}='noop'; # override value in irodsEnv file
 runCmd(0, "test_chl modrfs $Resc 123456789 close");
 
-require "../../../config/irods.config";
+$cfgPath="../../../config/irods.config";
+require $cfgPath;
+
 if ($DATABASE_TYPE eq "oracle") {
 #   oracle does autocommit so don't check the result
     runCmd(1, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
