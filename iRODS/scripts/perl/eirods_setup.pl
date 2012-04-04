@@ -480,7 +480,7 @@ if( scalar(@ARGV) == 0 ) {
 	$DATABASE_ADMIN_NAME        = "eirods";
 	$DATABASE_ADMIN_PASSWORD    = "foobar";
 
-	$DATABASE_HOST           = promptString( "Datbase Host Name", $DATABASE_HOST );
+	$DATABASE_HOST           = promptString( "Database Host Name", $DATABASE_HOST );
 	$DATABASE_PORT           = promptInteger( "Database Port", ( ( !defined($DATABASE_PORT)||$DATABASE_PORT eq "") ? $DEFAULT_databaseServerPort : $DATABASE_PORT) );
 	$DATABASE_ADMIN_NAME     = promptIdentifier( "User Name", $DATABASE_ADMIN_NAME );
 	$DATABASE_ADMIN_PASSWORD = promptIdentifier( "Password", $DATABASE_ADMIN_PASSWORD );
@@ -2916,8 +2916,8 @@ sub Postgres_CreateDatabase()
 			# probably means Postgres was installed (incompletely)
 			# previously.  Chances are good that this will not
 			# be sufficient and something else is wrong too.
-			my $libPath = abs_path( File::Spec->catfile(
-				$databaseLibDir, "libodbcpsql.so" ) );
+			my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
+				
 			printToFile( $ini,
 				"[PostgreSQL]\n" .
 				"Driver=$libPath\n" .
@@ -3077,10 +3077,14 @@ sub Postgres_CreateDatabase()
 #		my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
 #		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/", "libodbc.so" ) );
 		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/odbc/", "psqlodbca.so" ) );
+
+	# E-iRODS now supports a script to determine the path & lib name of the odbc driver
+	my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
+	chomp($psqlOdbcLib);
 			      
 
 		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
-				"Driver=$libPath\n" .
+				"Driver=$psqlOdbcLib\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
 				"Servername=$DATABASE_HOST\n" .
@@ -3141,6 +3145,7 @@ sub Oracle_CreateDatabase()
 	my $sqlfile;
 	foreach $sqlfile (@sqlfiles)
 	{
+	    printLog( "    $sqlfile...\n" );
 	    printLog( "    $sqlfile...\n" );
 	    printStatus ( "    $sqlfile...\n" );
 	    my $sqlPath = File::Spec->catfile( $serverSqlDir, $sqlfile );
