@@ -1,11 +1,26 @@
 #!/bin/sh
 
-# =-=-=-=-=-=-=-
-# detect database version and update installed irods.config accordingly
-EIRODSPOSTGRESVERSION=$(`which psql` --version | head -n1 | awk '{print $3}' | cut -d'.' -f1,2 )
-echo "Detecting PostgreSQL Version: [$EIRODSPOSTGRESVERSION]"
-sed -e s,.*/usr/lib/postgresql/.*,"\$DATABASE_HOME = '/usr/lib/postgresql/$EIRODSPOSTGRESVERSION';", $1/config/irods.config > /tmp/irods.config.tmp
-mv /tmp/irods.config.tmp $1/config/irods.config
+IRODS_HOME=$1
+SVC_ACCT=$2
+SERVERTYPE=$3
+HOME_DIR=$4
+DATABASE_ROLE=$5
+DATABASE=$6
+DB_TYPE=$7
+DB_PORT=$8
+DB_HOST=$9
+DB_PASS=$10
+
+if [ "$SERVERTYPE" == "icat" ] ; then
+  # =-=-=-=-=-=-=-
+  # detect database path and update installed irods.config accordingly
+  cd $IRODS_HOME
+  EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
+  EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
+  echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
+  sed -e ,^\$DATABASE_HOME,s,^.*$,"\$DATABASE_HOME = '$EIRODSPOSTGRESPATH';", $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+  mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
+fi
 
 # =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
@@ -15,44 +30,46 @@ fi
 
 # =-=-=-=-=-=-=-
 # determine if the service account already exists
-USER=$( grep $5 /etc/passwd )
+USER=$( grep $SVC_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
-  echo "WARNING :: Service Account $5 Already Exists."
+  echo "WARNING :: Service Account $SVC_ACCT Already Exists."
 else
   # =-=-=-=-=-=-=-
   # create the service account
-  echo "Creating Service Account: $5 At $9"
-  useradd -m -d $9 $5
-  chown $5:$5 $9
+  echo "Creating Service Account: $SVC_ACCT At $HOME_DIR"
+  useradd -m -d $HOME_DIR $SVC_ACCT
+  chown $SVC_ACCT:$SVC_ACCT $HOME_DIR
 fi
 
-# =-=-=-=-=-=-=-
-# determine if the database role already exists
-ROLE=$(setuid $7 psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$5'")
-if [ $ROLE ]; then
-  echo "WARNING :: Role $5 Already Exists in Database."
-else
+if [ "$SERVERTYPE" == "icat" ] ; then
   # =-=-=-=-=-=-=-
-  # create the database role
-  echo "Creating Database Role: $5 As $7"
-  setuid $7 createuser -s $5
-fi
+  # determine if the database role already exists
+  ROLE=$(setuid $DATABASE_ROLE psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$SVC_ACCT'")
+  if [ $ROLE ]; then
+    echo "WARNING :: Role $SVC_ACCT Already Exists in Database."
+  else
+    # =-=-=-=-=-=-=-
+    # create the database role
+    echo "Creating Database Role: $SVC_ACCT As $DATABASE_ROLE"
+    setuid $DATABASE_ROLE createuser -s $SVC_ACCT
+  fi
 
-# =-=-=-=-=-=-=-
-# determine if the database already exists
-DB=$(setuid $7 psql --list  | grep $8 )
-if [ -n "$DB" ]; then
-  echo "WARNING :: Database $8 Already Exists"
+  # =-=-=-=-=-=-=-
+  # determine if the database already exists
+  DB=$(setuid $DATABASE_ROLE psql --list  | grep $DATABASE )
+  if [ -n "$DB" ]; then
+    echo "WARNING :: Database $DATABASE Already Exists"
+  fi
 fi
 
 # =-=-=-=-=-=-=-
 # set permissions on the installed files
-chown -R $5:$5 $1
+chown -R $SVC_ACCT:$SVC_ACCT $IRODS_HOME
 
 # =-=-=-=-=-=-=-
 # touch odbc file so it exists for the install script to update 
-touch $9/.odbc.ini
-chown $5:$5 $9/.odbc.ini
+touch $HOME_DIR/.odbc.ini
+chown $SVC_ACCT:$SVC_ACCT $HOME_DIR/.odbc.ini
 
 # =-=-=-=-=-=-=-
 # symlink init.d script to rcX.d
@@ -79,12 +96,12 @@ cd $PWD
 
 # =-=-=-=-=-=-=-
 # run setup script to configure database, users, default resource, etc.
-cd $1
-sudo -H -u $5 perl ./scripts/perl/eirods_setup.pl $2 $3 $4 $5 $6
+cd $IRODS_HOME
+sudo -H -u $SVC_ACCT perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_PORT $DB_HOST $SVC_ACCT $DB_PASS
 
 # =-=-=-=-=-=-=-
 # symlink the icommands
-cd $1
+cd $IRODS_HOME
 ln -s ${1}/clients/icommands/bin/chgCoreToCore1.ir    /usr/bin/chgCoreToCore1.ir
 ln -s ${1}/clients/icommands/bin/chgCoreToCore2.ir    /usr/bin/chgCoreToCore2.ir
 ln -s ${1}/clients/icommands/bin/chgCoreToOrig.ir     /usr/bin/chgCoreToOrig.ir
@@ -141,9 +158,16 @@ ln -s ${1}/clients/icommands/bin/runQuota.ir          /usr/bin/runQuota.ir
 ln -s ${1}/clients/icommands/bin/runQuota.r           /usr/bin/runQuota.r
 ln -s ${1}/clients/icommands/bin/showCore.ir          /usr/bin/showCore.ir
 
+if [ "$SERVERTYPE" == "resource" ] ; then
+  # =-=-=-=-=-=-=-
+  # prompt for resource server configuration information
+  cd $IRODS_HOME
+  ../packaging/setup_resource.sh.txt | sed -e s/localhost/`hostname`/
+fi
+
 # =-=-=-=-=-=-=-
 # give user some guidance regarding .irodsEnv
-cd $1
+cd $IRODS_HOME
 cat ../packaging/user_help.txt | sed -e s/localhost/`hostname`/
 
 # =-=-=-=-=-=-=-
