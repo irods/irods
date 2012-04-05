@@ -82,7 +82,11 @@ END_PREINSTALL
 
 # =-=-=-=-=-=-=-
 # preremove
-%preremove $HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%if ICAT
+%preremove $HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%else
+%preremove $HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
+%endif
 
 # =-=-=-=-=-=-=-
 # post remove
