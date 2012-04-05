@@ -28,7 +28,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     EIRODSPOSTGRESPATH=`$PSQL | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
     EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
-    sed -e ,^\$DATABASE_HOME,s,^.*$,"\$DATABASE_HOME = '$EIRODSPOSTGRESPATH';", $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+    sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESPATH';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
     mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
     # =-=-=-=-=-=-=-
