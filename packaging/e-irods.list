@@ -75,21 +75,24 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 # post install
 %if ICAT
-%postinstall $HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER $DB_PASS
+%postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER $DB_PASS
 %else
-%postinstall $HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
+%postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
 
 # =-=-=-=-=-=-=-
 # preremove
 %if ICAT
-%preremove $HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
+%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
 %else
-%preremove $HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
+%preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
 
 # =-=-=-=-=-=-=-
 # post remove
+%if RPM
+%postremove rm -r $EIRODS_HOME_DIR  
+%elseif DEB
 %postremove << END_POSTREMOVE
 # =-=-=-=-=-=-=-
 # remove the install directory if necessary
@@ -100,6 +103,7 @@ else
   echo "Not removing Service Account Directory " $EIRODS_HOME_DIR
 fi 
 END_POSTREMOVE
+%endif
 
 # =-=-=-=-=-=-=-
 # =-=-=-=-=-=-=-

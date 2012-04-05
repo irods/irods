@@ -9,9 +9,22 @@ DB_NAME=$6
 DB_HOST=$7
 DB_PORT=$8
 DB_USER=$9
-DB_PASS=$10
+DB_PASS=${10}
 
 IRODS_HOME=$EIRODS_HOME_DIR/iRODS
+
+
+#echo "EIRODS_HOME_DIR=$EIRODS_HOME_DIR"
+#echo "OS_EIRODS_ACCT=$OS_EIRODS_ACCT"
+#echo "SERVER_TYPE=$SERVER_TYPE"
+#echo "DB_TYPE=$DB_TYPE"
+#echo "DB_ADMIN_ROLE=$DB_ADMIN_ROLE"
+#echo "DB_NAME=$DB_NAME"
+#echo "DB_HOST=$DB_HOST"
+#echo "DB_PORT=$DB_PORT"
+#echo "DB_USER=$DB_USER"
+#echo "DB_PASS=$DB_PASS"
+
 
 # =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
@@ -25,10 +38,10 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     # =-=-=-=-=-=-=-
     # detect database path and update installed irods.config accordingly
     PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres.sh`
-    EIRODSPOSTGRESPATH=`$PSQL | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
-    EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
-    echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
-    sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESPATH';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+	EIRODSPOSTGRESDIR=$(dirname `dirname $PSQL`)
+    EIRODSPOSTGRESDIR="$EIRODSPOSTGRESDIR/"
+    echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
+    sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
     mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
     # =-=-=-=-=-=-=-
@@ -40,7 +53,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
       # =-=-=-=-=-=-=-
       # create the database role
       echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
-      su --shell=/bin/bash --session-command="createuser -s $DB_USER" $DB_ADMIN_ROLE
+      su --shell=/bin/bash --session-command="createuser -s $DB_USER" $DB_ADMIN_ROLE &> /dev/null
     fi
 
     # =-=-=-=-=-=-=-

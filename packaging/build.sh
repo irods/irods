@@ -15,7 +15,7 @@ fi
 
 
 
-# get into the correct directory
+# get into the correct directory 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR/../iRODS
 
@@ -77,8 +77,8 @@ if [ $1 == "icat" ] ; then
 fi
 
 
-
 # run epm for all package types we're producing
 cd $DIR/../
-sudo epm -v -f deb e-irods $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
-sudo epm -v -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
+sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+

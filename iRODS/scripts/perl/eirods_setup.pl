@@ -2846,7 +2846,7 @@ sub Postgres_CreateDatabase()
 
 		if ($DATABASE_HOST eq "localhost") {
 		    #($status,$output) = run( "createdb -U $DATABASE_ADMIN_NAME $DB_NAME" ); # < $tmpPassword" );
-			$status = system( "createdb -U $DATABASE_ADMIN_NAME ICAT" );
+			$status = system( "createdb -U $DATABASE_ADMIN_NAME ICAT &> /dev/null" );
 		}
 		else {
 		    ($status,$output) = run( "createdb -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
@@ -3030,57 +3030,50 @@ sub Postgres_CreateDatabase()
 		# to it, etc., as it had before.
 
 		# Backup the current file.
-		my $dt = getCurrentDateTime( );
-		$dt =~ s/ /_/g;
-		my $tmpfile = "$userODBC.$dt";
-		if ( copy( $userODBC, $tmpfile ) != 1 )
-		{
-			printError( "\nInstall problem:\n" );
-			printError( "    Cannot copy user's ODBC configuration file.\n" );
-			printError( "        Temp file:  $tmpfile\n" );
-			printError( "        Error:      $!\n" );
-			printLog( "Cannot copy user's ODBC config file:  $tmpfile\n" );
-			printLog( "Copy error:  $!\n" );
-			return 0;
-		}
-		chmod( $tmpfile, 0600 );
+		#my $dt = getCurrentDateTime( );
+		#$dt =~ s/ /_/g;
+		#my $tmpfile = "$userODBC.$dt";
+		#if ( copy( $userODBC, $tmpfile ) != 1 )
+		#{
+		#	printError( "\nInstall problem:\n" );
+		#	printError( "    Cannot copy user's ODBC configuration file.\n" );
+		#	printError( "        Temp file:  $tmpfile\n" );
+		#	printError( "        Error:      $!\n" );
+		#	printLog( "Cannot copy user's ODBC config file:  $tmpfile\n" );
+		#	printLog( "Copy error:  $!\n" );
+		#	return 0;
+		#}
+		#chmod( $tmpfile, 0600 );
 
 		# Open the backup for reading and the original for writing.
 		# This will truncate the original file, but we'll write
 		# new lines back into it.
-		open( CONFIGFILE,    "<$tmpfile" );
-		open( NEWCONFIGFILE, ">$userODBC" );	# Truncate file
-		my $inSection = 0;
-		my $hasContent = 0;
-		foreach $line ( <CONFIGFILE> )
-		{
-			$hasContent = 1;
-			if ( $line =~ /^\[[ \t]*PostgreSQL/ )
-			{
-				$inSection = 1;
-			}
-			elsif ( $line =~ /^[ \t]*$/ || $line =~ /^\[/ )
-			{
-				$inSection = 0;
-			}
-			if ( ! $inSection )
-			{
-				print( NEWCONFIGFILE $line );
-			}
-		}
+		#open( CONFIGFILE,    "<$tmpfile" );
+		#open( NEWCONFIGFILE, ">$userODBC" );	# Truncate file
+		#my $inSection = 0;
+		#my $hasContent = 0;
+		#foreach $line ( <CONFIGFILE> )
+		#{
+		#	$hasContent = 1;
+		#	if ( $line =~ /^\[[ \t]*PostgreSQL/ )
+		#	{
+		#		$inSection = 1;
+		#	}
+		#	elsif ( $line =~ /^[ \t]*$/ || $line =~ /^\[/ )
+		#	{
+		#		$inSection = 0;
+		#	}
+		#	if ( ! $inSection )
+		#	{
+		#		print( NEWCONFIGFILE $line );
+		#	}
+		#}
 
-# New section added 8/21/08 to update ~/.odbc.ini to have the
-# [PostgreSQL] section as this seems to be needed on some hosts.  Note
-# that this may change the user's version of odbcpsql.so being used
-# (but the previous ~/.odbc.ini file is saved).
-
-#		my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
-#		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/", "libodbc.so" ) );
 		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/odbc/", "psqlodbca.so" ) );
 
-	# E-iRODS now supports a script to determine the path & lib name of the odbc driver
-	my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
-	chomp($psqlOdbcLib);
+		# E-iRODS now supports a script to determine the path & lib name of the odbc driver
+		my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
+		chomp($psqlOdbcLib);
 			      
 
 		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
@@ -3093,7 +3086,6 @@ sub Postgres_CreateDatabase()
 				"Ksqo=0\n" .
 				"Port=$DATABASE_PORT\n" );
 		$hasContent = 1;
-# end new section
 
 		close( NEWCONFIGFILE );
 		close( CONFIGFILE );
@@ -3102,8 +3094,6 @@ sub Postgres_CreateDatabase()
 		{
 			# Be sure edited file has the right permissions.
 			chmod( $userODBC, 0600 );
-
-			printStatus( "    Old file moved to $tmpfile\n" );
 		}
 		else
 		{
@@ -3112,7 +3102,7 @@ sub Postgres_CreateDatabase()
 			unlink( $tmpfile );
 			printStatus( "    Skipped.  Unused empty file deleted.\n" );
 		}
-	}
+	} 
 	return 1;
 }
 

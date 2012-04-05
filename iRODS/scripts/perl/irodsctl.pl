@@ -1296,9 +1296,12 @@ sub stopIrods
 	# Find and kill the server process IDs
 	my @pids = getOurIrodsServerPids();
 	my $found = 0;
+	$num = @pids;
+	print ( "Found $num processes:\n" );
 	foreach $pid (@pids)
 	{
 		$found = 1;
+		print( "\tStopping process id $pid\n" );
 		kill( 'SIGINT', $pid );
 	}
 	if ( ! $found )
@@ -1313,6 +1316,7 @@ sub stopIrods
 	foreach $pid (@pids)
 	{
 		$found = 1;
+		print( "\tKilling process id $pid\n" );
 		kill( 9, $pid );
 	}
 

@@ -10,11 +10,23 @@ DB_USER=$7
 
 IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 
+
+#echo "EIRODS_HOME_DIR=$EIRODS_HOME_DIR"
+#echo "OS_EIRODS_ACCT=$OS_EIRODS_ACCT"
+#echo "SERVER_TYPE=$SERVER_TYPE"
+#echo "DB_TYPE=$DB_TYPE"
+#echo "DB_ADMIN_ROLE=$DB_ADMIN_ROLE"
+#echo "DB_NAME=$DB_NAME"
+#echo "DB_USER=$DB_USER"
+
+
 # =-=-=-=-=-=-=-
 # stop any running E-iRODS Processes
 echo "*** Running Pre-Remove Script ***"
 echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
-su --shell=/bin/bash --session-command="$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT
+cd $IRODS_HOME
+su --shell=/bin/bash --session-command="$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT 
+cd /tmp
 
 if [ "$SERVER_TYPE" == "icat" ] ; then
 
@@ -25,15 +37,15 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     DB=$( su --shell=/bin/bash --session-command="$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
     if [ -n "$DB" ]; then
       echo "Removing Database $DB_NAME"
-      su --shell=/bin/bash --session-command="dropdb $DB_NAME" $DB_ADMIN_ROLE
+      su --shell=/bin/bash --session-command="dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
     fi
 
     # =-=-=-=-=-=-=-
     # determine if the database role already exists
-    ROLE=$( su --shell=/bin/bash --session-command="$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $OS_EIRODS_ACCT )
+    ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash --session-command="$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
     if [ $ROLE ]; then
       echo "Removing Database Role $DB_USER"
-      su --shell=/bin/bash --session-command="dropuser $DB_USER" $DB_ADMIN_ROLE
+      su --shell=/bin/bash --session-command="dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
     fi
   else
     # expand this for each type of database
@@ -48,8 +60,7 @@ fi
 USER=$( grep $OS_EIRODS_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
   echo "Removing Service Account $OS_EIRODS_ACCT"
-  cd /tmp
-  userdel $OS_EIRODS_ACCT
+  userdel $OS_EIRODS_ACCT 
 fi
 
 # =-=-=-=-=-=-=-
