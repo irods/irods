@@ -33,7 +33,9 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
   if [ "$DB_TYPE" == "postgres" ] ; then
     # =-=-=-=-=-=-=-
     # determine if the database already exists
-    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres.sh`
+    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+    PSQL="$PSQL/psql"
+
     DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
     if [ -n "$DB" ]; then
       echo "Removing Database $DB_NAME"

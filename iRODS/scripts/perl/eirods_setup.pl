@@ -2635,11 +2635,16 @@ sub Postgres_CreateAlternateDatabaseUser( )
 	my $tmpPassword = createTempFilePath( "create" );
 	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 	chmod( 0600, $tmpPassword );
-	($status,$output) = run( "sudo -u postgres createuser -s $DATABASE_ADMIN_NAME < $tmpPassword" );
+
+	$CUSER=`../packaging/find_postgres_bin.sh`;
+	chomp $CUSER;
+	$CUSER=$CUSER . "/createuser";
+
+	($status,$output) = run( "sudo -u postgres $CUSER -s $DATABASE_ADMIN_NAME < $tmpPassword" );
 	if ( $status != 0 ) {
 		printStatus( "        Create user failed (which may be OK)...\n" );
 		printLog( "\n        Create user failed (which may be OK)...\n" );
-		printLog( "        $createuser \n" );
+		printLog( "        $CUSER \n" );
 		printLog( "        $output" );
 		printLog( "        status: $status\n");
 	}
@@ -2763,10 +2768,13 @@ sub Postgres_CreateDatabase()
 	#	'psql' will list databases, or report an error
 	#	if the one we want isn't there.
 	printStatus( "Checking whether iCAT database exists...\n" );
-	printLog( "\nChecking whether iCAT database exist...\n" );
+	printLog( "\nChecking whether iCAT database exists...\n" );
 	my $needCreate = 1;
 
-	my ($status,$output) = run( "psql -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
+	$PSQL=`../packaging/find_postgres_bin.sh`;
+	chomp $PSQL;
+	$PSQL=$PSQL . "/psql";
+	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
 	if ( $output =~ /List of databases/i )
 	{
 		# The command only shows a list of databases if
@@ -2800,7 +2808,11 @@ sub Postgres_CreateDatabase()
 				my $tmpPassword = createTempFilePath( "drop" );
 				printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 				chmod( 0600, $tmpPassword );
-				my ($status,$output) = run( "$dropdb $DB_NAME < $tmpPassword" );
+
+				$DDB=`../packaging/find_postgres_bin.sh`;
+				chomp $DDB;
+				$DDB=$DDB . "/dropdb";
+				my ($status,$output) = run( "$DDB $DB_NAME < $tmpPassword" );
 				unlink( $tmpPassword );
 
 				if ( $status != 0 && $output !~ /does not exist/i )
@@ -2838,12 +2850,14 @@ sub Postgres_CreateDatabase()
 		chmod( 0600, $tmpPassword );
 
 
+		$CDB=`../packaging/find_postgres_bin.sh`;
+		chomp $CDB;
+		$CDB=$CDB . "/createdb";
 		if ($DATABASE_HOST eq "localhost") {
-		    #($status,$output) = run( "createdb -U $DATABASE_ADMIN_NAME $DB_NAME" ); # < $tmpPassword" );
-			$status = system( "createdb -U $DATABASE_ADMIN_NAME ICAT &> /dev/null" );
+			$status = system( "$CDB -U $DATABASE_ADMIN_NAME ICAT &> /dev/null" );
 		}
 		else {
-		    ($status,$output) = run( "createdb -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
+		    ($status,$output) = run( "$CDB -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
 		}
 		unlink( $tmpPassword );
 
@@ -3503,8 +3517,9 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
-	$PSQL=`../packaging/find_postgres.sh`;
+	$PSQL=`../packaging/find_postgres_bin.sh`;
 	chomp $PSQL;
+	$PSQL=$PSQL . "/psql";
 
 	if ($DATABASE_HOST eq "localhost") {
 	    return run( "$PSQL -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );

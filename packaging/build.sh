@@ -33,9 +33,14 @@ if [ $1 == "icat" ] ; then
   SERVER_TYPE="ICAT"
   DB_TYPE=$2
   EPMFILE="../packaging/irods.config.icat.epm"
+
   if [ "$DB_TYPE" == "postgres" ] ; then
-    EIRODSPOSTGRESPATH=`../packaging/find_postgres.sh | sed -e s,\/[^\/]*$,, -e s,\/[^\/]*$,,`
+    # need to do a dirname here, as the irods.config is expected to have a path
+    # which will be appended with a /bin
+    EIRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
+    EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
     EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
+
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
     sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
   else
@@ -67,6 +72,7 @@ sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=\`./scripts/find_irods_home.sh\`," ./iro
 mv /tmp/irodsctl.tmp ./irodsctl
 
 # go!
+make -j
 make -j
 
 

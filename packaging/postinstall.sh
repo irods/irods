@@ -37,17 +37,18 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
   if [ "$DB_TYPE" == "postgres" ] ; then
     # =-=-=-=-=-=-=-
     # detect database path and update installed irods.config accordingly
-    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres.sh`
-	if [ $PSQL == "FAIL" ]; then
+    PGPATH=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+	if [ $PGPATH == "FAIL" ]; then
 		echo "Aborting."
-		exit "FAIL"
+		exit -1
 	fi
 
-	EIRODSPOSTGRESDIR=$(dirname `dirname $PSQL`)
-    EIRODSPOSTGRESDIR="$EIRODSPOSTGRESDIR/"
+    EIRODSPOSTGRESDIR="$PGPATH/"
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
     sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
     mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
+
+	PSQL="$PGPATH/psql"
 
     # =-=-=-=-=-=-=-
     # determine if the database role already exists
