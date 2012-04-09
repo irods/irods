@@ -142,12 +142,16 @@ $currentStep = 0;
 #
 setPrintVerbose( 1 );
 
-if ( $thisUserID == 0 )
-{
-	printError( "Usage error:\n" );
-	printError( "    This script should *not* be run as root.\n" );
-	exit( 1 );
-}
+########################
+# Commenting out this block so that E-iRODS build.sh
+# can complete when run as sudo.
+########################
+#if ( $thisUserID == 0 )
+#{
+#	printError( "Usage error:\n" );
+#	printError( "    This script should *not* be run as root.\n" );
+#	exit( 1 );
+#}
 
 
 

@@ -805,13 +805,7 @@ sub createDatabaseAndTables
 
 		# Now add the password line(s)
 		appendToFile( $tmpSql, "$sql\n" );
-		# Set the encoding to be LATIN1.  This avoids a problem
-		# in the current Postgres ODBC code that doesn't handle
-		# non-latin encodings yet.
-		$sql = "alter user $DATABASE_ADMIN_NAME set client_encoding to LATIN1;";
-		printLog( "    $sql\n" );
-		appendToFile( $tmpSql, "$sql\n" );
-
+		
 		($status,$output) = execute_sql( $DB_NAME, $tmpSql );
 		unlink( $tmpSql );
 		if ( $status != 0 )
@@ -3024,58 +3018,11 @@ sub Postgres_CreateDatabase()
 	}
 	else
 	{
-		# Edit the file to remove a [PostgreSQL] section.
-		# Do this editing in-place so that the edited file
-		# has the same permissions, ownership, hard links
-		# to it, etc., as it had before.
-
-		# Backup the current file.
-		#my $dt = getCurrentDateTime( );
-		#$dt =~ s/ /_/g;
-		#my $tmpfile = "$userODBC.$dt";
-		#if ( copy( $userODBC, $tmpfile ) != 1 )
-		#{
-		#	printError( "\nInstall problem:\n" );
-		#	printError( "    Cannot copy user's ODBC configuration file.\n" );
-		#	printError( "        Temp file:  $tmpfile\n" );
-		#	printError( "        Error:      $!\n" );
-		#	printLog( "Cannot copy user's ODBC config file:  $tmpfile\n" );
-		#	printLog( "Copy error:  $!\n" );
-		#	return 0;
-		#}
-		#chmod( $tmpfile, 0600 );
-
-		# Open the backup for reading and the original for writing.
-		# This will truncate the original file, but we'll write
-		# new lines back into it.
-		#open( CONFIGFILE,    "<$tmpfile" );
-		#open( NEWCONFIGFILE, ">$userODBC" );	# Truncate file
-		#my $inSection = 0;
-		#my $hasContent = 0;
-		#foreach $line ( <CONFIGFILE> )
-		#{
-		#	$hasContent = 1;
-		#	if ( $line =~ /^\[[ \t]*PostgreSQL/ )
-		#	{
-		#		$inSection = 1;
-		#	}
-		#	elsif ( $line =~ /^[ \t]*$/ || $line =~ /^\[/ )
-		#	{
-		#		$inSection = 0;
-		#	}
-		#	if ( ! $inSection )
-		#	{
-		#		print( NEWCONFIGFILE $line );
-		#	}
-		#}
-
-		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/odbc/", "psqlodbca.so" ) );
-
 		# E-iRODS now supports a script to determine the path & lib name of the odbc driver
 		my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
 		chomp($psqlOdbcLib);
-			      
 
+		open( NEWCONFIGFILE, ">$userODBC" );
 		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
 				"Driver=$psqlOdbcLib\n" .
 				"Debug=0\n" .
@@ -3085,23 +3032,10 @@ sub Postgres_CreateDatabase()
 				"ReadOnly=no\n" .
 				"Ksqo=0\n" .
 				"Port=$DATABASE_PORT\n" );
-		$hasContent = 1;
 
 		close( NEWCONFIGFILE );
-		close( CONFIGFILE );
 
-		if ( $hasContent )
-		{
-			# Be sure edited file has the right permissions.
-			chmod( $userODBC, 0600 );
-		}
-		else
-		{
-			# The file is empty.  Just delete.
-			unlink( $userODBC );
-			unlink( $tmpfile );
-			printStatus( "    Skipped.  Unused empty file deleted.\n" );
-		}
+		chmod( $userODBC, 0600 );
 	} 
 	return 1;
 }
@@ -3569,10 +3503,13 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
+	$PSQL=`../packaging/find_postgres.sh`;
+	chomp $PSQL;
+
 	if ($DATABASE_HOST eq "localhost") {
-	    return run( "psql -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
+	    return run( "$PSQL -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
 	}
-	return run( "psql -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
+	return run( "$PSQL -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
 }
 
 #

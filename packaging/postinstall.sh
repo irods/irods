@@ -38,6 +38,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     # =-=-=-=-=-=-=-
     # detect database path and update installed irods.config accordingly
     PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres.sh`
+	if [ $PSQL == "FAIL" ]; then
+		echo "Aborting."
+		exit "FAIL"
+	fi
+
 	EIRODSPOSTGRESDIR=$(dirname `dirname $PSQL`)
     EIRODSPOSTGRESDIR="$EIRODSPOSTGRESDIR/"
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
@@ -46,19 +51,19 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 
     # =-=-=-=-=-=-=-
     # determine if the database role already exists
-    ROLE=$( su --shell=/bin/bash --session-command="$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $DB_ADMIN_ROLE )
+    ROLE=$( su --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" $DB_ADMIN_ROLE )
     if [ $ROLE ]; then
       echo "WARNING :: Role $DB_USER Already Exists in Database."
     else
       # =-=-=-=-=-=-=-
       # create the database role
       echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
-      su --shell=/bin/bash --session-command="createuser -s $DB_USER" $DB_ADMIN_ROLE &> /dev/null
+      su --shell=/bin/bash -c "createuser -s $DB_USER" $DB_ADMIN_ROLE &> /dev/null
     fi
 
     # =-=-=-=-=-=-=-
     # determine if the database already exists
-    DB=$( su --shell=/bin/bash --session-command="$PSQL --list" $DB_ADMIN_ROLE  | grep $DB_NAME )
+    DB=$( su --shell=/bin/bash -c "$PSQL --list" $DB_ADMIN_ROLE  | grep $DB_NAME )
     if [ -n "$DB" ]; then
       echo "WARNING :: Database $DB_NAME Already Exists"
     fi
@@ -109,7 +114,7 @@ cd $PWD
 # =-=-=-=-=-=-=-
 # run setup script to configure database, users, default resource, etc.
 cd $IRODS_HOME
-su --shell=/bin/bash --session-command="perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
+su --shell=/bin/bash -c "perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
 
 # =-=-=-=-=-=-=-
 # symlink the icommands

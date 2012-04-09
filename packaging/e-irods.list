@@ -97,10 +97,7 @@ END_PREINSTALL
 # =-=-=-=-=-=-=-
 # remove the install directory if necessary
 if [ -d $EIRODS_HOME_DIR -a "$$1" = 'remove' ]; then
-  echo "Removing Service Account Directory " $EIRODS_HOME_DIR
   rm -rf $EIRODS_HOME_DIR
-else
-  echo "Not removing Service Account Directory " $EIRODS_HOME_DIR
 fi 
 END_POSTREMOVE
 %endif

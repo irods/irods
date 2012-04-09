@@ -62,6 +62,10 @@ cp $TMPCONFIGFILE ./config/irods.config
 ./scripts/configure
 # again to reset IRODS_HOME
 cp $TMPCONFIGFILE ./config/irods.config
+# handle issue with IRODS_HOME being overwritten by the configure script    
+sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=\`./scripts/find_irods_home.sh\`," ./irodsctl > /tmp/irodsctl.tmp
+mv /tmp/irodsctl.tmp ./irodsctl
+
 # go!
 make -j
 
