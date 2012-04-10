@@ -87,8 +87,15 @@ if [ $1 == "icat" ] ; then
 fi
 
 
-# run epm for all package types we're producing
-cd $DIR/../
-sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
-sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
 
+# run EPM for package type of this machine
+cd $DIR/../
+if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL
+  echo "Running EPM :: Generating RPM"
+  sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
+  echo "Running EPM :: Generating DEB"
+  sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
+elif [ -f "/usr/bin/sw_vers" ]; then  # MacOSX
+  echo "TODO: generate package for MacOSX"
+fi
