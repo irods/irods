@@ -85,11 +85,93 @@ Successful installation will complete and leave a running iRODS server.  If you 
  /tempZone/home/rods:
  $
 
+---------
+Upgrading
+---------
+
+----------
+Backing Up
+----------
+
 -----------
 Assumptions
 -----------
 
-E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and the tables inherit this setting.
+E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.
+
+------
+How To
+------
+
+Failure Scenarios
+-----------------
+
+These will be cross-referenced with each feature.
+
+- where to check
+- what to expect
+- error codes - with numeric to string translation
+
+Manage Resources
+----------------
+- cache
+  - cache cleanup
+  - monitoring
+- compound
+- database
+- WOS
+- HPSS
+- S3
+- Group Population
+   - Random
+   - Round Robin
+   - Least Populated
+
+Manage Users
+------------
+- groups
+- ACLs (always surprising)
+   - multiple people / groups
+   - inheritance
+   - StrictACL
+
+Examples
+--------
+- Least Recently Used (LRU)
+- First In First Out (FIFO)
+- Failover checking
+
+----------
+Monitoring
+----------
+- nagios plugins (Jean-Yves)
+- other
+
+---------------
+Delay Execution
+---------------
+- how
+- what
+- when
+- where
+- why
+- errors
+- queue management
+
+--------------
+Authentication
+--------------
+- iRODS
+- OSAuth
+- GSI
+
+--------------
+Best Practices
+--------------
+- microservice objects (MSO)
+- tickets
+- realizable objects
+- quota management
 
 -------------
 Configuration
@@ -97,9 +179,7 @@ Configuration
 
 There are a number of configuration files that control how an iRODS server behaves.  The following is a listing of the configuration files in a binary-only E-iRODS installation.
 
-
-Client and Server
------------------
+This document is intended to explain how the various configuration files are connected, what their parameters are, and when to use them.
 
 ~/.odbc.ini
 
@@ -107,19 +187,11 @@ iRODS/config/irods.config
 
 iRODS/server/config/server.config
 
-
-Client Only
------------
-
 ~/.irods/.irodsA
     This is the scrambled password file that is saved after an ``iinit`` is run.  If this file does not exist, then each iCommand will prompt for a password before authenticating with the iRODS server.  If this file does exist, then each iCommand will read this file and use the contents as a cached password token and skip the password prompt.  This file can be deleted manually or can be removed by running ``iexit full``.
 
 ~/.irods/.irodsEnv
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
-
-
-Other Environment Variables
----------------------------
 
 
 --------
@@ -241,8 +313,8 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2012-03-01   3.0        Initial Release.
-                         This is the first release from RENCI, based on the
-                         iRODS 3.0 community codebase.
+2012-03-01   3.0b1      Initial Beta Release.
+                          This is the first release from RENCI, based on the
+                          iRODS 3.0 community codebase.
 ==========   =======    =====================================================
 
