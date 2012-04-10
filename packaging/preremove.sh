@@ -19,6 +19,11 @@ IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 #echo "DB_NAME=$DB_NAME"
 #echo "DB_USER=$DB_USER"
 
+# =-=-=-=-=-=-=-
+# determine if we can remove the resource from the zone
+
+# TODO
+
 
 # =-=-=-=-=-=-=-
 # stop any running E-iRODS Processes

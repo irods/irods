@@ -3,13 +3,13 @@
 SCRIPTNAME=`basename $0`
 
 # check arguments
-if [ $# -ne 2 ] ; then
-  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource {icatip}"
+if [ $# -ne 1 -a $# -ne 2 ] ; then
+  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource"
   exit 1
 fi
 
 if [ $1 != "icat" -a $1 != "resource" ] ; then
-  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource {icatip}"
+  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource"
   exit 1
 fi
 
@@ -51,10 +51,8 @@ if [ $1 == "icat" ] ; then
 else
 
   SERVER_TYPE="RESOURCE"
-  ICATIP=$2
   EPMFILE="../packaging/irods.config.resource.epm"
-  sed -e s,REMOTEICATIPADDRESS,$ICATIP, $EPMFILE > $TMPCONFIGFILE
-
+  cp $EPMFILE $TMPCONFIGFILE
 fi
 
 

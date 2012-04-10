@@ -113,9 +113,11 @@ ln -s ../init.d/e-irods ./K15e-irods
 cd $PWD
 
 # =-=-=-=-=-=-=-
-# run setup script to configure database, users, default resource, etc.
-cd $IRODS_HOME
-su --shell=/bin/bash -c "perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
+# run setup script to configure an ICAT server
+if [ "$SERVER_TYPE" == "icat" ] ; then
+	cd $IRODS_HOME
+	su --shell=/bin/bash -c "perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
+fi
 
 # =-=-=-=-=-=-=-
 # symlink the icommands
@@ -176,15 +178,15 @@ ln -s ${IRODS_HOME}/clients/icommands/bin/runQuota.ir          /usr/bin/runQuota
 ln -s ${IRODS_HOME}/clients/icommands/bin/runQuota.r           /usr/bin/runQuota.r
 ln -s ${IRODS_HOME}/clients/icommands/bin/showCore.ir          /usr/bin/showCore.ir
 
-if [ "$SERVER_TYPE" == "resource" ] ; then
-  # =-=-=-=-=-=-=-
-  # prompt for resource server configuration information
-  $EIRODS_HOME_DIR/packaging/setup_resource.sh
-fi
-
 # =-=-=-=-=-=-=-
-# give user some guidance regarding .irodsEnv
-cat $EIRODS_HOME_DIR/packaging/user_help.txt | sed -e s/localhost/`hostname`/
+if [ "$SERVER_TYPE" == "icat" ] ; then
+  # tell user about their irodsenv
+  cat $EIRODS_HOME_DIR/packaging/user_irodsenv.txt
+  cat $EIRODS_HOME_DIR/.irods/.irodsEnv
+elif [ "$SERVER_TYPE" == "resource" ] ; then
+  # give user some guidance regarding resource configuration
+  cat $EIRODS_HOME_DIR/packaging/user_resource.txt
+fi
 
 # =-=-=-=-=-=-=-
 # exit with success

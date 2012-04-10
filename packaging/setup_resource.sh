@@ -73,4 +73,19 @@ while [ "$STATUS" != "complete" ] ; do
 done
 echo "==================================================================="
 
-echo "Now we are updating irods.config..."
+echo "Updating irods.config..."
+sed -e "/^\$IRODS_ICAT_HOST/s/^.*$/\$IRODS_ICAT_HOST = '$ICATHOSTORIP';/" ./iRODS/config/irods.config > /tmp/tmp.irods.config
+mv /tmp/tmp.irods.config ./iRODS/config/irods.config
+sed -e "/^\$IRODS_PORT/s/^.*$/\$IRODS_PORT = '$ICATPORT';/" ./iRODS/config/irods.config > /tmp/tmp.irods.config
+mv /tmp/tmp.irods.config ./iRODS/config/irods.config
+sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$ICATZONE';/" ./iRODS/config/irods.config > /tmp/tmp.irods.config
+mv /tmp/tmp.irods.config ./iRODS/config/irods.config
+new_resc_name="`hostname -s`Resource"
+sed -e "/^\$RESOURCE_NAME/s/^.*$/\$RESOURCE_NAME = '$new_resc_name';/" ./iRODS/config/irods.config > /tmp/tmp.irods.config
+mv /tmp/tmp.irods.config ./iRODS/config/irods.config
+
+
+echo "Running eirods_setup.pl..."
+cd iRODS
+perl ./scripts/perl/eirods_setup.pl
+

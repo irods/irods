@@ -33,6 +33,13 @@ use Config;
 
 $version{"eirods_setup.pl"} = "Jan 2012";
 
+# =-=-=-=-=-=-=-
+# set flag to determine if this is an ICAT installation or not
+# for testing later...
+$icatInstall = 0;
+if( scalar(@ARGV) > 0 ) {
+	$icatInstall = 1;
+}
 
 #
 # Design Notes:  Perl and OS compatability
@@ -472,19 +479,8 @@ foreach $ver (keys %version)
 $IRODS_DEFAULT_ZONE="tempZone";
 
 # =-=-=-=-=-=-=-
-# JMC :: Prompt for final bits of info.  Database Hostname, Username, Port and Password
-if( scalar(@ARGV) == 0 ) {
-	$DATABASE_TYPE              = "postgres";
-	$DEFAULT_databaseServerPort = "5432";
-	$DATABASE_HOST              = "localhost";
-	$DATABASE_ADMIN_NAME        = "eirods";
-	$DATABASE_ADMIN_PASSWORD    = "foobar";
-
-	$DATABASE_HOST           = promptString( "Database Host Name", $DATABASE_HOST );
-	$DATABASE_PORT           = promptInteger( "Database Port", ( ( !defined($DATABASE_PORT)||$DATABASE_PORT eq "") ? $DEFAULT_databaseServerPort : $DATABASE_PORT) );
-	$DATABASE_ADMIN_NAME     = promptIdentifier( "User Name", $DATABASE_ADMIN_NAME );
-	$DATABASE_ADMIN_PASSWORD = promptIdentifier( "Password", $DATABASE_ADMIN_PASSWORD );
-} else {
+# JMC :: if arguments are 0, then we will assume this is a RESOURCE installation.  we hope...
+if( 1 == $icatInstall ) {
 	$DATABASE_TYPE           = $ARGV[0];
 	$DATABASE_HOST           = $ARGV[1];
 	$DATABASE_PORT           = $ARGV[2];
@@ -1338,6 +1334,7 @@ sub configureIrodsServer
 			chomp($currentPort);
 		}
 	}
+
 	close( BOOTENV );
 
 	if ( startIrods( ) == 0 )
@@ -1714,27 +1711,66 @@ sub configureIrodsUser
 		chmod( 0600, $userIrodsFile . ".orig" );
 	}
 
-	printToFile( $userIrodsFile,
-		"# iRODS personal configuration file.\n" .
-		"#\n" .
-		"# This file was automatically created during iRODS installation.\n" .
-		"#   Created " . getCurrentDateTime( ) . "\n" .
-		"#\n" .
-		"# iRODS server host name:\n" .
-		"irodsHost '$thisHost'\n" .
-		"# iRODS server port number:\n" .
-		"irodsPort $IRODS_PORT\n" .
-		"\n" .
-		"# Default storage resource name:\n" .
-		"irodsDefResource '$RESOURCE_NAME'\n" .
-		"# Home directory in iRODS:\n" .
-		"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-		"# Current directory in iRODS:\n" .
-		"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-		"# Account name:\n" .
-		"irodsUserName '$IRODS_ADMIN_NAME'\n" .
-		"# Zone:\n" .
-		"irodsZone '$ZONE_NAME'\n" );
+	if( 1 == $icatInstall ) {
+		# this is an instance of an ICAT installation as 
+        # determined by the passing of configuration parameters ( database info ).
+		printToFile( $userIrodsFile,
+			"# iRODS personal configuration file.\n" .
+			"#\n" .
+			"# This file was automatically created during iRODS installation.\n" .
+			"#   Created " . getCurrentDateTime( ) . "\n" .
+			"#\n" .
+			"# iRODS server host name:\n" .
+			"irodsHost '$thisHost'\n" .
+			"# iRODS server port number:\n" .
+			"irodsPort $IRODS_PORT\n" .
+			"\n" .
+			"# Default storage resource name:\n" .
+			"irodsDefResource '$RESOURCE_NAME'\n" .
+			"# Home directory in iRODS:\n" .
+			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Current directory in iRODS:\n" .
+			"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Account name:\n" .
+			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
+			"# Zone:\n" .
+			"irodsZone '$ZONE_NAME'\n" );
+	} else {
+		# this is an instance of a Resource Server installation as
+		# determined by the lack of database info passed to the script.
+		# this info will be temp. until setup_resource.sh is ran by the DGA.
+
+        # NOTE :: this does not work in windows with the -s option
+		$tmpHost=`hostname -s`;
+		chomp $tmpHost;
+		my $resc_name = $tmpHost."Resource";
+
+		printToFile( $userIrodsFile,
+			"# iRODS personal configuration file.\n" .
+			"#\n" .
+			"# This file was automatically created during iRODS installation.\n" .
+			"#   Created " . getCurrentDateTime( ) . "\n" .
+			"#\n" .
+			"# iRODS server host name:\n" .
+			"irodsHost '$thisHost'\n" .
+			"# iRODS server port number:\n" .
+			"irodsPort $IRODS_PORT\n" .
+			"\n" .
+			"# Default storage resource name:\n" .
+			"irodsDefResource '$resc_name'\n" .
+			"# Home directory in iRODS:\n" .
+			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Current directory in iRODS:\n" .
+			"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Account name:\n" .
+			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
+			"# Zone:\n" .
+			"irodsZone '$ZONE_NAME'\n" );
+	}
+
+
+
+
 	chmod( 0600, $userIrodsFile );
 
 

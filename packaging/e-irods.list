@@ -18,7 +18,7 @@
 
 %requires postgresql 
 %requires postgresql-server
-%requires postgresql-odbc
+#%requires postgresql-odbc
 %requires unixODBC
 %requires perl
 %requires authd
@@ -110,8 +110,14 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_postgres
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/postinstall.sh ./packaging/postinstall.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_help.txt ./packaging/user_help.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
+%if RESOURCE
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/setup_resource.sh ./packaging/setup_resource.sh
+%endif
+
+
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/installLogs -
 
