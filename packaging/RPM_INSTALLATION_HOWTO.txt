@@ -1,0 +1,32 @@
+1.  Yum Install Required Dependencies ::
+
+   -- Note - names may change slightly revision to revision, which can be determined by 'yum search package-name'
+
+      postgresql
+      postgresql-server
+      postgresql-odbc
+      unixODBC
+      perl
+      authd
+
+2.  Start Postgres Server and Initialize Database Tables ::
+    
+	sudo /sbin/service postgresql start
+
+
+3.  Modify authd config file for xinet.d ::
+
+	vim /etc/xinetd.d/auth
+
+    Remove the '-E' command line arguement for auth :
+	
+	    changing this line [ server_args = -t60 --xerror --os -E ] to this [ server_args = -t60 --xerror --os ]
+	    
+4.  Set the proper runlevel for authd :
+
+    sudo /sbin/chkconfig --level=3 authd
+
+
+5.  Install the E-iRODS rpm
+
+    rpm -i e-irods-XXX.rpm
