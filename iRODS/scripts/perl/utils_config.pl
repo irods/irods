@@ -156,7 +156,13 @@ sub loadIrodsConfigAndValidate($)
 	if ( $validate == 1 )
 	{
 		return 0 if validateIrodsVariables( )    == 0;
-		return 0 if validateDatabaseVariables( ) == 0;
+
+		#return 0 if validateDatabaseVariables( ) == 0;
+        # JMC :: take the "$DATABASE_EXCLUSIVE_TO_IRODS variable into consideration
+        #     :: when doing validation
+		if( $DATABASE_EXCLUSIVE_TO_IRODS == 1 ) {
+			return 0 if validateDatabaseVariables( ) == 0;
+		}
 	}
 
 	# Set environment variables.

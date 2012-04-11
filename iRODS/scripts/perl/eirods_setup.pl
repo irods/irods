@@ -33,6 +33,13 @@ use Config;
 
 $version{"eirods_setup.pl"} = "Jan 2012";
 
+# =-=-=-=-=-=-=-
+# set flag to determine if this is an ICAT installation or not
+# for testing later...
+$icatInstall = 0;
+if( scalar(@ARGV) > 0 ) {
+	$icatInstall = 1;
+}
 
 #
 # Design Notes:  Perl and OS compatability
@@ -472,22 +479,11 @@ foreach $ver (keys %version)
 $IRODS_DEFAULT_ZONE="tempZone";
 
 # =-=-=-=-=-=-=-
-# JMC :: Prompt for final bits of info.  Database Hostname, Username, Port and Password
-if( scalar(@ARGV) == 0 ) {
-	$DATABASE_TYPE              = "postgres";
-	$DEFAULT_databaseServerPort = "5432";
-	$DATABASE_HOST              = "localhost";
-	$DATABASE_ADMIN_NAME        = "eirods";
-	$DATABASE_ADMIN_PASSWORD    = "foobar";
-
-	$DATABASE_HOST           = promptString( "Datbase Host Name", $DATABASE_HOST );
-	$DATABASE_PORT           = promptInteger( "Database Port", ( ( !defined($DATABASE_PORT)||$DATABASE_PORT eq "") ? $DEFAULT_databaseServerPort : $DATABASE_PORT) );
-	$DATABASE_ADMIN_NAME     = promptIdentifier( "User Name", $DATABASE_ADMIN_NAME );
-	$DATABASE_ADMIN_PASSWORD = promptIdentifier( "Password", $DATABASE_ADMIN_PASSWORD );
-} else {
+# JMC :: if arguments are 0, then we will assume this is a RESOURCE installation.  we hope...
+if( 1 == $icatInstall ) {
 	$DATABASE_TYPE           = $ARGV[0];
-	$DATABASE_PORT		 = $ARGV[1];
-	$DATABASE_HOST           = $ARGV[2];
+	$DATABASE_HOST           = $ARGV[1];
+	$DATABASE_PORT           = $ARGV[2];
 	$DATABASE_ADMIN_NAME     = $ARGV[3];
 	$DATABASE_ADMIN_PASSWORD = $ARGV[4];
 }
@@ -805,13 +801,7 @@ sub createDatabaseAndTables
 
 		# Now add the password line(s)
 		appendToFile( $tmpSql, "$sql\n" );
-		# Set the encoding to be LATIN1.  This avoids a problem
-		# in the current Postgres ODBC code that doesn't handle
-		# non-latin encodings yet.
-		$sql = "alter user $DATABASE_ADMIN_NAME set client_encoding to LATIN1;";
-		printLog( "    $sql\n" );
-		appendToFile( $tmpSql, "$sql\n" );
-
+		
 		($status,$output) = execute_sql( $DB_NAME, $tmpSql );
 		unlink( $tmpSql );
 		if ( $status != 0 )
@@ -1344,6 +1334,7 @@ sub configureIrodsServer
 			chomp($currentPort);
 		}
 	}
+
 	close( BOOTENV );
 
 	if ( startIrods( ) == 0 )
@@ -1720,27 +1711,66 @@ sub configureIrodsUser
 		chmod( 0600, $userIrodsFile . ".orig" );
 	}
 
-	printToFile( $userIrodsFile,
-		"# iRODS personal configuration file.\n" .
-		"#\n" .
-		"# This file was automatically created during iRODS installation.\n" .
-		"#   Created " . getCurrentDateTime( ) . "\n" .
-		"#\n" .
-		"# iRODS server host name:\n" .
-		"irodsHost '$thisHost'\n" .
-		"# iRODS server port number:\n" .
-		"irodsPort $IRODS_PORT\n" .
-		"\n" .
-		"# Default storage resource name:\n" .
-		"irodsDefResource '$RESOURCE_NAME'\n" .
-		"# Home directory in iRODS:\n" .
-		"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-		"# Current directory in iRODS:\n" .
-		"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
-		"# Account name:\n" .
-		"irodsUserName '$IRODS_ADMIN_NAME'\n" .
-		"# Zone:\n" .
-		"irodsZone '$ZONE_NAME'\n" );
+	if( 1 == $icatInstall ) {
+		# this is an instance of an ICAT installation as 
+        # determined by the passing of configuration parameters ( database info ).
+		printToFile( $userIrodsFile,
+			"# iRODS personal configuration file.\n" .
+			"#\n" .
+			"# This file was automatically created during iRODS installation.\n" .
+			"#   Created " . getCurrentDateTime( ) . "\n" .
+			"#\n" .
+			"# iRODS server host name:\n" .
+			"irodsHost '$thisHost'\n" .
+			"# iRODS server port number:\n" .
+			"irodsPort $IRODS_PORT\n" .
+			"\n" .
+			"# Default storage resource name:\n" .
+			"irodsDefResource '$RESOURCE_NAME'\n" .
+			"# Home directory in iRODS:\n" .
+			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Current directory in iRODS:\n" .
+			"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Account name:\n" .
+			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
+			"# Zone:\n" .
+			"irodsZone '$ZONE_NAME'\n" );
+	} else {
+		# this is an instance of a Resource Server installation as
+		# determined by the lack of database info passed to the script.
+		# this info will be temp. until setup_resource.sh is ran by the DGA.
+
+        # NOTE :: this does not work in windows with the -s option
+		$tmpHost=`hostname -s`;
+		chomp $tmpHost;
+		my $resc_name = $tmpHost."Resource";
+
+		printToFile( $userIrodsFile,
+			"# iRODS personal configuration file.\n" .
+			"#\n" .
+			"# This file was automatically created during iRODS installation.\n" .
+			"#   Created " . getCurrentDateTime( ) . "\n" .
+			"#\n" .
+			"# iRODS server host name:\n" .
+			"irodsHost '$thisHost'\n" .
+			"# iRODS server port number:\n" .
+			"irodsPort $IRODS_PORT\n" .
+			"\n" .
+			"# Default storage resource name:\n" .
+			"irodsDefResource '$resc_name'\n" .
+			"# Home directory in iRODS:\n" .
+			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Current directory in iRODS:\n" .
+			"irodsCwd '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
+			"# Account name:\n" .
+			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
+			"# Zone:\n" .
+			"irodsZone '$ZONE_NAME'\n" );
+	}
+
+
+
+
 	chmod( 0600, $userIrodsFile );
 
 
@@ -2641,11 +2671,16 @@ sub Postgres_CreateAlternateDatabaseUser( )
 	my $tmpPassword = createTempFilePath( "create" );
 	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 	chmod( 0600, $tmpPassword );
-	($status,$output) = run( "sudo -u postgres createuser -s $DATABASE_ADMIN_NAME < $tmpPassword" );
+
+	$CUSER=`../packaging/find_postgres_bin.sh`;
+	chomp $CUSER;
+	$CUSER=$CUSER . "/createuser";
+
+	($status,$output) = run( "sudo -u postgres $CUSER -s $DATABASE_ADMIN_NAME < $tmpPassword" );
 	if ( $status != 0 ) {
 		printStatus( "        Create user failed (which may be OK)...\n" );
 		printLog( "\n        Create user failed (which may be OK)...\n" );
-		printLog( "        $createuser \n" );
+		printLog( "        $CUSER \n" );
 		printLog( "        $output" );
 		printLog( "        status: $status\n");
 	}
@@ -2769,10 +2804,13 @@ sub Postgres_CreateDatabase()
 	#	'psql' will list databases, or report an error
 	#	if the one we want isn't there.
 	printStatus( "Checking whether iCAT database exists...\n" );
-	printLog( "\nChecking whether iCAT database exist...\n" );
+	printLog( "\nChecking whether iCAT database exists...\n" );
 	my $needCreate = 1;
 
-	my ($status,$output) = run( "psql -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
+	$PSQL=`../packaging/find_postgres_bin.sh`;
+	chomp $PSQL;
+	$PSQL=$PSQL . "/psql";
+	my ($status,$output) = run( "$PSQL -U $DATABASE_ADMIN_NAME -l $DB_NAME" );
 	if ( $output =~ /List of databases/i )
 	{
 		# The command only shows a list of databases if
@@ -2806,7 +2844,11 @@ sub Postgres_CreateDatabase()
 				my $tmpPassword = createTempFilePath( "drop" );
 				printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 				chmod( 0600, $tmpPassword );
-				my ($status,$output) = run( "$dropdb $DB_NAME < $tmpPassword" );
+
+				$DDB=`../packaging/find_postgres_bin.sh`;
+				chomp $DDB;
+				$DDB=$DDB . "/dropdb";
+				my ($status,$output) = run( "$DDB $DB_NAME < $tmpPassword" );
 				unlink( $tmpPassword );
 
 				if ( $status != 0 && $output !~ /does not exist/i )
@@ -2844,12 +2886,14 @@ sub Postgres_CreateDatabase()
 		chmod( 0600, $tmpPassword );
 
 
+		$CDB=`../packaging/find_postgres_bin.sh`;
+		chomp $CDB;
+		$CDB=$CDB . "/createdb";
 		if ($DATABASE_HOST eq "localhost") {
-		    #($status,$output) = run( "createdb -U $DATABASE_ADMIN_NAME $DB_NAME" ); # < $tmpPassword" );
-			$status = system( "createdb -U $DATABASE_ADMIN_NAME ICAT" );
+			$status = system( "$CDB -U $DATABASE_ADMIN_NAME ICAT &> /dev/null" );
 		}
 		else {
-		    ($status,$output) = run( "createdb -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
+		    ($status,$output) = run( "$CDB -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
 		}
 		unlink( $tmpPassword );
 
@@ -2916,8 +2960,8 @@ sub Postgres_CreateDatabase()
 			# probably means Postgres was installed (incompletely)
 			# previously.  Chances are good that this will not
 			# be sufficient and something else is wrong too.
-			my $libPath = abs_path( File::Spec->catfile(
-				$databaseLibDir, "libodbcpsql.so" ) );
+			my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
+				
 			printToFile( $ini,
 				"[PostgreSQL]\n" .
 				"Driver=$libPath\n" .
@@ -3024,63 +3068,13 @@ sub Postgres_CreateDatabase()
 	}
 	else
 	{
-		# Edit the file to remove a [PostgreSQL] section.
-		# Do this editing in-place so that the edited file
-		# has the same permissions, ownership, hard links
-		# to it, etc., as it had before.
+		# E-iRODS now supports a script to determine the path & lib name of the odbc driver
+		my $psqlOdbcLib = `../packaging/find_psqlodbc.sh`;
+		chomp($psqlOdbcLib);
 
-		# Backup the current file.
-		my $dt = getCurrentDateTime( );
-		$dt =~ s/ /_/g;
-		my $tmpfile = "$userODBC.$dt";
-		if ( copy( $userODBC, $tmpfile ) != 1 )
-		{
-			printError( "\nInstall problem:\n" );
-			printError( "    Cannot copy user's ODBC configuration file.\n" );
-			printError( "        Temp file:  $tmpfile\n" );
-			printError( "        Error:      $!\n" );
-			printLog( "Cannot copy user's ODBC config file:  $tmpfile\n" );
-			printLog( "Copy error:  $!\n" );
-			return 0;
-		}
-		chmod( $tmpfile, 0600 );
-
-		# Open the backup for reading and the original for writing.
-		# This will truncate the original file, but we'll write
-		# new lines back into it.
-		open( CONFIGFILE,    "<$tmpfile" );
-		open( NEWCONFIGFILE, ">$userODBC" );	# Truncate file
-		my $inSection = 0;
-		my $hasContent = 0;
-		foreach $line ( <CONFIGFILE> )
-		{
-			$hasContent = 1;
-			if ( $line =~ /^\[[ \t]*PostgreSQL/ )
-			{
-				$inSection = 1;
-			}
-			elsif ( $line =~ /^[ \t]*$/ || $line =~ /^\[/ )
-			{
-				$inSection = 0;
-			}
-			if ( ! $inSection )
-			{
-				print( NEWCONFIGFILE $line );
-			}
-		}
-
-# New section added 8/21/08 to update ~/.odbc.ini to have the
-# [PostgreSQL] section as this seems to be needed on some hosts.  Note
-# that this may change the user's version of odbcpsql.so being used
-# (but the previous ~/.odbc.ini file is saved).
-
-#		my $libPath = abs_path( File::Spec->catfile($databaseLibDir, "libodbcpsql.so" ) );
-#		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/", "libodbc.so" ) );
-		my $libPath = abs_path( File::Spec->catfile( "/usr/lib/odbc/", "psqlodbca.so" ) );
-			      
-
+		open( NEWCONFIGFILE, ">$userODBC" );
 		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
-				"Driver=$libPath\n" .
+				"Driver=$psqlOdbcLib\n" .
 				"Debug=0\n" .
 				"CommLog=0\n" .
 				"Servername=$DATABASE_HOST\n" .
@@ -3088,27 +3082,11 @@ sub Postgres_CreateDatabase()
 				"ReadOnly=no\n" .
 				"Ksqo=0\n" .
 				"Port=$DATABASE_PORT\n" );
-		$hasContent = 1;
-# end new section
 
 		close( NEWCONFIGFILE );
-		close( CONFIGFILE );
 
-		if ( $hasContent )
-		{
-			# Be sure edited file has the right permissions.
-			chmod( $userODBC, 0600 );
-
-			printStatus( "    Old file moved to $tmpfile\n" );
-		}
-		else
-		{
-			# The file is empty.  Just delete.
-			unlink( $userODBC );
-			unlink( $tmpfile );
-			printStatus( "    Skipped.  Unused empty file deleted.\n" );
-		}
-	}
+		chmod( $userODBC, 0600 );
+	} 
 	return 1;
 }
 
@@ -3141,6 +3119,7 @@ sub Oracle_CreateDatabase()
 	my $sqlfile;
 	foreach $sqlfile (@sqlfiles)
 	{
+	    printLog( "    $sqlfile...\n" );
 	    printLog( "    $sqlfile...\n" );
 	    printStatus ( "    $sqlfile...\n" );
 	    my $sqlPath = File::Spec->catfile( $serverSqlDir, $sqlfile );
@@ -3574,10 +3553,14 @@ sub Postgres_sql($$)
 {
 	my ($databaseName,$sqlFilename) = @_;
 
+	$PSQL=`../packaging/find_postgres_bin.sh`;
+	chomp $PSQL;
+	$PSQL=$PSQL . "/psql";
+
 	if ($DATABASE_HOST eq "localhost") {
-	    return run( "psql -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
+	    return run( "$PSQL -U $DATABASE_ADMIN_NAME $databaseName < $sqlFilename" );
 	}
-	return run( "psql -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
+	return run( "$PSQL -U $DATABASE_ADMIN_NAME -h $DATABASE_HOST $databaseName < $sqlFilename" );
 }
 
 #

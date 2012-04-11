@@ -14,19 +14,3 @@
 #
 ###########################################################
 
-# iRODS server host name:
-irodsHost 'localhost'
-# iRODS server port number:
-irodsPort 1247
-# Zone:
-irodsZone 'tempZone'
-# Account name:
-irodsUserName 'rods'
-# Default storage resource name:
-irodsDefResource 'demoResc'
-# Home directory in iRODS:
-irodsHome '/tempZone/home/rods'
-# Current directory in iRODS:
-irodsCwd '/tempZone/home/rods'
-
-

@@ -1,34 +1,73 @@
 #!/bin/bash
 
+EIRODS_HOME_DIR=$1
+OS_EIRODS_ACCT=$2
+SERVER_TYPE=$3
+DB_TYPE=$4
+DB_ADMIN_ROLE=$5
+DB_NAME=$6
+DB_USER=$7
+
+IRODS_HOME=$EIRODS_HOME_DIR/iRODS
+
+
+#echo "EIRODS_HOME_DIR=$EIRODS_HOME_DIR"
+#echo "OS_EIRODS_ACCT=$OS_EIRODS_ACCT"
+#echo "SERVER_TYPE=$SERVER_TYPE"
+#echo "DB_TYPE=$DB_TYPE"
+#echo "DB_ADMIN_ROLE=$DB_ADMIN_ROLE"
+#echo "DB_NAME=$DB_NAME"
+#echo "DB_USER=$DB_USER"
+
+# =-=-=-=-=-=-=-
+# determine if we can remove the resource from the zone
+
+# TODO
+
+
 # =-=-=-=-=-=-=-
 # stop any running E-iRODS Processes
 echo "*** Running Pre-Remove Script ***"
-echo "Stopping iRODS :: $1/irodsctl stop"
-cd $1
-sudo -u $2 $1/irodsctl stop
+echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
+cd $IRODS_HOME
+su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT 
+cd /tmp
 
-# =-=-=-=-=-=-=-
-# determine if the database already exists
-DB=$(sudo -u $3 psql --list  | grep $4 )
-if [ -n "$DB" ]; then
-  echo "Removing Database $4"
-  sudo -u $3 dropdb $4
-fi
+if [ "$SERVER_TYPE" == "icat" ] ; then
 
-# =-=-=-=-=-=-=-
-# determine if the database role already exists
-ROLE=$(sudo -u $3 psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='$2'")
-if [ $ROLE ]; then
-  echo "Removing Database Role $2"
-  sudo -u $3 dropuser $2
+  if [ "$DB_TYPE" == "postgres" ] ; then
+    # =-=-=-=-=-=-=-
+    # determine if the database already exists
+    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+    PSQL="$PSQL/psql"
+
+    DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
+    if [ -n "$DB" ]; then
+      echo "Removing Database $DB_NAME"
+      su --shell=/bin/bash -c "dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
+    fi
+
+    # =-=-=-=-=-=-=-
+    # determine if the database role already exists
+    ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
+    if [ $ROLE ]; then
+      echo "Removing Database Role $DB_USER"
+      su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
+    fi
+  else
+    # expand this for each type of database
+    echo "TODO: remove non-postgres database"
+    echo "TODO: remove non-postgres user"
+  fi
+
 fi
 
 # =-=-=-=-=-=-=-
 # determine if the service account already exists
-USER=$( grep $2 /etc/passwd )
+USER=$( grep $OS_EIRODS_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
-  echo "Removing Service Account $2"
-  deluser $2
+  echo "Removing Service Account $OS_EIRODS_ACCT"
+  userdel $OS_EIRODS_ACCT 
 fi
 
 # =-=-=-=-=-=-=-
