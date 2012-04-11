@@ -189,5 +189,9 @@ elif [ "$SERVER_TYPE" == "resource" ] ; then
 fi
 
 # =-=-=-=-=-=-=-
+# really make sure everything is owned by the eirods service account
+chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR
+
+# =-=-=-=-=-=-=-
 # exit with success
 exit 0
