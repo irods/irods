@@ -1,3 +1,4 @@
+// This code is for issue 721
 #ifndef CURL_WOS_H
 #define CURL_WOS_H
 

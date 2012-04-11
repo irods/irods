@@ -1,3 +1,4 @@
+# This code is for issue 721
 CC=gcc
 CFLAGS=-g
 CURL_FLAGS=-lcurl
