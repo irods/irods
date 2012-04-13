@@ -36,8 +36,14 @@
 #define WOS_MISSING_OBJECT 213
 #define WOS_TEMPORARILY_NOT_SUPPORTED 214
 
+// Let's define the WOS operations
+#define WOS_COMMAND_GET "/cmd/get"
+#define WOS_COMMAND_PUT "/cmd/put"
+#define WOS_COMMAND_DELETE "/cmd/delete"
+
 enum WOS_OPERATION_TYPE {
    WOS_PUT,
+   WOS_DELETE,
    WOS_GET
 } WOS_OP;
 
