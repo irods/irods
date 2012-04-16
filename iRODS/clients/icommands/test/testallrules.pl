@@ -40,6 +40,7 @@ my $username;
 my @words;
 
 my $unixuser     = `whoami`;
+chomp $unixuser;
 my $dir_w        = cwd();
 my $myssize;
 my $host         = hostname();
