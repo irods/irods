@@ -1526,9 +1526,10 @@ int chlRegResc(rsComm_t *rsComm,
    return(status);
 }
 
+
 /* delete a Resource */
-int chlDelResc(rsComm_t *rsComm, 
-	       rescInfo_t *rescInfo) {
+int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
+	  
    int status;
    rodsLong_t iVal;
    char rescId[MAX_NAME_LEN];
@@ -1640,6 +1641,11 @@ int chlDelResc(rsComm_t *rsComm,
       _rollback("chlDelResc");
       return(status);
    }
+
+	if( _dryrun ) { // JMC
+		_rollback( "chlDelResc" );
+		return status;
+	}
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
