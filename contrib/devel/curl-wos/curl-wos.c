@@ -1,4 +1,26 @@
 // This code is for issue 721
+/**
+ * @file
+ * @author  Howard Lander <howard@renci.org>
+ * @version 1.0
+ *
+ * @section LICENSE
+ *
+ * This software is open source.
+ *
+ * Renaissance Computing Institute,
+ * (A Joint Institute between the University of North Carolina at Chapel Hill,
+ * North Carolina State University, and Duke University)
+ * http://www.renci.org
+ *
+ * For questions, comments please contact software@renci.org
+ *
+ * @section DESCRIPTION
+ *
+ * This file contains the standalone c code to exercise the DDN WOS rest
+ * interface.  The code uses libcurl to access the interface.  The file
+ * currently supports the get, put and delete operations.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -16,7 +38,7 @@ void usage() {
 }
 
 size_t 
-readGetResultHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
+readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
    char *theHeader = calloc(size, nmemb + 1);
    int   x_ddn_status;
    char  x_ddn_status_string[WOS_STATUS_LENGTH];
@@ -45,6 +67,19 @@ readGetResultHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
       theHeaders->x_ddn_status = x_ddn_status;
       strcpy(theHeaders->x_ddn_status_string, x_ddn_status_string);
    } 
+
+   if (!strncasecmp(theHeader, 
+                    WOS_OID_HEADER, 
+                    strlen(WOS_OID_HEADER))) {
+      // Time for a little pointer arithmetic: we start the
+      // sscanf after the header by adding the size of the header
+      // to the address of theHeader.
+      theHeaders->x_ddn_oid = calloc (strlen(WOS_STATUS_HEADER) - sizeof(WOS_OID_HEADER), 1);
+      sscanf(theHeader + sizeof(WOS_OID_HEADER), 
+             "%s", theHeaders->x_ddn_oid);
+      printf("oid: %s\n", theHeaders->x_ddn_oid);
+   } 
+
    free(theHeader);
    return (nmemb * size);
 }
@@ -65,6 +100,7 @@ static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   size_t retcode;
  
+  printf("In readTheData\n");
   // This can be optimized...
   retcode = fread(ptr, size, nmemb, stream);
   return retcode;
@@ -91,21 +127,23 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
    theTM = gmtime(&now);
    strftime(dateHeader, WOS_DATE_LENGTH, WOS_DATE_FORMAT_STRING, theTM);
 
-   // Set the request header
-   curl_easy_setopt(theCurl, CURLOPT_PUT, 1);
+   // Set the operation
+   curl_easy_setopt(theCurl, CURLOPT_POST, 1);
+   
+   // construct the url from the resource and the put command
+   sprintf(theURL, "%s%s", argP->resource, WOS_COMMAND_PUT);
+   printf("theURL: %s\n", theURL);
+   curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
 
    // Let's not dump the header or be verbose
    curl_easy_setopt(theCurl, CURLOPT_HEADER, 0);
    curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 0);
 
-   // Stuff the headers into the request
-   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, headers);
-
    // assign the read function
    curl_easy_setopt(theCurl, CURLOPT_READFUNCTION, readTheData);
 
    // assign the result header function and it's user data
-   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readGetResultHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
    curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, &theHeaders);
 
    // We need the size of the destination file. Let's do stat command
@@ -116,25 +154,37 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
    }
 
    // Make the content length header
-   sprintf(contentLengthHeader, "%s %d", 
+   sprintf(contentLengthHeader, "%s%d", 
           WOS_CONTENT_LENGTH_PUT_HEADER,
           (int) (sourceFileInfo.st_size));
 
    // Make the policy header
    sprintf(policyHeader, "%s %s", WOS_POLICY_HEADER, argP->policy);
+
+   // assign the data size
+   curl_easy_setopt(theCurl, 
+                    CURLOPT_POSTFIELDSIZE_LARGE, 
+                    (curl_off_t) sourceFileInfo.st_size);
    
-   // Now add some headers
+   // Now add the headers
    headers = curl_slist_append(headers, dateHeader);
    headers = curl_slist_append(headers, contentLengthHeader);
    headers = curl_slist_append(headers, policyHeader);
+   headers = curl_slist_append(headers, WOS_CONTENT_TYPE_HEADER);
+   
+   // Stuff the headers into the request
+   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, headers);
 
-   // Open the destination file
+   // Open the destination file so the handle can be passed to the
+   // read function
    sourceFile = fopen(argP->file, "rb");
    if (sourceFile) {
-      curl_easy_setopt(theCurl, CURLOPT_FILE, sourceFile);
+      curl_easy_setopt(theCurl, CURLOPT_READDATA, sourceFile);
       res = curl_easy_perform(theCurl);
       printf("res is %d\n", res);
    }
+   printf("In putTheFile: code: %d, oid: %s\n", theHeaders.x_ddn_status, theHeaders.x_ddn_oid);
+   curl_easy_cleanup(theCurl);
 }
 
 void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
@@ -175,6 +225,8 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
    headers = curl_slist_append(headers, WOS_CONTENT_TYPE_HEADER);
    headers = curl_slist_append(headers, WOS_CONTENT_LENGTH_HEADER);
    headers = curl_slist_append(headers, dateHeader);
+
+   // Get rid of the accept header
    headers = curl_slist_append(headers, "Accept:");
    
    // Stuff the headers into the request
@@ -184,7 +236,7 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
    curl_easy_setopt(theCurl, CURLOPT_WRITEFUNCTION, writeTheData);
 
    // assign the result header function and it's user data
-   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readGetResultHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
    curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, &theHeaders);
    
    // Open the destination file
@@ -196,9 +248,74 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
    }
 
    printf("In getTheFile: code: %d, string: %s\n", theHeaders.x_ddn_status, theHeaders.x_ddn_status_string);
+
+   if (theHeaders.x_ddn_status == WOS_OBJ_NOT_FOUND) {
+      // The file was not found but because we already opened it
+      // there will now be a zero length file. Let's remove it
+      unlink(argP->destination);
+   }
    curl_easy_cleanup(theCurl);
+}
+
+void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
+   printf("getting ready to put the file\n");
+   CURLcode res;
+   time_t now;
+   struct tm *theTM;
+   struct stat sourceFileInfo;
+   FILE  *sourceFile;
+   WOS_HEADERS theHeaders;
+   char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
+   char dateHeader[WOS_DATE_LENGTH];
+   char contentLengthHeader[WOS_CONTENT_HEADER_LENGTH];
+   char oidHeader[WOS_FILE_LENGTH];
+ 
+   // The headers
+   struct curl_slist *headers = NULL;
+
+   // Create the date header
+   now = time(NULL);
+   theTM = gmtime(&now);
+   strftime(dateHeader, WOS_DATE_LENGTH, WOS_DATE_FORMAT_STRING, theTM);
+
+   // Set the operation
+   curl_easy_setopt(theCurl, CURLOPT_POST, 1);
    
-    
+   // construct the url from the resource and the put command
+   sprintf(theURL, "%s%s", argP->resource, WOS_COMMAND_DELETE);
+   printf("theURL: %s\n", theURL);
+   curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
+
+   // Let's not dump the header or be verbose
+   curl_easy_setopt(theCurl, CURLOPT_HEADER, 1);
+   curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+
+   // assign the result header function and it's user data
+   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, &theHeaders);
+
+   // Make the content length header
+   sprintf(contentLengthHeader, "%s%d", WOS_CONTENT_LENGTH_PUT_HEADER, 0);
+
+   // Make the OID header
+   sprintf(oidHeader, "%s %s", WOS_OID_HEADER, argP->file);
+   
+   // Now add the headers
+   headers = curl_slist_append(headers, dateHeader);
+   headers = curl_slist_append(headers, contentLengthHeader);
+   headers = curl_slist_append(headers, oidHeader);
+   headers = curl_slist_append(headers, WOS_CONTENT_TYPE_HEADER);
+   
+   // Stuff the headers into the request
+   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, headers);
+
+   // Open the destination file so the handle can be passed to the
+   // read function
+   curl_easy_setopt(theCurl, CURLOPT_READDATA, sourceFile);
+   res = curl_easy_perform(theCurl);
+   printf("res is %d\n", res);
+   printf("In deleteTheFile: code: %d, oid: %s\n", theHeaders.x_ddn_status, theHeaders.x_ddn_oid);
+   curl_easy_cleanup(theCurl);
 }
 
 void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
@@ -235,6 +352,8 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
                argP->op = WOS_PUT;
             } else if (!strcasecmp(optarg, "get")) {
                argP->op = WOS_GET;
+            } else if (!strcasecmp(optarg, "delete")) {
+               argP->op = WOS_DELETE;
             } else {
                usage();
             }
@@ -272,6 +391,8 @@ void main (int argc, char *argv[]) {
       getTheFile(argP, theCurl);
    } else if (theArgs.op == WOS_PUT) {
       putTheFile(argP, theCurl);
+   } else if (theArgs.op == WOS_DELETE) {
+      deleteTheFile(argP, theCurl);
    }
 
 }
