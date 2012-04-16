@@ -1002,9 +1002,8 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    }
 
    if (strcmp(cmdToken[0],"rmresc") ==0) {
-	  printf( "generalAdmin - cmd token: %s %s %s %s %s %s %s %s\n", cmdToken[0], cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7] );
-      generalAdmin(0, "rm", "resource", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], _rodsArgs );
+      generalAdmin(0, "rm", "resource", cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], _rodsArgs );
+		  
       return(0);
    }
    if (strcmp(cmdToken[0],"rmdir") ==0) {
