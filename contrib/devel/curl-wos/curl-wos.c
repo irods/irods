@@ -32,11 +32,28 @@
 #include <sys/stat.h>
 #include "curl-wos.h"
 
+/** 
+ @brief The usage message when something is wrong with the invocation
+ */
 void usage() {
    printf("something wrong in the invocation..\n");
    exit(1);
 }
 
+/** 
+ * @brief This function parses the headers returned from the libcurl call.
+ *
+ *  This function conforms to the prototype required by libcurl for 
+ *  a header callback function.  It parses the headers we are interested
+ *  in into a structure of type WOS_HEADERS.
+ *
+ * @param ptr A void ptr to the header data
+ * @param size The size of single item in the header data: seems to always be 1
+ * @param nmemb The number of items in the header data.
+ * @param stream A pointer to the user provided data: in this case a pointer to
+ *        the WOS_HEADERS structure the function fills in.
+ * @return The number of bytes processed.
+ */
 size_t 
 readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
    char *theHeader = calloc(size, nmemb + 1);
@@ -84,18 +101,49 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
    return (nmemb * size);
 }
 
+/** 
+ * @brief This function writes the data received from the DDN unit to disk.
+ *        It's used by the get operation.
+ *
+ *  This function conforms to the prototype required by libcurl for a 
+ *  a CURLOPT_WRITEFUNCTION callback function. It writes the date returned
+ *  by the curl library call to the FILE pointer defined in the stream
+ *  parameter. Note that the function will often be called more than once,
+ *  as libcurl defines a maximum buffer size.  This maximum can be
+ *  redefined by recompiling libcurl.
+ *
+ * @param ptr A void ptr to the data to be written to disk.
+ * @param size The size of a single item in the data: seems to always be 1
+ * @param nmemb The number of items in the data.
+ * @param stream A pointer to the user provided data: in this case a pointer to
+ *        the FILE handle of the file to which the data will be written.
+ * @return The number of bytes written.
+ */
 static size_t 
 writeTheData(void *ptr, size_t size, size_t nmemb, void *stream) {
   size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
   return written;
 }
 
-/***************************************************************
-*
-* Note that this function is called during the put operation.  It's role
-* is to read the data that will be put from the local disk.
-*
-***************************************************************/
+/** 
+ * @brief This function reads the data to be placed into the DDN unit
+ *        from the specified file. It's used by the put operation.
+ *
+ *  This function conforms to the prototype required by libcurl for a 
+ *  a CURLOPT_READFUNCTION callback function. It reads the date from
+ *  FILE pointer defined in the stream parameter and provides the data
+ *  to the libcurl POST operation. Note that the function will often be 
+ *  called more than once, as libcurl defines a maximum buffer size.  
+ *  This maximum can be redefined by recompiling libcurl.
+ *
+ * @param ptr A void ptr to the data read from the file.
+ * @param size The size of single item in the data: seems to always be 1
+ * @param nmemb The number of items in the data.
+ * @param stream A pointer to the user provided data: in this case a pointer to
+ *        the FILE handle of the file from which the data will be read.
+ * @return The number of bytes read.
+ */
+
 static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   size_t retcode;
@@ -106,6 +154,19 @@ static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
   return retcode;
 }
 
+/** 
+ * @brief This function is the high level function that adds a data file
+ *        to the DDN storage using the WOS interface.
+ *
+ *  This function uses the libcurl API to POST the specified file
+ *  to the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
+ *  for information about libcurl.
+ *
+ * @param argP Pointer to the user specified arguments parsed into a
+ *        WOS_ARG structure.
+ * @param theCurl A pointer to the libcurl connection handle.
+ * @return void.  Maybe not a great idea...
+ */
 void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
    printf("getting ready to put the file\n");
    CURLcode res;
@@ -187,6 +248,20 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
    curl_easy_cleanup(theCurl);
 }
 
+/** 
+ * @brief This function is the high level function that retrieves a data file
+ *        from the DDN storage using the WOS interface.
+ *
+ *  This function uses the libcurl API to GET the specified file
+ *  to the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
+ *  for information about libcurl.
+ *
+ * @param argP Pointer to the user specified arguments parsed into a
+ *        WOS_ARG structure.
+ * @param theCurl A pointer to the libcurl connection handle.
+ * @return void.  Maybe not a great idea...
+ */
+
 void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
    CURLcode res;
    time_t now;
@@ -257,6 +332,20 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
    curl_easy_cleanup(theCurl);
 }
 
+/** 
+ * @brief This function is the high level function that deletes a data file
+ *        from DDN storage using the WOS interface.
+ *
+ *  This function uses the libcurl API to POST the specified file deletion
+ *  to the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
+ *  for information about libcurl.
+ *
+ * @param argP Pointer to the user specified arguments parsed into a
+ *        WOS_ARG structure.
+ * @param theCurl A pointer to the libcurl connection handle.
+ * @return void.  Maybe not a great idea...
+ */
+
 void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
    printf("getting ready to put the file\n");
    CURLcode res;
@@ -318,6 +407,16 @@ void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
    curl_easy_cleanup(theCurl);
 }
 
+/** 
+ * @brief This function processes the user arguments into the a convenient
+ *        structure. Arguments are processed with getopt_long.
+ *
+ * @param argc The number of arguments.
+ * @param argv The arguments as passed in by the user.
+ * @param argP Pointer to the WOS_ARG into which to process the arguments.
+ * @return void.  
+ */
+
 void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
    int opt = 0;
    int longIndex;
@@ -373,6 +472,17 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
       opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
    }
 }
+
+/** 
+ * @brief This main routine for this program
+ *
+ * The main routine processes the arguments, initializes the curl 
+ * library and calls the appropriate routine for the operation 
+ * requested by the user.
+ * @param argc The number of arguments.
+ * @param argv The arguments as passed in by the user.
+ * @return void.  
+ */
 
 void main (int argc, char *argv[]) {
    WOS_ARG theArgs;
