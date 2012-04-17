@@ -86,6 +86,13 @@ fi
 
 
 
+# generate randomized database password, replacing hardcoded placeholder
+RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
+sed -e "s/SOMEPASSWORD/$RANDOMDBPASS/" ./e-irods.list > /tmp/eirodslist.tmp
+mv /tmp/eirodslist.tmp ./e-irods.list
+
+
+
 # run EPM for package type of this machine
 cd $DIR/../
 if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL
