@@ -98,6 +98,9 @@ cd $DIR/../
 if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL
   echo "Running EPM :: Generating RPM"
   sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+elif [ -f "/etc/SuSE-release" ]; then # SuSE
+  echo "Running EPM :: Generating RPM"
+  sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
 elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
   echo "Running EPM :: Generating DEB"
   sudo epm -f deb e-irods $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
