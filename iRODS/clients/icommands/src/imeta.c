@@ -240,8 +240,9 @@ showColl(char *name, char *attrName, int wild)
    }
   
    // JMC cppcheck - dangerous use of strcpy : need a explicit null term 
-   if( ( strlen( name ) + 1 ) < BIG_STR ) 
-	   fullName[ strlen( name ) ] = '\0';
+   // NOTE :: adding len of name + 1 for added / + len of cwd + 1 for null term          
+   if( ( strlen( name )+1+strlen(cwd)+1 ) < LONG_NAME_LEN ) 
+	   fullName[ strlen( name )+1+strlen(cwd)+1 ] = '\0';
    else
 	   rodsLog( LOG_ERROR, "showColl :: error - fullName could not be explicitly null terminated" );
 

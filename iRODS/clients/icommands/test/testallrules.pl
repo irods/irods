@@ -39,6 +39,8 @@ my @tmp_tab;
 my $username;
 my @words;
 
+my $unixuser     = `whoami`;
+chomp $unixuser;
 my $dir_w        = cwd();
 my $myssize;
 my $host         = hostname();
@@ -170,7 +172,7 @@ if ( ! $input ) {
 runCmd( "iinit $input" );
 
 # prep and cleanup
-runCmd( "iadmin mkresc testResc 'unix file system' cache localhost /tmp/testResc", "", "", "", "iadmin rmresc testResc" );
+runCmd( "iadmin mkresc testResc 'unix file system' cache localhost /tmp/$unixuser/testResc", "", "", "", "iadmin rmresc testResc" );
 runCmd( "iadmin atrg testgroup testResc", "", "", "", "iadmin rfrg testgroup testResc");
 runCmd( "imkdir sub1", "", "", "", "irm -rf sub1" );
 runCmd( "imkdir forphymv", "", "", "", "irm -rf forphymv" );

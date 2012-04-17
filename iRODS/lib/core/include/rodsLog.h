@@ -21,6 +21,7 @@
 */
 
 #define LOG_NOTICE  5
+#define LOG_STATUS  5
 /* This is informational only, part of the normal operation but will
    often be of interest. */
 

@@ -530,15 +530,20 @@ showResourceQuotas(char *inputUserOrGroup)
 
 int
 generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3, 
-	     char *arg4, char *arg5, char *arg6, char *arg7) {
+	     char *arg4, char *arg5, char *arg6, char *arg7, rodsArguments_t* _rodsArgs = 0 ) {
 /* If userOption is 1, try userAdmin if generalAdmin gets a permission
  * failure */
+
    generalAdminInp_t generalAdminInp;
    userAdminInp_t userAdminInp;
    int status;
    char *mySubName;
    char *myName;
    char *funcName;
+
+   if( _rodsArgs && _rodsArgs->dryrun ) {
+	   arg3 = "--dryrun";
+   }
 
    generalAdminInp.arg0 = arg0;
    generalAdminInp.arg1 = arg1;
@@ -570,26 +575,42 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
       funcName = "rcGeneralAdmin and rcUserAdmin";
    }
 
-   if (status < 0 ) {
-      if (Conn->rError) {
-	 rError_t *Err;
-         rErrMsg_t *ErrMsg;
-	 int i, len;
-	 Err = Conn->rError;
-	 len = Err->len;
-	 for (i=0;i<len;i++) {
-	    ErrMsg = Err->errMsg[i];
-	    rodsLog(LOG_ERROR, "Level %d: %s",i, ErrMsg->msg);
-	 }
-      }
-      myName = rodsErrorName(status, &mySubName);
-      rodsLog (LOG_ERROR, "%s failed with error %d %s %s",funcName,
-	       status, myName, mySubName);
-      if (status == CAT_INVALID_USER_TYPE) {
-	 printf("See 'lt user_type' for a list of valid user types.\n");
-      }
-   }
-   return(status);
+    // =-=-=-=-=-=-=-
+	// JMC :: for 'dryrun' option on rmresc we need to capture the
+	//     :: return value and simply output either SUCCESS or FAILURE
+	// rm resource dryrun BOOYA
+	if( _rodsArgs &&
+		_rodsArgs->dryrun == true && 
+		0 == strcmp( arg0, "rm" ) && 
+		0 == strcmp( arg1, "resource" ) ) {
+		if ( 0 == status ) {
+			printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: SUCCESS\n", arg2, status );
+		} else {
+			printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: FAILURE\n", arg2, status );
+		} // else
+	} else {
+		if (status < 0 ) {
+			if (Conn->rError) {
+				rError_t* Err = Conn->rError;
+				int       len = Err->len;
+
+				for ( int i = 0; i < len; i++ ) {
+					rErrMsg_t* ErrMsg = Err->errMsg[i];
+					rodsLog(LOG_ERROR, "Level %d: %s",i, ErrMsg->msg);
+				}
+			}
+
+			myName = rodsErrorName(status, &mySubName);
+			rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
+			if (status == CAT_INVALID_USER_TYPE) {
+				printf("See 'lt user_type' for a list of valid user types.\n");
+			}
+		} // if status < 0
+
+	} // else
+
+
+	return(status);
 }
 
 /* 
@@ -675,7 +696,7 @@ getInput(char *cmdToken[], int maxTokens) {
    -3 if empty.
  */
 int
-doCommand(char *cmdToken[]) {
+doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    char buf0[MAX_PASSWORD_LEN+10];
    char buf1[MAX_PASSWORD_LEN+10];
    char buf2[MAX_PASSWORD_LEN+100];
@@ -981,8 +1002,8 @@ doCommand(char *cmdToken[]) {
    }
 
    if (strcmp(cmdToken[0],"rmresc") ==0) {
-      generalAdmin(0, "rm", "resource", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+      generalAdmin(0, "rm", "resource", cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], _rodsArgs );
+		  
       return(0);
    }
    if (strcmp(cmdToken[0],"rmdir") ==0) {
@@ -1144,7 +1165,11 @@ main(int argc, char **argv) {
    int keepGoing;
    int firstTime;
 
-   status = parseCmdLineOpt (argc, argv, "vVh", 0, &myRodsArgs);
+   // JMC - turn on 'includeLong' for dryrun & add Z to the options
+   // status = parseCmdLineOpt (argc, argv, "vVh", 0, &myRodsArgs);
+
+   status = parseCmdLineOpt (argc, argv, "vVhZ", 1, &myRodsArgs);
+
    if (status) {
       printf("Use -h for help.\n");
       exit(2);
@@ -1242,7 +1267,7 @@ main(int argc, char **argv) {
    firstTime=1;
    while (keepGoing) {
       int status;
-      status=doCommand(cmdToken);
+      status=doCommand( cmdToken, &myRodsArgs );
       if (status==-1) keepGoing=0;
       if (firstTime) {
 	 if (status==0) keepGoing=0;

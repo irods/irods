@@ -477,6 +477,25 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
+
+		// =-=-=-=-=-=-=-
+		// JMC 04.11.2012 :: add a dry run option to idamin rmresc
+		//                :: basically run chlDelResc then run a rollback immediately after
+		if ( strcmp( generalAdminInp->arg3, "--dryrun" ) == 0 ) {
+			strncpy( rescInfo.rescName,  generalAdminInp->arg2, sizeof rescInfo.rescName );
+			rodsLog( LOG_STATUS, "Executing a dryrun of removal of resource [%s]", generalAdminInp->arg2 );
+			
+			status = chlDelResc( rsComm, &rescInfo, 1 );
+			if( 0 == status ) {
+				rodsLog( LOG_STATUS, "DRYRUN REMOVING RESOURCE [%s] :: SUCCESS", generalAdminInp->arg2 );	
+			} else {
+				rodsLog( LOG_STATUS, "DRYRUN REMOVING RESOURCE [%s] :: FAILURE", generalAdminInp->arg2 );	
+			}
+
+			return status;
+		} // if dryrun                                                                                                           
+		// =-=-=-=-=-=-=- 
+
 	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, 
 		  sizeof rescInfo.rescName);
 

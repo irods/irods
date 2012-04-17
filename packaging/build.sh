@@ -86,9 +86,19 @@ fi
 
 
 
+# generate randomized database password, replacing hardcoded placeholder
+RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
+sed -e "s/SOMEPASSWORD/$RANDOMDBPASS/" ./e-irods.list > /tmp/eirodslist.tmp
+mv /tmp/eirodslist.tmp ./e-irods.list
+
+
+
 # run EPM for package type of this machine
 cd $DIR/../
 if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL
+  echo "Running EPM :: Generating RPM"
+  sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+elif [ -f "/etc/SuSE-release" ]; then # SuSE
   echo "Running EPM :: Generating RPM"
   sudo epm -f rpm e-irods $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
 elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
