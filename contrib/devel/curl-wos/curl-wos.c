@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <curl/curl.h>
 #include <sys/stat.h>
+#include <json/json.h>
 #include "curl-wos.h"
 
 /** 
@@ -100,6 +101,55 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
    free(theHeader);
    return (nmemb * size);
 }
+
+/** 
+ * @brief This function writes the data received from the DDN unit to a 
+ *        memory buffer. It's used by the status operation.
+ *
+ *  This function conforms to the prototype required by libcurl for a 
+ *  a CURLOPT_WRITEFUNCTION callback function. It writes the date returned
+ *  by the curl library call to the WOS_MEMORY pointer defined in the stream
+ *  parameter. Note that the function will could be called more than once,
+ *  as libcurl defines a maximum buffer size.  This maximum can be
+ *  redefined by recompiling libcurl.
+ *
+ * @param ptr A void ptr to the data to be written to disk.
+ * @param size The size of a single item in the data: seems to always be 1
+ * @param nmemb The number of items in the data.
+ * @param stream A pointer to the user provided data: in this case a pointer to
+ *        the FILE handle of the file to which the data will be written.
+ * @return The number of bytes added to the data on this invocation.
+ */
+static size_t 
+writeTheDataToMemory(void *ptr, size_t size, size_t nmemb, void *stream) {
+    size_t totalSize = size * nmemb;
+    WOS_MEMORY_P theMem = (WOS_MEMORY_P)stream;
+   
+    // If the function is called more than once, we realloc the data.
+    // In principle that is a really bad idea for performance reasons
+    // but since the json data this will be used for is small, this should
+    // not happen enough times to matter.
+    if (theMem->data == NULL) {
+       theMem->data = (char *) malloc(totalSize + 1);
+    } else {
+       theMem->data = realloc(theMem->data, theMem->size + totalSize + 1);
+    }
+    if (theMem->data == NULL) {
+      /* out of memory! */ 
+      printf("not enough memory (realloc returned NULL)\n");
+      exit(-1);
+    }
+   
+    // Append whatever data came in this invocation of the function
+    // to the previous state of the data. Also increment the total size
+    // and put on a null terminator in case this is the last invocation.
+    memcpy(&(theMem->data[theMem->size]), ptr, totalSize);
+    theMem->size += totalSize;
+    theMem->data[theMem->size] = 0;
+   
+    return totalSize;
+}
+
 
 /** 
  * @brief This function writes the data received from the DDN unit to disk.
@@ -408,6 +458,111 @@ void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
 }
 
 /** 
+ * @brief This function is the high level function that retrieves data from
+ *        the DDN using the admin interface.
+ *
+ *  This function uses the libcurl API to get the specified data
+ *  from the DDN using the admin interface. See http://curl.haxx.se/libcurl/
+ *  for information about libcurl. The data ends up in memory, where we
+ *  use a json parser to demarshal into a structure.
+ *
+ * @param argP Pointer to the user specified arguments parsed into a
+ *        WOS_ARG structure.
+ * @param theCurl A pointer to the libcurl connection handle.
+ * @return void.  Maybe not a great idea...
+ */
+
+/** 
+ * @brief This function processes the json returned by the stats interface
+ * into the a convenient structure. 
+ *
+ * The parsing is done using json-c (http://oss.metaparadigm.com/json-c/). On
+ * Ubuntu, you get this by executing sudo apt-get install libjson0-dev. An
+ * example usage of this library is at 
+ * http://coolaj86.info/articles/json-c-example.html 
+ *
+ * @param statP The structure that will contain the processed json.
+ * @param jsonP A character string with the json in it.
+ * @return void.  
+ */
+void processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
+   struct json_object *theObjectP;
+   struct json_object *tmpObjectP;
+
+   // Do the parse.
+   theObjectP = json_tokener_parse(jsonP);
+
+   // For each value we care about, we get the object, then the value
+   // from the object
+   tmpObjectP = json_object_object_get(theObjectP, "totalNodes");
+   statP->totalNodes = json_object_get_int(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "activeNodes");
+   statP->activeNodes = json_object_get_int(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "disconnected");
+   statP->disconnected = json_object_get_int(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "clients");
+   statP->clients = json_object_get_int(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "objectCount");
+   statP->objectCount = json_object_get_int(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "rawObjectCount");
+   statP->rawObjectCount = json_object_get_int(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "usableCapacity");
+   statP->usableCapacity = json_object_get_double(tmpObjectP);
+
+   tmpObjectP = json_object_object_get(theObjectP, "capacityUsed");
+   statP->capacityUsed = json_object_get_double(tmpObjectP);
+   printf("\tObjectCount:        %d\n\tRaw Object Count:      %d\n", 
+          statP->objectCount, statP->rawObjectCount);
+   printf("\tCapacity used:      %f Gb\n\tCapacity available: %f GB\n", 
+          statP->capacityUsed, statP->usableCapacity);
+}
+
+
+void getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
+   CURLcode   res;
+   WOS_MEMORY theData;
+   WOS_STATISTICS theStats;
+   char       auth[(WOS_AUTH_LENGTH * 2) + 1];
+
+   // Init the memory struct
+   theData.data = NULL;
+   theData.size = 0;
+ 
+   // The headers
+   struct curl_slist *headers = NULL;
+
+   printf("getting ready to get the json\n");
+   
+   // Copy the resource into the URL
+   curl_easy_setopt(theCurl, CURLOPT_URL, argP->resource);
+
+   // Let's not dump the header or be verbose
+   curl_easy_setopt(theCurl, CURLOPT_HEADER, 0);
+   curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 0);
+
+   // assign the write function and the pointer
+   curl_easy_setopt(theCurl, CURLOPT_WRITEFUNCTION, writeTheDataToMemory);
+   curl_easy_setopt(theCurl, CURLOPT_WRITEDATA, &theData);
+
+   // Add the user name and password
+   sprintf(auth, "%s:%s", argP->user, argP->password);
+   curl_easy_setopt(theCurl, CURLOPT_USERPWD, auth);
+   curl_easy_setopt(theCurl, CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
+  
+   res = curl_easy_perform(theCurl);
+   printf("res is %d\n", res);
+
+   printf("In getTheManagementData: data: %s\n", theData.data);
+   processTheStatJSON(theData.data, &theStats);
+}
+
+/** 
  * @brief This function processes the user arguments into the a convenient
  *        structure. Arguments are processed with getopt_long.
  *
@@ -427,6 +582,9 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
       {"policy", required_argument, NULL, 'p'},
       {"file", required_argument, NULL, 'f'},
       {"operation", required_argument, NULL, 'o'},
+      {"destination", required_argument, NULL, 'd'},
+      {"user", required_argument, NULL, 'u'},
+      {"password", required_argument, NULL, 'a'},
       {"destination", required_argument, NULL, 'd'},
       {NULL, no_argument, NULL, 0}
    };
@@ -453,9 +611,19 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
                argP->op = WOS_GET;
             } else if (!strcasecmp(optarg, "delete")) {
                argP->op = WOS_DELETE;
+            } else if (!strcasecmp(optarg, "status")) {
+               argP->op = WOS_STATUS;
             } else {
                usage();
             }
+            break;
+
+         case 'u':
+            strcpy(argP->user, optarg);
+            break;
+
+         case 'a':
+            strcpy(argP->password, optarg);
             break;
 
          case 'd':
@@ -503,6 +671,8 @@ void main (int argc, char *argv[]) {
       putTheFile(argP, theCurl);
    } else if (theArgs.op == WOS_DELETE) {
       deleteTheFile(argP, theCurl);
+   } else if (theArgs.op == WOS_STATUS) {
+      getTheManagementData(argP, theCurl);
    }
 
 }
