@@ -1,0 +1,86 @@
+What is this?
+
+A collection of c code related to the DDN wos interface.
+
+How do I build it?
+
+You need 2 external libraries:
+
+   libcurl and it's development package: Shipped with some linux distros and 
+   OSX by default. Otherwise look for the libcurl4-gnutls-dev package.
+
+   libjson and it's development package: This can be confusing as there is 
+   more than one available. The one used by this package is json-c.  It's 
+   available as the package libjson0-dev or from 
+   http://oss.metaparadigm.com/json-c/.
+
+Once you have everything installed, make sure the Makefile has the correct
+paths for curl and json and type make.  You can also type make doc to
+generate some Doxygen documentation for the package.
+
+What's it for and how do I use it?
+
+This code is used to test out the DDN WOS and admin interfaces.  The code
+supports the following operations:
+
+	get: Retrieve the contents of a file from the DDN unit and store the data
+         in a file on the local file system.
+
+	put: Put the contents of a local file into the DDN storage.
+
+    delete: Delete a file from the DDN storage.
+
+	status: Retrieve informationi, including total and used capacity, about i
+            the DDN unit from it's administrative interface.  
+
+The code supports the following arguments:
+
+    --operation: Specifies which of the supported operations to execute.
+
+	--resource: Specifies the ddn resource that will be addressed. For
+                the get, put and delete operations this is the fully
+                qualified name of resource, such as wos.edc.renci.org.
+                For the status operation this is the URL of the 
+                status operation. Example: 
+                http://wos.edc.renci.org:8088/mgmt/statistics
+
+	--policy: The policy on the DDN controlling the file. This is
+              only used for the put operation.
+
+	--file: The file parameter is used with the put, get and delete operations.
+            For the get and delete operation, this parameter specifies the
+            Object ID (OID) for a file that currently exists on the DDN
+            system.  For the put operation, this file specifies the file
+            on local disk to be copied into the DDN storage.
+
+	--destination: This parameter is only used with the get operation. It
+                   specifies a local filename in which the contents of the
+                   object specified with an OID and the file parameter are
+                   stored.
+
+	--user: The user parameter is only used with the status operation.
+            Pass a user name that has permission to access the web based
+            administration tool.
+
+	--password: The password parameter is only used with the status operation.
+            Pass a password associated with a user name that has permission 
+            to access the web based administration tool.
+
+	--help: Print the help message.
+
+Examples
+
+	Put a file. Be sure to grab the oid from the output.  You'll need it for 
+    get and delete.
+
+    curl-wos --operation=put --resource=wos.edc.renci.org --policy=Howard --file=Makefile.insert
+
+    Get the file.
+    curl-wos --operation=get --resource=wos.edc.renci.org --policy=Howard --file=HDGkEvwZAmkpsQDyTCqGBgm2_MmycPN8jfa4IMHN --destination=Makefile.insert
+
+    Delete the file.
+    curl-wos --operation=delete --resource=wos.edc.renci.org --file=HDGkEvwZAmkpsQDyTCqGBgm2_MmycPN8jfa4IMHN
+
+    Get the status of the DDN unit
+    curl-wos --operation=status --resource=wos.edc.renci.org:8088/mgmt/statistics --user=admin-user --password=admin-password
+    

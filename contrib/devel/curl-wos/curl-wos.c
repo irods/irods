@@ -37,7 +37,75 @@
  @brief The usage message when something is wrong with the invocation
  */
 void usage() {
-   printf("something wrong in the invocation..\n");
+   const char *message = "\n\
+This code is used to test out the DDN WOS and admin interfaces.  The code\n\
+supports the following operations:\n\
+\n\
+    get: Retrieve the contents of a file from the DDN unit and store the data\n\
+         in a file on the local file system.\n\
+\n\
+    put: Put the contents of a local file into the DDN storage.\n\
+\n\
+    delete: Delete a file from the DDN storage.\n\
+\n\
+    status: Retrieve informationi, including total and used capacity, about i\n\
+            the DDN unit from it's administrative interface.\n\
+\n\
+The code supports the following arguments:\n\
+\n\
+    --operation: Specifies which of the supported operations to execute.\n\
+\n\
+    --resource: Specifies the ddn resource that will be addressed. For\n\
+                the get, put and delete operations this is the fully\n\
+                qualified name of resource, such as wos.edc.renci.org.\n\
+                For the status operation this is the URL of the\n\
+                status operation. Example:\n\
+                http://wos.edc.renci.org:8088/mgmt/statistics\n\
+\n\
+    --policy: The policy on the DDN controlling the file. This is\n\
+              only used for the put operation.\n\
+\n\
+    --file: The file parameter is used with the put, get and delete operations.\n\
+            For the get and delete operation, this parameter specifies the\n\
+            Object ID (OID) for a file that currently exists on the DDN\n\
+            system.  For the put operation, this file specifies the file\n\
+            on local disk to be copied into the DDN storage.\n\
+\n\
+    --destination: This parameter is only used with the get operation. It\n\
+                   specifies a local filename in which the contents of the\n\
+                   object specified with an OID and the file parameter are\n\
+                   stored.\n\
+\n\
+    --user: The user parameter is only used with the status operation.\n\
+            Pass a user name that has permission to access the web based\n\
+            administration tool.\n\
+\n\
+    --password: The password parameter is only used with the status operation.\n\
+            Pass a password associated with a user name that has permission\n\
+            to access the web based administration tool.\n\
+\n\
+    --help: Print the help message.\n\
+\n\
+Examples \n\
+\n\
+    Put a file. Be sure to grab the oid from the output.  You'll need it for\n\
+    get and delete.\n\
+    \n\
+    curl-wos --operation=put --resource=wos.edc.renci.org --policy=Howard --file=Makefile.insert\n\
+\n\
+    Get the file.\n\
+    curl-wos --operation=get --resource=wos.edc.renci.org --policy=Howard --file=HDGkEvwZAmkpsQDyTCqGBgm2_MmycPN8jfa4IMHN --destination=Makefile.insert\n\
+\n\
+    Delete the file.\n\
+    curl-wos --operation=delete --resource=wos.edc.renci.org --file=HDGkEvwZAmkpsQDyTCqGBgm2_MmycPN8jfa4IMHN\n\
+\n\
+    Get the status of the DDN unit\n\
+    curl-wos --operation=status --resource=wos.edc.renci.org:8088/mgmt/statistics --user=admin-user --password=admin-password\n\
+";
+
+   
+   printf("%s", message);
+
    exit(1);
 }
 
@@ -585,13 +653,17 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
       {"destination", required_argument, NULL, 'd'},
       {"user", required_argument, NULL, 'u'},
       {"password", required_argument, NULL, 'a'},
-      {"destination", required_argument, NULL, 'd'},
+      {"help", no_argument, NULL, 'h'},
       {NULL, no_argument, NULL, 0}
    };
  
    opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
    while (opt != -1) {
       switch (opt){
+         case 'h':
+            usage();
+            break;
+
          case 'r':
             strcpy(argP->resource, optarg);
             break;
