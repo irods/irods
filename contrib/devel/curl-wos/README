@@ -16,7 +16,8 @@ You need 2 external libraries:
 
 Once you have everything installed, make sure the Makefile has the correct
 paths for curl and json and type make.  You can also type make doc to
-generate some Doxygen documentation for the package.
+generate some Doxygen documentation for the package. You can also type
+make CPPFLAGS=-DDEBUG to see extra information outputted to standard out.
 
 What's it for and how do I use it?
 
@@ -53,10 +54,10 @@ The code supports the following arguments:
             system.  For the put operation, this file specifies the file
             on local disk to be copied into the DDN storage.
 
-	--destination: This parameter is only used with the get operation. It
-                   specifies a local filename in which the contents of the
-                   object specified with an OID and the file parameter are
-                   stored.
+	--destination: This parameter is required with the get operation and
+                   not used for any other operation. It specifies a local 
+                   filename in which the contents of the object specified 
+                   with an OID and the file parameter are stored.
 
 	--user: The user parameter is only used with the status operation.
             Pass a user name that has permission to access the web based

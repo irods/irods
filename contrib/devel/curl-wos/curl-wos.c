@@ -36,7 +36,7 @@
 /** 
  @brief The usage message when something is wrong with the invocation
  */
-void usage() {
+void Usage() {
    const char *message = "\n\
 This code is used to test out the DDN WOS and admin interfaces.  The code\n\
 supports the following operations:\n\
@@ -71,10 +71,10 @@ The code supports the following arguments:\n\
             system.  For the put operation, this file specifies the file\n\
             on local disk to be copied into the DDN storage.\n\
 \n\
-    --destination: This parameter is only used with the get operation. It\n\
-                   specifies a local filename in which the contents of the\n\
-                   object specified with an OID and the file parameter are\n\
-                   stored.\n\
+    --destination: This parameter is required with the get operation and\n\
+                   not used for any other operation. It specifies a local\n\
+                   filename in which the contents of the object specified\n\
+                   with an OID and the file parameter are stored.\n\
 \n\
     --user: The user parameter is only used with the status operation.\n\
             Pass a user name that has permission to access the web based\n\
@@ -102,10 +102,7 @@ Examples \n\
     Get the status of the DDN unit\n\
     curl-wos --operation=status --resource=wos.edc.renci.org:8088/mgmt/statistics --user=admin-user --password=admin-password\n\
 ";
-
-   
    printf("%s", message);
-
    exit(1);
 }
 
@@ -138,7 +135,9 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
    // that we don't need or want. Remember that we used calloc 
    // for the space, so the string is properly terminated.
    strncpy(theHeader, (char *) ptr, ((size * nmemb)) - 2);
+#ifdef DEBUG
    printf("%d, %d, %s\n", (int) size, (int) strlen(theHeader), theHeader);
+#endif
 
    // Now lets see if this is a header we care about
    if (!strncasecmp(theHeader, 
@@ -149,7 +148,9 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
       // to the address of theHeader.
       sscanf(theHeader + sizeof(WOS_STATUS_HEADER), 
              "%d %s", &x_ddn_status, x_ddn_status_string);
+#ifdef DEBUG
       printf("code: %d, string: %s\n", x_ddn_status, x_ddn_status_string);
+#endif
       theHeaders->x_ddn_status = x_ddn_status;
       strcpy(theHeaders->x_ddn_status_string, x_ddn_status_string);
    } 
@@ -163,7 +164,9 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
       theHeaders->x_ddn_oid = calloc (strlen(WOS_STATUS_HEADER) - sizeof(WOS_OID_HEADER), 1);
       sscanf(theHeader + sizeof(WOS_OID_HEADER), 
              "%s", theHeaders->x_ddn_oid);
+#ifdef DEBUG
       printf("oid: %s\n", theHeaders->x_ddn_oid);
+#endif
    } 
 
    free(theHeader);
@@ -239,7 +242,14 @@ writeTheDataToMemory(void *ptr, size_t size, size_t nmemb, void *stream) {
  */
 static size_t 
 writeTheData(void *ptr, size_t size, size_t nmemb, void *stream) {
+#ifdef DEBUG
+  static int nCalls = 0;
+#endif
   size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
+#ifdef DEBUG
+  printf("call number %d, written %d\n", nCalls, (int) written);
+  nCalls ++;
+#endif
   return written;
 }
 
@@ -265,10 +275,16 @@ writeTheData(void *ptr, size_t size, size_t nmemb, void *stream) {
 static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   size_t retcode;
- 
+#ifdef DEBUG
+  static int nCalls = 0;
   printf("In readTheData\n");
+#endif
   // This can be optimized...
   retcode = fread(ptr, size, nmemb, stream);
+#ifdef DEBUG
+  printf("call number %d, read %d\n", nCalls, (int) retcode);
+  nCalls ++;
+#endif
   return retcode;
 }
 
@@ -283,16 +299,18 @@ static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
  * @param argP Pointer to the user specified arguments parsed into a
  *        WOS_ARG structure.
  * @param theCurl A pointer to the libcurl connection handle.
- * @return void.  Maybe not a great idea...
+ * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
+ * @return res.  The return code from curl_easy_perform.
  */
-void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
+CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+#ifdef DEBUG
    printf("getting ready to put the file\n");
+#endif
    CURLcode res;
    time_t now;
    struct tm *theTM;
    struct stat sourceFileInfo;
    FILE  *sourceFile;
-   WOS_HEADERS theHeaders;
    char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
    char dateHeader[WOS_DATE_LENGTH];
    char contentLengthHeader[WOS_CONTENT_HEADER_LENGTH];
@@ -311,7 +329,9 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
    
    // construct the url from the resource and the put command
    sprintf(theURL, "%s%s", argP->resource, WOS_COMMAND_PUT);
+#ifdef DEBUG
    printf("theURL: %s\n", theURL);
+#endif
    curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
 
    // Let's not dump the header or be verbose
@@ -323,7 +343,7 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
 
    // assign the result header function and it's user data
    curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
-   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, &theHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, headerP);
 
    // We need the size of the destination file. Let's do stat command
    if (stat(argP->file, &sourceFileInfo)){
@@ -360,10 +380,16 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
    if (sourceFile) {
       curl_easy_setopt(theCurl, CURLOPT_READDATA, sourceFile);
       res = curl_easy_perform(theCurl);
+#ifdef DEBUG
       printf("res is %d\n", res);
+#endif
    }
-   printf("In putTheFile: code: %d, oid: %s\n", theHeaders.x_ddn_status, theHeaders.x_ddn_oid);
+#ifdef DEBUG
+   printf("In putTheFile: code: %d, oid: %s\n", 
+           headerP->x_ddn_status, headerP->x_ddn_oid);
+#endif
    curl_easy_cleanup(theCurl);
+   return res;
 }
 
 /** 
@@ -377,15 +403,15 @@ void putTheFile (WOS_ARG_P argP, CURL *theCurl) {
  * @param argP Pointer to the user specified arguments parsed into a
  *        WOS_ARG structure.
  * @param theCurl A pointer to the libcurl connection handle.
- * @return void.  Maybe not a great idea...
+ * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
+ * @return res.  The return code from curl_easy_perform.
  */
 
-void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
+CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    CURLcode res;
    time_t now;
    struct tm *theTM;
    FILE  *destFile;
-   WOS_HEADERS theHeaders;
  
    // The extra byte is for the '/'
    char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
@@ -395,11 +421,15 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
    // The headers
    struct curl_slist *headers = NULL;
 
+#ifdef DEBUG
    printf("getting ready to get the file\n");
+#endif
    
    // construct the url from the resource and the file name
    sprintf(theURL, "%s/objects/%s", argP->resource, argP->file);
+#ifdef DEBUG
    printf("theURL: %s\n", theURL);
+#endif
    curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
 
    // Create the date header
@@ -430,24 +460,30 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
 
    // assign the result header function and it's user data
    curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
-   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, &theHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, headerP);
    
    // Open the destination file
    destFile = fopen(argP->destination, "wb");
    if (destFile) {
       curl_easy_setopt(theCurl, CURLOPT_FILE, destFile);
       res = curl_easy_perform(theCurl);
+#ifdef DEBUG
       printf("res is %d\n", res);
+#endif
    }
 
-   printf("In getTheFile: code: %d, string: %s\n", theHeaders.x_ddn_status, theHeaders.x_ddn_status_string);
+#ifdef DEBUG
+   printf("In getTheFile: code: %d, string: %s\n", 
+          headerP->x_ddn_status, headerP->x_ddn_status_string);
+#endif
 
-   if (theHeaders.x_ddn_status == WOS_OBJ_NOT_FOUND) {
+   if (headerP->x_ddn_status == WOS_OBJ_NOT_FOUND) {
       // The file was not found but because we already opened it
       // there will now be a zero length file. Let's remove it
       unlink(argP->destination);
    }
    curl_easy_cleanup(theCurl);
+   return res;
 }
 
 /** 
@@ -461,17 +497,19 @@ void getTheFile (WOS_ARG_P argP, CURL *theCurl) {
  * @param argP Pointer to the user specified arguments parsed into a
  *        WOS_ARG structure.
  * @param theCurl A pointer to the libcurl connection handle.
- * @return void.  Maybe not a great idea...
+ * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
+ * @return res.  The return code from curl_easy_perform.
  */
 
-void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
+CURLcode deleteTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+#ifdef DEBUG
    printf("getting ready to put the file\n");
+#endif
    CURLcode res;
    time_t now;
    struct tm *theTM;
    struct stat sourceFileInfo;
    FILE  *sourceFile;
-   WOS_HEADERS theHeaders;
    char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
    char dateHeader[WOS_DATE_LENGTH];
    char contentLengthHeader[WOS_CONTENT_HEADER_LENGTH];
@@ -490,7 +528,9 @@ void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
    
    // construct the url from the resource and the put command
    sprintf(theURL, "%s%s", argP->resource, WOS_COMMAND_DELETE);
+#ifdef DEBUG
    printf("theURL: %s\n", theURL);
+#endif
    curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
 
    // Let's not dump the header or be verbose
@@ -499,7 +539,7 @@ void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
 
    // assign the result header function and it's user data
    curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
-   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, &theHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, headerP);
 
    // Make the content length header
    sprintf(contentLengthHeader, "%s%d", WOS_CONTENT_LENGTH_PUT_HEADER, 0);
@@ -520,25 +560,15 @@ void deleteTheFile (WOS_ARG_P argP, CURL *theCurl) {
    // read function
    curl_easy_setopt(theCurl, CURLOPT_READDATA, sourceFile);
    res = curl_easy_perform(theCurl);
-   printf("res is %d\n", res);
-   printf("In deleteTheFile: code: %d, oid: %s\n", theHeaders.x_ddn_status, theHeaders.x_ddn_oid);
-   curl_easy_cleanup(theCurl);
-}
 
-/** 
- * @brief This function is the high level function that retrieves data from
- *        the DDN using the admin interface.
- *
- *  This function uses the libcurl API to get the specified data
- *  from the DDN using the admin interface. See http://curl.haxx.se/libcurl/
- *  for information about libcurl. The data ends up in memory, where we
- *  use a json parser to demarshal into a structure.
- *
- * @param argP Pointer to the user specified arguments parsed into a
- *        WOS_ARG structure.
- * @param theCurl A pointer to the libcurl connection handle.
- * @return void.  Maybe not a great idea...
- */
+#ifdef DEBUG
+   printf("res is %d\n", res);
+   printf("In deleteTheFile: code: %d, oid: %s\n", 
+           headerP->x_ddn_status, headerP->x_ddn_oid);
+#endif
+   curl_easy_cleanup(theCurl);
+   return res;
+}
 
 /** 
  * @brief This function processes the json returned by the stats interface
@@ -585,14 +615,31 @@ void processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
 
    tmpObjectP = json_object_object_get(theObjectP, "capacityUsed");
    statP->capacityUsed = json_object_get_double(tmpObjectP);
+#ifdef DEBUG
    printf("\tObjectCount:        %d\n\tRaw Object Count:      %d\n", 
           statP->objectCount, statP->rawObjectCount);
    printf("\tCapacity used:      %f Gb\n\tCapacity available: %f GB\n", 
           statP->capacityUsed, statP->usableCapacity);
+#endif
 }
 
+/** 
+ * @brief This function is the high level function that retrieves data from
+ *        the DDN using the admin interface.
+ *
+ *  This function uses the libcurl API to get the specified data
+ *  from the DDN using the admin interface. See http://curl.haxx.se/libcurl/
+ *  for information about libcurl. The data ends up in memory, where we
+ *  use a json parser to demarshal into a structure.
+ *
+ * @param argP Pointer to the user specified arguments parsed into a
+ *        WOS_ARG structure.
+ * @param theCurl A pointer to the libcurl connection handle.
+ * @return res.  The return code from curl_easy_perform.
+ */
 
-void getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
+
+CURLcode getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
    CURLcode   res;
    WOS_MEMORY theData;
    WOS_STATISTICS theStats;
@@ -605,7 +652,9 @@ void getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
    // The headers
    struct curl_slist *headers = NULL;
 
+#ifdef DEBUG
    printf("getting ready to get the json\n");
+#endif
    
    // Copy the resource into the URL
    curl_easy_setopt(theCurl, CURLOPT_URL, argP->resource);
@@ -624,10 +673,13 @@ void getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
    curl_easy_setopt(theCurl, CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
   
    res = curl_easy_perform(theCurl);
+#ifdef DEBUG
    printf("res is %d\n", res);
-
    printf("In getTheManagementData: data: %s\n", theData.data);
+#endif
+
    processTheStatJSON(theData.data, &theStats);
+   return res;
 }
 
 /** 
@@ -661,7 +713,7 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
    while (opt != -1) {
       switch (opt){
          case 'h':
-            usage();
+            Usage();
             break;
 
          case 'r':
@@ -686,7 +738,7 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
             } else if (!strcasecmp(optarg, "status")) {
                argP->op = WOS_STATUS;
             } else {
-               usage();
+               Usage();
             }
             break;
 
@@ -703,7 +755,7 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
             break;
     
          case '?':
-            usage();
+            Usage();
             break;
 
          default:
@@ -721,31 +773,63 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
  * requested by the user.
  * @param argc The number of arguments.
  * @param argv The arguments as passed in by the user.
- * @return void.  
+ * @return int The return value of this program in the status code from
+ *             the WOS API.
  */
 
-void main (int argc, char *argv[]) {
-   WOS_ARG theArgs;
-   WOS_ARG_P argP = &theArgs;
-   CURL *theCurl;
+int main (int argc, char *argv[]) {
+   WOS_ARG     theArgs;
+   WOS_ARG_P   argP = &theArgs;
+   CURL       *theCurl;
+   CURLcode    res;
+   WOS_HEADERS theHeaders;
+   int         mainReturn;
+
+   // init the OID field
+   theHeaders.x_ddn_oid = NULL;
+
+   // bzero the arg structure
+   bzero(argP, sizeof(WOS_ARG));   
 
    // Process the args into a structure
    processTheArguments(argc, argv, argP);
+#ifdef DEBUG
    printf("resource %s\n", theArgs.resource);
+#endif
 
    // Initialize lib curl
    theCurl = curl_easy_init();
 
    // Call the appropriate function
    if (theArgs.op == WOS_GET) {
-      getTheFile(argP, theCurl);
+      if (strlen(argP->destination) == 0) {
+         // This is an error
+         printf("\nThe destination parameter is "
+                 "required with the get operation.\n\n");
+         Usage();
+      }
+      res = getTheFile(argP, theCurl, &theHeaders);
    } else if (theArgs.op == WOS_PUT) {
-      putTheFile(argP, theCurl);
+      res = putTheFile(argP, theCurl, &theHeaders);
    } else if (theArgs.op == WOS_DELETE) {
-      deleteTheFile(argP, theCurl);
+      res = deleteTheFile(argP, theCurl, &theHeaders);
    } else if (theArgs.op == WOS_STATUS) {
-      getTheManagementData(argP, theCurl);
+      res = getTheManagementData(argP, theCurl);
    }
 
+   if (res != 0) {
+      printf("Failure in Curl library: result: %d\n", res);
+   }
+   // The STATUS_OP is treated differently from the others
+   // since there are no headers.
+   if (theArgs.op == WOS_STATUS) {
+      mainReturn = res;
+   } else {
+      mainReturn = theHeaders.x_ddn_status;
+      printf("%s\n", theHeaders.x_ddn_oid);
+   } 
+
+   // We want to return the WOS API status code
+   return(mainReturn);
 }
 
