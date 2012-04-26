@@ -5,15 +5,20 @@
 #include "debug.h"
 #include "configuration.h"
 #define RE_ERROR(x) if(x) { goto error; }
-#ifndef DEBUG
-typedef struct {
-  char action[MAX_ACTION_SIZE];
-  int numberOfStringArgs;
-  funcPtr callAction;
-} microsdef_t;
-extern int NumOfAction;
-extern microsdef_t MicrosTable[];
-#endif
+
+#ifdef USE_EIRODS
+#include <assert.h>
+#else
+	#ifndef DEBUG
+		typedef struct {
+		  char action[MAX_ACTION_SIZE];
+		  int numberOfStringArgs;
+		  funcPtr callAction;
+		} microsdef_t;
+		extern int NumOfAction;
+		extern microsdef_t MicrosTable[];
+	#endif
+#endif // ifdef USE_EIRODS
 
 Hashtable *coreRuleFuncMapDefIndex = NULL;
 Hashtable *appRuleFuncMapDefIndex = NULL;
@@ -290,6 +295,9 @@ int createFuncMapDefIndex(rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex)
  */
 int createMacorsIndex()
 {
+	rodsLog( LOG_ERROR, "createMacorsIndex :: calling function which is supposedly not used." );
+	assert( 0 );
+#ifndef USE_EIRODS
 	clearIndex(&microsTableIndex);
 	microsTableIndex = newHashTable(NumOfAction*2);
 	if (microsTableIndex == NULL)
@@ -299,7 +307,6 @@ int createMacorsIndex()
 		char *key = MicrosTable[i].action;
 		int *value=(int *)malloc(sizeof(int));
 		*value = i;
-
 		if (insertIntoHashTable(microsTableIndex, key,value) == 0) {
 			deleteHashTable(microsTableIndex, free);
 			microsTableIndex=NULL;
@@ -307,6 +314,7 @@ int createMacorsIndex()
 		}
 	}
 	return 1;
+#endif
 }
 /* find the ith RuleIndexListNode */
 int findNextRuleFromIndex(Env *ruleIndex, char *action, int i, RuleIndexListNode **node) {

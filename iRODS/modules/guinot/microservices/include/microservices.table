@@ -1,3 +1,7 @@
 /* Properties module microservices */
 /* Service name			# args		Service function */
+#ifdef USE_EIRODS
+{"msiGetFormattedSystemTime", { "msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime } },
+#else
 {"msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime},
+#endif

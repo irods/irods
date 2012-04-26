@@ -65,6 +65,14 @@ endif
 
 
 
+# =-=-=-=-=-=-=-
+# JMC :: set flag stating that we will build with E-iRODS Extensions
+#     :: currently this is only microservice plugins
+USE_EIRODS=1
+
+
+
+
 #
 # Configure the rule engine server
 #
@@ -384,6 +392,11 @@ ifndef BOOST_DIR
 BOOST_DIR=/tbox/IRODS_BUILD/iRODS/boost_irods
 endif
 endif
+
+
+# USE_EIRODS - specificy wether the E-iRODS extensions are compiled for use
+USE_EIRODS = 1
+
 
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to

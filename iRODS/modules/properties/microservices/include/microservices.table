@@ -1,3 +1,17 @@
+#ifdef USE_EIRODS
+/* Properties module microservices */
+/*                                           Service name			    # args	Service function */
+{ "msiPropertiesNew",        { "msiPropertiesNew",		1,		(funcPtr) msiPropertiesNew } },
+{ "msiPropertiesClear",      { "msiPropertiesClear",		1,		(funcPtr) msiPropertiesClear } },
+{ "msiPropertiesClone",      { "msiPropertiesClone",		2,		(funcPtr) msiPropertiesClone } },
+{ "msiPropertiesAdd",        { "msiPropertiesAdd",		3,		(funcPtr) msiPropertiesAdd } },
+{ "msiPropertiesRemove",     { "msiPropertiesRemove",	    2,		(funcPtr) msiPropertiesRemove } },
+{ "msiPropertiesGet",        { "msiPropertiesGet",		3,		(funcPtr) msiPropertiesGet } },
+{ "msiPropertiesSet",        { "msiPropertiesSet",		3,		(funcPtr) msiPropertiesSet } },
+{ "msiPropertiesExists",     { "msiPropertiesExists",	    3,		(funcPtr) msiPropertiesExists } },
+{ "msiPropertiesToString",   { "msiPropertiesToString",	2,		(funcPtr) msiPropertiesToString } },
+{ "msiPropertiesFromString", { "msiPropertiesFromString",	2,		(funcPtr) msiPropertiesFromString } },
+#else
 /* Properties module microservices */
 /* Service name			# args		Service function */
 { "msiPropertiesNew",		1,		(funcPtr) msiPropertiesNew },
@@ -10,3 +24,4 @@
 { "msiPropertiesExists",	3,		(funcPtr) msiPropertiesExists },
 { "msiPropertiesToString",	2,		(funcPtr) msiPropertiesToString },
 { "msiPropertiesFromString",	2,		(funcPtr) msiPropertiesFromString },
+#endif

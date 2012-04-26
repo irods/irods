@@ -232,7 +232,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reDBO.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
-		$(svrReObjDir)/sysBackupMS.o
+		$(svrReObjDir)/sysBackupMS.o 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
@@ -293,7 +293,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
-		$(svrReObjDir)/sysBackupMS.o
+		$(svrReObjDir)/sysBackupMS.o \
+		$(svrReObjDir)/eirods_ms_plugin.o
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
@@ -523,7 +524,6 @@ $(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c
 $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
 	@echo "Compile re `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
-
 
 
 

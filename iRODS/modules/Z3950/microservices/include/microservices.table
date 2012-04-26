@@ -1,2 +1,6 @@
 /* Service name       # args    Service function */
+#ifdef USE_EIRODS
+{ "msiz3950Submit", { "msiz3950Submit",   4,        (funcPtr) msiz3950Submit } },
+#else
 { "msiz3950Submit",   4,        (funcPtr) msiz3950Submit },
+#endif

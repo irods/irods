@@ -37,6 +37,13 @@ CCFLAGS += -Wno-write-strings
 endif
 
 # =-=-=-=-=-=-=-
+# JMC :: build using E-iRODS Extensions
+#     :: currently this is only the microservice plugins
+#     :: also enable C++ 0x capabilities
+CCFLAGS += -std=c++0x -DUSE_EIRODS -fPIC
+
+
+# =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking
 ifdef USE_BOOST
 CCFLAGS+=-I$(BOOST_DIR)/include

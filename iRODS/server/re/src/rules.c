@@ -13,17 +13,22 @@
 #define RE_ERROR(cond) if(cond) { goto error; }
 
 extern int GlobalAllRuleExecFlag;
-#ifndef DEBUG
-#include "reGlobalsExtern.h"
-#include "reHelpers1.h"
-typedef struct {
-  char action[MAX_ACTION_SIZE];
-  int numberOfStringArgs;
-  funcPtr callAction;
-} microsdef_t;
-extern int NumOfAction;
-extern microsdef_t MicrosTable[];
-#endif
+
+#ifdef USE_EIRODS
+	#include "reAction.h"
+#else
+	#ifndef DEBUG
+		#include "reGlobalsExtern.h"
+		#include "reHelpers1.h"
+		typedef struct {
+		  char action[MAX_ACTION_SIZE];
+		  int numberOfStringArgs;
+		  funcPtr callAction;
+		} microsdef_t;
+		extern int NumOfAction;
+		extern microsdef_t MicrosTable[];
+	#endif
+#endif // ifdef USE_EIRODS
 
 /**
  * Read a set of rules from files.
@@ -650,8 +655,36 @@ RuleDesc* getRuleDesc(int ri)
 	}
 }
 
+#ifdef USE_EIRODS
+// =-=-=-=-=-=-=-
+// function to look up and / or load a microservice for execution
+int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
+
+	string str_act( _action );
+	
+	rodsLog( LOG_NOTICE, "actionTableLookUp - find a msvc [%s]", _action );
+
+	// =-=-=-=-=-=-=
+	// look up Action in microservice table.  If it returns
+	// the end() iterator, is is not found so try to load it.
+	if( MicrosTable.end() == MicrosTable.find( str_act ) ) {
+		rodsLog( LOG_NOTICE, "actionTableLookUp - [%s] not found, load it.", _action );
+		if( !eirods::load_microservice_plugin( MicrosTable, str_act ) ) {
+			return UNMATCHED_ACTION_ERR;
+		} else { // if loaded
+			rodsLog( LOG_NOTICE, "actionTableLookUp - loaded [%s]", _action );
+		} // else
+	}  // if not found
+
+	_entry = MicrosTable[ str_act ];
+
+	return 0;
+
+} // actionTableLookUp
+#else
 int actionTableLookUp (char *action)
 {
+
 	int i;
 
 	for (i = 0; i < NumOfAction; i++) {
@@ -661,6 +694,10 @@ int actionTableLookUp (char *action)
 
 	return (UNMATCHED_ACTION_ERR);
 }
+#endif
+
+
+
 Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
     /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
     int recclearDelayed = ruleEngineConfig.clearDelayed;
