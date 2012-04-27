@@ -1,3 +1,43 @@
+#ifdef USE_EIRODS
+
+// ERA module microservices
+// Service name				# args		Service function
+{ "msiRecursiveCollCopy", { "msiRecursiveCollCopy",		3,		(funcPtr) msiRecursiveCollCopy } },
+{ "msiGetDataObjACL", { "msiGetDataObjACL",			2,		(funcPtr) msiGetDataObjACL } },
+{ "msiGetCollectionACL", { "msiGetCollectionACL",			3,		(funcPtr) msiGetCollectionACL } },
+{ "msiGetDataObjAVUs", { "msiGetDataObjAVUs",			2,		(funcPtr) msiGetDataObjAVUs } },
+{ "msiGetDataObjPSmeta", { "msiGetDataObjPSmeta",			2,		(funcPtr) msiGetDataObjPSmeta } },
+{ "msiGetCollectionPSmeta", { "msiGetCollectionPSmeta",		2,		(funcPtr) msiGetCollectionPSmeta } },
+{ "msiGetDataObjAIP", { "msiGetDataObjAIP",			2,		(funcPtr) msiGetDataObjAIP } },
+{ "msiLoadMetadataFromDataObj", { "msiLoadMetadataFromDataObj",		2,		(funcPtr) msiLoadMetadataFromDataObj } },
+{ "msiExportRecursiveCollMeta", { "msiExportRecursiveCollMeta",		2,		(funcPtr) msiExportRecursiveCollMeta } },
+{ "msiCopyAVUMetadata", { "msiCopyAVUMetadata",			3,		(funcPtr) msiCopyAVUMetadata } },
+{ "msiGetUserInfo", { "msiGetUserInfo",			3,		(funcPtr) msiGetUserInfo } },
+{ "msiGetUserACL", { "msiGetUserACL",			3,		(funcPtr) msiGetUserACL } },
+{ "msiCreateUserAccountsFromDataObj", { "msiCreateUserAccountsFromDataObj",	2,		(funcPtr) msiCreateUserAccountsFromDataObj } },
+{ "msiLoadUserModsFromDataObj", { "msiLoadUserModsFromDataObj",		2,		(funcPtr) msiLoadUserModsFromDataObj } },
+{ "msiDeleteUsersFromDataObj", { "msiDeleteUsersFromDataObj",		2,		(funcPtr) msiDeleteUsersFromDataObj } },
+{ "msiLoadACLFromDataObj", { "msiLoadACLFromDataObj",		2,		(funcPtr) msiLoadACLFromDataObj } },
+{ "msiGetAuditTrailInfoByUserID", { "msiGetAuditTrailInfoByUserID",	3,		(funcPtr) msiGetAuditTrailInfoByUserID } },
+{ "msiGetAuditTrailInfoByObjectID", { "msiGetAuditTrailInfoByObjectID",	3,		(funcPtr) msiGetAuditTrailInfoByObjectID } },
+{ "msiGetAuditTrailInfoByActionID", { "msiGetAuditTrailInfoByActionID",	3,		(funcPtr) msiGetAuditTrailInfoByActionID } },
+{ "GetAuditTrailInfoByKeywords", { "msiGetAuditTrailInfoByKeywords",	3,		(funcPtr) msiGetAuditTrailInfoByKeywords } },
+{ "msiGetAuditTrailInfoByTimeStamp", { "msiGetAuditTrailInfoByTimeStamp",	4,		(funcPtr) msiGetAuditTrailInfoByTimeStamp } },
+{ "msiSetDataType", { "msiSetDataType",				4,		(funcPtr) msiSetDataType } },
+{ "msiGuessDataType", { "msiGuessDataType",			3,		(funcPtr) msiGuessDataType } },
+{ "msiMergeDataCopies", { "msiMergeDataCopies",			4,		(funcPtr) msiMergeDataCopies } },
+{ "msiIsColl", { "msiIsColl",					3,		(funcPtr) msiIsColl } },
+{ "msiIsData", { "msiIsData",					3,		(funcPtr) msiIsData } },
+{ "msiGetObjectPath", { "msiGetObjectPath",			3,		(funcPtr) msiGetObjectPath } },
+{ "msiGetCollectionContentsReport", { "msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport } },
+{ "msiGetCollectionSize", { "msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize } },
+{ "msiStructFileBundle", { "msiStructFileBundle",			4,		(funcPtr) msiStructFileBundle } },
+{ "msiCollectionSpider", { "msiCollectionSpider",			4,		(funcPtr) msiCollectionSpider } },
+{ "msiFlagDataObjwithAVU", { "msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU } },
+{ "msiFlagInfectedObjs", { "msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs } },
+{ "msiStripAVUs", { "msiStripAVUs",				3,		(funcPtr) msiStripAVUs } },
+
+#else
 // ERA module microservices
 // Service name				# args		Service function
 {"msiRecursiveCollCopy",		3,		(funcPtr) msiRecursiveCollCopy},
@@ -34,3 +74,4 @@
 {"msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU},
 {"msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs},
 {"msiStripAVUs",				3,		(funcPtr) msiStripAVUs},
+#endif

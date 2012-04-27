@@ -886,7 +886,12 @@ isAFunction(char *s)
   int i;
   if ((t = strstr(s,"(")) != NULL) {
     *t = '\0';
-    i = actionTableLookUp(s);
+#ifdef USE_EIRODS
+	eirods::ms_table_entry entry;
+    i = actionTableLookUp( entry, s );
+#else 
+	i = actionTableLookUp(s);
+#endif
     *t = '(';
     if (i < 0)
       return(0);

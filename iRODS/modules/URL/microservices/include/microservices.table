@@ -1,5 +1,11 @@
 // URL module microservices
-// Service name				# args		Service function
+#ifdef USE_EIRODS
+//                                  Service name				# args	Service function
+{ "msiFtpGet",      { "msiFtpGet",				3,		(funcPtr) msiFtpGet } },
+{ "msiTwitterPost", { "msiTwitterPost",			4,		(funcPtr) msiTwitterPost } },
+{ "msiPostThis",    { "msiPostThis",				3,		(funcPtr) msiPostThis } },
+#else
 {"msiFtpGet",				3,		(funcPtr) msiFtpGet},
 {"msiTwitterPost",			4,		(funcPtr) msiTwitterPost},
 {"msiPostThis",				3,		(funcPtr) msiPostThis},
+#endif

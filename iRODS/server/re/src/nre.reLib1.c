@@ -4,7 +4,6 @@
 #include "reGlobals.h"
 #include "initServer.h"
 #include "reHelpers1.h"
-#include "reAction.h"
 #include "apiHeaderAll.h"
 #include "parser.h"
 #include "index.h"
@@ -13,6 +12,9 @@
 #include "locks.h"
 #include "functions.h"
 #include "configuration.h"
+#ifndef USE_EIRODS
+#include "reAction.h"
+#endif
 
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal

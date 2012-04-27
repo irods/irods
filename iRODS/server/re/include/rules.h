@@ -7,6 +7,10 @@
 #include "arithmetics.h"
 #include "typing.h"
 
+#ifdef USE_EIRODS
+#include "eirods_ms_plugin.h"
+#endif
+
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
 int readRuleSetFromFile(char *ruleBaseName, RuleSet *ruleSet, Env *funcDesc, int* errloc, rError_t *errmsg, Region *r);
 int readRuleSetFromLocalFile(char *ruleBaseName, char *fileName, RuleSet *ruleSet, Env *funcDesc, int *errloc, rError_t *errmsg, Region *r);
@@ -25,7 +29,11 @@ execCmdOut_t *addCmdExecOutToEnv(Env *global, Region *r);
 void freeCmdExecOut(execCmdOut_t *ruleExecOut);
 RuleDesc *getRuleDesc(int ri);
 int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r);
+#ifdef USE_EIRODS
+int actionTableLookUp( eirods::ms_table_entry&, char *action );
+#else
 int actionTableLookUp (char *action);
+#endif
 
 int overflow(char*expr,int len);
 Env *defaultEnv(Region *r);

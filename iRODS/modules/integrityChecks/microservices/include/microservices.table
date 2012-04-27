@@ -1,4 +1,22 @@
 /* Properties module microservices */
+#ifdef USE_EIRODS
+/*                          Service name			                    # args	Service function */
+{ "msiVerifyOwner",         { "msiVerifyOwner",			4,	    (funcPtr) msiVerifyOwner } },
+{ "msiVerifyAVU",           { "msiVerifyAVU",			    6,	    (funcPtr) msiVerifyAVU } },
+{ "msiVerifyACL",           { "msiVerifyACL",			    6,	    (funcPtr) msiVerifyACL } },
+{ "msiVerifyExpiry",        { "msiVerifyExpiry",		    5,	    (funcPtr) msiVerifyExpiry } },
+{ "msiVerifyDataType",      { "msiVerifyDataType",		4,	    (funcPtr) msiVerifyDataType } },
+{ "msiVerifyFileSizeRange", { "msiVerifyFileSizeRange",	5,	    (funcPtr) msiVerifyFileSizeRange } },
+{ "msiVerifySubCollOwner",  { "msiVerifySubCollOwner",	4,	    (funcPtr) msiVerifySubCollOwner } },
+{ "msiVerifySubCollACL",    { "msiVerifySubCollACL",   	5,	    (funcPtr) msiVerifySubCollACL } },
+{ "msiVerifySubCollAVU",    { "msiVerifySubCollAVU",	    6,	    (funcPtr) msiVerifySubCollAVU } },
+
+{ "msiListFields",          { "msiListFields",			4,	    (funcPtr) msiListFields } },
+{ "msiHiThere",             { "msiHiThere",				1,	    (funcPtr) msiHiThere } },
+{ "msiTestWritePosInt",     { "msiTestWritePosInt",		1,	    (funcPtr) msiTestWritePosInt } },
+{ "msiListColl",            { "msiListColl",			    2,	    (funcPtr) msiListColl } },
+{ "msiTestForEachExec",     { "msiTestForEachExec",		1,	    (funcPtr) msiTestForEachExec } },
+#else
 /* Service name			# args		Service function */
 { "msiVerifyOwner",			4,	(funcPtr) msiVerifyOwner },
 { "msiVerifyAVU",			6,	(funcPtr) msiVerifyAVU },
@@ -15,4 +33,4 @@
 { "msiTestWritePosInt",		1,	(funcPtr) msiTestWritePosInt },
 { "msiListColl",			2,	(funcPtr) msiListColl },
 { "msiTestForEachExec",		1,	(funcPtr) msiTestForEachExec },
-
+#endif
