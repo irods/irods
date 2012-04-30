@@ -79,6 +79,8 @@
 #define WOS_DATE_LENGTH 64
 #define WOS_AUTH_LENGTH 32
 #define WOS_CONTENT_HEADER_LENGTH 40
+#define JSON_OK 0
+#define JSON_ERROR -1
 ///@}
 
 
@@ -146,6 +148,7 @@ typedef struct WOS_STATISTICS_TYPE {
    int    rawObjectCount;
    double usableCapacity; /**< in Gigabytes */
    double capacityUsed; /**< in Gigabytes */
+   char  *data;   /**< used for error reporting */
 } WOS_STATISTICS, *WOS_STATISTICS_P;
 
 

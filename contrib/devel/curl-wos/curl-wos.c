@@ -534,8 +534,8 @@ CURLcode deleteTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
 
    // Let's not dump the header or be verbose
-   curl_easy_setopt(theCurl, CURLOPT_HEADER, 1);
-   curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 1);
+   curl_easy_setopt(theCurl, CURLOPT_HEADER, 0);
+   curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 0);
 
    // assign the result header function and it's user data
    curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
@@ -581,14 +581,19 @@ CURLcode deleteTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
  *
  * @param statP The structure that will contain the processed json.
  * @param jsonP A character string with the json in it.
- * @return void.  
+ * @return int  Either JSON_OK or JSON_ERROR
  */
-void processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
+int processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
    struct json_object *theObjectP;
    struct json_object *tmpObjectP;
+   int    res;
 
    // Do the parse.
    theObjectP = json_tokener_parse(jsonP);
+   if (is_error(theObjectP)) {
+      statP->data = jsonP; // Error handling
+      return (JSON_ERROR);
+   }
 
    // For each value we care about, we get the object, then the value
    // from the object
@@ -621,6 +626,7 @@ void processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
    printf("\tCapacity used:      %f Gb\n\tCapacity available: %f GB\n", 
           statP->capacityUsed, statP->usableCapacity);
 #endif
+   return (JSON_OK);
 }
 
 /** 
@@ -635,14 +641,16 @@ void processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
  * @param argP Pointer to the user specified arguments parsed into a
  *        WOS_ARG structure.
  * @param theCurl A pointer to the libcurl connection handle.
+ * @param statsP A pointer to the stats structure used to return the JSON
+ *               data on a parse error.
  * @return res.  The return code from curl_easy_perform.
  */
 
 
-CURLcode getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
+CURLcode 
+getTheManagementData(WOS_ARG_P argP, CURL *theCurl, WOS_STATISTICS_P statsP) {
    CURLcode   res;
    WOS_MEMORY theData;
-   WOS_STATISTICS theStats;
    char       auth[(WOS_AUTH_LENGTH * 2) + 1];
 
    // Init the memory struct
@@ -678,7 +686,8 @@ CURLcode getTheManagementData(WOS_ARG_P argP, CURL *theCurl) {
    printf("In getTheManagementData: data: %s\n", theData.data);
 #endif
 
-   processTheStatJSON(theData.data, &theStats);
+   res = processTheStatJSON(theData.data, statsP);
+
    return res;
 }
 
@@ -778,12 +787,17 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
  */
 
 int main (int argc, char *argv[]) {
-   WOS_ARG     theArgs;
-   WOS_ARG_P   argP = &theArgs;
-   CURL       *theCurl;
-   CURLcode    res;
-   WOS_HEADERS theHeaders;
-   int         mainReturn;
+   WOS_ARG        theArgs;
+   WOS_ARG_P      argP = &theArgs;
+   CURL          *theCurl;
+   CURLcode       res;
+   WOS_HEADERS    theHeaders;
+   WOS_STATISTICS theStats;
+   int            mainReturn;
+#ifdef TIMING
+   time_t         startTime;
+   time_t         endTime;
+#endif
 
    // init the OID field
    theHeaders.x_ddn_oid = NULL;
@@ -800,6 +814,9 @@ int main (int argc, char *argv[]) {
    // Initialize lib curl
    theCurl = curl_easy_init();
 
+#ifdef TIMING
+   startTime = time(NULL);
+#endif
    // Call the appropriate function
    if (theArgs.op == WOS_GET) {
       if (strlen(argP->destination) == 0) {
@@ -814,19 +831,32 @@ int main (int argc, char *argv[]) {
    } else if (theArgs.op == WOS_DELETE) {
       res = deleteTheFile(argP, theCurl, &theHeaders);
    } else if (theArgs.op == WOS_STATUS) {
-      res = getTheManagementData(argP, theCurl);
+      res = getTheManagementData(argP, theCurl, &theStats);
    }
+#ifdef TIMING
+   endTime = time(NULL);
+   printf("Operation took %d seconds\n", (int) (endTime - startTime));
+#endif
 
-   if (res != 0) {
-      printf("Failure in Curl library: result: %d\n", res);
-   }
    // The STATUS_OP is treated differently from the others
    // since there are no headers.
+   // Note that this error processing is still imperfect...
    if (theArgs.op == WOS_STATUS) {
       mainReturn = res;
+      if (res == JSON_ERROR) {
+         printf("Failure in processing JSON string: %s\n", 
+                theStats.data);
+      } else {
+         printf("%f %f\n", theStats.usableCapacity, theStats.capacityUsed);
+      }
    } else {
-      mainReturn = theHeaders.x_ddn_status;
-      printf("%s\n", theHeaders.x_ddn_oid);
+      if (res != 0) {
+         printf("Failure in Curl library: result: %d\n", res);
+         return(res);
+      } else {
+         mainReturn = theHeaders.x_ddn_status;
+         printf("%s\n", theHeaders.x_ddn_oid);
+      }
    } 
 
    // We want to return the WOS API status code

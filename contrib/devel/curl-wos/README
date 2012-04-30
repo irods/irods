@@ -18,6 +18,9 @@ Once you have everything installed, make sure the Makefile has the correct
 paths for curl and json and type make.  You can also type make doc to
 generate some Doxygen documentation for the package. You can also type
 make CPPFLAGS=-DDEBUG to see extra information outputted to standard out.
+You can also see the length of time the operation takes by adding -DTIMING to
+the make line. NOTE: if you want to use the cycleTest described below, be
+sure to compile curl-wos with -DTIMING.
 
 What's it for and how do I use it?
 
@@ -85,3 +88,12 @@ Examples
     Get the status of the DDN unit
     curl-wos --operation=status --resource=wos.edc.renci.org:8088/mgmt/statistics --user=admin-user --password=admin-password
     
+This directory now also includes a python code call cycleTest.py.  Here's an
+example usage:
+
+./cycleTest.py --resource=wos.edc.renci.org --policy=Howard --file=1gbtestfile --user=admin --password=admin --destination=1gbtestfile.get
+
+This will get the status of the resource, add the file specified with the 
+--file parameter, pull the file back to the filename specified with the 
+destination parameter and finally delete the use.  Compile curl-wos with 
+-DTIMING for this to work properly.
