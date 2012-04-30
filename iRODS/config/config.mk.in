@@ -394,10 +394,6 @@ endif
 endif
 
 
-# USE_EIRODS - specificy wether the E-iRODS extensions are compiled for use
-USE_EIRODS = 1
-
-
 # OS_AUTH - build in support for "OS level" authentication. This form
 # of authentication uses a shared secret and the genOSAuth command to
 # generate a credential that the user presents to the iRODS server. 

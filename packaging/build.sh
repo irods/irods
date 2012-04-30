@@ -98,7 +98,7 @@ fi
 
 # generate randomized database password, replacing hardcoded placeholder
 RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
-sed -e "s/SOMEPASSWORD/$RANDOMDBPASS/" ./e-irods.list > /tmp/eirodslist.tmp
+sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./e-irods.list > /tmp/eirodslist.tmp
 mv /tmp/eirodslist.tmp ./e-irods.list
 
 
