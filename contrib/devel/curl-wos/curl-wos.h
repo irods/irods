@@ -34,6 +34,7 @@
 #define WOS_STATUS_HEADER "x-ddn-status:"
 #define WOS_META_HEADER "x-ddn-meta:"
 #define WOS_POLICY_HEADER "x-ddn-policy:"
+#define WOS_LENGTH_HEADER "x-ddn-length:"
 ///@}
 
 /** @name WOS Interface codes
@@ -92,6 +93,7 @@ enum WOS_OPERATION_TYPE {
    WOS_PUT,
    WOS_DELETE,
    WOS_STATUS,
+   WOS_FILESTATUS,
    WOS_GET
 } WOS_OP;
 ///@}
@@ -128,6 +130,7 @@ typedef struct WOS_ARG_TYPE {
 typedef struct WOS_HEADERS_TYPE {
     int  x_ddn_status; /**< Return code from the rest interface */
     int  content_length; /**< Content length as returned by rest interface */
+    long x_ddn_length; /**< The length of the file */
     char x_ddn_status_string[WOS_STATUS_LENGTH]; /**< String corresponding to
                                                    the x_ddn_status */
     char *x_ddn_meta; /**< The DDN Metadata: Currently unused */
