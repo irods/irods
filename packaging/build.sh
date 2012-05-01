@@ -58,15 +58,6 @@ fi
 
 
 # =-=-=-=-=-=-=-
-# modify the eirods_ms_home.h file with the proper path to the binary directory
-irods_msvc_home=`./scripts/find_irods_home.sh`
-irods_msvc_home="$irods_msvc_home/server/bin/"
-sed -e s,EIRODSMSCVPATH,$irods_msvc_home, server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
-cp /tmp/eirods_ms_home.h server/re/include
-
-
-
-# =-=-=-=-=-=-=-
 # run configure to create Makefile, config.mk, platform.mk, etc.
 ./scripts/configure
 # overwrite with our values
@@ -78,6 +69,19 @@ cp $TMPCONFIGFILE ./config/irods.config
 # handle issue with IRODS_HOME being overwritten by the configure script    
 sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=\`./scripts/find_irods_home.sh\`," ./irodsctl > /tmp/irodsctl.tmp
 mv /tmp/irodsctl.tmp ./irodsctl
+
+
+
+
+# =-=-=-=-=-=-=-
+# modify the eirods_ms_home.h file with the proper path to the binary directory
+irods_msvc_home=`./scripts/find_irods_home.sh`
+irods_msvc_home="$irods_msvc_home/server/bin/"
+sed -e s,EIRODSMSCVPATH,$irods_msvc_home, server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
+mv /tmp/eirods_ms_home.h server/re/include/
+
+
+
 
 # go!
 make -j
@@ -98,7 +102,7 @@ fi
 
 # generate randomized database password, replacing hardcoded placeholder
 RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
-sed -e "s/SOMEPASSWORD/$RANDOMDBPASS/" ./e-irods.list > /tmp/eirodslist.tmp
+sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./e-irods.list > /tmp/eirodslist.tmp
 mv /tmp/eirodslist.tmp ./e-irods.list
 
 
