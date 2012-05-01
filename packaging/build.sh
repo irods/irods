@@ -62,7 +62,7 @@ fi
 irods_msvc_home=`./scripts/find_irods_home.sh`
 irods_msvc_home="$irods_msvc_home/server/bin/"
 sed -e s,EIRODSMSCVPATH,$irods_msvc_home, server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
-cp /tmp/eirods_ms_home.h server/re/include
+mv /tmp/eirods_ms_home.h server/re/include/
 
 
 
