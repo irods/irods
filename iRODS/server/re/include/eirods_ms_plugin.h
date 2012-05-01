@@ -54,6 +54,7 @@ namespace eirods {
 			action             = _rhs.action;
 			numberOfStringArgs = _rhs.numberOfStringArgs;
 			callAction         = _rhs.callAction;
+			return *this;
 		} // operator=
 
 		// =-=-=-=-=-=-=-
