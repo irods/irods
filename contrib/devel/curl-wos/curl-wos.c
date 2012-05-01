@@ -126,6 +126,7 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
    int   x_ddn_status;
    char  x_ddn_status_string[WOS_STATUS_LENGTH];
    int   i;
+   long  x_ddn_length;
    WOS_HEADERS_P theHeaders;
  
    theHeaders = (WOS_HEADERS_P) stream;
@@ -167,6 +168,21 @@ readTheHeaders(void *ptr, size_t size, size_t nmemb, void *stream) {
 #ifdef DEBUG
       printf("oid: %s\n", theHeaders->x_ddn_oid);
 #endif
+   } 
+
+   if (!strncasecmp(theHeader, 
+                    WOS_LENGTH_HEADER, 
+                    strlen(WOS_LENGTH_HEADER))) {
+      // Time for a little pointer arithmetic: we start the
+      // sscanf after the header by adding the size of the header
+      // to the address of theHeader.
+      sscanf(theHeader + sizeof(WOS_LENGTH_HEADER), 
+             "%ld", &x_ddn_length);
+#ifdef DEBUG
+      printf("length: %ld \n", x_ddn_length);
+#endif
+      theHeaders->x_ddn_length = x_ddn_length;
+      strcpy(theHeaders->x_ddn_status_string, x_ddn_status_string);
    } 
 
    free(theHeader);
@@ -487,6 +503,96 @@ CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
 }
 
 /** 
+ * @brief This function is the high level function that retrieves the 
+ *        status of a data file from the DDN storage using the WOS interface.
+ *
+ *  This function uses the libcurl API to HEAD the specified file
+ *  from the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
+ *  for information about libcurl.
+ *
+ * @param argP Pointer to the user specified arguments parsed into a
+ *        WOS_ARG structure.
+ * @param theCurl A pointer to the libcurl connection handle.
+ * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
+ * @return res.  The return code from curl_easy_perform.
+ */
+
+CURLcode 
+getTheFileStatus (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+   CURLcode res;
+   time_t now;
+   struct tm *theTM;
+   FILE  *destFile;
+ 
+   // The extra byte is for the '/'
+   char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
+   char hostHeader[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
+   char dateHeader[WOS_DATE_LENGTH];
+ 
+   // The headers
+   struct curl_slist *headers = NULL;
+
+#ifdef DEBUG
+   printf("getting ready to get the file status\n");
+#endif
+   
+   // construct the url from the resource and the file name
+   sprintf(theURL, "%s/objects/%s", argP->resource, argP->file);
+#ifdef DEBUG
+   printf("theURL: %s\n", theURL);
+#endif
+   curl_easy_setopt(theCurl, CURLOPT_URL, theURL);
+
+   // Create the date header
+   now = time(NULL);
+   theTM = gmtime(&now);
+   strftime(dateHeader, WOS_DATE_LENGTH, WOS_DATE_FORMAT_STRING, theTM);
+
+   // Set the request header
+   curl_easy_setopt(theCurl, CURLOPT_NOBODY, 1);
+
+   // Let's not dump the header or be verbose
+   curl_easy_setopt(theCurl, CURLOPT_HEADER, 0);
+   curl_easy_setopt(theCurl, CURLOPT_VERBOSE, 0);
+
+   // Now add some headers
+   headers = curl_slist_append(headers, WOS_CONTENT_TYPE_HEADER);
+   headers = curl_slist_append(headers, WOS_CONTENT_LENGTH_HEADER);
+   headers = curl_slist_append(headers, dateHeader);
+
+   // Get rid of the accept header
+   headers = curl_slist_append(headers, "Accept:");
+   
+   // Stuff the headers into the request
+   curl_easy_setopt(theCurl, CURLOPT_HTTPHEADER, headers);
+
+   // assign the result header function and it's user data
+   curl_easy_setopt(theCurl, CURLOPT_HEADERFUNCTION, readTheHeaders);
+   curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, headerP);
+   
+   // Call the operation
+   res = curl_easy_perform(theCurl);
+#ifdef DEBUG
+   printf("res is %d\n", res);
+#endif
+
+#ifdef DEBUG
+   printf("In getTheFileStatus: code: %d, string: %s length: %ld\n", 
+          headerP->x_ddn_status, headerP->x_ddn_status_string, 
+          headerP->x_ddn_length);
+#endif
+
+   if (headerP->x_ddn_status == WOS_OBJ_NOT_FOUND) {
+      // The file was not found but because we already opened it
+      // there will now be a zero length file. Let's remove it
+      unlink(argP->destination);
+   }
+   curl_easy_cleanup(theCurl);
+   return res;
+}
+
+
+/** 
  * @brief This function is the high level function that deletes a data file
  *        from DDN storage using the WOS interface.
  *
@@ -746,6 +852,8 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
                argP->op = WOS_DELETE;
             } else if (!strcasecmp(optarg, "status")) {
                argP->op = WOS_STATUS;
+            } else if (!strcasecmp(optarg, "filestatus")) {
+               argP->op = WOS_FILESTATUS;
             } else {
                Usage();
             }
@@ -830,6 +938,8 @@ int main (int argc, char *argv[]) {
       res = putTheFile(argP, theCurl, &theHeaders);
    } else if (theArgs.op == WOS_DELETE) {
       res = deleteTheFile(argP, theCurl, &theHeaders);
+   } else if (theArgs.op == WOS_FILESTATUS) {
+      res = getTheFileStatus(argP, theCurl, &theHeaders);
    } else if (theArgs.op == WOS_STATUS) {
       res = getTheManagementData(argP, theCurl, &theStats);
    }

@@ -1289,14 +1289,16 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
                   "procAndQueResResult:splitPathByKey of wosHost error for %s",
 		  wosHost, wosPolicy);
 	    } else {
-		        tmpStr = (char*)malloc (strlen (wosHost) + 40);
+                // We are using static chars here because the call to putenv
+                // requires a non-automatic variable.  Otherwise the ENV
+                // var dies with function.  Note that we could use setenv
+                // but putenv is more likely to be available.
+                static char tmpStr[MAX_NAME_LEN];
+                static char tmpStr1[MAX_NAME_LEN];
                 snprintf (tmpStr, MAX_NAME_LEN, "%s=%s", WOS_HOST_ENV, wosHost);
                 putenv (tmpStr);
-				free( tmpStr ); // JMC cppcheck - leak
-		        tmpStr = (char*)malloc (strlen (wosPolicy) + 40);
-                snprintf (tmpStr, MAX_NAME_LEN, "%s=%s",  WOS_POLICY_ENV, wosPolicy);
-                putenv (tmpStr);
-				free( tmpStr ); // JMC cppcheck - leak
+                snprintf (tmpStr1, MAX_NAME_LEN, "%s=%s",  WOS_POLICY_ENV, wosPolicy);
+                putenv (tmpStr1);
 		if (ProcessType == SERVER_PT) {
 		    rodsLog (LOG_NOTICE,
 		     "Set WOS env wosHost=%s, wosPolicy=%s", 
