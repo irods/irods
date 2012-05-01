@@ -350,6 +350,11 @@ $POSTGRES_FTP_HOST             = "ftp5.us.postgresql.org";
 #$POSTGRES_FTP_ODBC_DIR         = "postgresql/odbc/versions/src";
 #$POSTGRES_FTP_HOST             = "ftp10.us.postgresql.org";
 
+# RENCI updates for E-iRODS testing
+$POSTGRES_FTP_POSTGRES_DIR     = "pub/source/v9.0.3";
+$POSTGRES_FTP_ODBC_DIR         = "pub/odbc/versions/src";
+$POSTGRES_FTP_HOST             = "ftp.postgresql.org";
+
 
 # UNIX ODBC FTP site access
 $UNIXODBC_FTP_ACCOUNT_NAME     = "anonymous";
