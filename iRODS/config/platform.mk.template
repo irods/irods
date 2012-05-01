@@ -41,7 +41,7 @@ endif
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
 CCFLAGS += -std=c++0x -DUSE_EIRODS -fPIC
-
+LDRFLAGS += -ldl
 
 # =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking
