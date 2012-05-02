@@ -19,51 +19,96 @@ IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 #echo "DB_NAME=$DB_NAME"
 #echo "DB_USER=$DB_USER"
 
+
+# =-=-=-=-=-=-=-
+# determine if we can delete the service account
+user=`who | grep $OS_EIRODS_ACCT`
+if [ "x$user" != "x" ]; then
+    echo "$OS_EIRODS_ACCT is currently logged in.  Aborting."
+	exit 1
+fi
+
 # =-=-=-=-=-=-=-
 # determine if we can remove the resource from the zone
+if [ "$SERVER_TYPE" == "resource" ] ; then
 
-# TODO
+    hn=`hostname`
+	dn=`hostname -d`
 
+    fhn="$hn.$dn"	
+		
+	echo "Pre-Remove :: Test Resource Removal"
+  
+	do_not_remove="FALSE"
+
+	# =-=-=-=-=-=-=-
+    # do a dryrun on the resource removal to determine if this resource server can
+    # be safely removed without harming any data
+	for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT` 
+	do
+	    # =-=-=-=-=-=-=-
+        # for each resource determine its location.  if it is this server then dryrun
+        loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $OS_EIRODS_ACCT )
+
+        if [[ $loc == $hn || $loc == $fhn ]]; then
+			rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_EIRODS_ACCT )
+			
+			if [[ "x$rem" == "x" ]]; then
+	            # =-=-=-=-=-=-=-
+                # dryrun for a local resource was a success, add resc to array for removal
+				do_not_remove="TRUE"
+			fi
+		fi
+    done
+
+    if [[ "$do_not_remove" == "TRUE" ]]; then
+		echo "ERROR :: Unable To Remove a Locally Resident Resource, Abort"
+		echo "      :: please run 'iadmin rmresc --dryrun RESOURCE_NAME' on local resources for more information."
+		exit 1
+	fi
+fi
 
 # =-=-=-=-=-=-=-
 # stop any running E-iRODS Processes
-echo "*** Running Pre-Remove Script ***"
 echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
 cd $IRODS_HOME
 su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT 
 cd /tmp
 
+# =-=-=-=-=-=-=-
+# 
 if [ "$SERVER_TYPE" == "icat" ] ; then
+    
+	echo "Pre-Remove :: Removing ICAT Server"
 
-  if [ "$DB_TYPE" == "postgres" ] ; then
-    # =-=-=-=-=-=-=-
-    # determine if the database already exists
-    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
-    PSQL="$PSQL/psql"
+	if [ "$DB_TYPE" == "postgres" ] ; then
+        # =-=-=-=-=-=-=-
+        # determine if the database exists & remove
+	    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+	    PSQL="$PSQL/psql"
 
-    DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
-    if [ -n "$DB" ]; then
-      echo "Removing Database $DB_NAME"
-      su --shell=/bin/bash -c "dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
-    fi
+	    DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
+	    if [ -n "$DB" ]; then
+	        echo "Removing Database $DB_NAME"
+	        su --shell=/bin/bash -c "dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
+	    fi
 
-    # =-=-=-=-=-=-=-
-    # determine if the database role already exists
-    ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
-    if [ $ROLE ]; then
-      echo "Removing Database Role $DB_USER"
-      su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
-    fi
-  else
-    # expand this for each type of database
-    echo "TODO: remove non-postgres database"
-    echo "TODO: remove non-postgres user"
-  fi
-
-fi
+        # =-=-=-=-=-=-=-
+        # determine if the database role exists & remove
+	    ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
+	    if [ $ROLE ]; then
+	        echo "Removing Database Role $DB_USER"
+	        su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
+	    fi
+	else
+        # expand this for each type of database
+	    echo "TODO: remove non-postgres database"
+	    echo "TODO: remove non-postgres user"
+	fi
+fi 
 
 # =-=-=-=-=-=-=-
-# determine if the service account already exists
+# determine if the service account exists & remove
 USER=$( grep $OS_EIRODS_ACCT /etc/passwd )
 if [ -n "$USER" ]; then 
   echo "Removing Service Account $OS_EIRODS_ACCT"
@@ -72,71 +117,36 @@ fi
 
 # =-=-=-=-=-=-=-
 # remove runlevel symlinks
-rm /etc/init.d/e-irods
-rm /etc/rc0.d/K15e-irods
-rm /etc/rc2.d/S95e-irods
-rm /etc/rc3.d/S95e-irods
-rm /etc/rc4.d/S95e-irods
-rm /etc/rc5.d/S95e-irods
-rm /etc/rc6.d/K15e-irods
+if [ -e /etc/init.d/e-irods ]; then
+    rm /etc/init.d/e-irods
+fi
+if [ -e /etc/rc0.d/K15-irods ]; then
+    rm /etc/rc0.d/K15e-irods
+fi
+if [ -e /etc/rc2.d/S95e-irods ]; then
+    rm /etc/rc2.d/S95e-irods
+fi
+if [ -e /etc/rc3.d/S95e-irods ]; then
+    rm /etc/rc3.d/S95e-irods
+fi
+if [ -e /etc/rc4.d/S95e-irods ]; then
+    rm /etc/rc4.d/S95e-irods
+fi
+if [ -e /etc/rc5.d/S95e-irods ]; then
+    rm /etc/rc5.d/S95e-irods
+fi
+if [ -e /etc/rc6.d/K15e-irods ]; then
+    rm /etc/rc6.d/K15e-irods
+fi
 
 # =-=-=-=-=-=-=-
 # remove icommands symlinks
-rm /usr/bin/chgCoreToCore1.ir
-rm /usr/bin/chgCoreToCore2.ir
-rm /usr/bin/chgCoreToOrig.ir
-rm /usr/bin/delUnusedAVUs.ir
-rm /usr/bin/genOSAuth
-rm /usr/bin/iadmin
-rm /usr/bin/ibun
-rm /usr/bin/icd
-rm /usr/bin/ichksum
-rm /usr/bin/ichmod
-rm /usr/bin/icp
-rm /usr/bin/idbo
-rm /usr/bin/idbug
-rm /usr/bin/ienv
-rm /usr/bin/ierror
-rm /usr/bin/iexecmd
-rm /usr/bin/iexit
-rm /usr/bin/ifsck
-rm /usr/bin/iget
-rm /usr/bin/igetwild.sh
-rm /usr/bin/ihelp
-rm /usr/bin/iinit
-rm /usr/bin/ilocate
-rm /usr/bin/ils
-rm /usr/bin/ilsresc
-rm /usr/bin/imcoll
-rm /usr/bin/imeta
-rm /usr/bin/imiscsvrinfo
-rm /usr/bin/imkdir
-rm /usr/bin/imv
-rm /usr/bin/ipasswd
-rm /usr/bin/iphybun
-rm /usr/bin/iphymv
-rm /usr/bin/ips
-rm /usr/bin/iput
-rm /usr/bin/ipwd
-rm /usr/bin/iqdel
-rm /usr/bin/iqmod
-rm /usr/bin/iqstat
-rm /usr/bin/iquest
-rm /usr/bin/iquota
-rm /usr/bin/ireg
-rm /usr/bin/irepl
-rm /usr/bin/irm
-rm /usr/bin/irmtrash
-rm /usr/bin/irsync
-rm /usr/bin/irule
-rm /usr/bin/iscan
-rm /usr/bin/isysmeta
-rm /usr/bin/itrim
-rm /usr/bin/iuserinfo
-rm /usr/bin/ixmsg
-rm /usr/bin/runQuota.ir
-rm /usr/bin/runQuota.r
-rm /usr/bin/showCore.ir
+for file in `ls ${IRODS_HOME}/clients/icommands/bin/`
+do
+	if [ -e /usr/bin/$file ]; then
+        rm /usr/bin/$file
+	fi
+done
 
 # =-=-=-=-=-=-=-
 # exit with success
