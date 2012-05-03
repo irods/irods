@@ -4,7 +4,7 @@
 %license COPYING
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Storage system
-%version 3.0b1 300001
+%version 3.0b2 300002
 
 %if DEB
 
