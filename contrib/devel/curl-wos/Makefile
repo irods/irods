@@ -1,4 +1,4 @@
-# This code is for issue 721
+# This code is for issue 721, really it is...
 CC=gcc
 CPPFLAGS=
 CFLAGS=-g
