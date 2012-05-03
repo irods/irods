@@ -1,5 +1,7 @@
 
+=======================================================================
 
+Welcome to E-iRODS.
 
 This installation of a resource server is currently incomplete and
 needs the following steps executed as the service account "eirods":
@@ -17,5 +19,7 @@ resource named with your hostname concatenated with "Resource"
 and a local vault in ~/eirods/iRODS/Vault.
 
 Please consult the manual for further configuration details.
+
+=======================================================================
 
 
