@@ -17,9 +17,8 @@
  *
  * @section DESCRIPTION
  *
- * This file contains the standalone c code to exercise the DDN WOS rest
- * interface.  The code uses libcurl to access the interface.  The file
- * currently supports the get, put and delete operations.
+ * This file contains the library functions that use the curl library to
+ * interface with the WOS rest API.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,82 +30,9 @@
 #include <curl/curl.h>
 #include <sys/stat.h>
 #include <json/json.h>
-#include "curl-wos.h"
 #include "curlWosFunctions.h"
+#include "curl-wos.h"
 
-/** 
- @brief The usage message when something is wrong with the invocation
- */
-void Usage() {
-   const char *message = "\n\
-This code is used to test out the DDN WOS and admin interfaces.  The code\n\
-supports the following operations:\n\
-\n\
-    get: Retrieve the contents of a file from the DDN unit and store the data\n\
-         in a file on the local file system.\n\
-\n\
-    put: Put the contents of a local file into the DDN storage.\n\
-\n\
-    delete: Delete a file from the DDN storage.\n\
-\n\
-    status: Retrieve informationi, including total and used capacity, about i\n\
-            the DDN unit from it's administrative interface.\n\
-\n\
-The code supports the following arguments:\n\
-\n\
-    --operation: Specifies which of the supported operations to execute.\n\
-\n\
-    --resource: Specifies the ddn resource that will be addressed. For\n\
-                the get, put and delete operations this is the fully\n\
-                qualified name of resource, such as wos.edc.renci.org.\n\
-                For the status operation this is the URL of the\n\
-                status operation. Example:\n\
-                http://wos.edc.renci.org:8088/mgmt/statistics\n\
-\n\
-    --policy: The policy on the DDN controlling the file. This is\n\
-              only used for the put operation.\n\
-\n\
-    --file: The file parameter is used with the put, get and delete operations.\n\
-            For the get and delete operation, this parameter specifies the\n\
-            Object ID (OID) for a file that currently exists on the DDN\n\
-            system.  For the put operation, this file specifies the file\n\
-            on local disk to be copied into the DDN storage.\n\
-\n\
-    --destination: This parameter is required with the get operation and\n\
-                   not used for any other operation. It specifies a local\n\
-                   filename in which the contents of the object specified\n\
-                   with an OID and the file parameter are stored.\n\
-\n\
-    --user: The user parameter is only used with the status operation.\n\
-            Pass a user name that has permission to access the web based\n\
-            administration tool.\n\
-\n\
-    --password: The password parameter is only used with the status operation.\n\
-            Pass a password associated with a user name that has permission\n\
-            to access the web based administration tool.\n\
-\n\
-    --help: Print the help message.\n\
-\n\
-Examples \n\
-\n\
-    Put a file. Be sure to grab the oid from the output.  You'll need it for\n\
-    get and delete.\n\
-    \n\
-    curl-wos --operation=put --resource=wos.edc.renci.org --policy=Howard --file=Makefile.insert\n\
-\n\
-    Get the file.\n\
-    curl-wos --operation=get --resource=wos.edc.renci.org --policy=Howard --file=HDGkEvwZAmkpsQDyTCqGBgm2_MmycPN8jfa4IMHN --destination=Makefile.insert\n\
-\n\
-    Delete the file.\n\
-    curl-wos --operation=delete --resource=wos.edc.renci.org --file=HDGkEvwZAmkpsQDyTCqGBgm2_MmycPN8jfa4IMHN\n\
-\n\
-    Get the status of the DDN unit\n\
-    curl-wos --operation=status --resource=wos.edc.renci.org:8088/mgmt/statistics --user=admin-user --password=admin-password\n\
-";
-   printf("%s", message);
-   exit(1);
-}
-#ifdef OLDCODE
 /** 
  * @brief This function parses the headers returned from the libcurl call.
  *
@@ -313,13 +239,15 @@ static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
  *  to the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
  *  for information about libcurl.
  *
- * @param argP Pointer to the user specified arguments parsed into a
- *        WOS_ARG structure.
+ * @param resource A character pointer to the resource for this request.
+ * @param policy A character pointer to the policy for this request.
+ * @param file A character pointer to the file for this request.
  * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
-CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+CURLcode putTheFile (char *resource, char *policy, char *file,
+                     CURL *theCurl, WOS_HEADERS_P headerP) {
 #ifdef DEBUG
    printf("getting ready to put the file\n");
 #endif
@@ -345,7 +273,7 @@ CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    curl_easy_setopt(theCurl, CURLOPT_POST, 1);
    
    // construct the url from the resource and the put command
-   sprintf(theURL, "%s%s", argP->resource, WOS_COMMAND_PUT);
+   sprintf(theURL, "%s%s", resource, WOS_COMMAND_PUT);
 #ifdef DEBUG
    printf("theURL: %s\n", theURL);
 #endif
@@ -363,9 +291,9 @@ CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, headerP);
 
    // We need the size of the destination file. Let's do stat command
-   if (stat(argP->file, &sourceFileInfo)){
+   if (stat(file, &sourceFileInfo)){
       printf("stat of source file %s failed with errno %d\n", 
-             argP->file, errno);
+             file, errno);
       exit(-1);
    }
 
@@ -375,7 +303,7 @@ CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
           (int) (sourceFileInfo.st_size));
 
    // Make the policy header
-   sprintf(policyHeader, "%s %s", WOS_POLICY_HEADER, argP->policy);
+   sprintf(policyHeader, "%s %s", WOS_POLICY_HEADER, policy);
 
    // assign the data size
    curl_easy_setopt(theCurl, 
@@ -393,7 +321,7 @@ CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
 
    // Open the destination file so the handle can be passed to the
    // read function
-   sourceFile = fopen(argP->file, "rb");
+   sourceFile = fopen(file, "rb");
    if (sourceFile) {
       curl_easy_setopt(theCurl, CURLOPT_READDATA, sourceFile);
       res = curl_easy_perform(theCurl);
@@ -417,14 +345,18 @@ CURLcode putTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
  *  to the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
  *  for information about libcurl.
  *
- * @param argP Pointer to the user specified arguments parsed into a
- *        WOS_ARG structure.
+ * @param resource A character pointer to the resource for this request.
+ * @param file A character pointer to the file to retrieve for this request.
+ *             This will be a DDN OID.
+ * @param destination A character pointer to the destination for this request.
+ *        This is a file.
  * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
 
-CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+CURLcode getTheFile (char *resource, char *file, char *destination, 
+                     CURL *theCurl, WOS_HEADERS_P headerP) {
    CURLcode res;
    time_t now;
    struct tm *theTM;
@@ -443,7 +375,7 @@ CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
 #endif
    
    // construct the url from the resource and the file name
-   sprintf(theURL, "%s/objects/%s", argP->resource, argP->file);
+   sprintf(theURL, "%s/objects/%s", resource, file);
 #ifdef DEBUG
    printf("theURL: %s\n", theURL);
 #endif
@@ -480,7 +412,7 @@ CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    curl_easy_setopt(theCurl, CURLOPT_WRITEHEADER, headerP);
    
    // Open the destination file
-   destFile = fopen(argP->destination, "wb");
+   destFile = fopen(destination, "wb");
    if (destFile) {
       curl_easy_setopt(theCurl, CURLOPT_FILE, destFile);
       res = curl_easy_perform(theCurl);
@@ -497,7 +429,7 @@ CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    if (headerP->x_ddn_status == WOS_OBJ_NOT_FOUND) {
       // The file was not found but because we already opened it
       // there will now be a zero length file. Let's remove it
-      unlink(argP->destination);
+      unlink(destination);
    }
    curl_easy_cleanup(theCurl);
    return res;
@@ -511,15 +443,16 @@ CURLcode getTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
  *  from the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
  *  for information about libcurl.
  *
- * @param argP Pointer to the user specified arguments parsed into a
- *        WOS_ARG structure.
+ * @param resource A character pointer to the resource for this request.
+ * @param file A character pointer to the file to retrieve for this request.
  * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
 
 CURLcode 
-getTheFileStatus (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+getTheFileStatus (char *resource, char *file, 
+                  CURL *theCurl, WOS_HEADERS_P headerP) {
    CURLcode res;
    time_t now;
    struct tm *theTM;
@@ -538,7 +471,7 @@ getTheFileStatus (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
 #endif
    
    // construct the url from the resource and the file name
-   sprintf(theURL, "%s/objects/%s", argP->resource, argP->file);
+   sprintf(theURL, "%s/objects/%s", resource, file);
 #ifdef DEBUG
    printf("theURL: %s\n", theURL);
 #endif
@@ -583,11 +516,6 @@ getTheFileStatus (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
           headerP->x_ddn_length);
 #endif
 
-   if (headerP->x_ddn_status == WOS_OBJ_NOT_FOUND) {
-      // The file was not found but because we already opened it
-      // there will now be a zero length file. Let's remove it
-      unlink(argP->destination);
-   }
    curl_easy_cleanup(theCurl);
    return res;
 }
@@ -601,14 +529,15 @@ getTheFileStatus (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
  *  to the DDN using the WOS interface. See http://curl.haxx.se/libcurl/
  *  for information about libcurl.
  *
- * @param argP Pointer to the user specified arguments parsed into a
- *        WOS_ARG structure.
+ * @param resource A character pointer to the resource for this request.
+ * @param file A character pointer to the file for this request.
  * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
 
-CURLcode deleteTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
+CURLcode deleteTheFile (char *resource, char *file, 
+                        CURL *theCurl, WOS_HEADERS_P headerP) {
 #ifdef DEBUG
    printf("getting ready to delete the file\n");
 #endif
@@ -634,7 +563,7 @@ CURLcode deleteTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    curl_easy_setopt(theCurl, CURLOPT_POST, 1);
    
    // construct the url from the resource and the put command
-   sprintf(theURL, "%s%s", argP->resource, WOS_COMMAND_DELETE);
+   sprintf(theURL, "%s%s", resource, WOS_COMMAND_DELETE);
 #ifdef DEBUG
    printf("theURL: %s\n", theURL);
 #endif
@@ -652,7 +581,7 @@ CURLcode deleteTheFile (WOS_ARG_P argP, CURL *theCurl, WOS_HEADERS_P headerP) {
    sprintf(contentLengthHeader, "%s%d", WOS_CONTENT_LENGTH_PUT_HEADER, 0);
 
    // Make the OID header
-   sprintf(oidHeader, "%s %s", WOS_OID_HEADER, argP->file);
+   sprintf(oidHeader, "%s %s", WOS_OID_HEADER, file);
    
    // Now add the headers
    headers = curl_slist_append(headers, dateHeader);
@@ -742,8 +671,11 @@ int processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
  *  for information about libcurl. The data ends up in memory, where we
  *  use a json parser to demarshal into a structure.
  *
- * @param argP Pointer to the user specified arguments parsed into a
- *        WOS_ARG structure.
+ * @param resource A character pointer to the resource for this request.
+ * @param user A character pointer to the name of the user for this
+ *             request.
+ * @param password A character pointer to the password of the user for this
+ *             request.
  * @param theCurl A pointer to the libcurl connection handle.
  * @param statsP A pointer to the stats structure used to return the JSON
  *               data on a parse error.
@@ -752,7 +684,8 @@ int processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
 
 
 CURLcode 
-getTheManagementData(WOS_ARG_P argP, CURL *theCurl, WOS_STATISTICS_P statsP) {
+getTheManagementData(char *resource, char *user, char *password,
+                    CURL *theCurl, WOS_STATISTICS_P statsP) {
    CURLcode   res;
    WOS_MEMORY theData;
    char       auth[(WOS_AUTH_LENGTH * 2) + 1];
@@ -769,7 +702,7 @@ getTheManagementData(WOS_ARG_P argP, CURL *theCurl, WOS_STATISTICS_P statsP) {
 #endif
    
    // Copy the resource into the URL
-   curl_easy_setopt(theCurl, CURLOPT_URL, argP->resource);
+   curl_easy_setopt(theCurl, CURLOPT_URL, resource);
 
    // Let's not dump the header or be verbose
    curl_easy_setopt(theCurl, CURLOPT_HEADER, 0);
@@ -780,7 +713,7 @@ getTheManagementData(WOS_ARG_P argP, CURL *theCurl, WOS_STATISTICS_P statsP) {
    curl_easy_setopt(theCurl, CURLOPT_WRITEDATA, &theData);
 
    // Add the user name and password
-   sprintf(auth, "%s:%s", argP->user, argP->password);
+   sprintf(auth, "%s:%s", user, password);
    curl_easy_setopt(theCurl, CURLOPT_USERPWD, auth);
    curl_easy_setopt(theCurl, CURLOPT_HTTPAUTH, (long) CURLAUTH_ANY);
   
@@ -794,185 +727,3 @@ getTheManagementData(WOS_ARG_P argP, CURL *theCurl, WOS_STATISTICS_P statsP) {
 
    return res;
 }
-#endif
-
-/** 
- * @brief This function processes the user arguments into the a convenient
- *        structure. Arguments are processed with getopt_long.
- *
- * @param argc The number of arguments.
- * @param argv The arguments as passed in by the user.
- * @param argP Pointer to the WOS_ARG into which to process the arguments.
- * @return void.  
- */
-
-void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
-   int opt = 0;
-   int longIndex;
-
-   static const char *optString = "r:p:f:o:d:?";
-   static const struct option longOpts[] = {
-      {"resource", required_argument, NULL, 'r'},
-      {"policy", required_argument, NULL, 'p'},
-      {"file", required_argument, NULL, 'f'},
-      {"operation", required_argument, NULL, 'o'},
-      {"destination", required_argument, NULL, 'd'},
-      {"user", required_argument, NULL, 'u'},
-      {"password", required_argument, NULL, 'a'},
-      {"help", no_argument, NULL, 'h'},
-      {NULL, no_argument, NULL, 0}
-   };
- 
-   opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
-   while (opt != -1) {
-      switch (opt){
-         case 'h':
-            Usage();
-            break;
-
-         case 'r':
-            strcpy(argP->resource, optarg);
-            break;
-
-         case 'p':
-            strcpy(argP->policy, optarg);
-            break;
-
-         case 'f':
-            strcpy(argP->file, optarg);
-            break;
-
-         case 'o':
-            if (!strcasecmp(optarg, "put")) {
-               argP->op = WOS_PUT;
-            } else if (!strcasecmp(optarg, "get")) {
-               argP->op = WOS_GET;
-            } else if (!strcasecmp(optarg, "delete")) {
-               argP->op = WOS_DELETE;
-            } else if (!strcasecmp(optarg, "status")) {
-               argP->op = WOS_STATUS;
-            } else if (!strcasecmp(optarg, "filestatus")) {
-               argP->op = WOS_FILESTATUS;
-            } else {
-               Usage();
-            }
-            break;
-
-         case 'u':
-            strcpy(argP->user, optarg);
-            break;
-
-         case 'a':
-            strcpy(argP->password, optarg);
-            break;
-
-         case 'd':
-            strcpy(argP->destination, optarg);
-            break;
-    
-         case '?':
-            Usage();
-            break;
-
-         default:
-            break;
-      }
-      opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
-   }
-}
-
-/** 
- * @brief This main routine for this program
- *
- * The main routine processes the arguments, initializes the curl 
- * library and calls the appropriate routine for the operation 
- * requested by the user.
- * @param argc The number of arguments.
- * @param argv The arguments as passed in by the user.
- * @return int The return value of this program in the status code from
- *             the WOS API.
- */
-
-int main (int argc, char *argv[]) {
-   WOS_ARG        theArgs;
-   WOS_ARG_P      argP = &theArgs;
-   CURL          *theCurl;
-   CURLcode       res;
-   WOS_HEADERS    theHeaders;
-   WOS_STATISTICS theStats;
-   int            mainReturn;
-#ifdef TIMING
-   time_t         startTime;
-   time_t         endTime;
-#endif
-
-   // init the OID field
-   theHeaders.x_ddn_oid = NULL;
-
-   // bzero the arg structure
-   bzero(argP, sizeof(WOS_ARG));   
-
-   // Process the args into a structure
-   processTheArguments(argc, argv, argP);
-#ifdef DEBUG
-   printf("resource %s\n", theArgs.resource);
-#endif
-
-   // Initialize lib curl
-   theCurl = curl_easy_init();
-
-#ifdef TIMING
-   startTime = time(NULL);
-#endif
-   // Call the appropriate function
-   if (theArgs.op == WOS_GET) {
-      if (strlen(argP->destination) == 0) {
-         // This is an error
-         printf("\nThe destination parameter is "
-                 "required with the get operation.\n\n");
-         Usage();
-      }
-      res = getTheFile(theArgs.resource, theArgs.file, theArgs.destination, 
-                       theCurl, &theHeaders);
-   } else if (theArgs.op == WOS_PUT) {
-      res = putTheFile(theArgs.resource, theArgs.policy, theArgs.file, 
-                       theCurl, &theHeaders);
-   } else if (theArgs.op == WOS_DELETE) {
-      res = deleteTheFile(theArgs.resource, theArgs.file, theCurl, &theHeaders);
-   } else if (theArgs.op == WOS_FILESTATUS) {
-      res = getTheFileStatus(theArgs.resource, theArgs.file, 
-                             theCurl, &theHeaders);
-   } else if (theArgs.op == WOS_STATUS) {
-      res = getTheManagementData(theArgs.resource, theArgs.user, 
-                                 theArgs.password, theCurl, &theStats);
-   }
-#ifdef TIMING
-   endTime = time(NULL);
-   printf("Operation took %d seconds\n", (int) (endTime - startTime));
-#endif
-
-   // The STATUS_OP is treated differently from the others
-   // since there are no headers.
-   // Note that this error processing is still imperfect...
-   if (theArgs.op == WOS_STATUS) {
-      mainReturn = res;
-      if (res == JSON_ERROR) {
-         printf("Failure in processing JSON string: %s\n", 
-                theStats.data);
-      } else {
-         printf("%f %f\n", theStats.usableCapacity, theStats.capacityUsed);
-      }
-   } else {
-      if (res != 0) {
-         printf("Failure in Curl library: result: %d\n", res);
-         return(res);
-      } else {
-         mainReturn = theHeaders.x_ddn_status;
-         printf("%s\n", theHeaders.x_ddn_oid);
-      }
-   } 
-
-   // We want to return the WOS API status code
-   return(mainReturn);
-}
-
