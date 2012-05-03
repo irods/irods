@@ -6,29 +6,26 @@
 %description Enterprise edition of the Integrated Rule Oriented Storage system
 %version 3.0b2 300002
 
-%if DEB
+%if DEBICAT
 
-%if ICAT
 %requires postgresql 8.4
 %requires unixodbc
 %requires odbc-postgresql
-%requires perl
 %requires super
-%endif
 
-%elseif RPM
+%elseif DEBRESOURCE
+%elseif RPMICAT
 
-%if ICAT
 %requires postgresql 
 %requires postgresql-server
 #%requires postgresql-odbc
 %requires unixODBC
-%requires perl
 %requires authd
+
+%elseif RPMRESOURCE
 %endif
 
-%endif
-
+%requires perl
 
 %format all
 
@@ -44,7 +41,7 @@ $OS_EIRODS_ACCT=eirods
 $EIRODS_HOME_DIR=/usr/share/$OS_EIRODS_ACCT
 $IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 $DB_ADMIN_ROLE=postgres
-$DB_NAME=ICAT
+$DB_NAME=EICAT
 
 # =-=-=-=-=-=-=-
 # variables for the installation of iRODS

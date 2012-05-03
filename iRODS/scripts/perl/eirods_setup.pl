@@ -2890,7 +2890,7 @@ sub Postgres_CreateDatabase()
 		chomp $CDB;
 		$CDB=$CDB . "/createdb";
 		if ($DATABASE_HOST eq "localhost") {
-			$status = system( "$CDB -U $DATABASE_ADMIN_NAME ICAT &> /dev/null" );
+			$status = system( "$CDB -U $DATABASE_ADMIN_NAME $DB_NAME &> /dev/null" );
 		}
 		else {
 		    ($status,$output) = run( "$CDB -h $DATABASE_HOST -U $DATABASE_ADMIN_NAME $DB_NAME < $tmpPassword" );
