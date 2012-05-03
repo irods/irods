@@ -1,6 +1,16 @@
-};
 
+#ifdef USE_EIRODS
+	}; // ms_table::ms_table
+}; // namespace eirods
+
+int NumOfAction = -1; // no longer used
+
+eirods::ms_table MicrosTable;
+
+#else
+};
 int NumOfAction = sizeof(MicrosTable) / sizeof(microsdef_t);
+#endif
 
 #endif	/* RE_ACTION_H */
 
