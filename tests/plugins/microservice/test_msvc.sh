@@ -20,11 +20,11 @@ chown eirods:eirods $irods_msvc_home/libeirods_msvc_test.so
 # =-=-=-=-=-=-=-
 # run rule to properly exec msvc 
 #echo "run msvc"
-irule -F ./run_eirods_msvc_test.r
+irule -F ./run_eirods_msvc_test.r &> /dev/null
 
 # =-=-=-=-=-=-=-
 # verify that it loaded and ran properly
-ls -l $irods_home/server/log/rodsLog*
+
 msvc_run=$(grep "eirods_msvc_test :: 1 2 3" $irods_home/server/log/rodsLog* )
 #echo "msvc_run - $msvc_run"
 
@@ -36,7 +36,7 @@ dupe_load=$(grep "load_microservice_plugin :: loaded eirods_msvc_test" $irods_ho
 # =-=-=-=-=-=-=-
 # run a rule to try to load a nonexistent msvc
 #echo "run missing"
-irule -F ./run_eirods_missing_msvc_test.r
+irule -F ./run_eirods_missing_msvc_test.r &> /dev/null
 
 # =-=-=-=-=-=-=-
 # test to see that it failed properly
@@ -47,7 +47,7 @@ miss_msvc=$(grep "load_microservice_plugin :: failed to load microservice plugin
 # =-=-=-=-=-=-=-
 # run a non-plugin rule 
 #echo "show core re"
-irule -F ./rulemsiAdmShowCoreRE.r > ./reout.txt
+irule -F ./rulemsiAdmShowCoreRE.r &> ./reout.txt
 if [[ ! -s ./eout.txt ]]; then
 	non_plugin="YES"
 else

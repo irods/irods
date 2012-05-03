@@ -1,16 +1,16 @@
 #ifdef USE_EIRODS
 /* Properties module microservices */
 /*                                           Service name			    # args	Service function */
-{ "msiPropertiesNew",        { "msiPropertiesNew",		1,		(funcPtr) msiPropertiesNew } },
-{ "msiPropertiesClear",      { "msiPropertiesClear",		1,		(funcPtr) msiPropertiesClear } },
-{ "msiPropertiesClone",      { "msiPropertiesClone",		2,		(funcPtr) msiPropertiesClone } },
-{ "msiPropertiesAdd",        { "msiPropertiesAdd",		3,		(funcPtr) msiPropertiesAdd } },
-{ "msiPropertiesRemove",     { "msiPropertiesRemove",	    2,		(funcPtr) msiPropertiesRemove } },
-{ "msiPropertiesGet",        { "msiPropertiesGet",		3,		(funcPtr) msiPropertiesGet } },
-{ "msiPropertiesSet",        { "msiPropertiesSet",		3,		(funcPtr) msiPropertiesSet } },
-{ "msiPropertiesExists",     { "msiPropertiesExists",	    3,		(funcPtr) msiPropertiesExists } },
-{ "msiPropertiesToString",   { "msiPropertiesToString",	2,		(funcPtr) msiPropertiesToString } },
-{ "msiPropertiesFromString", { "msiPropertiesFromString",	2,		(funcPtr) msiPropertiesFromString } },
+    table_[ "msiPropertiesNew" ] = eirods::ms_table_entry( "msiPropertiesNew", 1, (funcPtr) msiPropertiesNew );
+    table_[ "msiPropertiesClear" ] = eirods::ms_table_entry( "msiPropertiesClear", 1, (funcPtr) msiPropertiesClear );
+    table_[ "msiPropertiesClone" ] = eirods::ms_table_entry( "msiPropertiesClone", 2, (funcPtr) msiPropertiesClone );
+    table_[ "msiPropertiesAdd" ] = eirods::ms_table_entry( "msiPropertiesAdd", 3, (funcPtr) msiPropertiesAdd );
+    table_[ "msiPropertiesRemove" ] = eirods::ms_table_entry( "msiPropertiesRemove", 2, (funcPtr) msiPropertiesRemove );
+    table_[ "msiPropertiesGet" ] = eirods::ms_table_entry( "msiPropertiesGet", 3, (funcPtr) msiPropertiesGet );
+    table_[ "msiPropertiesSet" ] = eirods::ms_table_entry( "msiPropertiesSet", 3, (funcPtr) msiPropertiesSet );
+    table_[ "msiPropertiesExists" ] = eirods::ms_table_entry( "msiPropertiesExists", 3, (funcPtr) msiPropertiesExists );
+    table_[ "msiPropertiesToString" ] = eirods::ms_table_entry( "msiPropertiesToString", 2, (funcPtr) msiPropertiesToString );
+    table_[ "msiPropertiesFromString" ] = eirods::ms_table_entry( "msiPropertiesFromString", 2, (funcPtr) msiPropertiesFromString );
 #else
 /* Properties module microservices */
 /* Service name			# args		Service function */

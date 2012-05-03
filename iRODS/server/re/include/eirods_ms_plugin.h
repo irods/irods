@@ -4,7 +4,6 @@
 
 // =-=-=-=-=-=-=-
 // STL Includes
-#include <unordered_map>
 #include <string>
 #include <iostream>
 using namespace std;
@@ -16,6 +15,7 @@ using namespace std;
 // =-=-=-=-=-=-=-
 // My Includes
 #include "eirods_ms_home.h"
+#include "eirods_hash.h"
 
 namespace eirods {
 
@@ -33,7 +33,7 @@ namespace eirods {
 		ms_table_entry( ) : 
 			action(""), 
 			numberOfStringArgs( 0 ), 
-			callAction( nullptr ) { 
+			callAction( 0 ) { 
 		} // def ctor
 
 		ms_table_entry( string _s, int _n, funcPtr _fp ) : 
@@ -64,12 +64,32 @@ namespace eirods {
 
 	}; // ms_table_entry
 
-	typedef unordered_map< string, ms_table_entry > ms_table;
+	//typedef hash_map< string, ms_table_entry, eirods_string_hash > ms_table;
 
+	// =-=-=-=-=-=-=-
+	// class to manage microservice indexing.  employing a class in order to use
+	// RAII for adding entries to the table now that it is not a static array
+	class ms_table {
+		hash_map< string, ms_table_entry, eirods_string_hash > table_;
+		public:
+		ms_table();
+        virtual ~ms_table() {}
+		ms_table_entry& operator[]( string _s ) {
+			return table_[ _s ];
+		}
+		int size() {
+			return table_.size();
+		}
+		bool has_msvc( string _s ) {
+            return !( table_.end() == table_.find( _s ) );
+		}
+	}; // class ms_table
+		
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object
 	// and then register that ms with the table
 	bool load_microservice_plugin( ms_table& _table, const string _ms );
+
 
 }; // namespace eirods
 

@@ -15,7 +15,7 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// does that MS happen to be in the table already?
-		if( _table.find( _ms ) != _table.end() )  {
+		if( _table.has_msvc( _ms ) )  {
 			cout << "load_microservice_plugin :: microservice already exists.  " << _ms << endl;
 			// return true as this ms can be used, it was just already loaded....
 			return true;
@@ -40,8 +40,8 @@ namespace eirods {
 		// attempt to load the microservice symbol from the handle
 		funcPtr fcn = reinterpret_cast< funcPtr >( dlsym( handle, _ms.c_str() ) );
 
-		char* err = nullptr;	
-		if( ( err = dlerror() ) != nullptr ) {
+		char* err = 0;	
+		if( ( err = dlerror() ) != 0 ) {
 			cout << "load_microservice_plugin :: failed to load sybol from shared object handle " << _ms << endl;
 			cout << "                         :: dlerror is " << err << endl;
 		}
@@ -50,7 +50,7 @@ namespace eirods {
 		// attempt to load the number of parameters symbol from the handle
 		int num_param = *static_cast< int* >( dlsym( handle, "NUMBER_OF_PARAMETERS" ) );
 
-		if( ( err = dlerror() ) != nullptr ) {
+		if( ( err = dlerror() ) != 0 ) {
 			cout << "load_microservice_plugin :: failed to load sybol from shared object" 
 			     << " handle NUMBER_OF_PARAMETERS" << endl;
 			cout << "                         :: dlerror is " << err << endl;
@@ -63,7 +63,7 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// add the new objects to the table via a new entry
-		_table.insert( pair< string, ms_table_entry >( _ms, ms_table_entry( _ms, num_param, fcn ) ) );
+		_table[ _ms ] = ms_table_entry( _ms, num_param, fcn );
 
 		// =-=-=-=-=-=-=-
 		// and... were done.

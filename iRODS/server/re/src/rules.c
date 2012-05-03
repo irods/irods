@@ -667,7 +667,7 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 	// =-=-=-=-=-=-=
 	// look up Action in microservice table.  If it returns
 	// the end() iterator, is is not found so try to load it.
-	if( MicrosTable.end() == MicrosTable.find( str_act ) ) {
+	if( !MicrosTable.has_msvc( str_act ) ) {
 		rodsLog( LOG_NOTICE, "actionTableLookUp - [%s] not found, load it.", _action );
 		if( !eirods::load_microservice_plugin( MicrosTable, str_act ) ) {
 			return UNMATCHED_ACTION_ERR;

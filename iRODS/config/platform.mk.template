@@ -40,7 +40,7 @@ endif
 # JMC :: build using E-iRODS Extensions
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
-CCFLAGS += -std=c++0x -DUSE_EIRODS -fPIC
+CCFLAGS += -DUSE_EIRODS -fPIC
 LDRFLAGS += -ldl
 
 # =-=-=-=-=-=-=-
