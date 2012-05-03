@@ -8,20 +8,24 @@
 
 %if DEB
 
+%if ICAT
 %requires postgresql 8.4
 %requires unixodbc
 %requires odbc-postgresql
 %requires perl
 %requires super
+%endif
 
 %elseif RPM
 
+%if ICAT
 %requires postgresql 
 %requires postgresql-server
 #%requires postgresql-odbc
 %requires unixODBC
 %requires perl
 %requires authd
+%endif
 
 %endif
 
