@@ -121,7 +121,7 @@ $IRODS_ADMIN_NAME = 'rods';
 $IRODS_ADMIN_PASSWORD = 'rods';
 $IRODS_ICAT_HOST = '';
 
-$DB_NAME = 'ICAT';
+$DB_NAME = 'EICAT';
 $RESOURCE_NAME = 'demoResc';
 $RESOURCE_DIR = '/usr/share/eirods/iRODS/Vault';
 $ZONE_NAME = 'tempZone';
