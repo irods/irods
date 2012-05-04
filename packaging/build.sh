@@ -83,9 +83,24 @@ mv /tmp/eirods_ms_home.h server/re/include/
 
 
 
-# go!
-make -j
-make -j
+###########################################
+# single 'make' time on a 8 core machine
+###########################################
+#        time make           1m55.508s
+#        time make -j 1      1m55.023s
+#        time make -j 2      0m17.199s
+#        time make -j 3      0m11.873s
+#        time make -j 4      0m9.894s   <-- inflection point
+#        time make -j 5      0m9.164s
+#        time make -j 6      0m8.515s
+#        time make -j 7      0m8.042s
+#        time make -j 8      0m7.898s
+#        time make -j 9      0m7.911s
+#        time make -j 10     0m7.898s
+#        time make -j        0m30.920s
+###########################################
+make -j 4
+make -j 4
 
 
 
