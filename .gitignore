@@ -1,0 +1,7 @@
+iRODS/config/config.mk
+iRODS/config/irods.config
+iRODS/config/platform.mk
+iRODS/server/config/server.config
+iRODS/server/re/include/eirods_ms_home.h
+packaging/e-irods.list
+
