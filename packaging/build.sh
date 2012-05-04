@@ -124,6 +124,10 @@ mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 
 
 # run EPM for package type of this machine
+
+# available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
+# md5sum 3805b1377f910699c4914ef96b273943
+
 cd $DIR/../
 if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
   echo "Running EPM :: Generating RPM"
