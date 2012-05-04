@@ -896,8 +896,7 @@ void processTheArguments (int argc, char *argv[], WOS_ARG_P argP) {
 int main (int argc, char *argv[]) {
    WOS_ARG        theArgs;
    WOS_ARG_P      argP = &theArgs;
-   CURL          *theCurl;
-   CURLcode       res;
+   int            res;
    WOS_HEADERS    theHeaders;
    WOS_STATISTICS theStats;
    int            mainReturn;
@@ -918,9 +917,6 @@ int main (int argc, char *argv[]) {
    printf("resource %s\n", theArgs.resource);
 #endif
 
-   // Initialize lib curl
-   theCurl = curl_easy_init();
-
 #ifdef TIMING
    startTime = time(NULL);
 #endif
@@ -933,18 +929,17 @@ int main (int argc, char *argv[]) {
          Usage();
       }
       res = getTheFile(theArgs.resource, theArgs.file, theArgs.destination, 
-                       theCurl, &theHeaders);
+                       &theHeaders);
    } else if (theArgs.op == WOS_PUT) {
       res = putTheFile(theArgs.resource, theArgs.policy, theArgs.file, 
-                       theCurl, &theHeaders);
+                       &theHeaders);
    } else if (theArgs.op == WOS_DELETE) {
-      res = deleteTheFile(theArgs.resource, theArgs.file, theCurl, &theHeaders);
+      res = deleteTheFile(theArgs.resource, theArgs.file, &theHeaders);
    } else if (theArgs.op == WOS_FILESTATUS) {
-      res = getTheFileStatus(theArgs.resource, theArgs.file, 
-                             theCurl, &theHeaders);
+      res = getTheFileStatus(theArgs.resource, theArgs.file, &theHeaders);
    } else if (theArgs.op == WOS_STATUS) {
       res = getTheManagementData(theArgs.resource, theArgs.user, 
-                                 theArgs.password, theCurl, &theStats);
+                                 theArgs.password, &theStats);
    }
 #ifdef TIMING
    endTime = time(NULL);

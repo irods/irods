@@ -242,16 +242,16 @@ static size_t readTheData(void *ptr, size_t size, size_t nmemb, void *stream)
  * @param resource A character pointer to the resource for this request.
  * @param policy A character pointer to the policy for this request.
  * @param file A character pointer to the file for this request.
- * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
-CURLcode putTheFile (char *resource, char *policy, char *file,
-                     CURL *theCurl, WOS_HEADERS_P headerP) {
+int 
+putTheFile (char *resource, char *policy, char *file, WOS_HEADERS_P headerP) {
 #ifdef DEBUG
    printf("getting ready to put the file\n");
 #endif
    CURLcode res;
+   CURL *theCurl;
    time_t now;
    struct tm *theTM;
    struct stat sourceFileInfo;
@@ -263,6 +263,9 @@ CURLcode putTheFile (char *resource, char *policy, char *file,
  
    // The headers
    struct curl_slist *headers = NULL;
+
+   // Initialize lib curl
+   theCurl = curl_easy_init();
 
    // Create the date header
    now = time(NULL);
@@ -334,7 +337,7 @@ CURLcode putTheFile (char *resource, char *policy, char *file,
            headerP->x_ddn_status, headerP->x_ddn_oid);
 #endif
    curl_easy_cleanup(theCurl);
-   return res;
+   return (int) res;
 }
 
 /** 
@@ -350,17 +353,21 @@ CURLcode putTheFile (char *resource, char *policy, char *file,
  *             This will be a DDN OID.
  * @param destination A character pointer to the destination for this request.
  *        This is a file.
- * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
 
-CURLcode getTheFile (char *resource, char *file, char *destination, 
-                     CURL *theCurl, WOS_HEADERS_P headerP) {
+int 
+getTheFile (char *resource, char *file, char *destination, 
+            WOS_HEADERS_P headerP) {
    CURLcode res;
+   CURL *theCurl;
    time_t now;
    struct tm *theTM;
    FILE  *destFile;
+
+   // Initialize lib curl
+   theCurl = curl_easy_init();
  
    // The extra byte is for the '/'
    char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
@@ -445,19 +452,21 @@ CURLcode getTheFile (char *resource, char *file, char *destination,
  *
  * @param resource A character pointer to the resource for this request.
  * @param file A character pointer to the file to retrieve for this request.
- * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
 
-CURLcode 
-getTheFileStatus (char *resource, char *file, 
-                  CURL *theCurl, WOS_HEADERS_P headerP) {
+int 
+getTheFileStatus (char *resource, char *file, WOS_HEADERS_P headerP) {
    CURLcode res;
+   CURL *theCurl;
    time_t now;
    struct tm *theTM;
    FILE  *destFile;
  
+   // Initialize lib curl
+   theCurl = curl_easy_init();
+
    // The extra byte is for the '/'
    char theURL[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
    char hostHeader[WOS_RESOURCE_LENGTH + WOS_POLICY_LENGTH + 1];
@@ -517,7 +526,7 @@ getTheFileStatus (char *resource, char *file,
 #endif
 
    curl_easy_cleanup(theCurl);
-   return res;
+   return (int) res;
 }
 
 
@@ -531,17 +540,16 @@ getTheFileStatus (char *resource, char *file,
  *
  * @param resource A character pointer to the resource for this request.
  * @param file A character pointer to the file for this request.
- * @param theCurl A pointer to the libcurl connection handle.
  * @param headerP A pointer to WOS_HEADERS structure that will be filled in.
  * @return res.  The return code from curl_easy_perform.
  */
 
-CURLcode deleteTheFile (char *resource, char *file, 
-                        CURL *theCurl, WOS_HEADERS_P headerP) {
+int deleteTheFile (char *resource, char *file, WOS_HEADERS_P headerP) {
 #ifdef DEBUG
    printf("getting ready to delete the file\n");
 #endif
    CURLcode res;
+   CURL *theCurl;
    time_t now;
    struct tm *theTM;
    struct stat sourceFileInfo;
@@ -550,6 +558,9 @@ CURLcode deleteTheFile (char *resource, char *file,
    char dateHeader[WOS_DATE_LENGTH];
    char contentLengthHeader[WOS_CONTENT_HEADER_LENGTH];
    char oidHeader[WOS_FILE_LENGTH];
+
+   // Initialize lib curl
+   theCurl = curl_easy_init();
  
    // The headers
    struct curl_slist *headers = NULL;
@@ -600,7 +611,7 @@ CURLcode deleteTheFile (char *resource, char *file,
            headerP->x_ddn_status, headerP->x_ddn_oid);
 #endif
    curl_easy_cleanup(theCurl);
-   return res;
+   return (int) res;
 }
 
 /** 
@@ -676,19 +687,22 @@ int processTheStatJSON(char *jsonP, WOS_STATISTICS_P statP) {
  *             request.
  * @param password A character pointer to the password of the user for this
  *             request.
- * @param theCurl A pointer to the libcurl connection handle.
  * @param statsP A pointer to the stats structure used to return the JSON
  *               data on a parse error.
  * @return res.  The return code from curl_easy_perform.
  */
 
 
-CURLcode 
+int 
 getTheManagementData(char *resource, char *user, char *password,
-                    CURL *theCurl, WOS_STATISTICS_P statsP) {
+                     WOS_STATISTICS_P statsP) {
    CURLcode   res;
+   CURL *theCurl;
    WOS_MEMORY theData;
    char       auth[(WOS_AUTH_LENGTH * 2) + 1];
+
+   // Initialize lib curl
+   theCurl = curl_easy_init();
 
    // Init the memory struct
    theData.data = NULL;
@@ -725,5 +739,5 @@ getTheManagementData(char *resource, char *user, char *password,
 
    res = processTheStatJSON(theData.data, statsP);
 
-   return res;
+   return (int) res;
 }

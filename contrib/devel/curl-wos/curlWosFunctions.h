@@ -126,20 +126,17 @@ typedef struct WOS_STATISTICS_TYPE {
    char  *data;   /**< used for error reporting */
 } WOS_STATISTICS, *WOS_STATISTICS_P;
 
-CURLcode 
-putTheFile (char *resource, char *policy, char *file, 
-            CURL *theCurl, WOS_HEADERS_P headerP);
-CURLcode 
+int 
+putTheFile (char *resource, char *policy, char *file, WOS_HEADERS_P headerP);
+int 
 getTheFile (char *resource, char *file, char *destination, 
-            CURL *theCurl, WOS_HEADERS_P headerP);
-CURLcode 
-getTheFileStatus (char *resource, char *file, 
-                  CURL *theCurl, WOS_HEADERS_P headerP);
-CURLcode 
-deleteTheFile (char *resource, char *file, 
-               CURL *theCurl, WOS_HEADERS_P headerP);
-CURLcode
+            WOS_HEADERS_P headerP);
+int 
+getTheFileStatus (char *resource, char *file, WOS_HEADERS_P headerP);
+int 
+deleteTheFile (char *resource, char *file, WOS_HEADERS_P headerP);
+int
 getTheManagementData(char *resource, char *user, char *password, 
-                     CURL *theCurl, WOS_STATISTICS_P statsP);
+                     WOS_STATISTICS_P statsP);
 
 #endif
