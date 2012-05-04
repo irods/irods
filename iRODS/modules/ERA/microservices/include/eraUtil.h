@@ -6,6 +6,7 @@
 
 #ifndef ERAUTIL_H
 #define ERAUTIL_H
+#define TIMESTAMP_LEN 18
 
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
@@ -36,6 +37,7 @@ int getUserACL(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int parseACLModLine(char *inpLine, rsComm_t *rsComm);
 int getSqlRowsByInx(genQueryOut_t *genQueryOut, intArray_t *indexes, bytesBuf_t *mybuf);
 int getObjectByFilePath(char *filePath, char *rescName, char *objPath, rsComm_t *rsComm);
+void timestampDataObjName(dataObjCopyInp_t *myDataObjCopyInp);
 
 #endif	/* ERAUTIL_H */
 

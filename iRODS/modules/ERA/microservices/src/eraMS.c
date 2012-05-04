@@ -2714,6 +2714,105 @@ msiStripAVUs(msParam_t *target, msParam_t *options, msParam_t *status, ruleExecI
 	return (rei->status);
 }
 
+/**
+ * \fn msiStoreVersionWithTS(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice creates a timestamped backup version of a DataObj.
+ *
+ * \module ERA
+ *
+ * \since post-3.1
+ *
+ * \author  Lisa Stillwell
+ * \date    2012-03-24
+ *
+ * \note This microservice creates a new name for a DataObj with a current timestamp, and copies the newly named object
+ *       into the provided (inpParam2) version backup collection. It is intended for use in versioning DataObjs.
+ *
+ * \usage See clients/icommands/test/rules3.0/
+ *
+ * \param[in] inpParam1 - A ObjCopyInp_MS_T or STR_MS_T which would be taken as the src dataObj path.
+ * \param[in] inpParam2 - A DataObjInp_MS_T which is the destination
+ *                                              DataObjInp or STR_MS_T which would be the destination (version backup) object path.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre none
+ * \post none
+ * \sa none
+**/
+int
+msiStoreVersionWithTS (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *outParam, ruleExecInfo_t *rei)
+{
+        rsComm_t *rsComm;
+        dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
+        dataObjInp_t *myDataObjInp;
+        transferStat_t *transStat = NULL;
+
+        RE_TEST_MACRO ("    Calling msiStoreVersionWithTS")
+
+        if (rei == NULL || rei->rsComm == NULL) {
+                rodsLog (LOG_ERROR,
+                        "msiStoreVersionWithTS: input rei or rsComm is NULL");
+                return (SYS_INTERNAL_NULL_INPUT_ERR);
+        }
+
+        rsComm = rei->rsComm;
+
+        /* parse inpParam1 */
+        rei->status = parseMspForDataObjCopyInp (inpParam1, &dataObjCopyInp,
+                &myDataObjCopyInp);
+
+        if (rei->status < 0) {
+                rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                        "msiStoreVersionWithTS: input inpParam1 error. status = %d", rei->status);
+                return (rei->status);
+        }
+
+        /* parse inpParam2 */
+        rei->status = parseMspForDataObjInp (inpParam2,
+                &myDataObjCopyInp->destDataObjInp, &myDataObjInp, 1);
+
+        if (rei->status < 0) {
+                rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                        "msiStoreVersionWithTS: input inpParam2 error. status = %d", rei->status);
+                return (rei->status);
+        }
+
+        /* put timestamp into inpParam1 dataObj name */
+        timestampDataObjName(myDataObjCopyInp);
+
+        rei->status = rsDataObjCopy (rsComm, myDataObjCopyInp, &transStat);
+        if (transStat != NULL) {
+                free (transStat);
+        }
+
+        if (myDataObjCopyInp == &dataObjCopyInp) {
+                clearKeyVal (&myDataObjCopyInp->destDataObjInp.condInput);
+        }
+
+        if (rei->status >= 0) {
+                fillIntInMsParam (outParam, rei->status);
+        } else {
+                rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                        "msiStoreVersionWithTS: rsDataObjCopy failed for %s, status = %d",
+                        myDataObjCopyInp->srcDataObjInp.objPath, rei->status);
+        }
+
+        return (rei->status);
+}
+
 
 
 
