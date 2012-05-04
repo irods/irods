@@ -15,6 +15,8 @@
 	using namespace __gnu_cxx;
 #endif
 
+#include <string.h>
+
 namespace eirods
 {
 	struct eirods_char_str_hash
