@@ -191,6 +191,8 @@ runCmd( "icp test/foo1 sub1/objunlink2");
 runCmd( "irepl -RtestResc sub1/objunlink2");
 runCmd( "icp test/foo1 sub1/freebuffer");
 runCmd( "icp test/foo1 sub1/automove");
+runCmd( "icp test/foo1 test/versiontest.txt");
+runCmd( "imkdir sub1/SaveVersions" );
 runCmd( "iput $dir_w/misc/sample.email test");
 runCmd( "iput $dir_w/misc/email.tag test");
 
