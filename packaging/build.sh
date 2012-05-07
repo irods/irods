@@ -77,7 +77,7 @@ chmod 755 ./irodsctl
 # modify the eirods_ms_home.h file with the proper path to the binary directory
 irods_msvc_home=`./scripts/find_irods_home.sh`
 irods_msvc_home="$irods_msvc_home/server/bin/"
-sed -e s,EIRODSMSCVPATH,$irods_msvc_home, server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
+sed -e s,EIRODSMSVCPATH,$irods_msvc_home, server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
 mv /tmp/eirods_ms_home.h server/re/include/
 
 

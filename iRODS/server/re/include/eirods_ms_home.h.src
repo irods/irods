@@ -6,7 +6,7 @@
 
 namespace eirods {
 
-	const std::string EIRODS_MS_HOME( "EIRODSMSCVPATH" );
+	const std::string EIRODS_MS_HOME( "EIRODSMSVCPATH" );
 
 }; // namespace eirods
 
