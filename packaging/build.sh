@@ -101,7 +101,9 @@ mv /tmp/eirods_ms_home.h server/re/include/
 ###########################################
 make -j 4
 make -j 4
-
+if [ "$?" != "0" ]; then
+ exit 1
+fi
 
 
 # bake SQL files for different database types
