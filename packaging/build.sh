@@ -56,6 +56,9 @@ else
 fi
 
 
+# =-=-=-=-=-=-=-
+# generate random password for database
+RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
 
 # =-=-=-=-=-=-=-
 # run configure to create Makefile, config.mk, platform.mk, etc.
@@ -66,6 +69,12 @@ cp $TMPCONFIGFILE ./config/irods.config
 ./scripts/configure
 # again to reset IRODS_HOME
 cp $TMPCONFIGFILE ./config/irods.config
+
+# change password for database to be consistent with that within the e-irods.list file 
+# for installation
+sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
+mv /tmp/irods.config ./config/irods.config
+
 # handle issue with IRODS_HOME being overwritten by the configure script    
 sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=\`./scripts/find_irods_home.sh\`," ./irodsctl > /tmp/irodsctl.tmp
 mv /tmp/irodsctl.tmp ./irodsctl
@@ -119,7 +128,6 @@ fi
 
 # generate randomized database password, replacing hardcoded placeholder
 cd $DIR/../
-RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
 sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./packaging/e-irods.list.template > /tmp/eirodslist.tmp
 mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 
@@ -142,7 +150,7 @@ elif [ -f "/etc/SuSE-release" ]; then # SuSE
 elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
   echo "Running EPM :: Generating DEB"
   epmvar="DEB$SERVER_TYPE" 
-  epm -f deb e-irods $epmvar=true $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
+  epm -a amd64 -f deb e-irods $epmvar=true $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
 elif [ -f "/usr/bin/sw_vers" ]; then  # MacOSX
   echo "TODO: generate package for MacOSX"
 fi

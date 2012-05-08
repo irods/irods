@@ -50,6 +50,10 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 	fi
 
     # =-=-=-=-=-=-=-
+    # build the proper path to psql
+    PSQL="$PGPATH/psql"
+
+    # =-=-=-=-=-=-=-
     # determine if the database already exists
     DB=$( su --shell=/bin/bash -c "$PSQL --list" $DB_ADMIN_ROLE  | grep $DB_NAME )
     if [ -n "$DB" ]; then
@@ -64,7 +68,6 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
     mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
-	PSQL="$PGPATH/psql"
 
     # =-=-=-=-=-=-=-
     # determine if the database role already exists
