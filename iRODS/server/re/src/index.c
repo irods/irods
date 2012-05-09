@@ -295,9 +295,10 @@ int createFuncMapDefIndex(rulefmapdef_t *inFuncStrct, Hashtable **ruleIndex)
  */
 int createMacorsIndex()
 {
+#ifdef USE_EIRODS
 	rodsLog( LOG_ERROR, "createMacorsIndex :: calling function which is supposedly not used." );
 	assert( 0 );
-#ifndef USE_EIRODS
+#else USE_EIRODS
 	clearIndex(&microsTableIndex);
 	microsTableIndex = newHashTable(NumOfAction*2);
 	if (microsTableIndex == NULL)
