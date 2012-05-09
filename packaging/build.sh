@@ -21,6 +21,9 @@ cd $DIR/../iRODS
 
 
 
+
+
+
 # set up own temporary configfile
 TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 mkdir -p $(dirname $TMPCONFIGFILE)
@@ -29,24 +32,37 @@ mkdir -p $(dirname $TMPCONFIGFILE)
 
 # set up variables for icat configuration
 if [ $1 == "icat" ] ; then
+    SERVER_TYPE="ICAT"
+    DB_TYPE=$2
+    EPMFILE="../packaging/irods.config.icat.epm"
 
-  SERVER_TYPE="ICAT"
-  DB_TYPE=$2
-  EPMFILE="../packaging/irods.config.icat.epm"
+    # =-=-=-=-=-=-=-
+    # bake SQL files for different database types
+    # NOTE:: icatSysInserts.sql is handled by the packager as we rely on the default zone name
+    serverSqlDir="./server/icat/src"
+    convertScript="$serverSqlDir/convertSql.pl"
 
-  if [ "$DB_TYPE" == "postgres" ] ; then
-    # need to do a dirname here, as the irods.config is expected to have a path
-    # which will be appended with a /bin
-    EIRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
-    EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
-    EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
+    echo "Convert Script: [$convertScript] [$DB_TYPE] [$serverSqlDir]"
+    `perl $convertScript $2 $serverSqlDir &> /dev/null`
+	if [ "$?" -ne "0" ]; then
+        echo "Failed to convert SQL forms"
+	    exit 1
+	fi
 
-    echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
-    sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
-  else
-    echo "TODO: irods.config for DBTYPE other than postgres"
-  fi
+    # =-=-=-=-=-=-=-
+    # insert postgres path into list file
+    if [ "$DB_TYPE" == "postgres" ] ; then
+        # need to do a dirname here, as the irods.config is expected to have a path
+        # which will be appended with a /bin
+        EIRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
+        EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
+        EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
 
+        echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
+        sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
+    else
+        echo "TODO: irods.config for DBTYPE other than postgres"
+    fi
 # set up variables for resource configuration
 else
 
@@ -113,18 +129,6 @@ make -j 4
 if [ "$?" != "0" ]; then
  exit 1
 fi
-
-
-# bake SQL files for different database types
-if [ $1 == "icat" ] ; then
-  if [ "$DB_TYPE" == "postgres" ] ; then
-    echo "TODO: bake SQL for postgres"
-  else
-    echo "TODO: bake SQL for DBTYPE other than postgres"
-  fi
-fi
-
-
 
 # generate randomized database password, replacing hardcoded placeholder
 cd $DIR/../

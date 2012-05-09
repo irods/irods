@@ -864,34 +864,37 @@ sub createDatabaseAndTables
 			"icatCoreInserts.sql",
 			"icatSysInserts.sql" );
 
-		if ( $ZONE_NAME ne $IRODS_DEFAULT) {
-		    printStatus( "    Converting zone name in icatSysInserts.sql\n" );
-		    printLog( "    Converting zone name in icatSysInserts.sql\n" );
-		    my $sqlPath = File::Spec->catfile( $serverSqlDir, 
-						       "icatSysInserts.sql");
-		    my $sqlPathOrig = File::Spec->catfile( $serverSqlDir, 
-						       "icatSysInserts.sql.orig");
-		    if (!-e $sqlPathOrig) {
-			rename($sqlPath, $sqlPathOrig);
-		    }
-		    unlink($sqlPath);
-		    `cat $sqlPathOrig | sed s/$IRODS_DEFAULT_ZONE/$ZONE_NAME/g > $sqlPath`;
-		}
-		
-		printStatus( "    Converting SQL to $DATABASE_TYPE form.\n" );
-		printLog( "    Converting SQL to $DATABASE_TYPE form.\n" );
-		my $convertSqlScript = File::Spec->catfile( $serverSqlDir,"convertSql.pl");
-		($status,$output) = run( "$perl $convertSqlScript $DATABASE_TYPE $serverSqlDir" );
-		if ( $status != 0 )
-		{
-		    printError( "\nInstall problem:\n" );
-		    printError( "    Could not run $convertSqlScript\n" );
-		    printError( "        ", $output );
-		    printLog( "\nInstall problem:\n" );
-		    printLog( "    Could not run $convertSqlScript\n" );
-		    printLog( "    ", $output );
-		    cleanAndExit( 1 );
-		}
+# =-=-=-=-=-=-=-
+# JMC :: This is now handled in build.sh as we do not want to depend on CC for installation
+#		if ( $ZONE_NAME ne $IRODS_DEFAULT) {
+#		    printStatus( "    Converting zone name in icatSysInserts.sql\n" );
+#		    printLog( "    Converting zone name in icatSysInserts.sql\n" );
+#		    my $sqlPath = File::Spec->catfile( $serverSqlDir, 
+#						       "icatSysInserts.sql");
+#		    my $sqlPathOrig = File::Spec->catfile( $serverSqlDir, 
+#						       "icatSysInserts.sql.orig");
+#		    if (!-e $sqlPathOrig) {
+#			rename($sqlPath, $sqlPathOrig);
+#		    }
+#		    unlink($sqlPath);
+#		    `cat $sqlPathOrig | sed s/$IRODS_DEFAULT_ZONE/$ZONE_NAME/g > $sqlPath`;
+#		}
+#
+#		printStatus( "    Converting SQL to $DATABASE_TYPE form.\n" );
+#		printLog( "    Converting SQL to $DATABASE_TYPE form.\n" );
+#		my $convertSqlScript = File::Spec->catfile( $serverSqlDir,"convertSql.pl");
+#		($status,$output) = run( "$perl $convertSqlScript $DATABASE_TYPE $serverSqlDir" );
+#		if ( $status != 0 )
+#		{
+#		    printError( "\nInstall problem:\n" );
+#		    printError( "    Could not run $convertSqlScript\n" );
+#		    printError( "        ", $output );
+#		    printLog( "\nInstall problem:\n" );
+#		    printLog( "    Could not run $convertSqlScript\n" );
+#		    printLog( "    ", $output );
+#		    cleanAndExit( 1 );
+#		}
+# =-=-=-=-=-=-=-
     
 		my $alreadyCreated = 0;
 		my $sqlfile;
