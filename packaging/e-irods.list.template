@@ -65,9 +65,11 @@ else
 # =-=-=-=-=-=-=-                                                                                                      
 # create the service account
 	echo Creating Service Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR
-	/usr/sbin/useradd -m -d $EIRODS_HOME_DIR $OS_EIRODS_ACCT
+	useradd --system --quiet --home $EIRODS_HOME_DIR --no-create-home \
+	    --shell /bin/bash --group -gecos "E-iRODS administrator" $OS_EIRODS_ACCT
 
 	ACCT=$OS_EIRODS_ACCT
+	mkdir -p $EIRODS_HOME_DIR
 	chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
 fi
 
