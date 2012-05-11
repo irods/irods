@@ -24,7 +24,7 @@ IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 # determine if we can delete the service account
 user=`who | grep $OS_EIRODS_ACCT`
 if [ "x$user" != "x" ]; then
-    echo "$OS_EIRODS_ACCT is currently logged in.  Aborting."
+    echo "ERROR :: $OS_EIRODS_ACCT is currently logged in.  Aborting."
 	exit 1
 fi
 
@@ -62,8 +62,8 @@ if [ "$SERVER_TYPE" == "resource" ] ; then
     done
 
     if [[ "$do_not_remove" == "TRUE" ]]; then
-		echo "ERROR :: Unable To Remove a Locally Resident Resource, Abort"
-		echo "      :: please run 'iadmin rmresc --dryrun RESOURCE_NAME' on local resources for more information."
+		echo "ERROR :: Unable To Remove a Locally Resident Resource.  Aborting."
+		echo "      :: Please run 'iadmin rmresc --dryrun RESOURCE_NAME' on local resources for more information."
 		exit 1
 	fi
 fi
@@ -108,12 +108,9 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 fi 
 
 # =-=-=-=-=-=-=-
-# determine if the service account exists & remove
-USER=$( grep $OS_EIRODS_ACCT /etc/passwd )
-if [ -n "$USER" ]; then 
-  echo "Removing Service Account $OS_EIRODS_ACCT"
-  userdel $OS_EIRODS_ACCT 
-fi
+# report that we are not deleting the account(s)
+echo "NOTE :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
+echo "     :: The Local System Administrator should delete these if necessary."
 
 # =-=-=-=-=-=-=-
 # remove runlevel symlinks
