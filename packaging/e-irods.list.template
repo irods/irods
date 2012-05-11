@@ -298,10 +298,12 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatHighLeve
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOdbc.c ./iRODS/server/icat/src/icatLowLevelOdbc.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql.orig ./iRODS/server/icat/src/icatSysInserts.sql
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuery.c ./iRODS/server/icat/src/icatGeneralQuery.c
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOracle.c ./iRODS/server/icat/src/icatLowLevelOracle.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelHelpers.c ./iRODS/server/icat/src/icatMidLevelHelpers.c
+%if ICAT
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysTables.sql ./iRODS/server/icat/src/icatSysTables.sql
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreTables.sql ./iRODS/server/icat/src/icatCoreTables.sql
+%endif
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatCoreInserts.sql ./iRODS/server/icat/src/icatCoreInserts.sql
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysTables.sql ./iRODS/server/icat/src/icatDropSysTables.sql
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralUpdate.c ./iRODS/server/icat/src/icatGeneralUpdate.c
