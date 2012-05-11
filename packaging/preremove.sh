@@ -78,8 +78,6 @@ cd /tmp
 # =-=-=-=-=-=-=-
 # 
 if [ "$SERVER_TYPE" == "icat" ] ; then
-    
-	echo "Pre-Remove :: Removing ICAT Server"
 
 	if [ "$DB_TYPE" == "postgres" ] ; then
         # =-=-=-=-=-=-=-

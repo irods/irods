@@ -53,33 +53,34 @@ $DB_USER=$OS_EIRODS_ACCT
 $DB_PASS=SOMEPASSWORD
 
 # =-=-=-=-=-=-=-
-# preinstall directives 
-# =-=-=-=-=-=-=-
+# preinstall
 %preinstall << END_PREINSTALL
-
 # =-=-=-=-=-=-=-
 # create the service account
-echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR"
+echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
-if [[ `getent group $OS_EIRODS_ACCT` != "" ]]; then
+CHECKGROUP=`getent group $OS_EIRODS_ACCT `
+CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
+if [ "$$CHECKGROUP" = "" ]; then
+  groupadd -r $OS_EIRODS_ACCT
+else
   echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
-  if [[ `getent passwd $OS_EIRODS_ACCT` != "" ]]; then
+  if [ "$$CHECKACCT" = "" ]; then
     echo "      :: The $OS_EIRODS_ACCT Service Account must be deleted prior to deleting the $OS_EIRODS_ACCT Service Group."
   fi
   exit 1
-else
-  groupadd -r $OS_EIRODS_ACCT
 fi
 
-if [[ `getent passwd $OS_EIRODS_ACCT` != "" ]]; then
+if [ "$$CHECKACCT" = "" ]; then
+  useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
+else
   echo "ERROR :: Please delete the existing Service Account $OS_EIRODS_ACCT before proceeding."
   exit 1
-else
-  useradd -r -d $EIRODS_HOME_DIR -M -s /bin/bash -g $OS_EIRODS_ACCT -c "E-iRODS Administrator" $OS_EIRODS_ACCT
 fi
 
+ACCT=$OS_EIRODS_ACCT
 mkdir -p $EIRODS_HOME_DIR
-chown $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR
+chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
 
 END_PREINSTALL
 
