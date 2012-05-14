@@ -263,7 +263,7 @@ make_rpm(int            format,		/* I - Subformat */
 //    return (1);
 //
   else {
-    snprintf(filename, sizeof(filename), "%s -bb -buildroot \"%s/buildroot\" %s %s %s%s",
+    snprintf(filename, sizeof(filename), "%s -bb --buildroot \"%s/buildroot\" %s %s %s%s",
       EPM_RPMBUILD, absdir, EPM_RPMARCH, platform->machine, build_option, specname);
     if (Verbosity){
       puts(filename);
