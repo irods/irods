@@ -493,6 +493,11 @@ make_rpm(int            format,		/* I - Subformat */
     snprintf(filename, sizeof(filename), "%s/buildroot", directory);
     unlink_directory(filename);
 
+    // TGR - remove newly added BUILD directory, for newer rpm calls
+    snprintf(filename, sizeof(filename), "%s/BUILD", directory);
+    unlink_directory(filename);
+    // TGR - end
+
     unlink(specname);
 
     if (dist->num_subpackages)
