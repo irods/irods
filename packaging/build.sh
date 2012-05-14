@@ -109,7 +109,7 @@ mv /tmp/eirods_ms_home.h server/re/include/
 
 
 ###########################################
-# single 'make' time on a 8 core machine
+# single 'make' time on an 8 core machine
 ###########################################
 #        time make           1m55.508s
 #        time make -j 1      1m55.023s
@@ -123,6 +123,13 @@ mv /tmp/eirods_ms_home.h server/re/include/
 #        time make -j 9      0m7.911s
 #        time make -j 10     0m7.898s
 #        time make -j        0m30.920s
+###########################################
+# single 'make' time on a single core VM
+###########################################
+#        time make           3m1.410s
+#        time make -j 2      2m13.481s
+#        time make -j 4      1m52.533s
+#        time make -j 5      1m48.611s
 ###########################################
 make -j 4
 make -j 4
@@ -142,19 +149,26 @@ mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
+cd $DIR/../epm
+./configure
+make
+if [ "$?" != "0" ]; then
+ exit 1
+fi
+
 cd $DIR/../
 if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
   echo "Running EPM :: Generating RPM"
   epmvar="RPM$SERVER_TYPE" 
-  epm -f rpm e-irods $epmvar=true $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+  ./epm/epm -f rpm e-irods $epmvar=true $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
 elif [ -f "/etc/SuSE-release" ]; then # SuSE
   echo "Running EPM :: Generating RPM"
   epmvar="RPM$SERVER_TYPE" 
-  epm -f rpm e-irods $epmvar=true $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+  ./epm/epm -f rpm e-irods $epmvar=true $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
 elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
   echo "Running EPM :: Generating DEB"
   epmvar="DEB$SERVER_TYPE" 
-  epm -a amd64 -f deb e-irods $epmvar=true $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
+  ./epm/epm -a amd64 -f deb e-irods $epmvar=true $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
 elif [ -f "/usr/bin/sw_vers" ]; then  # MacOSX
   echo "TODO: generate package for MacOSX"
 fi
