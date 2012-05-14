@@ -1,0 +1,59 @@
+.\"
+.\" "$Id: setup.man 753 2007-04-10 18:34:01Z mike $"
+.\"
+.\"   Manual page for the ESP Package Manager (EPM) setup GUI.
+.\"
+.\"   Copyright 1999-2007 by Easy Software Products, all rights reserved.
+.\"
+.\"   This program is free software; you can redistribute it and/or modify
+.\"   it under the terms of the GNU General Public License as published by
+.\"   the Free Software Foundation; either version 2, or (at your option)
+.\"   any later version.
+.\"
+.\"   This program is distributed in the hope that it will be useful,
+.\"   but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"   GNU General Public License for more details.
+.\"
+.TH setup 1 "ESP Package Manager" "3 April 2006" "Easy Software Products"
+.SH NAME
+setup \- graphical setup program for the esp package manager
+.SH SYNOPSIS
+.B setup
+[
+.I directory
+]
+.SH DESCRIPTION
+\fBsetup\fR provides a graphical installation interface for
+EPM-generated portable installation packages. It presents a
+step-by-step dialog for collecting a list of packages to install
+and accepting any license agreements for those packages.
+.LP
+\fBsetup\fR searches for products in the current directory or the
+directory specified on the command-line.
+.SH INSTALLATION TYPES
+The default type of installation is "custom". That is, users will be
+able to select from the list of products and install them.
+.LP
+\fBsetup\fR also supports other types of installations. The
+\fIsetup.types\fR file, if present, defines the other
+installation types.
+.SH SEE ALSO
+epm(1) - create software packages.
+.br
+setup.types(5) - epm gui setup types file format.
+.SH COPYRIGHT
+Copyright 1999-2007 by Easy Software Products, All Rights Reserved.
+.LP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+.LP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.\"
+.\" End of "$Id: setup.man 753 2007-04-10 18:34:01Z mike $".
+.\"

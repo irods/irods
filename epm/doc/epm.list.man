@@ -1,0 +1,372 @@
+.\"
+.\" "$Id: epm.list.man 842 2010-12-31 02:16:45Z mike $"
+.\"
+.\"   Manual page for the ESP Package Manager (EPM) list file format.
+.\"
+.\"   Copyright 1999-2010 by Easy Software Products, all rights reserved.
+.\"
+.\"   This program is free software; you can redistribute it and/or modify
+.\"   it under the terms of the GNU General Public License as published by
+.\"   the Free Software Foundation; either version 2, or (at your option)
+.\"   any later version.
+.\"
+.\"   This program is distributed in the hope that it will be useful,
+.\"   but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"   GNU General Public License for more details.
+.\"
+.TH epm.list 5 "ESP Package Manager" "30 December 2010" "Easy Software Products"
+.SH NAME
+epm.list \- epm list file format.
+.SH DESCRIPTION
+Each \fIEPM\fR product has an associated list file that
+describes the files to include with the product. Comment lines
+begin with the "#" character and are ignored. All other
+non-blank lines must begin with a letter, dollar sign ("$"), or
+the percent sign ("%") as follows:
+.TP 5
+$name=value
+.br
+Sets the named variable to \fIvalue\fR. \fBNote:\fR Variables
+set in the list file are overridden by variables specified on
+the command-line or in the current environment.
+.TP 5
+%arch all
+.br
+Uses following files and directives on all processor architectures.
+.TP 5
+%arch \fIarchitecture [... architecture]\fR
+.br
+Uses following files and directives on the named processor architectures.
+.TP 5
+%arch !\fIarchitecture [... architecture]\fR
+.br
+Uses following files and directives on all but the named processor
+architectures.
+.TP 5
+%copyright \fIcopyright notice\fR
+.br
+Sets the copyright notice for the file.
+.TP 5
+%description \fIdescription text\fR
+.br
+Adds a line of descriptive text to the distribution. Multiple lines are
+supported.
+.TP 5
+%format \fIformat [... format]\fR
+.br
+Uses following files and directives only if the distribution format is
+the same as \fIformat\fR.
+.TP 5
+%format !\fIformat [... format]\fR
+.br
+Uses following files and directives only if the distribution format is
+not the same as \fIformat\fR.
+.TP 5
+%if \fIvariable\fR [... variable]\fR
+.TP 5
+%if !\fIvariable\fR [... variable]\fR
+.TP 5
+%ifdef \fIvariable\fR [... variable]\fR
+.TP 5
+%ifdef !\fIvariable\fR [... variable]\fR
+.TP 5
+%elseif \fIvariable\fR [... variable]\fR
+.TP 5
+%elseif !\fIvariable\fR [... variable]\fR
+.TP 5
+%elseifdef \fIvariable\fR [... variable]\fR
+.TP 5
+%elseifdef !\fIvariable\fR [... variable]\fR
+.TP 5
+%else
+.TP 5
+%endif
+.br
+Conditionally includes lines in the list file. The \fI%if\fR
+lines include the lines that follow if the named variables are
+(not) defined with a value. The \fI%ifdef\fR lines include the
+lines that follow if the named variables are (not) defined with
+any value. These conditional lines cannot be nested.
+.TP 5
+%include \fIfilename\fR
+.br
+Includes files listed in \fIfilename\fR.
+.TP 5
+%incompat \fIproduct\fR
+.TP 5
+%incompat \fIfilename\fR
+.br
+Indicates that this product is incompatible with the named product or
+file.
+.TP 5
+%install \fIscript or program\fR
+.br
+Specifies a script or program to be run after all files are installed.
+(This has been obsoleted by the %postinstall directive)
+.TP 5
+%license \fIlicense file\fR
+.br
+Specifies the file to display as the software license.
+.TP 5
+%literal(section) \fIline\fR
+.TP 5
+%literal(section) <\fIfile\fR
+.TP 5
+%literal(section) <<\fIstring\fR
+.br
+Specifies format-specific literal data for packaging. Currently only supported
+for RPM and PKG packages.
+.TP 5
+%packager \fIname of packager\fR
+.br
+Specifies the name of the packager.
+.TP 5
+%patch \fIscript or program\fR
+.br
+Specifies a script or program to be run after all files are patched.
+(This has been obsoleted by the %postpatch directive)
+.TP 5
+%postinstall \fIscript or program\fR
+.TP 5
+%postinstall <\fIscriptfile\fR
+.TP 5
+%postinstall <<\fIstring\fR
+.br
+Specifies a script or program to be run after all files are installed.
+.TP 5
+%postpatch \fIscript or program\fR
+.TP 5
+%postpatch <\fIscriptfile\fR
+.TP 5
+%postpatch <<\fIstring\fR
+.br
+Specifies a script or program to be run after all files are patched.
+.TP 5
+%postremove \fIscript or program\fR
+.TP 5
+%postremove <\fIscriptfile\fR
+.TP 5
+%postremove <<\fIstring\fR
+.br
+Specifies a script or program to be run after removing files.
+.TP 5
+%preinstall \fIscript or program\fR
+.TP 5
+%preinstall <\fIscriptfile\fR
+.TP 5
+%preinstall <<\fIstring\fR
+.br
+Specifies a script or program to be run before all files are installed.
+.TP 5
+%prepatch \fIscript or program\fR
+.TP 5
+%prepatch <\fIscriptfile\fR
+.TP 5
+%prepatch <<\fIstring\fR
+.br
+Specifies a script or program to be run before all files are patched.
+.TP 5
+%preremove \fIscript or program\fR
+.TP 5
+%preremove <\fIscriptfile\fR
+.TP 5
+%preremove <<\fIstring\fR
+.br
+Specifies a script or program to be run before removing files.
+.TP 5
+%product \fIproduct name\fR
+.br
+Specifies the product name.
+.TP 5
+%readme \fIreadme file\fR
+.br
+Specifies a README file to be included in the distribution.
+.TP 5
+%remove \fIscript or program\fR
+.br
+Specifies a script or program to be run before removing files.
+(This has been obsoleted by the %preremove directive)
+.TP 5
+%release \fInumber\fR
+.br
+Specifies the release or build number of a product (defaults to 0).
+.TP 5
+%replaces \fIproduct\fR
+.br
+Indicates that this product replaces the named product.
+.TP 5
+%requires \fIproduct\fR
+.TP 5
+%requires \fIfilename\fR
+.br
+Indicates that this product requires the named product or file.
+.TP 5
+%subpackage
+.TP 5
+%subpackage \fIname\fR
+.br
+Selects the named subpackage; if no name is given, selects the
+main (parent) package.
+.TP 5
+%vendor \fIvendor or author name\fR
+.br
+Specifies the vendor or author of the product.
+.TP 5
+%version \fIversion number\fR
+.br
+Specifies the version number of the product.
+.TP 5
+%system \fIsystem[-release] [... system[-release]]\fR
+.br
+Specifies that the following files should only be used for the specified
+operating systems and releases.
+.TP 5
+%system !\fIsystem[-release] [... system[-release]]\fR
+.br
+Specifies that the following files should not be used for the specified
+operating systems and releases.
+.TP 5
+%system all
+.br
+Specifies that the following files are applicable to all operating systems.
+.TP 5
+c \fImode user group destination source\fR
+.TP 5
+C \fImode user group destination source\fR
+.br
+Specifies a configuration file for installation. The second form
+specifies that the file has changed or is new and should be included as
+part of a patch. Configuration files are installed as "destination.N"
+if the destination already exists.
+.TP 5
+d \fImode user group destination -\fR
+.TP 5
+D \fImode user group destination -\fR
+.br
+Specifies a directory should be created when installing the software. The
+second form specifies that the directory is new and should be included as part
+of a patch.
+.TP 5
+f \fImode user group destination source [nostrip()]\fR
+.TP 5
+F \fImode user group destination source [nostrip()]\fR
+.br
+Specifies a file for installation. The second form specifies
+that the file has changed or is new and should be included as
+part of a patch. If the "nostrip()" option is included, the file
+will not be stripped before the installation is created.
+.TP 5
+f \fImode user group destination source/pattern [nostrip()]\fR
+.TP 5
+F \fImode user group destination source/pattern [nostrip()]\fR
+.br
+Specifies one or more files for installation using shell
+wildcard patterns. The second form specifies that the files have
+changed or are new and should be included as part of a patch. If
+the "nostrip()" option is included, the file will not be
+stripped before the installation is created.
+.TP 5
+i \fImode user group service-name source ["options"]\fR
+.TP 5
+I \fImode user group service-name source ["options"]\fR
+.br
+Specifies an initialization script for installation. The second form
+specifies that the file has changed or is new and should be included as
+part of a patch. Initialization scripts are stored in /etc/software/init.d and
+are linked to the appropriate system-specific directories for run levels 0,
+2, 3, and 5. Initialization scripts \fBmust\fR accept at least the \fIstart\fR
+and \fIstop\fR commands. The optional \fIoptions\fR following the source
+filename can be any of the following:
+
+.TP 10
+     order(\fIstring\fR)
+.br
+Specifies the relative startup order compared to the required
+and used system functions. Supported values include First,
+Early, None, Late, and Last (OSX only).
+.TP 10
+     provides(\fIname(s)\fR)
+.br
+Specifies names of system functions that are provided by this startup
+item (OSX only).
+.TP 10
+     requires(\fIname(s)\fR)
+.br
+Specifies names of system functions that are required by this startup
+item (OSX only).
+.TP 10
+     runlevel(\fIlevels\fR)
+.br
+Specifies the run levels to use.
+.TP 10
+     start(\fInumber\fR)
+.br
+Specifies the starting sequence number from 00 to 99.
+.TP 10
+     stop(\fInumber\fR)
+.br
+Specifies the ending sequence number from 00 to 99.
+.TP 10
+     uses(\fIname(s)\fR)
+.br
+Specifies names of system functions that are used by this startup
+item (OSX only).
+
+.TP 5
+l \fImode user group destination source\fR
+.TP 5
+L \fImode user group destination source\fR
+.br
+Specifies a symbolic link in the installation. The second form specifies that
+the link has changed or is new and should be included as part of a patch.
+.TP 5
+R \fImode user group destination\fR
+.br
+Specifies that the file is to be removed upon patching.  The \fIuser\fR and
+\fIgroup\fR fields are ignored.  The \fImode\fR field is only used to determine
+if a check should be made for a previous version of the file.
+.SH LIST VARIABLES
+\fIEPM\fR maintains a list of variables and their values which can be used
+to substitute values in the list file. These variables are imported from the
+current environment and taken from the command-line and list file as provided.
+Substitutions occur when the variable name is referenced with the dollar sign
+($):
+.nf
+.br
+
+    %postinstall <<EOF
+    echo What is your name:
+    read $$name
+    Your name is $$name
+    EOF
+
+    f 0555 root sys ${bindir}/foo foo
+    f 0555 root sys $datadir/foo/foo.dat foo.dat
+.fi
+.LP
+Variable names can be surrounded by curley brackets (${name}) or
+alone ($name); without brackets the name is terminated by the
+first slash (/), dash (-), or whitespace. The dollar sign can be
+inserted using $$.
+.SH SEE ALSO
+epm(1) - create software packages
+.br
+epminstall(1) - add a directory, file, or symlink to a list file
+.br
+mkepmlist(1) - make an epm list file from a directory
+.SH COPYRIGHT
+Copyright 1999-2010 by Easy Software Products, All Rights Reserved.
+.LP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+.LP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.\"
+.\" End of "$Id: epm.list.man 842 2010-12-31 02:16:45Z mike $".
+.\"

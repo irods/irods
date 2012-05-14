@@ -1,0 +1,75 @@
+.\"
+.\" "$Id: setup.types.man 753 2007-04-10 18:34:01Z mike $"
+.\"
+.\"   Manual page for the ESP Package Manager (EPM) setup types file format.
+.\"
+.\"   Copyright 1999-2007 by Easy Software Products, all rights reserved.
+.\"
+.\"   This program is free software; you can redistribute it and/or modify
+.\"   it under the terms of the GNU General Public License as published by
+.\"   the Free Software Foundation; either version 2, or (at your option)
+.\"   any later version.
+.\"
+.\"   This program is distributed in the hope that it will be useful,
+.\"   but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"   GNU General Public License for more details.
+.\"
+.TH setup.types 5 "ESP Package Manager" "3 April 2006" "Easy Software Products"
+.SH NAME
+setup.types \- epm gui setup types file format.
+.SH DESCRIPTION
+The EPM \fBsetup\fR program normally presents the user with a
+list of software products to install, which is called a "custom"
+software installation.
+.LP
+If a file called \fIsetup.types\fR is present in the package
+directory, the user will instead be presented with a list of
+installation types. Each type has an associated product list
+which determines the products that are installed by default. If a
+type has no products associated with it, then it is treated as a
+custom installation and the user is presented with a list of
+packages to choose from.
+.SH FILE FORMAT
+The \fIsetup.types\fR file is an ASCII text file consisting of
+type and product lines. Comments can be inserted by starting a
+line with the pound sign (#). Each installation type is defined
+by a line starting with the word TYPE. Products are defined by a
+line starting with the word INSTALL:
+.in 5
+.nf
+
+TYPE Typical End-User Configuration
+INSTALL foo
+INSTALL foo-help
+TYPE Typical Developer Configuration
+INSTALL foo
+INSTALL foo-help
+INSTALL foo-devel
+INSTALL foo-examples
+TYPE Custom Configuration
+.fi
+.in
+.LP
+In the example above, three installation types are defined. Since the last
+type includes no products, the user will be presented with the full list
+of products to choose from.
+.SH SEE ALSO
+epm(1) - create software packages
+.br
+setup(1) - graphical setup program for the esp package manager
+.SH COPYRIGHT
+Copyright 1999-2007 by Easy Software Products, All Rights Reserved.
+.LP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+.LP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.\"
+.\" End of "$Id: setup.types.man 753 2007-04-10 18:34:01Z mike $".
+.\"

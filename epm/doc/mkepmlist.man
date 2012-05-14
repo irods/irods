@@ -1,0 +1,74 @@
+.\"
+.\" "$Id: mkepmlist.man 753 2007-04-10 18:34:01Z mike $"
+.\"
+.\"   Manual page for the ESP Package Manager (EPM).
+.\"
+.\"   Copyright 1999-2007 by Easy Software Products, all rights reserved.
+.\"
+.\"   This program is free software; you can redistribute it and/or modify
+.\"   it under the terms of the GNU General Public License as published by
+.\"   the Free Software Foundation; either version 2, or (at your option)
+.\"   any later version.
+.\"
+.\"   This program is distributed in the hope that it will be useful,
+.\"   but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"   GNU General Public License for more details.
+.\"
+.TH mkepmlist 1 "ESP Package Manager" "3 April 2006" "Easy Software Products"
+.SH NAME
+mkepmlist \- make an epm list file from a directory.
+.SH SYNOPSIS
+.B mkepmlist
+[ \-g
+.I group
+] [ \-u
+.I user
+] [ \--prefix
+.I directory
+]
+.I directory
+[ ...
+.I directory
+]
+.SH DESCRIPTION
+\fBmkepmlist\fR recursively generates file list entries for
+files, links, and directories. The file list is send to the
+standard output.
+.LP
+The \fI-g\fR option overrides the group ownership of the files in
+the specified directories with the specified group name.
+.LP
+The \fI-u\fR option overrides the user ownership of the files in
+the specified directories with the specified user name.
+.LP
+The \fI--prefix\fR option adds the specified directory to the
+destination path. For example, if you installed files to
+"/opt/foo" and wanted to build a distribution that installed the
+files in "/usr/local", the following command would generate a file
+list that is installed in "/usr/local":
+.nf
+.br
+     mkepmlist --prefix=/usr/local /opt/foo >foo.list
+.fi
+.SH SEE ALSO
+epm(1) - create software packages
+.br
+epminstall(1) - add a directory, file, or symlink to a list file
+.br
+epm.list(5) - epm list file format
+.SH COPYRIGHT
+Copyright 1999-2007 by Easy Software Products, All Rights Reserved.
+.LP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+.LP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.\"
+.\" End of "$Id: mkepmlist.man 753 2007-04-10 18:34:01Z mike $".
+.\"

@@ -1,0 +1,48 @@
+INSTALL - ESP Package Manager (EPM) 4.2
+---------------------------------------
+
+Complete installation instructions can be found in the file
+"doc/epm-book.html"...
+
+
+WHAT IS REQUIRED FOR EPM?
+
+    On your development system you just need a C compiler, a make
+    program, the Bourne (or Korn or Bash) shell, and gzip.
+
+    The graphical setup program needs a C++ compiler and the
+    FLTK library, version 1.1 or higher, available at
+    "http://www.fltk.org".
+
+    EPM can generate so-called "portable" distributions that are
+    based on shell scripts and tar files.  For these types of
+    distributions your customers/users will need the Bourne (or
+    Korn or Bash) shell, a tar program, and GNU zip. The first
+    two are standard items, and GNU zip is being shipped by most
+    vendors as well.
+
+    EPM can also generate vendor-specific distributions.  These
+    require the particular vendor tool (rpm, dpkg, etc.) to load
+    the software.
+
+
+HOW DO I COMPILE EPM?
+
+    EPM uses GNU autoconf to configure itself for your system. 
+    To build it, use:
+
+        ./configure ENTER
+	make ENTER
+
+    The default installation prefix is /usr; if you want to put
+    EPM in /usr/local, do:
+
+        ./configure --prefix=/usr/local ENTER
+	make ENTER
+
+    Once EPM is compiled you can type:
+
+        su ENTER
+	make install ENTER
+
+    to install the software in /usr/bin.

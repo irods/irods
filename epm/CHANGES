@@ -1,0 +1,672 @@
+CHANGES - ESP Package Manager (EPM) 4.2
+---------------------------------------
+
+CHANGES IN EPM 4.2
+
+	- EPM now supports a %arch conditional directive (STR #27)
+	- EPM now uses hard links whenever possible instead of copying files for
+	  distribution (STR #21)
+	- EPM no longer puts files in /export in the root file set for AIX
+	  packages (STR #15)
+	- EPM did not work with newer versions of RPM (STR #23, STR #25)
+	- EPM did not clean up temporary files from Solaris packages (STR #20)
+	- Building Solaris gzip'd packages failed if the pkg.gz file already
+	  existed (STR #16)
+	- Fixed handling of %preremove and %postremove for AIX packages
+	  (STR #22)
+	- Fixed directory permissions in HP-UX packages (STR #24)
+	- Removed unnecessary quoting of "!" in filenames (STR #26)
+	- Added support for signed RPM packages (STR #19)
+	- Added support for inclusion of format-specific packaging files and
+	  directives via a %literal directive (STR #5)
+	- *BSD init scripts were not installed properly.
+	- EPM now displays a warning message when a variable is undefined
+	  (STR #10)
+	- *BSD dependencies on versioned packages are now specified correctly
+	  (STR #4)
+	- EPM now uses /usr/sbin/pkg_create on FreeBSD (STR #2)
+	- FreeBSD packages are now created with a .tbz extension (STR #1)
+	- FreeBSD packages incorrectly assumed that chown was installed in /bin
+	  (STR #3)
+	- Added support for an "lsb" package format which uses RPM with the LSB
+	  dependencies (STR #7)
+	- The configure script now supports a --with-archflags and no longer
+	  automatically builds universal binaries on Mac OS X.
+	- The epm program now automatically detects when the setup GUI is not
+	  available, displays a warning message, and then creates a non-GUI
+	  package.
+	- RPM packages did not map %replaces to Obsoletes:
+
+
+CHANGES IN EPM 4.1
+
+	- Mac OS X portable packages did not create a correct
+	  Uninstall application.
+	- The temporary package files for portable packages are
+	  now removed after creation of the .tar.gz file unless
+	  the -k (keep files) option is used.
+ 	- The RPM summary string for subpackages did not contain
+ 	  the first line of the package description as for other
+ 	  package formats.
+ 	- The setup and uninst GUIs now support installing and
+ 	  removing RPM packages.
+	- The setup GUI now confirms acceptance of all licenses
+	  prior to installing the first package.
+	- Subpackages are no longer automatically dependent on
+	  the main package.
+	- Multi-line descriptions were not embedded properly into
+	  portable package install/patch/remove scripts.
+	- Updated the setup and uninstall GUIs for a nicer
+	  look-n-feel.
+	- Mac OS X portable packages now show the proper name,
+	  version, and copyright for the packaged software
+	  instead of the EPM version and copyright...
+	- Fixed a problem with creation of Mac OS X metapackages
+	  with the latest Xcode.
+	- EPM now removes the individual .rpm and .deb files when
+	  creating a package with subpackages unless the -k
+	  option (keep files) is used.
+	- EPM now only warns about package names containing
+	  characters other than letters and numbers.
+	- EPM now generates disk images as well as a .tar.gz
+	  file when creating portable packages on Mac OS X.
+
+
+CHANGES IN EPM 4.0
+
+	- New subpackage support for creating multiple dependent
+	  packages or a combined package with selectable
+	  subpackages, depending on the package format.
+	- Added support for compressing the package files in
+	  portable packages (reduces disk space requirements on
+	  platforms that provide gzip...)
+	- Added support for custom platform names via the new
+	  "-m name" option.
+	- Added support for non-numeric %release values.
+	- Added new --depend option to list all of the source
+	  files that a package depends on.
+	- The setup GUI now sets the EPM_INSTALL_TYPE environment
+	  variable to the value of the selected TYPE line in the
+	  setup.types file.
+	- Fixed NetBSD and OpenBSD packaging support - no longer
+	  use FreeBSD-specific extensions to pkg_create on those
+	  variants.
+	- Fixed PowerPC platform support for RPM and Debian
+	  packages.
+	- Many fixes to AIX package support.
+	- Tru64 packages with init scripts now work when
+	  installing for the first time.
+	- RPM file dependencies should now work properly.
+	- Portable product names containing spaces will now
+	  display properly.
+
+
+CHANGES IN EPM 3.7.1
+
+	- Solaris packages were not created when the output
+	  directory was absolute.
+	- EPM no longer tries to strip empty files.
+	- Solaris 7 and higher no longer have the "2." prefix in
+	  the version number.
+	- The setup and uninst GUIs now support GIF setup images
+	  (setup.gif) as well as XPM images (setup.xpm)
+	- Debian packages now properly install init scripts.
+	- MacOS X packages can now be created when using the
+	  new Xcode developer tools.
+	- Packages created on MacOS X now use the system name
+	  "macosx" and the MacOS X version number.  The old
+	  "darwin" name is still accepted as a synonym.
+	- EPM now supports version numbers that do not start
+	  with a number (HP-UX workaround for OS
+	  dependencies...)
+	- EPM now issues an error message if you have identical
+	  destination files that don't match up.
+	- HP-UX packages now use the %readme file for the readme
+	  info in a package, and the %license file for the
+	  copyright info in a package.
+	- Added %preremove support for AIX packages and fixed
+	  some AIX packaging issues with patch from David Maltz.
+
+
+CHANGES IN EPM 3.7
+
+	- Fixed init script support for Tru64 packages.
+	- AIX output now correctly generates the inventory file
+	  for files in /usr and /opt.
+	- The Slackware packaging code swapped the output
+	  directory and product name when generating the
+	  post-install script.
+	- RPM dependencies of the form "%requires package >=
+	  version" are now correctly written in the spec file.
+	- AIX output now correctly lists file sizes by directory
+	  and handles /opt properly.
+	- RPM output now correctly handles installing,
+	  upgrading, and removing init scripts.
+	- RPM output did not work with filenames that contained
+	  a dollar sign ($).
+	- Added Slackware packager support based upon a patch
+	  contributed by Alec Thomas.
+	- The file copy code reported write errors for the
+	  source filename and not the (correct) destination
+	  filename.
+	- Fixed the handling of absolute output directories when
+	  generating RPM packages.
+	- The configure script did not support the OPTIM
+	  environment variable for custom optimization settings.
+	- Portable packages updated the permissions of
+	  configuration files before they were copied.
+	- Portable installations did not remove empty
+	  installation directories when the remove script was
+	  run.
+	- Portable patch installation did not correctly
+	  determine when root or /usr files were present in the
+	  patch.
+	- OSX packages incorrectly looked in /System/Library for
+	  the init scripts instead of /Library.
+	- RPM building did not work properly when --output-dir
+	  was specified using an absolute path.
+	- Made cosmetic changes to the setup/uninstall GUIs.
+	- The setup GUI did not support software patches.
+	- The documentation incorrectly specified runlevels()
+	  instead of runlevel().
+	- The portable distributions incorrectly used
+	  /usr/local/src/rc.d as a fallback location for init
+	  scripts.
+
+
+CHANGES IN EPM 3.6
+
+	- Added a GUI uninstall program to be distributed with
+	  portable distributions with a setup image.
+	- MacOS X portable packages now support graphical setup
+	  and uninstall using the Apple authorization API. 
+	- Debian packages did not include the (required)
+	  trailing period when running the update-rc.d script.
+	- BSD packages now create directories using postinstall
+	  commands instead of listing them directly.  This
+	  should eliminate errors from the FreeBSD pkg_delete
+	  command.
+	- File dependencies were incorrectly specified in RPM
+	  spec files.
+	- IRIX portable distributions didn't write the chkconfig
+	  commands properly.
+	- The mkepmlist utility didn't support files as well as
+	  directories.
+	- EPM didn't do variable expansion of imported files
+	  ("<foo.txt") or in-line data ("<<FOO")
+	- Now build gzip'd depot files as well as the tar.gz
+	  files when creating HP-UX software packages.
+	- Now correctly use --libdir setting to locate the setup
+	  GUI.
+	- Now use rpmbuild command, if available, to build RPM
+	  files since newer versions of RPM may not map the
+	  "-bb" option to build a package.
+	- Now set the RPMDIR environment variable when building
+	  with older versions of RPM that don't understand the
+	  "topdir_" variable.
+	- Now handle dependencies of the form "package >=
+	  version" in Debian packages.
+	- Portable distributions that didn't have any files in
+	  /usr or in / would look for a non-existent .sw or .ss
+	  file.
+	- EPM's sample list file didn't include the man pages
+	  for setup or setup.types, and installed the epm list
+	  file format man page in the wrong directories.
+	- EPM would quote the ":" character in filenames but
+	  didn't need to.
+	- EPM tried to move the wrong RPM file on non-intel
+	  systems.
+
+
+CHANGES IN EPM 3.5.1
+
+	- OSX packages did not set the "install as root" package
+	  type, so package installation usually failed.
+	- OSX packages installed init scripts in
+	  /System/Library/StartupItems, but non-Apple packages
+	  should be installed in /Library/StartupItems.
+	- Added support for "requires(foo)", "uses(foo)",
+	  "provides(foo)", and "order(foo)" as options for init
+	  scripts. These options are currently only used when
+	  creating OSX packages.
+
+
+CHANGES IN EPM 3.5
+
+	- Added support for MacOS X package generation.
+	- No longer need/use RPMDIR when building RPMs, just
+	  set the "topdir_" variable in the spec file.
+	- The portable removal scripts didn't correctly write
+	  the list of init scripts to remove.
+	- Added a new --output-dir option contributed by
+	  Geoffrey Wossum.
+	- Not all implementations of the "id" command support
+	  the "-u" option, so EPM now looks at the default
+	  output.
+	- RPM dependencies with a single version number didn't
+	  get written to the spec file properly.
+	- Added support for file options - nostrip(),
+	  runlevel(12345), start(nn), and stop(nn).
+	- Filenames can now contain spaces, either by putting
+	  the full name in quotes ("file with spaces") or using
+	  the backslash character (file\ with\ spaces).
+	- The mkepmlist utility didn't handle symlinks properly.
+	- BSD packages needed to list the directories to remove
+	  separately and in reverse order.
+
+
+CHANGES IN EPM 3.4
+
+	- No longer install init scripts in run levels 2 and 5
+	  under Solaris, which runs all init scripts in each run
+	  level.
+	- The tar files produced by EPM didn't conform to the
+	  POSIX 1003.1 spec.  EPM now puts the POSIX version
+	  number (00) and supports "long" filenames up to
+	  255 characters in length.
+	- AIX packages did not use the correct path for files
+	  placed in the root partition.
+	- Now install init scripts for *BSD in
+	  /usr/local/etc/rc.d.
+	- Portable installation scripts now issue chown and
+	  chgrp commands for all installed files that are not
+	  owned by user root.
+	- No longer use or pad empty tar files, which saves 5k
+	  of disk space per distribution.
+
+
+CHANGES IN EPM 3.3
+
+	- UnixWare 7 needs the absolute path when transferring
+	  an AT&T package directory to a .pkg file.
+	- Now use the "id" command (POSIX) instead of "whoami"
+	  (BSD) to check that the installing user is root.
+	- Various fixes for OpenServer.
+	- Now use the "-ln" option when checking for the size
+	  of the distribution files in portable distributions.
+	- New C implementation of mkepmlist, based on a
+	  contribution from Andreas Voegele.
+	- The portable install and patch scripts now change the
+	  permissions of the installed "remove" script to 544.
+	- The wildcard character * did not match 0 characters if
+	  the pattern and the filename string differed only by
+	  the trailing * (e.g. "Courier" and "Courier*").
+	- IRIX pre/postremove scripts are now copied after
+	  installation so that they can be executed when
+	  removing the inst/tardist package.
+	- HP-UX postinstall/preremove scripts would execute init
+	  scripts from /sbin/init.d/sbin/init.d.
+	- The copyright string wasn't being quoted in portable
+	  installation scripts.
+	- EPM now checks to see if an executable file is a shell
+	  script before running the "strip" command.
+
+
+CHANGES IN EPM 3.2.1
+
+	- The check for Darwin (MacOS X) in the portable
+	  installation scripts was using "==" instead of just
+	  "=".
+
+
+CHANGES IN EPM 3.2
+
+	- Added "SHELL=/bin/sh" line to portable installation,
+	  patch, and remove scripts in case the root shell is
+	  not /bin/sh or a compatible shell.
+	- The epminstall utility didn't support the EPMLIST
+	  environment variable as documented.
+	- The "native" distribution format is now "deb" if
+	  the "dpkg" command is installed in /usr/bin.
+	- Debian packages did not use the release number in
+	  the Version: keyword.
+	- Changed the portable installation script support
+	  for init scripts to look for scripts in both rc2.d
+	  and rc3.d, and to check for the existence of all
+	  rc directories before installing into them.
+	- Changed the portable installation script to prepend
+	  /bin, /usr/bin, and /usr/ucb to the beginning of the
+	  PATH variable so the "tar", "rm", and "mv" commands
+	  can be found in whatever directory the local system
+	  uses.
+	- AIX packaging now works.
+	- Added support for the Darwin (MacOS X) tar command
+	  in portable packages (sudo ./foo.install :)
+	- IRIX inst packages incorrectly had the postinstall commands
+	  in the preinstall and removal scripts.
+	- The setup GUI now requires FLTK 1.1.x.
+
+
+CHANGES IN EPM 3.1
+
+	- Added support for "<<end ... end" and "<filename" to
+	  insert descriptions and commands in-line and from a
+	  file.
+	- Added new --software-dir option which specifies the
+	  location of the EPM software directory (default
+	  /etc/software).
+	- Added new %if, %ifdef, %elseif, %elseifdef, %else, and
+	  %endif directives for list files (addition contributed
+	  by J. Nordell.)
+	- The GUI setup program left the "Next" button enabled
+	  after the license check.
+	- Fixed the dependency strings created for HP-UX
+	  swinstall (fix contributed by R. Begg.)
+	- Wasn't installing the man pages in section 5.
+	- When generating Debian packages, the DEBIAN directory
+	  might not have the correct permissions due to a
+	  restrictive umask.  EPM now forces the correct
+	  permissions for the package archive.
+	- HP-UX swinstall packages now use the prerequisites
+	  rule instead of corequisites to ensure that the
+	  %requires dependency is enforced.
+	- Dependencies for Debian packages are now listed on a
+	  single line per type rather than one line per
+	  dependency.
+	- EPM now detects RPM 4.0.3, which (mysteriously) now
+	  uses "--target arch" instead of "--target=arch".
+
+
+CHANGES IN EPM 3.0
+
+	- Added new documentation.
+	- Added new "-a arch" option to support specific
+	  architectures (e.g. i586, i686, ultrasparc, etc.)
+	- Added support for the *BSD package format using
+	  pkg_create.
+	- Added support for the AIX package format using
+	  the backup program.
+	- Added new epminstall utility to build list files
+	  from "make install" targets.
+	- Added snprintf/vsnprintf functions for systems that
+	  don't provide them, and use snprintf and vsnprintf
+	  for all formatted strings that aren't just numbers.
+	- Added new run_command() function to replace use of
+	  system() function.
+	- Added new %provides directive.
+	- Revamped the setup GUI, including support for
+	  installation types in the setup GUI, so that you can
+	  select groups of products or choose a custom
+	  installation.
+	- The mkepmlist utility had a bad regular expression
+	  that thought that any argument (directory names, etc.)
+	  with a dash ("-") in it was an unsupported option.
+	- Fixed a bug in the removal script: config files were
+	  removed by the remove script...
+	- Changed the config file install logic to copy the new
+	  config file (instead of moving it), so that an
+	  unchanged config file can be detected and removed.
+	  This provides the best of both worlds: unchanged
+	  config files are update automatically by an
+	  upgrade/install, while changed ones are preserved.
+
+
+CHANGES IN EPM 2.8
+
+	- The line breaking code did not include an extra
+	  space, so filenames in the portable install/patch/
+	  remove scripts would be joined instead of separated.
+	- The setup GUI did not allow the user to toggle a
+	  software product for distribution if the product was
+	  selected (nav box around it).
+	- The mkepmlist program didn't get the permissions of
+	  each file (just the parent directory.)
+	- The portable installation scripts used the -L or -h
+	  option to test for symlinks with the test command. The
+	  choice of option was based on the build platform,
+	  making the script non-portable. Now use -h exclusively
+	  since it is supported on all UNIX's we have access to,
+	  even with GNU test even though it isn't documented...
+
+
+CHANGES IN EPM 2.7
+
+	- Fixed a bug in the configuration script with the
+	  --with-fltk-includes option.
+	- Tru64 UNIX distributions now use the name "tru64"
+	  instead of "dunix".  "dunix" is still supported
+	  in list files for compatibility with old list files.
+	- Added support for portable scripts under AIX.
+	- Fixed the space checking code in portable installation
+	  scripts.
+	- Now break up long lines in the portable install/patch/
+	  remove scripts.
+
+
+CHANGES IN EPM 2.6
+
+	- Changed the automatic version number generation code to
+	  properly handle patch, beta, and pre releases.
+	- Added support for release numbers in RPM files.
+	- Added support for version number ranges in dependencies,
+	  either as "low-version high-version", "< version", or
+	  "> version".
+	- Eliminated some GCC warnings about using a char to
+	  index into an array.
+	- Added a disk space check to the portable installation
+	  scripts.
+	- Added a new mkepmlist utility, based on a Perl script
+	  by Christian Lademann.
+	- Added a "keep files" option (-k) to epm to keep the
+	  intermediate (spec, etc.) files around after building
+	  the binary distribution.
+	- Added support for Tru64 UNIX software packages (setld).
+	- Patch distributions were incorrectly backing up the
+	  original files, causing the original backup to be lost.
+	- Pre/post install/remove scripts were not using the
+	  right filename for Solaris PKG distributions.	
+  
+
+CHANGES IN EPM 2.5
+
+	- Added support for pre-install, post-install, pre-patch,
+	  post-patch, pre-remove, and post-remove commands.
+	- There was no way to use a literal $ in scripts or in
+	  filenames.  Use $$ to include a single $.
+	- The config and license file support for AT&T software
+	  packages did not check to see if the source file had
+	  an absolute path.  This would produce an invalid
+	  prototype file.
+	- The RPM --target option was not being called with an
+	  equal sign, which caused problems with RPM 4.0.
+	- Updated the Debian packager to use the prerm and postrm
+	  script names to match reality.
+	- Updated the Debian packager to support the Replaces
+	  dependency.
+	- Updated the portable and RPM distributions to check
+	  for the new SuSE 7.1 init.d directories.
+	- RPM distributions now use %config(noreplace) for
+	  config files, to duplicate the behavior that is
+	  expected.
+	- The portable scripts now use the autoconf echo test to
+	  determine the proper options for echo (-n or \c),
+	  rather then hardcoding this based on the build system.
+
+
+CHANGES IN EPM 2.4
+
+	- The [] wildcard matching did not skip over the
+	  character that was matched.  This prevented matches in
+	  most cases...
+
+
+CHANGES IN EPM 2.3
+
+	- Fix for an incredibly stupid bug in the portable
+	  distribution code - was using ! instead of ~ to mask
+	  off the write permission bits in the distribution
+	  archive.
+	- Now use getpwuid() instead of getlogin() to get the
+	  username of the packager.
+	- The RPM distributions now use the same init.d script
+	  logic as portable distributions. This should make them
+	  portable to all known Linux distributions as well as
+	  avoid a *very* nasty installer bug in RedHat 7.0.
+	- The HP-UX swinstall code did not properly handle
+	  directories or config files.
+	- The [] wildcard matching rule did not accept ranges
+          (e.g. "[a-z]", "[0-9]", etc.)
+	- Added VPATH support and distribution targets to
+	  Makefile.
+	- Added support for defining variables in list files;
+	  the format is "$name=value".
+	- The variable expansion code didn't check for ${name}.
+
+
+CHANGES IN EPM 2.2
+
+	- New HTML documentation files.
+	- Updated the BuildRoot directive in RPM spec files to
+	  be an absolute path; RedHat 6.2's version of RPM adds
+	  a leading slash otherwise.
+	- IRIX defaults to run level 2...
+	- The setup GUI now displays an error message if run by
+	  a non-root user.
+	- The setup GUI now provides "Install All" and "Install
+	  None" buttons in the software selection pane.
+	- Added a "native" distribution format to select the
+	  native format for a particular OS (Linux defaults to
+	  RPM format...)
+	- The tar file generation code now always appends at
+	  least 2 zeroed blocks to the end of the archive.  This
+	  eliminates error messages from Solaris tar and seems
+	  to be compatible with all other tar programs.
+	- Added the SuSE RPM directory to the standard search
+	  path.
+	- Added support for a new %packager directive.
+	- The strip command used was redirecting stderr before
+	  redirecting stdout.
+	- The portable distributions now set the umask to avoid
+	  problems with buggy tar programs and Linux
+	  distributions.
+	- Added command-line option to specify the location of
+	  the setup program.
+	- Added support for wildcards in source filenames.
+	- The OS version number is now truncated to only contain
+	  the major and minor release numbers.
+
+
+CHANGES IN EPM 2.1
+
+	- Moved setup program to /usr/lib/epm ($prefix/lib/epm)
+	  to avoid name clash with RedHat setup program.
+	- Added Debian distribution files from Jeff Licquia.
+	- Configure script changes for GCC 2.95.x and Solaris.
+	- Portability fixes.
+	- Now look for RPMS in different "standard" locations
+	  after building them; the RPMDIR environment variable
+	  can be used to override the default locations.
+	- The sample project list file (epm.list) was missing
+	  from the 2.0 distribution.
+	- Now check for write permission in /usr by writing a
+	  test file (/usr/.writetest); this should make diskless
+	  client installations more reliable.
+	- Added support for variables on the command line
+	  (name=value); insert into project filenames using
+	  $name.
+	- Variable expansion is now done on all lines and fields.
+	  This allows variables to be used in scripts and in the
+	  permissions field, for example.
+	- Now only specify run levels 0 and 3 for init scripts
+	  (0, 3, and 5 for Linux.)
+	- Now support init scripts in /sbin/init.d and
+	  /sbin/init.d/rcN.d (SuSE.)
+	- RPM distributions should now work OK for non-Red Hat
+	  based systems, in particular for init scripts.
+	- PKG distributions are now also generated in the
+	  "package stream" format as well as the directory and
+	  tar.gz file formats.
+
+
+CHANGES IN EPM 2.0
+
+	- New "-f" option to generate vendor-specific software
+	  distributions.  Now support AT&T, Debian, HP-UX, IRIX,
+	  and Red Hat software distributions.
+	- New "-s" option to include the ESP Software Wizard (GUI)
+	  with portable distributions.
+	- The "-t" option (test) is no longer supported.
+	- New "-v" option to control the amount of information
+	  that is reported.
+	- New graphical setup program for portable distributions.
+	- New "description" directive.
+	- New "format" directive.
+	- New "include" directive.
+	- New "replaces" directive.
+	- Portable distributions should now be more portable.
+
+
+CHANGES IN EPM 1.7
+
+	- The %requires and %incompat directives now support
+	  specification of files as well as products.
+	- The init script installation code now creates a link in the
+	  init.d subdirectory to avoid frustrating well-trained
+	  fingers.
+	- The progress messages for shared and non-shared software were
+	  the same.
+
+
+CHANGES IN EPM 1.6
+
+	- Installation archives were missing the ".ss" and ".pss"
+	  files that were added to support diskless installations.
+	- The scripts didn't handle removing distributions that
+	  had no non-shared components.
+	- The scripts didn't return a non-zero exit status if the
+	  user did not agree with the license or want to install.
+
+
+CHANGES IN EPM 1.5
+
+	- Now support diskless installations; all files destined for
+	  /usr are put in a separate archive and are installed (or
+	  removed) only if /usr is read+write.
+
+CHANGES IN EPM 1.4
+
+	- Now map group "sys" to "system" for Digital UNIX and "root" for
+	  Linux.
+	- The initialization script installation now checks for the presence
+	  of run levels 4 and 5.
+
+
+CHANGES IN EPM 1.3
+
+	- Now use the "p" option to tar to ensure that file permissions
+	  are created properly.  This is normally the default for the
+	  super-user, but not under Digital UNIX!
+	- Initialization scripts are now linked to run levels 0, 2, 3, 4,
+	  and 5.
+
+
+CHANGES IN EPM 1.2
+
+	- Patch distributions were not correctly named.
+	- Added new "initialization script" file types "i" and "I". The
+	  new file types place the scripts in /etc/software/init.d and
+	  make links to the appropriate system-specific rc.d
+	  directories and run the scripts to start and stop things
+	  accordingly.
+
+
+CHANGES IN EPM 1.1
+
+	- The "whoami" command isn't always in the user's path, so
+	  scripts now use a hard-coded path (setup by the configure
+	  script) to the program.
+	- Added a check for IRIX64 (64-bit kernel instead of n32.)
+	- The %system directive now supports release numbers, e.g.
+	  "irix-6.5".
+	- The %system directive now supports "!" (not) operator so you
+	  can do things like "%system irix !irix-6.5" to select any
+	  IRIX release except IRIX 6.5.
+	- Files that already exist on the system are renamed to
+	  "filename.O" on installation and back to "filename" when
+	  removed (except for config files, which don't overwrite and
+	  aren't removed.)
+	- Prerequisites (%required directive) now look for required
+	  product in the current directory and install it automatically
+	  if it is available and not already installed.
+	- The copyright notice in the installation script was not
+	  displayed if the user used the "now" option.

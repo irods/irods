@@ -1,0 +1,323 @@
+<HTML>
+<BODY>
+
+<H1 ALIGN="RIGHT"><A NAME="INTRO">1 - Introduction to EPM</A></H1>
+
+<P>This chapter provides an introduction to the ESP Package Manager ("EPM").
+
+<H2>What is EPM?</H2>
+
+<P>Software distribution under UNIX/Linux can be a challenge,
+especially if you ship software for more than one operating
+system. Every operating system provides its own software
+packaging tools and each has unique requirements or implications
+for the software development environment.</P>
+
+<P>The ESP Package Manager ("EPM") is one solution to this
+problem. Besides its own "portable" distribution format, EPM
+also supports the generation of several vendor-specific formats.
+This allows you to build software distribution files for almost
+any operating system from the same sources.</P>
+
+<H2>History and Evolution</H2>
+
+<P>When Easy Software Products was founded in 1993, we
+originally shipped software only for the SGI IRIX operating
+system. In 1997 we added support for Solaris, which was quickly
+followed by HP-UX support in 1998.</P>
+
+<P>Each new operating system and supported processor required a
+new set of packaging files. While this worked, it also meant
+that we had to keep all of the packaging files synchronized
+manually. Needless to say, this process was far from perfect and
+we had more than one distribution that was not identical on all
+operating systems.</P>
+
+<P>As we began developing CUPS
+(<A HREF="http://www.cups.org/">http://www.cups.org/</A>) in
+1997, our initial goal was to add support for two additional
+operating systems: Linux and Compaq Tru64 UNIX. If we wanted to
+avoid the mistakes of the past, we clearly had to change how we
+produced software distributions.</P>
+
+<P>The first version of EPM was released in 1999 and supported
+so-called "portable" software distributions that were not tied
+to any particular operating system or packaging software. Due to
+popular demand, we added support for vendor-specific packaging
+formats in the second major release of EPM, allowing the
+generation of portable or "native" distributions from one
+program and one set of software distribution files.
+
+<H2>Existing Software Packaging Systems</H2>
+
+<P>As we looked for a solution to our problem, we naturally
+investigated the existing open-source packaging systems. Under
+Linux, we looked at the Red Hat Package Manager ("RPM") and
+Debian packaging software ("dpkg" and "dselect"). For the
+commercial UNIX's we looked at the vendor-supplied packaging
+systems. <A HREF="#TABLE_1_1">Table 1.1</A> shows the results of
+our investigation.</P>
+
+<!-- NEED 5in -->
+<TABLE ALIGN="CENTER" BORDER="1">
+<CAPTION><A NAME="TABLE_1_1">Table 1.1: Software Packaging Formats</A></CAPTION>
+<TR>
+	<TH><FONT SIZE="-4">Format</FONT></TH>
+	<TH><FONT SIZE="-4">Operating Systems<SUP>1</SUP></FONT></TH>
+	<TH><FONT SIZE="-4">Binaries</FONT></TH>
+	<TH><FONT SIZE="-4">Cross- Platform</FONT></TH>
+	<TH><FONT SIZE="-4">Patches</FONT></TH>
+	<TH><FONT SIZE="-4">Up- grades</FONT></TH>
+	<TH><FONT SIZE="-4">Con- flicts</FONT></TH>
+	<TH><FONT SIZE="-4">Re- quires</FONT></TH>
+	<TH><FONT SIZE="-4">Re- places</FONT></TH>
+	<TH><FONT SIZE="-4">Config Files</FONT></TH>
+	<TH><FONT SIZE="-4">Map Files</FONT></TH>
+	<TH><FONT SIZE="-4">Un- install</FONT></TH>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>installp</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>AIX</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>pkg_add</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>FreeBSD</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes<SUP>2</SUP></SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>pkg_add</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>NetBSD<BR>
+	OpenBSD</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes<SUP>2</SUP></SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>dpkg</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Corel Linux<BR>
+	Debian GNU/Linux</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes<SUP>2</SUP></SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>depot</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>HP-UX</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>inst</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>IRIX</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>Install.app</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>MacOS X</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>pkgadd</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Solaris</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>rpm</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Mandrake<BR>
+	Red Hat<BR>
+	SuSE<BR>
+	TurboLinux</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes<SUP>2</SUP></SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>setld</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Tru64 UNIX</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER"><SMALL>slackware</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Slackware Linux</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>No</SMALL></TD>
+	<TD ALIGN="CENTER"><SMALL>Yes</SMALL></TD>
+</TR>
+</TABLE>
+
+<OL>
+
+	<LI>Standard packaging system for named operating systems.</LI>
+
+	<LI>These packaging systems are cross-platform but require
+	the package management utilities to be installed on the
+	platform before installing the package.</LI>
+
+</OL>
+
+<P>&nbsp;</P>
+
+<P>As you can see, none of the formats supported every feature we
+were looking for. One common fault of all these formats is that
+they do not support a common software specification file format.
+That is, making a Debian software distribution requires
+significantly different support files than required for a Solaris
+pkg distribution. This makes it extremely difficult to manage
+distributions for multiple operating systems.</P>
+
+<P>All of the package formats support binary distributions. The
+RPM and Debian formats also support source distributions that
+specifically allow for recompilation and installation. Only the
+commercial UNIX formats support patch distributions - you have
+to completely upgrade a software package with RPM and Debian.
+All but the Solaris <CODE>pkg</CODE> format allow you to upgrade
+a package without removing the old version first.</P>
+
+<P>When building the software packages, RPM and Debian force you
+to create the actual directories, copy the files to those
+directories, and set the ownerships and permissions. You
+essentially are creating a directory for your software that can
+be archived in the corresponding package format. To ensure that
+all file permissions and ownerships are correct, you must build
+the distribution as the root user or use the
+<CODE>fakeroot</CODE> software, introducing potential security
+risks and violating many corporate security policies. It can also
+make building distributions difficult when dynamic data such as
+changing data files or databases is involved.</P>
+
+<P>The commercial UNIX formats use software list files that map
+source files to the correct directories and permissions.
+This allows for easier delivery of dynamic data, configuration
+management of what each distribution actually contains, and
+eliminates security issues with special permissions and building
+distributions as the root user. Using the proprietary format
+also has the added benefit of allowing for software patches and
+using the familiar software installation tools for that
+operating system. The primary disadvantage is that the same
+distributions and packaging software cannot be used on other
+operating systems.</P>
+
+<H2>Design Goals of EPM</H2>
+
+<P>EPM was designed from the beginning to build binary software
+distributions using a common software specification format. The
+same distribution files work for all operating systems and all
+distribution formats. Supporting source code distributions was
+not a goal since most RPM and Debian source distributions are
+little more than wrapping around a compressed tar file
+containing the source files and a configure script.</P>
+
+<P>Over the years, additional features have made their way into
+EPM to support more advanced software packages. Whenever
+possible, EPM emulates a feature if the vendor package format
+does not support it natively.</P>
+
+<H2>Resources</H2>
+
+<P>The EPM web site provides access to the current software, documentation,
+and discussion forums for EPM:</P>
+
+<PRE>
+    <A HREF="http://www.epmhome.org/">http://www.epmhome.org/</A>
+</PRE>
+
+<P>The EPM source code can be downloaded in compressed tar files or
+via the popular Subversion software. Please see the EPM web site for
+complete instructions.</P>
+
+<P>Send book feedback to
+"<A HREF="mailto:epm-book@easysw.com">epm-book@easysw.com</A>".</P>
+
+</BODY>
+</HTML>

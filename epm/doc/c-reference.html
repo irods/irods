@@ -1,0 +1,455 @@
+<HTML>
+<BODY>
+
+<H1 ALIGN="RIGHT"><A NAME="REFERENCE">C - List File Reference</A></H1>
+
+<P>This appendix provides a complete reference for the EPM list file
+and setup types formats.</P>
+
+<H2>The EPM List File Format</H2>
+
+<P>Each <I>EPM</I> product has an associated list file that
+describes the files to include with the product. Comment lines
+begin with the "#" character and are ignored. All other
+non-blank lines must begin with a letter, dollar sign ("$"), or
+the percent sign ("%").</P>
+
+<!-- NEED 3in -->
+<H3>List File Directives</H3>
+
+<P>The following list describes all of the list file directives
+supported by <I>EPM</I>:</P>
+
+<DL><DD><DL>
+
+	<DT>$name=value
+	<BR>&nbsp;</DT>
+
+	<DD>Sets the named variable to <I>value</I>.
+	<B>Note:</B> Variables set in the list file are
+	overridden by variables specified on the command-line or
+	in the current environment.
+	<BR>&nbsp;</DD>
+
+	<!-- NEED 2in -->
+	<DT>%copyright <I>copyright notice</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Sets the copyright notice for the file.
+	<BR>&nbsp;</DD>
+
+	<DT>%description <I>description text</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Adds a line of descriptive text to the distribution.
+	Multiple lines are supported.
+	<BR>&nbsp;</DD>
+
+	<DT>%format <I>format [... format]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Uses following files and directives only if the
+	distribution format is the same as <I>format</I>.
+	<BR>&nbsp;</DD>
+
+	<DT>%format !<I>format [... format]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Uses following files and directives only if the
+	distribution format is not the same as
+	<I>format</I>.
+	<BR>&nbsp;</DD>
+
+	<DT>%include <I>filename</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Includes files listed in <I>filename</I>.
+	<BR>&nbsp;</DD>
+
+	<DT>%incompat <I>product</I>
+	<DT>%incompat <I>filename</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Indicates that this product is incompatible with the
+	named product or file.
+	<BR>&nbsp;</DD>
+
+	<DT>%if <I>variable [... variable]</I><BR>
+	%if !<I>variable [... variable]</I><BR>
+	%ifdef <I>variable [... variable]</I><BR>
+	%ifdef !<I>variable [... variable]</I><BR>
+	%elseif <I>variable [... variable]</I><BR>
+	%elseif !<I>variable [... variable]</I><BR>
+	%elseifdef <I>variable [... variable]</I><BR>
+	%elseifdef !<I>variable [... variable]</I><BR>
+	%else<BR>
+	%endif
+	<BR>&nbsp;</DT>
+
+	<DD>Conditionally includes lines in the list file. The
+	<I>%if</I> lines include the lines that follow if the
+	named variables are (not) defined with a value. The
+	<I>%ifdef</I> lines include the lines that follow if the
+	named variables are (not) defined with any value. These
+	conditional lines cannot be nested.
+	<BR>&nbsp;</DD>
+
+	<DT>%install <I>script or program</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run after all
+	files are installed. (This has been obsoleted by the
+	%postinstall directive)
+	<BR>&nbsp;</DD>
+
+	<DT>%license <I>license file</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies the file to display as the software
+	license.
+	<BR>&nbsp;</DD>
+
+	<DT>%packager <I>name of packager</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies the name of the packager.
+	<BR>&nbsp;</DD>
+
+	<DT>%patch <I>script or program</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run after all
+	files are patched. (This has been obsoleted by the
+	%postpatch directive)
+	<BR>&nbsp;</DD>
+
+	<!-- NEED 2in -->
+	<DT>%postinstall <I>script or program</I><BR>
+	%postinstall &lt;<I>scriptfile</I><BR>
+	%postinstall &lt;&lt;<I>string</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run after all
+	files are installed.
+	<BR>&nbsp;</DD>
+
+	<DT>%postpatch <I>script or program</I><BR>
+	%postpatch &lt;<I>scriptfile</I><BR>
+	%postpatch &lt;&lt;<I>string</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run after all
+	files are patched.
+	<BR>&nbsp;</DD>
+
+	<DT>%postremove <I>script or program</I><BR>
+	%postremove &lt;<I>scriptfile</I><BR>
+	%postremove &lt;&lt;<I>string</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run after removing files.
+	<BR>&nbsp;</DD>
+
+	<DT>%preinstall <I>script or program</I><BR>
+	%preinstall &lt;<I>scriptfile</I><BR>
+	%preinstall &lt;&lt;<I>string</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run before all
+	files are installed.
+	<BR>&nbsp;</DD>
+
+	<DT>%prepatch <I>script or program</I><BR>
+	%prepatch &lt;<I>scriptfile</I><BR>
+	%prepatch &lt;&lt;<I>string</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run before all
+	files are patched.
+	<BR>&nbsp;</DD>
+
+	<DT>%preremove <I>script or program</I><BR>
+	%preremove &lt;<I>scriptfile</I><BR>
+	%preremove &lt;&lt;<I>string</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run before removing files.
+	<BR>&nbsp;</DD>
+
+	<DT>%product <I>product name</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies the product name.
+	<BR>&nbsp;</DD>
+
+	<!-- NEED 2in -->
+	<DT>%provides <I>product name</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Indicates that this product provides the named dependency.
+	<BR>&nbsp;</DD>
+
+	<DT>%readme <I>readme file</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a README file to be included in the distribution.
+	<BR>&nbsp;</DD>
+
+	<DT>%remove <I>script or program</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a script or program to be run before removing files.
+	(This has been obsoleted by the %preremove directive)
+	<BR>&nbsp;</DD>
+
+	<DT>%release <I>number</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies the release or build number of a product
+	(defaults to 0).
+	<BR>&nbsp;</DD>
+
+	<DT>%replaces <I>product</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Indicates that this product replaces the named product.
+	<BR>&nbsp;</DD>
+
+	<DT>%requires <I>product</I>
+	<DT>%requires <I>filename</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Indicates that this product requires the named product or file.
+	<BR>&nbsp;</DD>
+
+	<DT>%system <I>system[-release] [... system[-release]]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies that the following files should only be
+	used for the specified operating systems and
+	releases.
+	<BR>&nbsp;</DD>
+
+	<DT>%system !<I>system[-release] [... system[-release]]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies that the following files should not be
+	used for the specified operating systems and
+	releases.
+	<BR>&nbsp;</DD>
+
+	<DT>%system all
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies that the following files are applicable to
+	all operating systems.
+	<BR>&nbsp;</DD>
+
+	<DT>%vendor <I>vendor or author name</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies the vendor or author of the product.
+	<BR>&nbsp;</DD>
+
+	<!-- NEED 2in -->
+	<DT>%version <I>version number</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies the version number of the product.
+	<BR>&nbsp;</DD>
+
+	<DT>c <I>mode user group destination source</I>
+	<DT>C <I>mode user group destination source</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a configuration file for installation. The
+	second form specifies that the file has changed or is
+	new and should be included as part of a patch.
+	Configuration files are installed as "destination.N" if
+	the destination already exists.
+	<BR>&nbsp;</DD>
+
+	<DT>d <I>mode user group destination -</I>
+	<DT>D <I>mode user group destination -</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a directory should be created when
+	installing the software. The second form specifies that
+	the directory is new and should be included as part of a
+	patch.
+	<BR>&nbsp;</DD>
+
+	<!-- NEED 2in -->
+	<DT>f <I>mode user group destination source [nostrip()]</I>
+	<DT>F <I>mode user group destination source [nostrip()]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a file for installation. The second form
+	specifies that the file has changed or is new and should
+	be included as part of a patch. If the "nostrip()"
+	option is included, the file will not be stripped before
+	the installation is created.
+	<BR>&nbsp;</DD>
+
+	<DT>f <I>mode user group destination source/pattern [nostrip()]</I>
+	<DT>F <I>mode user group destination source/pattern [nostrip()]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies one or more files for installation using
+	shell wildcard patterns. The second form specifies that
+	the files have changed or are new and should be included
+	as part of a patch. If the "nostrip()" option is
+	included, the file will not be stripped before the
+	installation is created.
+	<BR>&nbsp;</DD>
+
+	<DT>i <I>mode user group service-name source ["options"]</I>
+	<DT>I <I>mode user group service-name source ["options"]</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies an initialization script for installation.
+	The second form specifies that the file has changed or
+	is new and should be included as part of a patch.
+	Initialization scripts are stored in
+	<VAR>/etc/software/init.d</VAR> and are linked to the
+	appropriate system-specific directories for run levels
+	0, 2, 3, and 5. Initialization scripts <B>must</B>
+	accept at least the <I>start</I> and <I>stop</I>
+	commands. The optional <I>options</I> following the
+	source filename can be any of the following:
+	<BR>&nbsp;
+	
+	<DL>
+
+		<DT>order(<I>string</I>)</DT>
+
+		<DD>Specifies the relative startup order
+		compared to the required and used system
+		functions. Supported values include First,
+		Early, None, Late, and Last (OSX only).</DD>
+
+		<DT>provides(<I>name(s)</I>)</DT>
+
+		<DD>Specifies names of system functions that are
+		provided by this startup item (OSX only).</DD>
+
+		<!-- NEED 3 --><DT>requires(<I>name(s)</I>)</DT>
+
+		<DD>Specifies names of system functions that are
+		required by this startup item (OSX only).</DD>
+
+		<DT>runlevels(<I>levels</I>)</DT>
+
+		<DD>Specifies the run levels to use.</DD>
+
+		<DT>start(<I>number</I>)</DT>
+
+		<DD>Specifies the starting sequence number from
+		00 to 99.</DD>
+
+		<DT>stop(<I>number</I>)</DT>
+
+		<DD>Specifies the ending sequence number from 00
+		to 99.</DD>
+
+		<DT>uses(<I>name(s)</I>)</DT>
+
+		<DD>Specifies names of system functions that are
+		used by this startup item (OSX only).</DD>
+
+	</DL>
+	<BR>&nbsp;</DD>
+
+	<!-- NEED 2in -->
+	<DT>l <I>mode user group destination source</I>
+	<DT>L <I>mode user group destination source</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies a symbolic link in the installation. The
+	second form specifies that the link has changed or is
+	new and should be included as part of a patch.
+	<BR>&nbsp;</DD>
+
+	<DT>R <I>mode user group destination</I>
+	<BR>&nbsp;</DT>
+
+	<DD>Specifies that the file is to be removed upon
+	patching.  The <I>user</I> and <I>group</I> fields are
+	ignored.  The <I>mode</I> field is only used to
+	determine if a check should be made for a previous
+	version of the file.
+	<BR>&nbsp;</DD>
+
+</DL></DD></DL>
+
+<!-- NEED 3in -->
+<H3>List Variables</H3>
+
+<P><I>EPM</I> maintains a list of variables and their values
+which can be used to substitute values in the list file. These
+variables are imported from the current environment and taken
+from the command-line and list file as provided. Substitutions
+occur when the variable name is referenced with the dollar sign
+($):</P>
+
+<PRE>
+    %postinstall &lt;&lt;EOF
+    echo What is your name:
+    read $$name
+    echo Your name is $$name
+    EOF
+
+    f 0555 root sys ${bindir}/foo foo
+    f 0555 root sys $datadir/foo/foo.dat foo.dat
+</PRE>
+
+<P>Variable names can be surrounded by curly brackets (${name})
+or alone ($name); without brackets the name is terminated by the
+first slash (/), dash (-), or whitespace. The dollar sign can be
+inserted using $$.</P>
+
+<!-- NEED 5in -->
+<H2><A NAME="SETUPTYPES">The setup.types File</A></H2>
+
+<P>The EPM <B>setup</B> program normally presents the user with
+a list of software products to install, which is called a
+"custom" software installation.</P>
+
+<P>If a file called <I>setup.types</I> is present in the package
+directory, the user will instead be presented with a list of
+installation types. Each type has an associated product list
+which determines the products that are installed by default. If
+a type has no products associated with it, then it is treated as
+a custom installation and the user is presented with a list of
+packages to choose from.</P>
+
+<P>The <I>setup.types</I> file is an ASCII text file consisting
+of type and product lines. Comments can be inserted by starting
+a line with the pound sign (#). Each installation type is
+defined by a line starting with the word <CODE>TYPE</CODE>.
+Products are defined by a line starting with the word
+<CODE>INSTALL</CODE>:</P>
+
+<PRE>
+    # Pre-select the user packages
+    TYPE Typical End-User Configuration
+    INSTALL foo
+    INSTALL foo-help
+
+    # Pre-select the developer packages
+    TYPE Typical Developer Configuration
+    INSTALL foo
+    INSTALL foo-help
+    INSTALL foo-devel
+    INSTALL foo-examples
+
+    # Allow the user to select packages
+    TYPE Custom Configuration
+</PRE>
+
+<P>In the example above, three installation types are defined.
+Since the last type includes no products, the user will be
+presented with the full list of products to choose from.</P>
+
+</BODY>
+</HTML>

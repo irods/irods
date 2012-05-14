@@ -1,0 +1,615 @@
+<HTML>
+<BODY>
+
+<H1 ALIGN="RIGHT"><A NAME="ADVANCED">4 - Advanced Packaging with EPM</A></H1>
+
+<P>This chapter describes the advanced packaging features of EPM.</P>
+
+<H2>Including Other List Files</H2>
+
+<P>The <CODE>%include</CODE> directive includes another list
+file:</P>
+
+<PRE>
+    %include filename
+</PRE>
+
+<P>Includes can usually be nested up to 250 levels depending on
+the host operating system and libraries.</P>
+
+<H2>Dependencies</H2>
+
+<P>EPM supports four types of dependencies in list files:
+<CODE>%incompat</CODE>, <CODE>%provides</CODE>,
+<CODE>%replaces</CODE>, and <CODE>%requires</CODE>. <A
+HREF="#TABLE_4_1">Table 4.1</A> shows the level of support for
+each package format.</P>
+
+<!-- NEED 5in -->
+<CENTER><TABLE BORDER CELLPADDING="2">
+<CAPTION><A NAME="TABLE_4_1">Table 4.1: Dependency Support</A></CAPTION>
+<TR>
+	<TH>Format</TH>
+	<TH>%incompat</TH>
+	<TH>%provides</TH>
+	<TH>%replaces</TH>
+	<TH>%requires</TH>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">aix</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">bsd</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">deb</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes<SUP>1</SUP></TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">inst</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">osx</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">pkg</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">portable</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">rpm</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">setld</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">slackware</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">swinstall</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+</TABLE></CENTER>
+
+<OL>
+
+	<LI>Debian's package format does not currently support
+	version numbers for <CODE>%provides</CODE>
+	dependencies.</LI>
+
+</OL>
+
+<P>&nbsp;</P>
+
+<P>Software conflicts and requirements are specified using the
+<CODE>%incompat</CODE> and <CODE>%requires</CODE> directives.</P>
+
+<P>If your software replaces another package, you can specify
+that using the <CODE>%replaces</CODE> directive.
+<CODE>%replaces</CODE> is silently mapped to
+<CODE>%incompat</CODE> when the package format does not support
+package replacement.</P>
+
+<P>If your package provides certain functionality associated with
+a standard name, the <CODE>%provides</CODE> directive can be
+used.</P>
+
+<!-- NEED 1in -->
+<P>Dependencies are specified using the package name and optionally the
+lower and upper version numbers:
+
+<PRE>
+    %requires foobar
+    %requires foobar 1.0
+    %incompat foobar 0.9
+    %replaces foobar
+    %replaces foobar 1.2 3.4
+    %provides foobar
+</PRE>
+
+<P>or the filename:</P>
+
+<PRE>
+    %requires /usr/lib/libfoobar.so
+    %incompat /usr/lib/libfoobar.so.1.2
+</PRE>
+
+<P>Package dependencies are currently enforced only for the same
+package format, so a portable distribution that requires package
+"foobar" will only look for an installed "foobar" package in
+portable format.</P>
+
+
+<P>Filename dependencies are only supported by the Debian,
+portable, and RPM distribution formats.
+
+<H2>Scripts</H2>
+
+<P>Bourne shell script commands can be executed before or after
+installation, patching, or removal of the software. <A
+HREF="#TABLE_4_2">Table 4.2</A> shows the support for scripts in
+each package format.</P>
+
+<P>The <CODE>%preinstall</CODE> and <CODE>%postinstall</CODE>
+directives specify commands to be run before and after
+installation, respectively:</P>
+
+<PRE>
+    %preinstall echo Command before installing
+    %postinstall echo Command after installing
+</PRE>
+
+<P>Similarly, the <CODE>%prepatch</CODE> and <CODE>%postpatch</CODE>
+directives specify commands to be executed before and after patching
+the software:</P>
+
+<PRE>
+    %prepatch echo Command before patching
+    %postpatch echo Command after patching
+</PRE>
+
+<P>Finally, the <CODE>%preremove</CODE> and <CODE>%postremove</CODE>
+directives specify commands that are run before and after removal
+of the software:</P>
+
+<PRE>
+    %preremove echo Command before removing
+    %postremove echo Command after removing
+</PRE>
+
+<!-- NEED 3in -->
+<CENTER><TABLE ALIGN="CENTER" BORDER="1">
+<CAPTION><A NAME="TABLE_4_2">Table 4.2: Scripts Support</A></CAPTION>
+<TR>
+	<TH><SMALL>Format</SMALL></TH>
+	<TH><SMALL>%preinstall</SMALL></TH>
+	<TH><SMALL>%postinstall</SMALL></TH>
+	<TH><SMALL>%prepatch</SMALL></TH>
+	<TH><SMALL>%postpatch</SMALL></TH>
+	<TH><SMALL>%preremove</SMALL></TH>
+	<TH><SMALL>%postremove</SMALL></TH>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">aix</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">bsd</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">deb</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">inst</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">osx</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">pkg</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">portable</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">rpm</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">setld</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">slackware</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+</TR>
+<TR>
+	<TD ALIGN="CENTER">swinstall</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">No</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+	<TD ALIGN="CENTER">Yes</TD>
+</TR>
+</TABLE></CENTER>
+
+<P>&nbsp;</P>
+
+<P>To include an external script file, use the
+<CODE>&lt;filename</CODE> notation:</P>
+
+<PRE>
+    %postinstall &lt;filename
+</PRE>
+
+<P>To include multiple lines directly, use the
+<CODE>&lt;&lt;string</CODE> notation (a.k.a. a "here" document):</P>
+
+<PRE>
+    %postinstall &lt;&lt;EOF
+    echo Command before installing
+    /usr/bin/foo
+    EOF
+</PRE>
+
+<P>Note that all commands specified in the list file will use
+the variable expansion provided by EPM, so be sure to quote any
+dollar sign (<CODE>$</CODE>) characters in your commands. For
+example, "$foo" is replaced by the value of "foo", but "$$foo"
+becomes "$foo".</P>
+
+<!-- NEED 4in -->
+<H2>Conditional Directives</H2>
+
+<P>The <CODE>%system</CODE> directive can match or not match
+specific operating system names or versions. The operating
+system name is the name reported by <CODE>uname</CODE> in
+lowercase, while the operating system version is the major and
+minor version number reported by <CODE>uname -r</CODE>:
+
+<DL><DD><DL>
+
+	<DT><CODE>%system irix</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building a distribution
+	for the IRIX operating system.
+	<BR>&nbsp;</DD>
+
+	<DT><CODE>%system linux-2.0</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building a distribution
+	for Linux 2.0.x.
+	<BR>&nbsp;</DD>
+
+	<DT><CODE>%system !irix !linux-2.0</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building a distribution
+	for operating systems other than IRIX and Linux 2.0.x.
+	<BR>&nbsp;</DD>
+
+</DL></DD></DL>
+
+<P>The special name <CODE>all</CODE> is used to match all
+operating systems:</P>
+
+<PRE>
+    %system all
+</PRE>
+
+<P>For format-specific files, the <CODE>%format</CODE> directive
+can be used:</P>
+
+<DL><DD><DL>
+
+	<DT><CODE>%format rpm</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building an RPM distribution.
+	<BR>&nbsp;</DD>
+
+	<DT><CODE>%format !rpm</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when not building an RPM
+	distribution.x.
+	<BR>&nbsp;</DD>
+
+	<DT><CODE>%format all</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Include the following files for all types of distributions.
+	<BR>&nbsp;</DD>
+
+</DL></DD></DL>
+
+<P>The <CODE>%arch</CODE> directive can match or not match specific
+architectures. The architecture name is the name reported by
+<CODE>uname -m</CODE>; "arm" is a synonym for "armv6", "armv7", and "armv8",
+"intel" is a synonym for "i386", "i486", "i586", and "i686", and "powerpc" is a
+synonym for "ppc":</P>
+
+<DL><DD><DL>
+
+	<DT><CODE>%arch intel</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building a package for 32-bit
+	Intel processors.
+	<BR>&nbsp;</DD>
+
+	<DT><CODE>%arch armv6</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building a package for ARMv6
+	processors.
+	<BR>&nbsp;</DD>
+
+	<DT><CODE>%system !powerpc</CODE>
+	<BR>&nbsp;</DT>
+
+	<DD>Only include the following files when building a package for
+	processors other than PowerPC.
+	<BR>&nbsp;</DD>
+
+</DL></DD></DL>
+
+<P>The special name <CODE>all</CODE> is used to match all architectures:</P>
+
+<PRE>
+    %arch all
+</PRE>
+
+<P>Finally, EPM can conditionally include lines using the
+<CODE>%if</CODE>, <CODE>%elseif</CODE>, <CODE>%ifdef</CODE>,
+<CODE>%elseifdef</CODE>, <CODE>%else</CODE>, and
+<CODE>%endif</CODE> directives.</P>
+
+<P><CODE>%if</CODE> directives include the text that follows if
+the named variable(s) are defined to a non-empty string:</P>
+
+<PRE>
+    %if FOO
+    f 755 root sys /usr/bin/foo foo
+    %elseif BAR
+    f 755 root sys /usr/bin/bar bar
+    %endif
+</PRE>
+
+<P><CODE>%ifdef</CODE> directives only include the text if the
+named variable(s) are defined to any value:</P>
+
+<PRE>
+    %ifdef OSTYPE
+    f 755 root sys /usr/bin/program program-$OSTYPE
+    %else
+    f 755 root sys /usr/bin/program program.sh
+    %endif
+</PRE>
+
+<H2>Protecting Object Files from Stripping</H2>
+
+<P>The <CODE>nostrip()</CODE> option can be included at the end
+of a file line to prevent EPM from stripping the symbols and
+debugging information from a file:</P>
+
+<PRE>
+    f 755 root sys /usr/lib/libfoo.so libfoo.so nostrip()
+</PRE>
+
+<H2>Software Patches</H2>
+
+<P>EPM supports portable software patch distributions which
+contain only the differences between the original and patch
+release.  Patch files are specified using uppercase letters for
+the affected files. In the following example, the files
+<VAR>/usr/bin/bar</VAR> and <VAR>/etc/foo.conf</VAR> are
+marked</P>
+
+<!-- NEED 2in -->
+<P>as changed since the original release:</P>
+
+<PRE>
+    f 755 root sys /usr/bin/foo foo
+    F 755 root sys /usr/bin/bar bar
+    f 755 root sys /usr/share/man/man1/foo.1 foo.man
+    f 755 root sys /usr/share/man/man1/bar.1 bar.man
+    C 644 root sys /etc/foo.conf foo.conf
+</PRE>
+
+<H2>Variables</H2>
+
+<P>EPM imports the current environment variables for use in your
+list file. You can also define new variable in the list file or
+on the command-line when running EPM.</P>
+
+<P>Variables are defined by starting the line with the dollar
+sign (<CODE>$</CODE>) followed by the name and value:</P>
+
+<PRE>
+    $name=value
+    $prefix=/usr
+    $exec_prefix=${prefix}
+    $bindir=$exec_prefix/bin
+</PRE>
+
+<P>Variable substitution is performed when the variable is
+defined, so be careful with the ordering of your variable
+definitions.</P>
+
+<P>Also, any variables you specify in your list file will be
+overridden by variables defined on the command-line or in your
+environment, just like with <CODE>make</CODE>. This can be a
+useful feature or a curse, depending on your choice of variable
+names.</P>
+
+<P>As you can see, variables are referenced using the dollar
+sign (<CODE>$</CODE>). As with most shells, variable names can
+be surrounded by curly braces (<CODE>${variable}</CODE>) to
+explicitly delimit the name.</P>
+
+<!-- NEED 1in -->
+<P>If you need to insert a <CODE>$</CODE> in a filename or a
+script, use <CODE>$$</CODE>:</P>
+
+<PRE>
+    %install echo Enter your name:
+    %install read $$name
+    %install echo Your name is $$name.
+</PRE>
+
+<H2>Init Scripts</H2>
+
+<P>Initialization scripts are generally portable between
+platforms, however the location of initialization scripts varies
+greatly.</P>
+
+<P>The <CODE>i</CODE> file type can be used to specify and init
+script that is to be installed on the system. EPM will then
+determine the appropriate init file directories to use and create
+any required symbolic links to support the init script:</P>
+
+<PRE>
+    i 755 root sys foo foo.sh
+</PRE>
+
+<P>The previous example creates an init script named
+<VAR>foo</VAR> on the end-user system and will create symbolic
+links to run levels 0, 2, 3, and 5 as needed, using a sequence
+number of 00 (or 000) for the shutdown script and 99 (or 999) for
+the startup script.</P>
+
+<P>To specify run levels and sequence numbers, use the
+<CODE>runlevel()</CODE>, <CODE>start()</CODE>, and
+<CODE>stop()</CODE> options:</P>
+
+<PRE>
+    i 755 root sys foo foo.sh "runlevel(02) start(50) stop(30)"
+</PRE>
+
+<H2>Literal Package Data</H2>
+
+<P>Sometimes you need to include format-specific package data such as
+keywords, signing keys, and response data. The <CODE>%literal(section)</CODE>
+directive adds format-specific data to the packages you create. Literal
+data is currently only supported for RPM and PKG packages.</P>
+
+<H3>PKG Literal Data</H3>
+
+<P>PKG packages support request files that are used to do batch
+installations when installation commands require user input.  The
+<CODE>%literal(request)</CODE> directive can be used to provide this user
+input:</P>
+
+<PRE>
+    %literal(request) &lt;&lt;EOF
+    John Doe
+    1 Any Lane
+    Forest Lawn, OH 12345
+    EOF
+</PRE>
+
+<H3>RPM Literal Data</H3>
+
+<P>RPM packages support numerous attributes in the "spec" file that control
+how the package is created and what metadata is included with the package. The
+<CODE>%literal(spec)</CODE> directive can be used to provide attributes for
+the spec file:</P>
+
+<PRE>
+    %literal(spec) &lt;&lt;EOF
+    %changelog
+    * Tue Aug 26 2008 John Doe &lt;johndoe@domain.com&gt;
+
+    - Added new feature "bar"
+
+    * Fri Aug 1 2008 John Doe &lt;johndoe@domain.com&gt;
+
+    - Added new feature "foo"
+    EOF
+</PRE>
+
+</BODY>
+</HTML>

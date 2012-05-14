@@ -1,0 +1,192 @@
+.\"
+.\" "$Id: epm.man 816 2008-08-27 03:44:15Z mike $"
+.\"
+.\"   Manual page for the ESP Package Manager (EPM).
+.\"
+.\"   Copyright 1999-2008 by Easy Software Products, all rights reserved.
+.\"
+.\"   This program is free software; you can redistribute it and/or modify
+.\"   it under the terms of the GNU General Public License as published by
+.\"   the Free Software Foundation; either version 2, or (at your option)
+.\"   any later version.
+.\"
+.\"   This program is distributed in the hope that it will be useful,
+.\"   but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"   GNU General Public License for more details.
+.\"
+.TH epm 1 "ESP Package Manager" "26 August 2008" "Easy Software Products"
+.SH NAME
+epm \- create software packages.
+.SH SYNOPSIS
+.B epm
+[ -a
+.I architecture
+] [ -f
+.I format
+] [ -g ] [ -k ] [ -m
+.I name
+] [ -n[mrs] ] [ -s
+.I setup.xpm
+] [ --depend ] [ --help ] [ --keep-files ] [ --output-dir
+.I directory
+] [ --setup-image
+.I setup.xpm
+] [ --setup-program
+.I /foo/bar/setup
+] [ --setup-types
+.I setup.types
+] [ -v ] [
+.I name=value
+\...
+.I name=value
+] product [
+.I listfile
+]
+.SH DESCRIPTION
+\fBepm\fR generates software packages complete with installation,
+removal, and (if necessary) patch scripts. Unless otherwise
+specified, the files required for \fIproduct\fR are read from a
+file named "\fIproduct\fR.list".
+.LP
+The \fI-a\fR option ("architecture") specifies the actual
+architecture for the software. Without this option the generic
+processor architecture is used ("intel", "sparc", "mips", etc.)
+.LP
+The \fI-f\fR option ("format") specifies the distribution format:
+.TP 5
+aix
+.br
+Generate an AIX distribution suitable for installation on an AIX system.
+.TP 5
+bsd
+.br
+Generate a BSD distribution suitable for installation on a FreeBSD, NetBSD,
+or OpenBSD system.
+.TP 5
+deb
+.br
+Generate a Debian distribution suitable for installation on a Debian Linux
+system.
+.TP 5
+inst, tardist
+.br
+Generate an IRIX distribution suitable for installation on an system running
+IRIX.
+.TP 5
+lsb, lsb-signed
+.br
+Generate RPM packages for LSB-conforming systems. The lsb-signed format uses
+the GPG private key you have defined in the ~/.rpmmacros file.
+.TP 5
+native
+.br
+Generate an native distribution. This uses \fIrpm\fR for Linux,
+\fIinst\fR for IRIX, \fIpkg\fR for Solaris, \fIswinstall\fR for
+HP-UX, \fIbsd\fR for FreeBSD, NetBSD, and OpenBSD, and \fIosx\fR
+for MacOS X. All other operating systems default to the
+\fIportable\fR format.
+.TP 5
+osx
+.br
+Generate a MacOS X software package.
+.TP 5
+pkg
+.br
+Generate an AT&T software package. These are used primarily under Solaris.
+.TP 5
+portable
+.br
+Generate a portable distribution based on shell scripts and tar files.  The
+resulting distribution is installed and removed the same way on all
+operating systems. [default]
+.TP 5
+rpm, rpm-signed
+.br
+Generate a Red Hat Package Manager ("RPM") distribution suitable
+for installation on a Red Hat Linux system. The rpm-signed format uses
+the GPG private key you have defined in the ~/.rpmmacros file.
+.TP 5
+setld
+.br
+Generate a Tru64 (setld) software distribution.
+.TP 5
+slackware
+.br
+Generate a Slackware Linux software distribution.
+.TP 5
+swinstall, depot
+.br
+Generate a HP-UX software distribution.
+.LP
+Executable files in the distribution are normally stripped of debugging
+information when packaged. To disable this functionality use the
+\fI\-g\fR option.
+.LP
+Intermediate (spec, etc.) files used to create the distribution are normally
+removed after the distribution is created. The \fI\-k\fR option keeps these
+files in the distribution directory.
+.LP
+The \fI-s\fR and \fI--setup-image\fR options ("setup") include
+the ESP Software Wizard with the specified GIF or XPM image file with
+the distribution. This option is currently only supported by
+portable and RPM distributions.
+.LP
+The \fI--setup-program\fR option specifies the setup executable
+to use with the distribution. This option is currently only
+supported by portable distributions.
+.LP
+The \fI--setup-types\fR option specifies the \fIsetup.types\fR
+file to include with the distribution. This option is currently
+only supported by portable distributions.
+.LP
+The \fI--output-dir\fR option specifies the directory to
+place output file into. The default directory is based on the
+operating system, version, and architecture.
+.LP
+The \fI-v\fR option ("verbose") increases the amount of information that is
+reported. Use multiple v's for more verbose output.
+.LP
+The \fI--depend\fR option lists the dependent (source) files for
+all files in the package.
+.LP
+Distributions normally are named
+"product-version-system-release-machine.ext" and
+"product-version-system-release-machine-patch.ext" (for patch
+distributions.) The "system-release-machine" information can be
+customized or eliminated using the \fI-n\fR option with the
+appropriate trailing letters. Using \fI-n\fR by itself will
+remove the "system-release-machine" string from the filename
+entirely. The "system-release-machine" information can also be
+customized by using the \fI-m\fR option with an arbitrary string.
+.LP
+Debian, IRIX, portable, and Red Hat distributions use the extensions ".deb",
+".tardist", "tar.gz", and ".rpm" respectively.
+.SH LIST FILES
+The EPM list file format is now described in the \fIepm.list(5)\fR
+man page.
+.SH KNOWN BUGS
+EPM does not currently support generation of IRIX software patches.
+.SH SEE ALSO
+epminstall(1) - add a directory, file, or symlink to a list file
+.br
+mkepmlist(1) - make an epm list file from a directory
+.br
+epm.list(5) - epm list file format
+.br
+setup(1) - graphical setup program for the esp package manager
+.SH COPYRIGHT
+Copyright 1999-2008 by Easy Software Products, All Rights Reserved.
+.LP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+.LP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.\"
+.\" End of "$Id: epm.man 816 2008-08-27 03:44:15Z mike $".
+.\"

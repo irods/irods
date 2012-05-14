@@ -1,0 +1,12 @@
+#HTMLDOC 1.8.26
+-t pdf14 -f "epm-book.pdf" --book --toclevels 2 --no-numbered --toctitle "Table of Contents" --title --titleimage "title.html" --linkstyle plain --size 6x9in --left 1in --right 0.750in --top 0.750in --bottom 0.750in --header .t. --header1 ... --footer h.1 --nup 1 --tocheader .t. --tocfooter ..i --duplex --portrait --grayscale --no-pscommands --no-xrxcomments --compression=9 --jpeg=90 --fontsize 10.0 --fontspacing 1.2 --headingfont Sans --bodyfont Sans --headfootsize 9.0 --headfootfont Sans-Oblique --charset iso-8859-1 --links --embedfonts --pagemode document --pagelayout tworight --firstpage p1 --pageeffect none --pageduration 10 --effectduration 1.0 --no-encryption --permissions all  --owner-password ""  --user-password "" --browserwidth 680 --strict --no-overflow
+preface.html
+1-intro.html
+2-building.html
+3-packaging.html
+4-advanced.html
+5-examples.html
+a-license.html
+b-manpages.html
+c-reference.html
+d-relnotes.html

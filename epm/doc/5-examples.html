@@ -1,0 +1,738 @@
+<HTML>
+<BODY>
+
+<H1 ALIGN="RIGHT"><A NAME="EXAMPLES">5 - EPM Packaging Examples</A></H1>
+
+<P>This chapter shows how the EPM and CUPS software is packaged using
+EPM list files. The EPM list file example highlights the basic features
+of EPM, while the CUPS list file example shows the more advanced features
+of EPM.</P>
+
+<H2>Packaging the EPM Software</H2>
+
+<P>The EPM software comes with its own autoconf-generated
+<VAR>epm.list</VAR> file that is used to package and test EPM.
+The EPM package consists of the main package plus a
+"documentation" subpackage for the documentation files and a
+"man" subpackage for the man pages.</P>
+
+<P>We start by defining variables for each of the autoconf directory
+variables:</P>
+
+<PRE><FONT SIZE="1">
+    $prefix=/usr
+    $exec_prefix=/usr
+    $bindir=${exec_prefix}/bin
+    $datadir=/usr/share
+    $docdir=${datadir}/doc/epm
+    $libdir=/usr/lib
+    $mandir=/usr/share/man
+    $srcdir=.
+</FONT></PRE>
+
+<P>Then we provide the general product information that is
+required for all packages; notice the use of
+<CODE>${srcdir}</CODE> to reference the COPYING and README
+files:</P>
+
+<PRE><FONT SIZE="1">
+    %product ESP Package Manager
+    %copyright 1999-2006 by Easy Software Products, All Rights Reserved.
+    %vendor Easy Software Products
+    %license ${srcdir}/COPYING
+    %readme ${srcdir}/README
+    %description Universal software packaging tool for UNIX.
+    %version 4.0 400
+</FONT></PRE>
+
+<P>After the product information, we include all of the non-GUI
+files that are part of EPM:</P>
+
+<PRE><FONT SIZE="1">
+    # Executables
+    %system all
+    f 0555 root sys ${bindir}/epm epm
+    f 0555 root sys ${bindir}/epminstall epminstall
+    f 0555 root sys ${bindir}/mkepmlist mkepmlist
+
+    # Documentation
+    %subpackage documentation
+    %description Documentation for EPM
+    f 0444 root sys ${docdir}/README $srcdir/README
+    f 0444 root sys ${docdir}/COPYING $srcdir/COPYING
+    f 0444 root sys ${docdir}/epm-book.html $srcdir/doc/epm-book.html
+
+    # Man pages
+    %subpackage man
+    %description Man pages for EPM
+    f 0444 root sys ${mandir}/man1/epm.1 $srcdir/doc/epm.man
+    f 0444 root sys ${mandir}/man1/epminstall.1 $srcdir/doc/epminstall.man
+    f 0444 root sys ${mandir}/man1/mkepmlist.1 $srcdir/doc/mkepmlist.man
+    f 0444 root sys ${mandir}/man5/epm.list.5 $srcdir/doc/epm.list.man
+</FONT></PRE>
+
+<P>Finally, we conditionally include the GUI files depending on
+the state of a variable called <CODE>GUIS</CODE>:</P>
+
+<PRE><FONT SIZE="1">
+    # GUI files...
+    $GUIS=setup uninst
+
+    %if GUIS
+    %subpackage
+    f 0555 root sys ${libdir}/epm/setup setup
+    f 0555 root sys ${libdir}/epm/uninst uninst
+
+    %system darwin
+    f 0444 root sys ${datadir}/epm/setup.icns macosx/setup.icns
+    f 0444 root sys ${datadir}/epm/setup.info macosx/setup.info
+    f 0444 root sys ${datadir}/epm/setup.plist macosx/setup.plist
+
+    f 0444 root sys ${datadir}/epm/uninst.icns macosx/uninst.icns
+    f 0444 root sys ${datadir}/epm/uninst.info macosx/uninst.info
+    f 0444 root sys ${datadir}/epm/uninst.plist macosx/uninst.plist
+    %system all
+
+    %subpackage man
+    f 0444 root sys ${mandir}/man1/setup.1 $srcdir/doc/setup.man
+    f 0444 root sys ${mandir}/man5/setup.types.5 $srcdir/doc/setup.types.man
+
+    %endif
+</FONT></PRE>
+
+
+<H2>Packaging the CUPS Software</H2>
+
+<P>The Common UNIX Printing System provides an EPM list file to
+generate software distributions for most UNIX operating systems.
+This list file is more complex than the EPM example and contains
+several subpackages:</P>
+
+<UL>
+
+	<LI>"devel"; Developer header, library, and documentation files</LI>
+
+	<LI>"es"; Spanish localization files</LI>
+
+	<LI>"ja"; Japanese localization files</LI>
+
+	<LI>"libs"; Shared libraries</LI>
+
+	<LI>"lpd"; LPD client support</LI>
+
+</UL>
+
+<H3>Variables Used for the Distribution</H3>
+
+<P>In addition to the autoconf variables defined in the EPM list
+file, the CUPS list file defines the following autoconf-derived
+variables for the distribution:</P>
+
+<UL>
+
+	<LI><CODE>AMANDIR</CODE>;
+	The directory for administrative manual pages.
+
+	<LI><CODE>BINDIR</CODE>;
+	The directory for user programs.
+
+	<LI><CODE>CACHEDIR</CODE>;
+	The directory for cache files.
+
+	<LI><CODE>DATADIR</CODE>;
+	The directory for data files.
+
+	<LI><CODE>DOCDIR</CODE>;
+	The directory for documentation files.
+
+	<LI><CODE>INCLUDEDIR</CODE>;
+	The directory for header files.
+
+	<LI><CODE>INITDIR</CODE>;
+	The directory for startup scripts.
+
+	<LI><CODE>INITDDIR</CODE>;
+	The directory to reference from run-level scripts.
+
+	<LI><CODE>LIBDIR</CODE>;
+	The directory for library files.
+
+	<LI><CODE>LIB32DIR</CODE>;
+	The directory for 32-bit library files.
+
+	<LI><CODE>LIB64DIR</CODE>;
+	The directory for 64-bit library files.
+
+	<LI><CODE>LOCALEDIR</CODE>;
+	The directory for message (localization) files.
+
+	<LI><CODE>LOGDIR</CODE>;
+	The directory for log files.
+
+	<LI><CODE>MANDIR</CODE>;
+	The directory for man pages.
+
+	<LI><CODE>PAMDIR</CODE>;
+	The directory for PAM configuration files.
+
+	<LI><CODE>REQUESTS</CODE>;
+	The directory for request files.
+
+	<LI><CODE>SBINDIR</CODE>;
+	The directory for administration programs.
+
+	<LI><CODE>SERVERBIN</CODE>;
+	The directory for server programs.
+
+	<LI><CODE>SERVERROOT</CODE>;
+	The directory for server configuration files.
+
+	<LI><CODE>STATEDIR</CODE>;
+	The directory for server state files.
+
+</UL>
+
+<H3>Product Information</H3>
+
+<P>The list file starts with the standard product information:</P>
+
+<PRE><FONT SIZE="1">
+    %product Common UNIX Printing System
+    %copyright 1993-2006 by Easy Software Products, All Rights Reserved.
+    %vendor Easy Software Products
+    %license LICENSE.txt
+    %readme packaging/cups.license
+    %version 1.2.0
+    %description The Common UNIX Printing System provides a portable
+    %description printing layer for UNIX(r) operating systems.  It
+    %description has been developed by Easy Software Products to
+    %description promote a standard printing solution for all UNIX
+    %description vendors and users.  CUPS provides the System V and
+    %description Berkeley command-line interfaces. 
+</FONT></PRE>
+
+<P>We then list different dependencies depending on the package
+format:</P>
+
+<PRE><FONT SIZE="1">
+    %format rpm
+    %provides cups 1:1.2.0
+    %provides lpd, lpr, LPRng
+    %replaces lpd, lpr, LPRng
+
+    %format deb
+    %provides cupsys
+    %provides cupsys-client
+    %provides cupsys-bsd
+
+    %format pkg
+    %replaces SUNWlpmsg LP Alerts
+    %replaces SUNWlpr LP Print Service, (Root)
+    %replaces SUNWlps LP Print Service - Server, (Usr)
+    %replaces SUNWlpu LP Print Service - Client, (Usr)
+    %replaces SUNWpsu LP Print Server, (Usr)
+    %replaces SUNWpsr LP Print Server, (Root)
+    %replaces SUNWpcu LP Print Client, (Usr)
+    %replaces SUNWpcr LP Print Client, (Root)
+    %replaces SUNWppm
+    %replaces SUNWmp
+    %replaces SUNWscplp SunOS Print Compatibility
+
+    %format inst
+    %replaces patch*.print_*.* 0 0 1289999999 1289999999
+    %replaces maint*.print_*.* 0 0 1289999999 1289999999
+    %replaces print 0 0 1289999999 1289999999
+    %replaces fw_cups 0 0 1289999999 1289999999
+    %incompat patch*.print_*.* 0 0 1289999999 1289999999
+    %incompat maint*.print_*.* 0 0 1289999999 1289999999
+    %incompat print 0 0 1289999999 1289999999
+    %incompat fw_cups 0 0 1289999999 1289999999
+
+    %format all
+</FONT></PRE>
+
+<P>The subpackages come next, each with their own
+dependencies:</P>
+
+<PRE><FONT SIZE="1">
+    %subpackage libs
+    %description Common UNIX Printing System - shared libraries
+    %format rpm
+    %provides cups-libs 1:1.2.0
+    %format deb
+    %provides libcups1
+    %provides libcupsys2
+    %provides libcupsys2-gnutls10
+    %provides libcupsimage2
+    %format all
+
+    %subpackage devel
+    %description Common UNIX Printing System - development environment
+    %format rpm
+    %provides cups-devel 1:1.2.0
+    %format deb
+    %provides libcupsys2-dev
+    %provides libcupsimage2-dev
+    %format all
+
+    %subpackage lpd
+    %description Common UNIX Printing System - LPD support
+    %format rpm
+    %provides cups-lpd 1:1.2.0
+    %format all
+
+    %subpackage es
+    %description Common UNIX Printing System - Spanish support
+
+    %subpackage ja
+    %description Common UNIX Printing System - Japanese support
+
+    %subpackage
+</FONT></PRE>
+
+<!-- NEED 3in -->
+<H3>Server Programs</H3>
+
+<P>The server programs are installed in the <CODE>SBINDIR</CODE>
+and <CODE>SERVERBIN</CODE> directories. The image and PDF filters
+are conditionally included based on the <CODE>IMGFILTERS</CODE>
+and <CODE>PDFTOPS</CODE> variables, respectively:</P>
+
+<PRE><FONT SIZE="1">
+    f 0755 root sys $SBINDIR/cupsd scheduler/cupsd
+
+    d 0755 root sys $SERVERBIN -
+    d 0755 root sys $SERVERBIN/backend -
+    f 0755 root sys $SERVERBIN/backend/ipp backend/ipp
+    l 0755 root sys $SERVERBIN/backend/http ipp
+    f 0755 root sys $SERVERBIN/backend/lpd backend/lpd
+    f 0755 root sys $SERVERBIN/backend/parallel backend/parallel
+    f 0755 root sys $SERVERBIN/backend/scsi backend/scsi
+    f 0755 root sys $SERVERBIN/backend/serial backend/serial
+    f 0755 root sys $SERVERBIN/backend/socket backend/socket
+    f 0755 root sys $SERVERBIN/backend/usb backend/usb
+    d 0755 root sys $SERVERBIN/cgi-bin -
+    f 0755 root sys $SERVERBIN/cgi-bin/admin.cgi cgi-bin/admin.cgi
+    f 0755 root sys $SERVERBIN/cgi-bin/classes.cgi cgi-bin/classes.cgi
+    f 0755 root sys $SERVERBIN/cgi-bin/help.cgi cgi-bin/help.cgi
+    f 0755 root sys $SERVERBIN/cgi-bin/jobs.cgi cgi-bin/jobs.cgi
+    f 0755 root sys $SERVERBIN/cgi-bin/printers.cgi cgi-bin/printers.cgi
+    d 0755 root sys $SERVERBIN/daemon -
+    f 0755 root sys $SERVERBIN/daemon/cups-deviced scheduler/cups-deviced
+    f 0755 root sys $SERVERBIN/daemon/cups-driverd scheduler/cups-driverd
+    f 0755 root sys $SERVERBIN/daemon/cups-polld scheduler/cups-polld
+    d 0755 root sys $SERVERBIN/driver -
+    d 0755 root sys $SERVERBIN/filter -
+    f 0755 root sys $SERVERBIN/filter/gziptoany filter/gziptoany
+    f 0755 root sys $SERVERBIN/filter/hpgltops filter/hpgltops
+    %if IMGFILTERS
+    f 0755 root sys $SERVERBIN/filter/imagetops filter/imagetops
+    f 0755 root sys $SERVERBIN/filter/imagetoraster filter/imagetoraster
+    %endif
+    %if PDFTOPS
+    f 0755 root sys $SERVERBIN/filter/pdftops pdftops/pdftops
+    %endif
+    f 0755 root sys $SERVERBIN/filter/pstops filter/pstops
+    f 0755 root sys $SERVERBIN/filter/rastertolabel filter/rastertolabel
+    l 0755 root sys $SERVERBIN/filter/rastertodymo rastertolabel
+    f 0755 root sys $SERVERBIN/filter/rastertoepson filter/rastertoepson
+    f 0755 root sys $SERVERBIN/filter/rastertohp filter/rastertohp
+    f 0755 root sys $SERVERBIN/filter/texttops filter/texttops
+    d 0755 root sys $SERVERBIN/notifier -
+    f 0755 root sys $SERVERBIN/notifier/mailto notifier/mailto
+</FONT></PRE>
+
+<P>The <CODE>cups-lpd</CODE> program goes in the "lpd"
+subpackage:</P>
+
+<PRE><FONT SIZE="1">
+    %subpackage lpd
+    d 0755 root sys $SERVERBIN/daemon -
+    f 0755 root sys $SERVERBIN/daemon/cups-lpd scheduler/cups-lpd
+    %subpackage
+</FONT></PRE>
+
+<H3>Administration Commands</H3>
+
+<P>The administration commands are all pretty much the same. The
+only difference is that IRIX needs a symlink for the
+<CODE>lpc</CODE> program in the <VAR>/usr/etc</VAR>
+directory.</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $BINDIR -
+    l 0755 root sys $BINDIR/enable $SBINDIR/accept
+    l 0755 root sys $LIBDIR/accept $SBINDIR/accept
+    d 0755 root sys $SBINDIR -
+    l 0755 root sys $SBINDIR/cupsdisable accept
+    l 0755 root sys $SBINDIR/cupsenable accept
+    l 0755 root sys $BINDIR/disable $SBINDIR/accept
+    d 0755 root sys $LIBDIR -
+    l 0755 root sys $LIBDIR/lpadmin $SBINDIR/lpadmin
+    l 0755 root sys $LIBDIR/reject accept
+    f 0755 root sys $SBINDIR/accept systemv/accept
+    f 0755 root sys $SBINDIR/cupsaddsmb systemv/cupsaddsmb
+    f 0755 root sys $SBINDIR/lpadmin systemv/lpadmin
+    f 0755 root sys $SBINDIR/lpc berkeley/lpc
+    f 0755 root sys $SBINDIR/lpinfo systemv/lpinfo
+    f 0755 root sys $SBINDIR/lpmove systemv/lpmove
+    l 0755 root sys $SBINDIR/reject accept
+
+    %system irix
+    l 0755 root sys /usr/etc/lpc $SBINDIR/lpc
+    %system all
+</FONT></PRE>
+
+<H3>User Commands</H3>
+
+<P>The user commands are all pretty much the same. As with the
+administration commands, IRIX needs the Berkeley commands linked
+to a different directory, <VAR>/usr/bsd</VAR>.</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $BINDIR -
+    f 0755 root sys $BINDIR/cancel systemv/cancel
+    f 0755 root sys $BINDIR/cupstestdsc systemv/cupstestdsc
+    f 0755 root sys $BINDIR/cupstestppd systemv/cupstestppd
+    f 0755 root sys $BINDIR/lp systemv/lp
+    f 0755 root sys $BINDIR/lpoptions systemv/lpoptions
+    f 4755 $CUPS_USER sys $BINDIR/lppasswd systemv/lppasswd
+    f 0755 root sys $BINDIR/lpq berkeley/lpq
+    f 0755 root sys $BINDIR/lpr berkeley/lpr
+    f 0755 root sys $BINDIR/lprm berkeley/lprm
+    f 0755 root sys $BINDIR/lpstat systemv/lpstat
+
+    %system irix
+    l 0755 root sys /usr/bsd/lpq $BINDIR/lpq
+    l 0755 root sys /usr/bsd/lpr $BINDIR/lpr
+    l 0755 root sys /usr/bsd/lprm $BINDIR/lprm
+    %system all
+</FONT></PRE>
+
+<H3>Shared Libraries</H3>
+
+<P>Shared libraries present their own challenges. AIX, HP-UX, and
+MacOS X uses a different extension for shared libraries than the
+other operating systems, and we only include the shared libraries
+if they are enabled in the build:</P>
+
+<PRE><FONT SIZE="1">
+    %if DSOLIBS
+    %subpackage libs
+    %system hpux
+    f 0755 root sys $LIBDIR/libcups.sl.2 cups/libcups.sl.2
+    l 0755 root sys $LIBDIR/libcups.sl libcups.sl.2
+    f 0755 root sys $LIBDIR/libcupsimage.sl.2 filter/libcupsimage.sl.2
+    l 0755 root sys $LIBDIR/libcupsimage.sl libcupsimage.sl.2
+    %system aix
+    f 0755 root sys $LIBDIR/libcups_s.a cups/libcups_s.a
+    f 0755 root sys $LIBDIR/libcupsimage_s.a filter/libcupsimage_s.a
+    %system darwin
+    f 0755 root sys $LIBDIR/libcups.2.dylib cups/libcups.2.dylib
+    l 0755 root sys $LIBDIR/libcups.dylib libcups.2.dylib
+    f 0755 root sys $LIBDIR/libcupsimage.2.dylib filter/libcupsimage.2.dylib
+    l 0755 root sys $LIBDIR/libcupsimage.dylib libcupsimage.2.dylib
+    %system !hpux !aix !darwin
+    f 0755 root sys $LIBDIR/libcups.so.2 cups/libcups.so.2
+    l 0755 root sys $LIBDIR/libcups.so libcups.so.2
+    f 0755 root sys $LIBDIR/libcupsimage.so.2 filter/libcupsimage.so.2
+    l 0755 root sys $LIBDIR/libcupsimage.so libcupsimage.so.2
+    %system all
+    %subpackage
+    %endif
+</FONT></PRE>
+
+<P>To keep things interesting, CUPS also supports separately
+compiled 32-bit and 64-bit libraries on systems that support a
+mix of 32-bit and 64-bit binaries. The <CODE>LIB32DIR</CODE> and
+<CODE>LIB64DIR</CODE> variables are used to conditionally include
+the corresponding libraries:</P>
+
+<PRE><FONT SIZE="1">
+    %if LIB32DIR
+    %subpackage libs
+    f 0755 root sys $LIB32DIR/libcups.so.2 cups/libcups.32.so.2
+    l 0755 root sys $LIB32DIR/libcups.so libcups.so.2
+    f 0755 root sys $LIB32DIR/libcupsimage.so.2 filter/libcupsimage.32.so.2
+    l 0755 root sys $LIB32DIR/libcupsimage.so libcupsimage.so.2
+    %system all
+    %subpackage
+    %endif
+
+    %if LIB64DIR
+    %subpackage libs
+    f 0755 root sys $LIB64DIR/libcups.so.2 cups/libcups.64.so.2
+    l 0755 root sys $LIB64DIR/libcups.so libcups.so.2
+    f 0755 root sys $LIB64DIR/libcupsimage.so.2 filter/libcupsimage.64.so.2
+    l 0755 root sys $LIB64DIR/libcupsimage.so libcupsimage.so.2
+    %system all
+    %subpackage
+    %endif
+</FONT></PRE>
+
+<H3>Directories</H3>
+
+<P>The CUPS distribution uses several directories to hold the
+log, request, and temporary files. The <CODE>CUPS_GROUP</CODE>
+and <CODE>CUPS_PRIMARY_SYSTEM_GROUP</CODE> variables define the
+group names to use for these directories:</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $LOGDIR -
+    d 0710 root $CUPS_GROUP $REQUESTS -
+    d 1770 root $CUPS_GROUP $REQUESTS/tmp -
+    d 0775 root $CUPS_GROUP $CACHEDIR -
+    d 0755 root $CUPS_GROUP $STATEDIR -
+    d 0511 root $CUPS_PRIMARY_SYSTEM_GROUP $STATEDIR/certs -
+</FONT></PRE>
+
+<H3>Data Files</H3>
+
+<P>CUPS has lots of data files. We use wildcards whenever
+possible:</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $DATADIR -
+
+    d 0755 root sys $DATADIR/banners -
+    f 0644 root sys $DATADIR/banners/classified data/classified
+    f 0644 root sys $DATADIR/banners/confidential data/confidential
+    f 0644 root sys $DATADIR/banners/secret data/secret
+    f 0644 root sys $DATADIR/banners/standard data/standard
+    f 0644 root sys $DATADIR/banners/topsecret data/topsecret
+    f 0644 root sys $DATADIR/banners/unclassified data/unclassified
+
+    d 0755 root sys $DATADIR/charsets -
+    f 0644 root sys $DATADIR/charsets data/*.txt
+    f 0644 root sys $DATADIR/charsets/windows-874 data/windows-874
+    f 0644 root sys $DATADIR/charsets/windows-1250 data/windows-1250
+    f 0644 root sys $DATADIR/charsets/windows-1251 data/windows-1251
+    f 0644 root sys $DATADIR/charsets/windows-1252 data/windows-1252
+    f 0644 root sys $DATADIR/charsets/windows-1253 data/windows-1253
+    f 0644 root sys $DATADIR/charsets/windows-1254 data/windows-1254
+    f 0644 root sys $DATADIR/charsets/windows-1255 data/windows-1255
+    f 0644 root sys $DATADIR/charsets/windows-1256 data/windows-1256
+    f 0644 root sys $DATADIR/charsets/windows-1257 data/windows-1257
+    f 0644 root sys $DATADIR/charsets/windows-1258 data/windows-1258
+    f 0644 root sys $DATADIR/charsets/iso-8859-1 data/iso-8859-1
+    f 0644 root sys $DATADIR/charsets/iso-8859-2 data/iso-8859-2
+    f 0644 root sys $DATADIR/charsets/iso-8859-3 data/iso-8859-3
+    f 0644 root sys $DATADIR/charsets/iso-8859-4 data/iso-8859-4
+    f 0644 root sys $DATADIR/charsets/iso-8859-5 data/iso-8859-5
+    f 0644 root sys $DATADIR/charsets/iso-8859-6 data/iso-8859-6
+    f 0644 root sys $DATADIR/charsets/iso-8859-7 data/iso-8859-7
+    f 0644 root sys $DATADIR/charsets/iso-8859-8 data/iso-8859-8
+    f 0644 root sys $DATADIR/charsets/iso-8859-9 data/iso-8859-9
+    f 0644 root sys $DATADIR/charsets/iso-8859-10 data/iso-8859-10
+    f 0644 root sys $DATADIR/charsets/iso-8859-13 data/iso-8859-13
+    f 0644 root sys $DATADIR/charsets/iso-8859-14 data/iso-8859-14
+    f 0644 root sys $DATADIR/charsets/iso-8859-15 data/iso-8859-15
+    f 0644 root sys $DATADIR/charsets/utf-8 data/utf-8
+
+    d 0755 root sys $DATADIR/data -
+    f 0644 root sys $DATADIR/data/HPGLprolog data/HPGLprolog
+    f 0644 root sys $DATADIR/data/psglyphs data/psglyphs
+    f 0644 root sys $DATADIR/data/testprint.ps data/testprint.ps
+
+    d 0755 root sys $DATADIR/fonts -
+    f 0644 root sys $DATADIR/fonts fonts/Courier*
+    f 0644 root sys $DATADIR/fonts/Symbol fonts/Symbol
+
+    d 0755 root sys $DATADIR/model -
+    f 0644 root sys $DATADIR/model ppd/*.ppd
+
+    d 0755 root sys $DATADIR/templates -
+    c 0644 root sys $DATADIR/templates templates/*.tmpl
+</FONT></PRE>
+
+<P>The template files for each of the language localizations are
+put in separate subpackages:</P>
+
+<PRE><FONT SIZE="1">
+    # Japanese template files
+    %subpackage es
+    d 0755 root sys $DATADIR/templates/es
+    f 0644 root sys $DATADIR/templates/es templates/es/*.tmpl
+    %subpackage ja
+    d 0755 root sys $DATADIR/templates/ja
+    f 0644 root sys $DATADIR/templates/ja templates/ja/*.tmpl
+    %subpackage
+</FONT></PRE>
+
+<H3>Configuration Files</H3>
+
+<P>The server configuration files and directories go in
+<CODE>SERVERROOT</CODE>. The MIME configuration files are not
+treated as configuration files in the distribution since new
+versions of CUPS may add filters and file types that are required
+to make CUPS work:</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $SERVERROOT -
+    d 0755 root $CUPS_GROUP $SERVERROOT/interfaces -
+    d 0755 root $CUPS_GROUP $SERVERROOT/ppd -
+    c $CUPS_PERM root $CUPS_GROUP $SERVERROOT conf/*.conf
+    f $CUPS_PERM root $CUPS_GROUP $SERVERROOT/cupsd.conf.default conf/cupsd.conf
+    f $CUPS_PERM root $CUPS_GROUP $SERVERROOT/mime.convs conf/mime.convs
+    f $CUPS_PERM root $CUPS_GROUP $SERVERROOT/mime.types conf/mime.types
+</FONT></PRE>
+
+<P>The PAM configuration file is only included if the configure
+script found a PAM configuration directory:</P>
+
+<PRE><FONT SIZE="1">
+    %if PAMDIR
+    d 0755 root sys $PAMDIR -
+    c 0644 root sys $PAMDIR/cups conf/pam.std
+    %endif
+</FONT></PRE>
+
+<H3>Developer Files</H3>
+
+<P>The developer files include the C header files, static
+libraries, and help files. The static libraries are only included
+if they have been built, which is specified using the
+<CODE>INSTALLSTATIC</CODE> variable:</P>
+
+<PRE><FONT SIZE="1">
+    %subpackage devel
+    f 0755 root sys $BINDIR/cups-config cups-config
+    d 0755 root sys $INCLUDEDIR/cups -
+    f 0644 root sys $INCLUDEDIR/cups/cups.h cups/cups.h
+    f 0644 root sys $INCLUDEDIR/cups/http.h cups/http.h
+    f 0644 root sys $INCLUDEDIR/cups/image.h filter/image.h
+    f 0644 root sys $INCLUDEDIR/cups/ipp.h cups/ipp.h
+    f 0644 root sys $INCLUDEDIR/cups/language.h cups/language.h
+    f 0644 root sys $INCLUDEDIR/cups/md5.h cups/md5.h
+    f 0644 root sys $INCLUDEDIR/cups/ppd.h cups/ppd.h
+    f 0644 root sys $INCLUDEDIR/cups/raster.h filter/raster.h
+
+    %if INSTALLSTATIC
+    f 0644 root sys $LIBDIR/libcups.a cups/libcups.a
+    f 0644 root sys $LIBDIR/libcupsimage.a filter/libcupsimage.a
+    %endif
+
+    d 0755 root sys $DOCDIR/help -
+    f 0644 root sys $DOCDIR/help doc/help/api*.html
+    f 0644 root sys $DOCDIR/help doc/help/spec*.html
+    %subpackage
+</FONT></PRE>
+
+<H3>Documentation Files</H3>
+
+<P>The documentation files go under <CODE>DOCDIR</CODE>.
+Wildcards take care of most of the work:</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $DOCDIR -
+    f 0644 root sys $DOCDIR doc/*.css
+    f 0644 root sys $DOCDIR doc/*.html
+    d 0755 root sys $DOCDIR/help -
+    f 0644 root sys $DOCDIR/help/cgi.html doc/help/cgi.html
+    f 0644 root sys $DOCDIR/help/glossary.html doc/help/glossary.html
+    f 0644 root sys $DOCDIR/help/license.html doc/help/license.html
+    f 0644 root sys $DOCDIR/help/network.html doc/help/network.html
+    f 0644 root sys $DOCDIR/help/options.html doc/help/options.html
+    f 0644 root sys $DOCDIR/help/overview.html doc/help/overview.html
+    f 0644 root sys $DOCDIR/help/security.html doc/help/security.html
+    f 0644 root sys $DOCDIR/help/standard.html doc/help/standard.html
+    f 0644 root sys $DOCDIR/help/translation.html doc/help/translation.html
+    f 0644 root sys $DOCDIR/help/whatsnew.html doc/help/whatsnew.html
+    f 0644 root sys $DOCDIR/help doc/help/man-*.html
+    f 0644 root sys $DOCDIR/help doc/help/ref-*.html
+    d 0755 root sys $DOCDIR/images -
+    f 0644 root sys $DOCDIR/images doc/images/*.gif
+    f 0644 root sys $DOCDIR/images doc/images/*.jpg
+    f 0644 root sys $DOCDIR/images doc/images/*.png
+    f 0644 root sys $DOCDIR/robots.txt doc/robots.txt
+</FONT></PRE>
+
+<P>The Japanese and Spanish version of the documentation files go
+in the corresponding subpackages:</P>
+
+<PRE><FONT SIZE="1">
+    # Localized documentation files
+    %subpackage es
+    d 0755 root sys $DOCDIR/es
+    f 0644 root sys $DOCDIR/es doc/es/*.html
+    d 0755 root sys $DOCDIR/es/images -
+    f 0644 root sys $DOCDIR/es/images doc/es/images/*.gif
+    %subpackage ja
+    d 0755 root sys $DOCDIR/ja
+    f 0644 root sys $DOCDIR/ja doc/ja/*.html
+    d 0755 root sys $DOCDIR/ja/images -
+    f 0644 root sys $DOCDIR/ja/images doc/ja/images/*.gif
+    %subpackage
+</FONT></PRE>
+
+<H3>Man Pages</H3>
+
+<P>Man pages are almost as much fun as initialization scripts.
+HP-UX, IRIX, and Solaris follow the System V convention of using
+section 1m for administration commands instead of section 8 as is
+used for all other operating systems. IRIX also places
+administrative commands in a separate subdirectory:</P>
+
+<PRE><FONT SIZE="1">
+    d 0755 root sys $AMANDIR -
+    d 0755 root sys $AMANDIR/man$MAN8DIR -
+    d 0755 root sys $MANDIR -
+    d 0755 root sys $MANDIR/man1 -
+    d 0755 root sys $MANDIR/man5 -
+    d 0755 root sys $MANDIR/man7 -
+
+    f 0644 root sys $MANDIR/man1/cancel.$MAN1EXT man/cancel.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/cupstestdsc.$MAN1EXT man/cupstestdsc.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/cupstestppd.$MAN1EXT man/cupstestppd.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lpoptions.$MAN1EXT man/lpoptions.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lppasswd.$MAN1EXT man/lppasswd.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lpq.$MAN1EXT man/lpq.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lprm.$MAN1EXT man/lprm.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lpr.$MAN1EXT man/lpr.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lpstat.$MAN1EXT man/lpstat.$MAN1EXT
+    f 0644 root sys $MANDIR/man1/lp.$MAN1EXT man/lp.$MAN1EXT
+
+    f 0644 root sys $MANDIR/man5/classes.conf.$MAN5EXT man/classes.conf.$MAN5EXT
+    f 0644 root sys $MANDIR/man5/cupsd.conf.$MAN5EXT man/cupsd.conf.$MAN5EXT
+    f 0644 root sys $MANDIR/man5/mime.convs.$MAN5EXT man/mime.convs.$MAN5EXT
+    f 0644 root sys $MANDIR/man5/mime.types.$MAN5EXT man/mime.types.$MAN5EXT
+    f 0644 root sys $MANDIR/man5/printers.conf.$MAN5EXT man/printers.conf.$MAN5EXT
+
+    f 0644 root sys $MANDIR/man7/backend.$MAN7EXT man/backend.$MAN7EXT
+    f 0644 root sys $MANDIR/man7/filter.$MAN7EXT man/filter.$MAN7EXT
+
+    f 0644 root sys $AMANDIR/man$MAN8DIR/accept.$MAN8EXT man/accept.$MAN8EXT
+    l 0644 root sys $AMANDIR/man$MAN8DIR/reject.$MAN8EXT accept.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/cupsaddsmb.$MAN8EXT man/cupsaddsmb.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/cups-polld.$MAN8EXT man/cups-polld.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/cupsd.$MAN8EXT man/cupsd.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/cupsenable.$MAN8EXT man/cupsenable.$MAN8EXT
+    l 0644 root sys $AMANDIR/man$MAN8DIR/cupsdisable.$MAN8EXT cupsenable.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/lpadmin.$MAN8EXT man/lpadmin.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/lpc.$MAN8EXT man/lpc.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/lpinfo.$MAN8EXT man/lpinfo.$MAN8EXT
+    f 0644 root sys $AMANDIR/man$MAN8DIR/lpmove.$MAN8EXT man/lpmove.$MAN8EXT
+
+    %subpackage devel
+    f 0644 root sys $MANDIR/man1/cups-config.$MAN1EXT man/cups-config.$MAN1EXT
+
+    %subpackage lpd
+    d 0755 root sys $AMANDIR/man$MAN8DIR -
+    f 0644 root sys $AMANDIR/man$MAN8DIR/cups-lpd.$MAN8EXT man/cups-lpd.$MAN8EXT
+    %subpackage
+</FONT></PRE>
+
+<H3>Startup Script</H3>
+
+<P>The CUPS startup script is last and specifies a script name of
+<CODE>cups</CODE>. Startup and shutdown scripts will be created
+with the (default) names <CODE>S99cups</CODE> and
+<CODE>K00cups</CODE>, respectively.</P>
+
+<PRE><FONT SIZE="1">
+    %system all
+    i 0555 root sys cups init/cups.sh
+</FONT></PRE>
+
+</BODY>
+</HTML>

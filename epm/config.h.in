@@ -1,0 +1,140 @@
+/*
+ * "$Id: config.h.in 648 2005-10-19 14:25:05Z mike $"
+ *
+ *   Configuration file for the ESP Package Manager (EPM).
+ *
+ *   Copyright 1999-2005 by Easy Software Products.
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2, or (at your option)
+ *   any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ */
+
+/*
+ * Version of software...
+ */
+
+#define EPM_VERSION	""
+
+
+/*
+ * Where are files stored?
+ */
+
+#define EPM_SOFTWARE	"/etc/software"
+
+
+/*
+ * Where are binaries stored?
+ */
+
+#define EPM_BINDIR	"/usr/bin"
+#define EPM_DATADIR	"/usr/share/epm"
+#define EPM_LIBDIR	"/usr/lib/epm"
+
+
+/*
+ * What options does the strip command take?
+ */
+
+#define EPM_STRIP	"/bin/strip"
+
+
+/*
+ * What command is used to build RPMs?
+ */
+
+#define EPM_RPMBUILD	"rpm"
+
+
+/*
+ * What option is used to specify the RPM architecture?
+ */
+
+#define EPM_RPMARCH	"--target"
+
+
+/*
+ * Does this version of RPM support the "topdir_" variable?
+ */
+
+#undef EPM_RPMTOPDIR
+
+
+/*
+ * Compiler stuff...
+ */
+
+#undef const
+#undef __CHAR_UNSIGNED__
+
+
+/*
+ * Do we have the <strings.h> header file?
+ */
+
+#undef HAVE_STRINGS_H
+
+
+/*
+ * Which header files do we use for the statfs() function?
+ */
+
+#undef HAVE_SYS_MOUNT_H
+#undef HAVE_SYS_STATFS_H
+#undef HAVE_SYS_VFS_H
+#undef HAVE_SYS_PARAM_H
+
+
+/*
+ * Do we have the strXXX() functions?
+ */
+
+#undef HAVE_STRCASECMP
+#undef HAVE_STRDUP
+#undef HAVE_STRLCAT
+#undef HAVE_STRLCPY
+#undef HAVE_STRNCASECMP
+
+
+/*
+ * Do we have the (v)snprintf() functions?
+ */
+
+#undef HAVE_SNPRINTF
+#undef HAVE_VSNPRINTF
+
+
+/*
+ * Which directory functions and headers do we use?
+ */
+
+#undef HAVE_DIRENT_H
+#undef HAVE_SYS_DIR_H
+#undef HAVE_SYS_NDIR_H
+#undef HAVE_NDIR_H
+
+
+/*
+ * Where is the "gzip" executable?
+ */
+
+#define EPM_GZIP	"gzip"
+
+
+/*
+ * Compress files by default?
+ */
+
+#define EPM_COMPRESS 0
+
+
+/*
+ * End of "$Id: config.h.in 648 2005-10-19 14:25:05Z mike $".
+ */

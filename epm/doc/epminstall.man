@@ -1,0 +1,97 @@
+.\"
+.\" "$Id: epminstall.man 753 2007-04-10 18:34:01Z mike $"
+.\"
+.\"   Manual page for the ESP Package Manager (EPM) install program.
+.\"
+.\"   Copyright 1999-2007 by Easy Software Products, all rights reserved.
+.\"
+.\"   This program is free software; you can redistribute it and/or modify
+.\"   it under the terms of the GNU General Public License as published by
+.\"   the Free Software Foundation; either version 2, or (at your option)
+.\"   any later version.
+.\"
+.\"   This program is distributed in the hope that it will be useful,
+.\"   but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"   GNU General Public License for more details.
+.\"
+.TH epminstall 1 "ESP Package Manager" "3 April 2006" "Easy Software Products"
+.SH NAME
+epminstall \- add a directory, file, or symlink to a list file.
+.SH SYNOPSIS
+.B epminstall
+.I options
+file1 file2 ... fileN directory
+.br
+.B epminstall
+.I options
+file1 file2
+.br
+.B epminstall
+.I options
+-d directory1 directory2 ... directoryN
+.SH DESCRIPTION
+\fBepminstall\fR adds or replaces a directory, file, or symlink
+in a list file. The default list file is "epm.list" and can be
+overridden using the \fIEPMLIST\fR environment variable or the
+\fI--list-file\fR option.
+.LP
+Entries are either added to the end of the list file or replaced
+in-line. Comments, directives, and variable declarations in the
+list file are preserved.
+.SH OPTIONS
+\fBepminstall\fR recognizes the standard Berkeley \fIinstall\fR command
+options:
+.TP 5
+\-b
+.br
+Make a backup of existing files (ignored, default for EPM.)
+.TP 5
+\-c
+.br
+BSD old compatibility mode (ignored.)
+.TP 5
+\-g \fIgroup\fR
+.br
+Set the group owner of the file or directory to \fIgroup\fR. The default
+group is "sys".
+.TP 5
+\-m \fImode\fR
+.br
+Set the permissions of the file or directory to \fImode\fR. The default
+permissions are 0755 for directories and executable files and
+0644 for non-executable files.
+.TP 5
+\-o \fIowner\fR
+.br
+Set the owner of the file or directory to \fIowner\fR. The default
+owner is "root".
+.TP 5
+\-s
+.br
+Strip the files (ignored, default for EPM.)
+.TP 5
+\--list-file \fIfilename.list\fR
+.br
+Specify the list file to update.
+.SH SEE ALSO
+epm(1) - create software packages
+.br
+mkepmlist(1) - make an epm list file from a directory
+.br
+epm.list(5) - epm list file format
+.SH COPYRIGHT
+Copyright 1999-2007 by Easy Software Products, All Rights Reserved.
+.LP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+.LP
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+.\"
+.\" End of "$Id: epminstall.man 753 2007-04-10 18:34:01Z mike $".
+.\"

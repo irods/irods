@@ -1,0 +1,92 @@
+#
+# "$Id: epm.list.in 782 2007-12-02 22:46:24Z mike $"
+#
+#   Sample software list file for the ESP Package Manager (EPM).
+#
+#   Please report problems and fixes to "epm@easysw.com".
+#
+#   Copyright 1999-2007 by Easy Software Products, all rights reserved.
+#
+#   These coded instructions, statements, and computer programs are the
+#   property of Easy Software Products and are protected by Federal
+#   copyright law.  Distribution and use rights are outlined in the file
+#   "COPYING" which should have been included with this file.  If this
+#   file is missing or damaged please contact Easy Software Products
+#   at:
+#
+#       Attn: EPM Licensing Information
+#       Easy Software Products
+#       44141 Airport View Drive, Suite 204
+#       Hollywood, Maryland 20636 USA
+#
+#       Voice: (301) 373-9600
+#       EMail: epm@easysw.com
+#         WWW: http://www.easysw.com/epm
+#
+
+# Directories...
+$prefix=@prefix@
+$exec_prefix=@exec_prefix@
+$bindir=@bindir@
+$datarootdir=@datarootdir@
+$datadir=@datadir@
+$docdir=@docdir@
+$libdir=@libdir@
+$mandir=@mandir@
+$srcdir=@srcdir@
+
+# Product information
+%product ESP Package Manager
+%copyright 1999-2007 by Easy Software Products, All Rights Reserved.
+%vendor Easy Software Products
+%license ${srcdir}/COPYING
+%readme ${srcdir}/README
+%description Universal software packaging tool for UNIX.
+%version @VERSION@ @VERNUMBER@
+
+# Executables
+%system all
+f 0555 root sys ${bindir}/epm epm
+f 0555 root sys ${bindir}/epminstall epminstall
+f 0555 root sys ${bindir}/mkepmlist mkepmlist
+
+# Documentation
+%subpackage documentation
+%description Documentation
+f 0444 root sys ${docdir}/README $srcdir/README
+f 0444 root sys ${docdir}/COPYING $srcdir/COPYING
+f 0444 root sys ${docdir}/epm-book.html $srcdir/doc/epm-book.html
+
+# Man pages
+%subpackage man
+%description Man pages
+f 0444 root sys ${mandir}/man1/epm.1 $srcdir/doc/epm.man
+f 0444 root sys ${mandir}/man1/epminstall.1 $srcdir/doc/epminstall.man
+f 0444 root sys ${mandir}/man1/mkepmlist.1 $srcdir/doc/mkepmlist.man
+f 0444 root sys ${mandir}/man5/epm.list.5 $srcdir/doc/epm.list.man
+
+# GUI files...
+$GUIS=@GUIS@
+
+%if GUIS
+%subpackage
+f 0555 root sys ${libdir}/epm/setup setup
+f 0555 root sys ${libdir}/epm/uninst uninst
+
+%system darwin
+f 0444 root sys ${datadir}/epm/setup.icns macosx/setup.icns
+f 0444 root sys ${datadir}/epm/setup.info macosx/setup.info
+
+f 0444 root sys ${datadir}/epm/uninst.icns macosx/uninst.icns
+f 0444 root sys ${datadir}/epm/uninst.info macosx/uninst.info
+%system all
+
+%subpackage man
+f 0444 root sys ${mandir}/man1/setup.1 $srcdir/doc/setup.man
+f 0444 root sys ${mandir}/man5/setup.types.5 $srcdir/doc/setup.types.man
+
+%endif
+
+#
+# End of "$Id: epm.list.in 782 2007-12-02 22:46:24Z mike $".
+#

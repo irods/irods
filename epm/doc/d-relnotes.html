@@ -1,0 +1,102 @@
+<HTML>
+<BODY>
+
+<H1 ALIGN="RIGHT"><A NAME="RELNOTES">D - Release Notes</A></H1>
+
+<P>This appendix lists the change log for each release of the
+EPM software.</P>
+
+<h2>Changes in EPM v4.2</h2>
+
+<ul>
+	<li>EPM now supports a %arch conditional directive (STR #27)</li>
+	<li>EPM now uses hard links whenever possible instead of copying files for distribution (STR #21)</li>
+	<li>EPM no longer puts files in /export in the root file set for AIX packages (STR #15)</li>
+	<li>EPM did not work with newer versions of RPM (STR #23, STR #25)</li>
+	<li>EPM did not clean up temporary files from Solaris packages (STR #20)</li>
+	<li>Building Solaris gzip'd packages failed if the pkg.gz file already existed (STR #16)</li>
+	<li>Fixed handling of %preremove and %postremove for AIX packages (STR #22)</li>
+	<li>Fixed directory permissions in HP-UX packages (STR #24)</li>
+	<li>Removed unnecessary quoting of &quot;!&quot; in filenames (STR #26)</li>
+	<li>Added support for signed RPM packages (STR #19)</li>
+	<li>Added support for inclusion of format-specific packaging files and directives via a %literal directive (STR #5)</li>
+	<li>*BSD init scripts were not installed properly.</li>
+	<li>EPM now displays a warning message when a variable is undefined (STR #10)</li>
+	<li>*BSD dependencies on versioned packages are now specified correctly (STR #4)</li>
+	<li>EPM now uses /usr/sbin/pkg_create on FreeBSD (STR #2)</li>
+	<li>FreeBSD packages are now created with a .tbz extension (STR #1)</li>
+	<li>FreeBSD packages incorrectly assumed that chown was installed in /bin (STR #3)</li>
+	<li>Added support for an &quot;lsb&quot; package format which uses RPM with the LSB dependencies (STR #7)</li>
+	<li>The configure script now supports a --with-archflags and no longer automatically builds universal binaries on Mac OS X.</li>
+	<li>The epm program now automatically detects when the setup GUI is not available, displays a warning message, and then creates a non-GUI package.</li>
+	<li>RPM packages did not map %replaces to Obsoletes:</li>
+</ul>
+
+
+<h2>Changes in EPM v4.1</h2>
+
+<ul>
+
+	<li>Mac OS X portable packages did not create a correct Uninstall application.
+	<li>The temporary package files for portable packages are now removed after creation of the .tar.gz file unless the -k (keep files) option is used.
+ 	<li>The RPM summary string for subpackages did not contain
+ 	the first line of the package description as for other
+ 	package formats.
+ 	<li>The setup and uninst GUIs now support installing and
+ 	removing RPM packages.
+	<li>The setup GUI now confirms acceptance of all licenses prior to installing the first package.
+	<li>Subpackages are no longer automatically dependent on the main package.
+	<li>Multi-line descriptions were not embedded properly into portable package install/patch/remove scripts.
+	<li>Updated the setup and uninstall GUIs for a nicer look-n-feel.
+	<li>Mac OS X portable packages now show the proper name, version, and copyright for the packaged software instead of the EPM version and copyright...
+	<li>Fixed a problem with creation of Mac OS X metapackages with the latest Xcode.
+	<li>EPM now removes the individual .rpm and .deb files when creating a package with subpackages unless the -k option (keep files) is used.
+	<li>EPM now only warns about package names containing characters other than letters and numbers.
+	<li>EPM now generates disk images as well as a .tar.gz file when creating portable packages on Mac OS X.
+
+</ul>
+
+
+<H2>Changes in EPM v4.0</H2>
+
+<UL>
+
+	<LI>New subpackage support for creating multiple dependent
+	packages or a combined package with selectable
+	subpackages, depending on the package format.
+	<LI>Added support for compressing the package files in
+	portable packages (reduces disk space requirements on
+	platforms that provide gzip...)
+	<LI>Added support for custom platform names via the new
+	"-m name" option.
+	<LI>Added support for non-numeric %release values.
+	<LI>Added new --depend option to list all of the source
+	files that a package depends on.
+	<LI>The setup GUI now sets the EPM_INSTALL_TYPE environment
+	variable to the value of the selected TYPE line in the
+	setup.types file.
+	<LI>Fixed NetBSD and OpenBSD packaging support - no longer
+	use FreeBSD-specific extensions to pkg_create on those
+	variants.
+	<LI>Fixed PowerPC platform support for RPM and Debian
+	packages.
+	<LI>Many fixes to AIX package support.
+	<LI>Tru64 packages with init scripts now work when
+	installing for the first time.
+	<LI>RPM file dependencies should now work properly.
+	<LI>Portable product names containing spaces will now
+	display properly.
+
+</UL>
+
+<!-- NEW SHEET 
+     HEADER CENTER ""
+     FOOTER LEFT ""
+     FOOTER RIGHT "" -->
+<P>&nbsp;</P>
+
+<!-- NEW SHEET -->
+<P>&nbsp;</P>
+
+</BODY>
+</HTML>

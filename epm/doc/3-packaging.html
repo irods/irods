@@ -1,0 +1,367 @@
+<HTML>
+<BODY>
+
+<H1 ALIGN="RIGHT"><A NAME="PACKAGING">3 - Packaging Your Software with EPM</A></H1>
+
+<P>This chapter describes how to use EPM to package your own software
+packages.</P>
+
+<H2>The Basics</H2>
+
+<P>EPM reads one or more software "list" files that describe a
+single software package. Each list file contains one or more
+lines of ASCII text containing product or file information.</P>
+
+<P>Comments lines start with the <CODE>#</CODE> character,
+directive lines start with the <CODE>%</CODE> character,
+variables lines start with the <CODE>$</CODE> character, and
+file, directory, init script, and symlink lines start with a
+letter.</P>
+
+<!-- NEED 3in -->
+<H3>Product Information</H3>
+
+<P>Every list file needs to define the product name, copyright, description,
+license, README file, vendor, and version:</P>
+
+<PRE>
+    %product Kung Foo Firewall
+    %copyright 1999-2005 by Foo Industries, All Rights Reserved.
+    %vendor Foo Industries
+    %license COPYING
+    %readme README
+    %description Kung Foo firewall software for your firewall.
+    %version 1.2.3p4 1020304
+</PRE>
+
+<P>The <CODE>%license</CODE> and <CODE>%readme</CODE> directives
+specify files for the license agreement and README files for the
+package, respectively.</P>
+
+<P>The <CODE>%product</CODE>, <CODE>%copyright</CODE>,
+<CODE>%vendor</CODE>, and <CODE>%description</CODE> directives
+take text directly from the line.
+
+<P>The <CODE>%version</CODE> directive specifies the version
+numbers of the package.  The first number is the human-readable
+version number, while the second number is the integer version
+number. If you omit the integer version number, EPM will
+calculate one for you.</P>
+
+<H3>Files, Directories, and Symlinks</H3>
+
+<P>Each file in the distribution is listed on a line starting
+with a letter. The format of all lines is:
+
+<PRE>
+    type mode owner group destination source <I>options</I>
+</PRE>
+
+<P>Regular files use the letter <CODE>f</CODE> for the type
+field:</P>
+
+<PRE>
+    f 755 root sys /usr/bin/foo foo
+</PRE>
+
+<P>Configuration files use the letter <CODE>c</CODE> for the
+type field:</P>
+
+<PRE>
+    c 644 root sys /etc/foo.conf foo.conf
+</PRE>
+
+<!-- NEED 2in -->
+<P>Directories use the letter <CODE>d</CODE> for the type field
+and use a source path of "-":</P>
+
+<PRE>
+    d 755 root sys /var/spool/foo -
+</PRE>
+
+<P>Finally, symbolic links use the letter <CODE>l</CODE> (lowercase L) for the type field:</P>
+
+<PRE>
+    l 000 root sys /usr/bin/foobar foo
+</PRE>
+
+<P>The source field specifies the file to link to and can be a
+relative path.</P>
+
+<H3>Wildcards</H3>
+
+<P>Wildcard patterns can be used in the source field to include multiple
+files on a single line:
+
+<PRE>
+    f 0444 root sys /usr/share/doc/foo *.html
+</PRE>
+
+<!-- NEED 3in -->
+<H3>Subpackages</H3>
+
+<P>Subpackages are optional parts of your software package. For
+example, if your package includes developer files, you might
+provide them as a subpackage so that users that will not be
+developing add-ons to your software can omit them from the
+installation.</P>
+
+<CENTER><TABLE BORDER WIDTH="80%" BGCOLOR="#cccccc" CELLPADDING="5">
+<TR><TD><B>Note:</B><BR>
+Subpackages are implemented as native subsets of the main package
+for the AIX, HPUX, IRIX, Solaris, and Tru64 formats and as
+separate packages that depend on the main (parent) package for
+all other formats.</TD></TR>
+</TABLE></CENTER>
+
+<P>To define a subpackage, use the <CODE>%subpackage</CODE>
+directive followed by a <CODE>%description</CODE> directive:</P>
+
+<PRE>
+    %subpackage foo
+    %description One-Line Description of Foo
+</PRE>
+
+<P>Files, scripts, and dependencies that follow the
+<CODE>%subpackage</CODE> directive are treated as part of that
+subpackage. Specifying the <CODE>%subpackage</CODE> directive
+with no name returns processing to the main (parent) package.</P>
+
+<!-- NEED 2in -->
+<P>You can alternate between subpackages as many times as you
+like:</P>
+
+<PRE>
+    %description Main package description
+    f 0755 /usr/bin/bar bar
+
+    %subpackage foo
+    %description Foo programs
+    f 0755 /usr/bin/foo foo
+    %requires bla
+
+    %subpackage
+    f 0644 /usr/share/man/man1/bar.1
+
+    %subpackage foo
+    f 0644 /usr/share/man/man1/foo.1
+</PRE>
+
+<P>The above example creates a package containing the "bar"
+program and man page with a subpackage containing the "foo"
+program and man page. The "foo" subpackage depends both on the
+main package (implicit <CODE>%requires</CODE>) and another
+package called "bla".</P>
+
+<!-- NEED 2in -->
+<H2>Building a Software Package</H2>
+
+<P>The <CODE>epm(1)</CODE> program is used to build software
+package from list files. To build a portable software package for
+an application called "foo", type the following command:</P>
+
+<PRE>
+    <KBD>epm foo ENTER</KBD>
+</PRE>
+
+<P>If your application uses a different base name than the list
+file, you can specify the list filename on the command-line as
+well:</P>
+
+<PRE>
+    <KBD>epm foo bar.list ENTER</KBD>
+</PRE>
+
+
+<CENTER><TABLE>
+<CAPTION ALIGN="BOTTOM"><A NAME="FIGURE_3_1">Figure 3.1: The EPM
+Setup GUI</A></CAPTION>
+<TR><TD><IMG SRC="setup.png"></TD></TR>
+</TABLE></CENTER>
+
+<P>&nbsp;</P>
+
+<H3>Installing the Software Package</H3>
+
+<P>Once you have created the software package, you can install
+it. Portable packages include an installation script called
+<VAR>product.install</VAR>, where "product" is the name of the
+package:</P>
+
+<PRE>
+    <KBD>cd os-release-arch ENTER
+    ./product.install ENTER</KBD>
+</PRE>
+
+<P>After answering a few yes/no questions, the software will be
+installed. To bypass the questions, run the script with the
+<CODE>now</CODE> argument:</P>
+
+<PRE>
+    <KBD>cd os-release-arch ENTER
+    ./product.install now ENTER</KBD>
+
+</PRE>
+
+<H3>Including the Setup GUI</H3>
+
+<P>EPM also provides an optional graphical setup program (<A
+HREF="#FIGURE_3_1">Figure 3.1</A>). To include the setup program
+in your distributions, create a product logo image in GIF or XPM
+format and use the <CODE>--setup-image</CODE> option when
+creating your distribution:</P>
+
+<PRE>
+    <KBD>epm --setup-image foo.xpm foo ENTER</KBD>
+</PRE>
+
+<P>This option is only supported when creating for portable and
+MacOS X software packages.</P>
+
+<!-- NEED 5in -->
+<H3>Creating Vendor Package Files</H3>
+
+<P>EPM can also produce vendor-specific packages using the
+<CODE>-f</CODE> option:
+
+<PRE>
+    <KBD>epm -f format foo bar.list ENTER</KBD>
+</PRE>
+
+<P>The <I>format</I> option can be one of the following keywords:
+
+<UL>
+
+	<LI><CODE>aix</CODE> - AIX software packages.
+
+	<LI><CODE>bsd</CODE> - FreeBSD, NetBSD, or OpenBSD
+	software packages.
+
+	<LI><CODE>depot</CODE> or <CODE>swinstall</CODE> - HP-UX
+	software packages.
+
+	<LI><CODE>dpkg</CODE> - Debian software packages.
+
+	<LI><CODE>inst</CODE> or <CODE>tardist</CODE> - IRIX
+	software packages.
+
+	<LI><CODE>native</CODE> - "Native" software packages
+	(RPM, INST, DEPOT, PKG, etc.) for the platform.
+
+	<LI><CODE>osx</CODE> - MacOS X software packages.
+
+	<LI><CODE>pkg</CODE> - Solaris software packages.
+
+	<LI><CODE>portable</CODE> - Portable software
+	packages (default).
+
+	<LI><CODE>rpm</CODE> - Red Hat software packages.
+
+	<LI><CODE>setld</CODE> - Tru64 (setld) software
+	packages.
+
+	<LI><CODE>slackware</CODE> - Slackware software
+	packages.
+
+</UL>
+
+<P>Everything in the software list file stays the same - you just
+use the <CODE>-f</CODE> option to select the format. For
+example, to build an RPM distribution of EPM, type:</P>
+
+<PRE>
+    epm -f rpm epm
+</PRE>
+
+<P>The result will be one or more RPM package files instead of
+the portable package files.</P>
+
+<H2>Package Files</H2>
+
+<P>EPM creates the package files in the output directory. As
+mentioned in <A HREF="#INSTALL_PORTABLE">Chapter 1, "Installing
+Using the Portable Distribution"</A>, the default output
+directory is based on the operating system name, version, and
+architecture. Each package format will leave different files in
+the output directory.</P>
+
+<H3>AIX Package Files</H3>
+
+<P>AIX packages are contained in a file called
+<VAR>name.bff</VAR>, where "name" is the product/package name you
+supplied on the command-line.</P>
+
+<H3>BSD Package Files</H3>
+
+<P>BSD packages are contained in a file called
+<VAR>name.tgz</VAR>, where "name" is the product/package name you
+supplied on the command-line.</P>
+
+<H3>HP-UX Package Files</H3>
+
+<P>HP-UX packages are contained in two files called
+<VAR>name.depot.gz</VAR> and <VAR>name.depot.tgz</VAR>, where
+"name" is the product/package name you supplied on the
+command-line. The <VAR>name.depot.gz</VAR> file can be supplied
+directly to the <CODE>swinstall(1m)</CODE> command, while the
+<VAR>name.depot.tgz</VAR> file contains a compressed
+<CODE>tar(1)</CODE> archive that can be used to install the
+software from CD-ROM or network filesystem.</P>
+
+<H3>Debian Package Files</H3>
+
+<P>Debian packages are contained in a file called
+<VAR>name.deb</VAR> or <VAR>name.deb.tgz</VAR> when there are
+subpackages, where "name" is the product/package name you
+supplied on the command-line. The <VAR>name.deb.tgz</VAR> file
+contains a compressed <CODE>tar</CODE> archive containing
+<VAR>name.deb</VAR> and <VAR>name-subpackage.deb</VAR> files that
+can be installed from CD-ROM, disk, or network filesystem.</P>
+
+<H3>IRIX Package Files</H3>
+
+<P>IRIX packages are contained in a file called
+<VAR>name.tardist</VAR>, where "name" is the product/package name
+you supplied on the command-line.</P>
+
+<H3>MacOS X Package Files</H3>
+
+<P>MacOS X packages are contained in a file called
+<VAR>name.dmg</VAR>, where "name" is the product/package name you
+supplied on the command-line.</P>
+
+<H3>RPM Package Files</H3>
+
+<P>RPM packages are contained in a file called
+<VAR>name.rpm</VAR> or <VAR>name.rpm.tgz</VAR> when there are
+subpackages, where "name" is the product/package name you
+supplied on the command-line. The <VAR>name.rpm.tgz</VAR> file
+contains a compressed <CODE>tar</CODE> archive containing
+<VAR>name.rpm</VAR> and <VAR>name-subpackage.rpm</VAR> files that
+can be installed from CD-ROM, disk, or network filesystem.</P>
+
+<H3>Slackware Package Files</H3>
+
+<P>Slackware packages are contained in a file called
+<VAR>name.tgz</VAR>, where "name" is the product/package name you
+supplied on the command-line.</P>
+
+<H3>Solaris Package Files</H3>
+
+<P>Solaris packages are contained in two files called
+<VAR>name.pkg.gz</VAR> and <VAR>name.pkg.tgz</VAR>, where "name"
+is the product/package name you supplied on the command-line. The
+<VAR>name.pkg.gz</VAR> file is a compressed package file that can
+be used directly with the <CODE>pkgadd(1m)</CODE> command, while
+the <VAR>name.pkg.tgz</VAR> file is a compressed <CODE>tar</CODE>
+archive that can be used to install the software from CD-ROM,
+disk, or network filesystem.</P>
+
+<H3>Tru64 Package Files</H3>
+
+<P>Tru64 packages are contained in a file called
+<VAR>name.tar.gz</VAR>, where "name" is the product/package name
+you supplied on the command-line.</P>
+
+</BODY>
+</HTML>

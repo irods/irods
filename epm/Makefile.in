@@ -1,0 +1,421 @@
+#
+# "$Id: Makefile.in 827 2010-12-29 17:32:40Z mike $"
+#
+#   Makefile for the ESP Package Manager (EPM).
+#
+#   Copyright 1999-2010 by Easy Software Products, all rights reserved.
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2, or (at your option)
+#   any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+
+#
+# Programs...
+#
+
+AR		=	@AR@
+CC		=	@CC@
+CHMOD		=	@CHMOD@
+CP		=	@CP@
+CXX		=	@CXX@
+FLTKCONFIG	=	@FLTKCONFIG@
+MKDIR		=	@MKDIR@ -p
+RANLIB		=	@RANLIB@
+RM		=	@RM@ -f
+SHELL		=	/bin/sh
+STRIP		=	@STRIP@
+
+
+#
+# Program options...
+#
+# OPTIM   defines the common compiler optimization/debugging options.
+#
+
+ARFLAGS		=	@ARFLAGS@
+ARCHFLAGS	=	@ARCHFLAGS@
+CFLAGS		=	$(ARCHFLAGS) @CFLAGS@ $(OPTIM)
+CXXFLAGS	=	$(ARCHFLAGS) @CXXFLAGS@ $(OPTIM)
+GUILIBS		=	@GUILIBS@
+LDFLAGS		=	$(ARCHFLAGS) @LDFLAGS@ $(OPTIM)
+LIBS		=	@LIBS@
+OPTIM		=	@OPTIM@
+
+
+#
+# Directories...
+#
+
+bindir		=	@bindir@
+datadir		=	@datadir@
+datarootdir	=	@datarootdir@
+docdir		=	@docdir@
+exec_prefix	=	@exec_prefix@
+mandir		=	@mandir@
+prefix		=	@prefix@
+libdir		=	@libdir@
+srcdir		=	@srcdir@
+
+VPATH		=	$(srcdir)
+
+
+#
+# Rules...
+#
+
+.SILENT:
+
+.SUFFIXES:	.c .cxx .h .o
+.c.o:
+	echo Compiling $<...
+	$(CC) $(CFLAGS) -I. -I$(srcdir) -c $<
+.cxx.o:
+	echo Compiling $<...
+	$(CXX) $(CXXFLAGS) -I. -I$(srcdir) -c $<
+
+
+#
+# Targets...
+#
+
+TARGETS		=	libepm.a \
+			epm \
+			epminstall \
+			mkepmlist \
+			@GUIS@
+EPM_OBJS	=	aix.o \
+			bsd.o \
+			deb.o \
+			dist.o \
+			file.o \
+			inst.o \
+			osx.o \
+			pkg.o \
+			portable.o \
+			qprintf.o \
+			rpm.o \
+			run.o \
+			setld.o \
+			slackware.o \
+			snprintf.o \
+			string.o \
+			support.o \
+			swinstall.o \
+			tar.o
+SETUP_OBJS	=	setup.o \
+			setup2.o \
+			gui-common.o
+UNINST_OBJS	=	uninst.o \
+			uninst2.o \
+			gui-common.o
+OBJS		=	epm.o \
+			$(EPM_OBJS) \
+			epminstall.o \
+			mkepmlist.o \
+			$(SETUP_OBJS) \
+			$(UNINST_OBJS)
+
+
+#
+# Make all targets...
+#
+
+all:	$(TARGETS) Makefile config.h
+
+
+#
+# Clean all object files...
+#
+
+clean:
+	$(RM) $(OBJS)
+	$(RM) $(TARGETS)
+
+
+#
+# Clean all object files and generated files...
+#
+
+distclean:
+	$(RM) $(OBJS)
+	$(RM) $(TARGETS)
+	$(RM) config.cache config.h config.log config.status
+	$(RM) Makefile doc/Makefile macosx/Makefile
+	$(RM) epm.list
+
+
+#
+# Run the clang.llvm.org static code analysis tool on the C sources.
+#
+
+.PHONY: clang clang-changes
+clang:
+	$(RM) -r clang
+	scan-build -V -k -o `pwd`/clang $(MAKE) $(MFLAGS) clean all
+clang-changes:
+	scan-build -V -k -o `pwd`/clang $(MAKE) $(MFLAGS) all
+
+
+#
+# Install all targets...
+#
+
+install: all @INSTALL_GUIS@ @INSTALL_OSX@
+	echo Installing EPM programs in $(bindir)
+	-$(MKDIR) $(bindir)
+	$(RM) $(bindir)/epm
+	$(CP) epm $(bindir)
+	$(STRIP) $(bindir)/epm
+	$(RM) $(bindir)/epminstall
+	$(CP) epminstall $(bindir)
+	$(STRIP) $(bindir)/epminstall
+	$(RM) $(bindir)/mkepmlist
+	$(CP) mkepmlist $(bindir)
+	echo Installing EPM manpages in $(mandir)/man1
+	-$(MKDIR) $(mandir)/man1
+	$(RM) $(mandir)/man1/epm.1
+	$(CP) $(srcdir)/doc/epm.man $(mandir)/man1/epm.1
+	$(RM) $(mandir)/man1/epminstall.1
+	$(CP) $(srcdir)/doc/epminstall.man $(mandir)/man1/epminstall.1
+	$(RM) $(mandir)/man1/mkepmlist.1
+	$(CP) $(srcdir)/doc/mkepmlist.man $(mandir)/man1/mkepmlist.1
+	$(RM) $(mandir)/man1/setup.1
+	$(CP) $(srcdir)/doc/setup.man $(mandir)/man1/setup.1
+	echo Installing EPM manpages in $(mandir)/man5
+	-$(MKDIR) $(mandir)/man5
+	$(RM) $(mandir)/man5/epm.list.5
+	$(CP) $(srcdir)/doc/epm.list.man $(mandir)/man5/epm.list.5
+	$(RM) $(mandir)/man5/setup.types.5
+	$(CP) $(srcdir)/doc/setup.types.man $(mandir)/man5/setup.types.5
+	echo Installing EPM documentation in $(docdir)
+	-$(MKDIR) $(docdir)
+	$(RM) $(docdir)/COPYING
+	$(CP) $(srcdir)/COPYING $(docdir)
+	$(RM) $(docdir)/README
+	$(CP) $(srcdir)/README $(docdir)
+	$(RM) $(docdir)/epm-book.html
+	$(CP) $(srcdir)/doc/epm-book.html $(docdir)
+
+install-guis:	setup uninst
+	echo Installing EPM setup/uninst in $(libdir)/epm
+	$(RM) -r $(libdir)/epm
+	-$(MKDIR) $(libdir)/epm
+	$(CP) setup $(libdir)/epm
+	-$(STRIP) $(libdir)/epm/setup
+	$(CP) uninst $(libdir)/epm
+	-$(STRIP) $(libdir)/epm/uninst
+
+install-osx:
+	echo Installing EPM OSX data files in $(datadir)/epm
+	$(RM) -r $(datadir)/epm
+	-$(MKDIR) $(datadir)/epm
+	$(CP) macosx/setup.icns $(datadir)/epm
+	$(CP) macosx/setup.info $(datadir)/epm
+	$(CP) macosx/uninst.icns $(datadir)/epm
+	$(CP) macosx/uninst.info $(datadir)/epm
+
+
+#
+# Uninstall EPM...
+#
+
+uninstall:
+	echo Uninstalling EPM programs from $(bindir)
+	$(RM) $(bindir)/epm
+	$(RM) $(bindir)/epminstall
+	$(RM) $(bindir)/mkepmlist
+	echo Uninstalling EPM manpages from $(mandir)/man1
+	$(RM) $(mandir)/man1/epm.1
+	$(RM) $(mandir)/man1/epminstall.1
+	$(RM) $(mandir)/man1/mkepmlist.1
+	$(RM) $(mandir)/man1/setup.1
+	echo Uninstalling EPM manpages from $(mandir)/man5
+	$(RM) $(mandir)/man5/epm.list.5
+	$(RM) $(mandir)/man5/setup.types.5
+	echo Uninstalling EPM documentation from $(docdir)
+	$(RM) -r $(docdir)
+	echo Uninstalling EPM setup/uninstall from $(libdir)/epm
+	$(RM) -r $(libdir)/epm
+	echo Uninstalling EPM OSX data files from $(datadir)/epm
+	$(RM) -r $(datadir)/epm
+
+
+#
+# Makefile
+#
+
+Makefile:	Makefile.in configure
+	if test -f config.status; then \
+		./config.status --recheck; \
+		./config.status; \
+	else \
+		./configure; \
+	fi
+	touch config.h
+
+
+#
+# config.h
+#
+
+config.h:	config.h.in configure
+	if test -f config.status; then \
+		./config.status --recheck; \
+		./config.status; \
+	else \
+		./configure; \
+	fi
+	touch config.h
+
+
+#
+# Test EPM...
+#
+
+test:	$(TARGETS)
+	echo Starting portable distribution build test...
+	if ./epm -vv epm >test.log; then \
+		echo Portable distribution build test PASSED.; \
+	else \
+		echo Portable distribution build test FAILED.; \
+		cat test.log; \
+	fi
+	echo Starting native distribution build test...
+	if ./epm -vv -s doc/epmlogo.tif -f native epm >test.log; then \
+		echo Native distribution build test PASSED.; \
+	else \
+		echo Native distribution build test FAILED.; \
+		cat test.log; \
+	fi
+	$(RM) test.log
+
+
+#
+# Make distributions using EPM...
+#
+
+aix: $(TARGETS)
+	./epm -f aix -v epm
+
+bsd: $(TARGETS)
+	./epm -f bsd -v epm
+
+slackware: $(TARGETS)
+	./epm -f slackware -v epm
+
+deb: $(TARGETS)
+	./epm -f deb -v epm
+
+gui portable: $(TARGETS)
+	./epm -v -s doc/epmlogo.gif --setup-program setup \
+		--uninstall-program uninst --data-dir macosx epm
+
+inst tardist: $(TARGETS)
+	./epm -f tardist -v epm
+
+lsb rpm: $(TARGETS)
+	./epm -f $@ -v -s doc/epmlogo.gif --setup-program setup \
+		--uninstall-program uninst --data-dir macosx epm
+
+pkg: $(TARGETS)
+	./epm -f pkg -v epm
+
+native: $(TARGETS)
+	./epm -f native -v epm
+
+osx: $(TARGETS)
+	./epm -f osx -v -s doc/epmlogo.tif epm
+
+swinstall depot: $(TARGETS)
+	./epm -f depot -v epm
+
+
+#
+# libepm.a
+#
+
+libepm.a:	$(EPM_OBJS)
+	echo Archiving libepm.a...
+	$(RM) libepm.a
+	$(AR) $(ARFLAGS) libepm.a $(EPM_OBJS)
+	$(RANLIB) libepm.a
+
+$(EPM_OBJS):	epm.h epmstring.h
+
+
+#
+# epm
+#
+
+epm:	epm.o $(EPM_OBJS)
+	echo Linking epm...
+	$(CC) $(LDFLAGS) -o epm epm.o libepm.a $(LIBS)
+
+epm.o:	epm.h epmstring.h
+
+
+#
+# epminstall
+#
+
+epminstall:	epminstall.o libepm.a
+	echo Linking epminstall...
+	$(CC) $(LDFLAGS) -o epminstall epminstall.o libepm.a $(LIBS)
+
+epminstall.o:	epm.h epmstring.h
+
+
+#
+# mkepmlist
+#
+
+mkepmlist:	mkepmlist.o libepm.a
+	echo Linking mkepmlist...
+	$(CC) $(LDFLAGS) -o mkepmlist mkepmlist.o libepm.a $(LIBS)
+
+mkepmlist.o:	epm.h epmstring.h
+
+
+#
+# setup
+#
+
+setup:	$(SETUP_OBJS) libepm.a
+	echo Linking setup...
+	$(CXX) $(LDFLAGS) -o setup $(SETUP_OBJS) libepm.a $(GUILIBS) $(LIBS)
+
+setup.o:	setup.h gui-common.h epmstring.h
+setup2.o:	setup.h gui-common.h epmstring.h
+gui-common.o:	gui-common.h
+
+
+#
+# uninst
+#
+
+uninst:	$(UNINST_OBJS) libepm.a
+	echo Linking uninst...
+	$(CXX) $(LDFLAGS) -o uninst $(UNINST_OBJS) libepm.a $(GUILIBS) $(LIBS)
+
+uninst.o:	uninst.h epmstring.h gui-common.h
+uninst2.o:	uninst.h epmstring.h gui-common.h
+gui-common.o:	gui-common.h
+
+
+#
+# Common dependencies...
+#
+
+$(OBJS):	Makefile config.h
+
+
+#
+# End of "$Id: Makefile.in 827 2010-12-29 17:32:40Z mike $".
+#
