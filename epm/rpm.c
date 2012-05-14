@@ -236,6 +236,11 @@ make_rpm(int            format,		/* I - Subformat */
   else
     build_option = "";
 
+  // TGR - newer RPM uses this BUILD directory
+  snprintf(filename, sizeof(filename), "%s/BUILD", absdir);
+  mkdir(filename, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+  // TGR - end
+
   if (!strcmp(platform->machine, "intel"))
   {
     if (run_command(NULL, EPM_RPMBUILD " -bb --buildroot \"%s/buildroot\" "
