@@ -250,10 +250,24 @@ make_rpm(int            format,		/* I - Subformat */
 			  specname))
       return (1);
   }
-  else if (run_command(NULL, EPM_RPMBUILD " -bb --buildroot \"%s/buildroot\" "
-                       EPM_RPMARCH "%s %s%s", absdir, platform->machine,
-		       build_option, specname))
-    return (1);
+// TGR - changes to run rpm directly, no forking
+//
+//  else if (run_command(NULL, EPM_RPMBUILD " -bb --buildroot \"%s/buildroot\" "
+//                       EPM_RPMARCH "%s %s%s", absdir, platform->machine,
+//		       build_option, specname))
+//    return (1);
+//
+  else {
+    snprintf(filename, sizeof(filename), "%s -bb -buildroot \"%s/buildroot\" %s %s %s%s",
+      EPM_RPMBUILD, absdir, EPM_RPMARCH, platform->machine, build_option, specname);
+    if (Verbosity){
+      puts(filename);
+    }
+    if (system(filename)){
+      return (1);
+    }
+  }
+// TGR - end
 
  /*
   * Move the RPMs to the local directory and rename the RPMs using the
