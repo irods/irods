@@ -49,6 +49,7 @@ export libCoreIncDir	= $(buildDir)/lib/core/include
 export libMd5IncDir	= $(buildDir)/lib/md5/include
 export libRbudpIncDir	= $(buildDir)/lib/rbudp/include
 export libApiIncDir	= $(buildDir)/lib/api/include
+export libHasherIncDir	= $(buildDir)/lib/hasher/include
 
 
 
