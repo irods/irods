@@ -143,6 +143,10 @@ sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./packaging/e-irods.list.template > /tmp/
 mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 
 
+# generate manual in pdf format
+cd $DIR/../
+rst2pdf manual.rst -o manual.pdf
+
 
 # run EPM for package type of this machine
 
