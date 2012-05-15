@@ -102,7 +102,9 @@ INCLUDES +=	-I$(libMd5IncDir)
 
 # Hasher
 LIB_HASHER_OBJS = \
-		$(libHasherObjDir)/Hasher.o
+		$(libHasherObjDir)/Hasher.o \
+		$(libHasherObjDir)/MD5Strategy.o
+INCLUDES +=	-I$(libHasherIncDir)
 
 # rbudp
 ifdef RBUDP_TRANSFER
