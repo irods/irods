@@ -4,15 +4,55 @@ SCRIPTNAME=`basename $0`
 
 # check arguments
 if [ $# -ne 1 -a $# -ne 2 ] ; then
-  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource"
+  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource" 1>&2
   exit 1
 fi
 
 if [ $1 != "icat" -a $1 != "resource" ] ; then
-  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource"
+  echo "Usage: $SCRIPTNAME icat {databasetype}   OR   $SCRIPTNAME resource" 1>&2
   exit 1
 fi
 
+if [ "$1" == "icat" ]; then
+#  if [ $2 != "postgres" -a $2 != "mysql" ]
+  if [ $2 != "postgres" ]; then
+    echo "ERROR :: Invalid iCAT database type [$2]" 1>&2
+    echo "      :: Only 'postgres' available at this time" 1>&2
+    exit 1
+  fi
+fi
+
+if [ -f "/etc/lsb-release" ]; then # Ubuntu
+  if [ "$(id -u)" != "0" ]; then
+    echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
+    echo "      :: because dpkg demands to be run as root" 1>&2
+    exit 1
+  fi
+fi
+
+RST2PDF=`which rst2pdf`
+if [ "$?" -ne "0" ]; then
+  echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
+  if [ -f "/etc/lsb-release" ]; then # Ubuntu
+    echo "      :: try: apt-get install rst2pdf" 1>&2
+  else
+    echo "      :: try: easy_install rst2pdf" 1>&2
+  fi
+  exit 1
+fi
+
+DOXYGEN=`which doxygen`
+if [ "$?" -ne "0" ]; then
+  echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
+  if [ -f "/etc/lsb-release" ]; then # Ubuntu
+    echo "      :: try: apt-get install doxygen" 1>&2
+  elif [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
+    echo "      :: try: yum install doxygen" 1>&2
+  else
+    echo "      :: download from: http://doxygen.org" 1>&2
+  fi
+  exit 1
+fi
 
 
 # get into the correct directory 
@@ -42,10 +82,10 @@ if [ $1 == "icat" ] ; then
     serverSqlDir="./server/icat/src"
     convertScript="$serverSqlDir/convertSql.pl"
 
-    echo "Convert Script: [$convertScript] [$DB_TYPE] [$serverSqlDir]"
+    echo "Converting SQL: [$convertScript] [$DB_TYPE] [$serverSqlDir]"
     `perl $convertScript $2 $serverSqlDir &> /dev/null`
 	if [ "$?" -ne "0" ]; then
-        echo "Failed to convert SQL forms"
+        echo "Failed to convert SQL forms" 1>&2
 	    exit 1
 	fi
 
@@ -147,9 +187,15 @@ mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 cd $DIR/../
 rst2pdf manual.rst -o manual.pdf
 
+# generate doxygen for microservices
+cd $DIR/../iRODS
+doxygen ./config/doxygen-saved.cfg
+if [ "$?" != "0" ]; then
+  echo "Error: Failed generating doxygen output." 1>&2
+fi
+
 
 # run EPM for package type of this machine
-
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
@@ -176,33 +222,6 @@ elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
 elif [ -f "/usr/bin/sw_vers" ]; then  # MacOSX
   echo "TODO: generate package for MacOSX"
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
