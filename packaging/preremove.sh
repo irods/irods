@@ -109,6 +109,19 @@ fi
 # report that we are not deleting the account(s)
 echo "NOTE :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
 echo "     :: The Local System Administrator should delete these if necessary."
+if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
+    echo "     :: try:"
+    echo "     ::      sudo userdel $OS_EIRODS_ACCT"
+    echo "     ::      sudo groupdel $OS_EIRODS_ACCT"
+elif [ -f "/etc/SuSE-release" ]; then # SuSE
+    echo "     :: try:"
+    echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"
+    echo "     ::      sudo /usr/sbin/groupdel $OS_EIRODS_ACCT"
+elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
+    echo "     :: try:"
+    echo "     ::      sudo userdel $OS_EIRODS_ACCT"
+                       # groupdel is not necessary on Ubuntu, apparently...
+fi
 
 # =-=-=-=-=-=-=-
 # remove runlevel symlinks
