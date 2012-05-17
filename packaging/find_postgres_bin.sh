@@ -28,6 +28,14 @@ ret=${not_links[0]}
 
 
 # =-=-=-=-=-=-=-
+# if there are no candidates, there is no psql on this machine.
+# set return value accordingly
+if [ "$ret" == "" ]; then
+    echo "No postgres [psql] found.  Aborting." 1>&2
+    ret="FAIL/FAIL"
+fi
+
+# =-=-=-=-=-=-=-
 # if there are still more than one candidate, then something terrible has happened
 # we shall bail and eschew all responsibility, silly human.
 if [ ${#not_links[@]} -gt 1 ]; then

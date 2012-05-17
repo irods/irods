@@ -134,6 +134,9 @@ if [ $1 == "icat" ] ; then
             # need to do a dirname here, as the irods.config is expected to have a path
             # which will be appended with a /bin
             EIRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
+            if [ "$EIRODSPOSTGRESPATH" == "FAIL" ]; then
+                exit 1
+            fi
             EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
             EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
 
