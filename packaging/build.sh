@@ -78,6 +78,13 @@ if [ "$?" -ne "0" ]; then
   exit 1
 fi
 
+ROMAN=`python -c "import roman"`
+if [ "$?" -ne "0" ]; then
+  echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
+  echo "      :: try: easy_install roman" 1>&2
+  exit 1
+fi
+
 DOXYGEN=`which doxygen`
 if [ "$?" -ne "0" ]; then
   echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
@@ -229,12 +236,17 @@ if [ "$BUILDEIRODS" == "1" ]; then
     # generate manual in pdf format
     cd $DIR/../
     rst2pdf manual.rst -o manual.pdf
+    if [ "$?" != "0" ]; then
+      echo "ERROR :: Failed generating manual.pdf" 1>&2
+      exit 1
+    fi
 
     # generate doxygen for microservices
     cd $DIR/../iRODS
     doxygen ./config/doxygen-saved.cfg
     if [ "$?" != "0" ]; then
       echo "ERROR :: Failed generating doxygen output" 1>&2
+      exit 1
     fi
 
 fi # if $BUILDEIRODS
