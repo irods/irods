@@ -669,7 +669,7 @@ sub configureDatabaseUser
 {
 	++$currentStep;
 	printSubtitle( "\n" );
-	printSubtitle( "Configuring database user...\n" );
+	printSubtitle( "Step $currentStep of $totalSteps:  Configuring database user...\n" );
 	printLog( "\n" );
 	printLog( "Configuring database user...\n" );
 	printLog( "------------------------------------------------------------------------\n" );
@@ -733,7 +733,7 @@ sub createDatabaseAndTables
 {
 	++$currentStep;
 	printSubtitle( "\n" );
-	printSubtitle( "Creating database and tables...\n" );
+	printSubtitle( "Step $currentStep of $totalSteps:  Creating database and tables...\n" );
 	printLog( "\n" );
 	printLog( "Creating database and tables...\n" );
 	printLog( "------------------------------------------------------------------------\n" );
