@@ -36,6 +36,10 @@ else
 CCFLAGS += -Wno-write-strings
 endif
 
+# added by Terrell
+# silence deprecation warnings until we can use newer compilers on CentOS
+CCFLAGS += -Wno-deprecated
+
 # =-=-=-=-=-=-=-
 # JMC :: build using E-iRODS Extensions
 #     :: currently this is only the microservice plugins
