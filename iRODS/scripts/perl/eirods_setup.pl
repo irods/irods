@@ -535,7 +535,7 @@ elsif ( $DATABASE_TYPE eq "" )
 else
 {
 	# There is a database.  We need to configure it.
-	$totalSteps  = 6;
+	$totalSteps  = 5;
 	if ($isUpgrade) {$totalSteps=3;}
 	$currentStep = 0;
 
