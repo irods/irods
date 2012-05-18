@@ -125,27 +125,24 @@ fi
 
 # =-=-=-=-=-=-=-
 # remove runlevel symlinks
-if [ -e /etc/init.d/e-irods ]; then
-    rm /etc/init.d/e-irods
+
+# detect correct /etc location of rcX.d
+if [ -d "/etc/rc.d" ]; then
+    # SuSE
+    # CentOS (has /etc/rcX.d as aliases into rc.d/)
+    # Fedora (same as CentOS)
+    ETCPREFIX="/etc/rc.d"
+else
+    # Ubuntu
+    ETCPREFIX="/etc"
 fi
-if [ -e /etc/rc0.d/K15-irods ]; then
-    rm /etc/rc0.d/K15e-irods
-fi
-if [ -e /etc/rc2.d/S95e-irods ]; then
-    rm /etc/rc2.d/S95e-irods
-fi
-if [ -e /etc/rc3.d/S95e-irods ]; then
-    rm /etc/rc3.d/S95e-irods
-fi
-if [ -e /etc/rc4.d/S95e-irods ]; then
-    rm /etc/rc4.d/S95e-irods
-fi
-if [ -e /etc/rc5.d/S95e-irods ]; then
-    rm /etc/rc5.d/S95e-irods
-fi
-if [ -e /etc/rc6.d/K15e-irods ]; then
-    rm /etc/rc6.d/K15e-irods
-fi
+rm $ETCPREFIX/rc0.d/K15e-irods
+rm $ETCPREFIX/rc2.d/S95e-irods
+rm $ETCPREFIX/rc3.d/S95e-irods
+rm $ETCPREFIX/rc4.d/S95e-irods
+rm $ETCPREFIX/rc5.d/S95e-irods
+rm $ETCPREFIX/rc6.d/K15e-irods
+rm /etc/init.d/e-irods
 
 # =-=-=-=-=-=-=-
 # remove icommands symlinks
