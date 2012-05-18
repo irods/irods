@@ -67,6 +67,10 @@ make_rpm(int            format,		/* I - Subformat */
   char		rpmdir[1024];		/* RPMDIR env var */
   char		release[256];		/* Release: number */
   const char	*build_option;		/* Additional rpmbuild option */
+  // TGR
+  // add fileinfo struct for directory check in cleanup code
+  struct stat fileinfo;
+  // TGR - end
 
 
   if (Verbosity)
@@ -491,7 +495,20 @@ make_rpm(int            format,		/* I - Subformat */
     unlink(filename);
 
     snprintf(filename, sizeof(filename), "%s/buildroot", directory);
-    unlink_directory(filename);
+//    unlink_directory(filename);
+    // TGR
+    // check whether directory exists before unlinking it
+    // newer rpm calls use the BUILD directory (also removed below)
+    if (stat(filename, &fileinfo)){
+        /* could not stat */
+    }
+    else {
+        if (S_ISDIR(fileinfo.st_mode)) {
+            unlink_directory(filename);
+        }
+    }
+    // TGR - end
+
 
     // TGR - remove newly added BUILD directory, for newer rpm calls
     snprintf(filename, sizeof(filename), "%s/BUILD", directory);
