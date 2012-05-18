@@ -7,22 +7,37 @@
 %version 3.0b2 300002
 
 %if DEBICAT
-
+$DEB=true
+$ICAT=true
 %requires postgresql 8.4
 %requires unixodbc
 %requires odbc-postgresql
 %requires super
 
 %elseif DEBRESOURCE
-%elseif RPMICAT
+$DEB=true
+$RESOURCE=true
 
+%elseif REDHATRPMICAT
+$REDHAT=true
+$RPM=true
+$ICAT=true
 %requires postgresql 
 %requires postgresql-server
 #%requires postgresql-odbc
 %requires unixODBC
 %requires authd
 
+%elseif SUSERPMICAT
+$SUSE=true
+$RPM=true
+$ICAT=true
+%requires psqlODBC
+
 %elseif RPMRESOURCE
+$RPM=true
+$RESOURCE=true
+
 %endif
 
 %requires perl

@@ -271,16 +271,16 @@ fi
 cd $DIR/../
 if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
   echo "Running EPM :: Generating RPM"
-  epmvar="RPM$SERVER_TYPE" 
-  ./epm/epm -f rpm e-irods $epmvar=true $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+  epmvar="REDHATRPM$SERVER_TYPE" 
+  ./epm/epm -f rpm e-irods $epmvar=true ./packaging/e-irods.list
 elif [ -f "/etc/SuSE-release" ]; then # SuSE
   echo "Running EPM :: Generating RPM"
-  epmvar="RPM$SERVER_TYPE" 
-  ./epm/epm -f rpm e-irods $epmvar=true $SERVER_TYPE=true RPM=true ./packaging/e-irods.list
+  epmvar="SUSERPM$SERVER_TYPE" 
+  ./epm/epm -f rpm e-irods $epmvar=true ./packaging/e-irods.list
 elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
   echo "Running EPM :: Generating DEB"
   epmvar="DEB$SERVER_TYPE" 
-  ./epm/epm -a amd64 -f deb e-irods $epmvar=true $SERVER_TYPE=true DEB=true ./packaging/e-irods.list
+  ./epm/epm -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
 elif [ -f "/usr/bin/sw_vers" ]; then  # MacOSX
   echo "TODO: generate package for MacOSX"
 fi
