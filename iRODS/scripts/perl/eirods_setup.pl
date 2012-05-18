@@ -34,7 +34,7 @@ use Config;
 $version{"eirods_setup.pl"} = "Jan 2012";
 
 # =-=-=-=-=-=-=-
-# set flag to determine if this is an ICAT installation or not
+# set flag to determine if this is an iCAT installation or not
 # for testing later...
 $icatInstall = 0;
 if( scalar(@ARGV) > 0 ) {
@@ -898,8 +898,8 @@ sub createDatabaseAndTables
     
 		my $alreadyCreated = 0;
 		my $sqlfile;
-		printStatus( "    Inserting ICAT tables...\n" );
-		printLog( "    Inserting ICAT tables...\n" );
+		printStatus( "    Inserting iCAT tables...\n" );
+		printLog( "    Inserting iCAT tables...\n" );
 		foreach $sqlfile (@sqlfiles)
 		{
 			printLog( "    $sqlfile...\n" );
@@ -928,11 +928,11 @@ sub createDatabaseAndTables
 			}
 		}
 
-                # Now apply the site-defined ICAT tables, if any 
+                # Now apply the site-defined iCAT tables, if any 
 		my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtTables.sql" );
 		if (-e $sqlPath) {
-		    printStatus( "    Inserting ICAT Extension tables...\n" );
-		    printLog( "    Inserting ICAT Extension tables...\n" );
+		    printStatus( "    Inserting iCAT Extension tables...\n" );
+		    printLog( "    Inserting iCAT Extension tables...\n" );
 		    printLog( "    $sqlPath...\n" );
 		    ($status,$output) = execute_sql( $DB_NAME, $sqlPath );
 		    if ( $status != 0 || $output =~ /error/i )
@@ -947,8 +947,8 @@ sub createDatabaseAndTables
 		}
 		my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtInserts.sql" );
 		if (-e $sqlPath) {
-		    printStatus( "    Inserting ICAT Extension table rows...\n" );
-		    printLog( "    Inserting ICAT Extension table rows...\n" );
+		    printStatus( "    Inserting iCAT Extension table rows...\n" );
+		    printLog( "    Inserting iCAT Extension table rows...\n" );
 		    printLog( "    $sqlPath...\n" );
 		    ($status,$output) = execute_sql( $DB_NAME, $sqlPath );
 		    if ( $status != 0 || $output =~ /error/i )
@@ -1715,7 +1715,7 @@ sub configureIrodsUser
 	}
 
 	if( 1 == $icatInstall ) {
-		# this is an instance of an ICAT installation as 
+		# this is an instance of an iCAT installation as 
         # determined by the passing of configuration parameters ( database info ).
 		printToFile( $userIrodsFile,
 			"# iRODS personal configuration file.\n" .
