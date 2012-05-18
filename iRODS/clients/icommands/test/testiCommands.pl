@@ -97,7 +97,7 @@ my $ntests       = 0;
 my $progname     = $0;
 
 my $outputfile   = "testSurvey_" . $host . ".log";
-my $ruletestfile = "testRule_"   . $host . ".irb";
+my $ruletestfile = "testRule_"   . $host . ".r";
 my $sfile2 = $dir_w . '/sfile2';
 my $sfile2size;
 system ( "cat $progname $progname > $sfile2" );
@@ -919,31 +919,25 @@ sub makeRuleFile {
 		return( 1 );
 	}
 
-	print( FILE2 "# This is an example of an input for the irule command.\n" );
-	print( FILE2 "# This first input line is the rule body.\n" );
-	print( FILE2 "# The second input line is the input parameter in the format of:\n" );
-	print( FILE2 "#   label=value. e.g., *A=$irodshome/icmdtest/foo1\n" );
-	print( FILE2 "# Multiple inputs can be specified using the \'\%\' character as the seperator.\n" );
-	print( FILE2 "# The third input line is the output description. Multiple outputs can be specified\n" );
-	print( FILE2 "# using the \'\%\' character as the seperator.\n" );
-	print( FILE2 "#\n" );
-	print( FILE2 "myTestRule||msiDataObjOpen(*A,*S_FD)" );
-	print( FILE2 "##msiDataObjCreate(*B,\'$irodsdefresource\',*D_FD)" );
-	print( FILE2 "##msiDataObjLseek(*S_FD,10,\'SEEK_SET\',*junk1)" );
-	print( FILE2 "##msiDataObjRead(*S_FD,10000,*R_BUF)" );
-	print( FILE2 "##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)" );
-	print( FILE2 "##msiDataObjClose(*S_FD,*junk2)" );
-	print( FILE2 "##msiDataObjClose(*D_FD,*junk3)" );
-	print( FILE2 "##msiDataObjCopy(*B,*C,\'$irodsdefresource\',*junk4)" );
-#	print( FILE2 "##delayExec(msiDataObjRepl(*C,$irodsdefresource,*junk5),<A></A>)" );
-	print( FILE2 "##msiDataObjUnlink(*B,*junk6)|null" );
-	print( FILE2 "\n" );
-	print( FILE2 "*A=\"$irodshome/icmdtest/foo1\"\%*B=\"$irodshome/icmdtest/foo4\"\%*C=\"$irodshome/icmdtest/foo3\"" );
-	print( FILE2 "\n" );
-	print( FILE2 "*R_BUF\%*W_LEN" );
-	print( FILE2 "\n" );
-	close( FILE2 );
-	return( 0 );
+        print( FILE2 "#\n" );
+        print( FILE2 "# This is an example of an input for the irule command.\n" );
+        print( FILE2 "#\n" );
+        print( FILE2 "myTestRule{\n" );
+        print( FILE2 "  msiDataObjOpen(*A,*S_FD);\n" );
+        print( FILE2 "  msiDataObjCreate(*B,\'$irodsdefresource\',*D_FD);\n" );
+        print( FILE2 "  msiDataObjLseek(*S_FD,10,\'SEEK_SET\',*junk1);\n" );
+        print( FILE2 "  msiDataObjRead(*S_FD,10000,*R_BUF);\n" );
+        print( FILE2 "  msiDataObjWrite(*D_FD,*R_BUF,*W_LEN);\n" );
+        print( FILE2 "  msiDataObjClose(*S_FD,*junk2);\n" );
+        print( FILE2 "  msiDataObjClose(*D_FD,*junk3);\n" );
+        print( FILE2 "  msiDataObjCopy(*B,*C,\'$irodsdefresource\',*junk4);\n" );
+        print( FILE2 "  msiDataObjUnlink(*B,*junk6);\n" );
+        print( FILE2 "}\n" );
+        print( FILE2 "input *A=\"$irodshome/icmdtest/foo1\", *B=\"$irodshome/icmdtest/foo4\", *C=\"$irodshome/icmdtest/foo3\"\n" );
+        print( FILE2 "output *R_BUF, *W_LEN\n" );
+        print( FILE2 "\n" );
+        close( FILE2 );
+        return( 0 );
 }
 
 # make a directory of 2 large files and 2 small fles
