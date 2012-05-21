@@ -1,0 +1,57 @@
+This file contains a comprehensive listing of Free / Open Source Software (FOSS) and Commercial Off-the-Shelf (COTS) software utilized by iRODS/E-iRODS and the packaging and development of iRODS/E-iRODS.
+
+
+----------------------------------------------
+
+iRODS/E-iRODS COTS
+------------------
+Oracle
+WOS
+Amazon S3
+HPSS
+
+iRODS/E-iRODS FOSS
+------------------
+c
+c++
+perl
+doxygen
+restructuredtext
+postgresql
+unixodbc
+mysql
+HDF5
+
+----------------------------------------------
+
+PACKAGING COTS
+--------------
+
+PACKAGING FOSS
+--------------
+bash
+epm
+dpkg
+lintian
+rpmtools
+rpmlint
+
+----------------------------------------------
+
+DEVELOPMENT COTS
+----------------
+VMWare VSphere
+Microsoft Windows
+
+DEVELOPMENT FOSS
+----------------
+hudson
+gforge
+suse
+ubuntu
+centos
+ssh
+gcc
+python
+eucalyptus
+
