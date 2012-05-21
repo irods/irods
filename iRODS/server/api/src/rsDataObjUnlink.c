@@ -327,7 +327,7 @@ dataObjInfo_t *dataObjInfo)
 		    if (isOrphanPath (dataObjUnlinkInp->objPath) == 
 		      NOT_ORPHAN_PATH) {
 			/* don't rename orphan path */
-		        status1 = rsMkOrhpanPath (rsComm, dataObjInfo->objPath,
+		        status1 = rsMkOrphanPath (rsComm, dataObjInfo->objPath,
 		          orphanPath);
 		        if (status1 < 0) break;
 		        /* reg the orphan path */

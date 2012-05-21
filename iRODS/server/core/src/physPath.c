@@ -1099,12 +1099,12 @@ getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath)
     return 0;
 }
 
-/* rsMkOrhpanPath - given objPath, compose the orphan path which is
+/* rsMkOrphanPath - given objPath, compose the orphan path which is
  * /myZone/trash/orphan/userName#userZone/filename.random
  * Also make the required directory.
  */
 int
-rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
+rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
 {
     int status;
     char *tmpStr;
@@ -1117,7 +1117,7 @@ rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "rsMkOrhpanPath: splitPathByKey error for %s, status = %d",
+          "rsMkOrphanPath: splitPathByKey error for %s, status = %d",
           objPath, status);
         return (status);
     }
@@ -1147,7 +1147,7 @@ rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
 
     if (status < 0 && status != CAT_NAME_EXISTS_AS_COLLECTION) {
         rodsLogError (LOG_ERROR, status,
-          "rsMkOrhpanPath: rsCollCreate error for %s",
+          "rsMkOrphanPath: rsCollCreate error for %s",
           orphanPath);
     }
     orphanPathPtr = orphanPath + strlen (orphanPath); 
