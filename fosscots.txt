@@ -15,6 +15,7 @@ iRODS/E-iRODS FOSS
 c
 c++
 perl
+boost
 doxygen
 restructuredtext
 postgresql
@@ -47,6 +48,8 @@ DEVELOPMENT FOSS
 ----------------
 hudson
 gforge
+cppcheck
+valgrind
 suse
 ubuntu
 centos
