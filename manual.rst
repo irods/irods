@@ -3,50 +3,55 @@ Enterprise iRODS (E-iRODS) Manual
 =================================
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0 beta
+:Version: 3.0beta2
 
 .. contents:: Table of Contents
 .. section-numbering::
 
-----------------
-ReStructuredText
-----------------
+..
+  ----------------
+  ReStructuredText
+  ----------------
 
-Needs python modules::
+  Needs python modules::
 
- $ easy_install docutils==0.7.0
- $ easy_install roman
- $ easy_install rst2pdf
+   $ easy_install docutils==0.7.0
+   $ easy_install roman
+   $ easy_install rst2pdf
 
-Some links for learning in place:
+  Some links for learning in place:
 
- http://docutils.sourceforge.net/docs/index.html
+   http://docutils.sourceforge.net/docs/index.html
 
- http://docutils.sourceforge.net/docs/user/rst/cheatsheet.txt
+   http://docutils.sourceforge.net/docs/user/rst/cheatsheet.txt
 
- http://docutils.sourceforge.net/docs/user/rst/quickstart.txt
+   http://docutils.sourceforge.net/docs/user/rst/quickstart.txt
 
- http://docutils.sourceforge.net/docs/user/rst/quickstart.html
+   http://docutils.sourceforge.net/docs/user/rst/quickstart.html
 
- http://docutils.sourceforge.net/docs/user/rst/demo.txt
+   http://docutils.sourceforge.net/docs/user/rst/demo.txt
 
- http://docutils.sourceforge.net/docs/user/rst/demo.html
+   http://docutils.sourceforge.net/docs/user/rst/demo.html
 
- http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
+   http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
 
-Generate HTML::
+  Generate HTML::
 
- $ rst2html.py -stg manual.rst > manual.html
+   $ rst2html.py -stg manual.rst > manual.html
 
-Generate PDF::
+  Generate PDF::
 
- $ rst2pdf manual.rst -o manual.pdf
+   $ rst2pdf manual.rst -o manual.pdf
 
 --------
 Overview
 --------
 
 This manual attempts to provide standalone documentation for E-iRODS as packaged by the Renaissance Computing Institute (RENCI).
+
+    http://e-irods.com
+
+    file://usr/share/eirods/iRODS/doc/html/index.html
 
 Additional documentation is available on the iRODS wiki and in the two books published by the iRODS team:
 
@@ -61,19 +66,49 @@ Additional documentation is available on the iRODS wiki and in the two books pub
     http://www.amazon.com/dp/1466469129
 
 
+--------
+Download
+--------
+
+E-iRODS is released in binary form.  RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for combinations of platform, operating system, and database type.
+
+More combinations will be made available as our testing matrix increases.
+
+The latest files can be downloaded from http://e-irods.com/download.
+
+
 ------------
 Installation
 ------------
 
-E-iRODS is released in binary form.  RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for your combination of platform, operating system, and database type.
+Installation of the Postgres iCAT RPM::
 
-Installation of the x86-Ubuntu-Postgres RPM::
+ $ (sudo) rpm -i e-irods-3.0b2-icat-postgres-64bit.rpm
 
- $ rpm -i e-irods-3.0-x86-ubuntu-postgres.rpm
+Installation of the Resource DEB::
 
-Installation of the x86-CentOS-MySQL DEB::
+ $ (sudo) dpkg -i e-irods-3.0b2-resource-64bit.deb
 
- $ dpkg -i e-irods-3.0-x86-centos-mysql.deb
+These packages install the dependencies necessary to run E-iRODS, a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
+
+For the iCAT-enabled server packages, the E-iRODS server and EICAT database are started automatically with default values::
+
+ $ eirods@hostname:~> ienv
+ NOTICE: Release Version = rods3.0, API Version = d
+ NOTICE: irodsHost=hostname
+ NOTICE: irodsPort=1247
+ NOTICE: irodsDefResource=demoResc
+ NOTICE: irodsHome=/tempZone/home/rods
+ NOTICE: irodsCwd=/tempZone/home/rods
+ NOTICE: irodsUserName=rods
+ NOTICE: irodsZone=tempZone 
+
+For the resource-only packages, the server is not started automatically.  The administrator will need to run the packaging/setup_resource.sh script and provide the following three pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
+
+1) Hostname or IP
+2) iCAT Port
+3) iCAT Zone 
+
 
 ----------
 Quickstart
@@ -81,17 +116,35 @@ Quickstart
 
 Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
- $ ils
+ $ eirods@hostname:~> ils
  /tempZone/home/rods:
- $
 
 ---------
 Upgrading
 ---------
 
+The beta release of E-iRODS does not yet support upgrading.  Every install will be a clean install.
+
+This section will be updated when support is included.
+
 ----------
 Backing Up
 ----------
+
+Backing up E-iRODS consists of three major parts:  The data, the iRODS system and configuration files, and the iCAT database itself.
+
+1) The data itself can be handled by the iRODS system through replication and should not require any specific backup efforts worth noting here.
+
+2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup`_ microservice.  When run on a regular schedule, the `msiServerBackup` microservice will contain all the necessary configuration information to reconstruct your iRODS setup during disaster recovery.
+
+.. _msiServerBackup: file://usr/share/eirods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
+
+3) The iCAT database itself can be backed up in a variety of ways.  A Postgres database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, Postgres 8.4 includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of Postgres where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in Postgres 9.0+ and can keep two Postgres servers in sync with sub-second delay.
+
+.. __: http://www.postgresql.org/docs/8.4/static/warm-standby.html#WARM-STANDBY-RECORD
+.. __: http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION
+
+Configuration and maintenance of this type of backup system is out of scope for this document, but is included here as an indication of best practice.
 
 -----------
 Assumptions
@@ -103,8 +156,8 @@ E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured 
 How To
 ------
 
-Failure Scenarios
------------------
+Troubleshooting
+---------------
 
 These will be cross-referenced with each feature.
 
@@ -313,6 +366,10 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
+2012-06-01   3.0b2      Second Beta Release.
+                          This is the second release from RENCI.  It includes
+                          four packages: DEB and RPM of iCAT and Resource.
+                          Also includes more documentation.
 2012-03-01   3.0b1      Initial Beta Release.
                           This is the first release from RENCI, based on the
                           iRODS 3.0 community codebase.
