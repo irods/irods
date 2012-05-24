@@ -73,6 +73,10 @@ digest(
             result = strategy->digest(messageDigest);
         }
     }
+    if(!found) {
+        result = 1;             // TODO - should be an enum or string
+                                // table value here
+    }
     return result;
 }
 

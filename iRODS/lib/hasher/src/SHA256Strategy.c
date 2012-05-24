@@ -1,44 +1,43 @@
 /* -*- mode: c++; fill-column: 72; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-
-#include "MD5Strategy.h"
+#include "SHA256Strategy.h"
 
 #include <string>
-#include <iostream>
 #include <sstream>
+#include <iostream>
 #include <iomanip>
 
-std::string MD5Strategy::_name = "MD5";
+std::string SHA256Strategy::_name = "SHA256";
 
-MD5Strategy::
-MD5Strategy(void)
+SHA256Strategy::
+SHA256Strategy(void)
 {
     _finalized = false;
 }
 
-MD5Strategy::
-~MD5Strategy()
+SHA256Strategy::
+~SHA256Strategy(void)
 {
     // TODO - stub
 }
 
-unsigned int MD5Strategy::
+unsigned int SHA256Strategy::
 init(void)
 {
     unsigned int result = 0;
-    MD5Init(&_context);
+    SHA256_Init(&_context);
     _finalized = false;
     return result;
 }
 
-unsigned int MD5Strategy::
+unsigned int SHA256Strategy::
 update(
     const std::string& data)
 {
     unsigned int result = 0;
     if(!_finalized) {
         unsigned char* charData = new unsigned char[data.length()];
-        MD5Update(&_context, charData, data.length());
+        SHA256_Update(&_context, charData, data.length());
     } else {
         result = 1;             // TODO - should be an enum or string
                                 // table value here
@@ -46,16 +45,16 @@ update(
     return result;
 }
 
-unsigned int MD5Strategy::
+unsigned int SHA256Strategy::
 digest(
     std::string& messageDigest)
 {
     unsigned int result = 0;
     if(!_finalized) {
-        unsigned char buffer[17];
-        MD5Final(buffer, &_context);
+        unsigned char buffer[SHA256_DIGEST_LENGTH];
+        SHA256_Final(buffer, &_context);
         std::stringstream ins;
-        for(int i = 0; i < 16; ++i) {
+        for(int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
             ins << std::setfill('0') << std::setw(2) << std::hex << (int)buffer[i];
         }
         _digest = ins.str();

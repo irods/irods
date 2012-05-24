@@ -103,7 +103,8 @@ INCLUDES +=	-I$(libMd5IncDir)
 # Hasher
 LIB_HASHER_OBJS = \
 		$(libHasherObjDir)/Hasher.o \
-		$(libHasherObjDir)/MD5Strategy.o
+		$(libHasherObjDir)/MD5Strategy.o \
+		$(libHasherObjDir)/SHA256Strategy.o
 INCLUDES +=	-I$(libHasherIncDir)
 
 # rbudp
