@@ -70,7 +70,7 @@ fi
 RST2PDF=`which rst2pdf`
 if [ "$?" -ne "0" ]; then
   echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
-  if [ -f "/etc/lsb-release" ]; then # Ubuntu
+  if [ -f "/etc/lsb-release" ] && [ ! -f "/etc/SuSE-release" ]; then # Ubuntu
     echo "      :: try: apt-get install rst2pdf" 1>&2
   else
     echo "      :: try: easy_install rst2pdf" 1>&2
