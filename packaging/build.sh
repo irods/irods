@@ -59,7 +59,7 @@ if [ "$1" == "icat" ]; then
   fi
 fi
 
-if [ -f "/etc/lsb-release" ]; then # Ubuntu
+if [ -f "/etc/lsb-release" ] && [ ! -f "/etc/SuSE-release" ]; then # Ubuntu
   if [ "$(id -u)" != "0" ]; then
     echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
     echo "      :: because dpkg demands to be run as root" 1>&2
