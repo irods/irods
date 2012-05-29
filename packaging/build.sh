@@ -88,7 +88,7 @@ fi
 DOXYGEN=`which doxygen`
 if [ "$?" -ne "0" ]; then
   echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
-  if [ -f "/etc/lsb-release" ]; then # Ubuntu
+  if [ -f "/etc/lsb-release" ] && [ ! -f "/etc/SuSE-release" ]; then # Ubuntu
     echo "      :: try: apt-get install doxygen" 1>&2
   elif [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
     echo "      :: try: yum install doxygen" 1>&2
