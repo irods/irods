@@ -780,40 +780,40 @@ sub createDatabaseAndTables
 
 
 
-	# Give the user access to the iCAT database.
-	#	Set the user's password.
-	#
-	#	If this script has been run before, then the
-	#	password may already be set.  But we can't tell.
-	#	So just do it again.
-	if ( $DATABASE_TYPE eq "postgres" )
-	{
-		printStatus( "Setting database user password...\n" );
-		printLog( "Setting database user password...\n" );
-		my $tmpSql = createTempFilePath( "sql" );
-
-		my $sql = "alter user \"$DATABASE_ADMIN_NAME\" with password '$DATABASE_ADMIN_PASSWORD';";
-		printLog( "    $sql\n" );
-
-		# Create an empty file first and make it unreadable by others
-		printToFile( $tmpSql, "\n" );
-		chmod( 0600, $tmpSql );
-
-		# Now add the password line(s)
-		appendToFile( $tmpSql, "$sql\n" );
-		
-		($status,$output) = execute_sql( $DB_NAME, $tmpSql );
-		unlink( $tmpSql );
-		if ( $status != 0 )
-		{
-			 printError( "\nInstall problem:\n" );
-			 printError( "    Could not set database password.\n" );
-			 printError( "        ", $output );
-			 printLog( "\nSQL failed:\n" );
-			 printLog( "    ", $output );
-			 cleanAndExit( 1 );
-		}
-	}
+#	# Give the user access to the iCAT database.
+#	#	Set the user's password.
+#	#
+#	#	If this script has been run before, then the
+#	#	password may already be set.  But we can't tell.
+#	#	So just do it again.
+#	if ( $DATABASE_TYPE eq "postgres" )
+#	{
+#		printStatus( "Setting database user password...\n" );
+#		printLog( "Setting database user password...\n" );
+#		my $tmpSql = createTempFilePath( "sql" );
+#
+#		my $sql = "alter user \"$DATABASE_ADMIN_NAME\" with password '$DATABASE_ADMIN_PASSWORD';";
+#		printLog( "    $sql\n" );
+#
+#		# Create an empty file first and make it unreadable by others
+#		printToFile( $tmpSql, "\n" );
+#		chmod( 0600, $tmpSql );
+#
+#		# Now add the password line(s)
+#		appendToFile( $tmpSql, "$sql\n" );
+#		
+#		($status,$output) = execute_sql( $DB_NAME, $tmpSql );
+#		unlink( $tmpSql );
+#		if ( $status != 0 )
+#		{
+#			 printError( "\nInstall problem:\n" );
+#			 printError( "    Could not set database password.\n" );
+#			 printError( "        ", $output );
+#			 printLog( "\nSQL failed:\n" );
+#			 printLog( "    ", $output );
+#			 cleanAndExit( 1 );
+#		}
+#	}
 
 
 	# Create the tables.
