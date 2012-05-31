@@ -86,7 +86,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     # update new role with proper password
 	echo "Updating Database Role Password..."
     ALTERPASSCMD="alter user $DB_USER with password '$DB_PASS'"
-    su --shell=/bin/bash -c "$PSQL -U $DB_USER $DB_NAME -c \"$ALTERPASSCMD\""
+    su --shell=/bin/bash -c "$PSQL -c \"$ALTERPASSCMD\"" $DB_ADMIN_ROLE &> /dev/null
 
   else 
     # =-=-=-=-=-=-=-
