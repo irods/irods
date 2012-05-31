@@ -27,9 +27,7 @@ generateHash(
 	while(!input.eof()) {
 	    input.read(buffer, 1023);
 	    int numRead = input.gcount();
-	    buffer[numRead] = '\0';
-	    string data(buffer);
-	    hasher.update(data);
+	    hasher.update(buffer, numRead);
 	}
 	input.close();
 	string messageDigest;

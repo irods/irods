@@ -18,7 +18,7 @@ public:
     unsigned int listStrategies(std::vector<std::string>& strategies) const;
   
     unsigned int init(void);
-    unsigned int update(const std::string& data);
+    unsigned int update(char const* data, unsigned int size);
     unsigned int digest(const std::string& name, std::string& messageDigest);
     unsigned int catDigest(std::string& messageDigest);
   

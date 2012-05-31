@@ -34,13 +34,15 @@ init(void)
 
 unsigned int SHA256Strategy::
 update(
-    const std::string& data)
+    char const* data,
+    unsigned int size)
 {
     unsigned int result = 0;
     if(!_finalized) {
-        unsigned char* charData = new unsigned char[data.length()];
-        memcpy(charData, data.data(), data.length());
-        SHA256_Update(&_context, charData, data.length());
+        unsigned char* charData = new unsigned char[size];
+        memcpy(charData, data, size);
+        SHA256_Update(&_context, charData, size);
+        delete charData;
     } else {
         result = 1;             // TODO - should be an enum or string
                                 // table value here
