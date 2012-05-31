@@ -8,6 +8,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include <string.h>
+
 std::string MD5Strategy::_name = "MD5";
 
 MD5Strategy::
@@ -38,6 +40,7 @@ update(
     unsigned int result = 0;
     if(!_finalized) {
         unsigned char* charData = new unsigned char[data.length()];
+        memcpy(charData, data.data(), data.length());
         MD5Update(&_context, charData, data.length());
     } else {
         result = 1;             // TODO - should be an enum or string

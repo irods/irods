@@ -7,6 +7,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include <string.h>
+
 std::string SHA256Strategy::_name = "SHA256";
 
 SHA256Strategy::
@@ -37,6 +39,7 @@ update(
     unsigned int result = 0;
     if(!_finalized) {
         unsigned char* charData = new unsigned char[data.length()];
+        memcpy(charData, data.data(), data.length());
         SHA256_Update(&_context, charData, data.length());
     } else {
         result = 1;             // TODO - should be an enum or string
