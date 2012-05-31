@@ -19,6 +19,12 @@ Examples:
  $SCRIPTNAME -s resource
 "
 
+# boilerplate
+echo "--------------------------------------"
+echo " E-iRODS Build Script"
+echo "--------------------------------------"
+
+# parse options
 while getopts ":hs" opt; do
   case $opt in
     h)
@@ -43,6 +49,23 @@ if [ $# -ne 1 -a $# -ne 2 ] ; then
   exit 1
 fi
 
+
+# detect operating system
+UNAMERESULTS=`uname`
+if [ -f "/etc/redhat-release" ]; then       # CentOS and RHEL and Fedora
+    DETECTEDOS="RedHatCompatible" 
+elif [ -f "/etc/SuSE-release" ]; then       # SuSE
+    DETECTEDOS="SuSE" 
+elif [ -f "/etc/lsb-release" ]; then        # Ubuntu
+    DETECTEDOS="Ubuntu" 
+elif [ -f "/usr/bin/sw_vers" ]; then        # MacOSX
+    DETECTEDOS="MacOSX"
+elif [ "$UNAMERESULTS" == "SunOS" ]; then   # Solaris
+    DETECTEDOS="Solaris"
+fi
+echo "Detected OS [$DETECTEDOS]"
+
+
 if [ $1 != "icat" -a $1 != "resource" ] ; then
     echo "ERROR :: Invalid serverType [$1]" 1>&2
     echo "      :: Only 'icat' or 'resource' available at this time" 1>&2
@@ -59,7 +82,7 @@ if [ "$1" == "icat" ]; then
   fi
 fi
 
-if [ -f "/etc/lsb-release" ] && [ ! -f "/etc/SuSE-release" ]; then # Ubuntu
+if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
   if [ "$(id -u)" != "0" ]; then
     echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
     echo "      :: because dpkg demands to be run as root" 1>&2
@@ -70,7 +93,7 @@ fi
 RST2PDF=`which rst2pdf`
 if [ "$?" -ne "0" ]; then
   echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
-  if [ -f "/etc/lsb-release" ] && [ ! -f "/etc/SuSE-release" ]; then # Ubuntu
+  if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
     echo "      :: try: apt-get install rst2pdf" 1>&2
   else
     echo "      :: try: easy_install rst2pdf" 1>&2
@@ -88,10 +111,12 @@ fi
 DOXYGEN=`which doxygen`
 if [ "$?" -ne "0" ]; then
   echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
-  if [ -f "/etc/lsb-release" ] && [ ! -f "/etc/SuSE-release" ]; then # Ubuntu
+  if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
     echo "      :: try: apt-get install doxygen" 1>&2
-  elif [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
+  elif [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
     echo "      :: try: yum install doxygen" 1>&2
+  elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
+    echo "      :: try: zypper install doxygen" 1>&2
   else
     echo "      :: download from: http://doxygen.org" 1>&2
   fi
@@ -269,20 +294,29 @@ if [ "$?" != "0" ]; then
 fi
 
 cd $DIR/../
-if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
-  echo "Running EPM :: Generating RPM"
+if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
+  echo "Running EPM :: Generating $DETECTEDOS RPM"
   epmvar="REDHATRPM$SERVER_TYPE" 
   ./epm/epm -f rpm e-irods $epmvar=true ./packaging/e-irods.list
-elif [ -f "/etc/SuSE-release" ]; then # SuSE
-  echo "Running EPM :: Generating RPM"
+elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
+  echo "Running EPM :: Generating $DETECTEDOS RPM"
   epmvar="SUSERPM$SERVER_TYPE" 
   ./epm/epm -f rpm e-irods $epmvar=true ./packaging/e-irods.list
-elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
-  echo "Running EPM :: Generating DEB"
+elif [ "$DETECTEDOS" == "Ubuntu" ]; then  # Ubuntu
+  echo "Running EPM :: Generating $DETECTEDOS DEB"
   epmvar="DEB$SERVER_TYPE" 
   ./epm/epm -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
-elif [ -f "/usr/bin/sw_vers" ]; then  # MacOSX
-  echo "TODO: generate package for MacOSX"
+elif [ "$DETECTEDOS" == "Solaris" ]; then  # Solaris
+  echo "Running EPM :: Generating $DETECTEDOS PKG"
+  epmvar="PKG$SERVER_TYPE"
+  ./epm/epm -f pkg e-irods $epmvar=true ./packaging/e-irods.list
+elif [ "$DETECTEDOS" == "MacOSX" ]; then  # MacOSX
+  echo "Running EPM :: Generating $DETECTEDOS DMG"
+  epmvar="OSX$SERVER_TYPE"
+  ./epm/epm -f osx e-irods $epmvar=true ./packaging/e-irods.list
+else
+  echo "ERROR :: Unknown OS, cannot generate package with EPM" 1>&2
+  exit 1
 fi
 
 
