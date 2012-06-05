@@ -281,9 +281,10 @@ fi
 
 
 # =-=-=-=-=-=-=-
-# remove setup account - no need for it to hang around
-# ${IRODS_HOME}/clients/icommands/bin/iadmin rmuser rodsBoot
-#/usr/bin/iadmin rmuser rodsBoot
+# remove setup 'rodsBoot' account - reduce potential attack surface
+if [ "$SERVER_TYPE" == "icat" ] ; then
+    su --shell=/bin/bash -c "/usr/bin/iadmin rmuser rodsBoot" $OS_EIRODS_ACCT
+fi
 
 
 
