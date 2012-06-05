@@ -1,4 +1,4 @@
-#!/bin/csh -ex
+#!/bin/bash -e
 ## PLEASE RUN THIS IN icommands/test
 unalias rm
 cd ../bin

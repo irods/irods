@@ -1,4 +1,4 @@
-#!/bin/csh -e
+#!/bin/sh -e
 set binDir = ../bin
 set defResc = data1at14Resc
 set defResc2 = data2at14Resc
@@ -10,9 +10,9 @@ $binDir/ipwd
 echo "------------------"
 set startd = `date`
    echo "Timing iput -R $defResc  ../test/bigData.1GB"
-   time $binDir/iput -R $defResc  ../test/bigData.1GB 
+   time $binDir/iput -R $defResc  ../test/bigData.1GB
    echo "Timing irepl -R $defResc2  bigData.1GB"
-   time $binDir/irepl -R $defResc2  bigData.1GB 
+   time $binDir/irepl -R $defResc2  bigData.1GB
    echo "Timing iget bigData.1GB -  to /dev/null"
    time $binDir/iget bigData.1GB - > /dev/null
 $binDir/icd

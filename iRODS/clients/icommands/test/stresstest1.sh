@@ -1,4 +1,4 @@
-#!/bin/csh -e
+#!/bin/sh -e
 set binDir = ../bin
 #set defResc = demoResc
 set defResc = data1at14Resc
@@ -9,7 +9,7 @@ if ("$2" == "" ) then
  echo " run this from icommands/test"
  echo " needs */home/*/stresstest collection"
  exit 1
-endif
+fi
 
 set j = `expr $1 +  $2`
 set i = $1
@@ -22,21 +22,22 @@ $binDir/ipwd
 echo "------------------"
 set startd = `date`
 while ( $i < $j )
+   do
    echo "Timing iput -r -R $defResc stresstest.dir sttst.$i   --- 1000 files"
    time $binDir/iput -r -R $defResc stresstest.dir sttst.$i
    set i = `expr $i +  1`
-end
+done
 $binDir/icd
 echo "Size with ils -lr stresstest"
-$binDir/ils -lr stresstest |wc
+$binDir/ils -lr stresstest | wc
 echo "Timing ils -lr stresstest"
-time $binDir/ils -lr stresstest >/dev/null
+time $binDir/ils -lr stresstest > /dev/null
 echo "Timing ils -r  stresstest"
-time $binDir/ils -r stresstest >/dev/null
+time $binDir/ils -r stresstest > /dev/null
 echo "Timing ils -lr stresstest"
-time $binDir/ils -lr stresstest >/dev/null
+time $binDir/ils -lr stresstest > /dev/null
 echo "Timing ils -r  stresstest"
-time $binDir/ils -r stresstest >/dev/null
+time $binDir/ils -r stresstest > /dev/null
 echo "------------------"
 set endd = `date`
 echo "Start: $startd"
