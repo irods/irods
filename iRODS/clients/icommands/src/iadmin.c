@@ -906,7 +906,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 	    "If you modify a resource name, you and other users will need to\n");
 	 printf("change your .irodsEnv files to use it, you may need to update\n");
 	 printf("irods.config and, if rules use the resource name, you'll need to\n");
-	 printf("update the core rules (core.irb).  This command will update various\n");
+	 printf("update the core rules (core.re).  This command will update various\n");
 	 printf("tables with the new name.\n");
 	 printf("Do you really want to modify the resource name? (enter y or yes to do so):");
 	 fgets(ttybuf, 50, stdin);
@@ -940,7 +940,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 		"If you modify the local zone name, you and other users will need to\n");
 	 printf("change your .irodsEnv files to use it, you may need to update\n");
 	 printf("irods.config and, if rules use the zone name, you'll need to update\n");
-	 printf("core.irb.  This command will update various tables with the new name\n");
+	 printf("core.re.  This command will update various tables with the new name\n");
 	 printf("and rename the top-level collection.\n");
 	 printf("Do you really want to modify the local zone name? (enter y or yes to do so):");
 	 fgets(ttybuf, 50, stdin);
@@ -1018,8 +1018,15 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
       status = parseUserName(cmdToken[1], userName, zoneName);
       /* just check for format */
       if (status) {
-	 printf("Invalid user name format");
+	 printf("Invalid user name format\n");
 	 return(0);
+      }
+      /* also check for current user, should not be able to rm own account */
+      if (strcmp(userName,myEnv.rodsUserName) == 0) {
+          if ( (strcmp(zoneName,"") == 0) || (strcmp(zoneName,myEnv.rodsZone) == 0) ) {
+              printf("Cannot remove currently authenticated user (yourself)\n");
+              return(0);
+          }
       }
       generalAdmin(0, "rm", "user", cmdToken[1], 
 	 cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]); 
