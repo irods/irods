@@ -1212,7 +1212,7 @@ sub make($)
 	{
 		return (1,"make:  command not found");
 	}
-	return run( "$make $target" );
+	return run( "$make -j 4 $target" );
 }
 
 
