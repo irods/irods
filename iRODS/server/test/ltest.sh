@@ -2,7 +2,7 @@
 #
 # Simple script used as part of a load test (run by multiple users).
 # Runs iput, ils and iget of multiple files and verifies a little.
-# 
+#
 # Creates and destroys local and irods directories called 'tmpdir' or
 # whatever is $tmpDir and also creates/destroys local directory tmpdir2.
 #
@@ -10,7 +10,8 @@
 #
 
 # functions ################################################
-function makeSmallFiles {
+makeSmallFiles()
+{
 # Make a directory with input-arg small files
     rm -rf $tmpDir
     mkdir $tmpDir
@@ -25,7 +26,8 @@ function makeSmallFiles {
     cd ..
 }
 
-function makeLargeFiles {
+makeLargeFiles()
+{
 # Make a directory with input-arg large files of size input2
     rm -rf $tmpDir
     mkdir $tmpDir
@@ -41,13 +43,15 @@ function makeLargeFiles {
     cd ..
 }
 
-function cleanUp {
+cleanUp()
+{
     echo "removing test files on local disk"
     rm -rf $tmpDir
     rm -rf tmpdir2
 }
 
-function loadTest {
+loadTest()
+{
 # test with input-arg number of files, which are in the $tmpDir
 # directory.
     echo "putting files"
