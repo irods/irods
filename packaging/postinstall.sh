@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 EIRODS_HOME_DIR=$1
 OS_EIRODS_ACCT=$2
@@ -55,7 +55,9 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 
     # =-=-=-=-=-=-=-
     # determine if the database already exists
+    set +e
     DB=$( su --shell=/bin/bash -c "$PSQL --list" $DB_ADMIN_ROLE  | grep $DB_NAME )
+    set -e
     if [ -n "$DB" ]; then
       echo "ERROR :: Database $DB_NAME Already Exists, Aborting."
 	  exit 1
@@ -200,6 +202,74 @@ fi
 
 
 
+
+
+# =-=-=-=-=-=-=-
+# symlink the icommands
+ln -s    /usr/bin/chgCoreToCore1.ir       ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir 
+ln -s    /usr/bin/chgCoreToCore2.ir       ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir 
+ln -s    /usr/bin/chgCoreToOrig.ir        ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir  
+ln -s    /usr/bin/delUnusedAVUs.ir        ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir  
+ln -s    /usr/bin/genOSAuth               ${IRODS_HOME}/clients/icommands/bin/genOSAuth         
+ln -s    /usr/bin/iadmin                  ${IRODS_HOME}/clients/icommands/bin/iadmin            
+ln -s    /usr/bin/ibun                    ${IRODS_HOME}/clients/icommands/bin/ibun              
+ln -s    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/icd               
+ln -s    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum           
+ln -s    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod            
+ln -s    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp               
+ln -s    /usr/bin/idbo                    ${IRODS_HOME}/clients/icommands/bin/idbo              
+ln -s    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug             
+ln -s    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv              
+ln -s    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror            
+ln -s    /usr/bin/iexecmd                 ${IRODS_HOME}/clients/icommands/bin/iexecmd           
+ln -s    /usr/bin/iexit                   ${IRODS_HOME}/clients/icommands/bin/iexit             
+ln -s    /usr/bin/ifsck                   ${IRODS_HOME}/clients/icommands/bin/ifsck             
+ln -s    /usr/bin/iget                    ${IRODS_HOME}/clients/icommands/bin/iget              
+ln -s    /usr/bin/igetwild.sh             ${IRODS_HOME}/clients/icommands/bin/igetwild.sh       
+ln -s    /usr/bin/ihelp                   ${IRODS_HOME}/clients/icommands/bin/ihelp             
+ln -s    /usr/bin/iinit                   ${IRODS_HOME}/clients/icommands/bin/iinit             
+ln -s    /usr/bin/ilocate                 ${IRODS_HOME}/clients/icommands/bin/ilocate           
+ln -s    /usr/bin/ils                     ${IRODS_HOME}/clients/icommands/bin/ils               
+ln -s    /usr/bin/ilsresc                 ${IRODS_HOME}/clients/icommands/bin/ilsresc           
+ln -s    /usr/bin/imcoll                  ${IRODS_HOME}/clients/icommands/bin/imcoll            
+ln -s    /usr/bin/imeta                   ${IRODS_HOME}/clients/icommands/bin/imeta             
+ln -s    /usr/bin/imiscsvrinfo            ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo      
+ln -s    /usr/bin/imkdir                  ${IRODS_HOME}/clients/icommands/bin/imkdir            
+ln -s    /usr/bin/imv                     ${IRODS_HOME}/clients/icommands/bin/imv               
+ln -s    /usr/bin/ipasswd                 ${IRODS_HOME}/clients/icommands/bin/ipasswd           
+ln -s    /usr/bin/iphybun                 ${IRODS_HOME}/clients/icommands/bin/iphybun           
+ln -s    /usr/bin/iphymv                  ${IRODS_HOME}/clients/icommands/bin/iphymv            
+ln -s    /usr/bin/ips                     ${IRODS_HOME}/clients/icommands/bin/ips               
+ln -s    /usr/bin/iput                    ${IRODS_HOME}/clients/icommands/bin/iput              
+ln -s    /usr/bin/ipwd                    ${IRODS_HOME}/clients/icommands/bin/ipwd              
+ln -s    /usr/bin/iqdel                   ${IRODS_HOME}/clients/icommands/bin/iqdel             
+ln -s    /usr/bin/iqmod                   ${IRODS_HOME}/clients/icommands/bin/iqmod             
+ln -s    /usr/bin/iqstat                  ${IRODS_HOME}/clients/icommands/bin/iqstat            
+ln -s    /usr/bin/iquest                  ${IRODS_HOME}/clients/icommands/bin/iquest            
+ln -s    /usr/bin/iquota                  ${IRODS_HOME}/clients/icommands/bin/iquota            
+ln -s    /usr/bin/ireg                    ${IRODS_HOME}/clients/icommands/bin/ireg              
+ln -s    /usr/bin/irepl                   ${IRODS_HOME}/clients/icommands/bin/irepl             
+ln -s    /usr/bin/irm                     ${IRODS_HOME}/clients/icommands/bin/irm               
+ln -s    /usr/bin/irmtrash                ${IRODS_HOME}/clients/icommands/bin/irmtrash          
+ln -s    /usr/bin/irsync                  ${IRODS_HOME}/clients/icommands/bin/irsync            
+ln -s    /usr/bin/irule                   ${IRODS_HOME}/clients/icommands/bin/irule             
+ln -s    /usr/bin/iscan                   ${IRODS_HOME}/clients/icommands/bin/iscan             
+ln -s    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/isysmeta          
+ln -s    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim             
+ln -s    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo         
+ln -s    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             
+ln -s    /usr/bin/runQuota.ir             ${IRODS_HOME}/clients/icommands/bin/runQuota.ir       
+ln -s    /usr/bin/runQuota.r              ${IRODS_HOME}/clients/icommands/bin/runQuota.r        
+ln -s    /usr/bin/showCore.ir             ${IRODS_HOME}/clients/icommands/bin/showCore.ir       
+
+
+
+
+
+
+
+
+
 cd $PWD
 
 # =-=-=-=-=-=-=-
@@ -209,82 +279,14 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 	su --shell=/bin/bash -c "perl ./scripts/perl/eirods_setup.pl $DB_TYPE $DB_HOST $DB_PORT $DB_USER $DB_PASS" $OS_EIRODS_ACCT
 fi
 
+
 # =-=-=-=-=-=-=-
-# symlink the icommands
-cd $IRODS_HOME
-
-for file in `ls ${IRODS_HOME}/clients/icommands/bin/`
-do
-	if [ -e /usr/bin/$file ]; then
-        res=`ls -l /usr/bin | cut -d' ' -f11`
-		if [ "$res" == "${IRODS_HOME}/clients/icommands/bin/$file" ]; then
-			continue
-		else
-			rm /usr/bin/$file
-		fi
-	fi
-
-	ln -s ${IRODS_HOME}/clients/icommands/bin/$file /usr/bin/$file
-
-done
+# remove setup account - no need for it to hang around
+# ${IRODS_HOME}/clients/icommands/bin/iadmin rmuser rodsBoot
+#/usr/bin/iadmin rmuser rodsBoot
 
 
 
-#ln -s ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir    /usr/bin/chgCoreToCore1.ir
-#ln -s ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir    /usr/bin/chgCoreToCore2.ir
-#ln -s ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir     /usr/bin/chgCoreToOrig.ir
-#ln -s ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir     /usr/bin/delUnusedAVUs.ir
-#ln -s ${IRODS_HOME}/clients/icommands/bin/genOSAuth            /usr/bin/genOSAuth
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iadmin               /usr/bin/iadmin
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ibun                 /usr/bin/ibun
-#ln -s ${IRODS_HOME}/clients/icommands/bin/icd                  /usr/bin/icd
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ichksum              /usr/bin/ichksum
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ichmod               /usr/bin/ichmod
-#ln -s ${IRODS_HOME}/clients/icommands/bin/icp                  /usr/bin/icp
-#ln -s ${IRODS_HOME}/clients/icommands/bin/idbo                 /usr/bin/idbo
-#ln -s ${IRODS_HOME}/clients/icommands/bin/idbug                /usr/bin/idbug
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ienv                 /usr/bin/ienv
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ierror               /usr/bin/ierror
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iexecmd              /usr/bin/iexecmd
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iexit                /usr/bin/iexit
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ifsck                /usr/bin/ifsck
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iget                 /usr/bin/iget
-#ln -s ${IRODS_HOME}/clients/icommands/bin/igetwild.sh          /usr/bin/igetwild.sh
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ihelp                /usr/bin/ihelp
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iinit                /usr/bin/iinit
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ilocate              /usr/bin/ilocate
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ils                  /usr/bin/ils
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ilsresc              /usr/bin/ilsresc
-#ln -s ${IRODS_HOME}/clients/icommands/bin/imcoll               /usr/bin/imcoll
-#ln -s ${IRODS_HOME}/clients/icommands/bin/imeta                /usr/bin/imeta
-#ln -s ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo         /usr/bin/imiscsvrinfo
-#ln -s ${IRODS_HOME}/clients/icommands/bin/imkdir               /usr/bin/imkdir
-#ln -s ${IRODS_HOME}/clients/icommands/bin/imv                  /usr/bin/imv
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ipasswd              /usr/bin/ipasswd
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iphybun              /usr/bin/iphybun
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iphymv               /usr/bin/iphymv
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ips                  /usr/bin/ips
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iput                 /usr/bin/iput
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ipwd                 /usr/bin/ipwd
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iqdel                /usr/bin/iqdel
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iqmod                /usr/bin/iqmod
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iqstat               /usr/bin/iqstat
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iquest               /usr/bin/iquest
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iquota               /usr/bin/iquota
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ireg                 /usr/bin/ireg
-#ln -s ${IRODS_HOME}/clients/icommands/bin/irepl                /usr/bin/irepl
-#ln -s ${IRODS_HOME}/clients/icommands/bin/irm                  /usr/bin/irm
-#ln -s ${IRODS_HOME}/clients/icommands/bin/irmtrash             /usr/bin/irmtrash
-#ln -s ${IRODS_HOME}/clients/icommands/bin/irsync               /usr/bin/irsync
-#ln -s ${IRODS_HOME}/clients/icommands/bin/irule                /usr/bin/irule
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iscan                /usr/bin/iscan
-#ln -s ${IRODS_HOME}/clients/icommands/bin/isysmeta             /usr/bin/isysmeta
-#ln -s ${IRODS_HOME}/clients/icommands/bin/itrim                /usr/bin/itrim
-#ln -s ${IRODS_HOME}/clients/icommands/bin/iuserinfo            /usr/bin/iuserinfo
-#ln -s ${IRODS_HOME}/clients/icommands/bin/ixmsg                /usr/bin/ixmsg
-#ln -s ${IRODS_HOME}/clients/icommands/bin/runQuota.ir          /usr/bin/runQuota.ir
-#ln -s ${IRODS_HOME}/clients/icommands/bin/runQuota.r           /usr/bin/runQuota.r
-#ln -s ${IRODS_HOME}/clients/icommands/bin/showCore.ir          /usr/bin/showCore.ir
 
 # =-=-=-=-=-=-=-
 if [ "$SERVER_TYPE" == "icat" ] ; then

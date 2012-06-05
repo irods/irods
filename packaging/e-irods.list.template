@@ -1,10 +1,22 @@
+# =-=-=-=-=-=-=-
+# EPM Variables
+# =-=-=-=-=-=-=-
 %product Enterprise iRODS
 %copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
-%vendor Renaissance Computing Institute
+%vendor Renaissance Computing Institute <info@e-irods.org>
 %license COPYING
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Storage system
 %version 3.0b2 300002
+
+
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for specific systems
+# and
+# Setting environment variables for EPM
+# =-=-=-=-=-=-=-
 
 %if DEBICAT
 $DEB=true
@@ -40,42 +52,73 @@ $RESOURCE=true
 
 %endif
 
+
+
+
+
+
+# =-=-=-=-=-=-=-
+# Required Packages for all systems
+# (have a common name across packaging universes)
+# =-=-=-=-=-=-=-
+
 %requires perl
+%requires python
+%requires libc6
 
 %format all
 
+
+
+
+
+
 # =-=-=-=-=-=-=-
-# variables for configuring the install
+# Configuration Variables
+# =-=-=-=-=-=-=-
+
+# =-=-=-=-=-=-=-
+# Install variables
 # NOTE :: we need to consider whether the install
 #      :: scripts should take these values and
 #      :: modify the config/irods.config values
 #      :: to match or we assume that they do.
-#      :: for instance SVC_ACCT must match the
-#      :: DATABASE_ADMIN_NAME variable in irods.config
+# =-=-=-=-=-=-=-
+$EIRODS_PACKAGENAME=e-irods
+$EIRODS_DOC_DIR=/usr/share/doc/$EIRODS_PACKAGENAME
+$EIRODS_HOME_DIR=/var/lib/$EIRODS_PACKAGENAME
 $OS_EIRODS_ACCT=eirods
-$EIRODS_HOME_DIR=/usr/share/$OS_EIRODS_ACCT
 $IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 $DB_ADMIN_ROLE=postgres
 $DB_NAME=EICAT
 
+
 # =-=-=-=-=-=-=-
-# variables for the installation of iRODS
+# iRODS variables
 # NOTE :: these need to match the values in config/irods.config
+# =-=-=-=-=-=-=-
 $DB_TYPE=postgres
 $DB_HOST=localhost
 $DB_PORT=5432
 $DB_USER=$OS_EIRODS_ACCT
 $DB_PASS=SOMEPASSWORD
 
+
+
+
+
+
+
 # =-=-=-=-=-=-=-
 # preinstall
-%preinstall << END_PREINSTALL
 # =-=-=-=-=-=-=-
-# create the service account
+%preinstall << END_PREINSTALL
 echo "Creating Service Group and Account: $OS_EIRODS_ACCT at $EIRODS_HOME_DIR "
 
+set +e
 CHECKGROUP=`getent group $OS_EIRODS_ACCT `
 CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
+set -e
 if [ "$$CHECKGROUP" = "" ]; then
   groupadd -r $OS_EIRODS_ACCT
 else
@@ -99,24 +142,43 @@ chown $$ACCT:$$ACCT $EIRODS_HOME_DIR
 
 END_PREINSTALL
 
+
+
+
+
+
+
 # =-=-=-=-=-=-=-
 # post install
+# =-=-=-=-=-=-=-
 %if ICAT
 %postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_HOST $DB_PORT $DB_USER $DB_PASS
 %else
 %postinstall $EIRODS_HOME_DIR/packaging/postinstall.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
 
+
+
+
+
+
 # =-=-=-=-=-=-=-
 # preremove
+# =-=-=-=-=-=-=-
 %if ICAT
 %preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT icat $DB_TYPE $DB_ADMIN_ROLE $DB_NAME $DB_USER
 %else
 %preremove $EIRODS_HOME_DIR/packaging/preremove.sh $EIRODS_HOME_DIR $OS_EIRODS_ACCT resource
 %endif
 
+
+
+
+
+
 # =-=-=-=-=-=-=-
 # post remove
+# =-=-=-=-=-=-=-
 %if RPM
 %postremove rm -r $EIRODS_HOME_DIR  
 %elseif DEB
@@ -129,9 +191,19 @@ fi
 END_POSTREMOVE
 %endif
 
+
+
+
+
+
+
+
+
+
+
 # =-=-=-=-=-=-=-
+# Full File Listing
 # =-=-=-=-=-=-=-
-# files, and more files...
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_postgres_bin.sh ./packaging/find_postgres_bin.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/find_psqlodbc.sh ./packaging/find_psqlodbc.sh
@@ -139,12 +211,10 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/postinstall.s
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/preremove.sh ./packaging/preremove.sh
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_irodsenv.txt ./packaging/user_irodsenv.txt
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
+c 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
 %if RESOURCE
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/setup_resource.sh ./packaging/setup_resource.sh
 %endif
-
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/manual.pdf ./manual.pdf
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc/html -
@@ -152,6 +222,15 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.css
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.png
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc/html ./iRODS/doc/html/*.js
+
+d 755 root root ${EIRODS_DOC_DIR} -
+f 644 root root ${EIRODS_DOC_DIR}/manual.pdf ./manual.pdf
+%if DEB
+f 644 root root ${EIRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
+f 644 root root ${EIRODS_DOC_DIR}/copyright_addendum ./iRODS/COPYRIGHT/Copyright_Addendum.txt
+%endif
+f 644 root root ${EIRODS_DOC_DIR}/changelog.gz ./changelog.gz
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/COPYING ./COPYING
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/installLogs -
 
@@ -177,12 +256,12 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_paths.pl 
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/irodsctl.pl ./iRODS/scripts/perl/irodsctl.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_prompt.pl ./iRODS/scripts/perl/utils_prompt.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/eirods_setup.pl ./iRODS/scripts/perl/eirods_setup.pl
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/updateRodsLog.pl ./iRODS/scripts/perl/updateRodsLog.pl
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/updateRodsLog.pl ./iRODS/scripts/perl/updateRodsLog.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/uninstallPostgres.pl ./iRODS/scripts/perl/uninstallPostgres.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/installPostgres.pl ./iRODS/scripts/perl/installPostgres.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_print.pl ./iRODS/scripts/perl/utils_print.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/utils_config.pl ./iRODS/scripts/perl/utils_config.pl
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/joinlines.pl ./iRODS/scripts/perl/joinlines.pl
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/joinlines.pl ./iRODS/scripts/perl/joinlines.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl/README.txt ./iRODS/scripts/perl/README.txt
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/uninstallPostgres ./iRODS/scripts/uninstallPostgres
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/irodsprompt ./iRODS/scripts/irodsprompt
@@ -193,7 +272,7 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssCosConfig.template ./iRODS/server/config/hpssCosConfig.template
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssCosConfig.template ./iRODS/server/config/hpssCosConfig.template
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/HostAccessControl ./iRODS/server/config/HostAccessControl
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/demo.irb ./iRODS/server/config/reConfigs/demo.irb
@@ -215,18 +294,18 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/demo.re ./iRODS/server/config/reConfigs/demo.re
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/rajatest.re ./iRODS/server/config/reConfigs/rajatest.re
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.orig ./iRODS/server/config/reConfigs/core.irb.orig
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.orig ./iRODS/server/config/reConfigs/core.irb.orig
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/misc.irb ./iRODS/server/config/reConfigs/misc.irb
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core3.re ./iRODS/server/config/reConfigs/core3.re
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nvo.irb ./iRODS/server/config/reConfigs/nvo.irb
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core4.irb ./iRODS/server/config/reConfigs/core4.irb
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja2.re ./iRODS/server/config/reConfigs/raja2.re
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core-1.re ./iRODS/server/config/reConfigs/core-1.re
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core-1.re ./iRODS/server/config/reConfigs/core-1.re
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja.re ./iRODS/server/config/reConfigs/raja.re
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.2 ./iRODS/server/config/reConfigs/core.irb.2
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.3 ./iRODS/server/config/reConfigs/core.irb.3
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.re ./iRODS/server/config/reConfigs/core.re
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.1 ./iRODS/server/config/reConfigs/core.irb.1
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.1 ./iRODS/server/config/reConfigs/core.irb.1
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/reRules ./iRODS/server/config/reConfigs/reRules
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core2.dvm ./iRODS/server/config/reConfigs/core2.dvm
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nara.re ./iRODS/server/config/reConfigs/nara.re
@@ -238,7 +317,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/rda.config ./i
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsMonPerf.config.in ./iRODS/server/config/irodsMonPerf.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.in ./iRODS/server/config/server.config.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssAuth.template ./iRODS/server/config/hpssAuth.template
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssAuth.template ./iRODS/server/config/hpssAuth.template
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.sav ./iRODS/server/config/server.config.sav
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
@@ -246,14 +325,12 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.templat
 f 600 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin -
-#f 600 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/gmon.out ./iRODS/server/bin/gmon.out
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/irodsServerMonPerf ./iRODS/server/bin/cmd/irodsServerMonPerf
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/test_execstream.py ./iRODS/server/bin/cmd/test_execstream.py
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/hello ./iRODS/server/bin/cmd/hello
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/univMSSInterface.sh ./iRODS/server/bin/cmd/univMSSInterface.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd/getErrorStr ./iRODS/server/bin/cmd/getErrorStr
-#f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ln ./iRODS/server/bin/ln
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/vacuumdb.pl ./iRODS/server/bin/vacuumdb.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsServer ./iRODS/server/bin/irodsServer
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./iRODS/server/bin/irodsReServer
@@ -340,7 +417,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropSysT
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralUpdate.c ./iRODS/server/icat/src/icatGeneralUpdate.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/rodsEnvInitLib.c ./iRODS/server/icat/src/rodsEnvInitLib.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icatd.c ./iRODS/server/icat/src/m2icatd.c
-f 664 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/dboHighLevelRoutines.c ./iRODS/server/icat/src/dboHighLevelRoutines.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelRoutines.c ./iRODS/server/icat/src/icatMidLevelRoutines.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
@@ -362,67 +439,68 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/workflow.html ./iRODS
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen.config ./iRODS/config/doxygen.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/common.mk ./iRODS/config/common.mk
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk.template ./iRODS/config/platform.mk.template
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/COPYING ./COPYING
-f 700 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
+f 744 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
+
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir    ./iRODS/clients/icommands/bin/chgCoreToCore1.ir
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir    ./iRODS/clients/icommands/bin/chgCoreToCore2.ir
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir     ./iRODS/clients/icommands/bin/chgCoreToOrig.ir
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir     ./iRODS/clients/icommands/bin/delUnusedAVUs.ir
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/icd                  ./iRODS/clients/icommands/bin/icd
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ichksum              ./iRODS/clients/icommands/bin/ichksum
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ichmod               ./iRODS/clients/icommands/bin/ichmod
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/icp                  ./iRODS/clients/icommands/bin/icp
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/idbo                 ./iRODS/clients/icommands/bin/idbo
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/idbug                ./iRODS/clients/icommands/bin/idbug
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ienv                 ./iRODS/clients/icommands/bin/ienv
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ierror               ./iRODS/clients/icommands/bin/ierror
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iexecmd              ./iRODS/clients/icommands/bin/iexecmd
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iexit                ./iRODS/clients/icommands/bin/iexit
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ifsck                ./iRODS/clients/icommands/bin/ifsck
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iget                 ./iRODS/clients/icommands/bin/iget
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/igetwild.sh          ./iRODS/clients/icommands/bin/igetwild.sh
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ihelp                ./iRODS/clients/icommands/bin/ihelp
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iinit                ./iRODS/clients/icommands/bin/iinit
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ilocate              ./iRODS/clients/icommands/bin/ilocate
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ils                  ./iRODS/clients/icommands/bin/ils
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ilsresc              ./iRODS/clients/icommands/bin/ilsresc
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/imcoll               ./iRODS/clients/icommands/bin/imcoll
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/imeta                ./iRODS/clients/icommands/bin/imeta
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/imiscsvrinfo         ./iRODS/clients/icommands/bin/imiscsvrinfo
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/imkdir               ./iRODS/clients/icommands/bin/imkdir
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/imv                  ./iRODS/clients/icommands/bin/imv
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ipasswd              ./iRODS/clients/icommands/bin/ipasswd
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iphybun              ./iRODS/clients/icommands/bin/iphybun
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iphymv               ./iRODS/clients/icommands/bin/iphymv
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ips                  ./iRODS/clients/icommands/bin/ips
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iput                 ./iRODS/clients/icommands/bin/iput
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ipwd                 ./iRODS/clients/icommands/bin/ipwd
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iqdel                ./iRODS/clients/icommands/bin/iqdel
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iqmod                ./iRODS/clients/icommands/bin/iqmod
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iqstat               ./iRODS/clients/icommands/bin/iqstat
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iquest               ./iRODS/clients/icommands/bin/iquest
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iquota               ./iRODS/clients/icommands/bin/iquota
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ireg                 ./iRODS/clients/icommands/bin/ireg
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/irepl                ./iRODS/clients/icommands/bin/irepl
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/irm                  ./iRODS/clients/icommands/bin/irm
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/irmtrash             ./iRODS/clients/icommands/bin/irmtrash
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/irsync               ./iRODS/clients/icommands/bin/irsync
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/irule                ./iRODS/clients/icommands/bin/irule
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iscan                ./iRODS/clients/icommands/bin/iscan
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/isysmeta             ./iRODS/clients/icommands/bin/isysmeta
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/itrim                ./iRODS/clients/icommands/bin/itrim
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/iuserinfo            ./iRODS/clients/icommands/bin/iuserinfo
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/ixmsg                ./iRODS/clients/icommands/bin/ixmsg
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.ir          ./iRODS/clients/icommands/bin/runQuota.ir
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.r           ./iRODS/clients/icommands/bin/runQuota.r
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/showCore.ir          ./iRODS/clients/icommands/bin/showCore.ir
+
+f 644 root root /usr/bin/chgCoreToCore1.ir    ./iRODS/clients/icommands/bin/chgCoreToCore1.ir
+f 644 root root /usr/bin/chgCoreToCore2.ir    ./iRODS/clients/icommands/bin/chgCoreToCore2.ir
+f 644 root root /usr/bin/chgCoreToOrig.ir     ./iRODS/clients/icommands/bin/chgCoreToOrig.ir
+f 644 root root /usr/bin/delUnusedAVUs.ir     ./iRODS/clients/icommands/bin/delUnusedAVUs.ir
+f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
+f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
+f 755 root root /usr/bin/ibun                 ./iRODS/clients/icommands/bin/ibun
+f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd
+f 755 root root /usr/bin/ichksum              ./iRODS/clients/icommands/bin/ichksum
+f 755 root root /usr/bin/ichmod               ./iRODS/clients/icommands/bin/ichmod
+f 755 root root /usr/bin/icp                  ./iRODS/clients/icommands/bin/icp
+f 755 root root /usr/bin/idbo                 ./iRODS/clients/icommands/bin/idbo
+f 755 root root /usr/bin/idbug                ./iRODS/clients/icommands/bin/idbug
+f 755 root root /usr/bin/ienv                 ./iRODS/clients/icommands/bin/ienv
+f 755 root root /usr/bin/ierror               ./iRODS/clients/icommands/bin/ierror
+f 755 root root /usr/bin/iexecmd              ./iRODS/clients/icommands/bin/iexecmd
+f 755 root root /usr/bin/iexit                ./iRODS/clients/icommands/bin/iexit
+f 755 root root /usr/bin/ifsck                ./iRODS/clients/icommands/bin/ifsck
+f 755 root root /usr/bin/iget                 ./iRODS/clients/icommands/bin/iget
+f 755 root root /usr/bin/igetwild.sh          ./iRODS/clients/icommands/bin/igetwild.sh
+f 755 root root /usr/bin/ihelp                ./iRODS/clients/icommands/bin/ihelp
+f 755 root root /usr/bin/iinit                ./iRODS/clients/icommands/bin/iinit
+f 755 root root /usr/bin/ilocate              ./iRODS/clients/icommands/bin/ilocate
+f 755 root root /usr/bin/ils                  ./iRODS/clients/icommands/bin/ils
+f 755 root root /usr/bin/ilsresc              ./iRODS/clients/icommands/bin/ilsresc
+f 755 root root /usr/bin/imcoll               ./iRODS/clients/icommands/bin/imcoll
+f 755 root root /usr/bin/imeta                ./iRODS/clients/icommands/bin/imeta
+f 755 root root /usr/bin/imiscsvrinfo         ./iRODS/clients/icommands/bin/imiscsvrinfo
+f 755 root root /usr/bin/imkdir               ./iRODS/clients/icommands/bin/imkdir
+f 755 root root /usr/bin/imv                  ./iRODS/clients/icommands/bin/imv
+f 755 root root /usr/bin/ipasswd              ./iRODS/clients/icommands/bin/ipasswd
+f 755 root root /usr/bin/iphybun              ./iRODS/clients/icommands/bin/iphybun
+f 755 root root /usr/bin/iphymv               ./iRODS/clients/icommands/bin/iphymv
+f 755 root root /usr/bin/ips                  ./iRODS/clients/icommands/bin/ips
+f 755 root root /usr/bin/iput                 ./iRODS/clients/icommands/bin/iput
+f 755 root root /usr/bin/ipwd                 ./iRODS/clients/icommands/bin/ipwd
+f 755 root root /usr/bin/iqdel                ./iRODS/clients/icommands/bin/iqdel
+f 755 root root /usr/bin/iqmod                ./iRODS/clients/icommands/bin/iqmod
+f 755 root root /usr/bin/iqstat               ./iRODS/clients/icommands/bin/iqstat
+f 755 root root /usr/bin/iquest               ./iRODS/clients/icommands/bin/iquest
+f 755 root root /usr/bin/iquota               ./iRODS/clients/icommands/bin/iquota
+f 755 root root /usr/bin/ireg                 ./iRODS/clients/icommands/bin/ireg
+f 755 root root /usr/bin/irepl                ./iRODS/clients/icommands/bin/irepl
+f 755 root root /usr/bin/irm                  ./iRODS/clients/icommands/bin/irm
+f 755 root root /usr/bin/irmtrash             ./iRODS/clients/icommands/bin/irmtrash
+f 755 root root /usr/bin/irsync               ./iRODS/clients/icommands/bin/irsync
+f 755 root root /usr/bin/irule                ./iRODS/clients/icommands/bin/irule
+f 755 root root /usr/bin/iscan                ./iRODS/clients/icommands/bin/iscan
+f 755 root root /usr/bin/isysmeta             ./iRODS/clients/icommands/bin/isysmeta
+f 755 root root /usr/bin/itrim                ./iRODS/clients/icommands/bin/itrim
+f 755 root root /usr/bin/iuserinfo            ./iRODS/clients/icommands/bin/iuserinfo
+f 755 root root /usr/bin/ixmsg                ./iRODS/clients/icommands/bin/ixmsg
+f 644 root root /usr/bin/runQuota.ir          ./iRODS/clients/icommands/bin/runQuota.ir
+f 644 root root /usr/bin/runQuota.r           ./iRODS/clients/icommands/bin/runQuota.r
+f 644 root root /usr/bin/showCore.ir          ./iRODS/clients/icommands/bin/showCore.ir
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testallrules.pl ./iRODS/clients/icommands/test/testallrules.pl
@@ -478,14 +556,14 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleInp1 ./iRODS/clients/icommands/test/rules/ruleInp1
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest24.ir ./iRODS/clients/icommands/test/rules/ruleTest24.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/verifychksumColl.ir ./iRODS/clients/icommands/test/rules/verifychksumColl.ir
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest42.ir ./iRODS/clients/icommands/test/rules/ruleTest42.ir
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest42.ir ./iRODS/clients/icommands/test/rules/ruleTest42.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/sendMailColl.ir ./iRODS/clients/icommands/test/rules/sendMailColl.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest18.ir ./iRODS/clients/icommands/test/rules/ruleTest18.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/msiAddDataObjChksumsTimeStampsToAVU.ir ./iRODS/clients/icommands/test/rules/msiAddDataObjChksumsTimeStampsToAVU.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest19.ir ./iRODS/clients/icommands/test/rules/ruleTest19.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/listColl.ir ./iRODS/clients/icommands/test/rules/listColl.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest30.ir ./iRODS/clients/icommands/test/rules/ruleTest30.ir
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest39.ir ./iRODS/clients/icommands/test/rules/ruleTest39.ir
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest39.ir ./iRODS/clients/icommands/test/rules/ruleTest39.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/chgCoreToCore1.ir ./iRODS/clients/icommands/test/rules/chgCoreToCore1.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/chgCoreToCore2.ir ./iRODS/clients/icommands/test/rules/chgCoreToCore2.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules/ruleTest40.ir ./iRODS/clients/icommands/test/rules/ruleTest40.ir
