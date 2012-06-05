@@ -277,6 +277,10 @@ if [ "$BUILDEIRODS" == "1" ]; then
 fi # if $BUILDEIRODS
 
 
+# prepare changelog for various platforms
+cd $DIR/../
+gzip -9 -c changelog > changelog.gz
+
 # run EPM for package type of this machine
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
