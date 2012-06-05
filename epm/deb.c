@@ -315,7 +315,7 @@ make_subpackage(const char     *prodname,
 
     fchmod(fileno(fp), 0755);
 
-    fputs("#!/bin/sh\n", fp);
+    fputs("#!/bin/sh -e\n", fp);
     fputs("# " EPM_VERSION "\n", fp);
 
     for (; i > 0; i --, c ++)
@@ -354,7 +354,7 @@ make_subpackage(const char     *prodname,
 
     fchmod(fileno(fp), 0755);
 
-    fputs("#!/bin/sh\n", fp);
+    fputs("#!/bin/sh -e\n", fp);
     fputs("# " EPM_VERSION "\n", fp);
 
     for (i = dist->num_commands, c = dist->commands; i > 0; i --, c ++)
@@ -412,7 +412,7 @@ make_subpackage(const char     *prodname,
 
     fchmod(fileno(fp), 0755);
 
-    fputs("#!/bin/sh\n", fp);
+    fputs("#!/bin/sh -e\n", fp);
     fputs("# " EPM_VERSION "\n", fp);
 
     for (i = dist->num_commands, c = dist->commands; i > 0; i --, c ++)
@@ -455,7 +455,7 @@ make_subpackage(const char     *prodname,
 
     fchmod(fileno(fp), 0755);
 
-    fputs("#!/bin/sh\n", fp);
+    fputs("#!/bin/sh -e\n", fp);
     fputs("# " EPM_VERSION "\n", fp);
 
     for (i = dist->num_commands, c = dist->commands; i > 0; i --, c ++)
