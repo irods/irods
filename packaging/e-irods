@@ -13,13 +13,16 @@ status)
     $IRODS_CTL status
     ;;
 start)
-    su --shell=/bin/bash -c "$IRODS_CTL start" eirods
+    su --shell=/bin/bash -c "$IRODS_CTL istart" eirods
     ;;
 stop)
-    su --shell=/bin/bash -c "$IRODS_CTL stop" eirods
+    su --shell=/bin/bash -c "$IRODS_CTL istop" eirods
     ;;
 restart)
-    su --shell=/bin/bash -c "$IRODS_CTL restart" eirods
+    su --shell=/bin/bash -c "$IRODS_CTL irestart" eirods
+    ;;
+force-reload)
+    su --shell=/bin/bash -c "$IRODS_CTL irestart" eirods
     ;;
 *)
     echo "/etc/init.d/e-irods :: [$1] is not supported."
