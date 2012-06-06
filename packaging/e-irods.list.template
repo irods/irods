@@ -298,7 +298,6 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/raja
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/demo.re ./iRODS/server/config/reConfigs/demo.re
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.fnm ./iRODS/server/config/reConfigs/core.fnm
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/rajatest.re ./iRODS/server/config/reConfigs/rajatest.re
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core.irb.orig ./iRODS/server/config/reConfigs/core.irb.orig
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/misc.irb ./iRODS/server/config/reConfigs/misc.irb
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/core3.re ./iRODS/server/config/reConfigs/core3.re
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/reConfigs/nvo.irb ./iRODS/server/config/reConfigs/nvo.irb
@@ -407,7 +406,6 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatDropCore
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icat.pl ./iRODS/server/icat/src/m2icat.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatHighLevelRoutines.c ./iRODS/server/icat/src/icatHighLevelRoutines.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOdbc.c ./iRODS/server/icat/src/icatLowLevelOdbc.c
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql.orig ./iRODS/server/icat/src/icatSysInserts.sql
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralQuery.c ./iRODS/server/icat/src/icatGeneralQuery.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatLowLevelOracle.c ./iRODS/server/icat/src/icatLowLevelOracle.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelHelpers.c ./iRODS/server/icat/src/icatMidLevelHelpers.c
