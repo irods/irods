@@ -1,7 +1,7 @@
 myTestRule {
 #Workflow operator to trap an error code of passed command
 #Input parameter is:
-#  micro-service whose error code will be trapped
+#  microservice whose error code will be trapped
 #Output parameter is:
 #  none
   if (errorcode( msiExecCmd(*Cmd, *Arg, "null", "null", "null", *Result)) < 0 ) {
