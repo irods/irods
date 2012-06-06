@@ -206,10 +206,15 @@ fi
 
 # =-=-=-=-=-=-=-
 # symlink the icommands
-ln -s    /usr/bin/chgCoreToCore1.ir       ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir 
-ln -s    /usr/bin/chgCoreToCore2.ir       ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir 
-ln -s    /usr/bin/chgCoreToOrig.ir        ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir  
-ln -s    /usr/bin/delUnusedAVUs.ir        ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir  
+
+#ln -s    /usr/bin/chgCoreToCore1.ir       ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore1.ir 
+#ln -s    /usr/bin/chgCoreToCore2.ir       ${IRODS_HOME}/clients/icommands/bin/chgCoreToCore2.ir 
+#ln -s    /usr/bin/chgCoreToOrig.ir        ${IRODS_HOME}/clients/icommands/bin/chgCoreToOrig.ir  
+#ln -s    /usr/bin/delUnusedAVUs.ir        ${IRODS_HOME}/clients/icommands/bin/delUnusedAVUs.ir  
+#ln -s    /usr/bin/runQuota.ir             ${IRODS_HOME}/clients/icommands/bin/runQuota.ir       
+#ln -s    /usr/bin/runQuota.r              ${IRODS_HOME}/clients/icommands/bin/runQuota.r        
+#ln -s    /usr/bin/showCore.ir             ${IRODS_HOME}/clients/icommands/bin/showCore.ir       
+
 ln -s    /usr/bin/genOSAuth               ${IRODS_HOME}/clients/icommands/bin/genOSAuth         
 ln -s    /usr/bin/iadmin                  ${IRODS_HOME}/clients/icommands/bin/iadmin            
 ln -s    /usr/bin/ibun                    ${IRODS_HOME}/clients/icommands/bin/ibun              
@@ -258,9 +263,6 @@ ln -s    /usr/bin/isysmeta                ${IRODS_HOME}/clients/icommands/bin/is
 ln -s    /usr/bin/itrim                   ${IRODS_HOME}/clients/icommands/bin/itrim             
 ln -s    /usr/bin/iuserinfo               ${IRODS_HOME}/clients/icommands/bin/iuserinfo         
 ln -s    /usr/bin/ixmsg                   ${IRODS_HOME}/clients/icommands/bin/ixmsg             
-ln -s    /usr/bin/runQuota.ir             ${IRODS_HOME}/clients/icommands/bin/runQuota.ir       
-ln -s    /usr/bin/runQuota.r              ${IRODS_HOME}/clients/icommands/bin/runQuota.r        
-ln -s    /usr/bin/showCore.ir             ${IRODS_HOME}/clients/icommands/bin/showCore.ir       
 
 
 

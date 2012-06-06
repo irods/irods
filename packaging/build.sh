@@ -281,6 +281,79 @@ fi # if $BUILDEIRODS
 cd $DIR/../
 gzip -9 -c changelog > changelog.gz
 
+
+# prepare man pages for every binary in the package
+cd $DIR/../
+MANDIR=man
+rm -rf $MANDIR
+mkdir -p $MANDIR
+EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
+ICMDDIR="iRODS/clients/icommands/bin"
+ICMDS=(
+    genOSAuth     
+    iadmin        
+    ibun          
+    icd           
+    ichksum       
+    ichmod        
+    icp           
+    idbo          
+    idbug         
+    ienv          
+    ierror        
+    iexecmd       
+    iexit         
+    ifsck         
+    iget          
+    igetwild.sh   
+    ihelp         
+    iinit         
+    ilocate       
+    ils           
+    ilsresc       
+    imcoll        
+    imeta         
+    imiscsvrinfo  
+    imkdir        
+    imv           
+    ipasswd       
+    iphybun       
+    iphymv        
+    ips           
+    iput          
+    ipwd          
+    iqdel         
+    iqmod         
+    iqstat        
+    iquest        
+    iquota        
+    ireg          
+    irepl         
+    irm           
+    irmtrash      
+    irsync        
+    irule         
+    iscan         
+    isysmeta      
+    itrim         
+    iuserinfo     
+    ixmsg         
+)
+for ICMD in "${ICMDS[@]}"
+do
+    help2man -h -h -N -n "an e-irods i-command" --version-string="E-iRODS-$EIRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
+done
+for manfile in `ls $MANDIR`
+do
+    gzip -9 $MANDIR/$manfile
+done
+
+
+
+
+
+
+
 # run EPM for package type of this machine
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
