@@ -355,7 +355,7 @@ ICMDS=(
 )
 for ICMD in "${ICMDS[@]}"
 do
-    help2man -h -h -N -n "an e-irods i-command" --version-string="E-iRODS-$EIRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
+    help2man -h -h -N -n "an E-iRODS iCommand" --version-string="E-iRODS-$EIRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
 done
 for manfile in `ls $MANDIR`
 do
