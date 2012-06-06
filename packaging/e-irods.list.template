@@ -54,7 +54,9 @@ $RESOURCE=true
 
 
 
-
+%if DEB
+%requires libc6
+%endif
 
 
 # =-=-=-=-=-=-=-
@@ -64,7 +66,6 @@ $RESOURCE=true
 
 %requires perl
 %requires python
-%requires libc6
 
 %format all
 
@@ -228,11 +229,13 @@ f 644 root root /usr/share/man/man1 ./man/*.gz
 d 755 root root ${EIRODS_DOC_DIR} -
 f 644 root root ${EIRODS_DOC_DIR}/manual.pdf ./manual.pdf
 %if DEB
-f 644 root root ${EIRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
-f 644 root root ${EIRODS_DOC_DIR}/copyright_addendum ./iRODS/COPYRIGHT/Copyright_Addendum.txt
-%endif
+f 644 root root ${EIRODS_DOC_DIR}/copyright ./COPYING
+#f 644 root root ${EIRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
+#f 644 root root ${EIRODS_DOC_DIR}/copyright_addendum ./iRODS/COPYRIGHT/Copyright_Addendum.txt
 f 644 root root ${EIRODS_DOC_DIR}/changelog.gz ./changelog.gz
+%else
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/COPYING ./COPYING
+%endif
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/installLogs -
 
@@ -244,7 +247,6 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/installPostgres ./iR
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/izoneinfo.sh ./iRODS/scripts/izoneinfo.sh
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/notify -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/notify/notify.config ./iRODS/scripts/notify/notify.config
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/notify/data.txt ./iRODS/scripts/notify/data.txt
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/notify/notify.pl ./iRODS/scripts/notify/notify.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/notify/cront ./iRODS/scripts/notify/cront
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/perl -
@@ -321,7 +323,6 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost.in ./iRODS/server/config/irodsHost.in
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssAuth.template ./iRODS/server/config/hpssAuth.template
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config.sav ./iRODS/server/config/server.config.sav
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
 f 600 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
