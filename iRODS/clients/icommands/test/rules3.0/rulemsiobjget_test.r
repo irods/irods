@@ -1,18 +1,14 @@
 myTestRule {
-#Input parameters are:
-#  inRequestPath - the string defining a read from a file in iRODS
-#  inFileMode - the cache file creation mode
-#  inFileFlags - the access modes for the cache file
-#  inCacheFilename - the full path of the cache file
-#No output parameters
-#Output is the name of the file that was created
-  msiSplitPath(*Path, *Coll, *File);
+# Input parameters are:
+#   inRequestPath - the string that specifies a test of the microservice object framework
+#   inFileMode - the cache file creation mode
+#   inFileFlags - the access modes for the cache file
+#   inCacheFilename - the full path of the cache file on the local system
+# No output parameters
+# Output is the name of the file that was created
+#   Wrote local file /tempZone/home/rods/sub1/rodsfiletest from remote //test:Test string
   msiobjget_test(*Request, *Mode, *Flags, *Path);
-  msiExecStrCondQuery("SELECT DATA_NAME where DATA_NAME = '*File' and COLL_NAME = '*Coll'",*GenQOut);
-  foreach(*GenQOut) {
-    msiGetValByKey(*GenQOut, "DATA_NAME", *Filestore);
-    writeLine("stdout","Created file *Filestore");
-  }
+  writeLine("stdout","Wrote local file *Path from remote *Request");
 }
-INPUT *Request ="test:Test string", *Mode = "w", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="//test:Test string", *Mode = "r+", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfiletest"
 OUTPUT ruleExecOut

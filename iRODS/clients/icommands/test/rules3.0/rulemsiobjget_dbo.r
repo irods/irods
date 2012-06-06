@@ -1,18 +1,14 @@
 myTestRule {
-#Input parameters are:
-#  inRequestPath - the string sent to the remote database object
-#  inFileMode - the cache file creation mode
-#  inFileFlags - the access modes for the cache file
-#  inCacheFilename - the full path of the cache file
-#No output parameters
-#Output is the name of the file that was created
-  msiSplitPath(*Path, *Coll, *File);
+# Input parameters are:
+#   inRequestPath - the string sent to the remote database object
+#   inFileMode - the cache file creation mode
+#   inFileFlags - the access modes for the cache file
+#   inCacheFilename - the full path of the cache file on the local system
+# No output parameters
+# Output is the name of the file that was created
+#   Wrote local file /tempZone/home/rods/sub1/rodsfiledbo from remote //dbo:dbr2:/tempZone/home/rods/dbotest/lt.pg
   msiobjget_dbo(*Request, *Mode, *Flags, *Path);
-  msiExecStrCondQuery("SELECT DATA_NAME where DATA_NAME = '*File' and COLL_NAME = '*Coll'",*GenQOut);
-  foreach(*GenQOut) {
-    msiGetValByKey(*GenQOut, "DATA_NAME", *Filestore);
-    writeLine("stdout","Created file *Filestore");
-  }
+  writeLine("stdout","Wrote local file *Path from remote *Request");
 }
-INPUT *Request ="dbo:dbr2:/tempZone/home/rods/dbotest/lt.pg", *Mode = "w", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfile"
+INPUT *Request ="//dbo:dbr2:/tempZone/home/rods/dbotest/lt.pg", *Mode = "w", *Flags = "O_RDWR", *Path = "/tempZone/home/rods/sub1/rodsfiledbo"
 OUTPUT ruleExecOut
