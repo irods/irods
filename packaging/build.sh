@@ -136,6 +136,8 @@ if [ "$?" -ne "0" ]; then
     echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
   fi
   exit 1
+else
+    H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
 fi
 
 
@@ -296,72 +298,75 @@ cd $DIR/../
 gzip -9 -c changelog > changelog.gz
 
 
-# prepare man pages for every binary in the package
+# prepare man pages for the icommands
 cd $DIR/../
 MANDIR=man
 rm -rf $MANDIR
 mkdir -p $MANDIR
-EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
-ICMDDIR="iRODS/clients/icommands/bin"
-ICMDS=(
-    genOSAuth     
-    iadmin        
-    ibun          
-    icd           
-    ichksum       
-    ichmod        
-    icp           
-    idbo          
-    idbug         
-    ienv          
-    ierror        
-    iexecmd       
-    iexit         
-    ifsck         
-    iget          
-    igetwild.sh   
-    ihelp         
-    iinit         
-    ilocate       
-    ils           
-    ilsresc       
-    imcoll        
-    imeta         
-    imiscsvrinfo  
-    imkdir        
-    imv           
-    ipasswd       
-    iphybun       
-    iphymv        
-    ips           
-    iput          
-    ipwd          
-    iqdel         
-    iqmod         
-    iqstat        
-    iquest        
-    iquota        
-    ireg          
-    irepl         
-    irm           
-    irmtrash      
-    irsync        
-    irule         
-    iscan         
-    isysmeta      
-    itrim         
-    iuserinfo     
-    ixmsg         
-)
-for ICMD in "${ICMDS[@]}"
-do
-    help2man -h -h -N -n "an E-iRODS iCommand" --version-string="E-iRODS-$EIRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
-done
-for manfile in `ls $MANDIR`
-do
-    gzip -9 $MANDIR/$manfile
-done
-
+if [ "$H2MVERSION" \< "1.37" ] ; then
+    echo "NOTE :: Skipping man page generation -- help2man version needs to be >= 1.37"
+else
+    EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
+    ICMDDIR="iRODS/clients/icommands/bin"
+    ICMDS=(
+        genOSAuth     
+        iadmin        
+        ibun          
+        icd           
+        ichksum       
+        ichmod        
+        icp           
+        idbo          
+        idbug         
+        ienv          
+        ierror        
+        iexecmd       
+        iexit         
+        ifsck         
+        iget          
+        igetwild.sh   
+        ihelp         
+        iinit         
+        ilocate       
+        ils           
+        ilsresc       
+        imcoll        
+        imeta         
+        imiscsvrinfo  
+        imkdir        
+        imv           
+        ipasswd       
+        iphybun       
+        iphymv        
+        ips           
+        iput          
+        ipwd          
+        iqdel         
+        iqmod         
+        iqstat        
+        iquest        
+        iquota        
+        ireg          
+        irepl         
+        irm           
+        irmtrash      
+        irsync        
+        irule         
+        iscan         
+        isysmeta      
+        itrim         
+        iuserinfo     
+        ixmsg         
+    )
+    for ICMD in "${ICMDS[@]}"
+    do
+        help2man -h -h -N -n "an E-iRODS iCommand" --version-string="E-iRODS-$EIRODSMANVERSION" $ICMDDIR/$ICMD > $MANDIR/$ICMD.1
+    done
+    for manfile in `ls $MANDIR`
+    do
+        gzip -9 $MANDIR/$manfile
+    done
+fi
 
 
 
@@ -373,15 +378,17 @@ done
 # md5sum 3805b1377f910699c4914ef96b273943
 
 cd $DIR/../epm
-echo "Configuring EPM"
-./configure > /dev/null
-if [ "$?" != "0" ]; then
- exit 1
-fi
-echo "Building EPM"
-make > /dev/null
-if [ "$?" != "0" ]; then
- exit 1
+if [ "$BUILDEIRODS" == "1" ]; then
+    echo "Configuring EPM"
+    ./configure > /dev/null
+    if [ "$?" != "0" ]; then
+     exit 1
+    fi
+    echo "Building EPM"
+    make > /dev/null
+    if [ "$?" != "0" ]; then
+     exit 1
+    fi
 fi
 
 cd $DIR/../
