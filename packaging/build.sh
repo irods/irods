@@ -123,6 +123,20 @@ if [ "$?" -ne "0" ]; then
   exit 1
 fi
 
+HELP2MAN=`which help2man`
+if [ "$?" -ne "0" ]; then
+  echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
+  if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
+    echo "      :: try: apt-get install help2man" 1>&2
+  elif [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
+    echo "      :: try: yum install help2man" 1>&2
+  elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
+    echo "      :: try: zypper install help2man" 1>&2
+  else
+    echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
+  fi
+  exit 1
+fi
 
 
 # get into the correct directory 
