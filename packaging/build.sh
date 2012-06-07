@@ -5,7 +5,6 @@ BUILDEIRODS="1"
 
 #read -d '' USAGE <<"EOF"
 USAGE="
-E-iRODS Build Script
 
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
 Usage: $SCRIPTNAME clean
