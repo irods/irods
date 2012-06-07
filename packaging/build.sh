@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 SCRIPTNAME=`basename $0`
 BUILDEIRODS="1"
@@ -8,6 +8,7 @@ USAGE="
 E-iRODS Build Script
 
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
+Usage: $SCRIPTNAME clean
 
 Options:
  -s      Skip compilation of E-iRODS source.
@@ -20,9 +21,12 @@ Examples:
 "
 
 # boilerplate
-echo "--------------------------------------"
-echo " E-iRODS Build Script"
-echo "--------------------------------------"
+echo ""
+echo "+------------------------------------+"
+echo "| RENCI E-iRODS Build Script         |"
+echo "+------------------------------------+"
+date
+echo ""
 
 # parse options
 while getopts ":hs" opt; do
@@ -49,6 +53,35 @@ if [ $# -ne 1 -a $# -ne 2 ] ; then
   exit 1
 fi
 
+MANDIR=man
+# check for clean
+if [ "$1" == "clean" ]; then
+    # clean up any build-created files
+    echo "Clean..."
+    echo "Cleaning $SCRIPTNAME residuals..."
+    rm -f changelog.gz
+    rm -rf $MANDIR
+    rm -f manual.pdf
+    set +e
+    echo "Cleaning EPM residuals..."
+    rm -rf linux-2.6-amd64
+    rm -rf linux-2.6-x86_64
+    rm -rf macosx-10.7-x86_64
+    cd epm
+    make clean > /dev/null 2>&1
+    make distclean > /dev/null 2>&1
+    echo "Cleaning iRODS residuals..."
+    cd ../iRODS
+    make clean > /dev/null 2>&1
+    rm -rf doc/html
+    rm -f server/config/reConfigs/raja1.re
+    rm -f server/config/scriptMonPerf.config
+    rm -f server/icat/src/icatCoreTables.sql
+    rm -f server/icat/src/icatSysTables.sql
+    set -e
+    echo "Done."
+    exit 0
+fi
 
 # detect operating system
 UNAMERESULTS=`uname`
@@ -300,7 +333,6 @@ gzip -9 -c changelog > changelog.gz
 
 # prepare man pages for the icommands
 cd $DIR/../
-MANDIR=man
 rm -rf $MANDIR
 mkdir -p $MANDIR
 if [ "$H2MVERSION" \< "1.37" ] ; then
@@ -416,6 +448,3 @@ else
   echo "ERROR :: Unknown OS, cannot generate package with EPM" 1>&2
   exit 1
 fi
-
-
-
