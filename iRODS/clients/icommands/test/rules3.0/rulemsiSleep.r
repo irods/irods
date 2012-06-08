@@ -9,6 +9,6 @@ myTestRule {
     msiSleep(*Sec, *MicroSec);
     writeLine("stdout", timestr(time()));
 }
-INPUT *Sec="10", *MicroSec="0"
+INPUT *Sec="3", *MicroSec="0"
 OUTPUT ruleExecOut
 

@@ -6,7 +6,7 @@ myTestRule {
 #Output parameter is:
 #  Duration
   msiGetIcatTime(*Start,"unix");
-  msiSleep("10","");
+  msiSleep("3","");
   msiGetIcatTime(*End,"unix");
   writeLine("stdout","Start time is *Start");
   msiGetDiffTime(*Start,*End,"",*Dur);
