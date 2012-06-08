@@ -65,6 +65,7 @@ if [ "$1" == "clean" ]; then
     echo "Cleaning EPM residuals..."
     rm -rf linux-2.6-amd64
     rm -rf linux-2.6-x86_64
+    rm -rf linux-3.1-x86_64
     rm -rf macosx-10.7-x86_64
     cd epm
     make clean > /dev/null 2>&1
@@ -82,19 +83,14 @@ if [ "$1" == "clean" ]; then
     exit 0
 fi
 
+
+# get into the correct directory 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR/../iRODS
+
+
 # detect operating system
-UNAMERESULTS=`uname`
-if [ -f "/etc/redhat-release" ]; then       # CentOS and RHEL and Fedora
-    DETECTEDOS="RedHatCompatible" 
-elif [ -f "/etc/SuSE-release" ]; then       # SuSE
-    DETECTEDOS="SuSE" 
-elif [ -f "/etc/lsb-release" ]; then        # Ubuntu
-    DETECTEDOS="Ubuntu" 
-elif [ -f "/usr/bin/sw_vers" ]; then        # MacOSX
-    DETECTEDOS="MacOSX"
-elif [ "$UNAMERESULTS" == "SunOS" ]; then   # Solaris
-    DETECTEDOS="Solaris"
-fi
+DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
 
 
@@ -171,14 +167,6 @@ if [ "$?" -ne "0" ]; then
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
 fi
-
-
-# get into the correct directory 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR/../iRODS
-
-
-
 
 
 
@@ -294,7 +282,9 @@ if [ "$BUILDEIRODS" == "1" ]; then
     #        time make -j 4      1m52.533s
     #        time make -j 5      1m48.611s
     ###########################################
+    set +e
     make -j 4
+    set -e
     make -j 4
     if [ "$?" != "0" ]; then
      exit 1
@@ -336,6 +326,7 @@ rm -rf $MANDIR
 mkdir -p $MANDIR
 if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "NOTE :: Skipping man page generation -- help2man version needs to be >= 1.37"
+    echo "     :: (or, add --version capability to all iCommands)"
 else
     EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"

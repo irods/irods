@@ -19,7 +19,6 @@ IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 #echo "DB_NAME=$DB_NAME"
 #echo "DB_USER=$DB_USER"
 
-
 # =-=-=-=-=-=-=-
 # determine if we can delete the service account
 user=`who | grep $OS_EIRODS_ACCT`
@@ -106,18 +105,21 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 fi 
 
 # =-=-=-=-=-=-=-
+# detect operating system
+DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
+
+# =-=-=-=-=-=-=-
 # report that we are not deleting the account(s)
 echo "NOTE :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
 echo "     :: The Local System Administrator should delete these if necessary."
-if [ -f "/etc/redhat-release" ]; then # CentOS and RHEL and Fedora
+if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
     echo "     :: try:"
     echo "     ::      sudo userdel $OS_EIRODS_ACCT"
-    echo "     ::      sudo groupdel $OS_EIRODS_ACCT"
-elif [ -f "/etc/SuSE-release" ]; then # SuSE
+elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
     echo "     :: try:"
     echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"
     echo "     ::      sudo /usr/sbin/groupdel $OS_EIRODS_ACCT"
-elif [ -f "/etc/lsb-release" ]; then  # Ubuntu
+elif [ "$DETECTEDOS" == "Ubuntu" ]; then  # Ubuntu
     echo "     :: try:"
     echo "     ::      sudo userdel $OS_EIRODS_ACCT"
                        # groupdel is not necessary on Ubuntu, apparently...
@@ -136,13 +138,13 @@ else
     # Ubuntu
     ETCPREFIX="/etc"
 fi
-rm $ETCPREFIX/rc0.d/K15e-irods
-rm $ETCPREFIX/rc2.d/S95e-irods
-rm $ETCPREFIX/rc3.d/S95e-irods
-rm $ETCPREFIX/rc4.d/S95e-irods
-rm $ETCPREFIX/rc5.d/S95e-irods
-rm $ETCPREFIX/rc6.d/K15e-irods
-rm /etc/init.d/e-irods
+rm -f $ETCPREFIX/rc0.d/K15e-irods
+rm -f $ETCPREFIX/rc2.d/S95e-irods
+rm -f $ETCPREFIX/rc3.d/S95e-irods
+rm -f $ETCPREFIX/rc4.d/S95e-irods
+rm -f $ETCPREFIX/rc5.d/S95e-irods
+rm -f $ETCPREFIX/rc6.d/K15e-irods
+rm -f /etc/init.d/e-irods
 
 # =-=-=-=-=-=-=-
 # remove icommands symlinks

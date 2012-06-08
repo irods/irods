@@ -26,6 +26,9 @@ IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 #echo "DB_PASS=$DB_PASS"
 
 
+# =-=-=-=-=-=-=-
+# detect operating system
+DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
 
 # =-=-=-=-=-=-=-
 # clean up any stray iRODS files in /tmp which will cause problems
@@ -54,6 +57,37 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     PSQL="$PGPATH/psql"
 
     # =-=-=-=-=-=-=-
+    # make sure postgres is running on this machine
+    PSQLSTATUS="notrunning"
+    if [ "$DETECTEDOS" == "SuSE" ] ; then
+        PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "Active" | awk '{print $2}'`
+        if [ "$PSQLSTATE" == "active" ] ; then
+            PSQLSTATUS="running"
+        fi
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "postmaster" | awk '{print $NF}'`
+        if [ "$PSQLSTATE" == "running..." ] ; then
+            PSQLSTATUS="running"
+        fi
+    elif [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PSQLSTATE=`/etc/init.d/postgresql-8.4 status 2>&1 | grep "clusters" | awk '{print $3}'`
+        if [ "$PSQLSTATE" != "" ] ; then
+            PSQLSTATUS="running"
+        else
+            PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "clusters" | awk '{print $3}'`
+            if [ "$PSQLSTATE" != "" ] ; then
+                PSQLSTATUS="running"
+            fi
+        fi
+    else
+        PSQLSTATUS="running"
+    fi
+    if [ "$PSQLSTATUS" != "running" ] ; then
+        echo "ERROR :: Installed PostgreSQL database server needs to be running, Aborting."
+        exit 1
+    fi
+
+    # =-=-=-=-=-=-=-
     # determine if the database already exists
     set +e
     DB=$( su --shell=/bin/bash -c "$PSQL --list" $DB_ADMIN_ROLE  | grep $DB_NAME )
@@ -69,7 +103,6 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
     sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
     mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
-
 
     # =-=-=-=-=-=-=-
     # determine if the database role already exists
