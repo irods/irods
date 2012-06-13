@@ -418,6 +418,7 @@ else
         ifsck         
         iget          
         igetwild      
+        igroupadmin   
         ihelp         
         iinit         
         ilocate       

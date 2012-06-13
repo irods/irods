@@ -263,7 +263,8 @@ ln -s    /usr/bin/iexecmd                 ${IRODS_HOME}/clients/icommands/bin/ie
 ln -s    /usr/bin/iexit                   ${IRODS_HOME}/clients/icommands/bin/iexit             
 ln -s    /usr/bin/ifsck                   ${IRODS_HOME}/clients/icommands/bin/ifsck             
 ln -s    /usr/bin/iget                    ${IRODS_HOME}/clients/icommands/bin/iget              
-ln -s    /usr/bin/igetwild.sh             ${IRODS_HOME}/clients/icommands/bin/igetwild.sh       
+ln -s    /usr/bin/igetwild                ${IRODS_HOME}/clients/icommands/bin/igetwild          
+ln -s    /usr/bin/igroupadmin             ${IRODS_HOME}/clients/icommands/bin/igroupadmin       
 ln -s    /usr/bin/ihelp                   ${IRODS_HOME}/clients/icommands/bin/ihelp             
 ln -s    /usr/bin/iinit                   ${IRODS_HOME}/clients/icommands/bin/iinit             
 ln -s    /usr/bin/ilocate                 ${IRODS_HOME}/clients/icommands/bin/ilocate           
