@@ -662,7 +662,7 @@ getNumSubfilesInBunfileObj (rsComm_t *rsComm, char *objPath)
     addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-    if (status < 0) {
+    if ( genQueryOut == NULL || status < 0) {
        clearGenQueryInp (&genQueryInp);
        if (status == CAT_NO_ROWS_FOUND) {
            return 0;

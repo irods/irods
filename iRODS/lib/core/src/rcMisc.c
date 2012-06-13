@@ -3113,7 +3113,7 @@ printHintedGenQueryOut(FILE *fd, char *format, char *hint,  genQueryOut_t *genQu
 int
 printGenQueryOut(FILE *fd, char *format, char *hint, genQueryOut_t *genQueryOut)
 {
-  int i,n,j;
+  int i=0,n=0,j=0;
   sqlResult_t *v[MAX_SQL_ATTR];
   char * cname[MAX_SQL_ATTR];
 

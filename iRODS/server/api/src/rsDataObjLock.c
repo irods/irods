@@ -32,8 +32,12 @@ rsDataObjLock (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = rcDataObjLock (rodsServerHost->conn, dataObjInp);
-        return (status);
+        if( rodsServerHost != NULL ) { // JMC - cppcheck null ref
+			status = rcDataObjLock (rodsServerHost->conn, dataObjInp);
+			return (status);
+		} else {
+            status = SYS_NO_RCAT_SERVER_ERR;
+		}
     } else {
 #ifdef RODS_CAT
         status = _rsDataObjLock (rsComm, dataObjInp);

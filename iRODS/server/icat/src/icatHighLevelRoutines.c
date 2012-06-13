@@ -2331,9 +2331,9 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       return(iVal);
    }
 
-   if (collInfo==0) {
-      return(CAT_INVALID_ARGUMENT);
-   }
+   //if (collInfo==0) { // JMC - cppcheck null ref above
+   //   return(CAT_INVALID_ARGUMENT);
+   //}
 
    strncpy(tSQL, "update R_COLL_MAIN set ", MAX_SQL_SIZE);
    count=0;

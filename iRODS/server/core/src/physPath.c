@@ -490,9 +490,9 @@ int
 _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumStr) // JMC - backport 4527
 {
     fileChksumInp_t fileChksumInp;
-    int rescTypeInx;
-    int rescClass;
-    int status;
+    int rescTypeInx = 0;
+    int rescClass = 0;
+    int status = 0;
     // =-=-=-=-=-=-=-
     // JMC - backport 4527
     dataObjInfo_t *dataObjInfo; 

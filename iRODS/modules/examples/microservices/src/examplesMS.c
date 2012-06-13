@@ -71,13 +71,13 @@ msiGetRescAddr( msParam_t *rescName, msParam_t *outAddress,
     tmpPtr = parseMspForStr (rescName);
 
     if (tmpPtr == NULL)  {
-	rodsLog (LOG_ERROR, "msiGetRescAddr: missing name input");
-	rei->status = USER__NULL_INPUT_ERR;
-	return USER__NULL_INPUT_ERR;
+	    rodsLog (LOG_ERROR, "msiGetRescAddr: missing name input");
+	    rei->status = USER__NULL_INPUT_ERR;
+	    return USER__NULL_INPUT_ERR;
     }
 
     status = _getRescInfo (rei->rsComm, tmpPtr, &rescGrpInfo);
-    if (status < 0) {
+    if ( rescGrpInfo == NULL || status < 0) {
          rodsLog (LOG_ERROR,
           "msiGetRescAddr: _getRescInfo of %s error. stat = %d",
           rescName, status);

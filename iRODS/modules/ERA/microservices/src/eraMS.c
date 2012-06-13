@@ -2197,96 +2197,98 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     	/* Get extended info of current and master objects */
     	rei->status = getDataObjInfo(rei->rsComm, currentObjInp, &currentDataObjInfo, ACCESS_READ_OBJECT, 0);
     	rei->status = getDataObjInfo(rei->rsComm, &masterObjInp, &masterDataObjInfo, ACCESS_READ_OBJECT, 0);
-    	
     
-    	/* We may have to create missing directories on the resource before we can make links */
-    	snprintf(tmpPath, MAX_NAME_LEN, "%s/%s", currentDataObjInfo->rescInfo->rescVaultPath, 
-    		masterObjInp.objPath + strlen(currentDataObjInfo->rescInfo->zoneName) + 2);
-    	
-    	/* First, separate file from parent directory in physical path */
-    	tmpPtr = &tmpPath[strlen(tmpPath)-1];
-    	while (*tmpPtr != '/' && tmpPtr > tmpPath)
-    	{
-    		tmpPtr--;
-    	}
-    	*tmpPtr = '\0';
-    		
-    	
-    	/* Set up input for rsExecCmd */
-    	memset(&execCmdInp, 0, sizeof(execCmd_t));
-    	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
-    	rstrcpy(execCmdInp.cmd, "mkdir", LONG_NAME_LEN);
-    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p \"%s\"", tmpPath);
-    	
-    	
-		/* Invoke rsExecCmd for remote mkdir on resource */
-		rei->status = rsExecCmd (rei->rsComm, &execCmdInp, &execCmdOut);
-		
-		if (rei->status < 0) {
-			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsExecCmd failed for %s %s. status = %d", 
-				execCmdInp.cmd, execCmdInp.cmdArgv, rei->status);
-			return (rei->status);
-		}
-		
-		
-		/* Rebuild full target path for hard link */
-		*tmpPtr = '/';
-		
-		/* Reset input for rsExecCmd */
-    	memset(&execCmdInp, 0, sizeof(execCmd_t));
-    	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
-    	rstrcpy(execCmdInp.cmd, "ln", LONG_NAME_LEN);
-    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "\"%s\" \"%s\"", currentDataObjInfo->filePath, tmpPath);
-    	
-    	
-    	/* Create hard link on resource */
-		rei->status = rsExecCmd (rei->rsComm, &execCmdInp, &execCmdOut);
-		
-		if (rei->status < 0) {
-			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsExecCmd failed for %s %s. status = %d", 
-				execCmdInp.cmd, execCmdInp.cmdArgv, rei->status);
-			return (rei->status);
-		}
-		
-		
-		/* Register new path as replica, and unlink old object */
-    	
-    	/* Update file and object path in currentDataObjInfo */
-		rstrcpy(currentDataObjInfo->filePath, tmpPath, MAX_NAME_LEN);
-		rstrcpy(currentDataObjInfo->objPath, masterObjInp.objPath, MAX_NAME_LEN);
+	    if( currentDataObjInfo != NULL ) { // JMC - cppcheck null ref
+   
+			/* We may have to create missing directories on the resource before we can make links */
+			snprintf(tmpPath, MAX_NAME_LEN, "%s/%s", currentDataObjInfo->rescInfo->rescVaultPath, 
+				masterObjInp.objPath + strlen(currentDataObjInfo->rescInfo->zoneName) + 2);
+			
+			/* First, separate file from parent directory in physical path */
+			tmpPtr = &tmpPath[strlen(tmpPath)-1];
+			while (*tmpPtr != '/' && tmpPtr > tmpPath)
+			{
+				tmpPtr--;
+			}
+			*tmpPtr = '\0';
+				
+			
+			/* Set up input for rsExecCmd */
+			memset(&execCmdInp, 0, sizeof(execCmd_t));
+			rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
+			rstrcpy(execCmdInp.cmd, "mkdir", LONG_NAME_LEN);
+			snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p \"%s\"", tmpPath);
+			
+			
+			/* Invoke rsExecCmd for remote mkdir on resource */
+			rei->status = rsExecCmd (rei->rsComm, &execCmdInp, &execCmdOut);
+			
+			if (rei->status < 0) {
+				rodsLog (LOG_ERROR, "msiMergeDataCopies: rsExecCmd failed for %s %s. status = %d", 
+					execCmdInp.cmd, execCmdInp.cmdArgv, rei->status);
+				return (rei->status);
+			}
+			
+			
+			/* Rebuild full target path for hard link */
+			*tmpPtr = '/';
+			
+			/* Reset input for rsExecCmd */
+			memset(&execCmdInp, 0, sizeof(execCmd_t));
+			rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
+			rstrcpy(execCmdInp.cmd, "ln", LONG_NAME_LEN);
+			snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "\"%s\" \"%s\"", currentDataObjInfo->filePath, tmpPath);
+			
+			
+			/* Create hard link on resource */
+			rei->status = rsExecCmd (rei->rsComm, &execCmdInp, &execCmdOut);
+			
+			if (rei->status < 0) {
+				rodsLog (LOG_ERROR, "msiMergeDataCopies: rsExecCmd failed for %s %s. status = %d", 
+					execCmdInp.cmd, execCmdInp.cmdArgv, rei->status);
+				return (rei->status);
+			}
+			
+			
+			/* Register new path as replica, and unlink old object */
+			
+			/* Update file and object path in currentDataObjInfo */
+			rstrcpy(currentDataObjInfo->filePath, tmpPath, MAX_NAME_LEN);
+			rstrcpy(currentDataObjInfo->objPath, masterObjInp.objPath, MAX_NAME_LEN);
 
- 	
-    	/* Set up regReplicaInp */
-    	memset(&regReplicaInp, 0, sizeof(regReplica_t));
-    	regReplicaInp.srcDataObjInfo = masterDataObjInfo;
-    	regReplicaInp.destDataObjInfo = currentDataObjInfo;
-    	
-    	
-		/* Invoke rsRegReplica */
-		rei->status = rsRegReplica (rei->rsComm, &regReplicaInp);
 		
-		if (rei->status < 0) {
-			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsRegReplica failed for %s. status = %d",
-				currentDataObjInfo->filePath, rei->status);
+			/* Set up regReplicaInp */
+			memset(&regReplicaInp, 0, sizeof(regReplica_t));
+			regReplicaInp.srcDataObjInfo = masterDataObjInfo;
+			regReplicaInp.destDataObjInfo = currentDataObjInfo;
+			
+			
+			/* Invoke rsRegReplica */
+			rei->status = rsRegReplica (rei->rsComm, &regReplicaInp);
+			
+			if (rei->status < 0) {
+				rodsLog (LOG_ERROR, "msiMergeDataCopies: rsRegReplica failed for %s. status = %d",
+					currentDataObjInfo->filePath, rei->status);
+				return (rei->status);
+			}
+			
+			
+			/* Unlink old object (for good!) */
+			addKeyVal (&currentObjInp->condInput, FORCE_FLAG_KW, ""); 
+			rei->status = rsDataObjUnlink (rei->rsComm, currentObjInp);
+			
+			if (rei->status < 0) {
+				rodsLog (LOG_ERROR, "msiMergeDataCopies: rsDataObjUnlink failed for %s. status = %d",
+					currentObjInp->objPath, rei->status);
+				return (rei->status);
+			}
+			
+			
+			/* And if we've made it this far, we're done */
+			fillIntInMsParam (status, rei->status);
 			return (rei->status);
-		}
-		
-		
-		/* Unlink old object (for good!) */
-		addKeyVal (&currentObjInp->condInput, FORCE_FLAG_KW, ""); 
-		rei->status = rsDataObjUnlink (rei->rsComm, currentObjInp);
-		
-		if (rei->status < 0) {
-			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsDataObjUnlink failed for %s. status = %d",
-				currentObjInp->objPath, rei->status);
-			return (rei->status);
-		}
-		
-		
-		/* And if we've made it this far, we're done */
-    	fillIntInMsParam (status, rei->status);
-		return (rei->status);
-        	
+
+        } // currentObjInfo != 0	
     }
     
     
