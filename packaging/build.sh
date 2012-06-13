@@ -1,9 +1,10 @@
 #!/bin/bash -e
 
 SCRIPTNAME=`basename $0`
+COVERAGE="0"
+RELEASE="0"
 BUILDEIRODS="1"
 
-#read -d '' USAGE <<"EOF"
 USAGE="
 
 Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
@@ -28,20 +29,58 @@ date
 echo ""
 
 # parse options
-while getopts ":hs" opt; do
-  case $opt in
-    h)
-      echo "$USAGE"
-      ;;
-    s)
-      BUILDEIRODS="0"
-      echo "-s detected -- Skipping E-iRODS compilation"
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      ;;
-  esac
+while getopts ":chrs" opt; do
+    case $opt in
+        c)
+            COVERAGE="1"
+            echo "-c detected -- Building E-iRODS with coverage support (GCOV)"
+            ;;
+        h)
+            echo "$USAGE"
+            ;;
+        r)
+            RELEASE="1"
+            echo "-r detected -- Building a RELEASE package of E-iRODS"
+            ;;
+        s)
+            BUILDEIRODS="0"
+            echo "-s detected -- Skipping E-iRODS compilation"
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            ;;
+    esac
 done
+echo ""
+
+# detect illogical combinations, and exit
+if [ "$BUILDEIRODS" == "0" -a "$RELEASE" == "1" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: Incompatible options:" 1>&2
+    echo "      :: -s   skip compilation" 1>&2
+    echo "      :: -r   build for release" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
+fi
+if [ "$BUILDEIRODS" == "0" -a "$COVERAGE" == "1" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: Incompatible options:" 1>&2
+    echo "      :: -s   skip compilation" 1>&2
+    echo "      :: -c   coverage support" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
+fi
+if [ "$COVERAGE" == "1" -a "$RELEASE" == "1" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: Incompatible options:" 1>&2
+    echo "      :: -c   coverage support" 1>&2
+    echo "      :: -r   build for release" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
+fi
+
+
+
 
 # remove options from $@
 shift $((OPTIND-1))
@@ -64,6 +103,7 @@ if [ "$1" == "clean" ]; then
     set +e
     echo "Cleaning EPM residuals..."
     rm -rf linux-2.6-amd64
+    rm -rf linux-3.2-amd64
     rm -rf linux-2.6-x86_64
     rm -rf linux-3.1-x86_64
     rm -rf macosx-10.7-x86_64
@@ -95,8 +135,10 @@ echo "Detected OS [$DETECTEDOS]"
 
 
 if [ $1 != "icat" -a $1 != "resource" ] ; then
+    echo "#######################################################" 1>&2
     echo "ERROR :: Invalid serverType [$1]" 1>&2
     echo "      :: Only 'icat' or 'resource' available at this time" 1>&2
+    echo "#######################################################" 1>&2
     exit 1
   exit 1
 fi
@@ -104,40 +146,49 @@ fi
 if [ "$1" == "icat" ]; then
 #  if [ "$2" != "postgres" -a "$2" != "mysql" ]
   if [ "$2" != "postgres" ]; then
+    echo "#######################################################" 1>&2
     echo "ERROR :: Invalid iCAT databaseType [$2]" 1>&2
     echo "      :: Only 'postgres' available at this time" 1>&2
+    echo "#######################################################" 1>&2
     exit 1
   fi
 fi
 
 if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
   if [ "$(id -u)" != "0" ]; then
+    echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
     echo "      :: because dpkg demands to be run as root" 1>&2
+    echo "#######################################################" 1>&2
     exit 1
   fi
 fi
 
 RST2PDF=`which rst2pdf`
 if [ "$?" -ne "0" ]; then
+  echo "#######################################################" 1>&2
   echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
   if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
     echo "      :: try: apt-get install rst2pdf" 1>&2
   else
     echo "      :: try: easy_install rst2pdf" 1>&2
   fi
+  echo "#######################################################" 1>&2
   exit 1
 fi
 
 ROMAN=`python -c "import roman"`
 if [ "$?" -ne "0" ]; then
+  echo "#######################################################" 1>&2
   echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
   echo "      :: try: easy_install roman" 1>&2
+  echo "#######################################################" 1>&2
   exit 1
 fi
 
 DOXYGEN=`which doxygen`
 if [ "$?" -ne "0" ]; then
+  echo "#######################################################" 1>&2
   echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
   if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
     echo "      :: try: apt-get install doxygen" 1>&2
@@ -148,11 +199,13 @@ if [ "$?" -ne "0" ]; then
   else
     echo "      :: download from: http://doxygen.org" 1>&2
   fi
+  echo "#######################################################" 1>&2
   exit 1
 fi
 
 HELP2MAN=`which help2man`
 if [ "$?" -ne "0" ]; then
+  echo "#######################################################" 1>&2
   echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
   if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
     echo "      :: try: apt-get install help2man" 1>&2
@@ -163,6 +216,7 @@ if [ "$?" -ne "0" ]; then
   else
     echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
   fi
+  echo "#######################################################" 1>&2
   exit 1
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
@@ -250,8 +304,18 @@ if [ "$BUILDEIRODS" == "1" ]; then
     mv /tmp/irodsctl.tmp ./irodsctl
     chmod 755 ./irodsctl
 
-
-
+    # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
+    if [ "$COVERAGE" == "1" ] ; then
+        sed -e "s,EIRODS_BUILD_COVERAGE=0,EIRODS_BUILD_COVERAGE=1," ./config/platform.mk > /tmp/eirods-platform.mk
+        mv /tmp/eirods-platform.mk ./config/platform.mk
+    fi
+    
+    # twiddle debug flag in platform.mk based on whether this is a release build
+    if [ "$RELEASE" == "1" ] ; then
+        sed -e "s,EIRODS_BUILD_DEBUG=1,EIRODS_BUILD_DEBUG=0," ./config/platform.mk > /tmp/eirods-platform.mk
+        mv /tmp/eirods-platform.mk ./config/platform.mk
+    fi
+    
     # =-=-=-=-=-=-=-
     # modify the eirods_ms_home.h file with the proper path to the binary directory
     irods_msvc_home=`./scripts/find_irods_home.sh`
@@ -303,7 +367,9 @@ if [ "$BUILDEIRODS" == "1" ]; then
     cd $DIR/../
     rst2pdf manual.rst -o manual.pdf
     if [ "$?" != "0" ]; then
+      echo "#######################################################" 1>&2
       echo "ERROR :: Failed generating manual.pdf" 1>&2
+      echo "#######################################################" 1>&2
       exit 1
     fi
 
@@ -311,7 +377,9 @@ if [ "$BUILDEIRODS" == "1" ]; then
     cd $DIR/../iRODS
     doxygen ./config/doxygen-saved.cfg
     if [ "$?" != "0" ]; then
+      echo "#######################################################" 1>&2
       echo "ERROR :: Failed generating doxygen output" 1>&2
+      echo "#######################################################" 1>&2
       exit 1
     fi
 
@@ -416,28 +484,37 @@ if [ "$BUILDEIRODS" == "1" ]; then
     fi
 fi
 
+if [ "$COVERAGE" == "1" ]; then
+    # sets EPM to not strip binaries of debugging information
+    EPMOPTS="-g"
+else
+    EPMOPTS=""
+fi
+
 cd $DIR/../
 if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
   echo "Running EPM :: Generating $DETECTEDOS RPM"
   epmvar="REDHATRPM$SERVER_TYPE" 
-  ./epm/epm -f rpm e-irods $epmvar=true ./packaging/e-irods.list
+  ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
 elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
   echo "Running EPM :: Generating $DETECTEDOS RPM"
   epmvar="SUSERPM$SERVER_TYPE" 
-  ./epm/epm -f rpm e-irods $epmvar=true ./packaging/e-irods.list
+  ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
 elif [ "$DETECTEDOS" == "Ubuntu" ]; then  # Ubuntu
   echo "Running EPM :: Generating $DETECTEDOS DEB"
   epmvar="DEB$SERVER_TYPE" 
-  ./epm/epm -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
+  ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
 elif [ "$DETECTEDOS" == "Solaris" ]; then  # Solaris
   echo "Running EPM :: Generating $DETECTEDOS PKG"
   epmvar="PKG$SERVER_TYPE"
-  ./epm/epm -f pkg e-irods $epmvar=true ./packaging/e-irods.list
+  ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
 elif [ "$DETECTEDOS" == "MacOSX" ]; then  # MacOSX
   echo "Running EPM :: Generating $DETECTEDOS DMG"
   epmvar="OSX$SERVER_TYPE"
-  ./epm/epm -f osx e-irods $epmvar=true ./packaging/e-irods.list
+  ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
 else
+  echo "#######################################################" 1>&2
   echo "ERROR :: Unknown OS, cannot generate package with EPM" 1>&2
+  echo "#######################################################" 1>&2
   exit 1
 fi

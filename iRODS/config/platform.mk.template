@@ -98,7 +98,21 @@ endif
 #
 # Compiler and loader options
 #
+EIRODS_BUILD_DEBUG=1
+ifeq ($(EIRODS_BUILD_DEBUG), 1)
 MY_CFLAG+= -g
+else
+# we'll change this to -O3 later to optimize... hit errors on first attempt
+MY_CFLAG+= -O0
+endif
+
+EIRODS_BUILD_COVERAGE=0
+ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+MY_CFLAG+= -fprofile-arcs -ftest-coverage
+LDADD+= -lgcov
+CL_LDADD+= -lgcov
+endif
+
 LDADD+= -lm -lpthread
 CL_LDADD+= -lm -lpthread
 
