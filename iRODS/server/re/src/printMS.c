@@ -7,6 +7,8 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
+#include "apiHeaderAll.h"
+#include "rsApiHandler.h"
 
 #ifdef ADDR_64BITS
 #define CAST_PTR_INT (long int)
@@ -97,7 +99,8 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  *
  * \usage See clients/icommands/test/rules3.0/
  *
- * \param[in] where - where is a msParam of type STR_MS_T which is the buffer name in ruleExecOut. Currently stdout and stderr.
+ * \param[in] where - where is a msParam of type STR_MS_T which is the buffer name in ruleExecOut. 
+ * Currently stdout, stderr and an existing iRODS file.
  * \param[in] inString - inString is a msParam of type STR_MS_T which is a string to be written into buffer
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -144,11 +147,68 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
   msParamArray_t *inMsParamArray;
   msParam_t *mP;
   execCmdOut_t *myExecCmdOut;
+
+  // =-=-=-=-=-=-=-
+  // JMC - backport 4619
+  dataObjInp_t dataObjInp;
+  openedDataObjInp_t openedDataObjInp;
+  bytesBuf_t tmpBBuf;
+  fileLseekOut_t *dataObjLseekOut = NULL;
+  int fd,i;
+  // =-=-=-=-=-=-=-
     
   if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
     rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
     return 0;
   }
+
+  // =-=-=-=-=-=-=-
+  // JMC - backport 4619
+  if (writeId != NULL && writeId[0] == '/') {
+    /* writing to an existing iRODS file */
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR, "_writeString: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    dataObjInp.openFlags = O_RDWR;
+    snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s",writeId);
+    fd = rsDataObjOpen (rei->rsComm, &dataObjInp);
+    if (fd < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd);
+      return(fd);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    openedDataObjInp.offset = 0;
+    openedDataObjInp.whence = SEEK_END;
+    i = rsDataObjLseek (rei->rsComm, &openedDataObjInp, &dataObjLseekOut);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i);
+      return(i);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    tmpBBuf.len = openedDataObjInp.len = strlen(writeStr) + 1;
+    tmpBBuf.buf =  writeStr;
+    i = rsDataObjWrite (rei->rsComm, &openedDataObjInp, &tmpBBuf);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i);
+      return(i);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    i = rsDataObjClose (rei->rsComm, &openedDataObjInp);
+    return(i);
+  }
+
+  // =-=-=-=-=-=-=-
+
   mP = NULL;
   inMsParamArray = rei->msParamArray;
   if (((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) &&

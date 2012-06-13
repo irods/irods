@@ -25,10 +25,7 @@ use File::Copy;
 # $doIbunZipTest - whether to do ibun test for gzip and bzip2 dataType.
 # "yes" or "no". Default is no since the gzipTar and bzip2Tar dataType
 # are not defined yet.
-
-#TGR
-#my $doIbunZipTest = "yes";
-my $doIbunZipTest = "no";
+my $doIbunZipTest = "yes";
 
 my $debug;
 my $entry;
@@ -279,11 +276,7 @@ runCmd( "ips -v", "", "LIST", "ips" );
 runCmd( "iqstat" );
 runCmd( "imkdir $irodshome/icmdtest", "", "", "", "irm -r $irodshome/icmdtest" );
 # make a directory of large files
-
-#TGR
-#runCmd( "iput -K --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
-runCmd( "iput -K $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
-
+runCmd( "iput -K --wlock $progname $irodshome/icmdtest/foo1", "", "", "", "irm $irodshome/icmdtest/foo1" );
 runCmd( "ichksum -f $irodshome/icmdtest/foo1" );
 runCmd( "iput -kf $progname $irodshome/icmdtest/foo1" );
 runCmd( "ils $irodshome/icmdtest/foo1" , "", "LIST", "foo1" );
@@ -292,11 +285,7 @@ runCmd( "iadmin ls $irodshome/icmdtest", "", "LIST", "foo1" );
 runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "$username#$irodszone:own" );
 runCmd( "ichmod read testuser1 $irodshome/icmdtest/foo1" );
 runCmd( "ils -A $irodshome/icmdtest/foo1", "", "LIST", "testuser1#$irodszone:read" );
-
-#TGR
-#runCmd( "irepl -B -R testresource --rlock $irodshome/icmdtest/foo1" );
-runCmd( "irepl -B -R testresource $irodshome/icmdtest/foo1" );
-
+runCmd( "irepl -B -R testresource --rlock $irodshome/icmdtest/foo1" );
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "1 testresource" );
 # overwrite a copy 
 runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/icmdtest/foo1" );
@@ -317,11 +306,7 @@ runCmd( "imeta add -d $irodshome/icmdtest/foo1 testmeta2 hello", "", "", "", "im
 runCmd( "imeta ls -d $irodshome/icmdtest/foo1", "", "LIST", "testmeta1,hello" );
 runCmd( "imeta qu -d testmeta1 = 180", "", "LIST", "foo1" );
 runCmd( "imeta qu -d testmeta2 = hello", "", "dataObj:", "foo1" );
-
-#TGR
-#runCmd( "iget -f -K --rlock $irodshome/icmdtest/foo2 $dir_w" );
-runCmd( "iget -f -K $irodshome/icmdtest/foo2 $dir_w" );
-
+runCmd( "iget -f -K --rlock $irodshome/icmdtest/foo2 $dir_w" );
 runCmd( "ls -l $dir_w/foo2", "", "LIST", "foo2,$myssize");
 unlink ( "$dir_w/foo2" );
 # we have foo1 in $irodsdefresource and foo2 in testresource
@@ -360,11 +345,7 @@ runCmd( "ils -l $irodshome/icmdtestx1.tar", "", "LIST", "testx1.tar" );
 system ( "mkdir $dir_w/testx1" );
 runCmd( "iget  $irodshome/icmdtestx1.tar $dir_w/testx1.tar", "",  "", "", "rm $dir_w/testx1.tar" );
 runCmd( "tar -xvf $dir_w/testx1.tar -C $dir_w/testx1", "", "", "", "rm -r $dir_w/testx1" );
-
-#TGR
-#runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
-runCmd( "diff -r $dir_w/testx $dir_w/testx1", "", "NOANSWER" );
-
+runCmd( "diff -r $dir_w/testx $dir_w/testx1/icmdtestx", "", "NOANSWER" );
 if ( $doIbunZipTest =~ "yes" ) {
 # test ibun with gzip
     runCmd( "ibun -cDgzip $irodshome/icmdtestx1.tar.gz $irodshome/icmdtestx");
@@ -407,11 +388,7 @@ $ENV{'clientUserName'}  = 'testuser2';
 system ( "cp /tmp/sfile2 /tmp/sfile2c" );
 # this should fail
 runCmd( "ireg -KR testresource /tmp/sfile2c  $testuser2home/foo5", "failtest" );
-
-#TGR
-#runCmd( "iput -R testresource /tmp/sfile2c $testuser2home/foo5" );
-runCmd( "iput -fR testresource /tmp/sfile2c $testuser2home/foo5" );
-
+runCmd( "iput -R testresource /tmp/sfile2c $testuser2home/foo5" );
 # this should fail
 runCmd( "irm -U $testuser2home/foo5", "failtest" );
 system ("irm -f $testuser2home/foo5" );
@@ -443,109 +420,87 @@ runCmd( "diff -r $mysdir $dir_w/testm", "", "NOANSWER" );
 runCmd( "imcoll -U $irodshome/icmdtestm" );
 runCmd( "irm -rf $irodshome/icmdtestm" );
 system ( "rm -r $dir_w/testm" );
-
-#TGR
-#runCmd( "imkdir $irodshome/icmdtestt" );
-#runCmd( "imcoll -m tar $irodshome/icmdtestx.tar $irodshome/icmdtestt" );
-#runCmd( "ils -lr $irodshome/icmdtestt", "", "LIST", "foo2,foo1" );
-#runCmd( "iget -vr $irodshome/icmdtestt  $dir_w/testt" );
-#runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
-#runCmd( "imkdir $irodshome/icmdtestt/mydirtt" );
-#runCmd( "iput $progname $irodshome/icmdtestt/mydirtt/foo1mt" );
-#runCmd( "imv $irodshome/icmdtestt/mydirtt/foo1mt $irodshome/icmdtestt/mydirtt/foo1mtx" );
-
+runCmd( "imkdir $irodshome/icmdtestt" );
+runCmd( "imcoll -m tar $irodshome/icmdtestx.tar $irodshome/icmdtestt" );
+runCmd( "ils -lr $irodshome/icmdtestt", "", "LIST", "foo2,foo1" );
+runCmd( "iget -vr $irodshome/icmdtestt  $dir_w/testt" );
+runCmd( "diff -r  $dir_w/testx $dir_w/testt", "", "NOANSWER" );
+runCmd( "imkdir $irodshome/icmdtestt/mydirtt" );
+runCmd( "iput $progname $irodshome/icmdtestt/mydirtt/foo1mt" );
+runCmd( "imv $irodshome/icmdtestt/mydirtt/foo1mt $irodshome/icmdtestt/mydirtt/foo1mtx" );
 mkldir ();
-
-#TGR
-## test adding a large file to a mounted collection
-#runCmd( "iput $myldir/lfile1 $irodshome/icmdtestt/mydirtt" );
-#runCmd( "iget $irodshome/icmdtestt/mydirtt/lfile1 $dir_w/testt" );
-#runCmd( "irm -r $irodshome/icmdtestt/mydirtt" );
-#runCmd( "imcoll -s $irodshome/icmdtestt" );
-#runCmd( "imcoll -p $irodshome/icmdtestt" );
-#runCmd( "imcoll -U $irodshome/icmdtestt" );
-#runCmd( "irm -rf $irodshome/icmdtestt" );
-#system ( "rm -r $dir_w/testt" );
-
+# test adding a large file to a mounted collection
+runCmd( "iput $myldir/lfile1 $irodshome/icmdtestt/mydirtt" );
+runCmd( "iget $irodshome/icmdtestt/mydirtt/lfile1 $dir_w/testt" );
+runCmd( "irm -r $irodshome/icmdtestt/mydirtt" );
+runCmd( "imcoll -s $irodshome/icmdtestt" );
+runCmd( "imcoll -p $irodshome/icmdtestt" );
+runCmd( "imcoll -U $irodshome/icmdtestt" );
+runCmd( "irm -rf $irodshome/icmdtestt" );
+system ( "rm -r $dir_w/testt" );
 # iphybun test
 runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
-
-#TGR
-#runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
-runCmd( "iphybun -Rresgroup $irodshome/icmdtestp" );
-
+runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
 runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
-
-#TGR
-#runCmd( "irepl --purgec -Rcompresource $bunfile" );
-runCmd( "irepl -Rcompresource $bunfile" );
-
-#TGR
-#runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
-#runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
-#runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
-
+runCmd( "irepl --purgec -Rcompresource $bunfile" );
+runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
+runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
+runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 # get the name of bundle file
 if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
-
-#TGR
-#runCmd( "irm -f --empty $bunfile" );
-## should not be able to remove it because it is not empty
-#runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
-#runCmd( "irm -f --empty $bunfile" );
+runCmd( "irm -f --empty $bunfile" );
+# should not be able to remove it because it is not empty
+runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
 runCmd( "irm -rvf $irodshome/icmdtestp" );
-runCmd( "irm -f $bunfile" );
-
-#TGR
-#system ( "rm -r $dir_w/testp" );
-
+runCmd( "irm -f --empty $bunfile" );
+system ( "rm -r $dir_w/testp" );
 system ( "rm -r $mysdir" );
 
 
 # resource group test
-#runCmd( "iput -KR resgroup $progname $irodshome/icmdtest/foo6", "", "", "", "irm $irodshome/icmdtest/foo6" );
-#runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "foo6,testresource" );
-#runCmd( "irepl -a $irodshome/icmdtest/foo6" );
-#runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
-#runCmd( "itrim -S testresource -N1 $irodshome/icmdtest/foo6" );
-#runCmd( "ils -l $irodshome/icmdtest/foo6", "negtest", "LIST", "testresource" );
-#runCmd( "iget -f $irodshome/icmdtest/foo6 $dir_w/foo6" );
-#runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
-#runCmd( "diff $progname $dir_w/foo6", "", "NOANSWER" );
-#runCmd( "itrim -S testresource -N1 $irodshome/icmdtest/foo6" );
-#runCmd( "iput -fR $irodsdefresource $progname $irodshome/icmdtest/foo6" );
-#runCmd( "irepl -UR compresource $irodshome/icmdtest/foo6" );
-#runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
-#runCmd( "iget -f $irodshome/icmdtest/foo6 $dir_w/foo6" );
-#runCmd( "diff $progname $dir_w/foo6", "", "NOANSWER" );
-#system ( "rm $dir_w/foo6" );
+runCmd( "iput -KR resgroup $progname $irodshome/icmdtest/foo6", "", "", "", "irm $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "foo6,testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
+runCmd( "itrim -S testresource -N1 $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "negtest", "LIST", "testresource" );
+runCmd( "iget -f $irodshome/icmdtest/foo6 $dir_w/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
+runCmd( "diff  $progname $dir_w/foo6", "", "NOANSWER" );
+runCmd( "itrim -S testresource -N1 $irodshome/icmdtest/foo6" );
+runCmd( "iput -fR $irodsdefresource $progname $irodshome/icmdtest/foo6" );
+runCmd( "irepl -UR compresource $irodshome/icmdtest/foo6" );
+runCmd( "ils -l $irodshome/icmdtest/foo6", "", "LIST", "compresource,testresource" );
+runCmd( "iget -f $irodshome/icmdtest/foo6 $dir_w/foo6" );
+runCmd( "diff  $progname $dir_w/foo6", "", "NOANSWER" );
+system ( "rm $dir_w/foo6" );
 
 # test --purgec option
-#runCmd( "iput -R resgroup --purgec $progname $irodshome/icmdtest/foo7", "", "", "", "irm $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource" );
-#runCmd( "irepl -a $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
-#runCmd( "iput -fR resgroup --purgec $progname $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
-#runCmd( "irepl -a $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
-#runCmd( "irepl -R compresource --purgec $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
-#runCmd( "irepl -a $irodshome/icmdtest/foo7" );
-#runCmd( "itrim -S compresource -N1 $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "testresource" );
-#runCmd( "irepl -R compresource --purgec $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
-#runCmd( "iget -f $irodshome/icmdtest/foo7 --purgec $dir_w/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
-#runCmd( "irepl -a $irodshome/icmdtest/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
-#runCmd( "iget -f $irodshome/icmdtest/foo7 --purgec $dir_w/foo7" );
-#runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
-#runCmd( "diff  $progname $dir_w/foo7", "", "NOANSWER" );
-#system ( "rm $dir_w/foo7" );
+runCmd( "iput -R resgroup --purgec $progname $irodshome/icmdtest/foo7", "", "", "", "irm $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "iput -fR resgroup --purgec $progname $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "irepl -R compresource --purgec $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "itrim -S compresource -N1 $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "testresource" );
+runCmd( "irepl -R compresource --purgec $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "iget -f --purgec $irodshome/icmdtest/foo7 $dir_w/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "irepl -a $irodshome/icmdtest/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "", "LIST", "compresource,testresource" );
+runCmd( "iget -f --purgec $irodshome/icmdtest/foo7 $dir_w/foo7" );
+runCmd( "ils -l $irodshome/icmdtest/foo7", "negtest", "LIST", "testresource" );
+runCmd( "diff  $progname $dir_w/foo7", "", "NOANSWER" );
+system ( "rm $dir_w/foo7" );
 
 
 #-- Test a simple rule from the rule test file
@@ -614,19 +569,11 @@ $ENV{'irodsProt'} = 0;
 my $lrsfile = $dir_w . "/lrsfile";
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-
-#TGR
-#runCmd( "iput -vbPKr --retries 10 --wlock -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/icmdtest/testy" );
-runCmd( "iput -vbPKr -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/icmdtest/testy" );
-
+runCmd( "iput -vbPKr --retries 10 --wlock -X $rsfile --lfrestart $lrsfile -N 2 $myldir $irodshome/icmdtest/testy" );
 runCmd( "ichksum -rK $irodshome/icmdtest/testy" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-
-#TGR
-#runCmd( "irepl -BvrPT -R testresource --rlock $irodshome/icmdtest/testy" );
-runCmd( "irepl -BvrPT -R testresource $irodshome/icmdtest/testy" );
-
+runCmd( "irepl -BvrPT -R testresource --rlock $irodshome/icmdtest/testy" );
 runCmd( "itrim -vrS $irodsdefresource --dryrun --age 1 -N1 $irodshome/icmdtest/testy" );
 runCmd( "itrim -vrS $irodsdefresource -N1 $irodshome/icmdtest/testy" );
 runCmd( "icp -vKPTr -N2 $irodshome/icmdtest/testy $irodshome/icmdtest/testz" );
@@ -636,11 +583,7 @@ runCmd( "iphymv -vrS $irodsdefresource -R testresource  $irodshome/icmdtest/test
 
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
 if ( -e $rsfile ) { unlink( $rsfile ); }
-
-#TGR
-#runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile --rlock -N 2 $irodshome/icmdtest/testz $dir_w/testz" );
-runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile -N 2 $irodshome/icmdtest/testz $dir_w/testz" );
-
+runCmd( "iget -vPKr --retries 10 -X $rsfile --lfrestart $lrsfile --rlock -N 2 $irodshome/icmdtest/testz $dir_w/testz" );
 runCmd( "irsync -r $dir_w/testz i:$irodshome/icmdtest/testz" );
 runCmd( "irsync -r i:$irodshome/icmdtest/testz $dir_w/testz" );
 if ( -e $lrsfile ) { unlink( $lrsfile ); }
@@ -983,7 +926,7 @@ sub mksdir
 }
 
 # given a sub file path, get the path of the bundle file
-sub getBunpathOfSubfile
+sub getBunpathOfSubfile ()
 {
     my $subfilepath = shift;
     my $line;
@@ -1001,7 +944,7 @@ sub getBunpathOfSubfile
     return ( $words[$numwords - 1] );
 }
 
-sub printUsage
+sub printUsage ()
 {
     print ("usage: $0 [help] [debug] [noprompt]\n");
     print ("  help - Print usage messages.\n");

@@ -18,7 +18,7 @@
 
 typedef struct StructFileOprInp {
     rodsHostAddr_t addr;
-    int oprType;
+    int oprType;  /* see syncMountedColl.h */ // JMC - backport 4643
     int flags;
     specColl_t *specColl;
     keyValPair_t condInput;   /* include chksum flag and value */

@@ -987,7 +987,7 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
 /**
  * \fn msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  *
- * \brief  This microservice does not check file path permissions when registering a file.  
+ * \brief  This microservice does not check file path permissions when registering a file. This microservice is REPLACED by msiSetChkFilePathPerm
  *
  * \module core
  *
@@ -1022,6 +1022,62 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
     rei->status = NO_CHK_PATH_PERM;
     return (NO_CHK_PATH_PERM);
 }
+ /**
+  * \fn msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei)
+  *
+  * \brief  This microservice set the check type for file path permission check when registering a file. 
+  *
+  * \module core
+  *
+  * \since pre-3.1
+  *
+  * \author Mike Wan
+  * \date 2012
+  * 
+  * \warning This microservice can create a security problem if set to anything other than DISALLOW_PATH_REG and used incorrectly.
+  *  
+  * \usage See clients/icommands/test/rules3.0/
+  *
+  * \param[in] - xchkType - Required - a msParam of type STR_MS_T which defines the check type to set. Valid values are DO_CHK_PATH_PERM_STR, NO_CHK_PATH_PERM_STR, CHK_NON_VAULT_PATH_PERM_STR and DISALLOW_PATH_REG_STR.
+  * \param[in,out] rei - The RuleExecInfo structure that is automatically
+  *    handled by the rule engine. The user does not include rei as a
+  *    parameter in the rule invocation.
+  *
+  * \DolVarDependence none
+  * \DolVarModified none
+  * \iCatAttrDependence none
+  * \iCatAttrModified none
+  * \sideeffect none
+  *
+  * \return integer
+  * \retval DO_CHK_PATH_PERM, NO_CHK_PATH_PERM, CHK_NON_VAULT_PATH_PERM or DISALLOW_PATH_REG.
+  * \pre none
+  * \post none
+  * \sa none
+**/
+int
+msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei)
+{
+    char *chkType;
+
+    chkType = (char *) xchkType->inOutStruct;
+    
+    if (strcmp (chkType, DO_CHK_PATH_PERM_STR) == 0) {
+       rei->status = DO_CHK_PATH_PERM;
+    } else if (strcmp (chkType, NO_CHK_PATH_PERM_STR) == 0) {
+       rei->status = NO_CHK_PATH_PERM;
+    } else if (strcmp (chkType, CHK_NON_VAULT_PATH_PERM_STR) == 0) {
+       rei->status = CHK_NON_VAULT_PATH_PERM;
+    } else if (strcmp (chkType, DISALLOW_PATH_REG_STR) == 0) {
+        rei->status = DISALLOW_PATH_REG;
+    } else {
+       rodsLog (LOG_ERROR,
+        "msiNoChkFilePathPerm:invalid check type %s,set to DISALLOW_PATH_REG");
+       rei->status = DISALLOW_PATH_REG;
+    }
+    return (rei->status);
+}
+// =-=-=-=-=-=-=-
 
 /**
  * \fn msiNoTrashCan (ruleExecInfo_t *rei)
@@ -1646,7 +1702,11 @@ msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] sysMetadata - A STR_MS_T which specifies the system metadata to be modified.
- *            Allowed values are: "datatype", "comment", "expirytime".
+ *            Allowed values are: "datatype", "comment", "expirytime". If one wants to modify
+ *                       only the sys metadata for one given replica, the value should be for example // JMC - backport 4573
+ *                   "comment++++numRepl=2". It will only modify the comment for the replica number 2.
+ *            If the syntax after "++++" is invalid, it will be ignored and all replica will be modified.
+ *            This does not work for the "datatype" metadata.
  * \param[in] value - A STR_MS_T which specifies the value to be given to the system metadata.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -1669,9 +1729,13 @@ msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
 {
 	keyValPair_t regParam;
 	modDataObjMeta_t modDataObjMetaInp;
-	char theTime[TIME_LEN], *mdname;
-    int status;
-    rsComm_t *rsComm;
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4573    
+    dataObjInfo_t dataObjInfo;
+    char theTime[TIME_LEN], *inpStr = 0, mdname[MAX_NAME_LEN], replAttr[MAX_NAME_LEN],*pstr1 = 0, *pstr2 = 0;
+    int allRepl = 0, len1 = 0, len2 = 0, numRepl = 0, status = 0;
+    // =-=-=-=-=-=-=-
+	rsComm_t *rsComm = 0;
 
     RE_TEST_MACRO (" Calling msiSysMetaModify")
 
@@ -1699,12 +1763,52 @@ msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
 
     if (strcmp (sysMetadata->type, STR_MS_T) == 0 && strcmp (value->type, STR_MS_T) == 0) {
 		memset(&regParam, 0, sizeof(regParam));
-		mdname = (char *) sysMetadata->inOutStruct;
+		// =-=-=-=-=-=-=-
+		// JMC - backport 4573
+		memcpy(&dataObjInfo, rei->doi, sizeof(dataObjInfo_t));
+		inpStr = (char *) sysMetadata->inOutStruct;
+		allRepl = 1;
+		/* parse the input parameter which is: <string> or <string>++++replNum=<int> */
+		pstr1 = strstr(inpStr, "++++");
+		if ( pstr1 != NULL ) {
+			   len1 = strlen(inpStr) - strlen(pstr1);
+			   if ( len1 > 0 ) {
+					   strncpy(mdname, inpStr, len1);
+			   }
+			   pstr2 = strstr(pstr1 + 4, "=");
+			   if ( pstr2 != NULL ) {
+					   len2 = strlen(pstr1 + 4) - strlen(pstr2);
+					   memset(replAttr, 0, sizeof(replAttr)); // JMC - backport 4803
+					   strncpy(replAttr, pstr1 + 4, len2);
+					   if ( len2 > 0 ) {
+							   if ( strcmp(replAttr, "numRepl") == 0 ) {
+									   numRepl = atoi(pstr2 + 1);
+									   if ( ( numRepl == 0 && strcmp(pstr2 + 1, "0") == 0 ) || numRepl > 0 ) {
+											   dataObjInfo.replNum = numRepl;
+											   allRepl = 0;
+									   }
+							   }
+					   }
+			   }
+		}
+		else {
+			   strncpy(mdname ,inpStr, strlen(inpStr));
+			   allRepl = 1;
+		}
+		/* end of the parsing */
+		// =-=-=-=-=-=-=-
 		if ( strcmp(mdname, "datatype") == 0 ) {
 			addKeyVal(&regParam, DATA_TYPE_KW, (char *) value->inOutStruct);
 		}
 		else if ( strcmp(mdname, "comment") == 0 ) {
 			addKeyVal(&regParam, DATA_COMMENTS_KW, (char *) value->inOutStruct);
+			// =-=-=-=-=-=-=-
+			// JMC - backport 4573
+            if ( allRepl == 1 ) {
+                addKeyVal(&regParam, ALL_KW, (char *) value->inOutStruct);
+            }
+
+			// =-=-=-=-=-=-=-
 		}
 		else if ( strcmp(mdname, "expirytime") == 0 ) {
 			rstrcpy(theTime, (char *) value->inOutStruct, TIME_LEN);
@@ -1724,6 +1828,12 @@ msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
 			}
 			else {
 				addKeyVal(&regParam, DATA_EXPIRY_KW, theTime);
+                // =-=-=-=-=-=-=-
+			    // JMC - backport 4573
+                if ( allRepl == 1 ) {
+                    addKeyVal(&regParam, ALL_KW, theTime);
+                }
+                // =-=-=-=-=-=-=-
 			}
 		}
 		else {
@@ -1732,7 +1842,7 @@ msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
 			"msiSysMetaModify: unknown system metadata or impossible to modify it: %s", 
 			(char *) sysMetadata->inOutStruct);
 		}
-		modDataObjMetaInp.dataObjInfo = rei->doi;
+		modDataObjMetaInp.dataObjInfo = &dataObjInfo; // JMC - backport 4573
 		modDataObjMetaInp.regParam = &regParam;
 		rei->status = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
     } else {     /* one or two bad input parameter type for the msi */ 

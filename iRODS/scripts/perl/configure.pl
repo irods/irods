@@ -883,7 +883,7 @@ if ( $thisOS =~ /linux/i )
 }
 elsif ( $thisOS =~ /(sunos)|(solaris)/i )
 {
-	if ( $thisProcessor =~ /i.86/i )	# such as i386, i486, i586, i686
+	if ( $thisProcessor =~ /86/i )	# such as i386, i486, i586, i686
 	{
 		$configMkVariables{ "OS_platform" } = "solaris_pc_platform";
 		printStatus( "Host OS is Solaris (PC).\n" );
@@ -903,6 +903,11 @@ elsif ( $thisOS =~ /irix/i )
 {
 	$configMkVariables{ "OS_platform" } = "sgi_platform";
 	printStatus( "Host OS is SGI.\n" );
+}
+elsif ( $thisOS =~ /FreeBSD/i ) # JMC - backport 4777
+{
+        $configMkVariables{ "OS_platform" } = "osx_platform";
+        printStatus( "Host OS is FreeBSD/Mac OS X.\n" );
 }
 elsif ( $thisOS =~ /darwin/i )
 {

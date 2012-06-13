@@ -284,6 +284,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/scripts/README.txt ./iRODS/s
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/log -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config -
+d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/lockFileDir -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/connectControl.config.template ./iRODS/server/config/connectControl.config.template
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/dbr.config ./iRODS/server/config/dbr.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssCosConfig.template ./iRODS/server/config/hpssCosConfig.template
@@ -599,7 +600,6 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stres
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/repeatiPutTest.sh ./iRODS/clients/icommands/test/repeatiPutTest.sh
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0 -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/ruleprint_hello.r ./iRODS/clients/icommands/test/rules3.0/ruleprint_hello.r
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiStoreVersionWithTS.r ./iRODS/clients/icommands/test/rules3.0/rulemsiStoreVersionWithTS.r
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiGetSessionVarValue.r ./iRODS/clients/icommands/test/rules3.0/rulemsiGetSessionVarValue.r
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiDataObjPutWithOptions.r ./iRODS/clients/icommands/test/rules3.0/rulemsiDataObjPutWithOptions.r
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCommit.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCommit.r

@@ -514,6 +514,76 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
 
 }
 
+// =-=-=-=-=-=-=-
+// JMC - backport 4836
+/**
+ * \fn msiSetKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam, 
+ *        msParam_t* typeParam, ruleExecInfo_t *rei)
+ * 
+ * \brief This microservice associates or modifies <key,value> p pairs
+ *  from a given keyValPair_t structure with an object.
+ * 
+ * \module framework
+ *
+ * \since 3.1
+ *
+ * \author  Thomas Ledoux
+ * \date   2012-01-25
+ * 
+ * \note The object type is also needed:
+ *  \li -d for data object
+ *  \li -R for resource
+ *  \li -G for resource group
+ *  \li -C for collection
+ *  \li -u for user
+ * 
+ * \usage See clients/icommands/test/rules3.0/
+ * 
+ * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
+ * \param[in] objParam - a msParam of type STR_MS_T
+ * \param[in] typeParam - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified AVU pairs are associated with an iRODS object 
+ * \sideeffect none
+ * 
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR when input parameters don't match the type from addAVUMetadataFromKVPairs
+ * \pre none
+ * \post none
+ * \sa 
+**/
+int
+msiSetKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam, 
+                              msParam_t* typeParam, 
+                              ruleExecInfo_t *rei)
+{
+  char *objName;
+  char *objType;
+  int ret;
+
+  RE_TEST_MACRO ("Loopback on msiSetKeyValuePairToObj");
+
+  if (strcmp(metadataParam->type, KeyValPair_MS_T) != 0)
+    return(USER_PARAM_TYPE_ERR);
+  if (strcmp(objParam->type, STR_MS_T) != 0)
+    return(USER_PARAM_TYPE_ERR);
+  if (strcmp(typeParam->type, STR_MS_T) != 0)
+    return(USER_PARAM_TYPE_ERR);
+  objName = (char *) objParam->inOutStruct;
+  objType = (char *) typeParam->inOutStruct;
+  ret = setAVUMetadataFromKVPairs (rei->rsComm,  objName, objType,
+                                (keyValPair_t *) metadataParam->inOutStruct);
+  return ret;
+
+}
+// =-=-=-=-=-=-=-
 
 /**
  * \fn msiGetObjType(msParam_t *objParam, msParam_t *typeParam, ruleExecInfo_t *rei)

@@ -398,3 +398,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetHostForGet.o
 SVR_API_OBJS += $(svrApiObjDir)/rsDataObjFsync.o
 LIB_API_OBJS += $(libApiObjDir)/rcDataObjFsync.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjLock.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjLock.o
+

@@ -157,9 +157,14 @@ bytesBuf_t *bulkOprInpBBuf)
     if (getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
         flags = flags | VERIFY_CHKSUM_FLAG;
     }
-
+#if 0  /* not sure why regUnbunSubfiles was used instead of // JMC - backport 4762
+         * bulkRegUnbunSubfiles. change it */
     status = regUnbunSubfiles (rsComm, rescInfo, inpRescGrpName,
       bulkOprInp->objPath, phyBunDir, flags, &bulkOprInp->attriArray);
+#else
+    status = bulkRegUnbunSubfiles (rsComm, rescInfo, inpRescGrpName,
+      bulkOprInp->objPath, phyBunDir, flags, &bulkOprInp->attriArray);
+#endif
 
     if (status == CAT_NO_ROWS_FOUND) {
         /* some subfiles have been deleted. harmless */

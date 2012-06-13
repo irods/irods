@@ -31,21 +31,45 @@ char **outHost)
     rodsHostAddr_t addr;
     specCollCache_t *specCollCache = NULL;
     char *myHost;
+    int remoteFlag = 0; // JMC - backport 4746
 
     *outHost = NULL;
-
+#if 0 // JMC - backport 4746
     if (isLocalZone (dataObjInp->objPath) == 0) {
 	/* it is a remote zone. better connect to this host */
 	*outHost = strdup (THIS_ADDRESS);
 	return 0;
     }
+#endif // JMC - backport 4746
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache, NULL);
     if (isLocalZone (dataObjInp->objPath) == 0) {
-        /* it is a remote zone. better connect to this host */
-        *outHost = strdup (THIS_ADDRESS);
-        return 0;
-    }
+#if 0 // JMC - backport 4746
+		/* it is a remote zone. better connect to this host */
+		*outHost = strdup (THIS_ADDRESS);
+		return 0;
+#else // JMC - backport 4746
+        resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
+          &dataObjInp->condInput);
+        remoteFlag = getAndConnRcatHost (rsComm, SLAVE_RCAT, 
+         dataObjInp->objPath, &rodsServerHost);
+        if (remoteFlag < 0) {
+            return (remoteFlag);
+        } else if (remoteFlag == LOCAL_HOST) {
+           *outHost = strdup (THIS_ADDRESS);
+            return 0;
+       } else {
+            status = rcGetHostForGet (rodsServerHost->conn, dataObjInp, 
+             outHost);
+           if (status >= 0 && *outHost != NULL && 
+             strcmp (*outHost, THIS_ADDRESS) == 0) {
+               free (*outHost);
+               *outHost = strdup (rodsServerHost->hostName->name);
+           }
+            return (status);
+       }
+#endif     // JMC - backport 4746
+	}
 
     status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
     if (status >= 0 && NULL != specCollCache ) { // JMC cppcheck - nullptr

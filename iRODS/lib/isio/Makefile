@@ -4,16 +4,16 @@ CCFLAGS = -g
 all:: test1 test2 test3
 
 test1: test1.c isio.o
-	$(CC) $(CCFLAGS) $(INCLUDES) isio.o -L../core/obj -l RodsAPIs -lpthread  -o test1 test1.c
+	g++ $(CCFLAGS) $(INCLUDES) isio.o -L../core/obj -l RodsAPIs -lpthread  -o test1 test1.c
 
 test2: test2.c isio.o
-	$(CC) $(CCFLAGS) $(INCLUDES) isio.o -L../core/obj -l RodsAPIs -lpthread  -o test2 test2.c
+	g++ $(CCFLAGS) $(INCLUDES) isio.o -L../core/obj -l RodsAPIs -lpthread  -o test2 test2.c
 
 test3: test3.c isio.o
-	$(CC) $(CCFLAGS) $(INCLUDES) isio.o -L../core/obj -l RodsAPIs -lpthread  -o test3 test3.c
+	g++ $(CCFLAGS) $(INCLUDES) isio.o -L../core/obj -l RodsAPIs -lpthread  -o test3 test3.c
 
 isio.o: src/isio.c
-	$(CC) $(CCFLAGS) $(II_INCLUDES) -c src/isio.c 
+	g++ $(CCFLAGS) $(II_INCLUDES) -c src/isio.c 
 
 clean:
 	rm isio.o test1 test2 test3

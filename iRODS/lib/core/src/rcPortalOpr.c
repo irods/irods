@@ -1032,9 +1032,8 @@ int sendRate, int packetSize)
 
     sendClose (&rbudpSender);
     if (status < 0) {
-        rodsLog (LOG_ERROR,
-         "putFileToPortalRbudp: sendfile error for %s", 
-	  myPortList->hostAddr);
+        rodsLog( LOG_ERROR, "putFileToPortalRbudp: sendfile error for %s:%d", // JMC - backport 4590
+		         myPortList->hostAddr, myPortList->portNum & 0xffff0000 );
         return (status);
     }
     return (status);

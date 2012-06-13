@@ -26,10 +26,10 @@ main(int argc, char **argv)
     rErrMsg_t errMsg;
     int status;
     msParamArray_t msParamArray;
-    msParam_t *myParam;
+    
     dataObjInp_t dataObjOpenInp, dataObjCreateInp, dataObjCopyInp;
-    dataObjCloseInp_t dataObjCloseInp1, dataObjCloseInp2;
-    fileLseekInp_t dataObjLseekInp;
+    
+    
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *outParamArray = NULL;
 

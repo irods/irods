@@ -6,9 +6,7 @@
 #include "isio.h"   /* the irods standard IO emulation library */
 #include <stdlib.h>
 #include <string.h>
-main(argc, argv)
-int argc;
-char **argv;
+void main(int argc, char **argv)
 {
     FILE *FI;
     char *userWriteString;

@@ -243,7 +243,7 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 
     return (rodsPath->objState);
 }
-
+#if 0 // JMC - UNUSED
 int
 extractRodsObjType (rodsPath_t *rodsPath, sqlResult_t *dataId, 
 sqlResult_t *replStatus, sqlResult_t *chksum, sqlResult_t *dataSize, 
@@ -295,7 +295,7 @@ int inx, int rowCnt)
     rodsPath->objState = EXIST_ST;
     return (i - 1);
 }
-
+#endif
 /* genAllInCollQCond - Generate a sqlCondInp for querying every thing under  
  * a collection. 
  * The server will handle special char such as "-" and "%".
@@ -435,6 +435,7 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
              addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
              addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
              addInxIval (&genQueryInp->selectInp, COL_D_RESC_GROUP_NAME, 1);
+			 addInxIval (&genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1); // JMC - backport 4636
 	}
     }
 
@@ -603,7 +604,7 @@ printNoSync (char *objPath, rodsLong_t fileSize)
 }
 
 int
-queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
+queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **genQueryOut) // JMC - bacport 4516
 {
     genQueryInp_t genQueryInp;
     int status;
@@ -614,6 +615,10 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
     }
 
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+    if (zoneHint != NULL) { // JMC - bacport 4516
+	    addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
+	}
 
     addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
@@ -638,7 +643,7 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
 
 
 int
-queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
+queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint, genQueryOut_t **genQueryOut) // JMC - bacport 4516
 {
     genQueryInp_t genQueryInp;
     genQueryOut_t *myGenQueryOut;
@@ -656,6 +661,10 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
     memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
 
     clearGenQueryInp (&genQueryInp);
+
+    if (zoneHint != NULL) { // JMC - bacport 4516
+	    addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
+	}
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
@@ -916,7 +925,7 @@ dataObjSqlResult_t *dataObjSqlResult)
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime, 
       *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
-      *ownerName, *replNum, *rescGrp;
+      *ownerName, *replNum, *rescGrp, *dataType; // JMC - backport 4636
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
       dataObjSqlResult == NULL)
@@ -1011,6 +1020,13 @@ dataObjSqlResult_t *dataObjSqlResult)
           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->rescGrp = *rescGrp;
+    }
+    if ((dataType = getSqlResultByInx (myGenQueryOut, COL_DATA_TYPE_NAME)) // JMC - backport 4636
+      == NULL) {
+        setSqlResultValue (&dataObjSqlResult->dataType, COL_DATA_TYPE_NAME,
+          "", myGenQueryOut->rowCnt);
+    } else {
+        dataObjSqlResult->dataType = *dataType;
     }
 
     if ((phyPath = getSqlResultByInx (myGenQueryOut, COL_D_DATA_PATH))
@@ -1280,6 +1296,7 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 	    }
             addKeyVal (&collHandle->dataObjInp.condInput,
               SEL_OBJ_TYPE_KW, "dataObj");
+          collHandle->dataObjInp.openFlags = 0;    /* start over */ // JMC - backport 4577
             status = (*queryHandle->querySpecColl) 
 	      ((rcComm_t *) queryHandle->conn,
 	      &collHandle->dataObjInp, &genQueryOut);
@@ -1564,6 +1581,10 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     len = dataObjSqlResult->chksum.len;
     outCollEnt->chksum = &value[len * selectedInx];
 
+    value = dataObjSqlResult->dataType.value; // JMC - backport 4636
+    len = dataObjSqlResult->dataType.len; // JMC - backport 4636
+    outCollEnt->dataType = &value[len * selectedInx]; // JMC - backport 4636
+
     if (rodsObjStat->specColl != NULL) {
 	outCollEnt->specColl = *rodsObjStat->specColl;
     }
@@ -1652,7 +1673,7 @@ clearCollEnt (collEnt_t *collEnt)
     if (collEnt->resource != NULL) free (collEnt->resource);
     if (collEnt->phyPath != NULL) free (collEnt->phyPath);
     if (collEnt->ownerName != NULL) free (collEnt->ownerName);
- 
+    if (collEnt->dataType != NULL) free (collEnt->dataType); // JMC - backport 4636 
     return (0);
 }
 

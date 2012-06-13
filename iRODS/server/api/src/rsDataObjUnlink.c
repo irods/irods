@@ -139,32 +139,42 @@ dataObjInfo_t **dataObjInfoHead)
 #endif
 
     myDataObjInfoHead = *dataObjInfoHead;
-    if (strcmp (myDataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+    if (strstr (myDataObjInfoHead->dataType, BUNDLE_STR) != NULL) { // JMC - backport 4658
+		int numSubfiles; // JMC - backport 4552
         if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
-	}
-	if (getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL) {
-	    return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
-	}
-	status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, NULL, 1);
-	if (status < 0) {
-	    /* go ahead and unlink the obj if the phy file does not exist or
-	     * have problem untaring it */
-	    if (getErrno (status) != EEXIST && 
-	      getIrodsErrno (status) != SYS_TAR_STRUCT_FILE_EXTRACT_ERR) {
-                rodsLog (LOG_NOTICE,
-                "_rsDataObjUnlink:_unbunAndStageBunfileObj err for %s,stat=%d",
-                  myDataObjInfoHead->objPath, status);
-                return (status);
 	    }
-        }
-	/* dataObjInfoHead may be outdated */
-	*dataObjInfoHead = NULL;
-        status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp,
-          dataObjInfoHead);
+		if (getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL) {
+			return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
+		}
+		
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4552
+		numSubfiles = getNumSubfilesInBunfileObj (rsComm, myDataObjInfoHead->objPath);
+		if (numSubfiles > 0) {
+			if (getValByKey (&dataObjUnlinkInp->condInput, EMPTY_BUNDLE_ONLY_KW) != NULL) {
+				/* not empty. Nothing to do */
+				return 0;
+			} else {
+				status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, NULL, 1);
+				if (status < 0) {
+					/* go ahead and unlink the obj if the phy file does not 
+					 * exist or have problem untaring it */
+					if (getErrno (status) != EEXIST && getIrodsErrno (status) != SYS_TAR_STRUCT_FILE_EXTRACT_ERR) {
+						rodsLogError( LOG_ERROR, status, "_rsDataObjUnlink:_unbunAndStageBunfileObj err for %s",
+									  myDataObjInfoHead->objPath);
+						return (status);
+					}
+				} // status < 0
+			   /* dataObjInfoHead may be outdated */
+			   *dataObjInfoHead = NULL;
+				status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp, dataObjInfoHead );
 
-        if (status < 0) return (status);
-    }
+			if (status < 0) return (status);
+			} // else
+		} // if numSubfiles
+    } // if strcmp
+	// =-=-=-=-=-=-=-
 
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
@@ -256,9 +266,10 @@ dataObjInfo_t *dataObjInfo)
 
             initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
             rei.doi = dataObjInfo;
-            rei.status = CHK_PERM_FLAG;         /* default */
-            applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-            if (rei.status == CHK_PERM_FLAG) {
+            rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
+            
+            applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+			if (rei.status != NO_CHK_PATH_PERM) {
                 char *outVaultPath;
                 rodsServerHost_t *rodsServerHost;
 	        status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
@@ -409,7 +420,7 @@ dataObjInfo_t **dataObjInfoHead)
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
 
-    if (strcmp ((*dataObjInfoHead)->dataType, TAR_BUNDLE_TYPE) == 0) {
+    if (strstr ((*dataObjInfoHead)->dataType, BUNDLE_STR) != NULL) { // JMC - backport 4658
 	return SYS_CANT_MV_BUNDLE_DATA_TO_TRASH;
     }
 

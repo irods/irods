@@ -739,6 +739,12 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
   sleepT = 1;
   svrComm = rei->rsComm;
 
+  if (svrComm == NULL) { // JMC - backport 4555
+    rodsLog(LOG_ERROR, "Empty svrComm in REI structure for actionStr=%s\n",actionStr);
+    return(0);
+  }
+
+
   snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s",callLabel);
   condRead[0] = '\0'; 
   /* rodsLog (LOG_NOTICE,"PPP:%s\n",hdr); */

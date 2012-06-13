@@ -12,6 +12,8 @@
 #include "dataObjOpr.h"
 #include "physPath.h"
 #include "dataObjCreate.h"
+#include "dataObjLock.h"
+
 #include "fileOpen.h"
 #include "subStructFileOpen.h"
 #include "rsGlobalExtern.h"
@@ -55,10 +57,6 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
 /* _rsDataObjOpen - handle internal server dataObj open request.
  * valid phyOpenFlag are DO_PHYOPEN, DO_NOT_PHYOPEN and PHYOPEN_BY_SIZE
- *
- * return value - 0-2 - success but did not phy open
- *                > 2 - success with phy open
- *                < 0 - failure
  */
  
 int
@@ -72,9 +70,14 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *compDataObjInfo = NULL;
     dataObjInfo_t *cacheDataObjInfo = NULL;
     rescInfo_t *compRescInfo = NULL;
+#if 0 // JMC - backport 4590
+	rescGrpInfo_t *myRescGrpInfo = NULL; // JMC - backport 4547
+#endif
     int l1descInx;
     int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
+    char *lockType = NULL; // JMC - backport 4604
+    int lockFd = -1; // JMC - backport 4604
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
 	phyOpenFlag = DO_NOT_PHYOPEN;
@@ -82,105 +85,174 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
       != NULL) {
 	phyOpenFlag = PHYOPEN_BY_SIZE;
     }
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4604
+    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    if (lockType != NULL) {
+        lockFd = rsDataObjLock (rsComm, dataObjInp);
+        if (lockFd > 0) {
+            /* rm it so it won't be done again causing deadlock */
+            rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
+        } else {
+            rodsLogError (LOG_ERROR, lockFd,
+              "_rsDataObjOpen: rsDataObjLock error for %s. lockType = %s",
+              dataObjInp->objPath, lockType);
+            return lockFd;
+        }
+    }
+    // =-=-=-=-=-=-=-
+/* query rcat for dataObjInfo and sort it */
 
-    /* query rcat for dataObjInfo and sort it */
+status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
 
-    status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
-   
     writeFlag = getWriteFlag (dataObjInp->openFlags);
 
     if (status < 0) {
         if (dataObjInp->openFlags & O_CREAT && writeFlag > 0) {
             l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-            return (l1descInx);
-        } else {
-	    return (status);
+           status = l1descInx; // JMC - backport 4604
 	}
+	   // =-=-=-=-=-=-=-
+ 	   // JMC - backport 4604
+       if (lockFd >= 0) {
+           if (status > 0) {
+               L1desc[l1descInx].lockFd = lockFd;
+           } else {
+                rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+           }
+       }
+       return (status);
+       // =-=-=-=-=-=-=-
     } else {
         /* screen out any stale copies */
         status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
 	  &dataObjInp->condInput, writeFlag);
-        if (status < 0) return status;
+        if (status < 0) { // JMC - backport 4604
+           if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+           return status;
+       }
 
         status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
-        if (status < 0) return status;
+        if (status < 0) { // JMC - backport 4604
+           if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+           return status;
+       }
     }
 
     if (getStructFileType (dataObjInfoHead->specColl) >= 0) {
 	/* special coll. Nothing to do */
-    } else if (writeFlag > 0) {
-	/* put the copy with destResc on top */
-	status = requeDataObjInfoByDestResc (&dataObjInfoHead, 
-	  &dataObjInp->condInput, writeFlag, 1);
-	/* status < 0 means there is no copy in the DEST_RESC */
-	if (status < 0 &&
-	  getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
-	    rescGrpInfo_t *myRescGrpInfo = NULL;
-	    /* we don't have a copy in the DEST_RESC_NAME */
-            status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-            if (status < 0) return status;
-	    if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
-	        /* get here because the comp object does not exist. Find
-		 * a cache copy. If one does not exist, stage one to cache */
-#if 0	/* not needed since we changed dataObjOpenForRepl */
-		/* have to save dataSize because it could be changed in
-		 * getCacheDataInfoOfCompResc */
-		rodsLong_t dataSize = dataObjInp->dataSize;
-#endif
-		status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
-		  dataObjInfoHead, NULL, myRescGrpInfo, NULL, 
-		  &cacheDataObjInfo);
-                if (status < 0) {
-                    rodsLog (LOG_ERROR,
-                      "_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",
-                      dataObjInfoHead->objPath, status);
-                    freeAllDataObjInfo (dataObjInfoHead);
-                    freeAllRescGrpInfo (myRescGrpInfo);
-                    return status;
-                } else {
-		    compRescInfo = myRescGrpInfo->rescInfo;
-#if 0
-		     dataObjInp->dataSize = dataSize;
-#endif
-		}
-	    } else {     /* dest resource is not a compound resource */
-	        status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
-	        if (status < 0) {
-                    rodsLog (LOG_ERROR,
-                      "_rsDataObjOpen: createEmptyRepl of %s failed, stat=%d",
-          	      dataObjInfoHead->objPath, status);
-                    freeAllDataObjInfo (dataObjInfoHead);
-	    	    freeAllRescGrpInfo (myRescGrpInfo);
-		    return status;
-	        }
-	    }
-	    freeAllRescGrpInfo (myRescGrpInfo);
-	} else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
-	    /* The target data object exists and it is a COMPOUND_CL. Save the 
-	     * comp object. It can be requeued by stageAndRequeDataToCache */
-	    compDataObjInfo = dataObjInfoHead;
-            status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
-                if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
-                rodsLog (LOG_ERROR,
-                  "_rsDataObjOpen:stageAndRequeDataToCache %s failed stat=%d",
-                  dataObjInfoHead->objPath, status);
-                freeAllDataObjInfo (dataObjInfoHead);
-                return status;
-            }
-	    cacheDataObjInfo = dataObjInfoHead;
-	}
-    } else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
-	/* open for read */
-	status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
-        if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
-            rodsLog (LOG_ERROR,
-              "_rsDataObjOpen: stageAndRequeDataToCache of %s failed stat=%d",
-              dataObjInfoHead->objPath, status);
-            freeAllDataObjInfo (dataObjInfoHead);
-            return status;
-        }
-	cacheDataObjInfo = dataObjInfoHead;
+	} else if (writeFlag > 0) {
+		// JMC :: had to reformat this code to find a missing {
+	    //     :: i seriously hope its in the right place...
+       status = procDataObjOpenForWrite (rsComm, dataObjInp, &dataObjInfoHead, &cacheDataObjInfo, &compDataObjInfo, &compRescInfo); 
+    } else {
+        status = procDataObjOpenForRead (rsComm, dataObjInp, &dataObjInfoHead,
+          &cacheDataObjInfo, &compDataObjInfo, &compRescInfo);
     }
+    if (status < 0) {
+		if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
+        freeAllDataObjInfo (dataObjInfoHead);
+       return status;
+    }
+#if 0  /* refactor with procDataObjOpenForRead and procDataObjOpenForWrite */
+
+		/* put the copy with destResc on top */
+		status = requeDataObjInfoByDestResc (&dataObjInfoHead, &dataObjInp->condInput, writeFlag, 1);
+
+		/* status < 0 means there is no copy in the DEST_RESC */
+		if (status < 0 &&getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
+			/* we don't have a copy in the DEST_RESC_NAME */
+			status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+			if (status < 0) 
+			    return status;
+			if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
+				/* get here because the comp object does not exist. Find
+				* a cache copy. If one does not exist, stage one to cache */
+				
+				status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,dataObjInfoHead, NULL, myRescGrpInfo, NULL, &cacheDataObjInfo);
+
+				if (status < 0) {
+					rodsLog (LOG_ERROR,"_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",dataObjInfoHead->objPath, status);
+					freeAllDataObjInfo (dataObjInfoHead);
+					freeAllRescGrpInfo (myRescGrpInfo);
+					return status;
+				} else {
+				    compRescInfo = myRescGrpInfo->rescInfo;
+			    }
+			} else {     /* dest resource is not a compound resource */
+				status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
+				if (status < 0) {
+					rodsLog (LOG_ERROR,
+					"_rsDataObjOpen: createEmptyRepl of %s failed, stat=%d",
+					dataObjInfoHead->objPath, status);
+					freeAllDataObjInfo (dataObjInfoHead);
+					freeAllRescGrpInfo (myRescGrpInfo);
+					return status;
+				}
+			}
+
+		} else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+			/* The target data object exists and it is a COMPOUND_CL. Save the 
+			* comp object. It can be requeued by stageAndRequeDataToCache */
+			compDataObjInfo = dataObjInfoHead;
+			status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
+			if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+				rodsLog (LOG_ERROR,"_rsDataObjOpen:stageAndRequeDataToCache %s failed stat=%d",dataObjInfoHead->objPath, status);
+				freeAllDataObjInfo (dataObjInfoHead);
+				return status;
+			}
+			cacheDataObjInfo = dataObjInfoHead;
+		// =-=-=-=-=-=-=-
+		// JMC - backport 4547
+		} else if ( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL  && 
+		            getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo) >= 0 &&
+		            strlen (myRescGrpInfo->rescGroupName) > 0) {
+
+			if( getRescInGrpByClass ( rsComm, myRescGrpInfo->rescGroupName,COMPOUND_CL, &compRescInfo, NULL) >= 0) {
+				status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,dataObjInfoHead, NULL, myRescGrpInfo, NULL,&cacheDataObjInfo);
+				if (status < 0) {
+					rodsLog (LOG_NOTICE,
+					"_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",
+					dataObjInfoHead->objPath, status);
+				} else {
+					if (getDataObjByClass (dataObjInfoHead, COMPOUND_CL, &compDataObjInfo) >= 0) {
+						/* we have a compDataObjInfo */
+						compRescInfo = NULL;
+					}
+				}
+			}
+		// =-=-=-=-=-=-=-
+		} else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+			/* open for read */
+			status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
+			if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+				rodsLog (LOG_ERROR,
+				"_rsDataObjOpen: stageAndRequeDataToCache of %s failed stat=%d",
+				dataObjInfoHead->objPath, status);
+				freeAllDataObjInfo (dataObjInfoHead);
+				return status;
+			}
+			cacheDataObjInfo = dataObjInfoHead;
+		// =-=-=-=-=-=-=-
+		// JMC - backport 4547
+		} else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&strlen (dataObjInfoHead->rescGroupName) > 0) {
+			if (getRescInGrpByClass (rsComm, dataObjInfoHead->rescGroupName,COMPOUND_CL, &compRescInfo, &myRescGrpInfo) >= 0) {
+				status = getCacheDataInfoOfCompResc (rsComm, dataObjInp, dataObjInfoHead, NULL, myRescGrpInfo, NULL,&cacheDataObjInfo);
+				if (status < 0) {
+					rodsLog (LOG_NOTICE,	  "_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",dataObjInfoHead->objPath, status);
+				} else {
+					if (getDataObjByClass (dataObjInfoHead, COMPOUND_CL,  &compDataObjInfo) >= 0) {
+						/* we have a compDataObjInfo */
+						compRescInfo = NULL;
+					}
+				}
+			}
+		}
+        // =-=-=-=-=-=-=-
+	} // writeFlag > 0
+	
+	freeAllRescGrpInfo( myRescGrpInfo);
+#endif  /* refactor with procDataObjOpenForRead and procDataObjOpenForWrite */ // JMC - backport 4590
 
     if (getRescClass (dataObjInfoHead->rescInfo) == BUNDLE_CL) {
 	status = stageBundledData (rsComm, &dataObjInfoHead);
@@ -189,71 +261,80 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
               "_rsDataObjOpen: stageBundledData of %s failed stat=%d",
               dataObjInfoHead->objPath, status);
             freeAllDataObjInfo (dataObjInfoHead);
+			if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
             return status;
         }
     }
 
     /* If cacheDataObjInfo != NULL, this is the staged copy of
-     * the compound obj. This copy must be opened. If compDataObjInfo != NULL,
-     * an existing COMPOUND_CL DataObjInfo exist. Need to replicate to
-     * this DataObjInfo in rsdataObjClose. If compRescInfo != NULL,
-     * writing to a compound resource where there is no existing copy in 
-     * the resource. Need to replicate to this resource in rsdataObjClose.  
+     * the compound obj. This copy must be opened. 
+     * If compDataObjInfo != NULL, an existing COMPOUND_CL DataObjInfo exist. 
+     * Need to replicate to * this DataObjInfo in rsdataObjClose. 
+     * At this point, cacheDataObjInfo is left in the dataObjInfoHead queue
+     * but not compDataObjInfo.
+     * If compRescInfo != NULL, writing to a compound resource where there 
+     * is no existing copy in the resource. Need to replicate to this 
+     * resource in rsdataObjClose.  
+     * For read, both compDataObjInfo and compRescInfo should be NULL.
      */
     tmpDataObjInfo = dataObjInfoHead;
+
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
-	if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
-	    if (compDataObjInfo != tmpDataObjInfo) 
-		queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
-#if 0
-	    if (replDataObjInfo != NULL) freeDataObjInfo (replDataObjInfo);
-	    replDataObjInfo = tmpDataObjInfo;
-#endif
-	    tmpDataObjInfo = nextDataObjInfo;
-	    continue;
-	} else if (writeFlag > 0 && cacheDataObjInfo != NULL && 
-	  tmpDataObjInfo != cacheDataObjInfo) {
-	    /* skip anything that does not match cacheDataObjInfo */
+	    if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
+			/* this check is not necessary but won't hurt */
+	        if (compDataObjInfo != tmpDataObjInfo)  {
+				/* save it in otherDataObjInfo so no mem leak */ // JMC - backport 4590
+		        queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
+            }
+	        tmpDataObjInfo = nextDataObjInfo;
+	        continue;
+	    } else if ( writeFlag > 0 && cacheDataObjInfo != NULL && 
+	                tmpDataObjInfo != cacheDataObjInfo) {
+	        /* skip anything that does not match cacheDataObjInfo */
             queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
             tmpDataObjInfo = nextDataObjInfo;
-	    continue;
-	}
-	status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,
-	  phyOpenFlag, tmpDataObjInfo);
+	        continue;
+	    }
+	    
+		status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
-	    if (compDataObjInfo != NULL) {
-		/* don't put compDataObjInfo in the otherDataObjInfo queue */
-		tmpDataObjInfo = nextDataObjInfo;
-		while (tmpDataObjInfo != NULL) {
-		    if (tmpDataObjInfo != compDataObjInfo) {
-			queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 
-			  1, 1);
-		    }
-		    tmpDataObjInfo = tmpDataObjInfo->next;
-		}
-		 L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
-	    } else {
-                queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 1, 1);
-                L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
-		if (compRescInfo != NULL)
-		    L1desc[l1descInx].replRescInfo = compRescInfo;
-	    }
-	    if (writeFlag > 0) {
-	        L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
-	    } else {
+	        if (compDataObjInfo != NULL) {
+               L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
+           } else if (compRescInfo != NULL) {
+               L1desc[l1descInx].replRescInfo = compRescInfo;
+		   } 
+
+		    queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 0, 1); // JMC - backport 4542
+		    L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
+
+	        if (writeFlag > 0) {
+	            L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
+	        } else {
                L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
-	    }
-            return (l1descInx);
-	}
+	        }
+			// =-=-=-=-=-=-=-
+			// JMC - backport 4604
+            if (lockFd >= 0) {
+                if (l1descInx >= 0) {
+                     L1desc[l1descInx].lockFd = lockFd;
+                } else {
+                    rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+                }
+            } 
+			// =-=-=-=-=-=-=-
+	        return (l1descInx);
+	    
+		} // if status >= 0
+
         tmpDataObjInfo = nextDataObjInfo;
-    }
+    } // while
     freeAllDataObjInfo (otherDataObjInfo);
 
     return (status);
-}
+} // BAD
 
 /* _rsDataObjOpenWithObjInfo - given a dataObjInfo, open a single copy
  * of the data object.
@@ -263,7 +344,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
 int
 _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-int phyOpenFlag, dataObjInfo_t *dataObjInfo)
+int phyOpenFlag, dataObjInfo_t *dataObjInfo, dataObjInfo_t *cacheDataObjInfo) // JMC - backport 4537
 {
     int replStatus;
     int status;
@@ -279,6 +360,10 @@ int phyOpenFlag, dataObjInfo_t *dataObjInfo)
      * For copy and replicate, the calling routine should modify this
      * dataSize */
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, replStatus, -1);
+    if (dataObjInfo == cacheDataObjInfo &&  // JMC - backport 4537
+       getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+       L1desc[l1descInx].purgeCacheFlag = 1;
+    }
     if (phyOpenFlag == DO_NOT_PHYOPEN) {
         /* don't actually physically open the file */
         status = 0;
@@ -511,3 +596,169 @@ dataObjInfo_t **dataObjInfoHead)
     return status;
 }
 
+// =-=-=-=-=-=-=-
+// JMC - backport 4590
+int
+procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo, 
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
+{
+    int status = 0;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+
+    /* put the copy with destResc on top */
+    status = requeDataObjInfoByDestResc (dataObjInfoHead,
+      &dataObjInp->condInput, 1, 1);
+    /* status < 0 means there is no copy in the DEST_RESC */
+    if (status < 0 &&
+      getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
+        /* we don't have a copy in the DEST_RESC_NAME */
+        status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+        if (status < 0) return status;
+        if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
+            /* get here because the comp object does not exist. Find
+             * a cache copy. If one does not exist, stage one to cache */
+            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              *dataObjInfoHead, NULL, myRescGrpInfo, NULL,
+              cacheDataObjInfo);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "procDataObjForOpenWrite: getCacheDataInfo of %s failed",
+                  (*dataObjInfoHead)->objPath);
+                freeAllRescGrpInfo (myRescGrpInfo);
+                return status;
+            } else {
+               /* replicate to compRescInfo after write is done */
+                *compRescInfo = myRescGrpInfo->rescInfo;
+            }
+        } else {     /* dest resource is not a compound resource */
+           /* we don't have a copy, so create an empty dataObjInfo */
+            status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "procDataObjForOpenWrite: createEmptyRepl of %s failed",
+                  (*dataObjInfoHead)->objPath);
+                freeAllRescGrpInfo (myRescGrpInfo);
+                return status;
+            }
+        }
+    } else {   /*  The target data object exists */
+        status = procDataObjOpenForExistObj (rsComm, dataObjInp, 
+         dataObjInfoHead, cacheDataObjInfo, compDataObjInfo, compRescInfo);
+#if 0  /* refactored by procDataObjOpenForExistObj */
+        if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
+        /* It is a COMPOUND_CL. Save the comp object because it can be 
+         * requeued by stageAndRequeDataToCache */
+            *compDataObjInfo = *dataObjInfoHead;
+            status = stageAndRequeDataToCache (rsComm, dataObjInfoHead);
+            if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+                rodsLogError (LOG_ERROR, status,
+                  "procDataObjForOpenWrite:stageAndRequeDataToCache %s failed",
+                  (*dataObjInfoHead)->objPath);
+                return status;
+            }
+            *cacheDataObjInfo = *dataObjInfoHead;
+        } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL
+          && getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo) >= 0 &&
+          strlen (myRescGrpInfo->rescGroupName) > 0) {
+           /* Do purge cache and destResc is a resource group. See if we
+            * a COMPOUND_CL resource in the group */ 
+            if (getRescInGrpByClass (rsComm, myRescGrpInfo->rescGroupName,
+              COMPOUND_CL, compRescInfo, NULL) >= 0) {
+               /* get cacheDataObjInfo */
+                status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+                 *dataObjInfoHead, NULL, myRescGrpInfo, NULL, cacheDataObjInfo);
+                if (status < 0) {
+                    rodsLogError (LOG_NOTICE, status,
+                      "procDataObjForOpenWrite: getCacheDataInfo of %s failed",
+                      (*dataObjInfoHead)->objPath);
+                } else {
+                    if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
+                      compDataObjInfo) >= 0) {
+                        /* we have a compDataObjInfo */
+                        *compRescInfo = NULL;
+                    }
+                }
+            }
+        }
+#endif /*   refactored by procDataObjOpenForExistObj */
+    }
+    if (*compDataObjInfo != NULL) {
+        dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return status;
+}
+
+/* procDataObjOpenForExistObj - process a dataObj for COMPOUND_CL special
+ * situation. The object must be :
+ *    read - already exist 
+ *    write - already exist in dest Resource
+ */
+int
+procDataObjOpenForExistObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
+{
+    int status = 0;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+
+    if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
+        /* It is a COMPOUND_CL. Save the comp object because it can be
+         * requeued by stageAndRequeDataToCache */
+        *compDataObjInfo = *dataObjInfoHead;
+        status = stageAndRequeDataToCache (rsComm, dataObjInfoHead);
+        if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+            rodsLogError (LOG_ERROR, status,
+             "procDataObjOpenForExistObj:stageAndRequeDataToCache of %s failed",
+              (*dataObjInfoHead)->objPath);
+            return status;
+        }
+        *cacheDataObjInfo = *dataObjInfoHead;
+    } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
+      strlen ((*dataObjInfoHead)->rescGroupName) > 0) {
+        /* Do purge cache and destResc is a resource group. See if we
+         * a COMPOUND_CL resource in the group */
+        if (getRescInGrpByClass (rsComm, (*dataObjInfoHead)->rescGroupName,
+          COMPOUND_CL, compRescInfo, &myRescGrpInfo) >= 0) {
+           /* get cacheDataObjInfo */
+            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              *dataObjInfoHead, NULL, myRescGrpInfo, NULL,
+              cacheDataObjInfo);
+            if (status < 0) {
+                rodsLogError (LOG_NOTICE, status,
+                  "procDataObjOpenForExistObj: getCacheDataInfo of %s failed",
+                  (*dataObjInfoHead)->objPath);
+            } else {
+                if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
+                  compDataObjInfo) >= 0) {
+                    /* we have a compDataObjInfo */
+                    *compRescInfo = NULL;
+                }
+            }
+        }
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return status;
+}
+
+int
+procDataObjOpenForRead (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
+{
+    int status = 0;
+
+    status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead,
+      cacheDataObjInfo, compDataObjInfo, compRescInfo);
+
+    if (*compDataObjInfo != NULL) {
+       dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
+       freeDataObjInfo (*compDataObjInfo);
+        *compDataObjInfo = NULL;
+    }
+    *compRescInfo = NULL;
+    return status;
+}
+
+// =-=-=-=-=-=-=-

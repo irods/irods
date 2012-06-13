@@ -129,7 +129,13 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
         addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");
         addKeyVal (&collInp->condInput, FORCE_FLAG_KW, "");
     }
-
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4552
+    if (rodsArgs->empty == True) {
+        addKeyVal (&dataObjInp->condInput, EMPTY_BUNDLE_ONLY_KW, "");
+        addKeyVal (&collInp->condInput, EMPTY_BUNDLE_ONLY_KW, "");
+    }
+    // =-=-=-=-=-=-=-
     if (rodsArgs->replNum == True) {
         addKeyVal (&dataObjInp->condInput, REPL_NUM_KW, 
 	  rodsArgs->replNumValue);
@@ -187,7 +193,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
 
     return (status);
 }
-
+#if 0 // JMC - UNUSED
 int
 mvDataObjToTrash (rcComm_t *conn, dataObjInp_t *dataObjInp)
 {
@@ -305,5 +311,5 @@ mvCollToTrash (rcComm_t *conn, dataObjInp_t *dataObjInp)
 
     return (status);
 }
-
+#endif // JMC - UNUSED
 

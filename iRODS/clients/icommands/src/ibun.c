@@ -22,9 +22,9 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "bhR:cxD:f";
+    optStr = "bhR:cxD:fZ"; // JMC - backport 4643
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs); // JMC - backport 4643
 
     if (status < 0) {
 	printf("use -h for help.\n");
@@ -91,6 +91,7 @@ usage ()
 "               irodsCollection",
 "Usage : ibun -c [-hf] [-R resource] [-D dataType] structFilePath",
 "               irodsCollection",
+"Usage : ibun --add [-h] structFilePath irodsCollection",
 
 " ",
 "Bundle file operations. This command allows structured files such as ",
@@ -138,15 +139,17 @@ usage ()
 " -b  bulk registration when used with -x to reduce overhead",
 " -R  resource - specifies the resource to store to. This is optional",
 "     in your environment",
-" -D  dataType - the struct file data type. Valid only if the struct file",
-"     does not exist. Currently only one dataType - 't' which specifies",
-"     a tar file type is supported. If -D is not specified, the default is",
-"     a tar file type",
+" -D  dataType - the struct file data type. Valid only for -c option for",
+"     specifying the target data type. Valid dataTypes are - t|tar|'tar file'",
+"     for tar file. g|gzip|gzipTar for gziped tar file, b|bzip2|bzip2Tar for",
+"     bzip2 file, and z|zip|zipFile for archive using 'zip'.  If -D is not",
+"     specified, the default is a tar file type",
 " -x  extract the structFile and register the extracted files and directories",
 "     under the input irodsCollection", 
 " -c  bundle the files and sub-collection underneath the input irodsCollection",
 "     and store it in the structFilePath",  
 " -f  force overwrite the struct file (-c) or the subfiles (-x).", 
+" --add  add or append to existing tar file. The tar file must not be compressed",
 " -h  this help",
 ""};
    int i;

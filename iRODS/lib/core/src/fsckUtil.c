@@ -36,7 +36,7 @@ fsckObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 			/* remove any trailing "/" from inpPathO */
 			lenInpPath = strlen(inpPathO);
 			lastChar = strrchr(inpPathO, '/');
-			if ( strlen(lastChar) == 1 ) {
+			if ( lastChar && strlen(lastChar) == 1 ) { // JMC - backport 4578
 				lenInpPath = lenInpPath - 1;
 			}
 			strncpy(inpPath, inpPathO, lenInpPath);

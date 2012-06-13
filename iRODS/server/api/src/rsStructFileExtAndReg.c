@@ -109,15 +109,16 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
 
     createPhyBundleDir (rsComm, dataObjInfo->filePath, phyBunDir);
 
-    status = unbunPhyBunFile (rsComm, &dataObjInp, rescInfo, dataObjInfo->filePath, phyBunDir);
-      
+    status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo, // JMC - backport 4657 
+	                          dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0);  
 
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
-	/* rename the phyBunDir */
+	    /* rename the phyBunDir */
     	char tmp[MAX_NAME_LEN]; // JMC cppcheck - src & dst snprintf
 		strcpy( tmp, phyBunDir ); // JMC cppcheck - src & dst snprintf
 		snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-d", tmp, (int) random () ); // JMC cppcheck - src & dst snprintf
-        status = unbunPhyBunFile (rsComm, &dataObjInp, rescInfo,dataObjInfo->filePath, phyBunDir);
+        status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo,
+                                    dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0);
     }
 
     if (status < 0) {
@@ -277,7 +278,7 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
 #ifdef USE_BOOST_FS
         if (!exists (p)) {
 #else
-        status = stat (subfilePath, &statbuf);
+        status = lstat (subfilePath, &statbuf);
 
         if (status != 0) {
 #endif
@@ -288,8 +289,21 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
 	    unlink (subfilePath);
 	    continue;
         }
-
+// =-=-=-=-=-=-=-
+// JMC - backport 4833
 #ifdef USE_BOOST_FS
+       if (is_symlink (p)) {
+#else
+       if ((statbuf.st_mode & S_IFLNK) == S_IFLNK) {
+#endif
+            rodsLogError (LOG_ERROR, SYMLINKED_BUNFILE_NOT_ALLOWED,
+              "regUnbunSubfiles: %s is a symlink",
+              subfilePath);
+            savedStatus = SYMLINKED_BUNFILE_NOT_ALLOWED;
+            continue;
+        }
+#ifdef USE_BOOST_FS
+// =-=-=-=-=-=-=-
         path childPath = p.filename();
         snprintf (subObjPath, MAX_NAME_LEN, "%s/%s",
           collection, childPath.c_str());

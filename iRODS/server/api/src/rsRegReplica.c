@@ -4,6 +4,7 @@
  */
 
 #include "regReplica.h"
+#include "objMetaOpr.h" // JMC - backport 4497
 #include "icatHighLevelRoutines.h"
 
 int
@@ -48,7 +49,14 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
-
+#if 0 // JMC - backport 4608
+    // JMC - backport 4487
+    status = checkDupReplica (rsComm, srcDataObjInfo->dataId, destDataObjInfo->rescName, destDataObjInfo->filePath);
+    if (status >= 0) {
+	    destDataObjInfo->replNum = status;
+	    return status;
+	}
+#endif
     if (getValByKey (&regReplicaInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
 	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
@@ -57,10 +65,27 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 	/* restore it */
 	rsComm->clientUser.authInfo.authFlag = savedClientAuthFlag;
     } else {
-        status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
-          &regReplicaInp->condInput);
-	if (status >= 0) status = destDataObjInfo->replNum;
+        status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo, &regReplicaInp->condInput);
+	    if (status >= 0) 
+			status = destDataObjInfo->replNum;
     }
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4608
+	if( status == CAT_SUCCESS_BUT_WITH_NO_INFO ||
+		status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME ) { // JMC - backport 4668, 4670
+		int status2;
+       /* register a repl with a copy with the same resource and phyPaht.
+         * could be caused by 2 staging at the same time */
+		status2 = checkDupReplica( rsComm, srcDataObjInfo->dataId,
+		                           destDataObjInfo->rescName, 
+								   destDataObjInfo->filePath);
+		if (status2 >= 0) {
+			destDataObjInfo->replNum = status2; // JMC - backport 4668
+			destDataObjInfo->dataId = srcDataObjInfo->dataId;
+			return status2;
+		}
+	}
+    // =-=-=-=-=-=-=-
     return (status);
 #else
     return (SYS_NO_RCAT_SERVER_ERR);

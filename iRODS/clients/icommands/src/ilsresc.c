@@ -142,13 +142,27 @@ showResc(char *name, int longOption)
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
    if (name !=NULL && *name != '\0') {
+      // =-=-=-=-=-=-=-
+	  // JMC - backport 4629
+      if (strncmp(name, BUNDLE_RESC, sizeof(BUNDLE_RESC))==0) {
+        printf("%s is a pseudo resource, not for direct access.\n",
+               BUNDLE_RESC);
+        return(0);
+      }
+      // =-=-=-=-=-=-=-
       i2a[0]=COL_R_RESC_NAME;
       sprintf(v1,"='%s'",name);
       condVal[0]=v1;
       genQueryInp.sqlCondInp.len=1;
    }
    else {
-      genQueryInp.sqlCondInp.len=0;
+      // =-=-=-=-=-=-=-
+	  // JMC - backport 4629
+      i2a[0]=COL_R_RESC_NAME;
+      sprintf(v1,"!='%s'",BUNDLE_RESC);  /* all but bundleResc */
+      condVal[0]=v1;
+      genQueryInp.sqlCondInp.len=1;
+      // =-=-=-=-=-=-=-
    }
 
    if (zoneArgument[0]!='\0') {

@@ -1043,7 +1043,20 @@ dataObjCopyInp_t *dataObjCopyInp)
         addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, 
 	  DEST_RESC_NAME_KW, myRodsEnv->rodsDefResource);
     }
-
+// =-=-=-=-=-=-=-
+// JMC - backport 4865
+#ifdef windows_platform
+    dataObjCopyInp->destDataObjInp.numThreads = NO_THREADING;
+#else
+    if (rodsArgs->number == True) {
+        if (rodsArgs->numberValue == 0) {
+            dataObjCopyInp->destDataObjInp.numThreads = NO_THREADING;
+        } else {
+            dataObjCopyInp->destDataObjInp.numThreads = rodsArgs->numberValue;
+        }
+    }
+#endif
+// =-=-=-=-=-=-=-
     return (0);
 }
 

@@ -58,6 +58,9 @@ int
 printDataCollEntLong (collEnt_t *collEnt, int flags);
 int
 printCollCollEnt (collEnt_t *collEnt, int flags);
+int
+lsSubfilesInBundle (rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
+rodsArguments_t *rodsArgs);
 #ifdef  __cplusplus
 }
 #endif

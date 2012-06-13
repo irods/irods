@@ -16,6 +16,7 @@
 #endif
 
 #include <string.h>
+#include <string>
 
 namespace eirods
 {
@@ -56,7 +57,7 @@ namespace eirods
 
 		}; // min_buckets = 2 ^^ N, 0 < N
 
-		size_t operator()(const string s1) const
+		size_t operator()(const std::string s1) const
 		{
 			// hash string s1 to size_t value
 			const unsigned char *p = (const unsigned char *)s1.c_str();
@@ -68,7 +69,7 @@ namespace eirods
 			return (hashval);
 		}
 
-		bool operator()(const string s1, const string s2 ) const
+		bool operator()(const std::string s1, const std::string s2 ) const
 		{
 			return ( s1 < s2 );
 		}

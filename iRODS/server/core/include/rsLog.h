@@ -15,12 +15,19 @@
 #define DEF_CONFIG_DIR	"../config"
 #define DEF_LOG_DIR	"../log"
 #define PROC_LOG_DIR_NAME	"proc"
+// =-=-=-=-=-=-=-
+// JMC - backport 4793
+#define DEF_LOGFILE_INT 5             /* default interval in days */
+#define LOGFILE_INT     "logfileInt"  /* interval in days for new log file */
 
-#define DEF_LOGFILE_INT 5               /* default interval in days */
-#define LOGFILE_INT     "logfileInt"   /* interval in days for new log file */
+
 #define LOGFILE_CHK_INT 1800          /* Interval in sec for checking logFile */
-#define LOGFILE_CHK_CNT	50	/* number of time through the loop before 
-				 * chkLogfileName is called */  
+#define LOGFILE_CHK_CNT        50      /* number of times through the loop before 
+                                * chkLogfileName is called */ 
+#define DEF_LOGFILE_PATTERN "%Y.%m.%d"  /* default pattern in strftime syntax */
+#define LOGFILE_PATTERN "logfilePattern" /* pattern for new name of log file */
+// =-=-=-=-=-=-=-
+  
 
 #include <sys/types.h>
 #include <sys/stat.h>

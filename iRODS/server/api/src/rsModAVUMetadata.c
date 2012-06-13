@@ -30,6 +30,8 @@ rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
         myHint = modAVUMetadataInp->arg3;
     } else if (strcmp(modAVUMetadataInp->arg0,"mod")==0) {
         myHint = modAVUMetadataInp->arg2;
+    } else if (strcmp(modAVUMetadataInp->arg0,"set")==0) { // JMC - backport 4836
+        myHint = modAVUMetadataInp->arg2;
     } else {
 	/* assume local */
 	myHint = NULL;
@@ -172,6 +174,14 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg6,
 				  modAVUMetadataInp->arg7,
 				  modAVUMetadataInp->arg8);
+    }
+    else if (strcmp(modAVUMetadataInp->arg0,"set")==0) { // JMC - backport 4836
+       status = chlSetAVUMetadata(rsComm, 
+                                 modAVUMetadataInp->arg1,
+                                 modAVUMetadataInp->arg2,
+                                 modAVUMetadataInp->arg3,
+                                 modAVUMetadataInp->arg4,
+                                 modAVUMetadataInp->arg5);
     }
     else {
       return(CAT_INVALID_ARGUMENT);

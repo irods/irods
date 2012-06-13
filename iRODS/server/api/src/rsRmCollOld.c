@@ -1,3 +1,4 @@
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -678,5 +679,5 @@ rsRmCollOld201 (rsComm_t *rsComm, collInp201_t *rmCollInp)
 
     return status;
 }
-#endif
 
+#endif

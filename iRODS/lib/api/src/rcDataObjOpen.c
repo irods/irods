@@ -51,6 +51,7 @@
  *    \n DATA_TYPE_KW - the data type of the data object.
  *    \n RESC_NAME_KW - The resource of the data object to open.
  *    \n REPL_NUM_KW - the replica number of the copy to open.
+ *    \n LOCK_TYPE_KW - set advisory lock type. valid values - WRITE_LOCK_TYPE or READ_LOCK_TYPE.
  *
  * \return integer
  * \retval an opened object descriptor on success

@@ -336,7 +336,7 @@ acSetReServerNumProc {msiSetReServerNumProc("default"); }
 # 18) acPreProcForCollCreate - This is the PreProcessing rule for creating
 # a collection. Currently there is no function written specifically
 # for this rule.
-# acPreProcForCollCreate {writeLine("serverLog","TEST:acPreProcForCollCreate:"++$collName); }
+acPreProcForCollCreate {writeLine("serverLog","TEST:acPreProcForCollCreate:"++$collName); }
 acPreProcForCollCreate { }
 #
 # 19) acPostProcForCollCreate - This rule set the post-processing policy for

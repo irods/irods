@@ -195,6 +195,8 @@ runCmd( "icp test/foo1 test/versiontest.txt");
 runCmd( "imkdir sub1/SaveVersions" );
 runCmd( "iput $dir_w/misc/sample.email test");
 runCmd( "iput $dir_w/misc/email.tag test");
+runCmd( "iput $dir_w/misc/sample.email test/sample2.email");
+runCmd( "iput $dir_w/misc/email.tag test/email2.tag");
 
 # get listing of example rules in ./rules3.0
 my @rules;
@@ -203,7 +205,8 @@ my $ssb=0;
 @rules = <rules3.0/*>;
 
 # loop through all
-foreach $rulefile (@rules) {
+foreach $rulefile (@rules) 
+{
 
   # skipping for now, not sure why it's throwing a stacktrace at the moment
   if ($rulefile =~ /rulemsiPropertiesToString/) { print "----- skipping b/c of stacktrace -- $rulefile\n"; next; }
@@ -353,6 +356,7 @@ foreach $rulefile (@rules) {
   runCmd( "irule -F $rulefile" );
 }
 
+
 #runCmd( "irule -F rules3.0/rulegenerateBagIt.r" );
 
 
@@ -367,7 +371,7 @@ runCmd( "irm -f bagit.tar" );
 runCmd( "irm -f rules" );
 runCmd( "irm -rf sub2" );
 runCmd( "iadmin modresc testResc status up" );
-runCmd( "irm -rf ../../bundle/home/rods" );
+runCmd( "irm -rf /tempZone/bundle/home/rods" );
 runCmd( "rm foo1" );
 
 

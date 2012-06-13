@@ -48,6 +48,9 @@ int
 addAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP);
 int
+setAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType, // JMC - backport 4836
+                           keyValPair_t *kVP);
+int
 removeAVUMetadataFromKVPairs(rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP);
 int
@@ -55,6 +58,12 @@ getStructFileType (specColl_t *specColl);
 
 extern int
 checkPermissionByObjType(rsComm_t *rsComm, char *objName, char *objType, char *user, char *zone, char *oper);
+int
+checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName,char *filePath); // JMC - backport 4497
+int
+getNumSubfilesInBunfileObj (rsComm_t *rsComm, char *objPath); // JMC - backport 4552
+int
+getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath); // JMC - backport 4680
 #ifdef  __cplusplus
 }
 #endif

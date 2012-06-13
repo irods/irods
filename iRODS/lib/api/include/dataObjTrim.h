@@ -24,6 +24,8 @@
 /* prototype for the server handler */
 int
 rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
+int
+trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 #else
 #define RS_DATA_OBJ_TRIM NULL
 #endif

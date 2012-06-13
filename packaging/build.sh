@@ -227,6 +227,9 @@ fi
 RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
 
 if [ "$BUILDEIRODS" == "1" ]; then
+	rm -f config/config.mk
+	rm -f config/platform.mk
+
     # =-=-=-=-=-=-=-
     # run configure to create Makefile, config.mk, platform.mk, etc.
     ./scripts/configure

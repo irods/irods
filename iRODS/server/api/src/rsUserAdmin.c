@@ -134,6 +134,37 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
           return(status);
        }
     } 
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4772
+    if (strcmp(userAdminInp->arg0,"mkuser")==0) {
+                 /* run the acCreateUser rule */
+       ruleExecInfo_t rei;
+       char *args[2];
+       userInfo_t userInfo;
+       memset((char*)&rei,0,sizeof(rei));
+       memset((char*)&userInfo,0,sizeof(userInfo));
+       rei.rsComm = rsComm;
+       strncpy(userInfo.userName, userAdminInp->arg1, 
+              sizeof userInfo.userName);
+       strncpy(userInfo.userType, "rodsuser",
+              sizeof userInfo.userType);
+       rei.uoio = &userInfo;
+       rei.uoic = &rsComm->clientUser;
+       rei.uoip = &rsComm->proxyUser;
+       status = applyRuleArg("acCreateUser", args, 0, &rei, SAVE_REI);
+       if (status != 0) {
+         chlRollback(rsComm);
+         return(status);
+       }
+       /* And then the chlModUser function to set the initial password */
+       status = chlModUser(rsComm, 
+                           userAdminInp->arg1,
+                           "password",
+                           userAdminInp->arg2);
+       if (status != 0) chlRollback(rsComm);
+       return(status);
+    }
+	// =-=-=-=-=-=-=-
     return(CAT_INVALID_ARGUMENT);
 }
 #endif

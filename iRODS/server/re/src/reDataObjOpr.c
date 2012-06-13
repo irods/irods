@@ -3824,7 +3824,12 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as the collection for the phybun.
- * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource.
+ * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource. If one wants to modify
+ *                       the value of the maximum number of subfiles contained in the tar file (default=5120), the input should be like this: 
+ *                   "<target resource name>++++N=10000". In this example, it will allow to merge up to 10000 files in a 
+ *            single tar file. Note that if this number is too high, it can cause some significant overhead for 
+ *            operations like retrieving a single file within a tar file (stage, untar and register in iRODS lots of files).
+ *            If the syntax after "++++" is invalid, it will be ignored.
  * \param[out] outParam - An INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -3848,6 +3853,8 @@ msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     rsComm_t *rsComm;
     structFileExtAndRegInp_t structFileExtAndRegInp, 
       *myStructFileExtAndRegInp;
+       int len1, len2; // JMC - backport 4802
+       char *inpStr, rescName[NAME_LEN], *pstr1, *pstr2, attr[MAX_NAME_LEN]; // JMC - backport 4802
 
     RE_TEST_MACRO (" Calling msiPhyBundleColl")
 
@@ -3864,6 +3871,7 @@ msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
     extract from inpParam1 the tar file object path: tarFilePath
     and from inpParam2 the target collection: colTarget */
 
+
     if ( inpParam1 == NULL) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
         "msiPhyBundleColl: input Param1 is NULL");
@@ -3871,29 +3879,60 @@ msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPara
         return (rei->status);
     }
 
+
     if (strcmp (inpParam1->type, STR_MS_T) == 0) {
         bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
         myStructFileExtAndRegInp = &structFileExtAndRegInp;
         strncpy ((char*)myStructFileExtAndRegInp->collection, (char*)inpParam1->inOutStruct,
           MAX_NAME_LEN);
+
     } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
         myStructFileExtAndRegInp =
           (structFileExtAndRegInp_t *) inpParam1->inOutStruct;
+
     } else {
+
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
         return (rei->status);
     }
 
-    if ( strcmp (inpParam2->type, STR_MS_T) == 0 && inpParam2 != NULL &&
-      strcmp ( (char *) inpParam2->inOutStruct, "null") != 0) {
-        addKeyVal(&myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
-        (char *) inpParam2->inOutStruct);
-    }
+    if( strcmp (inpParam2->type, STR_MS_T) == 0 && inpParam2 != NULL &&
+         // =-=-=-=-=-=-=-
+         strcmp ( (char *) inpParam2->inOutStruct, "null") != 0) {
+        inpStr = (char *) inpParam2->inOutStruct;
+	    /* parse the input parameter which is: <string> or <string>++++N=<int> */
+	    pstr1 = strstr(inpStr, "++++");
+	    if ( pstr1 != NULL ) {
+			   len1 = strlen(inpStr) - strlen(pstr1);
+			   if ( len1 > 0 ) {
+					   strncpy(rescName, inpStr, len1);
+					   addKeyVal(&myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW, rescName);
+			   }
+			   pstr2 = strstr(pstr1 + 4, "=");
+			   if ( pstr2 != NULL ) {
+					   len2 = strlen(pstr1 + 4) - strlen(pstr2);
+					   memset(attr, 0, sizeof(attr));
+					   strncpy(attr, pstr1 + 4, len2);
+					   if ( len2 > 0 ) {
+							   if ( strcmp(attr, "N") == 0 ) {
+									   addKeyVal(&myStructFileExtAndRegInp->condInput, MAX_SUB_FILE_KW, pstr2 + 1);
+							   }
+					   }
+			   }
+	    }
+	    else {
+	 		   addKeyVal(&myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW, inpStr);
+	    }
+	    /* end of the parsing */
+        // =-=-=-=-=-=-=-
+	}
 
     /* tar file extraction */
     rei->status = rsPhyBundleColl (rsComm, myStructFileExtAndRegInp);
 
+
     fillIntInMsParam (outParam, rei->status);
+
 
     return (rei->status);
 

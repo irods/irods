@@ -6,7 +6,6 @@
 // STL Includes
 #include <string>
 #include <iostream>
-using namespace std;
 
 // =-=-=-=-=-=-=-
 // dlopen, etc
@@ -15,7 +14,7 @@ using namespace std;
 // =-=-=-=-=-=-=-
 // My Includes
 #include "eirods_ms_home.h"
-#include "eirods_hash.h"
+#include "eirods_lookup_table.h"
 
 namespace eirods {
 
@@ -24,36 +23,36 @@ namespace eirods {
 	typedef int((*funcPtr)(...));
 	struct ms_table_entry {
 
-		string  action;
-		int     numberOfStringArgs;
-		funcPtr callAction;
+		std::string  action_;
+		int          numberOfStringArgs_;
+		funcPtr      callAction_;
 
 		// =-=-=-=-=-=-=-
 		// Constructors 
 		ms_table_entry( ) : 
-			action(""), 
-			numberOfStringArgs( 0 ), 
-			callAction( 0 ) { 
+			action_(""), 
+			numberOfStringArgs_( 0 ), 
+			callAction_( 0 ) { 
 		} // def ctor
 
-		ms_table_entry( string _s, int _n, funcPtr _fp ) : 
-			action(_s), 
-			numberOfStringArgs( _n ), 
-			callAction( _fp ) {
+		ms_table_entry( std::string _s, int _n, funcPtr _fp ) : 
+			action_(_s), 
+			numberOfStringArgs_( _n ), 
+			callAction_( _fp ) {
 		} // ctor
 
 		ms_table_entry( const ms_table_entry& _rhs ) :
-			action(_rhs.action ), 
-			numberOfStringArgs( _rhs.numberOfStringArgs ), 
-			callAction( _rhs.callAction ) {
+			action_(_rhs.action_ ), 
+			numberOfStringArgs_( _rhs.numberOfStringArgs_ ), 
+			callAction_( _rhs.callAction_ ) {
 		} // cctor
 
 		// =-=-=-=-=-=-=-
 		// Assignment Operator - necessary for stl containers
 		ms_table_entry& operator=( const ms_table_entry& _rhs ) { 
-			action             = _rhs.action;
-			numberOfStringArgs = _rhs.numberOfStringArgs;
-			callAction         = _rhs.callAction;
+			action_             = _rhs.action_;
+			numberOfStringArgs_ = _rhs.numberOfStringArgs_;
+			callAction_         = _rhs.callAction_;
 			return *this;
 		} // operator=
 
@@ -64,31 +63,14 @@ namespace eirods {
 
 	}; // ms_table_entry
 
-	//typedef hash_map< string, ms_table_entry, eirods_string_hash > ms_table;
-
 	// =-=-=-=-=-=-=-
-	// class to manage microservice indexing.  employing a class in order to use
-	// RAII for adding entries to the table now that it is not a static array
-	class ms_table {
-		hash_map< string, ms_table_entry, eirods_string_hash > table_;
-		public:
-		ms_table();
-        virtual ~ms_table() {}
-		ms_table_entry& operator[]( string _s ) {
-			return table_[ _s ];
-		}
-		int size() {
-			return table_.size();
-		}
-		bool has_msvc( string _s ) {
-            return !( table_.end() == table_.find( _s ) );
-		}
-	}; // class ms_table
-		
+    // create a lookup table for ms_table_entry value type
+	typedef lookup_table<ms_table_entry> ms_table;	
+	
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object
 	// and then register that ms with the table
-	bool load_microservice_plugin( ms_table& _table, const string _ms );
+	bool load_microservice_plugin( ms_table& _table, const std::string _ms );
 
 
 }; // namespace eirods

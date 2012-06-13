@@ -85,6 +85,8 @@ int
 queDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo,
 int singleInfoFlag, int topFlag);
 int
+dequeDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo); // JMC - backport 4590
+int
 clearKeyVal (keyValPair_t *condInput);
 int
 clearInxIval (inxIvalPair_t *inxIvalPair);
@@ -138,6 +140,8 @@ int
 getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead);
 int
 appendRandomToPath (char *trashPath);
+int
+isBundlePath (char *myPath); // JMC - backport 4552
 int
 isTrashPath (char *myPath);
 orphanPathType_t

@@ -103,4 +103,6 @@ void
 spawnManagerTask ();
 int
 procBadReq ();
+void
+purgeLockFileWorkerTask (); // JMC - backport 4612
 #endif	/* RODS_SERVER_H */

@@ -99,7 +99,7 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
 syncCacheDirToTarfile (int structFileInx, int oprType);
 int
-bundleCacheDirWithExec (int structFileInx);
+bundleCacheDirWithExec (int structFileInx, int oprType); // JMC - backport 4643
 int
 bundleCacheDirWithLib (int structFileInx);
 int
@@ -108,4 +108,8 @@ int
 allocTarSubFileDesc ();
 int
 freeTarSubFileDesc (int tarSubFileInx);
+int
+bundleCacheDirWithZip (int structFileInx); // JMC - backport 4637
+int
+extractFileWithUnzip (int structFileInx); // JMC - backport 4637
 #endif	/* TAR_STRUCT_FILE_DRIVER_H_H */

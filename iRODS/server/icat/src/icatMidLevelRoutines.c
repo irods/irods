@@ -954,9 +954,8 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 }
 
 /* 
- Check that the user has permission to add or remover a user to a
- group (other than rodsadmin).  The user must be of type 'groupadmin'
- and a member of the specified group.
+ * Check that the user has group-admin permission.  The user must be of
+ * type 'groupadmin' and in some cases a member of the specified group.
  */
 int cmlCheckGroupAdminAccess(char *userName, char *userZone, 
 			     char *groupName, icatSessionStruct *icss) {
@@ -971,6 +970,17 @@ int cmlCheckGroupAdminAccess(char *userName, char *userZone,
       sVal, MAX_NAME_LEN, userName, userZone, 0, icss);
    if (status==CAT_NO_ROWS_FOUND) return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    if (status) return(status);
+
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4772
+   if (groupName == NULL) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+   if (*groupName == '\0') {
+      return(0);  /* caller is requesting no check for a particular group,
+                    so if the above check passed, the user is OK */
+   }
+   // =-=-=-=-=-=-=-
 
    if (logSQL_CML!=0) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 ");
 

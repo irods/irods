@@ -89,12 +89,11 @@ rodsServerHost_t *rodsServerHost)
      * when RCAT is available 
      */
 
-    if (fileCreateInp->otherFlags & CHK_PERM_FLAG) {
-	status = chkFilePathPerm (rsComm, fileCreateInp, 
-	  rodsServerHost);
-	if (status < 0) {
-	    return (status);
-	}
+    if( fileCreateInp->otherFlags & NO_CHK_PERM_FLAG == 0 ) { // JMC - backport 4758
+        status = chkFilePathPerm (rsComm, fileCreateInp, rodsServerHost, DO_CHK_PATH_PERM); // JMC - backport 4774
+		if (status < 0) {
+			return (status);
+		}
     }
 
     fd = fileCreate (fileCreateInp->fileType, rsComm, fileCreateInp->fileName,

@@ -137,8 +137,8 @@ fileDriver_t FileDriverTable[] = {
       unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
       unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
       unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
-      unixFileGetFsFreeSpace, unixFileTruncate, noSupportFsFileStageToCache, 
-      noSupportFsFileSyncToArch},
+      unixFileGetFsFreeSpace, unixFileTruncate, unixStageToCache,  // JMC - backport 4521
+      unixSyncToArch},
     #ifdef HPSS
         {HPSS_FILE_TYPE, noSupportFsFileCreate, noSupportFsFileOpen, noSupportFsFileRead, 
          noSupportFsFileWrite, noSupportFsFileClose, hpssFileUnlink, hpssFileStat, 
@@ -178,7 +178,7 @@ fileDriver_t FileDriverTable[] = {
      noSupportFsFileWrite, noSupportFsFileClose, univMSSFileUnlink, univMSSFileStat, 
      noSupportFsFileFstat, noSupportFsFileLseek, noSupportFsFileFsync, univMSSFileMkdir, 
      univMSSFileChmod, noSupportFsFileRmdir, noSupportFsFileOpendir, noSupportFsFileClosedir, 
-     noSupportFsFileReaddir, noSupportFsFileStage, noSupportFsFileRename, 
+     noSupportFsFileReaddir, noSupportFsFileStage, univMSSFileRename, // JMC - backport 4697 
      noSupportFsFileGetFsFreeSpace, noSupportFsFileTruncate, univMSSStageToCache, univMSSSyncToArch},
 #endif
 

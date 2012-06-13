@@ -19,6 +19,7 @@
 #
 
 $F1="TestFile1";
+$F1LC="testfile1";
 $F2="TestFile2";
 $F3="TestFile3";
 $D1="directory1";
@@ -31,6 +32,10 @@ $D3D="direct003/subAD";
 $D3E="direct003/subE";
 $D4="directory04";
 $D4A="directory04/sub1";
+$TICKET1="ticket1";
+$TICKET2="ticket2";
+$TICKET3="ticket3";
+$TICKET_HOST="pivo.ucsd.edu";
 
 $U2="u2";
 $U3="u3";
@@ -121,6 +126,14 @@ runCmd(0, "imv $F1 $F1a");
 runCmd(0, "imv $F1a $F1b");
 runCmd(0, "imv $F1b $F1");
 runCmd(2, "imv $F1 $F1"); 
+runCmd(0, "irm -f $F1");
+
+# test that upper/lower case are different (can be problem with MySQL)
+`ls -l > $F1LC`;
+runCmd(2, "irm -f $F1LC");
+runCmd(0, "iput $F1");
+runCmd(0, "iput $F1LC");
+runCmd(0, "irm -f $F1LC");
 runCmd(0, "irm -f $F1");
 
 $D1a = "$D1" . "a";
@@ -262,6 +275,19 @@ runCmd(0, "iput -f $F1");
 runCmd(0, "iput -fK $F1");
 runCmd(0, "irm -f $F1");
 
+# isysmeta
+runCmd(0, "iput $F1");
+runCmd(0, "isysmeta mod $F1 +1h");
+runCmd(0, "isysmeta mod $F1 2009-12-01");
+runCmd(0, "isysmeta mod $F1 datatype 'tar file'");
+runCmd(0, "isysmeta mod $F1 comment 0 'my comment'");
+runCmd(0, "isysmeta mod $F1 comment 'my other comment'");
+runCmd(0, "isysmeta ls $F1");
+runCmd(0, "isysmeta ls -l $F1");
+runCmd(0, "isysmeta ls -v $F1");
+runCmd(0, "isysmeta ldt");
+runCmd(0, "irm -f $F1");
+
 # Metadata
 unlink($F3);
 `ls -l > $F3`;
@@ -285,6 +311,8 @@ runCmd(0, "imeta rm -d $F1 x y z");
 runCmd(0, "imeta add -d $F1 testAVUnumber 14");
 runCmd(0, "imeta qu -d testAVUnumber '<' 6 | wc -l", "2");
 runCmd(0, "imeta qu -d testAVUnumber 'n<' 6 | grep 'No rows found'");
+runCmd(0, "imeta qu -d testAVUnumber 'n>' 6 | wc -l", "2");
+runCmd(0, "imeta qu -d testAVUnumber 'n=' 14 | wc -l", "2");
 runCmd(0, "imeta rm -d $F1 testAVUnumber 14");
 runCmd(0, "irm -f $F3");
 
@@ -426,6 +454,27 @@ runCmd(0, "imeta mod -r $Resc aaaaa bbbbb n:a1");
 runCmd(2, "imeta rm -r $Resc aaaaa bbbbb");
 runCmd(0, "imeta rm -r $Resc a1 bbbbb");
 
+# imeta set
+runCmd(1, "imeta rm -d $F1 setAttr1 y z");
+runCmd(0, "iadmin rum");
+unlink($F2);
+`ls -l > $F2`;
+runCmd(0, "iput -f $F2");
+runCmd(0, "imeta set -d $F1 setAttr1 y z");
+runCmd(0, "imeta set -d $F1 setAttr1 y2 z");
+runCmd(0, "imeta set -d $F1 setAttr1 y z");
+runCmd(0, "imeta set -d $F2 setAttr1 y z");
+runCmd(0, "imeta set -d $F1 setAttr1 y3 z");
+runCmd(0, "imeta rm -d $F2 setAttr1 y z");
+runCmd(0, "imeta rm -d $F1 setAttr1 y3 z");
+runCmd(0, "iadmin rum");
+runCmd(0, "imeta set -d $F1 setAttr2 1");
+runCmd(0, "imeta set -d $F1 setAttr2 2");
+runCmd(0, "imeta set -d $F2 setAttr3 3");
+runCmd(0, "imeta set -d $F1 setAttr3 3");
+runCmd(0, "imeta rm -d $F1 setAttr2 2");
+runCmd(0, "irm -f $F2");
+
 # basic test of imeta addw
 runCmd(0, "imeta addw -d $F1 a4 b4 c4");
 runCmd(0, "imeta rm -d $F1 a4 b4 c4");
@@ -466,11 +515,10 @@ runCmd(0, "ienv | grep irodsAuthFileName | tail -1");
 chomp($cmdStdout);
 $ix = index($cmdStdout,"=");
 $envAuth=substr($cmdStdout, $ix+1);
-#$envAuth=$ENV{'irodsAuthFileName'};
 if ($envAuth ne "") {
     $authFile=$envAuth;
 }
-runCmd(0, "mv $authFile $F2"); # save the auth file
+runCmd(1, "mv $authFile $F2"); # save the auth file
 runCmd(2, "iinit 1234");
 $ENV{'irodsUserName'}=$U2; 
 runCmd(0, "iinit 1234");
@@ -479,7 +527,7 @@ runCmd(2, "ichmod -R write $U1 $Resc"); # test SQL (the non-admin)
 runCmd(0, "echo '1234\nabcd\nabcd' | ipasswd"); # change the password
 runCmd(0, "echo 'abcd\n1234\n1234' | ipasswd"); # change the password back
 runCmd(0, "iexit full");
-runCmd(0, "mv $F2 $authFile"); # restore auth file
+runCmd(1, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
 runCmd(0, "ils");
 
@@ -508,6 +556,12 @@ runCmd(0, "iadmin cu");
 runCmd(0, "iadmin suq $U1 total 20");
 runCmd(0, "iadmin sgq $G1 total 20");
 runCmd(0, "iadmin cu");
+runCmd(0, "iquota");
+runCmd(0, "iquota -a");
+runCmd(0, "iquota -u baduser");
+runCmd(0, "iquota -u $U2");
+runCmd(0, "iquota usage");
+runCmd(0, "iquota -a usage");
 runCmd(0, "iadmin suq $U1 total 0");
 runCmd(0, "iadmin sgq $G1 total 0");
 runCmd(0, "iadmin suq $U1 $Resc 0");
@@ -631,6 +685,13 @@ runCmd(0, "irm -rf $D1");
 runCmd(0, "irmtrash");
 
 #
+# Admin mode of irmtrash
+#
+runCmd(0, "iput $F1");
+runCmd(0, "irm $F1");
+runCmd(0, "irmtrash -M");
+
+#
 # ichmod for DB Resource
 #
 runCmd(0, "ichmod -R write $U2 $Resc");
@@ -704,6 +765,46 @@ runCmd(0, "iquest \"select sum(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "iquest \"select count(DATA_SIZE) where COLL_NAME = '$iHome'\"");
 runCmd(0, "irm -f $F2");
 runCmd(0, "irm -f $F1");
+
+#Tickets 
+#runCmd(0, "iput $F1");
+#runCmd(1, "iticket delete $TICKET1");
+#runCmd(0, "iticket create read $F1 $TICKET1");
+#runCmd(0, "iticket mod $TICKET1 uses 10");
+#runCmd(1, "iticket mod badticketname uses 1");
+#runCmd(0, "iticket mod $TICKET1 add host $TICKET_HOST");
+#runCmd(0, "iticket mod $TICKET1 remove host $TICKET_HOST");
+#runCmd(0, "iticket mod $TICKET1 add user $U1");
+#runCmd(0, "iticket mod $TICKET1 remove user $U1");
+#runCmd(0, "iticket mod $TICKET1 expire 2012-02-02");
+#runCmd(0, "iticket mod $TICKET1 expire 0");
+#runCmd(0, "iticket ls $TICKET1");
+#runCmd(0, "iticket ls");
+#runCmd(0, "iget -f -t $TICKET1 $F1");
+#runCmd(0, "iticket mod $TICKET1 uses 0");
+#runCmd(0, "iadmin mkgroup $G1");
+#runCmd(0, "iticket mod $TICKET1 add group $G1");
+#runCmd(1, "iget -f -t $TICKET1 $F1");
+#runCmd(0, "iticket mod $TICKET1 remove group $G1");
+#runCmd(0, "iticket delete $TICKET1");
+#runCmd(1, "iticket delete $TICKET2");
+#runCmd(0, "iticket create write $F1 $TICKET2");
+#runCmd(0, "iticket mod $TICKET2 write-file 10");
+#runCmd(0, "iticket mod $TICKET2 write-byte 10000000");
+#runCmd(0, "iget -f -t $TICKET2 $F1");
+#runCmd(0, "ls -l >> $F1");
+#runCmd(0, "iput -f -t $TICKET2 $F1");
+#runCmd(0, "iticket delete $TICKET2");
+#runCmd(1, "iticket delete $TICKET3");
+#runCmd(1, "irm -fr $D2");
+#runCmd(0, "imkdir $D2");
+#runCmd(0, "iticket create write $D2 $TICKET3");
+#runCmd(0, "iput -t $TICKET3 $F1 $D2");
+#runCmd(0, "iticket delete $TICKET3");
+#runCmd(1, "irm -fr $D2");
+#runCmd(0, "iadmin rmgroup $G1");
+#runCmd(1, "iticket create read badfilename");
+#runCmd(0, "irm -f $F1");
 
 # simple test to exercise the clean-up AVUs sql;
 # will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none

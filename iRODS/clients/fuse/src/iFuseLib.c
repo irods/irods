@@ -1247,6 +1247,7 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
     status = clientLogin (iFuseConn->conn);
     if (status != 0) {
         rcDisconnect (iFuseConn->conn);
+		iFuseConn->conn=NULL; // JMC - backport 4589
     }
     return (status);
 }
@@ -1368,6 +1369,7 @@ disconnectAll ()
     while (tmpIFuseConn != NULL) {
 	if (tmpIFuseConn->conn != NULL) {
 	    rcDisconnect (tmpIFuseConn->conn);
+		tmpIFuseConn->conn=NULL; // JMC - backport 4589
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
     }
@@ -1377,6 +1379,7 @@ disconnectAll ()
     while (tmpIFuseConn != NULL) {
 	if (tmpIFuseConn->conn != NULL) {
 	    rcDisconnect (tmpIFuseConn->conn);
+		tmpIFuseConn->conn=NULL; // JMC - backport 4589
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
     }
@@ -1415,6 +1418,7 @@ connManager ()
 		    /* can be disconnected */
 		    if (tmpIFuseConn->conn != NULL) {
 		        rcDisconnect (tmpIFuseConn->conn);
+		        tmpIFuseConn->conn=NULL; // JMC - backport 4589
 		    }
 #ifdef USE_BOOST
 		    /* don't unlock. it will cause delete to fail */
@@ -1451,6 +1455,7 @@ connManager ()
                     /* can be disconnected */
                     if (tmpIFuseConn->conn != NULL) {
                         rcDisconnect (tmpIFuseConn->conn);
+		tmpIFuseConn->conn=NULL; // JMC - backport 4589
                     }
 #ifdef USE_BOOST
 		    /* don't unlock. it will cause delete to fail */
@@ -1531,6 +1536,7 @@ ifuseReconnect (iFuseConn_t *iFuseConn)
     rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
     rcDisconnect (iFuseConn->conn);
     status = ifuseConnect (iFuseConn, &MyRodsEnv);
+	tmpIFuseConn->conn=NULL; // JMC - backport 4589
     return status;
 }
 

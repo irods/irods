@@ -126,9 +126,7 @@ runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
 $ENV{'irodsDebug'}='noop'; # override value in irodsEnv file
 runCmd(0, "test_chl modrfs $Resc 123456789 close");
 
-$cfgPath="../../../config/irods.config";
-require $cfgPath;
-
+require "../../../config/irods.config";
 if ($DATABASE_TYPE eq "oracle") {
 #   oracle does autocommit so don't check the result
     runCmd(1, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
@@ -220,6 +218,33 @@ else {
 }
 unlink($tmpPwFile);
 
+# Temporary password for other
+#$prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
+#$ENV{'irodsAuthFileName'}=$tmpPwFile;
+#runCmd(0, "test_chl tpwforother 123 $User2 | grep  'temp pw'");
+#$temp1=$cmdStdout;
+#chomp($temp1);
+#$ixPw=index($temp1,"=");
+#$pw=substr($temp1, $ixPw+1);
+#unlink($tmpPwFile);
+#unlink($tmpAuthFile);
+#$ENV{'irodsUserName'}=$User2; 
+#runCmd(0, "echo badpw > $tmpPwFile");
+#runCmd(2, "ils ../$User2 < $tmpPwFile");  # should fail with a bad pw
+#unlink($tmpPwFile);
+#runCmd(0, "echo $pw > $tmpPwFile");  
+#runCmd(0, "ils ../$User2 < $tmpPwFile");  # should work with the temp pw
+#printf($cmdStdout);
+#runCmd(2, "ils ../$User2 < $tmpPwFile");  # but only once
+#delete $ENV{'irodsUserName'};
+#if ($prevAuthFileName eq "") {
+#    delete $ENV{'irodsAuthFileName'};
+#}
+#else {
+#    $ENV{'irodsAuthFileName'}=$prevAuthFileName;
+#}
+#unlink($tmpPwFile);
+
 # auth test (special case)
 runCmd(1, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin mkuser $UserAdmin2 rodsadmin");
@@ -247,6 +272,12 @@ runCmd(0, "irm -rf $DIR1");
 #runCmd(0, "test_genu 1 test 100078 name1");
 #runCmd(2, "test_genu 2 test 100099 name1");
 #runCmd(0, "test_genu 2 test 100078 name1");
+#
+# Oct 2011, re-added test_genu tests to improve coverage a little.
+# Without defining an extended ICAT (which would be difficult), 
+# coverage will be slight tho.
+runCmd(2, "test_genu 1 test 100078 name1");
+runCmd(2, "test_genu 2 test 100078 name1");
 
 # multiple open/close test
 runCmd(0, "test_chl open");
@@ -280,5 +311,14 @@ runCmd(0, "rm -rf $Resc2Path");
 # Check that an invalid simpleQuery does fail
 $testCmd="test_chl sql \"select coll_id from R_COLL_MAIN where coll_name != " . "?" . "\" /$myZone/home/rods 1";
 runCmd(2, $testCmd);
+
+# Exercise a couple simple queries that are no longer used in iadmin:
+$testCmd="test_chl sql \"select user_name from R_USER_MAIN where user_type_name='rodsgroup'\"";
+runCmd(0, $testCmd);
+$testCmd="test_chl sql \"select user_name||'#'||zone_name from R_USER_MAIN, R_USER_GROUP where R_USER_GROUP.user_id=R_USER_MAIN.user_id and R_USER_GROUP.group_user_id=(select user_id from R_USER_MAIN where user_name=" . "?)" . "\" g1 1";
+runCmd(1, $testCmd);
+
+# Exercise the chlGetLocalZone for coverage
+runCmd(0, "test_chl getlocalzone $myZone");
 
 printf("Success\n");

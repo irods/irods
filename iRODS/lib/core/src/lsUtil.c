@@ -4,6 +4,8 @@
 #include "lsUtil.h"
 #include "miscUtil.h"
 
+char zoneHint[MAX_NAME_LEN]; // JMC - backport 4416
+
 int
 lsUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp)
@@ -21,6 +23,7 @@ rodsPathInp_t *rodsPathInp)
     initCondForLs (myRodsEnv, myRodsArgs, &genQueryInp);
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
+    rstrcpy(zoneHint, rodsPathInp->srcPath[i].inPath, MAX_NAME_LEN); // // JMC - backport 4416
 	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T || 
 	  rodsPathInp->srcPath[i].objState == UNKNOWN_ST) {
 	    status = getRodsObjType (conn, &rodsPathInp->srcPath[i]);
@@ -89,7 +92,9 @@ genQueryInp_t *genQueryInp)
 	} else {
             lsDataObjUtilLong (conn, srcPath->outPath, myRodsEnv, rodsArgs, 
 	      genQueryInp);
-	}
+	   }
+    } else if (rodsArgs->bundle == True) { // JMC - backport 4536
+	       lsSubfilesInBundle (conn, srcPath->outPath, myRodsEnv, rodsArgs);
     } else {
 	printLsStrShort (srcPath->outPath);
         if (rodsArgs->accessControl == True) {
@@ -172,7 +177,7 @@ genQueryOut_t *genQueryOut)
     int i;
     sqlResult_t *dataName, *replNum, *dataSize, *rescName, 
       *replStatus, *dataModify, *dataOwnerName, *dataId;
-    sqlResult_t *chksumStr, *dataPath, *rescGrp;
+    sqlResult_t *chksumStr, *dataPath, *rescGrp, *dataType; // JMC - backport 4636
     char *tmpDataId;
     int queryFlags;
 
@@ -201,6 +206,12 @@ genQueryOut_t *genQueryOut)
           == NULL) {
             rodsLog (LOG_ERROR,
              "printLsLong: getSqlResultByInx for COL_D_RESC_GROUP_NAME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if ((dataType = getSqlResultByInx (genQueryOut, COL_DATA_TYPE_NAME))== NULL) { // JMC - backport 4636
+          
+            rodsLog (LOG_ERROR,
+             "printLsLong: getSqlResultByInx for COL_DATA_TYPE_NAME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         }
     }
@@ -272,8 +283,9 @@ genQueryOut_t *genQueryOut)
         if (rodsArgs->veryLongOption == True) {
 	    collEnt.chksum = &chksumStr->value[chksumStr->len * i];
 	    collEnt.phyPath = &dataPath->value[dataPath->len * i];
-	    collEnt.rescGrp = &rescGrp->value[dataPath->len * i];
-	}
+        collEnt.rescGrp = &rescGrp->value[rescGrp->len * i]; // JMC - backport 4636
+        collEnt.dataType = &dataType->value[dataType->len * i];  // JMC - backport 4636
+}
 
 	printDataCollEntLong (&collEnt, queryFlags);
 
@@ -318,13 +330,13 @@ genQueryOut_t *genQueryOut)
 
     if ((dataId = getSqlResultByInx (genQueryOut, COL_D_DATA_ID)) == NULL) {
         rodsLog (LOG_ERROR,
-          "printLsLong: getSqlResultByInx for COL_D_DATA_ID failed");
+          "printLsShort: getSqlResultByInx for COL_D_DATA_ID failed"); // JMC - backport 4516
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
     if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
-          "printLsLong: getSqlResultByInx for COL_DATA_NAME failed");
+          "printLsShort: getSqlResultByInx for COL_DATA_NAME failed"); // JMC - backport 4516
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -407,9 +419,19 @@ rodsArguments_t *rodsArgs)
     }
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
 	if (collEnt.objType == DATA_OBJ_T) {
-	    printDataCollEnt (&collEnt, queryFlags);
-	    if (rodsArgs->accessControl == True) {
-		printDataAcl (conn, collEnt.dataId);
+		// =-=-=-=-=-=-=-
+		// JMC - backport 4536
+            if (rodsArgs->bundle == True) {
+               char myPath[MAX_NAME_LEN];
+               snprintf (myPath, MAX_NAME_LEN, "%s/%s", collEnt.collName,
+                 collEnt.dataName);
+                lsSubfilesInBundle (conn, myPath, myRodsEnv, rodsArgs);
+           } else {
+               printDataCollEnt (&collEnt, queryFlags);
+               if (rodsArgs->accessControl == True) {
+                   printDataAcl (conn, collEnt.dataId);
+               }
+		// =-=-=-=-=-=-=-
 	    }
 	} else {
 	    printCollCollEnt (&collEnt, queryFlags);
@@ -473,8 +495,8 @@ printDataCollEntLong (collEnt_t *collEnt, int flags)
 
 
     if ((flags & VERY_LONG_METADATA_FG) != 0) {
-        printf ("    %s    %s    %s\n", collEnt->chksum, collEnt->phyPath,
-	  collEnt->rescGrp);
+        printf ("    %s    %s    %s    %s\n", collEnt->chksum, collEnt->rescGrp, collEnt->dataType, collEnt->phyPath); // JMC - backport 4636
+
     }
     return 0;
 }
@@ -547,7 +569,7 @@ printDataAcl (rcComm_t *conn, char *dataId)
     sqlResult_t *userName, *userZone, *dataAccess;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
-    status = queryDataObjAcl (conn, dataId, &genQueryOut);
+    status = queryDataObjAcl (conn, dataId, zoneHint, &genQueryOut); // JMC - backport 4516
 
     printf ("        ACL - ");
 
@@ -598,7 +620,7 @@ printCollAcl (rcComm_t *conn, char *collName)
     sqlResult_t *userName, *userZone, *dataAccess ;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
-    status = queryCollAcl (conn, collName, &genQueryOut);
+    status = queryCollAcl (conn, collName, zoneHint, &genQueryOut); // JMC - backport 4516
 
     printf ("        ACL - ");
 
@@ -695,4 +717,87 @@ specColl_t *specColl)
         fprintf (stdout, "%s- %s :\n", typeStr, myName);
     }
 }
+
+int
+lsSubfilesInBundle (rcComm_t *conn, char *srcPath, rodsEnv *myRodsEnv,
+rodsArguments_t *rodsArgs)
+{
+    int i, status;
+    genQueryOut_t *genQueryOut = NULL;
+    genQueryInp_t genQueryInp;
+    char condStr[MAX_NAME_LEN];
+    sqlResult_t *dataName, *collection, *dataSize;
+    char *dataNameStr, *collectionStr, *dataSizeStr;
+    int continueInx = 1;
+
+
+    fprintf (stdout, "Bundle file: %s\n", srcPath);
+    fprintf (stdout, "Subfiles:\n");
+    bzero (&genQueryInp, sizeof (genQueryInp));
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", srcPath);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr);
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", BUNDLE_RESC_CLASS);
+    addInxVal (&genQueryInp.sqlCondInp, COL_R_CLASS_NAME, condStr);
+    addKeyVal (&genQueryInp.condInput, ZONE_KW, srcPath);
+
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+
+    while (continueInx > 0) {
+        status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
+
+        if (status < 0) {
+            if (status != CAT_NO_ROWS_FOUND) {
+                rodsLogError (LOG_ERROR, status,
+                  "lsSubfilesInBundle: rsGenQuery error for %s",
+                  srcPath);
+            }
+            clearGenQueryInp (&genQueryInp);
+            return (status);
+        }
+
+        if ((collection = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == 
+         NULL) {
+            rodsLog (LOG_ERROR,
+              "lsSubfilesInBundle: getSqlResultByInx for COL_COLL_NAME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == 
+          NULL) {
+            rodsLog (LOG_ERROR,
+              "lsSubfilesInBundle: getSqlResultByInx for COL_DATA_NAME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if ((dataSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE)) == 
+          NULL) {
+            rodsLog (LOG_ERROR,
+              "lsSubfilesInBundle: getSqlResultByInx for COL_DATA_SIZE failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+        for (i = 0;i < genQueryOut->rowCnt; i++) {
+            collectionStr = &collection->value[collection->len * i];
+            dataNameStr = &dataName->value[dataName->len * i];
+            dataSizeStr = &dataSize->value[dataSize->len * i];
+            fprintf (stdout, "    %s/%s    %s\n", 
+             collectionStr, dataNameStr, dataSizeStr);
+        }
+
+        if (genQueryOut != NULL) {
+            continueInx = genQueryInp.continueInx =
+            genQueryOut->continueInx;
+            freeGenQueryOut (&genQueryOut);
+        } else {
+            continueInx = 0;
+        }
+    }
+    clearGenQueryInp (&genQueryInp);
+    return (status);
+}
+
+
+
 

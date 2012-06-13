@@ -44,6 +44,7 @@ typedef struct structFileDesc {
     specColl_t *specColl;
     rescInfo_t *rescInfo;
     int openCnt;
+	char dataType[NAME_LEN]; // JMC - backport 4634
 } structFileDesc_t;
 
 #define NUM_STRUCT_FILE_DESC 16

@@ -19,14 +19,16 @@
 
 #define BUNDLE_RESC	"bundleResc"
 #define TAR_BUNDLE_TYPE	"tar bundle"
+#define BUNDLE_STR     "bundle" // JMC - backport 4658
 #define BUNDLE_RESC_CLASS	"bundle"
 
 #define MAX_BUNDLE_SIZE		4	/* 4 G */
-#define MAX_SUB_FILE_CNT	512
+#define MAX_SUB_FILE_CNT	5120 // JMC - backport 4480
 
 typedef struct BunReplCache {
     rodsLong_t  dataId;
     char objPath[MAX_NAME_LEN];         /* optional for IRODS_ADMIN_KW */
+    char chksumStr[NAME_LEN]; // JMC - backport 4528
     int srcReplNum;
     struct BunReplCache *next;
 } bunReplCache_t;
@@ -62,7 +64,7 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
 rescGrpInfo_t *rescGrpInfo);
 int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
-rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp);
+rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType); // JMC - backport 4658
 int
 createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 char *outPhyBundleDir);
@@ -84,10 +86,10 @@ replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader);
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
-char *collection, bunReplCacheHeader_t *bunReplCacheHeader);
+char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag); // JMC - backport 4528
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
-char *collection);
+char *collection, int oprType); // JMC - backport 4643
 #else
 #define RS_PHY_BUNDLE_COLL NULL
 #endif

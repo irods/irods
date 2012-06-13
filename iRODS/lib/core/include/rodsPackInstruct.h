@@ -121,7 +121,7 @@
 #define h5Dataspace_PI "int rank; int dims[H5S_MAX_RANK]; int npoints; int start[H5DATASPACE_MAX_RANK]; int stride[H5DATASPACE_MAX_RANK]; int count[H5DATASPACE_MAX_RANK];"
 /* content of collEnt_t cannot be freed since they are pointers in "value"
  * of sqlResult */ 
-#define CollEnt_PI "int objType; int replNum; int replStatus; int dataMode; double dataSize; str $collName; str $dataName; str $dataId; str $createTime; str $modifyTime; str $chksum; str $resource; str $rescGrp; str $phyPath; str $ownerName; struct SpecColl_PI;" 
+#define CollEnt_PI "int objType; int replNum; int replStatus; int dataMode; double dataSize; str $collName; str $dataName; str $dataId; str $createTime; str $modifyTime; str $chksum; str $resource; str $rescGrp; str $phyPath; str $ownerName; str $dataType; struct SpecColl_PI;"
 #define CollOprStat_PI "int filesCnt; int totalFileCnt; double bytesWritten; str lastObjPath[MAX_NAME_LEN];"
 /* XXXXX end of HDF5 PI */
 #define RuleStruct_PI "int maxNumOfRules; str *ruleBase[maxNumOfRules]; str *action[maxNumOfRules]; str *ruleHead[maxNumOfRules]; str *ruleCondition[maxNumOfRules]; str *ruleAction[maxNumOfRules]; str *ruleRecovery[maxNumOfRules]; double ruleId[maxNumOfRules];"

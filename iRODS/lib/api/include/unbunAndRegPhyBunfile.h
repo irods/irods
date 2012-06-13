@@ -17,6 +17,7 @@
 #include "dataObjClose.h"
 #include "dataCopy.h"
 
+#define UNLINK_FILE_AGE                7200    /* delete files younger than this */ // JMC - backport 4666
 #if defined(RODS_SERVER)
 #define RS_UNBUN_AND_REG_PHY_BUNFILE rsUnbunAndRegPhyBunfile
 /* prototype for the server handler */
@@ -29,8 +30,9 @@ int
 remoteUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t *rodsServerHost);
 int
-unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir);
+unbunPhyBunFile ( rsComm_t *rsComm, char *objPath,
+                  rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
+                  int saveLinkedFles ); // JMC _ backport 4657, 4658
 int
 regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
 int rmBunCopyFlag);
@@ -39,6 +41,8 @@ regPhySubFile (rsComm_t *rsComm, char *subfilePath,
 dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo);
 int
 rmLinkedFilesInUnixDir (char *phyBunDir);
+int
+rmUnlinkedFilesInUnixDir (char *phyBunDir); // JMC _ backport 4657
 #else
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif

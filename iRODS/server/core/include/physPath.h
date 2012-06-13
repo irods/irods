@@ -22,6 +22,12 @@
 #define ORPHAN_DIR	"orphan"
 #define REPL_DIR	"replica"
 #define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */
+// =-=-=-=-=-=-=-
+// JMC - backport 4598
+#define LOCK_FILE_DIR  "lockFileDir"
+#define LOCK_FILE_TRAILER      "LOCK_FILE"     /* added to end of lock file */ // JMC - backport 4604
+// =-=-=-=-=-=-=-
+ 
 
 #ifdef  __cplusplus
 extern "C" {
@@ -90,7 +96,14 @@ getDefDirMode ();
 int
 getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
 int
-rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath);
+rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath);
+// =-=-=-=-=-=-=-
+// JMC - backport 4598
+int
+getDataObjLockPath (char *objPath, char **outLockPath);
+int
+fsDataObjLock (char *objPath, int cmd, int type, int infd);
+// =-=-=-=-=-=-=-
 
 #ifdef  __cplusplus
 }

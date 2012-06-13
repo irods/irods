@@ -50,6 +50,7 @@ typedef struct DataObjSqlResult {
     sqlResult_t ownerName;
     sqlResult_t replNum;
     sqlResult_t rescGrp;
+	sqlResult_t dataType; // JMC - backport 4636
 } dataObjSqlResult_t;
 
 typedef struct DataObjMetaInfo {
@@ -125,6 +126,7 @@ typedef struct CollEnt {
     char *rescGrp;
     char *phyPath;
     char *ownerName;    	 /* valid for dataObj and collection */
+	char *dataType; // JMC - backport 4636
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
@@ -164,9 +166,11 @@ printSysTiming (char *procName, char *action, int envVarFlag);
 int
 printNoSync (char *objPath, rodsLong_t fileSize);
 int
-queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut);
+queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint,
+                 genQueryOut_t **genQueryOut); // JMC - backport 4516
 int
-queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut);
+queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint,
+              genQueryOut_t **genQueryOut); // JMC - backport 4516
 int
 queryCollInheritance (rcComm_t *conn, char *collName, 
 		      genQueryOut_t **genQueryOut);

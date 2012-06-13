@@ -188,7 +188,7 @@ userInfo_t *clientUser, userInfo_t *proxyUser)
 
     return (0);
 }
-
+#if 0 // JMC - UNUSED
 int setAuthInfo (char *rodsAuthScheme,
 char *authStr, char *rodsServerDn,
 userInfo_t *clientUser, userInfo_t *proxyUser, int flag)
@@ -218,7 +218,7 @@ userInfo_t *clientUser, userInfo_t *proxyUser, int flag)
 
     return (0);
 }
-
+#endif // JMC - UNUSED
 int
 setRhostInfo (rcComm_t *conn, char *rodsHost, int rodsPort)
 {

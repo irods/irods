@@ -91,6 +91,43 @@ isData (rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
     return(status);
 }
 
+int // JMC - backport 4680
+getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath)
+{
+   genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    char tmpStr[MAX_NAME_LEN];
+    char logicalEndName[MAX_NAME_LEN];
+    char logicalParentDirName[MAX_NAME_LEN];
+    int status;
+
+    status = splitPathByKey(objName,
+                            logicalParentDirName, logicalEndName, '/');
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
+    genQueryInp.maxRows = 2;
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    if (status >= 0) {
+        sqlResult_t *phyPathRes = NULL;
+        if ((phyPathRes = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH)) ==
+          NULL) {
+            rodsLog (LOG_ERROR,
+              "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if (phyPath != NULL) {
+            rstrcpy (phyPath, phyPathRes->value, MAX_NAME_LEN);
+        }
+        freeGenQueryOut (&genQueryOut);
+    }
+    clearGenQueryInp (&genQueryInp);
+    return(status);
+}
+
 int
 isCollAllKinds (rsComm_t *rsComm, char *objName, rodsLong_t *collId)
 {
@@ -271,7 +308,43 @@ addAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
   }
   return(0);
 }
+// =-=-=-=-=-=-=-
+// JMC - backport 4836
+int
+setAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
+                          keyValPair_t *kVP)
+{
+  int i,j;
+  char  objType[10];
+  modAVUMetadataInp_t modAVUMetadataInp;
 
+  bzero (&modAVUMetadataInp, sizeof(modAVUMetadataInp));
+  if (strcmp(inObjType, "-1")) {
+    strcpy(objType, inObjType);
+  }
+  else {
+    i = getObjType(rsComm, objName, objType);
+    if (i < 0)
+      return(i);
+ }
+  for (i = 0; i < kVP->len ; i++) {
+     /* Call rsModAVUMetadata to call chlSetAVUMetadata.
+        rsModAVUMetadata connects to the icat-enabled server if the
+        local host isn't.
+     */
+    modAVUMetadataInp.arg0 = "set";
+    modAVUMetadataInp.arg1 = objType;
+    modAVUMetadataInp.arg2 = objName;
+    modAVUMetadataInp.arg3 = kVP->keyWord[i];
+    modAVUMetadataInp.arg4 = kVP->value[i];
+    modAVUMetadataInp.arg5 = NULL;
+    j = rsModAVUMetadata (rsComm, &modAVUMetadataInp);
+    if (j < 0)
+      return j;
+  }
+  return 0;
+}
+// =-=-=-=-=-=-=-
 int
 getStructFileType (specColl_t *specColl)
 {
@@ -518,3 +591,94 @@ checkPermissionByObjType(rsComm_t *rsComm, char *objName, char *objType, char *u
     i = INVALID_OBJECT_TYPE;
   return(i);
 }
+
+/* checkDupReplica - Check if a given object with a given rescName
+ * and physical path already exist. If it does, returns the replNum.
+ * JMC - backport 4497 */
+int
+checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName, 
+char *filePath)
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    char tmpStr[MAX_NAME_LEN];
+    int status;
+
+    if (rsComm == NULL || rescName == NULL || filePath == NULL)
+       return USER__NULL_INPUT_ERR;
+
+    bzero (&genQueryInp, sizeof (genQueryInp_t));
+    
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", rescName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_NAME, tmpStr);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", filePath);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, tmpStr);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%lld'", dataId);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_ID, tmpStr);
+
+    addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
+    genQueryInp.maxRows = 2;
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    clearGenQueryInp (&genQueryInp);
+    if (status >= 0) {
+       int intReplNum;
+       sqlResult_t *replNum;
+        if ((replNum = getSqlResultByInx (genQueryOut, COL_DATA_REPL_NUM)) ==
+         NULL) {
+            rodsLog (LOG_ERROR,
+              "checkDupReplica: getSqlResultByInx COL_DATA_REPL_NUM failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+       intReplNum = atoi (replNum->value);
+       freeGenQueryOut (&genQueryOut);
+        return (intReplNum);
+   } else {
+       return status;
+    }
+}
+// =-=-=-=-=-=-=-
+// JMC - backport 4552
+int
+getNumSubfilesInBunfileObj (rsComm_t *rsComm, char *objPath)
+{
+    int status;
+    genQueryOut_t *genQueryOut = NULL;
+    genQueryInp_t genQueryInp;
+    int totalRowCount;
+    char condStr[MAX_NAME_LEN];
+
+    bzero (&genQueryInp, sizeof (genQueryInp));
+    genQueryInp.maxRows = 1;
+    genQueryInp.options = RETURN_TOTAL_ROW_COUNT;
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", objPath);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr);
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", BUNDLE_RESC_CLASS);
+    addInxVal (&genQueryInp.sqlCondInp, COL_R_CLASS_NAME, condStr);
+    addKeyVal (&genQueryInp.condInput, ZONE_KW, objPath);
+
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    if (status < 0) {
+       clearGenQueryInp (&genQueryInp);
+       if (status == CAT_NO_ROWS_FOUND) {
+           return 0;
+       } else {
+           return status;
+       } 
+    }
+    totalRowCount = genQueryOut->totalRowCount;
+    freeGenQueryOut (&genQueryOut);
+    /* clear result */
+    genQueryInp.maxRows = 0;
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    clearGenQueryInp (&genQueryInp);
+
+    return totalRowCount;
+}
+// =-=-=-=-=-=-=-
+
+

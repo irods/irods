@@ -111,4 +111,7 @@ int
 getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
 dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+int
+getDataObjByClass (dataObjInfo_t *dataObjInfoHead, int rescClass,
+dataObjInfo_t **outDataObjInfo);
 #endif	/* DATA_OBJ_OPR_H */

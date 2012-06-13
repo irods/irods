@@ -103,3 +103,26 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     return (retVal);
 }
 
+
+int
+trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) // JMC - backport 4537
+{
+    dataObjInp_t dataObjInp;
+    char tmpStr[NAME_LEN];
+    int status;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath,  dataObjInfo->objPath, MAX_NAME_LEN);
+    snprintf (tmpStr, NAME_LEN, "1");
+    addKeyVal (&dataObjInp.condInput, COPIES_KW, tmpStr);
+    addKeyVal (&dataObjInp.condInput, RESC_NAME_KW,
+      dataObjInfo->rescInfo->rescName);
+    status = rsDataObjTrim (rsComm, &dataObjInp);
+    clearKeyVal (&dataObjInp.condInput);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "trimDataObjInfo: rsDataObjTrim of %s error", dataObjInfo->objPath);
+    }
+    return status;
+}
+

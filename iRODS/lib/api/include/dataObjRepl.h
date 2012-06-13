@@ -63,7 +63,8 @@ l3DataStageSync (rsComm_t *rsComm, int l1descInx);
 int
 l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
 int
-l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
+l3FileStage ( rsComm_t *rsComm, int srcL1descInx, int destL1descInx); // JMC - backport 4527
+int _l3FileStage (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, dataObjInfo_t *destDataObjInfo, int mode);// JMC - backport 4527
 int
 rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
 dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr);

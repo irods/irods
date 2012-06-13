@@ -341,7 +341,7 @@ statToRodsStat (rodsStat_t *rodsStat, struct stat *myFileStat)
 
     return (0);
 }
-
+#if 0 // JMC - UNUSED
 int 
 rodsStatToStat (struct stat *myFileStat, rodsStat_t *rodsStat)
 {
@@ -366,7 +366,7 @@ rodsStatToStat (struct stat *myFileStat, rodsStat_t *rodsStat)
 
     return (0);
 }
-
+#endif // JMC - UNUSED
 int
 direntToRodsDirent (struct rodsDirent *dirent, struct dirent *fileDirent)
 {
@@ -628,7 +628,33 @@ int singleInfoFlag, int topFlag)
 
     return (0);
 }
+// =-=-=-=-=-=-=-
+// JMC - backport 4590
+int
+dequeDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo)
+{
+    dataObjInfo_t *tmpDataObjInfo;
+    dataObjInfo_t *prevDataObjInfo = NULL;
 
+    if (dataObjInfo == NULL || dataObjInfoHead == NULL)
+        return (-1);
+
+    tmpDataObjInfo = *dataObjInfoHead;
+    while (tmpDataObjInfo != NULL) {
+        if (tmpDataObjInfo == dataObjInfo) {
+            if (prevDataObjInfo == NULL) {
+                *dataObjInfoHead = tmpDataObjInfo->next;
+            } else {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            }
+            return 0;
+        }
+        prevDataObjInfo = tmpDataObjInfo;
+        tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+    return -1;
+}
+// =-=-=-=-=-=-=-
 int 
 getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead)
 {
@@ -661,7 +687,7 @@ getValByKey (keyValPair_t *condInput, char *keyWord)
 
     return (NULL); 
 }
-
+#if 0 // JMC - UNUSED
 char *
 getValByInx (inxValPair_t *inxValPair, int inx)
 {
@@ -679,7 +705,7 @@ getValByInx (inxValPair_t *inxValPair, int inx)
 
     return (NULL);
 }
-
+#endif // JMC - UNUSED
 int
 getIvalByInx (inxIvalPair_t *inxIvalPair, int inx, int *outValue)
 {
@@ -1031,7 +1057,7 @@ resizeStrArray (strArray_t *strArray, int newSize)
 }
 
 
-
+#if 0 // JMC - UNUSED
 int
 addIntArray (intArray_t *intArray, int value)
 {
@@ -1060,6 +1086,7 @@ addIntArray (intArray_t *intArray, int value)
 
     return (0);
 }
+#endif // JMC - UNUSED
 
 int
 clearKeyVal (keyValPair_t *condInput)
@@ -1080,6 +1107,7 @@ clearKeyVal (keyValPair_t *condInput)
     return(0);
 }
 
+#if 0 // JMC - UNUSED
 int
 clearTagStruct (tagStruct_t *condInput)
 {
@@ -1100,6 +1128,7 @@ clearTagStruct (tagStruct_t *condInput)
     memset (condInput, 0, sizeof (tagStruct_t));
     return(0);
 }
+#endif // JMC - UNUSED
 
 int
 clearInxIval (inxIvalPair_t *inxIvalPair)
@@ -1282,7 +1311,7 @@ getUnixUid (char *userName)
 #ifndef _WIN32
     struct passwd *pw;
     int myuid;
-
+rodsLog( LOG_NOTICE, "QQQQ - getUnixUid - %s", userName );
     if (!(pw = getpwnam(userName))) {
         myuid = -1;
     } else {
@@ -2285,6 +2314,7 @@ printErrorStack (rError_t *rError)
     return (0);
 }
 
+#if 0 // JMC - UNUSED
 int
 closeQueryOut (rcComm_t *conn, genQueryOut_t *genQueryOut)
 {
@@ -2306,7 +2336,7 @@ closeQueryOut (rcComm_t *conn, genQueryOut_t *genQueryOut)
 
     return (status);
 }
-
+#endif // JMC - UNUSED
 int
 appendRandomToPath (char *trashPath)
 {
@@ -2325,6 +2355,35 @@ appendRandomToPath (char *trashPath)
 
     return (0);
 }
+
+// =-=-=-=-=-=-=-
+// JMC - backport 4552
+int
+isBundlePath (char *myPath)
+{
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if (*tmpPtr != '/') {
+        return False;
+    }
+
+    tmpPtr++;
+    if ((tmpPtr1 = strchr (tmpPtr, '/')) == NULL) {
+        return False;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if (strncmp (tmpPtr, "bundle/", 7) == 0) {
+       return True;
+    } else {
+        return False;
+    }
+}
+//  =-=-=-=-=-=-=-
 
 int
 isTrashPath (char *myPath)
@@ -2614,6 +2673,7 @@ getLineInBuf (char **inbuf, char *outbuf, int bufLen)
     return (bytesCopied);
 }
 
+
 int
 setStateForResume (rcComm_t *conn, rodsRestart_t *rodsRestart, 
 char *restartPath, objType_t objType, keyValPair_t *condInput,
@@ -2651,6 +2711,7 @@ int deleteFlag)
 
     return (0);
 }
+
 
 /* writeRestartFile - the restart file contain 4 lines:
  *   line 1 - collection.
@@ -2859,6 +2920,14 @@ getSelVal(char *c)
     return(SELECT_AVG);
   if (!strcmp(c,"count") || !strcmp(c,"COUNT"))
     return(SELECT_COUNT);
+  // =-=-=-=-=-=-=-
+  // JMC - backport 4795
+  if (!strcmp(c,"order") || !strcmp(c,"ORDER"))
+     return(ORDER_BY);
+  if (!strcmp(c,"order_desc") || !strcmp(c,"ORDER_DESC"))
+     return(ORDER_BY_DESC);
+  // =-=-=-=-=-=-=-
+
   return(1);
 }
 
@@ -3033,13 +3102,13 @@ fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp)
   return(0);
 }
 
+#if 0 // JMC - UNUSED
 int
 printHintedGenQueryOut(FILE *fd, char *format, char *hint,  genQueryOut_t *genQueryOut)
 {
   return(0);
-
-  
 }
+#endif // JMC - UNUSED
 
 int
 printGenQueryOut(FILE *fd, char *format, char *hint, genQueryOut_t *genQueryOut)
@@ -3049,7 +3118,7 @@ printGenQueryOut(FILE *fd, char *format, char *hint, genQueryOut_t *genQueryOut)
   char * cname[MAX_SQL_ATTR];
 
   if (hint != NULL &&  strlen(hint) > 0) {
-    i = printHintedGenQueryOut(fd,format,hint, genQueryOut);
+    //i = printHintedGenQueryOut(fd,format,hint, genQueryOut);
     return(i);
   }
 
@@ -3341,6 +3410,7 @@ getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl)
 	return (STRUCT_FILE_SPEC_COLL_OPR);
 }
 
+#if 0 // JMC - UNUSED
 void
 resolveStatForStructFileOpr (keyValPair_t *condInput, 
 rodsObjStat_t *rodsObjStatOut)
@@ -3353,6 +3423,7 @@ rodsObjStat_t *rodsObjStatOut)
     }
     return;
 }
+#endif // JMC - UNUSED
 
 
 /**

@@ -6,6 +6,13 @@
 #include "datetime.h"
 #include "cache.h"
 #include "configuration.h"
+#ifndef DEBUG
+#include "apiHeaderAll.h" // JMC - backport 4619
+#include "rsApiHandler.h" // JMC - backport 4619
+#endif
+
+
+
 #if defined(USE_BOOST)
 #include <boost/regex.h>
 #elif defined(_POSIX_VERSION)
@@ -31,6 +38,8 @@ cpEnv2((env), _rnew, _rnew2); \
 region_free(_rnew); \
 _rnew = _rnew2;}
 #define GC_END region_free(_rnew);
+
+//#define RE_BACKWARD_COMPATIBLE
 
 int fileConcatenate(char *file1, char *file2, char *file3);
 
@@ -105,15 +114,15 @@ Res *smsi_matchExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int r
 		Res *pres = matchPattern(params[i]->subtrees[0], res, nEnv, rei, reiSaveFlag, errmsg, r);
 		if(getNodeType(pres) == N_ERROR) {
 			/*deleteEnv(nEnv, 1); */
-			addRErrorMsg(errmsg, PATTERN_NOT_MATCHED, ERR_MSG_SEP);
+			addRErrorMsg(errmsg, RE_PATTERN_NOT_MATCHED, ERR_MSG_SEP);
 			continue;
 		}
 		res = evaluateExpression3(params[i]->subtrees[1], 0,0, rei,reiSaveFlag,nEnv,errmsg,r);
 		/*deleteEnv(nEnv, 1); */
 		return res;
     }
-    generateAndAddErrMsg("pattern not matched", node, PATTERN_NOT_MATCHED, errmsg);
-    return newErrorRes(r, PATTERN_NOT_MATCHED);
+    generateAndAddErrMsg("pattern not matched", node, RE_PATTERN_NOT_MATCHED, errmsg);
+    return newErrorRes(r, RE_PATTERN_NOT_MATCHED);
 }
 
 
@@ -161,23 +170,23 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
     if(getNodeType(init) == N_ERROR) {
         res = init;
         cpEnv(env, r);
-        res = cpRes(res, r);
+        res = cpRes2(res, rnew, r); // JMC - backport 4829
         region_free(rnew);
         return res;
     }
     GC_BEGIN
     while(1) {
 
-        cond = evaluateExpression3((Node *)params[1], 0, 1,rei,reiSaveFlag, env,errmsg,rnew);
+        cond = evaluateExpression3((Node *)params[1], 0, 1,rei,reiSaveFlag, env,errmsg,GC_REGION); // JMC - backport 4829
         if(getNodeType(cond) == N_ERROR) {
-            res = cond;
+            // res = cond; // JMC - backport 4829
             break;
         }
         if(RES_BOOL_VAL(cond) == 0) {
             res = newIntRes(r, 0);
             break;
         }
-        res = evaluateActions((Node *)params[3],(Node *)params[4], 0, rei,reiSaveFlag, env,errmsg,rnew);
+        res = evaluateActions((Node *)params[3],(Node *)params[4], 0, rei,reiSaveFlag, env,errmsg,GC_REGION); // JMC - backport 4829
         if(getNodeType(res) == N_ERROR) {
             break;
         } else
@@ -189,9 +198,9 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
         if(TYPE(res) == T_SUCCESS) {
             break;
         }
-        step = evaluateExpression3((Node *)params[2], 0,1,rei,reiSaveFlag, env,errmsg,rnew);
+        step = evaluateExpression3((Node *)params[2], 0,1,rei,reiSaveFlag, env,errmsg,GC_REGION);
         if(getNodeType(step) == N_ERROR) {
-            res = step;
+            //res = step; // JMC - backport 4829
             break;
         }
         GC_ON(env);
@@ -219,8 +228,8 @@ Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
 		strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
 		char errbuf[ERR_MSG_LEN];
 		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
-		generateAndAddErrMsg(errbuf, node, DYNAMIC_TYPE_ERROR, errmsg);
-		return newErrorRes(r, DYNAMIC_TYPE_ERROR);
+		generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+		return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 	} else {
 		return coll;
 	}
@@ -256,10 +265,18 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 		int i;
 		Res* elem;
 		int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
+		GC_BEGIN // JMC - backport 4829
 		for(i=0;i<len;i++) {
-				elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
-				setVariableValue(varName, elem, rei, env, errmsg, r);
-				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,r);
+			    // =-=-=-=-=-=-=-
+				// JMC - backport 4829
+                GC_ON(env);
+                elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, GC_REGION);
+                setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
+                res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
+                clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
+                free(RES_UNINTER_STRUCT(elem));
+			    // =-=-=-=-=-=-=-
+
 				if(getNodeType(res) == N_ERROR) {
 						break;
 				}
@@ -267,6 +284,12 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
 						break;
 				}
 		}
+        // =-=-=-=-=-=-=-
+        // JMC - backport 4829
+        cpEnv(env, r);
+        res = cpRes(res, r);
+        GC_END
+        // =-=-=-=-=-=-=-
 		if(getNodeType(res) != N_ERROR) {
 			res = newIntRes(r,0);
 		}
@@ -306,10 +329,17 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
             int i;
             Res* elem;
             int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
+			GC_BEGIN // JMC - backport 4829
             for(i=0;i<len;i++) {
-                    elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, r);
-                    setVariableValue(varName, elem, rei, env, errmsg, r);
-                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,r);
+				    // =-=-=-=-=-=-=-
+					// JMC - backport 4829
+                    GC_ON(env);
+                    elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, GC_REGION);
+                    setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
+                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
+                    clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
+                    free(RES_UNINTER_STRUCT(elem));
+				    // =-=-=-=-=-=-=-
                     if(getNodeType(res) == N_ERROR) {
                             break;
                     }
@@ -317,6 +347,12 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                             break;
                     }
             }
+		    // =-=-=-=-=-=-=-
+			// JMC - backport 4829
+            cpEnv(env, r);
+            res = cpRes(res, r);
+            GC_END
+		    // =-=-=-=-=-=-=-
             if(getNodeType(res) != N_ERROR) {
                 res = newIntRes(r,0);
             }
@@ -469,8 +505,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(params[0]->degree > 0) {
                 return params[0]->subtrees[0];
             } else {
-                generateAndAddErrMsg("error: hd: empty list", node, RUNTIME_ERROR, errmsg);
-                return newErrorRes(r, RUNTIME_ERROR);
+                generateAndAddErrMsg("error: hd: empty list", node, RE_RUNTIME_ERROR, errmsg);
+                return newErrorRes(r, RE_RUNTIME_ERROR);
             }
 	}
         Res *smsi_tl(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -487,8 +523,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		}
                 return res;
             } else {
-            	generateAndAddErrMsg("error: tl: empty list", node, RUNTIME_ERROR, errmsg);
-                return newErrorRes(r, RUNTIME_ERROR);
+            	generateAndAddErrMsg("error: tl: empty list", node, RE_RUNTIME_ERROR, errmsg);
+                return newErrorRes(r, RE_RUNTIME_ERROR);
             }
 	}
         Res *smsi_cons(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -515,8 +551,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(0>index || index >= coll->degree) {
                 char errbuf[ERR_MSG_LEN];
                 snprintf(errbuf, ERR_MSG_LEN, "setelem: index out of bound %d", index);
-                generateAndAddErrMsg(errbuf, node, RUNTIME_ERROR, errmsg);
-                return newErrorRes(r, RUNTIME_ERROR);
+                generateAndAddErrMsg(errbuf, node, RE_RUNTIME_ERROR, errmsg);
+                return newErrorRes(r, RE_RUNTIME_ERROR);
             }
 
             /* allocate memory for elements */
@@ -565,8 +601,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
             if(TYPE(params[0]) == T_CONS) {
                 if(index <0 || index >= params[0]->degree ) {
                     snprintf(errbuf, ERR_MSG_LEN, "error: index out of range %d.", index);
-                    addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
-                    return newErrorRes(r, RUNTIME_ERROR);
+                    addRErrorMsg(errmsg, RE_RUNTIME_ERROR, errbuf);
+                    return newErrorRes(r, RE_RUNTIME_ERROR);
                 }
                 Res *res = params[0]->subtrees[index];
                 return res;
@@ -574,8 +610,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                 if(index <0 || index >= getCollectionSize(params[0]->exprType->text,
                         RES_UNINTER_STRUCT(params[0]), r) ) {
                     snprintf(errbuf, ERR_MSG_LEN, "error: index out of range %d. %s", index, ((Res *)params[0])->exprType->text);
-                    addRErrorMsg(errmsg, RUNTIME_ERROR, errbuf);
-                    return newErrorRes(r, RUNTIME_ERROR);
+                    addRErrorMsg(errmsg, RE_RUNTIME_ERROR, errbuf);
+                    return newErrorRes(r, RE_RUNTIME_ERROR);
                 }
                 Res *res2 = getValueFromCollection(params[0]->exprType->text,
                         RES_UNINTER_STRUCT(params[0]),
@@ -602,9 +638,9 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		char* format;
 		if(TYPE(params[0])!=T_STRING ||
 			(n == 2 && TYPE(params[1])!=T_STRING)) { /* error not a string */
-                        res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+                        res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
                         snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
-                        addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
+                        addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
 		} else {
 			if(n == 2) {
 				format = params[1]->text;
@@ -630,9 +666,9 @@ Res *smsi_timestr(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
         char* format;
         if(TYPE(params[0])!=T_DATETIME ||
             (n == 2 && TYPE(params[1])!=T_STRING)) {
-            res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+            res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
-            addRErrorMsg(errmsg, UNSUPPORTED_OP_OR_TYPE, errbuf);
+            addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
         } else {
             if(n == 2) {
                     format = params[1]->text;
@@ -656,11 +692,11 @@ Res *smsi_arity(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 		Res *val = params[0];
 		RuleIndexListNode *ruleInxLstNode;
 		if(findNextRule2(val->text, 0, &ruleInxLstNode)<0) {
-			return newErrorRes(r, RUNTIME_ERROR);
+			return newErrorRes(r, RE_RUNTIME_ERROR);
 		}
 		int ri;
 		if(ruleInxLstNode->secondaryIndex) {
-			return newErrorRes(r, RUNTIME_ERROR);
+			return newErrorRes(r, RE_RUNTIME_ERROR);
 		} else {
 			ri = ruleInxLstNode->ruleIndex;
 		}
@@ -682,15 +718,15 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                         res = newStringRes(r, buf);
                         free(buf);
                     } else {
-                        res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+                        res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
                         snprintf(errbuf, ERR_MSG_LEN, "error: converting value of type %s to string.", typeName_Res(val));
-                        generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
+                        generateAndAddErrMsg(errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg);
 
                     }
 		} else {
-                    res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+                    res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errmsgbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res(val));
-                    generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
+                    generateAndAddErrMsg(errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg);
 		}
                 return res;
 }
@@ -707,9 +743,9 @@ Res *smsi_double(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
                 } else if(TYPE(val) == T_DOUBLE) {
                     res = val;
                 } else {
-                    res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+                    res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to double.", typeName_Res(val));
-                    generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
+                    generateAndAddErrMsg(errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg);
 		}
                 return res;
 }
@@ -725,9 +761,9 @@ Res *smsi_int(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         } else if(TYPE(val) == T_INT) {
             res = val;
         } else {
-            res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+            res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to integer.", typeName_Res(val));
-            generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
+            generateAndAddErrMsg(errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg);
         }
         return res;
 }
@@ -746,9 +782,9 @@ Res *smsi_bool(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
         } else if(TYPE(val) == T_INT) {
             RES_BOOL_VAL_LVAL(res) = (int)RES_INT_VAL(val)?1:0;
         } else {
-            res = newErrorRes(r, UNSUPPORTED_OP_OR_TYPE);
+            res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
             snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not convert %s to boolean.", typeName_Res(val));
-            generateAndAddErrMsg(errbuf, node, UNSUPPORTED_OP_OR_TYPE, errmsg);
+            generateAndAddErrMsg(errbuf, node, RE_UNSUPPORTED_OP_OR_TYPE, errmsg);
         }
         return res;
 }
@@ -843,16 +879,16 @@ Res *smsi_divide(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiS
         	return newDoubleRes(r, RES_DOUBLE_VAL(params[0])/RES_DOUBLE_VAL(params[1]));
         }
     }
-	generateAndAddErrMsg("division by zero.", node, DIVISION_BY_ZERO, errmsg);
-	return newErrorRes(r, DIVISION_BY_ZERO);
+	generateAndAddErrMsg("division by zero.", node, RE_DIVISION_BY_ZERO, errmsg);
+	return newErrorRes(r, RE_DIVISION_BY_ZERO);
 }
 
 Res *smsi_modulo(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 	if(RES_INT_VAL(params[1]) != 0) {
 		return newDoubleRes(r, RES_INT_VAL(params[0])%RES_INT_VAL(params[1]));
 	}
-	generateAndAddErrMsg("division by zero.", node, DIVISION_BY_ZERO, errmsg);
-	return newErrorRes(r, DIVISION_BY_ZERO);
+	generateAndAddErrMsg("division by zero.", node, RE_DIVISION_BY_ZERO, errmsg);
+	return newErrorRes(r, RE_DIVISION_BY_ZERO);
 }
 
 Res *smsi_power(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -862,8 +898,8 @@ Res *smsi_root(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSav
 	if(RES_DOUBLE_VAL(params[1]) != 0) {
 		return newDoubleRes(r, pow(RES_DOUBLE_VAL(params[0]), 1/RES_DOUBLE_VAL(params[1])));
 	}
-	generateAndAddErrMsg("division by zero.", node, DIVISION_BY_ZERO, errmsg);
-	return newErrorRes(r, DIVISION_BY_ZERO);
+	generateAndAddErrMsg("division by zero.", node, RE_DIVISION_BY_ZERO, errmsg);
+	return newErrorRes(r, RE_DIVISION_BY_ZERO);
 }
 
 Res *smsi_concat(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -903,8 +939,8 @@ Res *smsi_lt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString(params[0]->exprType, NULL, type0, 128), typeToString(params[1]->exprType, NULL, type1, 128));
-    generateAndAddErrMsg(errbuf, node, TYPE_ERROR, errmsg);
-    return newErrorRes(r, TYPE_ERROR);
+    generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+    return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 
 }
 Res *smsi_le(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -926,8 +962,8 @@ Res *smsi_le(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString(params[0]->exprType, NULL, type0, 128), typeToString(params[1]->exprType, NULL, type1, 128));
-    generateAndAddErrMsg(errbuf, node, TYPE_ERROR, errmsg);
-    return newErrorRes(r, TYPE_ERROR);
+    generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+    return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 
 }
 Res *smsi_gt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -949,8 +985,8 @@ Res *smsi_gt(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString(params[0]->exprType, NULL, type0, 128), typeToString(params[1]->exprType, NULL, type1, 128));
-    generateAndAddErrMsg(errbuf, node, TYPE_ERROR, errmsg);
-    return newErrorRes(r, TYPE_ERROR);
+    generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+    return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 
 }
 Res *smsi_ge(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -972,8 +1008,8 @@ Res *smsi_ge(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString(params[0]->exprType, NULL, type0, 128), typeToString(params[1]->exprType, NULL, type1, 128));
-    generateAndAddErrMsg(errbuf, node, TYPE_ERROR, errmsg);
-    return newErrorRes(r, TYPE_ERROR);
+    generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+    return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 }
 Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     switch(TYPE(params[0])) {
@@ -997,8 +1033,8 @@ Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString(params[0]->exprType, NULL, type0, 128), typeToString(params[1]->exprType, NULL, type1, 128));
-    generateAndAddErrMsg(errbuf, node, TYPE_ERROR, errmsg);
-    return newErrorRes(r, TYPE_ERROR);
+    generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+    return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 }
 Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     switch(TYPE(params[0])) {
@@ -1022,8 +1058,8 @@ Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
     }
     char errbuf[ERR_MSG_LEN], type0[128], type1[128];
     snprintf(errbuf, ERR_MSG_LEN, "type error: comparing between %s and %s", typeToString(params[0]->exprType, NULL, type0, 128), typeToString(params[1]->exprType, NULL, type1, 128));
-    generateAndAddErrMsg(errbuf, node, TYPE_ERROR, errmsg);
-    return newErrorRes(r, TYPE_ERROR);
+    generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+    return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 }
 Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res **params = paramsr;
@@ -1222,14 +1258,74 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
       return newIntRes(r, i);
   }
 }
-int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r) {
+int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r, ruleExecInfo_t *rei ) { // JMC - backport 4619
   execCmdOut_t *myExecCmdOut;
   Res *execOutRes;
+  // =-=-=-=-=-=-=-
+  // JMC - backport 4619
+#ifndef DEBUG // JMC - backport 4760
+  dataObjInp_t dataObjInp;
+  openedDataObjInp_t openedDataObjInp;
+  bytesBuf_t tmpBBuf;
+  fileLseekOut_t *dataObjLseekOut = NULL;
+  int fd,i;
+#endif // JMC - backport 4760
+  // =-=-=-=-=-=-=-
 
   if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
     rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
     return 0;
   }
+#ifndef DEBUG // JMC - backport 4760
+  // =-=-=-=-=-=-=-
+  // JMC - backport 4619
+  /* inserted by Raja Dec 2, 2011 */
+    if (writeId != NULL && writeId[0] == '/') {
+    /* writing to an existing iRODS file */
+
+    if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR, "_writeString: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    dataObjInp.openFlags = O_RDWR;
+    snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s",writeId);
+    fd = rsDataObjOpen (rei->rsComm, &dataObjInp);
+    if (fd < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd);
+      return(fd);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    openedDataObjInp.offset = 0;
+    openedDataObjInp.whence = SEEK_END;
+    i = rsDataObjLseek (rei->rsComm, &openedDataObjInp, &dataObjLseekOut);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i);
+      return(i);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    tmpBBuf.len = openedDataObjInp.len = strlen(writeStr) + 1;
+    tmpBBuf.buf =  writeStr;
+    i = rsDataObjWrite (rei->rsComm, &openedDataObjInp, &tmpBBuf);
+    if (i < 0) {
+      rodsLog (LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i);
+      return(i);
+    }
+
+    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+    openedDataObjInp.l1descInx = fd;
+    i = rsDataObjClose (rei->rsComm, &openedDataObjInp);
+    return(i);
+  }
+
+  /* inserted by Raja Dec 2, 2011 */
+  // =-=-=-=-=-=-=-
+#endif // JMC - backport 4760
   if ((execOutRes = (Res *)lookupFromEnv(env, "ruleExecOut")) != NULL) {
     myExecCmdOut = (execCmdOut_t *)RES_UNINTER_STRUCT(execOutRes);
   } else {
@@ -1260,7 +1356,7 @@ Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
       free(inString);
       return newIntRes(r, 0);
   }
-  int i = writeStringNew(whereId, inString, env, r);
+  int i = writeStringNew(whereId, inString, env, r, rei); // JMC - backport 4619
 #ifdef DEBUG
   printf("%s\n", inString);
 #endif
@@ -1269,7 +1365,7 @@ Res *smsi_writeLine(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
   if (i < 0) {
       return newErrorRes(r, i);
   }
-  i = writeStringNew(whereId, "\n", env, r);
+  i = writeStringNew(whereId, "\n", env, r, rei); // JMC - backport 4619
 
   if (i < 0)
     return newErrorRes(r, i);
@@ -1282,7 +1378,7 @@ Res *smsi_writeString(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, in
   Res *where = (Res *)paramsr[0];
   char *whereId = where->text;
 
-  int i = writeStringNew(whereId, inString, env, r);
+  int i = writeStringNew(whereId, inString, env, r, rei); // JMC - backport 4619
 
   free(inString);
   if (i < 0)
@@ -1429,7 +1525,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei ); // JMC - backport 4619
 		}
 	}
 	if(isComponentInitialized(ruleEngineConfig.appRuleSetStatus)) {
@@ -1438,7 +1534,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei ); // JMC - backport 4619
 		}
 	}
 	if(isComponentInitialized(ruleEngineConfig.coreRuleSetStatus)) {
@@ -1447,7 +1543,7 @@ Res *smsi_msiAdmShowIRB(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, 
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei ); // JMC - backport 4619
 		}
 	}
 	return newIntRes(r, 0);
@@ -1465,7 +1561,7 @@ Res *smsi_msiAdmShowCoreRE(Node **paramsr, int n, Node *node, ruleExecInfo_t *re
 #ifdef DEBUG_VERBOSE
 			printf("%s", buf);
 #endif
-			writeStringNew("stdout", buf, env, r);
+			writeStringNew("stdout", buf, env, r, rei); // JMC - backport 4619
 		}
 	}
 	fclose(f2);
@@ -1648,7 +1744,7 @@ Res * smsi_msiAdmReadRulesFromFileIntoStruct(Node **paramsr, int n, Node *node, 
   Hashtable *objectMap = newHashTable2(100, rsr);
   RuleSet *buf = memCpRuleSet(ruleSet, objectMap);
   if(buf == NULL) {
-	  return newErrorRes(r, OUT_OF_MEMORY);
+	  return newErrorRes(r, RE_OUT_OF_MEMORY);
   }
 
   paramsr[1] = newUninterpretedRes(r, RuleSet_MS_T, (void *) buf, NULL);
@@ -1740,7 +1836,7 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
   Hashtable *objectMap = newHashTable2(100, rsr);
   RuleSet *buf = memCpRuleSet(ruleSet, objectMap);
   if(buf == NULL) {
-	  return newErrorRes(r, OUT_OF_MEMORY);
+	  return newErrorRes(r, RE_OUT_OF_MEMORY);
   }
 
   paramsr[2] = newUninterpretedRes(r, RuleSet_MS_T, (void *) buf, NULL);
@@ -1753,8 +1849,8 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
 Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
     if(res == NULL) {
-    	generateAndAddErrMsg("ruleExecOut not set", node, UNKNOWN_ERROR, errmsg);
-    	return newErrorRes(r, UNKNOWN_ERROR);
+    	generateAndAddErrMsg("ruleExecOut not set", node, RE_RUNTIME_ERROR, errmsg);
+    	return newErrorRes(r, RE_RUNTIME_ERROR);
     }
 
     execCmdOut_t *out = (execCmdOut_t *)RES_UNINTER_STRUCT(res);
@@ -1768,8 +1864,8 @@ Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
 Res *smsi_getstderr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
     if(res == NULL) {
-    	generateAndAddErrMsg("ruleExecOut not set", node, UNKNOWN_ERROR, errmsg);
-    	return newErrorRes(r, UNKNOWN_ERROR);
+    	generateAndAddErrMsg("ruleExecOut not set", node, RE_RUNTIME_ERROR, errmsg);
+    	return newErrorRes(r, RE_RUNTIME_ERROR);
     }
 
     execCmdOut_t *out = (execCmdOut_t *)RES_UNINTER_STRUCT(res);
@@ -1906,19 +2002,14 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "match", newFunctionFD("e 0 * e (0 * 1)*->1", smsi_matchExec, r));
     insertIntoHashTable(ft, "if2", newFunctionFD("e boolean * e 0 * e 0 * e ? * e ?->0", smsi_if2Exec, r));
     insertIntoHashTable(ft, "if", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
-    insertIntoHashTable(ft, "ifExec", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
     insertIntoHashTable(ft, "for", newFunctionFD("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
-    insertIntoHashTable(ft, "forExec", newFunctionFD("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
     insertIntoHashTable(ft, "while", newFunctionFD("e boolean * a ? * a ?->?",smsi_whileExec, r));
-    insertIntoHashTable(ft, "whileExec", newFunctionFD("e boolean * a ? * a ?->?", smsi_whileExec, r));
     insertIntoHashTable(ft, "foreach", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
     insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
-    insertIntoHashTable(ft, "forEachExec", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
     insertIntoHashTable(ft, "break", newFunctionFD("->integer", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
     insertIntoHashTable(ft, "assign", newFunctionFD("e 0 * e f 0->integer", smsi_assign, r));
-    insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));
     insertIntoHashTable(ft, "lmsg", newFunctionFD("string->integer", smsi_lmsg, r));
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
     insertIntoHashTable(ft, "listcorerules", newFunctionFD("->list string", smsi_listcorerules, r));
@@ -2013,5 +2104,13 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncTypePtr) NULL, r));
 
+#ifdef RE_BACKWARD_COMPATIBLE // JMC - backport 4545
+    insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));
+    insertIntoHashTable(ft, "ifExec", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
+    insertIntoHashTable(ft, "forExec", newFunctionFD("e ? * e boolean * a ? * a ? * a ?->?", smsi_forExec, r));
+    insertIntoHashTable(ft, "whileExec", newFunctionFD("e boolean * a ? * a ?->?", smsi_whileExec, r));
+    insertIntoHashTable(ft, "forEachExec", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "msiGetRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+#endif
 
 }

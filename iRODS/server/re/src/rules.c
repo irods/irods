@@ -65,7 +65,7 @@ int readRuleSetFromLocalFile(char *ruleBaseName, char *rulesFileName, RuleSet *r
 	ExprType *restype = typeRuleSet(ruleSet, errmsg, &errnode, r);
 	if(getNodeType(restype) == T_ERROR) {
 	    *errloc = NODE_EXPR_POS(errnode);
-	    return TYPE_ERROR;
+	    return RE_TYPE_ERROR;
 	}
 
 	return 0;
@@ -238,14 +238,14 @@ error:
 /* parse and compute a rule */
 int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r) {
 	if(overflow(rule, MAX_RULE_LEN)) {
-		addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
-		return BUFFER_OVERFLOW;
+		addRErrorMsg(errmsg, RE_BUFFER_OVERFLOW, "error: potential buffer overflow");
+		return RE_BUFFER_OVERFLOW;
 	}
 	Node *node;
     Pointer *e = newPointer2(rule);
     if(e == NULL) {
-        addRErrorMsg(errmsg, POINTER_ERROR, "error: can not create a Pointer.");
-        return POINTER_ERROR;
+        addRErrorMsg(errmsg, RE_POINTER_ERROR, "error: can not create a Pointer.");
+        return RE_POINTER_ERROR;
     }
 
     int tempLen = ruleEngineConfig.extRuleSet->len;
@@ -260,7 +260,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
     rescode = parseRuleSet(e, ruleEngineConfig.extRuleSet, ruleEngineConfig.extFuncDescIndex, &errloc, errmsg, r);
     deletePointer(e);
     if(rescode != 0) {
-        return PARSER_ERROR;
+        return RE_PARSER_ERROR;
     }
 
     RuleDesc *rd = NULL;
@@ -283,7 +283,7 @@ int parseAndComputeRule(char *rule, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 
 			if(getNodeType(type)==T_ERROR) {
 /*				rescode = TYPE_ERROR;     #   TGR, since renamed to RE_TYPE_ERROR */
-				rescode = TYPE_ERROR;
+				rescode = RE_TYPE_ERROR;
 				RETURN;
 			}
 		}
@@ -314,14 +314,14 @@ Res *computeExpressionWithParams( char *actionName, char **params, int paramsCou
     ruleEngineConfig.clearDelayed = 0;
 
     if(overflow(actionName, MAX_NAME_LEN)) {
-            addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
-            return newErrorRes(r, BUFFER_OVERFLOW);
+            addRErrorMsg(errmsg, RE_BUFFER_OVERFLOW, "error: potential buffer overflow");
+            return newErrorRes(r, RE_BUFFER_OVERFLOW);
     }
     int k;
     for(k=0;k<paramsCount;k++) {
         if(overflow(params[k], MAX_RULE_LEN)) {
-            addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
-            return newErrorRes(r, BUFFER_OVERFLOW);
+            addRErrorMsg(errmsg, RE_BUFFER_OVERFLOW, "error: potential buffer overflow");
+            return newErrorRes(r, RE_BUFFER_OVERFLOW);
         }
     }
 
@@ -384,7 +384,7 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
             	typeToString(resType, varTypes, buf2, 1024);
             	snprintf(buf3, ERR_MSG_LEN, "error: the type %s of the rule condition is not supported", buf2);
                 generateErrMsg(buf3, NODE_EXPR_POS(node->subtrees[1]), node->subtrees[1]->base, buf);
-                addRErrorMsg(errmsg, TYPE_ERROR, buf);
+                addRErrorMsg(errmsg, RE_TYPE_ERROR, buf);
                 RE_ERROR(1);
             }
             resType = typeExpression3(node->subtrees[2], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
@@ -403,7 +403,7 @@ ExprType *typeRule(RuleDesc *rule, Env *funcDesc, Hashtable *varTypes, List *typ
 
         error:
             snprintf(buf, ERR_MSG_LEN, "type error: in rule %s", node->subtrees[0]->text);
-            addRErrorMsg(errmsg, TYPE_ERROR, buf);
+            addRErrorMsg(errmsg, RE_TYPE_ERROR, buf);
             return resType;
 
 }
@@ -458,8 +458,8 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 					}
 
 					generateErrMsg(err, NODE_EXPR_POS(rule->node), rule->node->base, errbuf);
-					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
-					res = newErrorType(FUNCTION_REDEFINITION, r);
+					addRErrorMsg(errmsg, RE_FUNCTION_REDEFINITION, errbuf);
+					res = newErrorType(RE_FUNCTION_REDEFINITION, r);
 					*errnode = rule->node;
 					RETURN;
 				}
@@ -469,10 +469,10 @@ ExprType *typeRuleSet(RuleSet *ruleset, rError_t *errmsg, Node **errnode, Region
 			if(rd!=NULL) {
 				if(rule->ruleType == RK_FUNC || rd ->ruleType == RK_FUNC) {
 					generateErrMsg("redefinition of function", NODE_EXPR_POS(rule->node), rule->node->base, errbuf);
-					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
+					addRErrorMsg(errmsg, RE_FUNCTION_REDEFINITION, errbuf);
 					generateErrMsg("previous definition", NODE_EXPR_POS(rd->node), rd->node->base, errbuf);
-					addRErrorMsg(errmsg, FUNCTION_REDEFINITION, errbuf);
-					res = newErrorType(FUNCTION_REDEFINITION, r);
+					addRErrorMsg(errmsg, RE_FUNCTION_REDEFINITION, errbuf);
+					res = newErrorType(RE_FUNCTION_REDEFINITION, r);
 					*errnode = rule->node;
 					RETURN;
 				}
@@ -495,8 +495,8 @@ int typeNode(Node *node, Hashtable *varTypes, rError_t *errmsg, Node **errnode, 
         Res *resType = typeExpression3(node, 0, ruleEngineConfig.extFuncDescIndex, varTypes, typingConstraints, errmsg, errnode, r);
         /*printf("Type %d\n",resType->t); */
         if(getNodeType(resType) == T_ERROR) {
-            addRErrorMsg(errmsg, TYPE_ERROR, "type error: in rule");
-            return TYPE_ERROR;
+            addRErrorMsg(errmsg, RE_TYPE_ERROR, "type error: in rule");
+            return RE_TYPE_ERROR;
         }
         postProcessCoercion(node, varTypes, errmsg, errnode, r);
         postProcessActions(node, ruleEngineConfig.extFuncDescIndex, errmsg, errnode, r);
@@ -557,14 +557,14 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     writeToTmp("entry.log", buf);
 #endif
     if(overflow(expr, MAX_RULE_LEN)) {
-            addRErrorMsg(errmsg, BUFFER_OVERFLOW, "error: potential buffer overflow");
-            return newErrorRes(r, BUFFER_OVERFLOW);
+            addRErrorMsg(errmsg, RE_BUFFER_OVERFLOW, "error: potential buffer overflow");
+            return newErrorRes(r, RE_BUFFER_OVERFLOW);
     }
     Pointer *e = newPointer2(expr);
     ParserContext *pc = newParserContext(errmsg, r);
     if(e == NULL) {
-        addRErrorMsg(errmsg, UNKNOWN_ERROR, "error: can not create pointer.");
-        res = newErrorRes(r, UNKNOWN_ERROR);
+        addRErrorMsg(errmsg, RE_POINTER_ERROR, "error: can not create pointer.");
+        res = newErrorRes(r, RE_POINTER_ERROR);
         RETURN;
     }
     rulegen = isRuleGenSyntax(expr);
@@ -575,13 +575,13 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
     	node= parseActionsRuleGen(e, rulegen, 1, pc);
     }
     if(node==NULL) {
-            addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
-            res = newErrorRes(r, OUT_OF_MEMORY);
+            addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "error: out of memory.");
+            res = newErrorRes(r, RE_OUT_OF_MEMORY);
             RETURN;
     } else if (getNodeType(node) == N_ERROR) {
             generateErrMsg("error: syntax error",NODE_EXPR_POS(node), node->base, buf);
-            addRErrorMsg(errmsg, PARSER_ERROR, buf);
-            res = newErrorRes(r, PARSER_ERROR);
+            addRErrorMsg(errmsg, RE_PARSER_ERROR, buf);
+            res = newErrorRes(r, RE_PARSER_ERROR);
             RETURN;
     } else {
         Token *token;
@@ -589,13 +589,13 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
         if(strcmp(token->text, "|")==0) {
         	recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
             if(node==NULL) {
-				addRErrorMsg(errmsg, OUT_OF_MEMORY, "error: out of memory.");
-				res = newErrorRes(r, OUT_OF_MEMORY);
+				addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "error: out of memory.");
+				res = newErrorRes(r, RE_OUT_OF_MEMORY);
 				RETURN;
             } else if (getNodeType(node) == N_ERROR) {
 				generateErrMsg("error: syntax error",NODE_EXPR_POS(node), node->base, buf);
-				addRErrorMsg(errmsg, PARSER_ERROR, buf);
-				res = newErrorRes(r, PARSER_ERROR);
+				addRErrorMsg(errmsg, RE_PARSER_ERROR, buf);
+				res = newErrorRes(r, RE_PARSER_ERROR);
 				RETURN;
             }
             token = nextTokenRuleGen(e, pc, 0);
@@ -604,8 +604,8 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             Label pos;
             getFPos(&pos, e, pc);
             generateErrMsg("error: unparsed suffix",pos.exprloc, pos.base, buf);
-            addRErrorMsg(errmsg, UNPARSED_SUFFIX, buf);
-            res = newErrorRes(r, UNPARSED_SUFFIX);
+            addRErrorMsg(errmsg, RE_UNPARSED_SUFFIX, buf);
+            res = newErrorRes(r, RE_UNPARSED_SUFFIX);
             RETURN;
         }
     }
@@ -660,14 +660,22 @@ RuleDesc* getRuleDesc(int ri)
 // function to look up and / or load a microservice for execution
 int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 
-	string str_act( _action );
-	
+	std::string str_act( _action );
+  
+    if( str_act[0] == 'a' && str_act[1] == 'c' )
+		return -1;
+		 
+    // filter out queryies for PEP Rules which begin with 'ac' 
+	if( str_act[0] == 'a' && str_act[1] == 'c' ) {
+		return -1;
+	}
+
 	rodsLog( LOG_NOTICE, "actionTableLookUp - find a msvc [%s]", _action );
 
 	// =-=-=-=-=-=-=
 	// look up Action in microservice table.  If it returns
 	// the end() iterator, is is not found so try to load it.
-	if( !MicrosTable.has_msvc( str_act ) ) {
+	if( !MicrosTable.has_entry( str_act ) ) {
 		rodsLog( LOG_NOTICE, "actionTableLookUp - [%s] not found, load it.", _action );
 		if( !eirods::load_microservice_plugin( MicrosTable, str_act ) ) {
 			return UNMATCHED_ACTION_ERR;
@@ -697,8 +705,10 @@ int actionTableLookUp (char *action)
 #endif
 
 
-
-Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) {
+/*
+ * Set retOutParam to 1 if you need to retrieve the output parameters from inMsParamArray and 0 if not
+ */
+Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, int retOutParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r) { // JMC - backport 4540
     /* set clearDelayed to 0 so that nested calls to this function do not call clearDelay() */
     int recclearDelayed = ruleEngineConfig.clearDelayed;
     ruleEngineConfig.clearDelayed = 0;
@@ -726,13 +736,12 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     }
 
     res = parseAndComputeExpression(inAction, env, rei, reiSaveFlag, &errmsgBuf, r);
-/*    if(inMsParamArray != NULL) {
-        clearMsParamArray(inMsParamArray, 0);
-    	convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
-    } else {
-        freeEnvUninterpretedStructs(env);
-    }*/
-
+    if(retOutParams) { // JMC - backport 4540
+       if(inMsParamArray != NULL) {
+                       clearMsParamArray(inMsParamArray, 0);
+                       convertEnvToMsParamArray(inMsParamArray, env, &errmsgBuf, r);
+               }
+    }
     rei->msParamArray = orig;
 
 	freeCmdExecOut(execOut);

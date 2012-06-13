@@ -3,6 +3,8 @@
 #include "structFileDriver.h"
 #include "structFileExtract.h" 
 #include "miscServerFunct.h"
+#include "syncMountedColl.h"
+
 #include "dataObjOpr.h"
 #include "rsGlobalExtern.h"
 #include "objMetaOpr.h"
@@ -81,7 +83,7 @@ _rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 
     specColl = structFileOprInp->specColl;
 
-    status = procCacheDir (rsComm, specColl->cacheDir, specColl->resource);
+    status = procCacheDir (rsComm, specColl->cacheDir, specColl->resource, structFileOprInp->oprType); // JMC - backport 4657
     if (status < 0) return status;
 
     status = structFileExtract (rsComm, structFileOprInp);
@@ -90,7 +92,7 @@ _rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 }
 
 int
-procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource)
+procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource, int oprType) // JMC - backport 4657
 {
     int status;
     int fileType;
@@ -107,13 +109,16 @@ procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource)
 
     fileType = RescTypeDef[rescInfo->rescTypeInx].driverType;
 
-    status = chkEmptyDir (fileType, rsComm, cacheDir);
+    if ((oprType & PRESERVE_DIR_CONT) == 0) { // JMC - backport 4657
+        status = chkEmptyDir (fileType, rsComm, cacheDir);
 
-    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
-        rodsLog (LOG_ERROR,
-          "procCacheDir: chkEmptyDir error for %s in resc %s, status = %d",
-          cacheDir, resource, status);
-        return (status);
+        if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) { // JMC - backport 4657
+            rodsLog (LOG_ERROR,
+              "procCacheDir: chkEmptyDir error for %s in resc %s, status = %d",
+              cacheDir, resource, status);
+            return (status);
+        }
+
     }
 
     mkFileDirR (fileType, rsComm, "/", cacheDir, getDefDirMode ());

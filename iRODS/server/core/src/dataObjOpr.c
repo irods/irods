@@ -578,8 +578,8 @@ char *preferredResc, int writeFlag, int topFlag)
     tmpDataObjInfo = *dataObjInfoHead;
     if (tmpDataObjInfo->next == NULL) {
 	/* just one */
-	if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) 
-	  == 0) {
+	if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) == 0 ||  // JMC - backport 4543
+	    strcmp (preferredResc, tmpDataObjInfo->rescGroupName) == 0) {
 	    return (0);
 	} else {
 	    return (-1);
@@ -815,6 +815,7 @@ dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
         return (0);
 }
 
+#if 0 // JMC - UNUSED
 /* dataObjExist - check whether the data object given in dataObjInp exist.
    Returns 1 if exists, 0 ==> does not exist
  */
@@ -846,6 +847,7 @@ dataObjExist (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (1);
     }
 }
+#endif // JMC - UNUSED
 
 /* initDataObjInfoQuery - initialize the genQueryInp based on dataObjInp.
  * returns the qcondCnt - count of sqlCondInp based on condition input.
@@ -983,6 +985,7 @@ dataObjInfo_t *dataObjInfo)
     }
 }
 
+
 /* chkOrphanDir - check whether a filePath is a orphan directory.
  *    return - 1 - the dir is orphan.
  *             0 - 0 the dir is not an orphan.
@@ -1071,6 +1074,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
     return savedStatus;
 }
 
+
 /* resolveSingleReplCopy - given the dataObjInfoHead (up-to-date copies) 
  * and oldDataObjInfoHead (stale copies) and the destRescGrpInfo,
  * sort through the single copy reuirement for repl.
@@ -1118,6 +1122,7 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
         if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
 	  *destRescGrpInfo)) != NULL) {
             /* have a good copy already */
+			*destDataObjInfo = NULL; // JMC - backport 4594
             return (HAVE_GOOD_COPY);
 	}
     } else {
@@ -1148,7 +1153,9 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
             if (*destRescGrpInfo != NULL) {
                 /* just creat a new one in myRescGrpInfo */
                 *destDataObjInfo = NULL;
-            }
+            } else { // // JMC - backport 4594
+			    dequeDataObjInfo (oldDataObjInfoHead, *destDataObjInfo);
+		    }
 	}
     }
     return (NO_GOOD_COPY);
@@ -1465,7 +1472,7 @@ keyValPair_t *condInput, int writeFlag, int topFlag)
     }
     return (status);
 }
-
+#if 0 // JMC - UNUSED
 int
 requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
 keyValPair_t *condInput, int writeFlag, int topFlag)
@@ -1477,7 +1484,7 @@ keyValPair_t *condInput, int writeFlag, int topFlag)
     }
     return (0);
 }
-
+#endif // JMC - UNUSED
 int
 getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 dataObjInfo_t **dataObjInfo)
@@ -1625,18 +1632,27 @@ dataObjInfo_t **outDataObjInfo)
 		freeAllRescGrpInfo (rescGrpInfo);
 		return 0;
 	    } else {
-	        status = getNonGrpCacheDataInfoInRescGrp (srcDataObjInfoHead,
-                  destDataObjInfoHead, tmpRescGrpInfo,
-                  compDataObjInfo, outDataObjInfo);
-                if (status >= 0) {
-                    /* update the rescGroupName */
-                    rstrcpy (compDataObjInfo->rescGroupName,
-                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
-		    rstrcpy ((*outDataObjInfo)->rescGroupName, 
-		      tmpRescGrpInfo->rescGroupName, NAME_LEN);
-                    freeAllRescGrpInfo (rescGrpInfo);
-                    return 0;
-		}
+	        status = getNonGrpCacheDataInfoInRescGrp (srcDataObjInfoHead,destDataObjInfoHead, tmpRescGrpInfo,compDataObjInfo, outDataObjInfo);
+			if (status >= 0) {
+				// =-=-=-=-=-=-=-
+				// JMC - backport 4549
+                /* see if we are in the same resource grp as cache */
+                if (strlen ((*outDataObjInfo)->rescGroupName) > 0) {
+                    rescInfo_t *myRescInfo = NULL;
+                    if (getRescInGrp( rsComm, compDataObjInfo->rescInfo->rescName,
+                                      (*outDataObjInfo)->rescGroupName, &myRescInfo) >= 0) {
+                        rstrcpy (compDataObjInfo->rescGroupName,(*outDataObjInfo)->rescGroupName, NAME_LEN);
+                        freeAllRescGrpInfo (rescGrpInfo);
+                        return 0;
+                    }
+                }
+				// =-=-=-=-=-=-=-
+				/* update the rescGroupName */
+				rstrcpy (compDataObjInfo->rescGroupName,tmpRescGrpInfo->rescGroupName, NAME_LEN);
+				rstrcpy ((*outDataObjInfo)->rescGroupName, tmpRescGrpInfo->rescGroupName, NAME_LEN);
+				freeAllRescGrpInfo (rescGrpInfo);
+				return 0;
+			}
 	    }
             tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
 	}
@@ -1752,4 +1768,23 @@ dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo)
     }
     return SYS_NO_CACHE_RESC_IN_GRP;
 }
+
+int // JMC - backport 4547
+getDataObjByClass (dataObjInfo_t *dataObjInfoHead, int rescClass,
+dataObjInfo_t **outDataObjInfo)
+{
+    dataObjInfo_t *tmpDataObjInfo = dataObjInfoHead;
+
+    if (outDataObjInfo == NULL) return USER__NULL_INPUT_ERR;
+    *outDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+       if (getRescClass (tmpDataObjInfo->rescInfo) == rescClass) {
+           *outDataObjInfo = tmpDataObjInfo;
+           return 0;
+       }
+       tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+    return -1;
+}
+
 

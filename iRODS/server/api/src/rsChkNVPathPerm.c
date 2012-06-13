@@ -101,20 +101,25 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 
     sysUid = rsComm->clientUser.sysUid;
     if (sysUid < 0) {
+		rodsLog( LOG_NOTICE, "ZZZZ - sysUid < 0" );
         /* have tried before */
         return (SYS_NO_PATH_PERMISSION);
     } else if (sysUid == 0) {
-	if (strstr (rsComm->clientUser.userName, "@") != NULL) {
-            splitPathByKey (rsComm->clientUser.userName, 
-	      userName, tmpPath, '@');
-	} else {
-	    rstrcpy (userName, rsComm->clientUser.userName, NAME_LEN);
-	}
-	sysUid = rsComm->clientUser.sysUid = getUnixUid (userName);
-	if (sysUid < 0) {
-	    rsComm->clientUser.sysUid = sysUid;
-	    return (SYS_NO_PATH_PERMISSION);
-	}
+		rodsLog( LOG_NOTICE, "ZZZZ - sysUid == 0" );
+	    if (strstr (rsComm->clientUser.userName, "@") != NULL) {
+		    rodsLog( LOG_NOTICE, "ZZZZ - splitPathByKey" );
+            splitPathByKey (rsComm->clientUser.userName, userName, tmpPath, '@');
+		} else {
+		    rodsLog( LOG_NOTICE, "ZZZZ - rstrcpy (userName, rsComm->clientUser.userName, NAME_LEN)" );
+			rstrcpy (userName, rsComm->clientUser.userName, NAME_LEN);
+		}
+
+		sysUid = rsComm->clientUser.sysUid = getUnixUid (userName);
+		if (sysUid < 0) {
+		    rodsLog( LOG_NOTICE, "ZZZZ - sysUid < 0 - 2" );
+			rsComm->clientUser.sysUid = sysUid;
+			return (SYS_NO_PATH_PERMISSION);
+		}
     }
 
     
@@ -124,42 +129,44 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 
     status = -1;
     while (1) {
-        status = fileStat (chkNVPathPermInp->fileType, rsComm, 
-         tmpPath, &myFileStat);
-	if (status >= 0) {
-	    break;
-	} else if (errno == EEXIST || getErrno (status) == EEXIST) {
+        status = fileStat (chkNVPathPermInp->fileType, rsComm, tmpPath, &myFileStat);
+         
+		if (status >= 0) {
+			break;
+		} else if (errno == EEXIST || getErrno (status) == EEXIST) {
 
-	    /* go back */
-	    tmpPtr =  tmpPath + len;
+			/* go back */
+			tmpPtr =  tmpPath + len;
 
-	    while (len > 0) {
-		len --;
-		if (*tmpPtr == '/') {
-		    *tmpPtr = '\0';
-		    break;
+			while (len > 0) {
+				len --;
+				if (*tmpPtr == '/') {
+					*tmpPtr = '\0';
+					break;
+				}
+				tmpPtr--;
+			}
+
+			if (len > 0) {
+			    /* give it more tries */
+			    continue;
+			} else {
+			    break;
+			}
+		} else {
+			break;
 		}
-		tmpPtr--;
-	    }
-
-	    if (len > 0) {
-		/* give it more tries */
-		continue;
-	    } else {
-		break;
-	    }
-	} else {
-	    break;
-	}
     }
 	    
     if (status < 0) {
-	return (SYS_NO_PATH_PERMISSION);
+		rodsLog( LOG_NOTICE, "ZZZZ - status < 0" );
+	    return (SYS_NO_PATH_PERMISSION);
     }
 	    
-    if (sysUid != (int) myFileStat.st_uid && 
-      (myFileStat.st_mode & S_IWOTH) == 0) {
-	return (SYS_NO_PATH_PERMISSION);
+    if( sysUid != (int) myFileStat.st_uid && 
+        (myFileStat.st_mode & S_IWOTH) == 0) {
+	rodsLog( LOG_NOTICE, "ZZZZ -  foobar" );
+	    return (SYS_NO_PATH_PERMISSION);
     } else {
         return (0);
     }

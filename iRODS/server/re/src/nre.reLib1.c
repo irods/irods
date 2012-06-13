@@ -360,12 +360,6 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   writeToTmp("entry.log", "\n");
 #endif
   int i;
-/*
-  int pFlag = 0;
-
-  msParam_t *mP;
-  char tmpStr[MAX_ACTION_SIZE];
-*/
 
   Region *r = make_region(0, NULL);
   rError_t errmsgBuf;
@@ -422,7 +416,7 @@ int computeExpression(char *inAction, msParamArray_t *inMsParamArray, ruleExecIn
 
 	Region *r = make_region(0, NULL);
 
-	Res *res0 = parseAndComputeExpressionAdapter(inAction, inMsParamArray, rei, reiSaveFlag, r);
+	Res *res0 = parseAndComputeExpressionAdapter(inAction, inMsParamArray, 0, rei, reiSaveFlag, r);
 	int ret;
 	char *res1 = convertResToString(res0);
 	snprintf(res, MAX_COND_LEN, "%s", res1);
@@ -449,7 +443,8 @@ int computeExpression(char *inAction, msParamArray_t *inMsParamArray, ruleExecIn
 }
 
 
-/** this was applyRulePA and got changed to applyRule ***/
+/* This function computes the expression in inAction using inMsParamArray as the env.
+ * It doesn't update inMsParamArray with the new env. */
 int
 applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag)
@@ -471,11 +466,11 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     	inActionCopy[strlen(inAction) - 1] = '\0';
     	char *action = (char *) malloc(sizeof(char) * strlen(inAction) + 3);
     	sprintf(action, "{%s}", inActionCopy);
-    	res = parseAndComputeExpressionAdapter(action, inMsParamArray, rei, reiSaveFlag, r);
+    	res = parseAndComputeExpressionAdapter(action, inMsParamArray, 0, rei, reiSaveFlag, r);
     	free(action);
     	free(inActionCopy);
     } else {
-    	res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, rei, reiSaveFlag, r);
+    	res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, 0, rei, reiSaveFlag, r);
 	}
 	ret = processReturnRes(res);
     region_free(r);
@@ -485,6 +480,36 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     return ret;
 
 }
+
+/* This function computes the expression in inAction using inMsParamArray as the env and updates inMsParamArray with the new env. */
+int
+applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray,
+         ruleExecInfo_t *rei, int reiSaveFlag)
+{
+    #ifdef DEBUG
+    writeToTmp("entry.log", "applyRule: ");
+    writeToTmp("entry.log", inAction);
+    writeToTmp("entry.log", "\n");
+    #endif
+    if (GlobalREAuditFlag > 0)
+        reDebug("ApplyRule", -1, "", inAction,NULL,NULL,rei);
+
+    Region *r = make_region(0, NULL);
+
+    int ret;
+    Res *res;
+    res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, 1, rei, reiSaveFlag, r);
+    ret = processReturnRes(res);
+    region_free(r);
+    if (GlobalREAuditFlag > 0)
+        reDebug("ApplyRule", -1, "Done", inAction,NULL,NULL,rei);
+
+    return ret;
+
+}
+
+
+
 
 
 

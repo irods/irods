@@ -23,6 +23,8 @@
 #include "fileSyncToArch.h"
 #include "fileStageToCache.h"
 #include "unbunAndRegPhyBunfile.h"
+#include "dataObjTrim.h" // JMC - backport 4550
+#include "dataObjLock.h" // JMC - backport 4609
 
 int
 rsDataObjRepl250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -55,10 +57,11 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 transferStat_t **transStat)
 {
     int status;
-
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     dataObjInfo_t *dataObjInfo = NULL;
+    char* lockType = NULL; // JMC - backport 4609
+    int   lockFd   = -1;   // JMC - backport 4609
 
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	/* To SU, cannot be called by normal user directly */ 
@@ -96,9 +99,26 @@ transferStat_t **transStat)
 
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4609
+    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    if (lockType != NULL) {
+        lockFd = rsDataObjLock (rsComm, dataObjInp);
+        if (lockFd >= 0) {
+            /* rm it so it won't be done again causing deadlock */
+            rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
+        } else {
+            rodsLogError (LOG_ERROR, lockFd,
+              "rsDataObjRepl: rsDataObjLock error for %s. lockType = %s",
+              dataObjInp->objPath, lockType);
+            return lockFd;
+        }
+    }
+    // =-=-=-=-=-=-=-
+    status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
+     
+    if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
 
-    status = _rsDataObjRepl (rsComm, dataObjInp, 
-     *transStat, NULL); 
     return (status);
 }
     
@@ -128,12 +148,6 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     } else {
         accessPerm = ACCESS_READ_OBJECT;
     }
-#if 0
-    /* query rcat for resource info and sort it */
-
-    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-    if (status < 0) return status;
-#endif
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
@@ -166,30 +180,29 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         if (status < 0) return status;
 
 	/* update old repl to new repl */
-	status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
-	  oldDataObjInfoHead, transStat, NULL);
-#if 0
-        status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead,
-          NULL, transStat, NULL, oldDataObjInfoHead);
-#endif
-        if (status >= 0 && outDataObjInfo != NULL) {
+	status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,oldDataObjInfoHead, transStat, NULL);
+	  
+    if (status >= 0 && outDataObjInfo != NULL) {
 	    *outDataObjInfo = *oldDataObjInfoHead;
 	    outDataObjInfo->next = NULL;
 	}
         freeAllDataObjInfo (dataObjInfoHead);
         freeAllDataObjInfo (oldDataObjInfoHead);
-        /* freeAllRescGrpInfo (myRescGrpInfo); */
+        
 	return status;
     }
     /* if multiCopy allowed, remove old so they won't be overwritten */
-    status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead,
-      multiCopyFlag);
-    if (status < 0) return status;
+    status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead,multiCopyFlag);
+      
+    if (status < 0) 
+		return status;
 
     if (getValByKey (&dataObjInp->condInput, BACKUP_RESC_NAME_KW) != NULL) {
-	backupFlag = 1;
+        /* backup to the DEST_RESC if one does not exist */
+	    backupFlag = 1;
+		multiCopyFlag = 0; // JMC - backport 4594
     } else {
-	backupFlag = 0;
+	    backupFlag = 0;
     }
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
@@ -197,20 +210,21 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         allFlag = 0;
     }
 
-    if (backupFlag == 0 && allFlag == 1 &&
-      getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) == NULL &&
-      dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0') {
-	/* replicate to all resc in the rescGroup */
-	addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW, 
-	  dataObjInfoHead->rescGroupName);
+    if( backupFlag == 0 && allFlag == 1                                 &&
+        getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) == NULL &&
+        dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0') {
+	    /* replicate to all resc in the rescGroup if DEST_RESC is not specified */
+	    addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW, 
+	    dataObjInfoHead->rescGroupName);
     }
 
     /* query rcat for resource info and sort it */
+	dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
 
-    if (multiCopyFlag == 0 || backupFlag == 1) {
+    if (multiCopyFlag == 0 ) { // JMC - backport 4594
 	/* if one copy per resource, see if a good copy already exist, 
 	 * If it does, the copy is returned in destDataObjInfo. 
 	 * Otherwise, Resources in &myRescGrpInfo are trimmed. Only those
@@ -220,35 +234,60 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = resolveSingleReplCopy (&dataObjInfoHead, &oldDataObjInfoHead,
           &myRescGrpInfo, &destDataObjInfo, &dataObjInp->condInput);
         if (status == HAVE_GOOD_COPY) {
+           // =-=-=-=-=-=-=-
+		   // JMC - backport 4450
+           dataObjInfo_t *cacheDataObjInfo = NULL;
+		   dataObjInfo_t *compDataObjInfo  = NULL; // JMC - backport 4594
+           if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL           &&
+
+// =-=-=-=-=-=-=-
+// JMC - backport 4494
+#if 0
+             getDataObjByClass (dataObjInfoHead, CACHE_CL, &cacheDataObjInfo)
+             >= 0 && cacheDataObjInfo != destDataObjInfo) {
+#else
+             getDataObjByClass( dataObjInfoHead, COMPOUND_CL, &compDataObjInfo ) >= 0 &&
+             strlen (compDataObjInfo->rescGroupName) > 0                              &&
+             getCacheDataInfoForRepl (rsComm, dataObjInfoHead, NULL,compDataObjInfo, &cacheDataObjInfo) >= 0 ) {
+#endif
+// =-=-=-=-=-=-=-
+               /* purge the cache */
+               int status1 = trimDataObjInfo (rsComm, cacheDataObjInfo);
+               if (status1 < 0) {
+                    rodsLog (LOG_NOTICE,
+                      "_rsDataObjRepl: trimDataObjInfo for %s", 
+                     dataObjInp->objPath);
+               }
+           }
+           // =-=-=-=-=-=-=-
             if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
                 /* pass back the GOOD_COPY */
                 *outDataObjInfo = *destDataObjInfo;
-		outDataObjInfo->next = NULL;
+		        outDataObjInfo->next = NULL;
             }
-	    if (backupFlag == 0) {
-		if (myRescGrpInfo != NULL && 
-	          (allFlag == 1 || myRescGrpInfo->next == NULL) && 
-		  (myRescGrpInfo->status < 0)) {
-		    status = myRescGrpInfo->status;
-		} else {
-#if 0
-                    status = SYS_COPY_ALREADY_IN_RESC;
-#endif
-                    status = 0;
-		}
-	    } else {
-	        status = 0;
-	    }
+// =-=-=-=-=-=-=-
+// JMC - backport 4494
+           if( backupFlag == 0 && myRescGrpInfo != NULL        && 
+               ( allFlag == 1 || myRescGrpInfo->next == NULL ) && 
+               ( myRescGrpInfo->status < 0 ) ) {
+               status = myRescGrpInfo->status;
+// =-=-=-=-=-=-=-
+			} else {
+				status = 0;
+			}
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
+            freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
             freeAllRescGrpInfo (myRescGrpInfo);
 	    return status;
 	} else if (status < 0) {
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
+            freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
             freeAllRescGrpInfo (myRescGrpInfo);
             return status;
         }
+       /* NO_GOOD_COPY drop through here */
     }
 
     status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
@@ -258,42 +297,38 @@ transferStat_t *transStat, dataObjInfo_t *outDataObjInfo)
      * replicate to myRescGrpInfo */ 
 
     if (destDataObjInfo != NULL) {
-        status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
-          destDataObjInfo, transStat, oldDataObjInfoHead);
+        status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
+                                       destDataObjInfo, transStat, oldDataObjInfoHead);
         if (status >= 0) {
             if (outDataObjInfo != NULL) {
-		*outDataObjInfo = *destDataObjInfo;
-		outDataObjInfo->next = NULL;
-	    }
-	    if (allFlag == 0) {
-		freeAllDataObjInfo (dataObjInfoHead);
-		freeAllDataObjInfo (oldDataObjInfoHead);
-		freeAllRescGrpInfo (myRescGrpInfo);
-		return 0;
-	    }
-	} else {
-	    savedStatus = status;
-	}
+		        *outDataObjInfo = *destDataObjInfo;
+		         outDataObjInfo->next = NULL;
+	        }
+	        if (allFlag == 0) {
+				freeAllDataObjInfo (dataObjInfoHead);
+				freeAllDataObjInfo (oldDataObjInfoHead);
+				freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
+				freeAllRescGrpInfo (myRescGrpInfo);
+				return 0;
+            } else { // JMC - backport 4494
+               /* queue destDataObjInfo in &dataObjInfoHead so that stage to cache 
+                * can evaluate it */
+               queDataObjInfo (&dataObjInfoHead, destDataObjInfo, 0, 1);
+               destDataObjInfo = NULL;
+	        } 
+		} else {
+			savedStatus = status;
+		}
     }
 
     if (myRescGrpInfo != NULL) {
-	/* new kreplication to the resource group */
-	status = _rsDataObjReplNewCopy (rsComm, dataObjInp, dataObjInfoHead,
-	  myRescGrpInfo, transStat, oldDataObjInfoHead, outDataObjInfo);
-	if (status < 0) savedStatus = status;
+	    /* new kreplication to the resource group */
+	    status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
+	                                    myRescGrpInfo, transStat, oldDataObjInfoHead, 
+										outDataObjInfo);
+	    if (status < 0) savedStatus = status;
     }
-#if 0
-    if (destDataObjInfo != NULL) {
-        status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
-          myRescGrpInfo, transStat, oldDataObjInfoHead, destDataObjInfo);
-	if (status >= 0 && outDataObjInfo != NULL) {
-	    *outDataObjInfo = *destDataObjInfo;
-	}
-    } else {
-        status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
-          myRescGrpInfo, transStat, oldDataObjInfoHead, outDataObjInfo);
-    }
-#endif
+
     freeAllDataObjInfo (dataObjInfoHead);
     freeAllDataObjInfo (oldDataObjInfoHead);
     freeAllRescGrpInfo (myRescGrpInfo);
@@ -400,47 +435,53 @@ dataObjInfo_t *outDataObjInfo)
     int status;
     int allFlag;
     int savedStatus = 0;
+    rescInfo_t *compRescInfo = NULL; // JMC - backport 4593
+    rescInfo_t *cacheRescInfo = NULL; // JMC - backport 4593
 
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
     } else {
         allFlag = 0;
     }
-
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4593
+    /* If doing ALL, need to skip cacheRescInfo if the rescGrp has a COMPOUND_CL resc 
+	 * because getCacheDataInfoOfCompResc will stage it */
+    if( allFlag == 1 && destRescGrpInfo != NULL    &&
+        strlen(destRescGrpInfo->rescGroupName) > 0 &&
+        getRescGrpClass (destRescGrpInfo, &compRescInfo) == COMPOUND_CL) {
+        getCacheRescInGrp (rsComm, destRescGrpInfo->rescGroupName,compRescInfo, &cacheRescInfo);
+    }
+    // =-=-=-=-=-=-=-
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
     tmpRescGrpInfo = destRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        // =-=-=-=-=-=-=-
+	    // JMC - backport 4593
+        if (tmpRescInfo == cacheRescInfo) {
+            /* skip cacheResc of COMPOUND_CL because getCacheDataInfoOfCompResc will
+             * stage to this cache */
+            tmpRescGrpInfo = tmpRescGrpInfo->next;
+            continue;
+        }
+        // =-=-=-=-=-=-=-
         if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
             /* need to get a copy in cache first */
-            /* XXXX this will not work because it is likely that
-             * rescGrpName will be blank */
             if ((status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
               srcDataObjInfoHead, NULL, tmpRescGrpInfo,
               oldDataObjInfo, &srcDataObjInfo)) < 0) {
                 return status;
             }
-#if 0	/* not needed with updateFlag */
-            /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
-             * could replicate to the wrong resource */
-            if (outDataObjInfo != NULL)
-                bzero (outDataObjInfo, sizeof (dataObjInfo_t));
-#endif
+
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
             tmpRescInfo, tmpRescGrpInfo->rescGroupName, outDataObjInfo, 0);
         } else {
             srcDataObjInfo = srcDataObjInfoHead;
             while (srcDataObjInfo != NULL) {
-#if 0	/* not needed with updateFlag */
-                /* have to zero out outDataObjInfo because _rsDataObjReplS
-                 * could replicate to the wrong resource */
-                if (outDataObjInfo != NULL)
-                    bzero (outDataObjInfo, sizeof (dataObjInfo_t));
-#endif
-                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-                  tmpRescInfo, tmpRescGrpInfo->rescGroupName,
-                  outDataObjInfo, 0);
-
+                status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo,
+                                          tmpRescInfo, tmpRescGrpInfo->rescGroupName,
+                                          outDataObjInfo, 0);
                 if (status >= 0) {
                     break;
                 } else {
@@ -467,144 +508,6 @@ dataObjInfo_t *outDataObjInfo)
         return (savedStatus);
     }
 }
-
-#if 0	/* deplicated */
-/* _rsDataObjRepl - An internal version of rsDataObjRepl with the 
- * Additinal input - 
- *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be 
- *     replicated. Only one will be picked. 
- *   rescGrpInfo_t *destRescGrpInfo - The dest resource info
- *   dataObjInfo_t *destDataObjInfo - This can be both input and output.
- *    dataObjInfo_t *oldDataObjInfo - this is for destDataObjInfo is a
- *       COMPOUND_CL resource. If it is, need to find an old copy of
- *	 the resource in the same group so that it can be updated first.
- *   If inpDestDataObjInfo == NULL, dest is new and no output is required.
- *   If inpDestDataObjInfo != NULL:
- *       If inpDestDataObjInfo->dataId <= 0, no input but put output in
- *       inpDestDataObjInfo. This is needed by msiSysReplDataObj and
- *       msiStageDataObj which need a copy of destDataObjInfo.
- *       If inpDestDataObjInfo->dataId > 0, the dest repl exists. Need to
- *       overwrite it.
- */
-
-int
-_rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transferStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
-dataObjInfo_t *inpDestDataObjInfo) 
-{
-    dataObjInfo_t *destDataObjInfo;
-    dataObjInfo_t *srcDataObjInfo;
-    rescGrpInfo_t *tmpRescGrpInfo;
-    rescInfo_t *tmpRescInfo;
-    int status;
-    int allFlag;
-    int savedStatus = 0;
-    int replCnt = 0;
-
-    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
-	allFlag = 1;
-    } else {
-	allFlag = 0;
-    }
-
-    transStat->bytesWritten = srcDataObjInfoHead->dataSize;
-    destDataObjInfo = inpDestDataObjInfo;
-    while (destDataObjInfo != NULL) {
-	if (destDataObjInfo->dataId == 0) {
-	    destDataObjInfo = destDataObjInfo->next;
-	    continue;
-	}
-
-	/* destDataObj exists */
-        if (getRescClass (destDataObjInfo->rescInfo) == COMPOUND_CL) {
-            /* need to get a copy in cache first */
-	    if ((status = getCacheDataInfoOfCompObj (rsComm, dataObjInp,
-	      srcDataObjInfoHead, inpDestDataObjInfo, destDataObjInfo,
-	      oldDataObjInfo, &srcDataObjInfo)) < 0) {
-		return status;
-	    }
-            status = _rsDataObjReplS (rsComm, dataObjInp,
-              srcDataObjInfo, NULL, "", destDataObjInfo);
-	} else {
-	    srcDataObjInfo = srcDataObjInfoHead;
-	    while (srcDataObjInfo != NULL) {
-                /* overwrite a specific destDataObjInfo */
-                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo, 
-		  NULL, "", destDataObjInfo);
-		if (status >= 0) {
-		    break;
-		}
-		srcDataObjInfo = srcDataObjInfo->next;
-	    }
-	}
-        if (status >= 0) {
-            transStat->numThreads = dataObjInp->numThreads;
-	    if (allFlag == 0) {
-                return 0;
-	    }
-        } else {
-            savedStatus = status;
-	    replCnt ++;
-	}
-	destDataObjInfo = destDataObjInfo->next;
-    }
-	    
-    if (replCnt > 0 && allFlag == 0) return savedStatus;
-
-    /* falls through here. destDataObj does not exist */
-    tmpRescGrpInfo = destRescGrpInfo;
-    while (tmpRescGrpInfo != NULL) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
-            /* need to get a copy in cache first */
-	    /* XXXX this will not work because it is likely that
-	     * rescGrpName will be blank */
-            if ((status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
-              srcDataObjInfoHead, NULL, tmpRescGrpInfo,
-              oldDataObjInfo, &srcDataObjInfo)) < 0) {
-                return status;
-            }
-	    /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
-	     * could replicate to the wrong resource */
-	    if (inpDestDataObjInfo != NULL)
-		bzero (inpDestDataObjInfo, sizeof (dataObjInfo_t));
-	    status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-            tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
-	} else {
-            srcDataObjInfo = srcDataObjInfoHead;
-            while (srcDataObjInfo != NULL) {
-                /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
-                 * could replicate to the wrong resource */
-                if (inpDestDataObjInfo != NULL)
-                    bzero (inpDestDataObjInfo, sizeof (dataObjInfo_t));
-
-                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-	          tmpRescInfo, tmpRescGrpInfo->rescGroupName, 
-		  inpDestDataObjInfo);
-
-	        if (status >= 0) {
-                    break;
-                } else {
-		    savedStatus = status;
-	        }
-                srcDataObjInfo = srcDataObjInfo->next;
-	    }
-	}
-        if (status >= 0) {
-            transStat->numThreads = dataObjInp->numThreads;
-            if (allFlag == 0) {
-                return 0;
-            }
-        } else {
-            savedStatus = status;
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-
-    return (savedStatus);
-}
-#endif
 
 /* _rsDataObjReplS - replicate a single obj 
  *   dataObjInfo_t *srcDataObjInfo - the src to be replicated. 
@@ -651,12 +554,7 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag)
     /* myDestDataObjInfo = L1desc[l1descInx].dataObjInfo; */
     L1desc[l1descInx].oprStatus = status;
     if (status >= 0) {
-#if 0
-	dataObjCloseInp.bytesWritten = L1desc[l1descInx].dataObjInfo->dataSize;
-#else
-	L1desc[l1descInx].bytesWritten =  
-	  L1desc[l1descInx].dataObjInfo->dataSize;
-#endif
+	    L1desc[l1descInx].bytesWritten =  L1desc[l1descInx].dataObjInfo->dataSize;
     }
 
     status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
@@ -822,15 +720,9 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 	srcRescName = NULL;
 
     l1DataObjInp->numThreads = dataObjInp->numThreads =
-      getNumThreads (rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
-      &dataObjInp->condInput, destRescName, srcRescName);
-#if 0
-    /* XXXXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
-    if (l1DataObjInp->numThreads == 0 && 
-      l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF) {
-	l1DataObjInp->numThreads = dataObjInp->numThreads = 1;
-    }
-#endif
+      getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
+                     &dataObjInp->condInput, destRescName, srcRescName);
+
     if (l1DataObjInp->numThreads > 0 && 
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	if (updateFlag > 0) {
@@ -876,6 +768,12 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     } else {
         L1desc[srcL1descInx].oprType = REPLICATE_SRC;
     }
+
+    if( L1desc[destL1descInx].stageFlag == SYNC_DEST && // JMC - backport 4549
+        getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+        L1desc[srcL1descInx].purgeCacheFlag = 1;
+    }
+
 
     if (l1DataObjInp->numThreads > 0 &&
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
@@ -1185,13 +1083,25 @@ int
 l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
 {
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
-    int rescTypeInx, cacheRescTypeInx;
-    fileStageSyncInp_t fileSyncToArchInp;
-    dataObjInp_t *dataObjInp;
-    int status;
+	int mode, status; // JMC - backport 4527
 
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
+
+    mode = getFileMode (L1desc[destL1descInx].dataObjInp);
+
+    status = _l3FileStage (rsComm, srcDataObjInfo, destDataObjInfo, mode);
+
+    return status;
+}
+
+int
+_l3FileStage (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, // JMC - backport 4527
+dataObjInfo_t *destDataObjInfo, int mode)
+{
+    int rescTypeInx, cacheRescTypeInx;
+    fileStageSyncInp_t fileSyncToArchInp;
+    int status;
 
     rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
     cacheRescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
@@ -1200,7 +1110,6 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
-        dataObjInp = L1desc[destL1descInx].dataObjInp;
 	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
         fileSyncToArchInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         fileSyncToArchInp.cacheFileType = 
@@ -1208,11 +1117,11 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
 	  destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
 	  /* use the cache addr srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);*/
-        rstrcpy (fileSyncToArchInp.cacheFilename, destDataObjInfo->filePath, 
-	  MAX_NAME_LEN);
-        rstrcpy (fileSyncToArchInp.filename, srcDataObjInfo->filePath, 
-	  MAX_NAME_LEN);
-        fileSyncToArchInp.mode = getFileMode (dataObjInp);
+        rstrcpy( fileSyncToArchInp.cacheFilename, destDataObjInfo->filePath, 
+	             MAX_NAME_LEN);
+        rstrcpy( fileSyncToArchInp.filename, srcDataObjInfo->filePath, 
+	             MAX_NAME_LEN);
+		fileSyncToArchInp.mode = mode;
         status = rsFileStageToCache (rsComm, &fileSyncToArchInp);
         break;
       default:
@@ -1296,11 +1205,6 @@ dataObjInfo_t *outCacheObjInfo)
     char tmpStr[NAME_LEN];
 
     if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
-#if 0
-    /* this check prevent infinite _rsDataObjRepl call */
-    if (strlen (compObjInfo->rescGroupName) == 0)
-	return SYS_NO_CACHE_RESC_IN_GRP;
-#endif
 
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
       compObjInfo->rescInfo, &cacheResc);
@@ -1347,38 +1251,16 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
         /* if (status == SYS_COPY_ALREADY_IN_RESC) { */
 	if (outCacheObjInfo->dataId > 0) {
 	    /* put the cache copy on top */
-	    requeDataObjInfoByReplNum (compObjInfoHead, 
-	      outCacheObjInfo->replNum);
-	    status = 0;
+           if( requeDataObjInfoByReplNum (compObjInfoHead, 
+               outCacheObjInfo->replNum) == 0) { // JMC - backport 4608
+               /* sucessfully requeued */
+               status = 0;
+           }
 	}
 	free (outCacheObjInfo);
     } else {
         queDataObjInfo (compObjInfoHead, outCacheObjInfo, 0, 1);
     }
-#if 0
-    rescInfo_t *cacheResc;
-    dataObjInfo_t *dataObjInfoHead = *compObjInfoHead;
-    if (getRescClass (dataObjInfoHead->rescInfo) != COMPOUND_CL) return 0;
-
-    status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName,
-      dataObjInfoHead->rescInfo, &cacheResc);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-         "stageAndRequeDataToCache: getCacheRescInGrp %s failed for %s stat=%d",
-          dataObjInfoHead->rescGroupName, dataObjInfoHead->objPath, status);
-        return status;
-    }
-    status = rsReplAndRequeDataObjInfo (rsComm, &dataObjInfoHead,
-      cacheResc->rescName, NULL);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-         "stageDataFromCompToCache:rsReplAndRequeDataObjInfo %s failed stat=%d",
-          dataObjInfoHead->objPath, status);
-        return status;
-    }
-    *compObjInfoHead = dataObjInfoHead;
-#endif
-
     return status;
 }
 
@@ -1393,21 +1275,9 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
     dataObjInfo_t *tmpDestDataObjInfo = NULL;
     int updateFlag;
 
-#if 0
-    status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
-      compObjInfo->rescInfo->rescName, &cacheResc);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-         "replToCacheRescOfCompObj: getCacheRescInGrp %s failed for %s stat=%d",
-         compObjInfo->rescGroupName, compObjInfo->objPath, status);
-        return status;
-    }
-#endif
-
-    if ((status = getCacheDataInfoForRepl (rsComm, oldDataObjInfo, NULL, 
-      compObjInfo, &tmpDestDataObjInfo)) >= 0) {
-	cacheResc = oldDataObjInfo->rescInfo;
-	updateFlag = 1;
+    if ((status = getCacheDataInfoForRepl (rsComm, oldDataObjInfo, NULL, compObjInfo, &tmpDestDataObjInfo)) >= 0) {
+	    cacheResc = oldDataObjInfo->rescInfo;
+	    updateFlag = 1;
     } else {
 	/* no old copy */
         status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
@@ -1549,10 +1419,14 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
 	if (outCacheResc != NULL)
 	    *outCacheResc = (*bunfileObjInfoHead)->rescInfo;
     }
-    addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, 
+    addKeyVal (&dataObjInp.condInput, BUN_FILE_PATH_KW,  // JMC - backport 4768
       (*bunfileObjInfoHead)->filePath);
     if (rmBunCopyFlag > 0) {
         addKeyVal (&dataObjInp.condInput, RM_BUN_COPY_KW, "");
+    }
+    if (strlen ((*bunfileObjInfoHead)->dataType) > 0) { // JMC - backport 4664
+        addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, 
+          (*bunfileObjInfoHead)->dataType);
     }
     status = _rsUnbunAndRegPhyBunfile (rsComm, &dataObjInp, 
       (*bunfileObjInfoHead)->rescInfo);

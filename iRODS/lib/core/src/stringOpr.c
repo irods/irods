@@ -171,7 +171,7 @@ char* outStr2, int maxOutLen2, char key)
 	return (0);
     }
 }
-
+#if 0 // JMC - UNUSED
 int
 rSplitStrByStrKey (char *inStr, char* outStr1, int maxOutLen1, 
 char* outStr2, int maxOutLen2, char* key)
@@ -194,7 +194,7 @@ char* outStr2, int maxOutLen2, char* key)
     }
     return(0);
 }
-
+#endif // JMC - UNUSED
 /* copyStrFromBuf - copy a string from buf to outStr, skipping white space
  * and comment. also advance buf pointer 
  * returns the len of string copied
@@ -325,7 +325,7 @@ splitPathByKey (char *srcPath, char *dir, char *file, char key)
     rstrcpy (file, srcPath, MAX_NAME_LEN);
     return (SYS_INVALID_FILE_PATH);
 }
-
+#if 0 // JMC - UNUSED
 /* get the strlen of the parent, including the last '/'
  */
 
@@ -347,7 +347,7 @@ getParentPathlen (char *path)
     }
     return (len + 1);
 }
-
+#endif // JMC - UNUSED
 int
 trimWS(char *s) 
 {

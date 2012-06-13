@@ -25,5 +25,5 @@ myTestRule {
   msiGetObjType(*Outfile,*Otype);
   msiAssociateKeyValuePairsToObj(*Keyval,*Outfile,*Otype);
 }  
-INPUT *Tag="/tempZone/home/rods/test/email.tag", *Pathfile="/tempZone/home/rods/test/sample.email", *Outfile="/tempZone/home/rods/test/sample.email", *Len=10000 
+INPUT *Tag="/tempZone/home/rods/test/email2.tag", *Pathfile="/tempZone/home/rods/test/sample2.email", *Outfile="/tempZone/home/rods/test/sample2.email", *Len=10000 
 OUTPUT ruleExecOut

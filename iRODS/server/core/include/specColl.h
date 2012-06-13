@@ -27,7 +27,7 @@ modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag);
 int
 querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut);
 int
-queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath);
+queueSpecCollCache (rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath); // JMC - backport 4680
 int
 queueSpecCollCacheWithObjStat (rodsObjStat_t *rodsObjStatOut);
 specCollCache_t *

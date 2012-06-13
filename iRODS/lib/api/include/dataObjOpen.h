@@ -28,7 +28,7 @@ int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
 _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-int phyOpenFlag, dataObjInfo_t *dataObjInfo);
+int phyOpenFlag, dataObjInfo_t *dataObjInfo, dataObjInfo_t *cacheDataObjInfo); // JMC - backport 4537
 int
 _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
@@ -45,6 +45,21 @@ dataObjInfo_t **dataObjInfoHead);
 int
 createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead);
+// =-=-=-=-=-=-=-
+// JMC - backport 4590
+int
+procDataObjOpenForWrite( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                         dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+                         dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo );
+int
+procDataObjOpenForRead( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                        dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+                        dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo );
+int
+procDataObjOpenForExistObj( rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                            dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
+                            dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo );
+// =-=-=-=-=-=-=-
 #else
 #define RS_DATA_OBJ_OPEN NULL
 #endif

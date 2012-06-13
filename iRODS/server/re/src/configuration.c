@@ -239,7 +239,7 @@ int generateLocalCache() {
 	}
 	buf = (unsigned char *)malloc(SHMMAX);
 	if(buf == NULL) {
-		return OUT_OF_MEMORY;
+		return RE_OUT_OF_MEMORY;
 	}
 	setCacheAddress(buf, INITIALIZED, SHMMAX);
 	return 0;

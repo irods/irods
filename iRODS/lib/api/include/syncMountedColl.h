@@ -35,7 +35,10 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType);
 #define LOGICAL_BUNDLE		0x8	/* use the filePath associated with
 					 * the logical path instead of
 					 * the path in cacheDir */  
-
+#define CREATE_TAR_OPR         0x0     /* create tar file -c */ // JMC - backport 4643
+#define ADD_TO_TAR_OPR          0x10   /* add to a tar file */ // JMC - backport 4643
+#define PRESERVE_COLL_PATH      0x20   /* preserver the last entry of coll */ // JMC - backport 4644
+#define PRESERVE_DIR_CONT      0x40    /* preserve the content of cachrdir */ // JMC - backport 4657
 #ifdef  __cplusplus
 extern "C" {
 #endif

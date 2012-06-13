@@ -629,7 +629,9 @@ void  sendClose (rbudpSender_t *rbudpSender)
 {
   if (!rbudpSender->rbudpBase.hasTcpSock) {
     close(rbudpSender->rbudpBase.tcpSockfd);
-    close(rbudpSender->rbudpBase.listenfd);
+    /* listenfd is not open for client */ // JMC - backport 4615
+    if (rbudpSender->rbudpBase.listenfd > 0)
+        close(rbudpSender->rbudpBase.listenfd);
   }
   close(rbudpSender->rbudpBase.udpSockfd);
 #ifdef DEBUG

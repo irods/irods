@@ -84,9 +84,9 @@ showDataObj(char *name, char *attrName, int wild)
    char v1[BIG_STR];
    char v2[BIG_STR];
    char v3[BIG_STR];
-   char fullName[LONG_NAME_LEN];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
+   char fullName[MAX_NAME_LEN];
+   char myDirName[MAX_NAME_LEN];
+   char myFileName[MAX_NAME_LEN];
    int status;
    /* "id" only used in testMode, in longMode id is reset to be 'time set' :*/
    char *columnNames[]={"attribute", "value", "units", "id"};
@@ -128,13 +128,13 @@ showDataObj(char *name, char *attrName, int wild)
    sprintf(v2,"='%s'",name);
    condVal[1]=v2;
 
-   strncpy(fullName, cwd, LONG_NAME_LEN);
-   rstrcat(fullName, "/", LONG_NAME_LEN);
-   rstrcat(fullName, name, LONG_NAME_LEN);
+   strncpy(fullName, cwd, MAX_NAME_LEN);
+   rstrcat(fullName, "/", MAX_NAME_LEN);
+   rstrcat(fullName, name, MAX_NAME_LEN);
    if (strstr(name, "/") != NULL) {
       /* reset v1 and v2 for when full path or relative path entered */
       if (*name=='/') {
-	 strncpy(fullName, name, LONG_NAME_LEN);
+	 strncpy(fullName, name, MAX_NAME_LEN);
       }
       status = splitPathByKey(fullName, 
 			      myDirName, myFileName, '/');
@@ -210,7 +210,7 @@ showColl(char *name, char *attrName, int wild)
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char fullName[LONG_NAME_LEN];
+   char fullName[MAX_NAME_LEN];
    int  status;
    char *columnNames[]={"attribute", "value", "units"};
 
@@ -228,14 +228,14 @@ showColl(char *name, char *attrName, int wild)
    genQueryInp.selectInp.value = i1b;
    genQueryInp.selectInp.len = 3;
 
-   strncpy(fullName, cwd, LONG_NAME_LEN);
+   strncpy(fullName, cwd, MAX_NAME_LEN);
    if (strlen(name)>0) {
       if (*name=='/') {
-	 strncpy(fullName, name, LONG_NAME_LEN);
+	 strncpy(fullName, name, MAX_NAME_LEN);
       }
       else {
-	 rstrcat(fullName, "/", LONG_NAME_LEN);
-	 rstrcat(fullName, name, LONG_NAME_LEN);
+	 rstrcat(fullName, "/", MAX_NAME_LEN);
+	 rstrcat(fullName, name, MAX_NAME_LEN);
       }
    }
   
@@ -949,41 +949,41 @@ modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    int status;
    char *mySubName;
    char *myName;
-   char fullName1[LONG_NAME_LEN];
-   char fullName2[LONG_NAME_LEN];
+   char fullName1[MAX_NAME_LEN];
+   char fullName2[MAX_NAME_LEN];
 
-   strncpy(fullName1, cwd, LONG_NAME_LEN);
+   strncpy(fullName1, cwd, MAX_NAME_LEN);
    if (strcmp(arg1,"-R")==0 || strcmp(arg1,"-r")==0 || 
        strcmp(arg1,"-G")==0 || strcmp(arg1,"-g")==0 || 
        strcmp(arg1,"-u")==0) {
-      strncpy(fullName1, arg3, LONG_NAME_LEN);
+      strncpy(fullName1, arg3, MAX_NAME_LEN);
    }
    else {
       if (strlen(arg3)>0) {
 	 if (*arg3=='/') {
-	    strncpy(fullName1, arg3, LONG_NAME_LEN);
+	    strncpy(fullName1, arg3, MAX_NAME_LEN);
 	 }
 	 else {
-	    rstrcat(fullName1, "/", LONG_NAME_LEN);
-	    rstrcat(fullName1, arg3, LONG_NAME_LEN);
+	    rstrcat(fullName1, "/", MAX_NAME_LEN);
+	    rstrcat(fullName1, arg3, MAX_NAME_LEN);
 	 }
       }
    }
 
-   strncpy(fullName2, cwd, LONG_NAME_LEN);
+   strncpy(fullName2, cwd, MAX_NAME_LEN);
    if (strcmp(arg2,"-R")==0 || strcmp(arg2,"-r")==0 || 
        strcmp(arg2,"-G")==0 || strcmp(arg2,"-g")==0 || 
        strcmp(arg2,"-u")==0) {
-      strncpy(fullName2, arg4, LONG_NAME_LEN);
+      strncpy(fullName2, arg4, MAX_NAME_LEN);
    }
    else {
       if (strlen(arg4)>0) {
 	 if (*arg4=='/') {
-	    strncpy(fullName2, arg4, LONG_NAME_LEN);
+	    strncpy(fullName2, arg4, MAX_NAME_LEN);
 	 }
 	 else {
-	    rstrcat(fullName2, "/", LONG_NAME_LEN);
-	    rstrcat(fullName2, arg4, LONG_NAME_LEN);
+	    rstrcat(fullName2, "/", MAX_NAME_LEN);
+	    rstrcat(fullName2, arg4, MAX_NAME_LEN);
 	 }
       }
    }
@@ -1020,7 +1020,7 @@ modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    }
 
    if (status == CAT_UNKNOWN_FILE) {
-      char tempName[LONG_NAME_LEN]="/";
+      char tempName[MAX_NAME_LEN]="/";
       int len;
       int isRemote=0;
       strncat(tempName, myEnv.rodsZone, MAX_NAME_LEN);
@@ -1052,22 +1052,22 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    int status;
    char *mySubName;
    char *myName;
-   char fullName[LONG_NAME_LEN];
+   char fullName[MAX_NAME_LEN];
 
-   strncpy(fullName, cwd, LONG_NAME_LEN);
+   strncpy(fullName, cwd, MAX_NAME_LEN);
    if (strcmp(arg1,"-R")==0 || strcmp(arg1,"-r")==0 || 
        strcmp(arg1,"-G")==0 || strcmp(arg1,"-g")==0 || 
        strcmp(arg1,"-u")==0) {
-      strncpy(fullName, arg2, LONG_NAME_LEN);
+      strncpy(fullName, arg2, MAX_NAME_LEN);
    }
    else {
       if (strlen(arg2)>0) {
 	 if (*arg2=='/') {
-	    strncpy(fullName, arg2, LONG_NAME_LEN);
+	    strncpy(fullName, arg2, MAX_NAME_LEN);
 	 }
 	 else {
-	    rstrcat(fullName, "/", LONG_NAME_LEN);
-	    rstrcat(fullName, arg2, LONG_NAME_LEN);
+	    rstrcat(fullName, "/", MAX_NAME_LEN);
+	    rstrcat(fullName, arg2, MAX_NAME_LEN);
 	 }
       }
    }
@@ -1282,6 +1282,13 @@ doCommand(char *cmdToken[]) {
 		     cmdToken[6], cmdToken[7], cmdToken[8]);
       return(0);
    }
+   if (strcmp(cmdToken[0],"set") == 0) { // JMC - backport 4836
+      modAVUMetadata("set", cmdToken[1], cmdToken[2], 
+                    cmdToken[3], cmdToken[4], cmdToken[5],
+                    cmdToken[6], cmdToken[7], "");
+      return(0);
+   }
+
    doLs=0;
    if (strcmp(cmdToken[0],"lsw") == 0) {
       doLs=1;
@@ -1556,6 +1563,7 @@ void usageMain()
 " rmw -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
 " mod -d|C|R|G|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]", 
 "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
+" set -d|C|R|G|u Name AttName newValue [newUnits] (Assign a single value)", // JMC - backport 4836
 " ls  -[l]d|C|R|G|u Name [AttName] (List existing AVUs for item Name)", 
 " lsw -[l]d|C|R|G|u Name [AttName] (List existing AVUs, use Wildcards)", 
 " qu -d|C|R|G|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
@@ -1745,6 +1753,27 @@ usage(char *subOpt)
 	    printf("%s\n",msgs[i]);
 	 }
       }
+// =-=-=-=-=-=-=-
+// JMC - backport 4836
+      if (strcmp(subOpt,"set")==0) {
+       char *msgs[]={
+" set -d|C|R|G|u Name AttName newValue [newUnits]  (assign a single value)", 
+"Set the newValue (and newUnit) of an AVU of a dataobj (-d), collection(-C),",
+"     resource(-R), resource group(-G) or user(-u).",
+" ",
+"'set' modifies an AVU if it exists, or creates one if it does not.",
+"If the AttName does not exist, or is used by multiple objects, the AVU for",
+"this object is added.",
+"If the AttName is used only by this one object, the AVU (row) is modified",
+"with the new values, reducing the database overhead (unused rows).",
+"Example: set -d file1 distance 12",
+""};
+        for (i=0;;i++) {
+          if (strlen(msgs[i])==0) return(0);
+           printf("%s\n",msgs[i]);
+        }
+      }
+// =-=-=-=-=-=-=-
       if (strcmp(subOpt,"qu")==0) {
 	 char *msgs[]={
 " qu -d|C|R|G|u AttName Op AttVal [...] (Query objects with matching AVUs)", 

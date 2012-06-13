@@ -14,9 +14,8 @@ rsGetTempPassword (rsComm_t *rsComm,
     int status;
 
     status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
-    rodsLog (LOG_NOTICE,
-		 "rsGetTempPassword get stat=%d", status);
-    if (status < 0) {
+    
+	if (status < 0) {
        return(status);
     }
 

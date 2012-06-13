@@ -48,7 +48,7 @@ main(int argc, char **argv)
     }
 
     memset (&structFileOprInp, 0, sizeof (structFileOprInp));
-    structFileOprInp.specColl = malloc (sizeof (specColl_t));
+    structFileOprInp.specColl = (specColl_t *)malloc (sizeof (specColl_t));
     rstrcpy (structFileOprInp.specColl->collection, 
       "/tempZone/home/rods/dirx", MAX_NAME_LEN);
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;

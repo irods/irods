@@ -134,6 +134,18 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->orphan=True;
             argv[i]="-Z";
          }
+         if (strcmp("--purgec", argv[i])==0) { // JMC - backport 4537
+            rodsArgs->purgeCache=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--bundle", argv[i])==0) { // JMC - backport 4536
+            rodsArgs->bundle=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--empty", argv[i])==0) { // JMC - backport 4552
+            rodsArgs->empty=True;
+            argv[i]="-Z";
+         }
          if (strcmp("--age", argv[i])==0) {  /* also -Y */
             rodsArgs->age=True;
             argv[i]="-Z";
@@ -151,6 +163,20 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->dryrun=True;
             argv[i]="-Z";
          }
+
+         if (strcmp("--rlock", argv[i])==0) { // JMC - backport 4604
+            rodsArgs->rlock=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--wlock", argv[i])==0) { // JMC - backport 4604
+            rodsArgs->wlock=True;
+            argv[i]="-Z";
+         }
+         if (strcmp("--add", argv[i])==0) { // JMC - backport 4643
+            rodsArgs->add=True;
+            argv[i]="-Z";
+         }
+
       }
    }
 

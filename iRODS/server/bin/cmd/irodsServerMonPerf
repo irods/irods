@@ -117,7 +117,7 @@ $fsExists = 1;
 my @sysPathList = split(',', $sysFilePath);
 foreach my $pth(@sysPathList) {
 	if ($pth ne 'none') {
-		my $rc = system("df -k $pth > /dev/null 2>&1");
+		my $rc = system("LANG=C;export LANG;df -k $pth > /dev/null 2>&1"); # JMC - backport 4830
 		if( $rc != 0 ) {
 			Log("The file $pth system doesn't exit. $!");
 			$fsExists = 0;
@@ -234,10 +234,10 @@ else
 	# the format of df command is different on
 	# the different platforms...
 	# it is necessary to determine the column useful for each plateform:
-	if ( $fsExists ) {
+	if ( $fsExists ) { 
 		foreach my $pth(@sysPathList) {
 			if ( $pth ne 'none' ) {
-				@result = `df -k $pth`;
+				@result = `LANG=C;export LANG;df -k $pth`; # JMC - backport 4830
 				chomp($result[0]);
 				foreach my $entry(@result) {
 					if ( $entry !~ /Filesystem/ && $entry =~ /%/) {
@@ -462,7 +462,7 @@ if ( $fsExists ) {
 			$diskAbsAvail .= -1;
 			next;
 		}
-		@result = `df -k $pth`;
+		@result = `LANG=C;export LANG;df -k $pth`; # JMC - backport 4830
 		while ( my $entry = shift(@result) ) {
 			if ( $entry !~ /Filesystem/ && $entry =~ /%/) {
 				chomp($entry);

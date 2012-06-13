@@ -36,6 +36,7 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei);
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei);
 int msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei);
+int msiGetFormattedSystemTime( msParam_t* outParam, msParam_t* inpParam, msParam_t* inpFormatParam, ruleExecInfo_t *rei );
 int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei);
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
@@ -55,6 +56,7 @@ int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 		 msParam_t* queryOutParam, ruleExecInfo_t *rei);
 int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei);
+int msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei); // JMC - backport 4713
 int msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *coperator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei);
 int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
@@ -89,6 +91,8 @@ int msiGetObjType(msParam_t *objNameP, msParam_t *objTypeP,
 	      ruleExecInfo_t *rei);
 int msiAssociateKeyValuePairsToObj(msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
 				   ruleExecInfo_t *rei);
+int msiSetKeyValuePairsToObj(msParam_t *mDP, msParam_t* objP,  msParam_t* typP,
+                                ruleExecInfo_t *rei);
 int msiExtractTemplateMDFromBuf(msParam_t* sOP, msParam_t* tSP, 
 			   msParam_t *mDP, ruleExecInfo_t *rei);
 int msiReadMDTemplateIntoTagStruct(msParam_t* sOP, msParam_t* tSP, ruleExecInfo_t *rei);
@@ -243,7 +247,9 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 		// =-=-=-=-=-=-=-
 		// implementation of the microservice table class, which initializes the table during the ctor
 		// inserting the statically compiled microservices during construction providing RAII behavior
-		ms_table::ms_table() {
+		// NOTE:: this template class is the same as the ms_table typedef from eirods_ms_plugin.h
+		template<>
+		lookup_table< eirods::ms_table_entry >::lookup_table() {
 			table_[ "print_hello" ] = eirods::ms_table_entry( "print_hello", 0, (funcPtr) print_hello );
 			table_[ "print_hello_arg" ] = eirods::ms_table_entry( "print_hello_arg", 1, (funcPtr) print_hello_arg );
 			table_[ "msiVacuum" ] = eirods::ms_table_entry( "msiVacuum", 0, (funcPtr) msiVacuum );
@@ -294,6 +300,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiAdmAppendToTopOfCoreIRB" ] = eirods::ms_table_entry( "msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB );
 			table_[ "msiGetObjType" ] = eirods::ms_table_entry( "msiGetObjType",2,(funcPtr) msiGetObjType );
 			table_[ "msiAssociateKeyValuePairsToObj" ] = eirods::ms_table_entry( "msiAssociateKeyValuePairsToObj",3,(funcPtr) msiAssociateKeyValuePairsToObj );
+			table_[ "msiSetKeyValuePairsToObj" ] = eirods::ms_table_entry( "msiSetKeyValuePairsToObj",3,(funcPtr) msiSetKeyValuePairsToObj );
 			table_[ "msiExtractTemplateMDFromBuf" ] = eirods::ms_table_entry( "msiExtractTemplateMDFromBuf",3,(funcPtr) msiExtractTemplateMDFromBuf );
 			table_[ "msiReadMDTemplateIntoTagStruct" ] = eirods::ms_table_entry( "msiReadMDTemplateIntoTagStruct",2,(funcPtr) msiReadMDTemplateIntoTagStruct );
 			table_[ "msiDataObjPut" ] = eirods::ms_table_entry( "msiDataObjPut",4,(funcPtr) msiDataObjPut );
@@ -312,6 +319,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiCollRsync" ] = eirods::ms_table_entry( "msiCollRsync",5,(funcPtr) msiCollRsync );
 			table_[ "msiFreeBuffer" ] = eirods::ms_table_entry( "msiFreeBuffer",1,(funcPtr) msiFreeBuffer );
 			table_[ "msiNoChkFilePathPerm" ] = eirods::ms_table_entry( "msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm );
+			table_[ "msiSetChkFilePathPerm" ] = eirods::ms_table_entry( "msiSetChkFilePathPerm",1,(funcPtr) msiSetChkFilePathPerm );
 			table_[ "msiNoTrashCan" ] = eirods::ms_table_entry( "msiNoTrashCan",0,(funcPtr) msiNoTrashCan );
 			table_[ "msiSetPublicUserOpr" ] = eirods::ms_table_entry( "msiSetPublicUserOpr",1,(funcPtr) msiSetPublicUserOpr );
 			table_[ "delayExec" ] = eirods::ms_table_entry( "delayExec",3,(funcPtr) delayExec );
@@ -323,6 +331,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiGetDiffTime" ] = eirods::ms_table_entry( "msiGetDiffTime", 4, (funcPtr) msiGetDiffTime );
 			table_[ "msiGetSystemTime" ] = eirods::ms_table_entry( "msiGetSystemTime", 2, (funcPtr) msiGetSystemTime );
 			table_[ "msiHumanToSystemTime" ] = eirods::ms_table_entry( "msiHumanToSystemTime", 2, (funcPtr) msiHumanToSystemTime );
+            table_[ "msiGetFormattedSystemTime" ] = eirods::ms_table_entry( "msiGetFormattedSystemTime", 3, (funcPtr) msiGetFormattedSystemTime );
 			table_[ "msiStrToBytesBuf" ] = eirods::ms_table_entry( "msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf );
 			table_[ "msiApplyDCMetadataTemplate" ] = eirods::ms_table_entry( "msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate );
 			table_[ "msiListEnabledMS" ] = eirods::ms_table_entry( "msiListEnabledMS", 1, (funcPtr) msiListEnabledMS );
@@ -338,6 +347,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiMakeQuery" ] = eirods::ms_table_entry( "msiMakeQuery",3,(funcPtr) msiMakeQuery );
 			table_[ "msiMakeGenQuery" ] = eirods::ms_table_entry( "msiMakeGenQuery",3,(funcPtr) msiMakeGenQuery );
 			table_[ "msiGetMoreRows" ] = eirods::ms_table_entry( "msiGetMoreRows",3,(funcPtr) msiGetMoreRows );
+			table_[ "msiCloseGenQuery" ] = eirods::ms_table_entry( "msiCloseGenQuery",2,(funcPtr) msiCloseGenQuery );
 			table_[ "msiAddSelectFieldToGenQuery" ] = eirods::ms_table_entry( "msiAddSelectFieldToGenQuery",3,(funcPtr) msiAddSelectFieldToGenQuery );
 			table_[ "msiAddConditionToGenQuery" ] = eirods::ms_table_entry( "msiAddConditionToGenQuery",4,(funcPtr) msiAddConditionToGenQuery );
 			table_[ "msiPrintGenQueryOutToBuffer" ] = eirods::ms_table_entry( "msiPrintGenQueryOutToBuffer",3,(funcPtr) msiPrintGenQueryOutToBuffer );
@@ -473,6 +483,7 @@ microsdef_t MicrosTable[] = {
 #endif
   {"msiGetObjType",2,(funcPtr) msiGetObjType},
   {"msiAssociateKeyValuePairsToObj",3,(funcPtr) msiAssociateKeyValuePairsToObj},
+{"msiSetKeyValuePairsToObj",3,(funcPtr) msiSetKeyValuePairsToObj},
   {"msiExtractTemplateMDFromBuf",3,(funcPtr) msiExtractTemplateMDFromBuf},
   {"msiReadMDTemplateIntoTagStruct",2,(funcPtr) msiReadMDTemplateIntoTagStruct},
   {"msiDataObjPut",4,(funcPtr) msiDataObjPut},
@@ -491,6 +502,7 @@ microsdef_t MicrosTable[] = {
   {"msiCollRsync",5,(funcPtr) msiCollRsync},
   {"msiFreeBuffer",1,(funcPtr) msiFreeBuffer},
   {"msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm},
+  {"msiSetChkFilePathPerm",1,(funcPtr) msiSetChkFilePathPerm},
   {"msiNoTrashCan",0,(funcPtr) msiNoTrashCan},
   {"msiSetPublicUserOpr",1,(funcPtr) msiSetPublicUserOpr},
 #ifndef RULE_ENGINE_N
@@ -527,6 +539,7 @@ microsdef_t MicrosTable[] = {
   {"msiMakeQuery",3,(funcPtr) msiMakeQuery},
   {"msiMakeGenQuery",3,(funcPtr) msiMakeGenQuery},
   {"msiGetMoreRows",3,(funcPtr) msiGetMoreRows},
+  {"msiCloseGenQuery",2,(funcPtr) msiCloseGenQuery},
   {"msiAddSelectFieldToGenQuery",3,(funcPtr) msiAddSelectFieldToGenQuery},
   {"msiAddConditionToGenQuery",4,(funcPtr) msiAddConditionToGenQuery},
   {"msiPrintGenQueryOutToBuffer",3,(funcPtr) msiPrintGenQueryOutToBuffer},

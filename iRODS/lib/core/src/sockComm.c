@@ -28,12 +28,14 @@ MMRESULT win_connect_timer_id;
 #include <setjmp.h>
 jmp_buf Jcenv;
 
+#if 0 // JMC - UNUSED
 void
 connToutHandler (int sig)
 {
     alarm (0);
     longjmp (Jcenv, 1);
 }
+#endif // JMC - UNUSED
 #endif  /* _WIN32 */
 
 #ifdef USE_BOOST_ASIO
@@ -1342,7 +1344,7 @@ rods_inet_ntoa (struct in_addr in)
 
     return (clHostAddr);
 }
-
+#if 0 // JMC - UNUSED 
 int
 irodsCloseSock (int sock)
 {
@@ -1352,7 +1354,7 @@ irodsCloseSock (int sock)
         return (close (sock));
 #endif /* WIN32 */
 }
-
+#endif // JMC - UNUSED 
 int
 readReconMsg (int sock, reconnMsg_t **reconnMsg)
 {

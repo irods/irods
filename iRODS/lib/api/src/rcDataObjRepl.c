@@ -71,6 +71,7 @@
  *    \n RBUDP_SEND_RATE_KW - the number of RBUDP packet to send per second
  *          The default is 600000.
  *    \n RBUDP_PACK_SIZE_KW - the size of RBUDP packet. The default is 8192.
+ *    \n LOCK_TYPE_KW - set advisory lock type. valid value - READ_LOCK_TYPE.
  *
  * \return integer
  * \retval 0 on success

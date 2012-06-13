@@ -23,6 +23,7 @@
 #define FILE_STAT_AN 			510
 #define FILE_FSTAT_AN 			511
 #define FILE_FSYNC_AN 			512
+
 #define FILE_STAGE_AN 			513
 #define FILE_GET_FS_FREE_SPACE_AN 	514
 #define FILE_OPENDIR_AN 		515
@@ -110,21 +111,22 @@
 #define COLL_CREATE_AN                  681
 #define RM_COLL_OLD_AN                  682
 #define REG_COLL_AN                     683
-#define PHY_BUNDLE_COLL_AN 		684
+#define PHY_BUNDLE_COLL_AN 		        684
 #define UNBUN_AND_REG_PHY_BUNFILE_AN 	685
 #define GET_HOST_FOR_PUT_AN 			686
-#define GET_RESC_QUOTA_AN 			687
+#define GET_RESC_QUOTA_AN 			    687
 #define BULK_DATA_OBJ_REG_AN 			688
 #define BULK_DATA_OBJ_PUT_AN 			689
-#define PROC_STAT_AN 			690
-#define STREAM_READ_AN 			691
-#define EXEC_CMD_AN 			692
-#define STREAM_CLOSE_AN 			693
+#define PROC_STAT_AN 			        690
+#define STREAM_READ_AN 			        691
+#define EXEC_CMD_AN 			        692
+#define STREAM_CLOSE_AN 			    693
 #define GET_HOST_FOR_GET_AN 			694
-#define DATA_OBJ_REPL_AN 		695
-#define DATA_OBJ_COPY_AN 		696
-#define DATA_OBJ_PHYMV_AN 		697
+#define DATA_OBJ_REPL_AN 		        695
+#define DATA_OBJ_COPY_AN 		        696
+#define DATA_OBJ_PHYMV_AN 		        697
 #define DATA_OBJ_FSYNC_AN               698
+#define DATA_OBJ_LOCK_AN                699 // JMC - backport 4599
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

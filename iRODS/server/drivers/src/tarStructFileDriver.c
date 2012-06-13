@@ -83,12 +83,13 @@ tarSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
     fileCreateInp.mode = subFile->mode;
     fileCreateInp.flags = subFile->flags;
+    fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
 
     status = rsFileCreate (rsComm, &fileCreateInp);
 
     if (status < 0) {
        rodsLog (LOG_ERROR,
-          "specCollCreate: rsFileCreate for %s error, status = %d",
+          "tarSubStructFileCreate: rsFileCreate for %s error, status = %d",
           fileCreateInp.fileName, status);
         return status;
     } else {
@@ -667,127 +668,6 @@ tarSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
     return status;
 }
 
-#if 0	/* no long use tarLogStructFileSync */
-int
-tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
-{
-    int status;
-
-    if ((structFileOprInp->oprType & LOGICAL_BUNDLE) != 0) {
-	status = tarLogStructFileSync (rsComm, structFileOprInp);
-    } else {
-	status = tarPhyStructFileSync (rsComm, structFileOprInp);
-    }
-    return (status);
-}
-
-/* tarLogStructFileSync - bundle files in the cacheDir UNIX directory,
- */
-int
-tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
-{
-    int structFileInx;
-    specColl_t *specColl;
-    rescInfo_t *rescInfo;
-    collInp_t openCollInp;
-    collEnt_t *collEnt = NULL;
-    int handleInx;
-    int status = 0;
-    TAR *t;
-    int myMode;
-    int collLen;
-    int parLen;
-    char savepath[MAX_NAME_LEN];
-    char topTmpDir[MAX_NAME_LEN];
-
-    structFileInx = rsTarStructFileOpen (rsComm, structFileOprInp->specColl);
-    if (structFileInx < 0) {
-        rodsLog (LOG_NOTICE,
-         "tarLogStructFileSync: rsTarStructFileOpen error for %s, stat=%d",
-         structFileOprInp->specColl->collection, structFileInx);
-        return (structFileInx);
-    }
-
-    rescInfo = StructFileDesc[structFileInx].rescInfo;
-    specColl = structFileOprInp->specColl;
-
-    memset (&openCollInp, 0, sizeof (openCollInp));
-    rstrcpy (openCollInp.collName, specColl->collection, MAX_NAME_LEN);
-    openCollInp.flags =
-      RECUR_QUERY_FG | VERY_LONG_METADATA_FG | INCLUDE_CONDINPUT_IN_QUERY;
-    addKeyVal (&openCollInp.condInput, RESC_NAME_KW, rescInfo->rescName);
-
-    handleInx = rsOpenCollection (rsComm, &openCollInp);
-    if (handleInx < 0) {
-        rodsLog (LOG_ERROR,
-          "tarLogStructFileSync: rsOpenCollection of %s error. status = %d",
-          openCollInp.collName, handleInx);
-        return (handleInx);
-    }
-
-    myMode = encodeIrodsTarfd (structFileInx, getDefFileMode ());
-
-    status = tar_open (&t, specColl->phyPath, &irodstype,
-      O_WRONLY, myMode, TAR_GNU);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-          "tarLogStructFileSync: tar_open error for %s, errno = %d",
-          specColl->phyPath, errno);
-        return (SYS_TAR_OPEN_ERR - errno);
-    }
-    collLen = strlen (openCollInp.collName) + 1;
-    parLen = getParentPathlen (openCollInp.collName);
-    snprintf (topTmpDir, MAX_NAME_LEN, "/tmp/%s", 
-      openCollInp.collName + parLen);
-
-    while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
-	if (collEnt->objType == DATA_OBJ_T) {
-	    if (collEnt->collName[collLen] == '\0') {
-	        snprintf (savepath, MAX_NAME_LEN, "./%s", 
-	          collEnt->dataName);
-	    } else {
-	        snprintf (savepath, MAX_NAME_LEN, "./%s/%s", 
-	          collEnt->collName + collLen, collEnt->dataName);
-	    }
-	    status = tar_append_file (t, collEnt->phyPath, savepath);
-    	    if (status != 0) {
-        	rodsLog (LOG_NOTICE,
-      		 "tarLogStructFileSync: tar_append_tree error for %s, errno=%d",
-                  savepath, errno);
-		rsCloseCollection (rsComm, &handleInx);;
-		rmTmpDirAll (topTmpDir);
-		tar_close(t);
-                return (SYS_TAR_APPEND_ERR - errno);
-            }
-	} else {	/* a collection */
-	    char tmpDir[MAX_NAME_LEN];
-	    snprintf (savepath, MAX_NAME_LEN, "./%s",
-              collEnt->collName + collLen);
-	   /* have to mkdir to fool tar_append_file */
-	    snprintf (tmpDir, MAX_NAME_LEN, "/tmp/%s", 
-	     collEnt->collName + parLen);
-	    mkdirR ("/tmp", tmpDir, getDefDirMode ());
-	    status = tar_append_file (t, tmpDir, savepath);
-            if (status != 0) {
-                rodsLog (LOG_NOTICE,
-                 "tarLogStructFileSync: tar_append_tree error for %s, errno=%d",
-                  collEnt->collName + collLen, errno);
-		rmTmpDirAll (topTmpDir);
-		rsCloseCollection (rsComm, &handleInx);
-		tar_close(t);
-                return (SYS_TAR_APPEND_ERR - errno);
-            }
-	}
-    }
-
-    rmTmpDirAll (topTmpDir);
-    rsCloseCollection (rsComm, &handleInx);;
-    tar_close(t);
-
-    return 0;
-}
-#endif
     
 int
 rmTmpDirAll (char *myDir)
@@ -824,6 +704,7 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     specColl_t *specColl;
     rescInfo_t *rescInfo;
     fileRmdirInp_t fileRmdirInp;
+	 char *dataType; // JMC - backport 4635
     int status = 0;
 
     structFileInx = rsTarStructFileOpen (rsComm, structFileOprInp->specColl);
@@ -846,6 +727,10 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 	/* remove cache and the struct file */
 	freeStructFileDesc (structFileInx);
 	return (status);
+    }
+    if ((dataType = getValByKey (&structFileOprInp->condInput, DATA_TYPE_KW)) // JMC - backport 4635
+      != NULL) {
+        rstrcpy (StructFileDesc[structFileInx].dataType, dataType, NAME_LEN);
     }
 
     if (strlen (specColl->cacheDir) > 0) {
@@ -908,6 +793,7 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int structFileInx;
     int status;
     specColl_t *specColl;
+    char* dataType; // JMC - backport 4635
 
     if (rsComm == NULL || structFileOprInp == NULL || 
       structFileOprInp->specColl == NULL) {
@@ -935,7 +821,10 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
         freeStructFileDesc (structFileInx);
         return (status);
     }
-
+    if ((dataType = getValByKey (&structFileOprInp->condInput, DATA_TYPE_KW))  // JMC - backport 4635
+      != NULL) {
+       rstrcpy (StructFileDesc[structFileInx].dataType, dataType, NAME_LEN);
+    }
     status = extractTarFile (structFileInx);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -976,8 +865,9 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
       &specCollCache)) >= 0) {
 	StructFileDesc[structFileInx].specColl = &specCollCache->specColl;
 	/* getSpecCollCache does not give phyPath nor resource */
-	rstrcpy (specCollCache->specColl.phyPath, specColl->phyPath, 
-	  MAX_NAME_LEN);
+    if (strlen (specColl->phyPath) > 0) { // JMC - backport 4517
+        rstrcpy (specCollCache->specColl.phyPath, specColl->phyPath, MAX_NAME_LEN);
+	}
 	if (strlen (specCollCache->specColl.resource) == 0) {
 	    rstrcpy (specCollCache->specColl.resource, specColl->resource,
 	      NAME_LEN);
@@ -1271,11 +1161,19 @@ int
 extractTarFile (int structFileInx)
 {
     int status; 
-#ifdef TAR_EXEC_PATH
-    status = extractTarFileWithExec (structFileInx);
-#else
-    status = extractTarFileWithLib (structFileInx);
-#endif
+    if( strcmp( StructFileDesc[structFileInx].dataType, ZIP_DT_STR ) == NULL) { // JMC - backport 4637, 4658, - changed != to == due to logic issue
+        #ifdef UNZIP_EXEC_PATH // JMC - backport 4639
+        status = extractFileWithUnzip (structFileInx);
+        #else
+	    return SYS_ZIP_FORMAT_NOT_SUPPORTED;
+        #endif
+    } else {
+        #ifdef TAR_EXEC_PATH
+        status = extractTarFileWithExec (structFileInx);
+        #else
+        status = extractTarFileWithLib (structFileInx);
+        #endif
+	} // JMC - backport 4637
     return status;
 }
 
@@ -1284,16 +1182,14 @@ int
 extractTarFileWithExec (int structFileInx)
 {
     int status;
-#if 0
-    char cmdStr[MAX_NAME_LEN];
-#else
      char *av[NAME_LEN];
-#endif
 #ifndef GNU_TAR
     char tmpPath[MAX_NAME_LEN];
 #endif
-
-    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    int inx = 0; // JMC - backport 4635
+    
+	specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+	char *dataType = StructFileDesc[structFileInx].dataType; // JMC - backport 4635
 
     if (StructFileDesc[structFileInx].inuseFlag <= 0) {
         rodsLog (LOG_NOTICE,
@@ -1309,29 +1205,40 @@ extractTarFileWithExec (int structFileInx)
           structFileInx);
         return (SYS_STRUCT_FILE_DESC_ERR);
     }
-
-#if 0
-    snprintf (cmdStr, MAX_NAME_LEN, "%s -xf %s -C %s",
-      TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
-
-    status = system (cmdStr);
-
-    if (status != 0) {
-        rodsLog (LOG_ERROR,
-          "extractTarFileWithExec:: tar of %s to %s failed. stat = %d",
-          specColl->cacheDir, specColl->phyPath, status);
-        status = SYS_EXEC_TAR_ERR;
-    }
-#else
     bzero (av, sizeof (av));
+// =-=-=-=-=-=-=-
+// JMC - backport 4635
+    av[inx] = TAR_EXEC_PATH; 
+    inx++; 
 #ifdef GNU_TAR
-    av[0] = TAR_EXEC_PATH;
-    av[1] = "-x";
-    av[2] = "-f";
-    av[3] = specColl->phyPath;
-    av[4] = "-C";
-    av[5] = specColl->cacheDir;
-#else	/* GNU_TAR */
+    av[inx] = "-x";
+    inx++;
+    if (strstr (dataType, GZIP_TAR_DT_STR) != NULL) { // JMC - backport 4658
+       av[inx] = "-z";
+        inx++;
+    } else if (strstr (dataType, BZIP2_TAR_DT_STR) != NULL) { // JMC - backport 4658
+        av[inx] = "-j";
+        inx++;
+    }
+#ifdef TAR_EXTENDED_HDR // JMC - backport 4596
+    av[inx] = "-E";
+    inx++;
+#endif
+    av[inx] = "-f";
+    inx++;
+    av[inx] = specColl->phyPath;
+    inx++;
+    av[inx] = "-C";
+    inx++;
+    av[inx] = specColl->cacheDir;
+#else  /* GNU_TAR */
+    if( strstr (dataType, GZIP_TAR_DT_STR) != NULL || // JMC - backport 4658
+        strstr (dataType, BZIP2_TAR_DT_STR) != NULL) {
+        /* non GNU_TAR don't seem to support -j nor -z option */
+        rodsLog (LOG_ERROR,
+         "extractTarFileWithExec:gzip/bzip2 %s not supported by non-GNU_TAR",
+          specColl->phyPath);
+    }
     mkdir (specColl->cacheDir, getDefDirMode ());
     if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
         rodsLog (LOG_ERROR,
@@ -1339,15 +1246,17 @@ extractTarFileWithExec (int structFileInx)
 	return SYS_EXEC_TAR_ERR - errno;
     }
     chdir (specColl->cacheDir);
-    av[0] = TAR_EXEC_PATH;
-    av[1] = "-xf";
-    av[2] = specColl->phyPath;
+#ifdef TAR_EXTENDED_HDR // JMC - backport 4596
+    av[inx] = "-xEf";
+#else
+    av[inx] = "-xf";
+#endif
+	inx++;
+    av[inx] = specColl->phyPath;
 #endif	/* GNU_TAR */
     status = forkAndExec (av);
 #ifndef GNU_TAR
     chdir (tmpPath);
-#endif
-
 #endif
 
     return status;
@@ -1446,12 +1355,21 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
     rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
 
-
-#ifdef TAR_EXEC_PATH
-    status = bundleCacheDirWithExec (structFileInx);
-#else
-    status = bundleCacheDirWithLib (structFileInx);
-#endif
+    if (strstr (StructFileDesc[structFileInx].dataType, ZIP_DT_STR) != 0) { // JMC - backport 4637
+       #ifdef ZIP_EXEC_PATH
+        status = bundleCacheDirWithZip (structFileInx );// JMC - backport 4665?  , oprType); // JMC - backport 4643
+       #else
+       return SYS_ZIP_FORMAT_NOT_SUPPORTED;
+       #endif
+    } else {
+        #ifdef TAR_EXEC_PATH
+        status = bundleCacheDirWithExec (structFileInx, oprType); // JMC - backport 4643
+        #else
+		if ((oprType & ADD_TO_TAR_OPR) != 0) // JMC - backport 4643
+		    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
+        status = bundleCacheDirWithLib (structFileInx);
+        #endif
+	} // JMC - backport 4637
     if (status < 0) return status;
 
     /* register size change */
@@ -1484,42 +1402,86 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
 #ifdef TAR_EXEC_PATH
 int
-bundleCacheDirWithExec (int structFileInx)
+bundleCacheDirWithExec (int structFileInx, int oprType) // JMC - backport 4643
 {
     int status;
-#if 0
-    char cmdStr[MAX_NAME_LEN];
-#else
-     char *av[NAME_LEN];
+    char *av[NAME_LEN];
+
+#ifndef GNU_TAR // JMC - backport 4643
+    char optStr[NAME_LEN];
 #endif
+
+    char *dataType; // JMC - backport 4635
+    int inx = 0; // JMC - backport 4635
 
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
     if (specColl == NULL || specColl->cacheDirty <= 0 ||
       strlen (specColl->cacheDir) == 0) return 0;
 
-#if 0
-    snprintf (cmdStr, MAX_NAME_LEN, "%s -chlf %s -C %s .",
-      TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
-
-    status = system (cmdStr);
-
-    if (status != 0) {
-        rodsLog (LOG_ERROR,
-          "bundleCacheDirWithExec: tar of %s to %s failed. stat = %d",
-          specColl->cacheDir, specColl->phyPath, status);
-	status = SYS_EXEC_TAR_ERR;
-    }
-#else
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4635
+	dataType = StructFileDesc[structFileInx].dataType;
     bzero (av, sizeof (av));
-    av[0] = TAR_EXEC_PATH;
-    av[1] = "-chf";
-    av[2] = specColl->phyPath;
-    av[3] = "-C";
-    av[4] = specColl->cacheDir;
-    av[5] = ".";
+    av[inx] = TAR_EXEC_PATH;
+	inx++;
+#ifdef GNU_TAR
+    if ((oprType & ADD_TO_TAR_OPR) == 0) { // JMC - backport 4643
+        av[inx] = "-c";
+    } else {
+        av[inx] = "-r";
+    }
 
-    status = forkAndExec (av);
+    inx++;
+    av[inx] = "-h";
+    inx++;
+    if (strstr (dataType, GZIP_TAR_DT_STR) != NULL) { // JMC - backport 4658
+       if ((oprType & ADD_TO_TAR_OPR) != 0) // JMC - backport 4643
+           return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
+        av[inx] = "-z";
+        inx++;
+    } else if (strstr  (dataType, BZIP2_TAR_DT_STR) != NULL) { // JMC - backport 4658
+       if ((oprType & ADD_TO_TAR_OPR) != 0) // JMC - backport 4643
+           return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
+        av[inx] = "-j";
+        inx++;
+    }
+#ifdef TAR_EXTENDED_HDR // JMC - backport 4596
+    av[inx] = "-E";
 #endif
+    av[inx] = "-f";
+    inx++;
+#else  /* GNU_TAR */
+    if( strstr (dataType, GZIP_TAR_DT_STR ) != NULL || // JMC - backport 4658
+        strstr (dataType, BZIP2_TAR_DT_STR) != NULL) { // JMC - backport 4658
+        rodsLog (LOG_ERROR,
+         "bundleCacheDirWithExec: gzip/bzip2 %s not supported for non-GNU_TAR",
+          specColl->phyPath);
+       return SYS_ZIP_FORMAT_NOT_SUPPORTED;
+    }
+	rstrcpy (optStr, "-h", NAME_LEN); // JMC  - backport 4643, 4645
+#ifdef TAR_EXTENDED_HDR
+    strcat (optStr, "E"); // JMC - backport 4643
+#endif
+    if ((oprType & ADD_TO_TAR_OPR) != 0) { // JMC - backport 
+       /* update */
+       strcat (optStr, "u");
+    }  else { // JMC - backport 4645
+	    strcat (optStr, "c");
+    }
+
+    strcat (optStr, "f");
+    av[inx] = optStr;
+    inx++;
+#endif /* GNU_TAR */
+    av[inx] = specColl->phyPath;
+    inx++;
+    av[inx] = "-C";
+    inx++;
+    av[inx] = specColl->cacheDir;
+    inx++;
+    av[inx] = ".";
+    status = forkAndExec (av);
+
 
     return status;
 }
@@ -1615,3 +1577,85 @@ freeTarSubFileDesc (int tarSubFileInx)
     return (0);
 }
 
+
+#ifdef ZIP_EXEC_PATH // JMC - backport 4639
+// =-=-=-=-=-=-=-
+// JMC - backport 4637
+int 
+bundleCacheDirWithZip (int structFileInx)
+{
+    char *av[NAME_LEN];
+    char tmpPath[MAX_NAME_LEN];
+    int status;
+    int inx = 0;
+
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+
+    if (specColl == NULL || specColl->cacheDirty <= 0 ||
+      strlen (specColl->cacheDir) == 0) return 0;
+
+    /* cd to the cacheDir */
+    if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
+        rodsLog (LOG_ERROR,
+          "bundleCacheDirWithZip: getcwd failed. errno = %d", errno);
+        return SYS_EXEC_TAR_ERR - errno;
+    }
+    chdir (specColl->cacheDir);
+    bzero (av, sizeof (av));
+    av[inx] = ZIP_EXEC_PATH;
+    inx++;
+    av[inx] = "-r";
+    inx++;
+    av[inx] = "-q";
+    inx++;
+    av[inx] = specColl->phyPath;
+    inx++;
+    av[inx] = ".";
+    status = forkAndExec (av);
+    chdir (tmpPath);
+
+    return status;
+}
+#endif // JMC - backport 4639
+
+#ifdef ZIP_EXEC_PATH // JMC - backport 4639
+int
+extractFileWithUnzip (int structFileInx)
+{
+    char *av[NAME_LEN];
+    int status;
+    int inx = 0;
+
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    if (StructFileDesc[structFileInx].inuseFlag <= 0) {
+        rodsLog (LOG_NOTICE,
+          "extractFileWithUnzip: structFileInx %d not in use",
+          structFileInx);
+        return (SYS_STRUCT_FILE_DESC_ERR);
+    }
+
+    if (specColl == NULL || strlen (specColl->cacheDir) == 0 ||
+     strlen (specColl->phyPath) == 0) {
+        rodsLog (LOG_NOTICE,
+          "extractFileWithUnzip: Bad specColl for structFileInx %d ",
+          structFileInx);
+        return (SYS_STRUCT_FILE_DESC_ERR);
+    }
+
+    /* cd to the cacheDir */
+    bzero (av, sizeof (av));
+    av[inx] = UNZIP_EXEC_PATH;
+    inx++;
+    av[inx] = "-q";
+    inx++;
+    av[inx] = "-d";
+    inx++;
+    av[inx] = specColl->cacheDir;
+    inx++;
+    av[inx] = specColl->phyPath;
+    status = forkAndExec (av);
+
+    return status;
+}
+#endif // JMC - backport 4639
+// =-=-=-=-=-=-=-

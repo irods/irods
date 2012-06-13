@@ -30,9 +30,18 @@ extern "C" {
 #endif
 
 /* defines some commonly used dataTypes */
-#define GENERIC_DT_STR	"generic"
-#define TAR_DT_STR	"tar file"
-#define HAAW_DT_STR	"haaw file"
+#define GENERIC_DT_STR	  "generic"
+#define TAR_DT_STR	      "tar file"
+#define GZIP_TAR_DT_STR   "gzipTar"  // JMC - backport 4632
+#define BZIP2_TAR_DT_STR  "bzip2Tar" // JMC - backport 4632
+#define ZIP_DT_STR        "zipFile"  // JMC - backport 4633
+/* bundle are types for internal phybun use */ // JMC - backport 4658
+#define TAR_BUNDLE_DT_STR "tar bundle" // JMC - backport 4658
+#define GZIP_TAR_BUNDLE_DT_STR "gzipTar bundle" // JMC - backport 4658
+#define BZIP2_TAR_BUNDLE_DT_STR "bzip2Tar bundle" // JMC - backport 4658
+#define ZIP_BUNDLE_DT_STR "zipFile bundle" // JMC - backport 4658
+
+#define HAAW_DT_STR	      "haaw file"
 #define MAX_LINK_CNT	20	/* max number soft link in a path */
 
 typedef struct RescInfo
@@ -283,8 +292,15 @@ typedef enum {
 
 /* definition for chkPathPerm */
 
-#define NO_CHK_PATH_PERM	0
-#define DO_CHK_PATH_PERM	1
+#define DISALLOW_PATH_REG       0       /* disallow path registration */ // JMC - backport 4774
+#define NO_CHK_PATH_PERM	    1 // JMC - backport 4758
+#define DO_CHK_PATH_PERM        2 // JMC - backport 4774
+#define CHK_NON_VAULT_PATH_PERM 3    /* allow reg of user's vault path */// JMC - backport 4774
+
+#define DISALLOW_PATH_REG_STR       "disallowPathReg"     // JMC - backport 4774
+#define NO_CHK_PATH_PERM_STR        "noChkPathPerm"       // JMC - backport 4774
+#define DO_CHK_PATH_PERM_STR        "doChkPathPerm"       // JMC - backport 4774
+#define CHK_NON_VAULT_PATH_PERM_STR "chkNonVaultPathPerm" // JMC - backport 4774
 
 /* definition for stageFlag to specify whether staging is required */
 #define NO_STAGING        0

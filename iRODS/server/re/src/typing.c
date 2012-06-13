@@ -580,7 +580,7 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
                     char errmsgbuf1[ERR_MSG_LEN], errmsgbuf2[ERR_MSG_LEN], buf2[1024], buf3[1024];
                     snprintf(errmsgbuf1, ERR_MSG_LEN, "simplify: unsolvable typing constraint %s < %s.\n", typeToString(TC_A(tc), typingEnv, buf2, 1024), typeToString(TC_B(tc), typingEnv, buf3, 1024));
                     generateErrMsg(errmsgbuf1, NODE_EXPR_POS((*errnode)), (*errnode)->base, errmsgbuf2);
-                    addRErrorMsg(errmsg, TYPE_ERROR, errmsgbuf2);
+                    addRErrorMsg(errmsg, RE_TYPE_ERROR, errmsgbuf2);
                     /*printVarTypeEnvToStdOut(typingEnv); */
                     /* printf("absurdity\n"); */
                     return ABSURDITY;
@@ -730,7 +730,7 @@ ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable*
     *errnode = node;
     snprintf(errmsgbuf, ERR_MSG_LEN, "type error: %s in %s", localErrorMsg, fn->text);
     generateErrMsg(errmsgbuf, NODE_EXPR_POS((*errnode)), (*errnode)->base, errbuf);
-    addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
+    addRErrorMsg(errmsg, RE_TYPE_ERROR, errbuf);
     return newSimpType(T_ERROR,r);
 }
 ExprType *replaceDynamicWithNewTVar(ExprType *type, Region *r) {
@@ -920,7 +920,7 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 		char errbuf[ERR_MSG_LEN], errbuf0[ERR_MSG_LEN];
 		snprintf(errbuf0, ERR_MSG_LEN, "error: unsupported ast node %d", getNodeType(expr));
 		generateErrMsg(errbuf0, NODE_EXPR_POS(expr), expr->base, errbuf);
-		addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
+		addRErrorMsg(errmsg, RE_TYPE_ERROR, errbuf);
 		return expr->exprType = newSimpType(T_ERROR,r);
 	}
 }

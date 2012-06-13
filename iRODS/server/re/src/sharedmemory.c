@@ -69,7 +69,7 @@ int removeSharedMemory() {
 
 #else
 	if(shm_unlink(shm_name) == -1) {
-		return SHM_UNLINK_ERROR;
+		return RE_SHM_UNLINK_ERROR;
 	}
 #endif
 	return 0;

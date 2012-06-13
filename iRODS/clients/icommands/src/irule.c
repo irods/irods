@@ -6,10 +6,12 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "getUtil.h"
+#define string sizeFlag /* in rodsArg, use the sizeFlag field for string mode */
+
 void usage ();
 
 int
-parseMsInputParam (int argc, char **argv, int optInd, int ruleGen,
+parseMsInputParam (int argc, char **argv, int optInd, int ruleGen, int string,
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf);
 
 int startsWith(char *str, char *prefix) {
@@ -92,7 +94,14 @@ int convertListToMultiString(char *strInput, int input) {
 					}
 				}
 			} else {
-				return -1;
+				if(*psrc == '\0') {
+					break;
+				} else if (*psrc == ','){
+					*(p++) = '%';
+					psrc++;
+				} else {
+					return -1;
+				}
 			}
 		} else {
 			if(*psrc == '\0') {
@@ -284,240 +293,253 @@ main(int argc, char **argv) {
     int connFlag = 0;
     char saveFile[MAX_NAME_LEN];
 
-    optStr = "ZhlvF:";
+    optStr = "ZhlvF:s";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
-	printf("Use -h for help.\n");
+    	printf("Use -h for help.\n");
         exit (1);
     }
+
     if (myRodsArgs.help==True) {
         usage();
         exit(0);
     }
 
+    /* init data structures */
     memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
     memset (&msParamArray, 0, sizeof (msParamArray));
     execMyRuleInp.inpParamArray = &msParamArray;
     execMyRuleInp.condInput.len=0;
 
+    /* add key val for test mode */
     if (myRodsArgs.test == True) {
        addKeyVal(&execMyRuleInp.condInput,"looptest","true");
     }
-    if (myRodsArgs.file == True) { /* input file */
-	FILE *fptr;
-	int len;
-	int gotRule = 0;
-	char buf[META_STR_LEN];
-	char *inpParamNames[1024];
-	char *outParamNames[1024];
-	int inpParamN = 0;
-	int outParamN = 0;
-	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
-	if (!strncmp(myRodsArgs.fileString,"i:",2)) {
-	  status = getRodsEnv (&myEnv);
-	  
-	  if (status < 0) {
-	    rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
-	    exit (1);
-	  }
-	  
-	  conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-			    myEnv.rodsZone, 0, &errMsg);
-	  
-	  if (conn == NULL) {
-	    exit (2);
-	  }
-	  
-	  status = clientLogin(conn);
-	  if (status != 0) {
-	    rcDisconnect(conn);
-	    exit (7);
-	  }
-	  if (status == 0) {
-	    char *myargv[3];
-	    int myargc, myoptind;
-	    rodsPathInp_t rodsPathInp;
-	    connFlag = 1;
-	    
-	    myargv[0] = strdup(myRodsArgs.fileString+2);
-	    myargv[1] = saveFile;
-	    myargc = 2;
-	    myoptind = 0;
-	    char *fileType = strrchr(myRodsArgs.fileString, '.');
-	    if(fileType == NULL) {
-	        printf (
-	          "Unsupported input file type\n");
-	        exit(10);
 
-	    }
-		int rulegen;
-		if(strcmp(fileType, ".r") == 0) {
+    /* read rules from the input file */
+    if (myRodsArgs.file == True) {
+    	FILE *fptr;
+		int len;
+		int gotRule = 0;
+		char buf[META_STR_LEN];
+		char *inpParamNames[1024];
+		char *outParamNames[1024];
+		int inpParamN = 0;
+		int outParamN = 0;
+
+		/* if the input file name starts with "i:", the get the file from iRODS server */
+		/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
+		if (!strncmp(myRodsArgs.fileString, "i:", 2)) {
+			status = getRodsEnv(&myEnv);
+
+			if (status < 0) {
+				rodsLogError(LOG_ERROR, status, "main: getRodsEnv error. ");
+				exit(1);
+			}
+
+			conn = rcConnect(myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+					myEnv.rodsZone, 0, &errMsg);
+
+			if (conn == NULL) {
+				exit(2);
+			}
+
+			status = clientLogin(conn);
+			if (status != 0) {
+				rcDisconnect(conn);
+				exit(7);
+			}
+			if (status == 0) {
+				char *myargv[3];
+				int myargc, myoptind;
+				rodsPathInp_t rodsPathInp;
+				connFlag = 1;
+
+				myargv[0] = strdup(myRodsArgs.fileString + 2);
+				myargv[1] = saveFile;
+				myargc = 2;
+				myoptind = 0;
+				char *fileType = strrchr(myRodsArgs.fileString, '.');
+				if (fileType == NULL) {
+					printf("Unsupported input file type\n");
+					exit(10);
+
+				}
+				int rulegen;
+				if (strcmp(fileType, ".r") == 0) {
+					rulegen = 1;
+				} else if (strcmp(fileType, ".ir") == 0
+						|| strcmp(fileType, ".irb") == 0) {
+					rulegen = 0;
+				}
+				snprintf(saveFile, MAX_NAME_LEN, "/tmp/tmpiruleFile.%i.%i.%s",
+						(unsigned int) time(0), getpid(), rulegen ? "r" : "ir");
+				status = parseCmdLinePath(myargc, myargv, myoptind, &myEnv,
+						UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
+				status = getUtil(&conn, &myEnv, &myRodsArgs, &rodsPathInp);
+				if (status < 0) {
+					rcDisconnect(conn);
+					exit(3);
+				}
+				myRodsArgs.fileString = saveFile;
+				connFlag = 1;
+			}
+		}
+		/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
+
+		fptr = fopen (myRodsArgs.fileString, "r");
+
+		/* test if the file can be opened */
+        if (fptr == NULL) {
+			rodsLog(LOG_ERROR, "Cannot open input file %s. ernro = %d\n",
+					myRodsArgs.fileString, errno);
+			exit(1);
+		}
+
+        /* test if the file extension is supported */
+		char *fileType = strrchr(myRodsArgs.fileString, '.');
+		if (fileType == NULL) {
+			printf("Unsupported input file type\n");
+			exit(10);
+
+		} else if(strcmp(fileType, ".r") == 0) {
 			rulegen = 1;
 		} else if(strcmp(fileType, ".ir") == 0 || strcmp(fileType, ".irb") == 0) {
 			rulegen = 0;
+		} else {
+			rodsLog (LOG_ERROR,
+			  "Unsupported input file type %s\n", fileType);
+			exit(10);
 		}
-	    snprintf(saveFile,MAX_NAME_LEN,"/tmp/tmpiruleFile.%i.%i.%s",
-	      (unsigned int) time(0),getpid(), rulegen?"r":"ir");
-	    status = parseCmdLinePath (myargc,myargv,myoptind,&myEnv,
-		       UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
-	    status = getUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);
-	    if (status < 0) {
-	      rcDisconnect(conn);
-	      exit (3);
-	    }
-	    myRodsArgs.fileString = saveFile;
-	    connFlag = 1;
-	  }
-	}
-	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
 
-	fptr = fopen (myRodsArgs.fileString, "r");
-
-        if (fptr == NULL) {
-            rodsLog (LOG_ERROR,
-              "Cannot open input file %s. ernro = %d\n",
-              myRodsArgs.fileString, errno);
-	    exit (1);
-	}
-    char *fileType = strrchr(myRodsArgs.fileString, '.');
-    if(fileType == NULL) {
-        printf (
-          "Unsupported input file type\n");
-        exit(10);
-
-    }
-	if(strcmp(fileType, ".r") == 0) {
-		rulegen = 1;
-	} else if(strcmp(fileType, ".ir") == 0 || strcmp(fileType, ".irb") == 0) {
-		rulegen = 0;
-	} else {
-		rodsLog (LOG_ERROR,
-          "Unsupported input file type %s\n", fileType);
-        exit(10);
-
-	}
-	if(rulegen) {
-		rstrcpy (execMyRuleInp.myRule, "@external\n", META_STR_LEN);
-	}
-	while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
-	    if (myRodsArgs.longOption == True)
-	    	puts(buf);
-
-	    if (!rulegen && buf[0] == '#') {
-	    	continue;
-	    }
-
-	    if(rulegen) {
-			if(startsWith(buf, "INPUT") || startsWith(buf, "input")) {
-				gotRule = 1;
-				trimSpaces(trimPrefix(buf));
-			} else if(startsWith(buf, "OUTPUT") || startsWith(buf, "output")) {
-				gotRule = 2;
-				trimSpaces(trimPrefix(buf));
-			}
-	    }
-
-		if (gotRule == 0) {
-	    	if(!rulegen) {
-				/* the input is a rule */
-				snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
-	    	} else {
-	    		snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
-	    	}
-	    } else if (gotRule == 1) {
-	    	if(rulegen) {
-	    		if(convertListToMultiString(buf, 1)!=0) {
-	    			rodsLog (LOG_ERROR,
-	    					"Input parameter list format error for %s\n", myRodsArgs.fileString);
-	    			exit(10);
-	    		}
-	    	}
-	    	inpParamN = extractVarNames(inpParamNames, buf);
-	    	parseMsInputParam (argc, argv, optind, rulegen, &execMyRuleInp, buf);
-	    } else if (gotRule == 2) {
-	    	if(rulegen) {
-	    		if(convertListToMultiString(buf, 0)!=0) {
-	    			rodsLog (LOG_ERROR,
-	    					"Output parameter list format error for %s\n", myRodsArgs.fileString);
-	    			exit(10);
-	    		}
-	    	}
-	    	outParamN = extractVarNames(outParamNames, buf);
-			if (strcmp (buf, "null") != 0) {
-				rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
-			}
-	        break;
-	    } else {
-	    	break;
-	    }
-		if(!rulegen) {
-			gotRule++;
+		/* add the @external directive in the rule if the input file is in the new rule engine syntax */
+		if(rulegen) {
+			rstrcpy (execMyRuleInp.myRule, "@external\n", META_STR_LEN);
 		}
-	}
-	if (myRodsArgs.longOption == True)
-	    puts("-----------------------------------------------------------------");
 
-	if (gotRule != 2) {
-	    rodsLog (LOG_ERROR, "Incomplete rule input for %s",
-	      myRodsArgs.fileString);
-	    exit (2);
-	} 
-	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
-	if (connFlag == 1) {
-	  fclose(fptr);
-	  unlink(saveFile);
-	}
-	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
+		while ((len = getLine (fptr, buf, META_STR_LEN)) > 0) {
+			if (myRodsArgs.longOption == True)
+				puts(buf);
+
+			/* skip comments if the input file is in the old rule engine syntax */
+			if (!rulegen && buf[0] == '#') {
+				continue;
+			}
+
+			if(rulegen) {
+				if(startsWith(buf, "INPUT") || startsWith(buf, "input")) {
+					gotRule = 1;
+					trimSpaces(trimPrefix(buf));
+				} else if(startsWith(buf, "OUTPUT") || startsWith(buf, "output")) {
+					gotRule = 2;
+					trimSpaces(trimPrefix(buf));
+				}
+			}
+
+			if (gotRule == 0) {
+				if(!rulegen) {
+					/* the input is a rule */
+					snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
+				} else {
+					snprintf (execMyRuleInp.myRule + strlen(execMyRuleInp.myRule), META_STR_LEN - strlen(execMyRuleInp.myRule), "%s\n", buf);
+				}
+			} else if (gotRule == 1) {
+				if(rulegen) {
+					if(convertListToMultiString(buf, 1)!=0) {
+						rodsLog (LOG_ERROR,
+								"Input parameter list format error for %s\n", myRodsArgs.fileString);
+						exit(10);
+					}
+				}
+				inpParamN = extractVarNames(inpParamNames, buf);
+				parseMsInputParam (argc, argv, optind, rulegen, myRodsArgs.string, &execMyRuleInp, buf);
+			} else if (gotRule == 2) {
+				if(rulegen) {
+					if(convertListToMultiString(buf, 0)!=0) {
+						rodsLog (LOG_ERROR,
+								"Output parameter list format error for %s\n", myRodsArgs.fileString);
+						exit(10);
+					}
+				}
+				outParamN = extractVarNames(outParamNames, buf);
+				if (strcmp (buf, "null") != 0) {
+					rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
+				}
+				break;
+			} else {
+				break;
+			}
+			if(!rulegen) {
+				gotRule++;
+			}
+		}
+
+		if (myRodsArgs.longOption == True)
+			puts("-----------------------------------------------------------------");
+
+		if (gotRule != 2) {
+			rodsLog (LOG_ERROR, "Incomplete rule input for %s",
+			  myRodsArgs.fileString);
+			exit (2);
+		}
+		/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
+		if (connFlag == 1) {
+		  fclose(fptr);
+		  unlink(saveFile);
+		}
+		/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
     } else {	/* command line input */
-	int nArg = argc - optind;
+    	int nArg = argc - optind; /* number of rule arguments */
         if (nArg < 3) {
             rodsLog (LOG_ERROR, "no input");
             printf("Use -h for help.\n");
             exit (3);
         }
-	snprintf (execMyRuleInp.myRule, META_STR_LEN, "@external rule { %s }", argv[optind]);
-	parseMsInputParam (0,NULL, 0, 1, &execMyRuleInp, argv[optind + 1]);
-	if (strcmp (argv[optind + 2], "null") != 0) {
+
+        snprintf (execMyRuleInp.myRule, META_STR_LEN, "@external rule { %s }", argv[optind]);
+        parseMsInputParam(0, NULL, 0, 1, myRodsArgs.string, &execMyRuleInp, argv[optind + 1]);
+        if (strcmp (argv[optind + 2], "null") != 0) {
             rstrcpy (execMyRuleInp.outParamDesc, argv[optind + 2], 
-	      LONG_NAME_LEN);
-	}
+            		LONG_NAME_LEN);
+        }
     }
 
 
     if (connFlag == 0) {
-      status = getRodsEnv (&myEnv);
+    	status = getRodsEnv (&myEnv);
       
-      if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
-        exit (1);
-      }
+    	if (status < 0) {
+    		rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
+    		exit (1);
+    	}
 
-      conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-			myEnv.rodsZone, 0, &errMsg);
+    	conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+    			myEnv.rodsZone, 0, &errMsg);
       
-      if (conn == NULL) {
-        rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
-		      errMsg.msg);
-        exit (2);
-      }
+    	if (conn == NULL) {
+    		rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
+    				errMsg.msg);
+    		exit (2);
+    	}
 
-      status = clientLogin(conn);
-      if (status != 0) {
-	rcDisconnect(conn);
-	exit (7);
-      }
+    	status = clientLogin(conn);
+    	if (status != 0) {
+    		rcDisconnect(conn);
+    		exit (7);
+    	}
     }
+
     if (myRodsArgs.verbose == True) {
         printf ("rcExecMyRule: %s\n", rulegen ? execMyRuleInp.myRule + 10 : execMyRuleInp.myRule);
-	printf ("outParamDesc: %s\n", execMyRuleInp.outParamDesc);
+        printf ("outParamDesc: %s\n", execMyRuleInp.outParamDesc);
     }
 
     status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
 
-   if (myRodsArgs.test == True) {
-      printErrorStack (conn->rError);
+    if (myRodsArgs.test == True) {
+    	printErrorStack (conn->rError);
     }
  
     if (status < 0) {
@@ -631,10 +653,44 @@ splitMultiStr (char *strInput, strArray_t *strArray)
     return (strArray->len);
 }
 
-
+char *quoteString(char *str, int string, int label) {
+	char *val = (char *) malloc(strlen(str) * 2 + 2);
+	char *pVal = val;
+	char *pStr = str;
+	if(label) {
+		int prefixLen = strchr(str, '=') - str + 1;
+		memcpy(val, str, prefixLen);
+		pVal += prefixLen;
+		pStr += prefixLen;
+	}
+	if(!string || (pStr[0] == '\"' && pStr[strlen(pStr)-1] == '\"') || (pStr[0] == '\'' && pStr[strlen(pStr)-1] == '\'')) {
+		free(val);
+		return strdup(str);
+	}
+	*pVal = '\"';
+	pVal ++;
+	while(*pStr!='\0') {
+		switch(*pStr) {
+		case '\\':
+		case '*':
+		case '$':
+		case '\'':
+		case '\"':
+			*pVal = '\\';
+			pVal ++;
+			break;
+		}
+		*pVal = *pStr;
+		pVal ++;
+		pStr ++;
+	}
+	pVal[0] = '\"';
+	pVal[1] = '\0';
+	return val;
+}
 
 int
-parseMsInputParam (int argc, char **argv, int optInd, int ruleGen,
+parseMsInputParam (int argc, char **argv, int optInd, int ruleGen, int string,
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf)
 {
     strArray_t strArray;
@@ -645,8 +701,8 @@ parseMsInputParam (int argc, char **argv, int optInd, int ruleGen,
     int promptF = 0;
     int labelF = 0;
     if (inBuf == NULL || strcmp (inBuf, "null") == 0) {
-	execMyRuleInp->inpParamArray = NULL;
-	return (0);
+    	execMyRuleInp->inpParamArray = NULL;
+    	return (0);
     }
 
     nInput = argc - optInd;
@@ -656,128 +712,135 @@ parseMsInputParam (int argc, char **argv, int optInd, int ruleGen,
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "parseMsInputParam: parseMultiStr error, status = %d", status);
-	execMyRuleInp->inpParamArray = NULL;
+        execMyRuleInp->inpParamArray = NULL;
         return (status);
     }
+
     resizeStrArray (&strArray, MAX_NAME_LEN);
     value = strArray.value;
+
     /* each string is supposed to have to format label=value */
     for (i = 0; i < nInput; i++ ) {
-      /* using the values from the input line following -F <filename> */
-      if (!strcmp(argv[optInd + i],"prompt")) {
-	promptF = 1;
-	break;
-      }
-      if (!strcmp(argv[optInd + i],"default") || strlen(argv[optInd + i]) == 0) 
-	continue;
-      else if (*argv[optInd + i] == '*') {
-	char *tmpPtr;
-	if (i > 0 && labelF == 0)
-	  return(CAT_INVALID_ARGUMENT);
-	labelF = 1;
-	if ((tmpPtr = strstr(argv[optInd + i],"=")) == NULL) 
-	  return(CAT_INVALID_ARGUMENT);
-	*tmpPtr = '\0';
-	for (j = 0; j < strArray.len; j++) {
-	  if (strstr(&value[j * strArray.size],argv[optInd + i]) == &value[j * strArray.size]){
-	    *tmpPtr = '=';
+    	/* using the values from the input line following -F <filename> */
+    	if (!strcmp(argv[optInd + i],"prompt")) {
+    		promptF = 1;
+    		break;
+    	}
+    	if (!strcmp(argv[optInd + i],"default") || strlen(argv[optInd + i]) == 0)
+    		continue;
+    	else if (*argv[optInd + i] == '*') {
+    		char *tmpPtr;
+    		if (i > 0 && labelF == 0)
+    			return(CAT_INVALID_ARGUMENT);
+    		labelF = 1;
+    		if ((tmpPtr = strstr(argv[optInd + i],"=")) == NULL)
+    			return(CAT_INVALID_ARGUMENT);
+    		*tmpPtr = '\0';
+    		for (j = 0; j < strArray.len; j++) {
+    			if (strstr(&value[j * strArray.size],argv[optInd + i]) == &value[j * strArray.size]){
+    				*tmpPtr = '=';
+    				char *val = quoteString(argv[optInd + i], string, 1);
 #if 0	/* fix a not enugh space bug. MW */
 	    rstrcpy (&value[j * strArray.size],argv[optInd + i],NAME_LEN);
 #else
-	    rstrcpy (&value[j * strArray.size],argv[optInd + i],strArray.size);
+	    			rstrcpy (&value[j * strArray.size],val,strArray.size);
 #endif
-	    break;
-	  }
-	}
-	if (j == strArray.len)
-	  printf("Ignoring Argument \"%s\"",argv[optInd + i]);
-      }
-      else {
-	char *valPtr = &value[i * strArray.size];
-	char *tmpPtr;
-	if (labelF == 1)
-	  return(CAT_INVALID_ARGUMENT);
-	if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
-	  tmpPtr++;
+	    			free(val);
+					break;
+    			}
+    		}
+    		if (j == strArray.len)
+    			printf("Ignoring Argument \"%s\"",argv[optInd + i]);
+    	} else {
+    		char *valPtr = &value[i * strArray.size];
+    		char *tmpPtr;
+    		if (labelF == 1)
+    			return(CAT_INVALID_ARGUMENT);
+    		if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
+    			tmpPtr++;
+    			char *val = quoteString(argv[optInd + i], string, 0);
 #if 0	/* fix a not enugh space bug. MW */
 	  rstrcpy (tmpPtr,argv[optInd + i], 
 	   (int) NAME_LEN - (tmpPtr - valPtr + 1));
 #else
-	  rstrcpy (tmpPtr,argv[optInd + i], 
-	   strArray.size - (tmpPtr - valPtr + 1));
+	  	  		rstrcpy (tmpPtr,val,
+	  	  				strArray.size - (tmpPtr - valPtr + 1));
 #endif
-	}
-      }
+	  	  		free(val);
+    		}
+    	}
     }
 
     for (i = 0; i < strArray.len; i++) {
-	char *valPtr = &value[i * strArray.size];
-	char *tmpPtr;
+    	char *valPtr = &value[i * strArray.size];
+    	char *tmpPtr;
 	
-	if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
-	    *tmpPtr = '\0';
-	    tmpPtr++;
-	    /** RAJA Jul 12 2007 changed it so that it can take input values from terminal
-	    addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T, 
+    	if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
+    		*tmpPtr = '\0';
+    		tmpPtr++;
+    		/** RAJA Jul 12 2007 changed it so that it can take input values from terminal
+	    	addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
 	                strdup (tmpPtr), NULL);
-            ** RAJA Jul 12 2007 changed it so that it can take input values from terminal **/
-	    if (*tmpPtr == '$' ) {
-	      /* If $ is used as a value in the input file for label=value then
-		 the remaining command line arguments are taken as values.
-		 If no command line arguments are given then the user is prompted
-		 for the input value 
-	      */
-	      printf("Default %s=%s\n    New %s=",valPtr,tmpPtr+1,valPtr);
-	      if (fgets(line,MAX_NAME_LEN,stdin) == NULL)
-		return(CAT_INVALID_ARGUMENT);
-	      if ((line[strlen(line)-1] = '\n')) 
-		line[strlen(line)-1] = '\0';
-	      if (strlen(line) == 0)
-		addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
-			  strdup(tmpPtr+1), NULL);
-	      else
-		addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
-			  strdup(line), NULL);
-	    }      
-	    else if ( promptF == 1) {
-	      /* the user has asked for prompting */
-	      printf("Current %s=%s\n    New %s=",valPtr,tmpPtr,valPtr);
-	      if (fgets(line,MAX_NAME_LEN,stdin) == NULL)
-		return(CAT_INVALID_ARGUMENT);
-	      if ((line[strlen(line)-1] = '\n')) 
-		line[strlen(line)-1] = '\0';
-	      if (strlen(line) == 0)
-		addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
-			  strdup(tmpPtr), NULL);
-	      else
-		addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
-			  strdup(line), NULL);
-	    }
-	    else if (*tmpPtr == '\\') {
-	      /* first '\'  is skipped. 
-		 If you need to use '\' in the first letter add an additional '\'
-		 if you have to use '$' in the first letter add a '\'  before that
-	      */
-	      tmpPtr++;
-		char *param = strdup (tmpPtr);
-		if(!ruleGen)
-		trimQuotes(param);
+    		 ** RAJA Jul 12 2007 changed it so that it can take input values from terminal **/
+    		if (*tmpPtr == '$' ) {
+    			/* If $ is used as a value in the input file for label=value then
+		 	 	 the remaining command line arguments are taken as values.
+		 	 	 If no command line arguments are given then the user is prompted
+		 	 	 for the input value
+    			 */
+    			printf("Default %s=%s\n    New %s=",valPtr,tmpPtr+1,valPtr);
+    			if (fgets(line,MAX_NAME_LEN,stdin) == NULL)
+    				return(CAT_INVALID_ARGUMENT);
+    			if ((line[strlen(line)-1] = '\n'))
+    				line[strlen(line)-1] = '\0';
+    			char *val;
+    			if (strlen(line) == 0)
+					val = strdup(tmpPtr+1);
+    			else
+    				val = quoteString(line, string && ruleGen, 0);
+				addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
+						val, NULL);
+    		}
+    		else if ( promptF == 1) {
+    			/* the user has asked for prompting */
+    			printf("Current %s=%s\n    New %s=",valPtr,tmpPtr,valPtr);
+    			if (fgets(line,MAX_NAME_LEN,stdin) == NULL)
+    				return(CAT_INVALID_ARGUMENT);
+    			if ((line[strlen(line)-1] = '\n'))
+    				line[strlen(line)-1] = '\0';
+    			char *val;
+    			if (strlen(line) == 0)
+    				val = strdup(tmpPtr);
+    			else
+    				val = quoteString(line, string && ruleGen, 0);
+				addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
+						val, NULL);
+    		}
+    		else if (*tmpPtr == '\\') {
+    			/* first '\'  is skipped.
+		 	 	 If you need to use '\' in the first letter add an additional '\'
+		 	 	 if you have to use '$' in the first letter add a '\'  before that
+    			 */
+    			tmpPtr++;
+    			char *param = quoteString (tmpPtr, string && ruleGen, 0);
+    			if(!ruleGen)
+    				trimQuotes(param);
 
-	      addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
-			  param, NULL);
-	    }
-	    else {
-                char *param = strdup (tmpPtr);
-		if(!ruleGen)
-                trimQuotes(param);
+    			addMsParam (execMyRuleInp->inpParamArray, valPtr, STR_MS_T,
+    					param, NULL);
+    		}
+    		else {
+                char *param = quoteString (tmpPtr, string && ruleGen, 0);
+                if(!ruleGen)
+                	trimQuotes(param);
 
-	      addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
-			  param, NULL);
-	    }
-	} else {
-	    rodsLog (LOG_ERROR,
-             "parseMsInputParam: inpParam %s format error", valPtr);
-	}
+                addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
+                		param, NULL);
+    		}
+    	} else {
+    		rodsLog (LOG_ERROR,
+    				"parseMsInputParam: inpParam %s format error", valPtr);
+    	}
     }
 
     return (0);
@@ -846,6 +909,9 @@ usage ()
 "Options are:",
 " --test  - enable test mode so that the microservices are not executed,",
 "             instead a loopback is performed",
+" -s      - enable string mode, in string mode all command line input arguments do not need "
+"             to be quoted and are automatically converted to strings"
+"             string mode does not affect input parameter values in rule files"
 " -F      - read the named inputFile",
 "             if the inputFile begins with the prefix \"i:\"",
 "             then the file is fetched from an iRODS server",

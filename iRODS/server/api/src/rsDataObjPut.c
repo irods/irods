@@ -154,6 +154,14 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     L1desc[l1descInx].oprType = PUT_OPR;
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
 
+    if (getStructFileType (L1desc[l1descInx].dataObjInfo->specColl) >= 0) { // JMC - backport 4682
+        *portalOprOut = (portalOprOut_t *) malloc (sizeof (portalOprOut_t));
+        bzero (*portalOprOut,  sizeof (portalOprOut_t));
+        (*portalOprOut)->l1descInx = l1descInx;
+        return l1descInx;
+    }
+
+
     status = preProcParaPut (rsComm, l1descInx, portalOprOut);
 
     if (status < 0) {
@@ -394,6 +402,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     int bytesWritten;
     dataObjInp_t *dataObjInp;
     int retryCnt = 0;
+    int chkType = 0; // JMC - backport 4774
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
@@ -438,9 +447,15 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         filePutInp.mode = getFileMode (dataObjInp);
         filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
-        if (getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp, 
-          L1desc[l1descInx].dataObjInfo)) {
-            filePutInp.otherFlags |= CHK_PERM_FLAG;
+		// =-=-=-=-=-=-=-
+		// JMC - backport 4774
+        chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,L1desc[l1descInx].dataObjInfo);
+
+		if(chkType == DISALLOW_PATH_REG) {
+			return PATH_REG_NOT_ALLOWED;
+		} else if (chkType == NO_CHK_PATH_PERM) {
+		// =-=-=-=-=-=-=-
+            filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
         }
         bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
         /* file already exists ? */

@@ -155,7 +155,7 @@ replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
 
     return (0);
 }
-
+#if 0 // JMC - UNUSED
 /* queryRescInRescGrp - Given the rescGroupName string which must be the
  * name of a resource group, query all resources in this resource group.
  * The output of the query is given in genQueryOut.
@@ -184,7 +184,7 @@ genQueryOut_t **genQueryOut)
     return (status);
 
 }
-
+#endif // JMC - UNUSED
 /* resolveAndQueResc - Given the rescName string, get the resource info
  * in a rescGrpInfo_t struct and queue this struct in the rescGrpInfo
  * link list by resource type. Also copy the rescGroupName string to this 
@@ -235,6 +235,27 @@ resolveResc (char *rescName, rescInfo_t **rescInfo)
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
     /* no match */
+#if 0  /* this has problem for subsequent query. need to mkresc to work  */ // JMC - backport 4632
+    if (strcmp (rescName, BUNDLE_RESC) == 0) {
+       /* it is the virtual bundleResc. Make one */
+       rescInfo_t *myRescInfo;
+        myRescInfo = ( rescInfo_t* )malloc (sizeof (rescInfo_t));
+        memset (myRescInfo, 0, sizeof (rescInfo_t));
+        myRescInfo->rodsServerHost = ServerHostHead;
+        rstrcpy (myRescInfo->zoneName, ZoneInfoHead->zoneName, NAME_LEN);
+        rstrcpy (myRescInfo->rescName, BUNDLE_RESC, NAME_LEN);
+        rstrcpy (myRescInfo->rescLoc, "localhost", NAME_LEN);
+        rstrcpy (myRescInfo->rescType, "unix file system", NAME_LEN);
+       myRescInfo->rescTypeInx = getRescTypeInx (myRescInfo->rescType);
+       rstrcpy (myRescInfo->rescClass, "bundle", NAME_LEN);
+       myRescInfo->rescClassInx = getRescClassInx (myRescInfo->rescClass);
+       rstrcpy (myRescInfo->rescVaultPath, "/bundle", MAX_NAME_LEN);
+        myRescInfo->quotaLimit = RESC_QUOTA_UNINIT;     /* not initialized */
+        queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
+       *rescInfo = myRescInfo;
+       return 0;
+    }
+#endif
     rodsLog (LOG_DEBUG1,
       "resolveResc: resource %s not configured in RCAT", rescName);
     return (SYS_INVALID_RESC_INPUT);
@@ -554,7 +575,7 @@ getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
     /* just use the top */
     return (getRescClass(rescGrpInfo->rescInfo));
 }
-
+#if 0 // JMC - UNUSED
 /* compareRescAddr - Given 2 rescInfo, if they have the same host address,
  * return 1. Otherwise, return 0.
  */
@@ -581,7 +602,7 @@ compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
     else
         return 0;
 }
-
+#endif // JMC - UNUSED
 /* getCacheRescInGrp - get the cache resc in the resource group specified
  * by rescGroupName. If rescGroupName does not exist, find the rescGroupName
  * that include memberRescInfo. Either rescGroupName or memberRescInfo must
@@ -626,6 +647,43 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
         if (RescClass[tmpRescInfo->rescClassInx].classType == CACHE_CL) {
             *outCacheResc = tmpRescInfo;
             freeAllRescGrpInfo (myRescGrpInfo);
+            return 0;
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return SYS_NO_CACHE_RESC_IN_GRP;
+}
+
+int // JMC - backport 4544
+getRescInGrpByClass (rsComm_t *rsComm, char *rescGroupName,
+int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp) // JMC - backport 4547
+{
+    int status;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    *outCacheResc = NULL;
+
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
+        rodsLog (LOG_NOTICE,
+          "getRescInGrpByClass: NULL rescGroupName input");
+           return USER__NULL_INPUT_ERR;
+    }
+    status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
+    if (status < 0) return status;
+    tmpRescGrpInfo = myRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+        rescInfo_t *tmpRescInfo;
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (RescClass[tmpRescInfo->rescClassInx].classType == rescClass) {
+            *outCacheResc = tmpRescInfo;
+           if (outRescGrp != NULL) { // JMC - backport 4547
+               *outRescGrp = myRescGrpInfo;
+           } else {
+                freeAllRescGrpInfo (myRescGrpInfo);
+           }
+
             return 0;
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
@@ -893,7 +951,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     int startInx;
 
     if (defaultRescList != NULL && strcmp (defaultRescList, "null") != 0 &&
-      optionStr != NULL &&  strcmp (optionStr, "force") == 0 &&
+      optionStr != NULL &&  strcmp (optionStr, "forced") == 0 && // JMC - backport 4481
       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         condInput = NULL;
     }
@@ -974,7 +1032,8 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
                 status = 0;
             }
         }
-    } else if (strcmp (optionStr, "forced") == 0) {
+    } else if (strcmp (optionStr, "forced") == 0 &&
+	rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) { // JMC - backport 4481
         if (defRescGrpInfo != NULL) {
             myRescGrpInfo = defRescGrpInfo;
         }
@@ -1590,11 +1649,12 @@ getRescClassInx (char *rescClass)
  */
 
 int
-getMultiCopyPerResc ()
+getMultiCopyPerResc ( rsComm_t *rsComm ) // JMC - backport 4556
 {
     ruleExecInfo_t rei;
 
     memset (&rei, 0, sizeof (rei));
+	rei.rsComm = rsComm; // JMC - backport 4556
     applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
         return 1;
@@ -1648,6 +1708,7 @@ updateResc (rsComm_t *rsComm)
     return status;
 }
 
+#if 0 // JMC - UNUSED
 /* matchSameHostRescByType - find a resource on the same host
  * as the input myRescInfo but with the input driverType.
  */
@@ -1674,4 +1735,7 @@ matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType)
     }
     return NULL;
 }
+#endif // JMC - UNUSED
+
+
 

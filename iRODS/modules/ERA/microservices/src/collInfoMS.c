@@ -835,7 +835,8 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 			snprintf(dataObjInp->objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
 		
 			/* Run actionStr on our object */
-			rei->status = applyRule(actionStr, rei->msParamArray, rei, 0);
+			rei->status = applyRuleUpdateParams(actionStr, rei->msParamArray, rei, 0); // JMC - backport 4541
+
 			if (rei->status < 0)
 			{
 				/* If an error occurs, log incident but keep going */			

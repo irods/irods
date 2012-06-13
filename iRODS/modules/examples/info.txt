@@ -1,0 +1,8 @@
+Name:		properties
+Brief:		Microservices for managing property lists
+Description:	Microservices for managing property lists containing keyword-value pairs.  Property lists are used to hold file attributes and options for controlling other complex microservices.  Property lists may be converted to XML-like strings, or parsed from those strings.
+Dependencies:
+Enabled:	yes
+Creator:	David Nadeau; University of California, San Diego
+Created:	September 2007
+License:	BSD

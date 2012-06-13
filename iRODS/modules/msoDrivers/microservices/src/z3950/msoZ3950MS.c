@@ -185,8 +185,11 @@ msiobjget_z3950(msParam_t*  inRequestPath, msParam_t* inFileMode,
   }
 
 
-
+#ifdef RULE_ENGINE_N
+  i = applyRuleUpdateParams(myMSICall, &msParamArray, &rei2, NO_SAVE_REI); // JMC - backport 4539
+#else
   i = applyRule(myMSICall, &msParamArray, &rei2, NO_SAVE_REI);
+#endif
   if (i != 0) {
     printf("msiobjget_z3950: Error in calling %s: %i\n", myMSICall, i);
     free(myMSICall);

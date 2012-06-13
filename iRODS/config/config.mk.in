@@ -176,8 +176,13 @@ endif
 ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
 DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
 DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
+
+ifneq ($(findstring /xe/, $(ORACLE_HOME)),)
+# For Oracle xe, also need nnz10 library
+DBMS_LIB+= -lnnz10
 endif
 
+endif
 
 #
 # MySQL options
@@ -270,8 +275,15 @@ endif
 # Otherwise tarDir can be used to specify the directory path of libtar.
 # Both TAR_EXEC_PATH  and tarDir should NOT be specified. By default, 
 # TAR_EXEC_PATH is on and tarDir is off.
+# GNU_TAR -specifies whether the tar execuable is a GNU tar. The default
+# is it is a GNU tar
+# TAR_EXTENDED_HDR - specify whether the extended header format option (-E) 
+# which allows individual file size larger than 8 Gb, is to be used. 
+# The default is off since not all tar commands support this option.
 TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
+GNU_TAR=1 
+# TAR_EXTENDED_HDR = 1
 ifeq ($(OS_platform), osx_platform)
 TAR_EXEC_PATH="`which tar`"
 else
@@ -279,6 +291,9 @@ TAR_EXEC_PATH=/bin/tar
 endif
 # tarDir=/data/mwan/tar/libtar-1.2.11
 endif
+# ZIP_EXEC_PATH and UNZIP_EXEC_PATH define the paths of zip/unzip executable.
+ZIP_EXEC_PATH=/usr/bin/zip
+UNZIP_EXEC_PATH=/usr/bin/unzip
 
 #
 # Grid Security Infrastructure

@@ -20,6 +20,7 @@
 #include "fileStat.h"
 #include "fileFstat.h"
 #include "fileFsync.h"
+#include "dataObjLock.h" // JMC - backport 4599
 #include "fileStage.h"
 #include "fileGetFsFreeSpace.h"
 #include "fileOpendir.h"

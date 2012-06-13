@@ -190,6 +190,14 @@ insert into R_TOKN_MAIN values ('data_type',1693,'XML Schema','text/xml','|.xsd|
 insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1250100000','1250100000');
 insert into R_TOKN_MAIN values ('data_type',1695,'database object','text','','','','1288631300','1288631300');
 insert into R_TOKN_MAIN values ('data_type',1696,'mso','','','','','1312910000','1312910000');
+insert into R_TOKN_MAIN values ('data_type',1697,'gzipTar','','|.tar.gz|','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1698,'bzip2Tar','','|.tar.bz2|','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1699,'gzipFile','','|.gz|','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1700,'bzip2File','','|.bz2|','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1701,'zipFile','','|.zip|','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1702,'gzipTar bundle','','','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1703,'bzip2Tar bundle','','','','','1324000000','1324000000');
+insert into R_TOKN_MAIN values ('data_type',1704,'zipFile bundle','','','','','1324000000','1324000000');
 
 
 insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','1170000000','1170000000');

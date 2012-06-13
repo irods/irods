@@ -38,13 +38,14 @@ rodsPathInp_t *rodsPathInp)
 
 	if (myRodsArgs->extract == True) {		/* -x */
 	    if (myRodsArgs->condition == True) {
-		rodsLog (LOG_ERROR,
-                  "bunUtil: cannot use -x and -c at the same time");
-		return -1;
+		    rodsLog (LOG_ERROR,"bunUtil: cannot use -x and -c at the same time");
+		    return -1;
 	    }
 	    status = rcStructFileExtAndReg (conn, &structFileExtAndRegInp);
 	} else if (myRodsArgs->condition == True) {  /* -c - create */
 	    status = rcStructFileBundle (conn, &structFileExtAndRegInp);
+        } else if (myRodsArgs->add == True) {  /* add to tar */ // JMC - backport 4643
+            status = rcStructFileBundle (conn, &structFileExtAndRegInp);
 	} else {
             rodsLog (LOG_ERROR,
               "bunUtil: -x or -c must be specified");
@@ -94,14 +95,32 @@ rodsPathInp_t *rodsPathInp)
 
     if (rodsArgs->dataType == True) {
         if (rodsArgs->dataTypeString != NULL) {
-	    if (strcmp (rodsArgs->dataTypeString, "t") == 0 ||
-	      strcmp (rodsArgs->dataTypeString, "tar") == 0) {
-                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
-                  "tar file");
-	    } else {
-                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
-                  rodsArgs->dataTypeString);
-	    }
+			if( strcmp (rodsArgs->dataTypeString, "t") == 0 ||
+			    strcmp (rodsArgs->dataTypeString, TAR_DT_STR) == 0 || // JMC - backport 4640
+			    strcmp (rodsArgs->dataTypeString, "tar") == 0) {
+					addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+				// =-=-=-=-=-=-=-
+				// JMC - backport 4633
+					 TAR_DT_STR);
+			} else if( strcmp (rodsArgs->dataTypeString, "g") == 0 ||
+			           strcmp (rodsArgs->dataTypeString, GZIP_TAR_DT_STR) == 0 || // JMC - backport 4640
+				       strcmp (rodsArgs->dataTypeString, "gzip") == 0) {
+		        addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,GZIP_TAR_DT_STR);
+			} else if( strcmp (rodsArgs->dataTypeString, "b") == 0 ||
+			           strcmp (rodsArgs->dataTypeString, BZIP2_TAR_DT_STR) == 0 || // JMC - backport 4640
+				       strcmp (rodsArgs->dataTypeString, "bzip2") == 0) { // JMC - backport 4648
+			    addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,BZIP2_TAR_DT_STR);
+			} else if( strcmp (rodsArgs->dataTypeString, "z") == 0 ||
+			           strcmp (rodsArgs->dataTypeString, ZIP_DT_STR) == 0 || // JMC - backport 4640
+				       strcmp (rodsArgs->dataTypeString, "zip") == 0) {
+				addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,ZIP_DT_STR); 
+				// =-=-=-=-=-=-=-
+			} else {
+				rodsLog( LOG_ERROR,"bunUtil: Unknown dataType %s for ibun",  // JMC - backport 4648
+				         rodsArgs->dataTypeString);
+				return SYS_ZIP_FORMAT_NOT_SUPPORTED;
+			}
+
         }
     } else if (rodsArgs->condition == True) {	/* -c */
         addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
@@ -131,6 +150,15 @@ rodsPathInp_t *rodsPathInp)
     } 
 
     if (rodsArgs->force == True) {
+        addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
+    }
+
+    if (rodsArgs->condition == True) {  /* -c - create */ // JMC - backport 4644
+       structFileExtAndRegInp->oprType = PRESERVE_COLL_PATH;
+    }
+
+    if (rodsArgs->add == True) {  /* add to tar */ // JMC - backport 4643
+        structFileExtAndRegInp->oprType = ADD_TO_TAR_OPR | PRESERVE_COLL_PATH; // JMC - backport 4644
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }
 

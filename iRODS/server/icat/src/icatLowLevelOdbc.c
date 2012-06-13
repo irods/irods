@@ -1114,6 +1114,9 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    if (stat == SQL_NO_DATA_FOUND) {
       if (logGetRows) {
 	 rodsLogSql("cllGetRow: NO DATA FOUND");
+	 // JMC - backport 4468
+	 char tmpstr[210];
+	 snprintf(tmpstr, 200, "cllGetRow: NO DATA FOUND, statement:%d", statementNumber);
       }
       _cllFreeStatementColumns(icss,statementNumber);
       myStatement->numOfCols=0;
@@ -1121,8 +1124,9 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    else {
       if (logGetRows) {
 	 char tmpstr[210];
-	 snprintf(tmpstr, 200, "cllGetRow columns:%d first column: %s", nCols, 
-		  myStatement->resultValue[0]);
+	 // JMC - backport 4468
+	 snprintf(tmpstr, 200, "cllGetRow statement:%d columns:%d first column: %s", statementNumber, nCols, myStatement->resultValue[0]);
+
 	 rodsLogSql(tmpstr);
       }
    }
@@ -1241,6 +1245,11 @@ int cllTest(char *userArg, char *pwArg) {
    icatSessionStruct icss;
 
    icss.stmtPtr[0]=0;
+   icss.databaseType = DB_TYPE_POSTGRES; // JMC - backport 4712
+#ifdef MY_ICAT
+   icss.databaseType = DB_TYPE_MYSQL;
+#endif
+
    rodsLogSqlReq(1);
    OK=1;
    i = cllOpenEnv(&icss);

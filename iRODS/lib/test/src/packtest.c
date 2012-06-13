@@ -38,7 +38,7 @@ main(int argc, char **argv)
     authCheckInp_t authCheckInp, *outAuthCheckInp;
     genQueryInp_t genQueryInp, *outGenQueryInp;
     irodsProt_t irodsProt = XML_PROT;
-    struct myStruct myStruct1;
+    
 
     memset (&genQueryInp, 0, sizeof (genQueryInp));
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, "=xyz");
@@ -109,28 +109,28 @@ main(int argc, char **argv)
 
     myQueryOut.sqlResult[0].attriInx = 10;
     myQueryOut.sqlResult[0].len = 20;
-    myQueryOut.sqlResult[0].value = tmpValue = malloc (20*2);
+    myQueryOut.sqlResult[0].value = tmpValue = (char*) malloc (20*2);
     sprintf (tmpValue, "value 0,1");
     tmpValue += 20;
     sprintf (tmpValue, "value 0,2");
 
     myQueryOut.sqlResult[1].attriInx = 20;
     myQueryOut.sqlResult[1].len = 30;
-    myQueryOut.sqlResult[1].value = tmpValue = malloc (30*2);
+    myQueryOut.sqlResult[1].value = tmpValue = (char*) malloc (30*2);
     sprintf (tmpValue, "value 1,1");
     tmpValue += 30;
     sprintf (tmpValue, "value 1,2");
 
     myQueryOut.sqlResult[2].attriInx = 30;
     myQueryOut.sqlResult[2].len = 40;
-    myQueryOut.sqlResult[2].value = tmpValue = malloc (40*2);
+    myQueryOut.sqlResult[2].value = tmpValue = (char*) malloc (40*2);
     sprintf (tmpValue, "value 2,1");
     tmpValue += 40;
     sprintf (tmpValue, "value 2,2");
 
     myQueryOut.sqlResult[3].attriInx = 40;
     myQueryOut.sqlResult[3].len = 50;
-    myQueryOut.sqlResult[3].value = tmpValue = malloc (50*2);
+    myQueryOut.sqlResult[3].value = tmpValue = (char*) malloc (50*2);
     memset (tmpValue, 0, 50*2);
 
     status = packStruct (&myQueryOut, &packedResult, "GenQueryOut_PI",
@@ -193,7 +193,7 @@ writePackedRes (bytesBuf_t *packedResult, char *outFile)
 {
     FILE *fptr;
     int len;
-    int gotRule = 0;
+
 
     fptr = fopen (outFile, "w");
 

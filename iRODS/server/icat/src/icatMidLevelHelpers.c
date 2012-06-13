@@ -18,6 +18,7 @@
  opt 1 do add single quotes
  opt 2 add single quotes if string does not start with (
  */
+#if 0 // JMC - backport 4535
 char *cmlArrToSepStr(char *str, 
 		  char *preStr,
 		  char *arr[], 
@@ -44,9 +45,11 @@ char *cmlArrToSepStr(char *str,
   return(str);
   
 }
+#endif
 
 /* Based on some naming rules and individual cases, determine if a
    particular table column is a string field or not */
+#if 0 // JMC - backport 4535
 int columnIsText(char *column) {
    if (strstr(column, "_id") != NULL) return(0); /* integer */
    if (strstr(column, "maxsize") != NULL) return(0); /* integer */
@@ -62,8 +65,9 @@ int columnIsText(char *column) {
    if (strstr(column, "rule_seq_num") != NULL) return(0); /* integer */
    return(1);  /* the rest are strings */
 }  
+#endif
 
-
+#if 0 // JMC - backport 4535
 char *cmlArr2ToSepStr(char *str, 
 		   char *preStr,
 		   char *arr[], 
@@ -89,8 +93,9 @@ char *cmlArr2ToSepStr(char *str,
   return(str);
   
 }
+#endif
 
-
+#if 0 // JMC - backport 4535
 char *cmlArr2ToSep2Str(char *str, 
 		   char *preStr,
 		   char *arr[], 
@@ -129,7 +134,7 @@ char *cmlArr2ToSep2Str(char *str,
   return(str);
   
 }
-
+#endif
 /*
  Convert the intput arrays to a string and add bind variables
  */
@@ -160,6 +165,7 @@ char *cmlArraysToStrWithBind(char *str,
 }
 
 /* Currently unused */
+#if 0 // JMC - backport 4535
 int cmlGetOneRowFromSingleTableUnused (char *tableName, 
 			   char *cVal[], 
 			   int cValSize[],
@@ -192,9 +198,10 @@ int cmlGetOneRowFromSingleTableUnused (char *tableName,
   i = cmlGetOneRowFromSql (tsql, cVal, cValSize, numOfSels, icss);
   return(i);
 }
-
+#endif
 
 /* Currently unused */
+#if 0 // JMC - backport 4535
 int cmlDeleteFromSingleTableUnused (char *tableName, 
 			   char *selectCols[],
 			   char *selectConds[],
@@ -215,10 +222,11 @@ int cmlDeleteFromSingleTableUnused (char *tableName,
   return(i);
 
 }
-
+#endif
 
 
 /* currently unused */
+#if 0 // JMC - backport 4535
 int cmlInsertIntoSingleTableUnused(char *tableName,
 			   char *insertCols[], 
 			   char *insertValues[], 
@@ -252,10 +260,11 @@ int cmlInsertIntoSingleTableUnused(char *tableName,
   i =  cmlExecuteNoAnswerSql( tsql, icss);
   return(i);
 }
-
+#endif
 /* like cmlInsertIntoSingleTable but the insertColumns are already
    in a single string*/
 /* No longer needed with bind vars */
+#if 0 // JMC - backport 4535
 int cmlInsertIntoSingleTableV2Unused (char *tableName,
 			   char *insertCols, 
 			   char *insertValues[], 
@@ -280,9 +289,10 @@ int cmlInsertIntoSingleTableV2Unused (char *tableName,
   i =  cmlExecuteNoAnswerSql( tsql, icss);
   return(i);
 }
-
+#endif
 
 /* Currently unused */
+#if 0 // JMC - backport 4535
 int cmlGetUserIdUnused( char *userName, icatSessionStruct *icss) {
    int status;
    char tsql[MAX_SQL_SIZE];
@@ -301,3 +311,4 @@ int cmlGetUserIdUnused( char *userName, icatSessionStruct *icss) {
 
    return(status);
 }
+#endif

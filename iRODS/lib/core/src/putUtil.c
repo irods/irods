@@ -352,6 +352,11 @@ rodsRestart_t *rodsRestart)
           rodsArgs->replNumValue);
     }
 
+    if (rodsArgs->purgeCache == True) { // JMC - backport 4537
+        addKeyVal (&dataObjOprInp->condInput, PURGE_CACHE_KW, "");
+    }
+
+
 #ifdef RBUDP_TRANSFER
     if (rodsArgs->rbudp == True) {
 	/* use -Q for rbudp transfer */
@@ -431,6 +436,14 @@ rodsRestart_t *rodsRestart)
 	    rstrcpy (conn->fileRestart.infoFile, rodsArgs->lfrestartFileString, 
 	      MAX_NAME_LEN);
 	}
+    }
+
+    if (rodsArgs->wlock == True) { // JMC - backport 4604
+       addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
+    }
+    if (rodsArgs->rlock == True) { // JMC - backport 4612
+        rodsLog (LOG_ERROR,"initCondForPut: --rlock not supported, changing it to --wlock");
+        addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, WRITE_LOCK_TYPE);
     }
 
     return (0);
@@ -733,8 +746,7 @@ bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart)
 	}
     }
     /* need to make phyBunDir */
-    getPhyBunDir (DEF_PHY_BUN_ROOT_DIR, (*myConn)->clientUser.userName,
-      bulkOprInfo.phyBunDir);
+    getPhyBunDir (DEF_PHY_BUN_ROOT_DIR, (*myConn)->clientUser.userName,bulkOprInfo.phyBunDir);
 
     if ((status = mkdirR ("/", bulkOprInfo.phyBunDir, 0750)) < 0) {
         rodsLogError (LOG_ERROR, status,

@@ -14,9 +14,11 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
 #ifndef _WIN32
     time_t myTime;
     struct tm *mytm;
+	char *logfilePattern; // JMC - backport 4793
     char *logfileIntStr;
     int logfileInt;
     int tm_mday = 1;
+    char logfileSuffix[MAX_NAME_LEN]; // JMC - backport 4793
     char myLogDir[MAX_NAME_LEN];
 
     /* Put together the full pathname of the logFile */
@@ -38,10 +40,17 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
 
     tm_mday = (mytm->tm_mday / logfileInt) * logfileInt + 1;
     if (tm_mday > mytm->tm_mday)
-	tm_mday -= logfileInt;
+	    tm_mday -= logfileInt;
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4793
+    if ((logfilePattern = getenv(LOGFILE_PATTERN)) == NULL) {
+       logfilePattern = DEF_LOGFILE_PATTERN;
+    }
+    mytm->tm_mday = tm_mday;
+    strftime (logfileSuffix, MAX_NAME_LEN, logfilePattern, mytm);
+    sprintf (*logFile, "%-s/%-s.%-s", myLogDir, logFileName, logfileSuffix);
+    // =-=-=-=-=-=-=-
 
-    sprintf (*logFile, "%-s/%-s.%-d.%-d.%-d", myLogDir, logFileName,
-      mytm->tm_year + 1900, mytm->tm_mon + 1, tm_mday);
 
 #else /* for Windows */
 	char tmpstr[1024];

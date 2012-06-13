@@ -1,9 +1,10 @@
 #
-# modules/guinot/Makefile
+# modules/examples/Makefile
 #
-# Build the iRODS guinot module
+# Build the iRODS examples module
 #
 
+myModule=examples
 ifndef buildDir
 buildDir = $(CURDIR)/../..
 endif
@@ -21,9 +22,9 @@ include $(buildDir)/config/common.mk
 #
 # Directories
 #
-MSObjDir =	$(modulesDir)/guinot/microservices/obj
-MSSrcDir =	$(modulesDir)/guinot/microservices/src
-MSIncDir =	$(modulesDir)/guinot/microservices/include
+MSObjDir =	$(modulesDir)/$(myModule)/microservices/obj
+MSSrcDir =	$(modulesDir)/$(myModule)/microservices/src
+MSIncDir =	$(modulesDir)/$(myModule)/microservices/include
 
 
 
@@ -32,7 +33,7 @@ MSIncDir =	$(modulesDir)/guinot/microservices/include
 #
 # Source files
 #
-OBJECTS =	$(MSObjDir)/guinotMS.o
+OBJECTS =	$(MSObjDir)/examplesMS.o
 INCLUDE_FLAGS =	-I$(MSIncDir)
 
 
@@ -92,7 +93,7 @@ rules:
 
 # Clean
 clean:
-	@echo "Clean guinot module..."
+	@echo "Clean $(myModule) module..."
 	@rm -f $(OBJECTS)
 
 
@@ -112,6 +113,6 @@ print_cflags:
 # Compilation targets
 #
 $(OBJECTS): $(MSObjDir)/%.o: $(MSSrcDir)/%.c $(DEPEND)
-	@echo "Compile guinot module `basename $@`..."
+	@echo "Compile $(myModule) module `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 

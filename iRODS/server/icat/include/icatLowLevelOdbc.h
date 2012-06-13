@@ -25,7 +25,7 @@
 #include "rods.h"
 #include "icatMidLevelRoutines.h"
 
-#define MAX_BIND_VARS  40
+#define MAX_BIND_VARS  120 // JMC - backport 4848 ( 40->120 )
 
 extern int cllBindVarCount;
 extern char *cllBindVars[MAX_BIND_VARS];

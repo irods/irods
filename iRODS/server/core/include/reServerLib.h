@@ -59,7 +59,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int statusFlag);
 int
 initReExec (rsComm_t *rsComm, reExec_t *reExec);
 int
-allocReThr (reExec_t *reExec);
+allocReThr (rsComm_t *rsComm, reExec_t *reExec); // JMC - backport 4695
 int
 freeReThr (reExec_t *reExec, int thrInx);
 int
@@ -72,7 +72,7 @@ procExecState_t execState);
 int
 matchPidInReExec (reExec_t *reExec, pid_t pid);
 int
-waitAndFreeReThr (reExec_t *reExec);
+waitAndFreeReThr (rsComm_t *rsComm, reExec_t *reExec); // JMC - backport 4695
 int
 chkAndUpdateResc (rsComm_t *rsComm);
 int

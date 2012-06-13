@@ -33,6 +33,8 @@ int genAdminOpFromDataObj(dataObjInp_t *dataObjInp, generalAdminInp_t *generalAd
 int parseGenAdminLine(char *inpLine, generalAdminInp_t *generalAdminInp, rsComm_t *rsComm);
 int loadACLFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm);
 int extractACLQueryResults(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, int coll_flag);
+int writeDataAclToBBuf(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf); // JMC - backport 4821
+int writeCollAclToBBuf(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf); // JMC - backport 4821
 int getUserACL(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int parseACLModLine(char *inpLine, rsComm_t *rsComm);
 int getSqlRowsByInx(genQueryOut_t *genQueryOut, intArray_t *indexes, bytesBuf_t *mybuf);

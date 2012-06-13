@@ -25,6 +25,7 @@
 #define CHKSUM_KW	"chksum"
 #define VERSION_KW	"version"
 #define FILE_PATH_KW	"filePath"	/* the physical file path */
+#define BUN_FILE_PATH_KW "bunFilePath" /* the physical bun file path */ // JMC - backport 4768
 #define REPL_NUM_KW	"replNum"	/* replica number */
 #define WRITE_FLAG_KW	"writeFlag"	/* whether it is opened for write */
 #define REPL_STATUS_KW	"replStatus"	/* status of the replica */
@@ -102,6 +103,22 @@
 						  * the ACL should be used */
 #define NO_CHK_COPY_LEN_KW	"noChkCopyLen"  /* Don't check the len 
 						  * when transfering  */
+#define PURGE_CACHE_KW         "purgeCache"    /* purge the cache copy right JMC - backport 4537
+                                                * after the operation */
+#define EMPTY_BUNDLE_ONLY_KW   "emptyBundleOnly" /* delete emptyBundleOnly */ // JMC - backport 4552
+
+// =-=-=-=-=-=-=-
+// JMC - backport 4599
+#define LOCK_TYPE_KW   "lockType"      /* valid values are READ_LOCK_TYPE
+                                        * WRITE_LOCK_TYPE and UNLOCK_TYPE */
+#define LOCK_CMD_KW    "lockCmd"       /* valid values are SET_LOCK_WAIT_CMD,
+                                        * SET_LOCK_CMD and GET_LOCK_CMD */
+#define LOCK_FD_KW     "lockFd"        /* Lock file desc for unlock */
+// =-=-=-=-=-=-=-
+#define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */ // JMC - backport 4771
+
+ /* OBJ_PATH_KW already defined */ 
+
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

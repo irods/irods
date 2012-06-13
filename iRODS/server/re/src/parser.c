@@ -2906,15 +2906,15 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
 
             Node *node = parseRuleRuleGen(e, backwardCompatible, pc);
             if(node==NULL) {
-                addRErrorMsg(errmsg, OUT_OF_MEMORY, "parseRuleSet: out of memory.");
-                return OUT_OF_MEMORY;
+                addRErrorMsg(errmsg, RE_OUT_OF_MEMORY, "parseRuleSet: out of memory.");
+                return RE_OUT_OF_MEMORY;
             } else if(getNodeType(node) == N_ERROR) {
                     *errloc = NODE_EXPR_POS(node);
                     generateErrMsg("parseRuleSet: error parsing rule.", *errloc, e->base, errbuf);
-                    addRErrorMsg(errmsg, PARSER_ERROR, errbuf);
+                    addRErrorMsg(errmsg, RE_PARSER_ERROR, errbuf);
                     /* skip the current line and try to parse the rule from the next line */
                     skipComments(e);
-                    return PARSER_ERROR;
+                    return RE_PARSER_ERROR;
             } else {
                 int n = node->degree;
                 Node **nodes = node->subtrees;
@@ -2927,8 +2927,8 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                     for(k=1;k<n;k++) {
                         if(lookupFromEnv(funcDescIndex, nodes[k]->subtrees[0]->text)!=NULL) {
                             generateErrMsg("parseRuleSet: redefinition of constructor.", NODE_EXPR_POS(nodes[k]->subtrees[0]), nodes[k]->subtrees[0]->base, errbuf);
-                            addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
-                            return TYPE_ERROR;
+                            addRErrorMsg(errmsg, RE_TYPE_ERROR, errbuf);
+                            return RE_TYPE_ERROR;
                         }
                         insertIntoHashTable(funcDescIndex->current, nodes[k]->subtrees[0]->text, newConstructorFD2(nodes[k]->subtrees[1], r));
                         pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[k], 0, r));
@@ -2936,8 +2936,8 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 } else if(strcmp(node->text, "CONSTR") == 0) {
 					if(lookupFromEnv(funcDescIndex, nodes[0]->subtrees[0]->text)!=NULL) {
 						generateErrMsg("parseRuleSet: redefinition of constructor.", NODE_EXPR_POS(nodes[0]->subtrees[0]), nodes[0]->subtrees[0]->base, errbuf);
-						addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
-						return TYPE_ERROR;
+						addRErrorMsg(errmsg, RE_TYPE_ERROR, errbuf);
+						return RE_TYPE_ERROR;
 					}
 					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newConstructorFD2(nodes[0]->subtrees[1], r));
 					pushRule(ruleSet, newRuleDesc(RK_CONSTRUCTOR, nodes[0], 0, r));
@@ -2945,8 +2945,8 @@ int parseRuleSet(Pointer *e, RuleSet *ruleSet, Env *funcDescIndex, int *errloc, 
                 	FunctionDesc *fd;
 					if((fd = (FunctionDesc *) lookupFromEnv(funcDescIndex, nodes[0]->subtrees[0]->text))!=NULL) {
 						generateErrMsg("parseRuleSet: redefinition of function.", NODE_EXPR_POS(nodes[0]->subtrees[0]), nodes[0]->subtrees[0]->base, errbuf);
-						addRErrorMsg(errmsg, TYPE_ERROR, errbuf);
-						return TYPE_ERROR;
+						addRErrorMsg(errmsg, RE_TYPE_ERROR, errbuf);
+						return RE_TYPE_ERROR;
 					}
 					insertIntoHashTable(funcDescIndex->current, nodes[0]->subtrees[0]->text, newExternalFD(nodes[0]->subtrees[1], r));
 					pushRule(ruleSet,  newRuleDesc(RK_EXTERN, nodes[0], 0, r));

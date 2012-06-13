@@ -61,6 +61,11 @@ compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo);
 int
 getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName,
 rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc);
+//(rsComm_t *rsComm, char *rescGroupName,
+//rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp);
+int
+getRescInGrpByClass( rsComm_t *rsComm, char *rescGroupName, int rescClass, 
+                     rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp); // JMC - backport 4544, 4547
 int
 getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 rescInfo_t **outRescInfo);
@@ -115,7 +120,7 @@ getRescType (rescInfo_t *rescInfo);
 int
 getRescClassInx (char *rescClass);
 int
-getMultiCopyPerResc ();
+getMultiCopyPerResc ( rsComm_t* ); // JMC - backport 4556
 int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo);
 int

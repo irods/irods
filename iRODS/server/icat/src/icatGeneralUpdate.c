@@ -198,9 +198,8 @@ chlGeneralUpdate(generalUpdateInp_t generalUpdateInp) {
 
    status =  cmlExecuteNoAnswerSql(tSQL, icss);
    if (status != 0) {
-      rodsLog(LOG_NOTICE,
-	      "chlGeneralUpdate cmlExecuteNoAnswerSql insert failure %d",
-	      status);
+      rodsLog(LOG_NOTICE,"chlGeneralUpdate cmlExecuteNoAnswerSql insert failure %d",status);
+	  int status2 = cmlExecuteNoAnswerSql("rollback", icss); // JMC - backport 4509
       return(status);
    }
 

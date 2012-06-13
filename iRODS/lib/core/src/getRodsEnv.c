@@ -32,6 +32,10 @@
 
 #ifdef windows_platform
 #include "irodsntutil.h"
+#else
+#ifdef UNI_CODE
+#include <locale.h>
+#endif
 #endif
 
 #define BUF_LEN 100
@@ -108,7 +112,6 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
    getVar = iRODSNt_gethome();
 #else
 #ifdef UNI_CODE
-#include <locale.h>
    setlocale (LC_ALL, "");
 #endif
    getVar = getenv("HOME");

@@ -161,7 +161,7 @@ char *destDir, int mode)
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
        status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode);
-        if (status < 0) {
+        if (status < 0 && (getErrno (status) != EEXIST)) { // JMC - backport 4834
 	    rodsLog (LOG_NOTICE,
              "mkFileDirR: mkdir failed for %s, status =%d",
               tmpPath, status);
@@ -244,17 +244,23 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
  */
 int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost)
+rodsServerHost_t *rodsServerHost, int chkType) // JMC - backport 4774
 {
     int status;
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4774
+    char *outVaultPath = NULL;
 
-    if (strstr (fileOpenInp->fileName, "/../") != NULL) {
-        /* don't allow /../ in the path */
-	rodsLog (LOG_ERROR,
-	  "chkFilePathPerm: input fileName %s contains /../",
-	  fileOpenInp->fileName);
-        return SYS_INVALID_FILE_PATH;
+    if (chkType == NO_CHK_PATH_PERM) {
+       return 0;
+    } else if (chkType == DISALLOW_PATH_REG) {
+       return PATH_REG_NOT_ALLOWED;
     }
+    // =-=-=-=-=-=-=-
+
+    status = isValidFilePath (fileOpenInp->fileName);  // JMC - backport 4766
+    if (status < 0) return status; // JMC - backport 4766
+
 
     if (rodsServerHost == NULL) {
 	rodsLog (LOG_NOTICE,
@@ -262,19 +268,71 @@ rodsServerHost_t *rodsServerHost)
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    status = matchCliVaultPath (rsComm, fileOpenInp->fileName, 
-      rodsServerHost);
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4774
+    if (chkType == CHK_NON_VAULT_PATH_PERM) {
+		rodsLog( LOG_NOTICE, "XXXX - chkType == CHK_NON_VAULT_PATH_PERM" );
+        status = matchCliVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost);
 
-    if (status > 0) {
-	/* a match in vault */
-	return (status);
+        rodsLog( LOG_NOTICE, "XXXX - status: %d", status );
+
+        if (status == 1) {
+           /* a match in vault */
+           return (status);
+        } else if (status == -1) {
+          /* in vault, but not in user's vault */
+           return CANT_REG_IN_VAULT_FILE;
+       }
+    } else if (chkType == DO_CHK_PATH_PERM) {
+		rodsLog( LOG_NOTICE, "XXXX - chkType == DO_CHK_PATH_PERM" );
+		int ret = matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost, &outVaultPath );
+		rodsLog( LOG_NOTICE, "XXXX - ret:%d ", ret );
+		if( ret > 0 ) {
+        //if (matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost,&outVaultPath) > 0) {
+            /* a match */
+            return CANT_REG_IN_VAULT_FILE;
+        }
+    } else {
+       return SYS_INVALID_INPUT_PARAM;
+    // =-=-=-=-=-=-=-
     }
 
+    rodsLog( LOG_NOTICE, "XXXX - rsChkNVPathPermByHost" );
     status = rsChkNVPathPermByHost (rsComm, fileOpenInp, rodsServerHost);
     
     return (status);
 }
 
+// =-=-=-=-=-=-=-
+// JMC - backport 4766, 4869
+/* isValidFilePath - check if it is a valid file path - should not contain
+ * "/../" or end with "/.."
+ */
+int
+isValidFilePath (char *path) 
+{
+    char *tmpPtr  = NULL;
+    char *tmpPath = path;
+#if 0
+    if (strstr (path, "/../") != NULL) {
+        /* don't allow /../ in the path */
+        rodsLog (LOG_ERROR,
+          "isValidFilePath: input fileName %s contains /../", path);
+        return SYS_INVALID_FILE_PATH;
+    }
+#endif
+    while ((tmpPtr = strstr (tmpPath, "/..")) != NULL) {
+       if (tmpPtr[3] == '\0' || tmpPtr[3] == '/') {
+           /* "/../" or end with "/.."  */
+           rodsLog (LOG_ERROR,"isValidFilePath: inp fileName %s contains /../ or ends with /..",path);
+           return SYS_INVALID_FILE_PATH;
+       } else {
+           tmpPath += 3;
+       }
+    }
+    return 0;
+}
+// =-=-=-=-=-=-=-
 int
 matchVaultPath (rsComm_t *rsComm, char *filePath, 
 rodsServerHost_t *rodsServerHost, char **outVaultPath)
@@ -282,30 +340,42 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
     int len;
-
-    if (strstr (filePath, "/../") != NULL) {
-	/* no match */
-	return (0);
+    rodsLog( LOG_NOTICE, "YYYY - filePath: %s", filePath );
+    if (isValidFilePath (filePath) < 0) { // JMC - backport 4766
+        /* no match */
+        rodsLog( LOG_NOTICE, "YYYY - invalid filePath: %s", filePath );
+        return (0);
     }
     tmpRescGrpInfo = RescGrpInfo;
 
     while (tmpRescGrpInfo != NULL) {
-	tmpRescInfo = tmpRescGrpInfo->rescInfo;
-	/* match the rodsServerHost */
-	if (tmpRescInfo->rodsServerHost == rodsServerHost) {
-	    len = strlen (tmpRescInfo->rescVaultPath);
-	    if (strncmp (tmpRescInfo->rescVaultPath, filePath, len) == 0) {
-		*outVaultPath = tmpRescInfo->rescVaultPath;
-		return (len);
-	    }
-	}
-	tmpRescGrpInfo = tmpRescGrpInfo->next;
+		tmpRescInfo = tmpRescGrpInfo->rescInfo;
+		/* match the rodsServerHost */
+		if (tmpRescInfo->rodsServerHost == rodsServerHost) {
+			rodsLog( LOG_NOTICE, "YYYY - filePath: %s vs tmpRescInfo->rescVaultPath: %s", filePath, tmpRescInfo->rescVaultPath );
+			len = strlen (tmpRescInfo->rescVaultPath);
+			rodsLog( LOG_NOTICE, "YYYY - len: %d", len );
+			rodsLog( LOG_NOTICE, "YYYY - strncmp: %d", strncmp ( tmpRescInfo->rescVaultPath, filePath, len ) );
+			rodsLog( LOG_NOTICE, "YYYY - filePath[len]: %c", filePath[len] );
+			if( strncmp ( tmpRescInfo->rescVaultPath, filePath, len ) == 0 && // JMC -backport 4767
+			  ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
+				rodsLog( LOG_NOTICE, "YYYY - match outVaultPath: %s", tmpRescInfo->rescVaultPath );
+				*outVaultPath = tmpRescInfo->rescVaultPath;
+				return (len);
+			}
+		}
+		tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
 
     /* no match */
     return (0);
 }
 
+/* matchCliVaultPath - if the input path is inside 
+ * $(vaultPath)/myzone/home/userName, retun 1.
+ * If it is in $(vaultPath) but not in $(vaultPath)/myzone/home/userName,
+ * return -1. If it is a non vault path, return 0.
+ */
 int
 matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost)
@@ -321,51 +391,21 @@ rodsServerHost_t *rodsServerHost)
 	return (0);
     }
 
-    /* assume the path is $(vaultPath/myzone/home/userName or 
-     * $(vaultPath/home/userName */
+    /* assume the path is $(vaultPath/myzone/home/userName */ 
 
     nameLen = strlen (rsComm->clientUser.userName);
 
     tmpPath = filePath + len + 1;    /* skip the vault path */
 
-    if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
-    tmpPath++;
-    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0) 
-	return 1;
-
-    if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
-    tmpPath++;
-    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0) 
-        return 1;
+    if (strncmp (tmpPath, "home/", 5) != -1) return -1;
+    tmpPath += 5;
+    if( strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0 &&
+        (tmpPath[nameLen] == '/' || tmpPath[len] == '\0') )
+	    return 1;
     else
-	return 0;
+	    return 0;
 
-#if 0
-    /* skip two more '/' */
-
-    count = 0;
-    while (*tmpPath != '\0') {
-	if (*tmpPath == '/') {
-	    count++;
-	    if (count >= 2) {
-		tmpPath++;
-		break;
-	    }
-	}
-	tmpPath++;
-    }
-
-    if (count < 2) {
-	return (0);
-    }
- 
-    len = strlen (rsComm->clientUser.userName);
-    if (strncmp (tmpPath, rsComm->clientUser.userName, len) == 0) {
-	return (1);
-    } else {
-	return (0);
-    }
-#endif
+	return -1;
 }
 
 /* filePathTypeInResc - the status of a filePath in a resource.

@@ -53,6 +53,8 @@ int
 msiSetMultiReplPerResc (ruleExecInfo_t *rei);
 int
 msiNoChkFilePathPerm (ruleExecInfo_t *rei);
+int // JMC - backport 4774
+msiSetChkFilePathPerm (msParam_t *xchkType, ruleExecInfo_t *rei);
 int
 msiNoTrashCan (ruleExecInfo_t *rei);
 int

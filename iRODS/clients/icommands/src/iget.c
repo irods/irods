@@ -92,13 +92,14 @@ void
 usage () {
    char *msgs[]={
 "Usage: iget [-fIKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] [--lfrestart lfRestartFile] [--retries count]",
-"srcDataObj|srcCollection ... destLocalFile|destLocalDir",
+"[-R resource] [--lfrestart lfRestartFile] [--retries count] [--purgec]", // JMC - backport 4537
+"[--rlock]  srcDataObj|srcCollection ... destLocalFile|destLocalDir",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] [--lfrestart lfRestartFile] [--retries count]",
-"srcDataObj|srcCollection",
+"[-R resource] [--lfrestart lfRestartFile] [--retries count] [--purgec]", // JMC - backport 4537
+"[--rlock]  srcDataObj|srcCollection",
 "Usage : iget [-fIKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
-"[-R resource] [--lfrestart lfRestartFile]  [--retries count] srcDataObj ... -",
+"[-R resource] [--lfrestart lfRestartFile]  [--retries count] [--purgec] ", // JMC - backport 4537
+"[--rlock]  srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
 " ",
@@ -150,6 +151,7 @@ usage () {
 " -N  numThreads - the number of thread to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.", 
+" --purgec  Purge the staged cache copy after downloading a COMPOUND object", // // JMC - backport 4537
 " -P  output the progress of the download.",
 " -r  recursive - retrieve subcollections",
 " -R  resource - the preferred resource",
@@ -166,6 +168,7 @@ usage () {
 " --lfrestart lfRestartFile - specifies that the large file restart option is",
 "      on and the lfRestartFile input specifies a local file that contains",
 "      the restart info.",
+" --rlock - use advisory read lock for the download",
 " -h  this help",
 ""};
    int i;

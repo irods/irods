@@ -56,10 +56,10 @@ int
 mkFileDirR (int fileType, rsComm_t *rsComm, char *startDir,
 char *destDir, int mode);
 int
-procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource);
-int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost);
+rodsServerHost_t *rodsServerHost, int chkType); // JMC - backport 4774
+int // JMC - backport 4766
+isValidFilePath (char *path);
 int
 matchVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost, char **outVaultPath);

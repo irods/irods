@@ -11,6 +11,7 @@
 #include "rcConnect.h"
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h" 
+#include "phyBundleColl.h"
 
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
@@ -68,6 +69,8 @@ int chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
     char *name, char *attribute, char *value,  char *units);
 int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type, 
     char *name, char *attribute, char *value,  char *units, int noCommit);
+int chlSetAVUMetadata(rsComm_t *rsComm, char *type,  // JMC - backport 4836
+    char *name, char *attribute, char *newValue, char *newUnit);
 int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2, 
     char *name1, char *name2);
 int chlModAVUMetadata(rsComm_t *rsComm, char *type, char *name, 

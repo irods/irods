@@ -310,6 +310,10 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
     }
 #endif  /* RBUDP_TRANSFER */
 
+    if (rodsArgs->purgeCache == True) { // JMC - backport 4537
+        addKeyVal (&dataObjOprInp->condInput, PURGE_CACHE_KW, "");
+    }
+
     memset (rodsRestart, 0, sizeof (rodsRestart_t));
     if (rodsArgs->restart == True) {
         int status;
@@ -337,7 +341,19 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
               MAX_NAME_LEN);
         }
     }
-
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4604
+    if (rodsArgs->rlock == True) {
+	        addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
+	}
+    // =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4612
+    if (rodsArgs->wlock == True) {
+        rodsLog (LOG_ERROR,"initCondForPut: --wlock not supported, changing it to --rlock");
+        addKeyVal (&dataObjOprInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
+    }
+    // =-=-=-=-=-=-=-
     dataObjOprInp->openFlags = O_RDONLY;
 
     return (0);

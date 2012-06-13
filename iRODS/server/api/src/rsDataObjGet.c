@@ -87,6 +87,15 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    if (getStructFileType (dataObjInfo->specColl) >= 0 &&  // JMC - backport 4682
+      L1desc[l1descInx].l3descInx > 0) {
+       /* l3descInx == 0 if included */
+        *portalOprOut = (portalOprOut_t *) malloc (sizeof (portalOprOut_t));
+        bzero (*portalOprOut,  sizeof (portalOprOut_t));
+        (*portalOprOut)->l1descInx = l1descInx;
+        return l1descInx;
+    }
+
     if (getValByKey (&dataObjInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
         if (strlen (dataObjInfo->chksum) > 0) {
             /* a chksum already exists */

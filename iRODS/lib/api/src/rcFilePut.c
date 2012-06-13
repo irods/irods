@@ -10,6 +10,15 @@ rcFilePut (rcComm_t *conn, fileOpenInp_t *filePutInp,
 bytesBuf_t *filePutInpBBuf)
 {
     int status;
+
+#if defined(osx_platform) // JMC - backport 4614
+    if (filePutInp->flags & O_TRUNC) {
+        filePutInp->flags = filePutInp->flags ^ O_TRUNC;
+        filePutInp->flags = filePutInp->flags | 0x200;
+    }
+#endif
+
+
     status = procApiRequest (conn, FILE_PUT_AN, filePutInp, filePutInpBBuf, 
         (void **) NULL, NULL);
 

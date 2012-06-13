@@ -166,6 +166,7 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
     char filePath[MAX_NAME_LEN];
     dataObjInfo_t dataObjInfo;
     char *tmpStr = NULL;
+    int chkType = 0; // JMC - backport 4774
 
     if ((tmpFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
@@ -188,17 +189,18 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
       LONG_NAME_LEN);
 
  
-    if (getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
-      getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) { 
+    if( getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
+        (chkType = getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) != NO_CHK_PATH_PERM) { // JMC - backport 4774
+		       
         memset (&chkNVPathPermInp, 0, sizeof (chkNVPathPermInp));
 
         rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
         rstrcpy (chkNVPathPermInp.fileName, filePath, MAX_NAME_LEN);
         chkNVPathPermInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (chkNVPathPermInp.addr.hostAddr,  
-	  rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
+	    rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
 
-        status = chkFilePathPerm (rsComm, &chkNVPathPermInp, rodsServerHost);
+        status = chkFilePathPerm (rsComm, &chkNVPathPermInp, rodsServerHost,chkType); // JMC - backport 4774
     
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -357,8 +359,13 @@ rescInfo_t *rescInfo)
         memset (&collCreateInp, 0, sizeof (collCreateInp));
         rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, 
 	  MAX_NAME_LEN);
+
+      /* no need to resolve sym link */ // JMC - backport 4845
+      addKeyVal (&collCreateInp.condInput, TRANSLATED_PATH_KW, ""); // JMC - backport 4845
+
         /* create the coll just in case it does not exist */
         status = rsCollCreate (rsComm, &collCreateInp);
+		clearKeyVal (&collCreateInp.condInput); // JMC - backport 4835
 	if (status < 0 ) return status;
     } else if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
@@ -398,6 +405,7 @@ rescInfo_t *rescInfo)
 
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
           strcmp (rodsDirent->d_name, "..") == 0) {
+			free (rodsDirent); // JMC - backport 4835
             continue;
         }
 
@@ -414,6 +422,7 @@ rescInfo_t *rescInfo)
             rodsLog (LOG_ERROR,
 	      "dirPathReg: rsFileStat failed for %s, status = %d",
 	      fileStatInp.fileName, status);
+		free (rodsDirent); // JMC - backport 4835
 	    return (status);
 	}
 
@@ -425,9 +434,10 @@ rescInfo_t *rescInfo)
 	    if (forceFlag > 0) {
 		/* check if it already exists */
 	        if (isData (rsComm, subPhyPathRegInp.objPath, NULL) >= 0) {
-		    free (myStat);
-		    continue;
-		}
+		        free (myStat);
+				free (rodsDirent); // JMC - backport 4835
+		        continue;
+		    }
 	    }
 	    subPhyPathRegInp.dataSize = myStat->st_size;
 	    if (getValByKey (&phyPathRegInp->condInput, REG_REPL_KW) != NULL) {
@@ -444,6 +454,7 @@ rescInfo_t *rescInfo)
               fileStatInp.fileName, rescInfo);
 	}
 	free (myStat);
+	free (rodsDirent); // JMC - backport 4835
     }
     if (status == -1) {         /* just EOF */
         status = 0;
@@ -465,6 +476,10 @@ rescInfo_t *rescInfo)
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
+
+    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) // JMC - backport 4832
+       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+ 
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
     if (status < 0 || NULL == rodsObjStatOut ) return status; // JMC cppcheck - nullptr
@@ -618,6 +633,10 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     rodsObjStat_t *rodsObjStatOut = NULL;
     specCollCache_t *specCollCache = NULL;
     rescInfo_t *rescInfo = NULL;
+
+    /* make it a privileged call for now */ // JMC - backport 4871
+    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
+        return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
 
     if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {

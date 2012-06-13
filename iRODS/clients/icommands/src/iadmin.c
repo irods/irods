@@ -243,30 +243,100 @@ getLocalZone() {
    }
    return(0);
 }
-  
+
+/* 
+ print the results of a general query for the showGroup function below
+ */
+void // JMC - backport 4742
+printGenQueryResultsForGroup(genQueryOut_t *genQueryOut)
+{
+   int i, j;
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      char *tResult;
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+        tResult = genQueryOut->sqlResult[j].value;
+        tResult += i*genQueryOut->sqlResult[j].len;
+        if (j>0) {
+           printf("#%s", tResult);
+        }
+        else {
+           printf("%s", tResult);
+        }
+      }
+      printf("\n");
+   }
+}
 
 int
-showGroup(char *group) 
+showGroup(char *groupName) // JMC - backport 4742 
 {
-   simpleQueryInp_t simpleQueryInp;
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4742
+   genQueryInp_t  genQueryInp;
+   genQueryOut_t *genQueryOut = 0;
+   int selectIndexes[10];
+   int selectValues[10];
+   int conditionIndexes[10];
+   char *conditionValues[10];
+   char conditionString1[BIG_STR];
+   char conditionString2[BIG_STR];
+   int status;
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (groupName != NULL && *groupName!='\0') {
+	      printf("Members of group %s:\n",groupName);
 
-   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
-   simpleQueryInp.control = 0;
-   if (group==0 || *group=='\0') {
-      simpleQueryInp.form = 1;
-      simpleQueryInp.sql =
-	 "select user_name from R_USER_MAIN where user_type_name='rodsgroup'";
-      simpleQueryInp.maxBufSize = 1024;
+   }
+   selectIndexes[0]=COL_USER_NAME;
+   selectValues[0]=0;
+   selectIndexes[1]=COL_USER_ZONE;
+   selectValues[1]=0;
+   genQueryInp.selectInp.inx = selectIndexes;
+   genQueryInp.selectInp.value = selectValues;
+   if (groupName != NULL && *groupName!='\0') {
+	      genQueryInp.selectInp.len = 2;
    }
    else {
-      printf("Members of group %s:\n",group);
-      simpleQueryInp.form = 1;
-      simpleQueryInp.sql = 
-	 "select user_name||'#'||zone_name from R_USER_MAIN, R_USER_GROUP where R_USER_GROUP.user_id=R_USER_MAIN.user_id and R_USER_GROUP.group_user_id=(select user_id from R_USER_MAIN where user_name=?)";
-      simpleQueryInp.arg1 = group;
-      simpleQueryInp.maxBufSize = 1024;
+       genQueryInp.selectInp.len = 1;
    }
-   return (doSimpleQuery(simpleQueryInp));
+
+   conditionIndexes[0]=COL_USER_TYPE;
+   sprintf(conditionString1,"='rodsgroup'");
+   conditionValues[0]=conditionString1;
+
+   genQueryInp.sqlCondInp.inx = conditionIndexes;
+   genQueryInp.sqlCondInp.value = conditionValues;
+   genQueryInp.sqlCondInp.len=1;
+
+   if (groupName != NULL && *groupName!='\0') {
+
+      sprintf(conditionString1,"!='rodsgroup'");
+
+      conditionIndexes[1]=COL_USER_GROUP_NAME;
+      sprintf(conditionString2,"='%s'",groupName);
+      conditionValues[1]=conditionString2;
+      genQueryInp.sqlCondInp.len=2;
+   }
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      printf("No rows found\n");
+      return -1;
+   }
+   else {
+      printGenQueryResultsForGroup(genQueryOut);
+   }
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) printGenQueryResultsForGroup(genQueryOut);
+   }
+   return 0;
+   // =-=-=-=-=-=-=-
 }
 
 int
@@ -589,17 +659,22 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
 			printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: FAILURE\n", arg2, status );
 		} // else
 	} else {
-		if (status < 0 ) {
-			if (Conn->rError) {
-				rError_t* Err = Conn->rError;
-				int       len = Err->len;
-
-				for ( int i = 0; i < len; i++ ) {
-					rErrMsg_t* ErrMsg = Err->errMsg[i];
-					rodsLog(LOG_ERROR, "Level %d: %s",i, ErrMsg->msg);
-				}
+        // =-=-=-=-=-=-=-
+		// JMC - backport 4597
+		if (Conn->rError) {
+			rError_t *Err;
+			rErrMsg_t *ErrMsg;
+			int i, len;
+			Err = Conn->rError;
+			len = Err->len;
+			for (i=0;i<len;i++) {
+				ErrMsg = Err->errMsg[i];
+				printf("Level %d message: %s\n",i, ErrMsg->msg);
 			}
+		}
+        // =-=-=-=-=-=-=-
 
+		if (status < 0 ) {
 			myName = rodsErrorName(status, &mySubName);
 			rodsLog( LOG_ERROR, "%s failed with error %d %s %s", funcName, status, myName, mySubName );
 			if (status == CAT_INVALID_USER_TYPE) {
@@ -1428,6 +1503,8 @@ usage(char *subOpt)
 "Just 'lg' briefly lists the defined groups.",
 "If you include a group name, it will list users who are",
 "members of that group.  Users are listed in the user#zone format.",
+"In addition to 'rodsadmin', any user can use this sub-command; this is",
+"of most value to 'groupadmin' users who can also 'atg' and 'rfg'",
 ""};
 
    char *lgdMsgs[]={

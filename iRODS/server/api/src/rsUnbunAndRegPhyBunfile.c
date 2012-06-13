@@ -49,6 +49,7 @@ rescInfo_t *rescInfo)
     char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
     int rmBunCopyFlag;
+    char *dataType = NULL; // JMC - backport 4664
 
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
@@ -60,7 +61,7 @@ rescInfo_t *rescInfo)
 	return status;
     }
     /* process this locally */
-    if ((bunFilePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW))
+    if ((bunFilePath = getValByKey (&dataObjInp->condInput, BUN_FILE_PATH_KW)) // JMC - backport 4768
       == NULL) {
         rodsLog (LOG_ERROR,
           "_rsUnbunAndRegPhyBunfile: No filePath input for %s",
@@ -69,9 +70,9 @@ rescInfo_t *rescInfo)
     }
 
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
-
-    status = unbunPhyBunFile (rsComm, dataObjInp, rescInfo, bunFilePath,
-      phyBunDir);
+    dataType = getValByKey (&dataObjInp->condInput, DATA_TYPE_KW); // JMC - backport 4664
+    status = unbunPhyBunFile (rsComm, dataObjInp->objPath, rescInfo, bunFilePath, phyBunDir, dataType, 0 ); // JMC - backport 4632, 4657, 4664
+     
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -319,8 +320,9 @@ dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo)
 }
 
 int
-unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
+unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
+                 rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, 
+                 char *dataType, int oprType ) // JMC - backport 4632, 4657
 {
     int status;
     structFileOprInp_t structFileOprInp;
@@ -331,9 +333,9 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
     memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
     structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
     snprintf (structFileOprInp.specColl->collection, MAX_NAME_LEN,
-      "%s.dir", dataObjInp->objPath);
+      "%s.dir", objPath); // JMC - backport 4657
     rstrcpy (structFileOprInp.specColl->objPath,
-      dataObjInp->objPath, MAX_NAME_LEN);
+      objPath, MAX_NAME_LEN); // JMC - backport 4657
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
     rstrcpy (structFileOprInp.specColl->resource, rescInfo->rescName,
       NAME_LEN);
@@ -342,8 +344,17 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
       NAME_LEN);
     /* set the cacheDir */
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
+    /* pass on the dataType */
+    if( dataType != NULL &&  // JMC - backport 4632
+        ( strstr (dataType, GZIP_TAR_DT_STR)  != NULL || // JMC - backport 4658
+          strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||
+          strstr (dataType, ZIP_DT_STR)       != NULL) ) {
+       addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
+    }
 
-    rmLinkedFilesInUnixDir (phyBunDir);
+    if ((oprType & PRESERVE_DIR_CONT) == 0) // JMC - backport 4657
+        rmLinkedFilesInUnixDir (phyBunDir);
+	structFileOprInp.oprType = oprType; // JMC - backport 4657
     status = rsStructFileExtract (rsComm, &structFileOprInp);
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
 	/* phyBunDir is not empty */
@@ -368,10 +379,11 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
             }
 	}
     }
+	clearKeyVal (&structFileOprInp.condInput); // JMC - backport 4632
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",
-          dataObjInp->objPath, status);
+          objPath, status); // JMC - backport 4657
     }
     free (structFileOprInp.specColl);
 
@@ -467,6 +479,46 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
 #ifndef USE_BOOST_FS
     closedir (dirPtr);
 #endif
+    return 0;
+}
+
+int // JMC - backport 4657
+rmUnlinkedFilesInUnixDir (char *phyBunDir)
+{
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    int status;
+    char subfilePath[MAX_NAME_LEN];
+    time_t myTime = time (0) - UNLINK_FILE_AGE; // JMC - backport 4666
+
+    dirPtr = opendir (phyBunDir);
+    if (dirPtr == NULL) return 0;
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          phyBunDir, myDirent->d_name);
+        status = stat (subfilePath, &statbuf);
+
+        if (status != 0) {
+            continue;
+        }
+
+        if ((statbuf.st_mode & S_IFREG) != 0) {
+           /* only delete those younger than UNLINK_FILE_AGE. A little 
+            * safeguard since this routine is very dangerous */
+           if (statbuf.st_nlink == 1 && statbuf.st_mtime > myTime) 
+               unlink (subfilePath);
+        } else {        /* a directory */
+            status = rmUnlinkedFilesInUnixDir (subfilePath);
+            /* rm subfilePath but not phyBunDir */
+            rmdir (subfilePath);
+        }
+    }
+    closedir (dirPtr);
     return 0;
 }
 

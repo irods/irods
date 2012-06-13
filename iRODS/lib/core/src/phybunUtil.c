@@ -64,6 +64,8 @@ initCondForPhybunOpr (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 structFileExtAndRegInp_t *phyBundleCollInp, 
 rodsPathInp_t *rodsPathInp)
 {
+	char tmpStr[NAME_LEN]; // JMC - backport 4771
+
     if (phyBundleCollInp == NULL) {
        rodsLog (LOG_ERROR,
           "initCondForPhybunOpr: NULL phyBundleCollInp input");
@@ -91,6 +93,43 @@ rodsPathInp_t *rodsPathInp)
        rodsLog (LOG_ERROR,
           "initCondForPhybunOpr: A -Rresource must be input");
         return (USER__NULL_INPUT_ERR);
+    }
+
+    if (rodsArgs->verifyChecksum == True) { // JMC - backport 4528
+	        addKeyVal (&phyBundleCollInp->condInput, VERIFY_CHKSUM_KW, "");
+	}
+    // =-=-=-=-=-=-=
+	// JMC - backport 4658
+    if (rodsArgs->dataTypeString != NULL) {
+        if (strcmp (rodsArgs->dataTypeString, "t") == 0 ||
+          strcmp (rodsArgs->dataTypeString, TAR_DT_STR) == 0 ||
+          strcmp (rodsArgs->dataTypeString, "tar") == 0) {
+            addKeyVal (&phyBundleCollInp->condInput, DATA_TYPE_KW,
+              TAR_BUNDLE_DT_STR);
+        } else if (strcmp (rodsArgs->dataTypeString, "g") == 0 ||
+          strcmp (rodsArgs->dataTypeString, GZIP_TAR_DT_STR) == 0 ||
+          strcmp (rodsArgs->dataTypeString, "gzip") == 0) {
+            addKeyVal (&phyBundleCollInp->condInput, DATA_TYPE_KW,
+              GZIP_TAR_BUNDLE_DT_STR);
+        } else if (strcmp (rodsArgs->dataTypeString, "b") == 0 ||
+          strcmp (rodsArgs->dataTypeString, BZIP2_TAR_DT_STR) == 0 ||
+          strcmp (rodsArgs->dataTypeString, "bzip") == 0) {
+           addKeyVal (&phyBundleCollInp->condInput, DATA_TYPE_KW,
+              BZIP2_TAR_BUNDLE_DT_STR);
+        } else if (strcmp (rodsArgs->dataTypeString, "z") == 0 ||
+          strcmp (rodsArgs->dataTypeString, ZIP_DT_STR) == 0 ||
+          strcmp (rodsArgs->dataTypeString, "zip") == 0) {
+            addKeyVal (&phyBundleCollInp->condInput, DATA_TYPE_KW,
+              ZIP_BUNDLE_DT_STR);
+        } else {
+            addKeyVal (&phyBundleCollInp->condInput, DATA_TYPE_KW,
+              rodsArgs->dataTypeString);
+        }
+    }
+	// =-=-=-=-=-=-=
+    if (rodsArgs->number == True) { // JMC - backport 4771
+        snprintf (tmpStr, NAME_LEN, "%d", rodsArgs->numberValue);
+        addKeyVal (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW, tmpStr);
     }
 
     return (0);

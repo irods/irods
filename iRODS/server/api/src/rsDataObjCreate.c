@@ -15,6 +15,7 @@
 #include "dataObjOpr.h"
 #include "physPath.h"
 #include "dataObjUnlink.h"
+#include "dataObjLock.h" // JMC - backport 4604
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
@@ -40,6 +41,8 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
+    char *lockType = NULL; // JMC - backport 4604
+    int lockFd = -1; // JMC - backport 4604
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
       &dataObjInp->condInput);
@@ -61,35 +64,36 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	if (openStat != NULL) free (openStat);
 	return (l1descInx);
     }
-
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4604
+    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    if (lockType != NULL) {
+       lockFd = rsDataObjLock (rsComm, dataObjInp);
+       if (lockFd >= 0) {
+           /* rm it so it won't be done again causing deadlock */
+           rmKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW);
+       } else {
+            rodsLogError (LOG_ERROR, lockFd,
+              "rsDataObjCreate: rsDataObjLock error for %s. lockType = %s",
+              dataObjInp->objPath, lockType);
+           return lockFd;
+       }
+    }
+    // =-=-=-=-=-=-=-
     /* Gets here means local zone operation */
     /* stat dataObj */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
-#if 0   /* separate specColl */
-    status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
-#endif
     status = rsObjStat (rsComm, dataObjInp, &rodsObjStatOut); 
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
-	return (USER_INPUT_PATH_ERR);
+		if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
+	    return (USER_INPUT_PATH_ERR);
     }
 
     if (rodsObjStatOut != NULL && rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
         /*  should not be here because if has been translated */
+		if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
         return SYS_COLL_LINK_PATH_ERR;
-
-#if 0
-	/* linked obj,  just replace the path */
-	if (strlen (rodsObjStatOut->specColl->objPath) > 0) {
-	    rstrcpy (dataObjInp->objPath, rodsObjStatOut->specColl->objPath,
-	      MAX_NAME_LEN);
-	    freeRodsObjStat (rodsObjStatOut);
-	    /* call rsDataObjCreate because the translated path could be
-	     * a cross zone opertion */
-	    l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-	    return (l1descInx);
-	}
-#endif
     }
 
     if (rodsObjStatOut == NULL || 
@@ -102,22 +106,13 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
     } else if (rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-#if 0 /* XXXXXXXXXX is this needed ? */
-        dataObjInp->specColl = rodsObjStatOut->specColl;
-	rodsObjStatOut->specColl = NULL;
-#endif
+
 	/* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
         l1descInx = specCollSubCreate (rsComm, dataObjInp);
     } else {
 	/* dataObj exist */
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-#if 0 /* XXXXXXXXXX is this needed ? */
-	    if (rodsObjStatOut->specColl != NULL) {
-                dataObjInp->specColl = rodsObjStatOut->specColl;
-                rodsObjStatOut->specColl = NULL;
-	    }
-#endif
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
@@ -125,7 +120,16 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
     }
     if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
-
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4604
+    if (lockFd >= 0) {
+        if (l1descInx >= 0) {
+            L1desc[l1descInx].lockFd = lockFd;
+       } else {
+           rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+       }
+    }
+    // =-=-=-=-=-=-=-
     return (l1descInx);
 }
 
@@ -257,16 +261,14 @@ rescInfo_t *rescInfo, char *rescGroupName)
 
     dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
-#if 0	/* not needed */
-    dataObjInfo->replStatus = NEWLY_CREATED_COPY;
-#endif
-    if (getRescClass (rescInfo) == COMPOUND_CL) {
+    
+	if (getRescClass (rescInfo) == COMPOUND_CL) {
 	rescInfo_t *cacheResc = NULL;
 	char myRescGroupName[NAME_LEN];
 
 	rstrcpy (myRescGroupName, rescGroupName, NAME_LEN);
-        status = getCacheRescInGrp (rsComm, myRescGroupName, rescInfo, 
-	  &cacheResc);
+    status = getCacheRescInGrp (rsComm, myRescGroupName, rescInfo, &cacheResc);
+	  
         if (status < 0 || cacheResc == NULL ) { // JMC cppcheck
             rodsLog (LOG_ERROR,
              "DataObjCreateWithResInfo:getCacheRescInGrp %s err for %s stat=%d",
@@ -279,11 +281,28 @@ rescInfo_t *rescInfo, char *rescGroupName)
         dataObjInfo->rescInfo = cacheResc;
         rstrcpy (dataObjInfo->rescName, cacheResc->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, myRescGroupName, NAME_LEN);
-    } else {
+        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) { // JMC - backport 4537
+            L1desc[l1descInx].purgeCacheFlag = 1;
+        }
+    
+	} else {
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+        // =-=-=-=-=-=-=-
+		// JMC - backport 4544
+        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
+         getRescClass (rescInfo) == CACHE_CL) {
+           rescInfo_t *compResc = NULL;
+           if (getRescInGrpByClass (rsComm, rescGroupName, COMPOUND_CL,
+             &compResc, NULL) >= 0) { // JMC - backport 4547
+               L1desc[l1descInx].replRescInfo = compResc;
+                L1desc[l1descInx].purgeCacheFlag = 1;
+           }
+        }
+        // =-=-=-=-=-=-=-
     }
+	dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
       dataObjInp->dataSize);
 
@@ -407,6 +426,7 @@ dataObjInfo_t *dataObjInfo)
       case FILE_CAT:
       {
 	int retryCnt = 0;
+    int chkType = 0; // JMC - backport 4774
 
 	fileCreateInp_t fileCreateInp;
 	memset (&fileCreateInp, 0, sizeof (fileCreateInp));
@@ -415,9 +435,15 @@ dataObjInfo_t *dataObjInfo)
 	  NAME_LEN);
 	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
 	fileCreateInp.mode = getFileMode (dataObjInp);
-	if (getchkPathPerm (rsComm, dataObjInp, dataObjInfo)) {
-	    fileCreateInp.otherFlags |= CHK_PERM_FLAG; 
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4774
+	chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
+	if (chkType == DISALLOW_PATH_REG) {
+		return PATH_REG_NOT_ALLOWED;
+	} else if (chkType == NO_CHK_PATH_PERM) {
+	    fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
 	}
+	// =-=-=-=-=-=-=-
 	l3descInx = rsFileCreate (rsComm, &fileCreateInp);
 
         /* file already exists ? */
@@ -460,7 +486,14 @@ rescGrpInfo_t **myRescGrpInfo)
     /* query rcat for resource info and sort it */
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-    status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
+    if (dataObjInp->oprType == REPLICATE_OPR) { // JMC - backport 4660
+        status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, 
+         NO_SAVE_REI);
+    } else {
+        status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, 
+         NO_SAVE_REI);
+    }
+
 
     if (status < 0) {
         if (rei.status < 0)

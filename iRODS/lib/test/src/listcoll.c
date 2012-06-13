@@ -134,7 +134,8 @@ int
 printCollectionNat (rcComm_t *conn, char *collection, int flags)
 {
     int status;
-    openCollInp_t openCollInp;
+    //openCollInp_t openCollInp;
+	collInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
 

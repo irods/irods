@@ -189,6 +189,7 @@ void *deleteFromHashTable(Hashtable *h, char* key) {
                         h->len --;
                         break;
                     }
+					b0 = b0->next; // JMC - backport 4799
                 }
             }
 	}

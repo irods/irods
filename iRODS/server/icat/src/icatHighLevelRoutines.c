@@ -79,6 +79,8 @@ static int removeAVUs();
 icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]="";
 
+int creatingUserByGroupAdmin=0; // JMC - backport 4772
+
 /*
  Enable or disable some debug logging.
  By default this is off.
@@ -764,7 +766,11 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    int IX_DATA_PATH=9;      /* index into theColls */
    int IX_CREATE_TS=18;
    int IX_MODIFY_TS=19;
-   int nColumns=20;
+   int IX_RESC_NAME2=20; // JMC - backport 4669
+   int IX_DATA_PATH2=21; // JMC - backport 4669
+   int IX_DATA_ID2=22; // JMC - backport 4669
+   int nColumns=23; // JMC - backport 4669
+
    char objIdString[MAX_NAME_LEN];
    char replNumString[MAX_NAME_LEN];
    int adminMode;
@@ -842,12 +848,22 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    cVal[IX_MODIFY_TS]=myTime;
    cVal[IX_CREATE_TS]=myTime;
 
+   cVal[IX_RESC_NAME2]=dstDataObjInfo->rescName; // JMC - backport 4669
+   cVal[IX_DATA_PATH2]=dstDataObjInfo->filePath; // JMC - backport 4669
+   cVal[IX_DATA_ID2]=objIdString; // JMC - backport 4669
+
+
    for (i=0;i<nColumns;i++) {
       cllBindVars[i]=cVal[i];
    }
    cllBindVarCount = nColumns;
-   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-	    theColls);
+#if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
+   /* MySQL and Oracle */
+   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4692
+#else  
+   /* Postgres */
+   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4669
+#endif            
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
    status = cmlExecuteNoAnswerSql(tSQL,  &icss);
    if (status < 0) {
@@ -1411,6 +1427,7 @@ int chlRegResc(rsComm_t *rsComm,
    char idNum[MAX_SQL_SIZE];
    int status;
    char myTime[50];
+   struct hostent *myHostEnt; // JMC - backport 4597
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc");
 
@@ -1467,6 +1484,24 @@ int chlRegResc(rsComm_t *rsComm,
    if (strlen(rescInfo->rescLoc)<1) {
       return(CAT_INVALID_RESOURCE_NET_ADDR);
    }
+
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4597
+   myHostEnt = gethostbyname(rescInfo->rescLoc);
+   if (myHostEnt <= 0) {
+	      int i;
+	      char errMsg[155];
+	      snprintf(errMsg, 150, 
+	              "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+	              rescInfo->rescLoc);
+	      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+   }
+   if (strcmp(rescInfo->rescLoc, "localhost") == 0) { // JMC - backport 4650
+       addRErrorMsg( &rsComm->rError, 0, 
+                     "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+   }
+
+   // =-=-=-=-=-=-=-
 
    if ((strcmp(rescInfo->rescType, "database") !=0) &&
        (strcmp(rescInfo->rescType, "mso") !=0) ) {
@@ -1546,6 +1581,19 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
    if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
+
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4629
+   if (strncmp(rescInfo->rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
+        char errMsg[155];
+        int i;
+        snprintf(errMsg, 150, 
+                 "%s is a built-in resource needed for bundle operations.", 
+                 BUNDLE_RESC);
+        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
+   }
+   // =-=-=-=-=-=-=-
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlDelResc SQL 1 ");
    status = cmlGetIntegerValueFromSql(
@@ -1864,11 +1912,20 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       return(CATALOG_NOT_CONNECTED);
    }
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4772
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || 
+       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      int status2;
+      status2  = cmlCheckGroupAdminAccess(
+        rsComm->clientUser.userName,
+        rsComm->clientUser.rodsZone, 
+        "", &icss);
+      if (status2 != 0) return(status2);
+      if (creatingUserByGroupAdmin==0) {
+        return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+   // =-=-=-=-=-=-=-
    }
 
    if (collInfo==0) {
@@ -2879,8 +2936,9 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 	 break;
       }
    }
-   if (OK == 0) return(CAT_INVALID_ARGUMENT);
-
+   if (OK == 0) {
+	   return(CAT_INVALID_ARGUMENT);
+   }
    /* done with multiple log calls so that each form will be checked
       via checkIcatLog.pl */
    if (i==0 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 1 ");
@@ -2966,7 +3024,11 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 	    rstrcat(outBuf, icss.stmtPtr[stmtNum]->resultColName[i],maxOutBuf);
 	    rstrcat(outBuf, " ", maxOutBuf);
 	 }
-	 rstrcat(outBuf, "\n", maxOutBuf);
+     if (i != nCols-1) { // JMC - backport 4586
+         /* add a space except for the last column */
+         rstrcat(outBuf, " ", maxOutBuf);
+     }
+
       }
       rows++;
       for (i = 0; i < nCols ; i++ ) {
@@ -3740,6 +3802,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char auditComment[110];
    char auditUserName[110];
    int userSettingOwnPassword;
+   int groupAdminSettingPassword; // JMC - backport 4772
 
    char userName2[NAME_LEN];
    char zoneName[NAME_LEN];
@@ -3755,18 +3818,35 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    }
 
    userSettingOwnPassword=0;
-   if ( strcmp(option,"password")==0 &&
-        strcmp(userName, rsComm->clientUser.userName)==0)  {
-      userSettingOwnPassword=1;
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4772
+   groupAdminSettingPassword=0;
+   if (rsComm->clientUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH && // JMC - backport 4773
+       rsComm->proxyUser.authInfo.authFlag >= LOCAL_PRIV_USER_AUTH) {
+      /* user is OK */
    }
-
-   if (userSettingOwnPassword==0) {
-      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-      }
-      if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-      }
+   else {
+	   /* need to check */
+	   if ( strcmp(option,"password")!=0) {
+		 /* only password (in cases below) is allowed */
+		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+	   }
+	   if ( strcmp(userName, rsComm->clientUser.userName)==0)  {
+		userSettingOwnPassword=1;
+	   }
+	   else {
+		int status2;
+		status2  = cmlCheckGroupAdminAccess(
+		   rsComm->clientUser.userName,
+		   rsComm->clientUser.rodsZone, 
+		   "", &icss);
+		if (status2 != 0) return(status2);
+		groupAdminSettingPassword=1;
+	   }
+   // =-=-=-=-=-=-=-
+      if (userSettingOwnPassword==0 && groupAdminSettingPassword==0) {
+		  return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+       }
    }
 
    status = getLocalZone();
@@ -3892,6 +3972,10 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
       if (i != 0 && i !=CAT_NO_ROWS_FOUND) return(i);
       if (i == 0) {
+        if (groupAdminSettingPassword == 1) { // JMC - backport 4772
+            /* Group admin can only set the initial password, not update */
+           return( CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+        }
 	 rstrcpy(tSQL, form3, MAX_SQL_SIZE);
 	 cllBindVars[cllBindVarCount++]=decoded;
 	 cllBindVars[cllBindVarCount++]=myTime;
@@ -4126,6 +4210,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    char myTime[50];
    char rescId[MAX_NAME_LEN];
    char commentStr[200];
+   struct hostent *myHostEnt; // JMC - backport 4597
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc");
 
@@ -4144,6 +4229,18 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    }
 
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4629
+   if (strncmp(rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
+        char errMsg[155];
+        int i;
+        snprintf(errMsg, 150, 
+                 "%s is a built-in resource needed for bundle operations.", 
+                 BUNDLE_RESC);
+        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
+   }
+   // =-=-=-=-=-=-=-
    status = getLocalZone();
    if (status != 0) return(status);
 
@@ -4256,6 +4353,23 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       OK=1;
    }
    if (strcmp(option, "host")==0) {
+      // =-=-=-=-=-=-=-
+      // JMC - backport 4597
+      myHostEnt = gethostbyname(optionValue);
+      if (myHostEnt <= 0) {
+        int i;
+        char errMsg[155];
+        snprintf(errMsg, 150, 
+                 "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+                 optionValue);
+        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
+      if (strcmp(optionValue, "localhost") == 0) { // JMC - backport 4650
+        addRErrorMsg (&rsComm->rError, 0, 
+                   "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+      }
+
+      // =-=-=-=-=-=-=-
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=rescId;
@@ -4712,13 +4826,6 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegUserRE");
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);
    }
@@ -4730,7 +4837,20 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    if (userInfo->userType==0) {
       return(CAT_INVALID_ARGUMENT);
    }
-
+   // =-=-=-=-=-=-=-
+   // JMC - backport 4772
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+         int status2;
+         status2  = cmlCheckGroupAdminAccess(
+            rsComm->clientUser.userName,
+            rsComm->clientUser.rodsZone, 
+            "",
+            &icss);
+         if (status2 != 0) return(status2);
+         creatingUserByGroupAdmin=1;
+   }
+   // =-=-=-=-=-=-=-
    /*
      Check if the user type is valid.
      This check is skipped if this process has already verified this type
@@ -5045,6 +5165,39 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
    
    return(objId);
 }
+/*
+// =-=-=-=-=-=-=-
+// JMC - backport 4836
++ Find existing AVU triplet.
++ Return code is error or the AVU ID.
++*/
+rodsLong_t
+findAVU(char *attribute, char *value, char *units) {
+   rodsLong_t status;
+// =-=-=-=-=-=-=-
+
+   rodsLong_t iVal;
+   iVal=0;
+   if (*units!='\0') {
+      if (logSQL!=0) rodsLog(LOG_SQL, "findAVU SQL 1"); // JMC - backport 4836
+      status = cmlGetIntegerValueFromSql(
+            "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
+	    &iVal, attribute, value, units, 0, 0, &icss);
+   }
+   else {
+      if (logSQL!=0) rodsLog(LOG_SQL, "findAVU SQL 2");
+      status = cmlGetIntegerValueFromSql(
+         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and (meta_attr_unit='' or meta_attr_unit IS NULL)", // JMC - backport 4827
+         &iVal, attribute, value, 0, 0, 0, &icss);
+   }
+   if (status == 0) {
+      status = iVal; /* use existing R_META_MAIN row */
+      return(status);
+   }
+// =-=-=-=-=-=-=-
+// JMC - backport 4836
+   return(status); // JMC - backport 4836
+}
 
 /*
  Find existing or insert a new AVU triplet.
@@ -5056,27 +5209,15 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    char myTime[50];
    rodsLong_t status, seqNum;
    rodsLong_t iVal;
-   iVal=0;
-   if (*units!='\0') {
-      if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 1");
-      status = cmlGetIntegerValueFromSql(
-            "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
-	    &iVal, attribute, value, units, 0, 0, &icss);
-   }
-   else {
-      if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2");
-      status = cmlGetIntegerValueFromSql(
-         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
-         &iVal, attribute, value, 0, 0, 0, &icss);
-   }
-   if (status == 0) {
-      status = iVal; /* use existing R_META_MAIN row */
-      return(status);
-   }
-   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 3");
+   iVal = findAVU(attribute, value, units);
+   if (iVal > 0) {
+       return iVal;
+  }
+   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 1");
+// =-=-=-=-=-=-=-
    status = cmlGetNextSeqVal(&icss);
    if (status < 0) {
-      rodsLog(LOG_NOTICE, "findOrInsertAVU cmlGetNextSeqVal failure %d",
+      rodsLog(LOG_NOTICE, "findAVU cmlGetNextSeqVal failure %d",
 	      status);
       return(status);
    }
@@ -5093,7 +5234,7 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 10");
+   if (logSQL!=0) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2"); // JMC - backport 4836
    status =  cmlExecuteNoAnswerSql(
              "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
 	     &icss);
@@ -5103,6 +5244,146 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    }
    return(seqNum);
 }
+
+// =-=-=-=-=-=-=-
+// JMC - backport 4836
+/* Add or modify an Attribute-Value pair metadata item of an object*/
+int chlSetAVUMetadata(rsComm_t *rsComm, char *type, 
+                     char *name, char *attribute, char *newValue,
+                     char *newUnit) {
+   int status;
+   char myTime[50];
+   rodsLong_t objId, iVal;
+   char metaIdStr[MAX_NAME_LEN*2]; /* twice as needed to query multiple */
+   char objIdStr[MAX_NAME_LEN];
+   char newMetaIdStr[MAX_NAME_LEN];
+
+   memset(metaIdStr, 0, sizeof(metaIdStr));
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata");
+
+   if (!icss.status) {
+     return(CATALOG_NOT_CONNECTED);
+   }
+
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 1 ");
+   objId = checkAndGetObjectId(rsComm, type, name, ACCESS_CREATE_METADATA);
+   if (objId < 0) return objId;
+   snprintf(objIdStr, MAX_NAME_LEN, "%lld", objId);
+
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 2");
+   /* Query to see if the attribute exists for this object */
+   status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_OBJT_METAMAP where meta_id in (select meta_id from R_META_MAIN where meta_attr_name=? AND meta_id in (select meta_id from R_OBJT_METAMAP where object_id=?))",
+               metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+   
+   if (status <= 0) {
+     if (status == CAT_NO_ROWS_FOUND) { 
+       /* Need to add the metadata */
+       status = chlAddAVUMetadata(rsComm, 0, type, name, attribute, 
+                                 newValue, newUnit);
+     } else {
+       rodsLog(LOG_NOTICE,
+          "chlSetAVUMetadata cmlGetMultiRowStringValuesFromSql failure %d",
+         status);
+     }
+     return status;
+   }
+
+   if (status > 1) {
+     /* More than one AVU, need to do a delete with wildcards then add */
+     status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute, "%",
+                                  "%", 1);
+     if (status != 0) {
+       _rollback("chlSetAVUMetadata");
+       return(status);
+     }
+     status = chlAddAVUMetadata(rsComm, 0, type, name, attribute, 
+                               newValue, newUnit);
+     return status;
+   }
+
+   /* Only one metaId for this Attribute and Object has been found */
+
+   rodsLog(LOG_NOTICE, "chlSetAVUMetadata found metaId %s", metaIdStr);
+   /* Check if there are other objects are using this AVU  */
+   if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 4");
+   status = cmlGetMultiRowStringValuesFromSql("select meta_id from R_META_MAIN where meta_attr_name=?",
+           metaIdStr, MAX_NAME_LEN, 2, attribute, objIdStr, &icss);
+   if (status <= 0) {
+     rodsLog(LOG_NOTICE,
+             "chlSetAVUMetadata cmlGetMultiRowStringValueFromSql failure %d",
+            status);
+     return(status);
+   }
+   if (status > 1) {
+     /* Can't modify in place, need to delete and add,
+         which will reuse matching AVUs if they exist.
+     */
+     status = chlDeleteAVUMetadata(rsComm, 1, type, name, attribute,
+                                  "%", "%", 1);
+     if (status != 0) {
+       _rollback("chlSetAVUMetadata");
+       return(status);
+     }
+     status = chlAddAVUMetadata(rsComm, 0, type, name, attribute,
+                               newValue, newUnit);
+   }
+   else {
+     getNowStr(myTime);
+     cllBindVarCount = 0;
+     cllBindVars[cllBindVarCount++] = newValue;
+     if (newUnit != NULL && *newUnit!='\0') {
+       cllBindVars[cllBindVarCount++] = newUnit;
+     }
+     cllBindVars[cllBindVarCount++] = myTime;
+     cllBindVars[cllBindVarCount++] = attribute;
+     cllBindVars[cllBindVarCount++] = metaIdStr;
+     if (newUnit != NULL && *newUnit!='\0') {
+       if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 5");
+       status = cmlExecuteNoAnswerSql(
+             "update R_META_MAIN set meta_attr_value=?,meta_attr_unit=?,modify_ts=? where meta_attr_name=? and meta_id=?",
+             &icss);
+     } 
+     else {
+       if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata SQL 6");
+       status = cmlExecuteNoAnswerSql(
+               "update R_META_MAIN set meta_attr_value=?,modify_ts=? where meta_attr_name=? and meta_id=?",
+                &icss);
+     }
+     if (status != 0) {
+        rodsLog(LOG_NOTICE,
+              "chlSetAVUMetadata cmlExecuteNoAnswerSql update failure %d",
+              status);
+        _rollback("chlSetAVUMetadata");
+        return(status);
+     }
+   }
+
+   /* Audit */
+   status = cmlAudit3(AU_ADD_AVU_METADATA,  
+                     objIdStr,
+                     rsComm->clientUser.userName,
+                     rsComm->clientUser.rodsZone,
+                      type,
+                     &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+             "chlSetAVUMetadata cmlAudit3 failure %d",
+             status);
+      _rollback("chlSetAVUMetadata");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+             "chlSetAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
+             status);
+      return(status);
+   }
+
+   return(status);
+}
+// =-=-=-=-=-=-=-
 
 /* Add an Attribute-Value [Units] pair/triple metadata item to one or
    more data objects.  This is the Wildcard version, where the

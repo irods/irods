@@ -17,6 +17,7 @@
 #include "hdf5.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h> // JMC - backport 4469
 #include <string.h>
 
 /** allocate a new str with given length */

@@ -20,6 +20,7 @@ extern "C" {
 #define False 0
 
 typedef struct {
+   int add; // JMC - backport 4643
    int age;
    int agevalue;
    int all;
@@ -34,6 +35,7 @@ typedef struct {
    int dataObjects;
    int dryrun;
    int echo;
+   int empty; // JMC - backport 4552
    int force;
    int file;
    char *fileString;
@@ -51,6 +53,8 @@ typedef struct {
    char *dataTypeString; 
    int longOption;
    int link;
+   int rlock; // JMC - backport 4604
+   int wlock; // JMC - backport 4604
    int veryLongOption;
    int mountCollection;
    char *mountType; 
@@ -67,6 +71,8 @@ typedef struct {
    int option;
    char *optionString;
    int orphan;
+   int purgeCache; // JMC - backport 4537
+   int bundle; // JMC - backport 4536
    int prompt;
    int query;
    int rbudp;

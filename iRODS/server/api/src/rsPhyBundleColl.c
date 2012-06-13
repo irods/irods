@@ -9,6 +9,7 @@
 #include "collection.h"
 #include "specColl.h"
 #include "physPath.h"
+#include "dataObjOpr.h"
 #include "miscServerFunct.h"
 #include "openCollection.h"
 #include "readCollection.h"
@@ -19,6 +20,7 @@
 #include "syncMountedColl.h"
 #include "regReplica.h"
 #include "unbunAndRegPhyBunfile.h"
+#include "fileChksum.h"
 
 static rodsLong_t OneGig = (1024*1024*1024);
 
@@ -87,6 +89,8 @@ rescGrpInfo_t *rescGrpInfo)
     dataObjInp_t dataObjInp;
     bunReplCacheHeader_t bunReplCacheHeader;
     int savedStatus = 0;
+    int chksumFlag, maxSubFileCnt; // JMC - backport 4528, 4771
+    char *dataType = NULL; // JMC - backport 4658
 
     myRescInfo = rescGrpInfo->rescInfo;
     myRescName = myRescInfo->rescName;
@@ -110,12 +114,28 @@ rescGrpInfo_t *rescGrpInfo)
         return (0);
     }
 
-    /* greate the bundle file */ 
+    /* create the bundle file */ 
+	dataType = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
     l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-      rescGrpInfo, &dataObjInp);
+      rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
 
     if (l1descInx < 0) return l1descInx;
-
+	// =-=-=-=-=-=-=-
+    // JMC - backport 4528
+    if (getValByKey (&phyBundleCollInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+       L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
+       chksumFlag = 1;
+    } else {
+       chksumFlag = 0;
+    }
+	// =-=-=-=-=-=-=-
+    // JMC - backport 4771
+    if (getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW) != NULL) {
+            maxSubFileCnt = atoi(getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW));
+    } else {
+            maxSubFileCnt = MAX_SUB_FILE_CNT;
+    }
+	// =-=-=-=-=-=-=-
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
       phyBunDir);
 
@@ -133,13 +153,13 @@ rescGrpInfo_t *rescGrpInfo)
 	    } else if (strcmp (curSubFileCond.collName, collEnt->collName) != 0
               || strcmp (curSubFileCond.dataName, collEnt->dataName) != 0) {
 		/* a new file, need to handle the old one */
-		if (bunReplCacheHeader.numSubFiles >= MAX_SUB_FILE_CNT ||
+		if (bunReplCacheHeader.numSubFiles >= maxSubFileCnt || // JMC - backport 4771
 		  bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
 		  MAX_BUNDLE_SIZE * OneGig) {
 		    /* bundle is full */
 		    status = bundlleAndRegSubFiles (rsComm, l1descInx,
 		      phyBunDir, phyBundleCollInp->collection,
-		      &bunReplCacheHeader);
+		      &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
                     if (status < 0) {
                         rodsLog (LOG_ERROR,
                         "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
@@ -149,7 +169,7 @@ rescGrpInfo_t *rescGrpInfo)
                         /* create a new bundle file */
                         l1descInx = createPhyBundleDataObj (rsComm,
                           phyBundleCollInp->collection, rescGrpInfo,
-                          &dataObjInp);
+                          &dataObjInp, dataType); // JMC - backport 4658
 
                         if (l1descInx < 0) {
                             rodsLog (LOG_ERROR,
@@ -193,18 +213,18 @@ rescGrpInfo_t *rescGrpInfo)
 		/* already bundled. skip */
 	    } else if (isDataObjBundled (rsComm, collEnt)) {
 		/* already bundled, skip */
-		curSubFileCond.bundled = 1;
+		    curSubFileCond.bundled = 1;
     		curSubFileCond.subPhyPath[0] = '\0';
     		curSubFileCond.cachePhyPath[0] = '\0';
-	    } else if (collEnt->replStatus > 0 && 
-	      strcmp (collEnt->resource, myRescName) == 0) {
-		/* have a good copy in cache resource */
-                setSubPhyPath (phyBunDir, curSubFileCond.dataId, 
-		  curSubFileCond.subPhyPath);
-                rstrcpy (curSubFileCond.cachePhyPath, collEnt->phyPath, 
-		  MAX_NAME_LEN);
-                curSubFileCond.cacheReplNum = collEnt->replNum;
-		curSubFileCond.subFileSize = collEnt->dataSize;
+           /* XXXX there was a bug that if dataSize == 0, replStatus is 0. 
+             * This bug has been fixed since 3.1 */
+        } else if( ( collEnt->replStatus > 0 || curSubFileCond.subPhyPath[0] == '\0') &&  // JMC - backport 4755
+	               strcmp (collEnt->resource, myRescName) == 0) {
+		    /* have a good copy in cache resource */
+            setSubPhyPath (phyBunDir, curSubFileCond.dataId, curSubFileCond.subPhyPath);
+            rstrcpy (curSubFileCond.cachePhyPath, collEnt->phyPath, MAX_NAME_LEN);
+            curSubFileCond.cacheReplNum = collEnt->replNum;
+			curSubFileCond.subFileSize = collEnt->dataSize;
 	    }
 	}
 	free (collEnt);     /* just free collEnt but not content */
@@ -221,7 +241,7 @@ rescGrpInfo_t *rescGrpInfo)
     }
 
     status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
-      phyBundleCollInp->collection, &bunReplCacheHeader);
+      phyBundleCollInp->collection, &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stat=%d",
@@ -271,13 +291,16 @@ char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader)
 
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
-char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
+char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag) // JMC - backport 4528
 {
     int status;
     openedDataObjInp_t dataObjCloseInp;
     bunReplCache_t *tmpBunReplCache, *nextBunReplCache;
     regReplica_t regReplicaInp;
     dataObjInp_t dataObjUnlinkInp;
+    keyValPair_t regParam; // JMC - backport 4528
+    modDataObjMeta_t modDataObjMetaInp; // JMC - backport 4528
+
     int savedStatus = 0;
 
     bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
@@ -295,7 +318,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     }
 
     status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
-      collection);
+      collection, CREATE_TAR_OPR); // JMC - backport 4643
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "bundlleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
@@ -307,7 +330,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
 	while (tmpBunReplCache != NULL) {
 	    nextBunReplCache = tmpBunReplCache->next;
 	    free (tmpBunReplCache);
-	    tmpBunReplCache = tmpBunReplCache;
+	    tmpBunReplCache = nextBunReplCache; // JMC - backport 4579
 	}
         bzero (bunReplCacheHeader, sizeof (bunReplCacheHeader_t));
 	return status;
@@ -341,7 +364,16 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     rstrcpy (regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN);
     rstrcpy (regReplicaInp.destDataObjInfo->filePath, 
       L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
-    
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4528
+    if (chksumFlag != 0) {
+       bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
+       bzero (&regParam, sizeof (regParam));
+        modDataObjMetaInp.dataObjInfo = regReplicaInp.destDataObjInfo;
+        modDataObjMetaInp.regParam = &regParam;
+    }
+	// =-=-=-=-=-=-=-
+	    
     /* close here because dataObjInfo is still being used */
 
     rsDataObjClose (rsComm, &dataObjCloseInp);
@@ -352,6 +384,16 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
 	/* rm the hard link here */
 	snprintf (subPhyPath, MAX_NAME_LEN, "%s/%lld", phyBunDir, 
 	  tmpBunReplCache->dataId);
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4528
+    if (chksumFlag != 0) {
+        status = fileChksum (UNIX_FILE_TYPE, rsComm, subPhyPath, tmpBunReplCache->chksumStr);
+        if (status < 0) {
+            savedStatus = status;
+            rodsLogError (LOG_ERROR, status,"bundlleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);
+        }
+    }
+	// =-=-=-=-=-=-=-
 	unlink (subPhyPath);
 	/* register the replica */
         rstrcpy (regReplicaInp.srcDataObjInfo->objPath, 
@@ -367,6 +409,18 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
               "bundlleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
               tmpBunReplCache->objPath, status);
 	}
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4528
+    if (chksumFlag != 0) {
+        addKeyVal (&regParam, CHKSUM_KW, tmpBunReplCache->chksumStr);
+        status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+        clearKeyVal (&regParam);
+        if (status < 0) {
+            savedStatus = status;
+            rodsLogError (LOG_ERROR, status, "bundlleAndRegSubFiles: rsModDataObjMeta error for %s.", tmpBunReplCache->objPath);
+        }
+    }
+	// =-=-=-=-=-=-=-
 	free (tmpBunReplCache);
         tmpBunReplCache = nextBunReplCache;
     }
@@ -383,12 +437,35 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     }
 }
 
+/* phyBundle
+ * Valid oprType are CREATE_TAR_OPR and ADD_TO_TAR_OPR
+ */
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
-char *collection)
+char *collection, int oprType ) // JMC - backport 4643
 {
     structFileOprInp_t structFileOprInp;
     int status;
+    char *dataType; // JMC - backport 4633
+	int myOprType = oprType; // JMC - backport 4657
+
+    dataType = dataObjInfo->dataType;
+    if ((oprType & ADD_TO_TAR_OPR) != 0) { // JMC - backport 4657
+       /* need to extract the content of the exsisting zipped file */
+        if( dataType != NULL &&
+            ( strstr( dataType, GZIP_TAR_DT_STR ) != NULL   || // JMC - backport 4658
+              strstr (dataType, BZIP2_TAR_DT_STR) != NULL)) { 
+			/* don't need to do this file zipFile */
+			/* strstr (dataType, ZIP_DT_STR) != NULL)) {  */
+           status = unbunPhyBunFile (rsComm, dataObjInfo->objPath,
+             dataObjInfo->rescInfo,  dataObjInfo->filePath, phyBunDir, 
+             dataType, PRESERVE_DIR_CONT);
+           if (status < 0) return status;
+           /* take out ADD_TO_TAR_OPR */
+           myOprType = myOprType ^ ADD_TO_TAR_OPR;
+       }
+    }
+
 
     bzero (&structFileOprInp, sizeof (structFileOprInp));
 
@@ -411,11 +488,21 @@ char *collection)
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
     structFileOprInp.specColl->cacheDirty = 1;
     /* don't reg CollInfo2 */
-    structFileOprInp.oprType = NO_REG_COLL_INFO;
+	structFileOprInp.oprType = NO_REG_COLL_INFO | myOprType; // JMC - backport 4657
+    if( dataType != NULL &&// JMC - backport 4633
+		( strstr( dataType, GZIP_TAR_DT_STR)  != NULL || // JMC - backport 4658
+		  strstr( dataType, BZIP2_TAR_DT_STR) != NULL ||
+		  strstr( dataType, ZIP_DT_STR)       != NULL ) ) {
+        addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
+    }
 
     status = rsStructFileSync (rsComm, &structFileOprInp);
 
     free (structFileOprInp.specColl);
+    /* rm the the exsisting files in the original tar files */
+    if ((oprType & ADD_TO_TAR_OPR) != 0 && (myOprType & ADD_TO_TAR_OPR) == 0) { // JMC - backport 4657 
+        rmUnlinkedFilesInUnixDir (phyBunDir); // JMC - backport 4666 
+	}
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -513,7 +600,7 @@ char *outPhyBundleDir)
 
 int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection, 
-rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
+rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char* dataType ) // JMC - backport 4658
 {
     int myRanNum;
     int l1descInx;
@@ -556,7 +643,21 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
 		break;
 	    }
 	}
-        addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_TYPE);
+
+	if (dataType != NULL && strstr (dataType, BUNDLE_STR) != NULL) { // JMC - backport 4658
+		addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, dataType);
+	} else {
+		/* assume it is TAR_BUNDLE_DT_STR */
+		addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_DT_STR);
+	}
+
+    if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) { // JMC - backport 4664
+        /* zipFile type. must end with .zip */
+        int len = strlen (dataObjInp->objPath);
+        if (strcmp (&dataObjInp->objPath[len - 4], ".zip") != 0) {
+            strcat (dataObjInp->objPath, ".zip");
+        }
+    }
 
         l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
           rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);
@@ -567,6 +668,8 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
     if (l1descInx >= 0) {
         l3Close (rsComm, l1descInx);
         L1desc[l1descInx].l3descInx = 0;
+		if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) // JMC - backport 4664
+		    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
     }
 
     return l1descInx;

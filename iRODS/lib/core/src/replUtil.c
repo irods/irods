@@ -165,6 +165,11 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
         addKeyVal (&dataObjInp->condInput, REPL_NUM_KW, 
 	  rodsArgs->replNumValue);
     }
+	
+    if (rodsArgs->purgeCache == True) {//  JMC - backport 4549
+        addKeyVal (&dataObjInp->condInput, PURGE_CACHE_KW, "");
+    }
+
 
     if (rodsArgs->all == True) {
         addKeyVal (&dataObjInp->condInput, ALL_KW, "");
@@ -245,6 +250,14 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
             rodsArgs->restartFileString);
             return (status);
         }
+    }
+    if (rodsArgs->rlock == True) { // JMC - backport 4609
+        addKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
+    }
+    if (rodsArgs->wlock == True) { // JMC - backport 4612
+        rodsLog (LOG_ERROR,
+          "initCondForPut: --wlock not supported, changing it to --rlock");
+        addKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
     }
 
     return (0);

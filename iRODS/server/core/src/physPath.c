@@ -4,6 +4,8 @@
 /* physPath.c - routines for physical path operations
  */
 
+#include <unistd.h> // JMC - backport 4598
+#include <fcntl.h> // JMC - backport 4598
 #include "rodsDef.h"
 #include "physPath.h"
 #include "dataObjOpr.h"
@@ -269,10 +271,12 @@ dataObjInfo_t *dataObjInfo)
     ruleExecInfo_t rei;
 
     if (rsComm->clientUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH) {
+rodsLog( LOG_NOTICE, "getchkPathPerm - return NO_CHK_PATH_PERM" );
         return (NO_CHK_PATH_PERM);
     }
 
     if (dataObjInp == NULL || dataObjInfo == NULL) {
+rodsLog( LOG_NOTICE, "getchkPathPerm - NULL -- return NO_CHK_PATH_PERM" );
         return (NO_CHK_PATH_PERM);
     }
 
@@ -284,15 +288,20 @@ dataObjInfo_t *dataObjInfo)
         if (rescInfo == NULL) {
             chkPathPerm = NO_CHK_PATH_PERM;
         } else {
+rodsLog( LOG_NOTICE, "getchkPathPerm - ELSE!?" );
     	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-	    rei.doi = dataObjInfo;
-	    rei.status = CHK_PERM_FLAG;		/* default */
-	    applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-	    if (rei.status == CHK_PERM_FLAG) {
-                chkPathPerm = RescTypeDef[rescInfo->rescTypeInx].chkPathPerm;
-	    } else {
-		chkPathPerm = NO_CHK_PATH_PERM;
-	    }
+			rei.doi = dataObjInfo;
+			// =-=-=-=-=-=-=-
+			// JMC - backport 4774
+		    rei.status = DISALLOW_PATH_REG;             /* default */
+		    applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+		    if( rei.status == NO_CHK_PATH_PERM || 
+			     RescTypeDef[rescInfo->rescTypeInx].chkPathPerm == NO_CHK_PATH_PERM ) {
+			   chkPathPerm = NO_CHK_PATH_PERM;
+			} else {
+			    chkPathPerm = rei.status;
+			// =-=-=-=-=-=-=-
+			}
         }
     } else {
             chkPathPerm = NO_CHK_PATH_PERM;
@@ -478,18 +487,64 @@ dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
 #endif
 
 int 
-_dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
+_dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumStr) // JMC - backport 4527
 {
     fileChksumInp_t fileChksumInp;
     int rescTypeInx;
     int rescClass;
     int status;
-    rescInfo_t *rescInfo = dataObjInfo->rescInfo;
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4527
+    dataObjInfo_t *dataObjInfo; 
+    rescInfo_t *rescInfo = inpDataObjInfo->rescInfo;
+    int destL1descInx = -1;
+    rescInfo_t *cacheResc;
 
-    rescClass = getRescClass (rescInfo);
-    if (rescClass == COMPOUND_CL) return SYS_CANT_CHKSUM_COMP_RESC_DATA;
-    else if (rescClass == BUNDLE_CL) return SYS_CANT_CHKSUM_BUNDLED_DATA;
-
+    if (rescClass == COMPOUND_CL) {
+       #if 0
+        return SYS_CANT_CHKSUM_COMP_RESC_DATA;
+       #else
+       dataObjInp_t dataObjInp;
+        status = getCacheRescInGrp (rsComm, inpDataObjInfo->rescGroupName,
+          inpDataObjInfo->rescInfo, &cacheResc);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "_dataObjChksum: getCacheRescInGrp %s failed for %s stat=%d",
+              inpDataObjInfo->rescGroupName, inpDataObjInfo->objPath, status);
+            return status;
+       }
+       /* create a fake object */
+        memset (&dataObjInp, 0, sizeof (dataObjInp_t));
+       snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s.%-d", 
+          inpDataObjInfo->objPath, (int) random());
+        addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, 
+          cacheResc->rescName);
+        addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+       destL1descInx = _rsDataObjCreate (rsComm, &dataObjInp);
+       clearKeyVal (&dataObjInp.condInput);
+       if (destL1descInx < 0) {
+            rodsLogError (LOG_ERROR, destL1descInx,
+             "_dataObjChksum: _rsDataObjCreate failed for %s",
+              inpDataObjInfo->objPath);
+            return destL1descInx;
+        }
+       dataObjInfo = L1desc[destL1descInx].dataObjInfo;
+       rescInfo = cacheResc;
+       status = _l3FileStage (rsComm, inpDataObjInfo, dataObjInfo,
+         getFileMode (NULL));
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+             "_dataObjChksum: _l3FileStage failed for %s",
+              dataObjInfo->objPath);
+            return destL1descInx;
+        }
+#endif
+    } else if (rescClass == BUNDLE_CL) {
+       return SYS_CANT_CHKSUM_BUNDLED_DATA;
+    } else {
+       dataObjInfo = inpDataObjInfo;
+    }
+    // =-=-=-=-=-=-=-
     rescTypeInx = rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
@@ -508,6 +563,13 @@ _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
         status = SYS_INVALID_RESC_TYPE;
         break;
     }
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4527
+    if (destL1descInx >= 0) {
+	       l3Unlink (rsComm, L1desc[destL1descInx].dataObjInfo);
+	       freeL1desc (destL1descInx);
+	}
+
     return (status);
 }
 
@@ -979,6 +1041,7 @@ isInVault (dataObjInfo_t *dataObjInfo)
     }
 }
 
+#if 0 // JMC - UNUSED
 /* initStructFileOprInp - initialize the structFileOprInp struct for
  * rsStructFileBundle and rsStructFileExtAndReg
  */
@@ -996,8 +1059,8 @@ dataObjInfo_t *dataObjInfo)
     memset (structFileOprInp, 0, sizeof (structFileOprInp_t));
     structFileOprInp->specColl = (specColl_t*)malloc (sizeof (specColl_t));
     memset (structFileOprInp->specColl, 0, sizeof (specColl_t));
-    if (strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0 ||
-      strcmp (dataObjInfo->dataType, TAR_BUNDLE_TYPE) == 0) {
+    if( strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0 ||
+        strstr (dataObjInfo->dataType, BUNDLE_STR) == 0) { // JMC - backport 4658
         structFileOprInp->specColl->type = TAR_STRUCT_FILE_T;
     } else if (strcmp (dataObjInfo->dataType, HAAW_DT_STR) == 0) {
         structFileOprInp->specColl->type = HAAW_STRUCT_FILE_T;
@@ -1040,12 +1103,14 @@ dataObjInfo_t *dataObjInfo)
 
     return (status);
 }
+#endif // JMC - UNUSED
 
 int
 getDefFileMode ()
 {
     int defFileMode;
-    if (getenv ("DefFileMode") != NULL) {
+    char *modeStr; // JMC - backport 4841
+    if ((modeStr = getenv ("DefFileMode")) != NULL && *modeStr == '0') { // JMC - backport 4841
         defFileMode = strtol (getenv ("DefFileMode"), 0, 0);
     } else {
         defFileMode = DEFAULT_FILE_MODE;
@@ -1057,7 +1122,8 @@ int
 getDefDirMode ()
 {
     int defDirMode;
-    if (getenv ("DefDirMode") != NULL) { 
+    char *modeStr; // JMC - backport 4841
+	if ((modeStr = getenv ("DefDirMode")) != NULL && *modeStr == '0') { // JMC - backport 4841
         defDirMode = strtol (getenv ("DefDirMode"), 0, 0);
     } else {
         defDirMode = DEFAULT_DIR_MODE;
@@ -1157,4 +1223,111 @@ rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath)
 
     return 0;
 }
+
+// =-=-=-=-=-=-=-
+// JMC - backport 4598
+int
+getDataObjLockPath (char *objPath, char **outLockPath)
+{
+    int i;
+    char *objPathPtr, *tmpPtr;
+    char tmpPath[MAX_NAME_LEN];
+    int c;
+    int len;
+
+    if (objPath == NULL || outLockPath == NULL) return USER__NULL_INPUT_ERR;
+    objPathPtr = objPath; // JMC - backport 4604
+
+    /* skip over the first 3 '/' */
+    for (i = 0; i < 3; i++) {
+        tmpPtr = strchr (objPathPtr, '/');
+        if (tmpPtr == NULL) {
+            break;      /* just use the shorten one */
+        } else {
+            /* skip over '/' */
+            objPathPtr = tmpPtr + 1;
+        }
+    }
+    rstrcpy (tmpPath, objPathPtr, MAX_NAME_LEN);
+    /* replace all '/' with '.' */
+    objPathPtr = tmpPath;
+
+    while ((c = *objPathPtr) != '\0') {
+        if (c == '/')
+            *objPathPtr = '.';
+        objPathPtr++;
+    }
+
+    len = strlen (getConfigDir()) + strlen (LOCK_FILE_DIR) + 
+    strlen (tmpPath) + strlen (LOCK_FILE_TRAILER) + 10; // JMC - backport 6404
+    *outLockPath = (char *) malloc (len); 
+
+    snprintf (*outLockPath, len, "%-s/%-s/%-s.%-s", getConfigDir(),  // JMC - backport 6404
+	      LOCK_FILE_DIR, tmpPath, LOCK_FILE_TRAILER);
+
+    return 0;
+}
+
+/* fsDataObjLock - lock the data object using the local file system
+ * Input:
+ *    char *objPath - The full Object path
+ *    int cmd - the fcntl cmd - valid values are F_SETLK, F_SETLKW and F_GETLK
+ *    int type - the fcntl type - valid values are F_UNLCK, F_WRLCK, F_RDLCK
+ *    int infd - For F_UNLCK, the fd of the file to unlock
+ */
+
+int
+fsDataObjLock (char *objPath, int cmd, int type, int infd)
+{
+    int status;
+    int myFd;
+    struct flock myflock;
+    char *path = NULL;
+
+    if (type != F_UNLCK) {
+       if ((status = getDataObjLockPath (objPath, &path)) < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "fsDataObjLock: getDataObjLockPath error for %s", objPath);
+            return status;
+       }
+       myFd = open (path, O_RDWR | O_CREAT, 0644);
+       if (myFd < 0) {
+           status = FILE_OPEN_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "fsDataObjLock: open error for %s", objPath);
+            return status;
+       }
+    } else {
+       myFd = infd;
+    }
+#ifndef _WIN32
+    bzero (&myflock, sizeof (myflock));
+    myflock.l_type = type;
+    myflock.l_whence = SEEK_SET;
+    status = fcntl (myFd, cmd, &myflock);
+    if (status < 0) {
+       /* this is not necessary an error. cmd F_SETLK or F_GETLK can return 
+        * -1. */
+       status = SYS_FS_LOCK_ERR - errno;
+       rodsLogError( LOG_DEBUG, status,"fsDataObjLock: fcntl error for %s, cmd = %d, type = %d", 
+                     objPath, cmd, type); // JMC - backport 4604
+
+       if (path != NULL) free (path); // JMC - backport 4604
+
+       close (myFd);
+       return (status);
+    }
+#endif
+    if (path != NULL) free (path); // JMC - backport 4604
+    if (type == F_UNLCK) {
+        close (myFd);
+       myFd = 0;
+    } else if (cmd == F_GETLK) {
+       /* get the status of locking the file. return F_UNLCK if no conflict */
+       close (myFd);
+       myFd = myflock.l_type;
+    }
+    return (myFd);
+}
+// =-=-=-=-=-=-=-
 

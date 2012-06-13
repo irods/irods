@@ -69,7 +69,7 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
  */
 
 int
-queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath)
+queueSpecCollCache ( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath) // JMC - backport 4680
 {
     specCollCache_t *tmpSpecCollCache;
     int status;
@@ -161,6 +161,22 @@ queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath)
               tmpCollInfo1, tmpCollInfo2, specColl);
             if (status < 0) return status;
 
+            // =-=-=-=-=-=-=-
+			// JMC - backport 4680
+           if (specColl->collClass == STRUCT_FILE_COLL && 
+             specColl->type == TAR_STRUCT_FILE_T) {
+               /* tar struct file. need to get phyPath */
+               status = getPhyPath (rsComm, specColl->objPath,
+                 specColl->resource, specColl->phyPath);
+
+               if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                      "queueSpecCollCache: getPhyPath failed for %s",
+                     specColl->objPath);
+                    return status;
+               }
+           }
+            // =-=-=-=-=-=-=-
             rstrcpy (tmpSpecCollCache->collId, tmpDataId, NAME_LEN);
             rstrcpy (tmpSpecCollCache->ownerName, tmpOwnerName, NAME_LEN);
             rstrcpy (tmpSpecCollCache->ownerZone, tmpOwnerZone, NAME_LEN);
@@ -236,7 +252,7 @@ int inCachOnly, specCollCache_t **specCollCache)
     status = querySpecColl (rsComm, objPath, &genQueryOut);
     if (status < 0) return (status);
 
-    status = queueSpecCollCache (genQueryOut, objPath);
+    status = queueSpecCollCache (rsComm, genQueryOut, objPath); // JMC - backport 4680
     freeGenQueryOut (&genQueryOut);
 
     if (status < 0) return (status);

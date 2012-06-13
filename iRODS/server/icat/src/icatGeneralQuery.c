@@ -53,14 +53,16 @@ extern icatSessionStruct *chlGetRcs();
 
 #define MAX_TSQL 100
 
+#define MAX_SQL_SIZE_GQ MAX_SQL_SIZE_GENERAL_QUERY // JMC - backport 4848
+
 int firstCall=1;
 
-char selectSQL[MAX_SQL_SIZE];
+char selectSQL[MAX_SQL_SIZE_GQ];
 int selectSQLInitFlag;
-char fromSQL[MAX_SQL_SIZE];
-char whereSQL[MAX_SQL_SIZE];
-char orderBySQL[MAX_SQL_SIZE];
-char groupBySQL[MAX_SQL_SIZE];
+char fromSQL[MAX_SQL_SIZE_GQ];
+char whereSQL[MAX_SQL_SIZE_GQ];
+char orderBySQL[MAX_SQL_SIZE_GQ];
+char groupBySQL[MAX_SQL_SIZE_GQ];
 int mightNeedGroupBy;
 int fromCount;
 char accessControlUserName[MAX_NAME_LEN];
@@ -317,20 +319,20 @@ tScan(int table, int link) {
 	 if (subKeep) {
 	    thisKeep=1;
 	    if (debug>1) printf("%d use link %d\n", table, i);
-	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
-	    rstrcat(whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE);
-	    rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
+	    rstrcat(whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ);
+	    rstrcat(whereSQL, " ", MAX_SQL_SIZE_GQ);
 	    if (tablePresent(Tables[Links[i].table2].tableAlias,fromSQL)==0){
-	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE);
+	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE_GQ);
 	       rstrcat(fromSQL, Tables[Links[i].table2].tableAlias, 
-		       MAX_SQL_SIZE);
-	       rstrcat(fromSQL, " ", MAX_SQL_SIZE);
+		       MAX_SQL_SIZE_GQ);
+	       rstrcat(fromSQL, " ", MAX_SQL_SIZE_GQ);
 	    }
 	    if (tablePresent(Tables[Links[i].table1].tableAlias, fromSQL)==0){
-	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE);
+	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE_GQ);
 	       rstrcat(fromSQL, Tables[Links[i].table1].tableAlias, 
-		       MAX_SQL_SIZE);
-	       rstrcat(fromSQL, " ", MAX_SQL_SIZE);
+		       MAX_SQL_SIZE_GQ);
+	       rstrcat(fromSQL, " ", MAX_SQL_SIZE_GQ);
 	    }
 	    if (debug>1) printf("added (2) to fromSQL: %s\n", fromSQL);
 	    if (nToFind <= 0) return(thisKeep);
@@ -346,20 +348,20 @@ tScan(int table, int link) {
 	 if (subKeep) {
 	    thisKeep=1;
 	    if (debug>1) printf("%d use link %d\n", table, i);
-	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
-	    rstrcat(whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE);
-	    rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
+	    rstrcat(whereSQL, Links[i].connectingSQL, MAX_SQL_SIZE_GQ);
+	    rstrcat(whereSQL, " ", MAX_SQL_SIZE_GQ);
 	    if (tablePresent(Tables[Links[i].table2].tableAlias, fromSQL)==0){
-	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE);
+	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE_GQ);
 	       rstrcat(fromSQL, Tables[Links[i].table2].tableAlias, 
-		       MAX_SQL_SIZE);
-	       rstrcat(fromSQL, " ", MAX_SQL_SIZE);
+		       MAX_SQL_SIZE_GQ);
+	       rstrcat(fromSQL, " ", MAX_SQL_SIZE_GQ);
 	    }
             if (tablePresent(Tables[Links[i].table1].tableAlias, fromSQL)==0){
-	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE);
+	       rstrcat(fromSQL, ", ", MAX_SQL_SIZE_GQ);
 	       rstrcat(fromSQL, Tables[Links[i].table1].tableAlias, 
-		       MAX_SQL_SIZE);
-	       rstrcat(fromSQL, " ", MAX_SQL_SIZE);
+		       MAX_SQL_SIZE_GQ);
+	       rstrcat(fromSQL, " ", MAX_SQL_SIZE_GQ);
 	    }
 	    if (debug>1) printf("added (3) to fromSQL: %s\n", fromSQL);
 	    if (nToFind <= 0) return(thisKeep);
@@ -544,78 +546,78 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	 }
 	 Tables[i].flag=1;
 	 if (sel) {
-	    if (selectSQLInitFlag==0) rstrcat(selectSQL, ",", MAX_SQL_SIZE); 
+	    if (selectSQLInitFlag==0) rstrcat(selectSQL, ",", MAX_SQL_SIZE_GQ); 
 	    selectSQLInitFlag=0;  /* no longer empty of columns */
 
 	    selectOptFlag=0;
 	    if (selectOption != 0) {
 	       if (selectOption == SELECT_MIN) {
-		  rstrcat(selectSQL, "min(", MAX_SQL_SIZE);
+		  rstrcat(selectSQL, "min(", MAX_SQL_SIZE_GQ);
 		  selectOptFlag=1;
 	       }
 	       if (selectOption == SELECT_MAX) {
-		  rstrcat(selectSQL, "max(", MAX_SQL_SIZE);
+		  rstrcat(selectSQL, "max(", MAX_SQL_SIZE_GQ);
 		  selectOptFlag=1;
 	       }
 	       if (selectOption == SELECT_SUM) {
-		  rstrcat(selectSQL, "sum(", MAX_SQL_SIZE);
+		  rstrcat(selectSQL, "sum(", MAX_SQL_SIZE_GQ);
 		  selectOptFlag=1;
 	       }
 	       if (selectOption == SELECT_AVG) {
-		  rstrcat(selectSQL, "avg(", MAX_SQL_SIZE);
+		  rstrcat(selectSQL, "avg(", MAX_SQL_SIZE_GQ);
 		  selectOptFlag=1;
 	       }
 	       if (selectOption == SELECT_COUNT) {
-		  rstrcat(selectSQL, "count(", MAX_SQL_SIZE);
+		  rstrcat(selectSQL, "count(", MAX_SQL_SIZE_GQ);
 		  selectOptFlag=1;
 	       }
 	    }
-	    rstrcat(selectSQL, Tables[i].tableName, MAX_SQL_SIZE);
-	    rstrcat(selectSQL, ".", MAX_SQL_SIZE);
-	    rstrcat(selectSQL, Columns[colIx].columnName, MAX_SQL_SIZE);
-	    rstrcat(selectSQL, " ", MAX_SQL_SIZE);
+	    rstrcat(selectSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ);
+	    rstrcat(selectSQL, ".", MAX_SQL_SIZE_GQ);
+	    rstrcat(selectSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ);
+	    rstrcat(selectSQL, " ", MAX_SQL_SIZE_GQ);
 	    if (selectOptFlag) {
-	       rstrcat(selectSQL, ") ", MAX_SQL_SIZE);
+	       rstrcat(selectSQL, ") ", MAX_SQL_SIZE_GQ);
 	       mightNeedGroupBy=1;
 	    }
 	    else {
-	       if (strlen(groupBySQL)>10) rstrcat(groupBySQL,",",MAX_SQL_SIZE);
-	       rstrcat(groupBySQL, Tables[i].tableName, MAX_SQL_SIZE);
-	       rstrcat(groupBySQL, ".", MAX_SQL_SIZE);
-	       rstrcat(groupBySQL, Columns[colIx].columnName, MAX_SQL_SIZE);
-	       rstrcat(groupBySQL, " ", MAX_SQL_SIZE);
+	       if (strlen(groupBySQL)>10) rstrcat(groupBySQL,",",MAX_SQL_SIZE_GQ);
+	       rstrcat(groupBySQL, Tables[i].tableName, MAX_SQL_SIZE_GQ);
+	       rstrcat(groupBySQL, ".", MAX_SQL_SIZE_GQ);
+	       rstrcat(groupBySQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ);
+	       rstrcat(groupBySQL, " ", MAX_SQL_SIZE_GQ);
 	    }
 
 	    if (tablePresent(Tables[i].tableAlias, fromSQL)==0){
 	       if (fromCount) {
-		  rstrcat(fromSQL, ", ", MAX_SQL_SIZE);
+		  rstrcat(fromSQL, ", ", MAX_SQL_SIZE_GQ);
 	       }
 	       else {
-		  rstrcat(fromSQL, " ", MAX_SQL_SIZE);
+		  rstrcat(fromSQL, " ", MAX_SQL_SIZE_GQ);
 	       }
 	       fromCount++;
-	       rstrcat(fromSQL, Tables[i].tableAlias, MAX_SQL_SIZE);
-	       rstrcat(fromSQL, " ", MAX_SQL_SIZE);
+	       rstrcat(fromSQL, Tables[i].tableAlias, MAX_SQL_SIZE_GQ);
+	       rstrcat(fromSQL, " ", MAX_SQL_SIZE_GQ);
 	    }
 	    if (debug>1) printf("added (1) to fromSQL: %s\n", fromSQL);
 	 }
 	 else {
 
-	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
 	    if (castOption==1) {
-	       rstrcat(whereSQL, "cast (", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, "cast (", MAX_SQL_SIZE_GQ);
 	    }
-	    rstrcat(whereSQL, Tables[i].tableName, MAX_SQL_SIZE);
-	    rstrcat(whereSQL, ".", MAX_SQL_SIZE);
-	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE);
+	    rstrcat(whereSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ);
+	    rstrcat(whereSQL, ".", MAX_SQL_SIZE_GQ);
+	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ);
 	    if (castOption==1) {
                /* For PostgreSQL and MySQL, 'decimal' seems to work
                   fine but for Oracle 'number' is needed to handle
                   both integer and floating point. */
 #if ORA_ICAT
-	       rstrcat(whereSQL, " as number)", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, " as number)", MAX_SQL_SIZE_GQ);
 #else
-	       rstrcat(whereSQL, " as decimal)", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, " as decimal)", MAX_SQL_SIZE_GQ);
 #endif
 	    }
 	 }
@@ -681,7 +683,7 @@ handleMultiDataAVUConditions(int nConditions) {
       snprintf(newStr, sizeof newStr,
        ", R_OBJT_METAMAP r_data_metamap%d, R_META_MAIN r_data_meta_mn%2.2d ", 
 	       i, i);
-      rstrcat(fromSQL, newStr, MAX_SQL_SIZE);
+      rstrcat(fromSQL, newStr, MAX_SQL_SIZE_GQ);
    }
 
    /* In the whereSQL, add items for 
@@ -692,10 +694,10 @@ handleMultiDataAVUConditions(int nConditions) {
       char newStr[100];
       snprintf(newStr, sizeof newStr,
        " AND r_data_metamap%d.meta_id = r_data_meta_mn%2.2d.meta_id", i, i);
-      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE_GQ);
       snprintf(newStr, sizeof newStr,
 	       " AND R_DATA_MAIN.data_id = r_data_metamap%d.object_id ", i);
-      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE_GQ);
    }
 }
 
@@ -754,7 +756,7 @@ handleMultiCollAVUConditions(int nConditions) {
       snprintf(newStr, sizeof newStr,
        ", R_OBJT_METAMAP r_coll_metamap%d, R_META_MAIN r_coll_meta_mn%2.2d ", 
 	       i, i);
-      rstrcat(fromSQL, newStr, MAX_SQL_SIZE);
+      rstrcat(fromSQL, newStr, MAX_SQL_SIZE_GQ);
    }
 
    /* In the whereSQL, add items for 
@@ -765,10 +767,10 @@ handleMultiCollAVUConditions(int nConditions) {
       char newStr[100];
       snprintf(newStr, sizeof newStr,
        " AND r_coll_metamap%d.meta_id = r_coll_meta_mn%2.2d.meta_id", i, i);
-      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE_GQ);
       snprintf(newStr, sizeof newStr,
 	       " AND R_COLL_MAIN.coll_id = r_coll_metamap%d.object_id ", i);
-      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE_GQ);
    }
 }
 
@@ -821,7 +823,7 @@ compoundConditionSpecified(char *condition) {
 int
 handleCompoundCondition(char *condition, int prevWhereLen)
 {
-   char tabAndColumn[MAX_SQL_SIZE];
+   char tabAndColumn[MAX_SQL_SIZE_GQ];
    char condPart1[MAX_NAME_LEN*2];
    static char condPart2[MAX_NAME_LEN*2];
    static char conditionsForBind[MAX_NAME_LEN*2];
@@ -872,27 +874,27 @@ handleCompoundCondition(char *condition, int prevWhereLen)
 	    }
 	 }
 
-	 rstrcpy(tabAndColumn, (char *)&whereSQL[prevWhereLen], MAX_SQL_SIZE);
+	 rstrcpy(tabAndColumn, (char *)&whereSQL[prevWhereLen], MAX_SQL_SIZE_GQ);
 	 whereSQL[prevWhereLen]='\0'; /* reset whereSQL to previous spot */
-	 rstrcat(whereSQL, " ( ", MAX_SQL_SIZE);
+	 rstrcat(whereSQL, " ( ", MAX_SQL_SIZE_GQ);
       }
-      rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE);
+      rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ);
       rstrcpy((char*)&conditionsForBind[conditionsForBindIx], condPart1, 
-	      (MAX_SQL_SIZE*2)-conditionsForBindIx);
+	      (MAX_SQL_SIZE_GQ*2)-conditionsForBindIx);
       status = insertWhere((char*)&conditionsForBind[conditionsForBindIx], 0);
       if (status) return(status);
       conditionsForBindIx+=strlen(condPart1)+1;
 
       if (type==1) {
-	 rstrcat(whereSQL, " OR ", MAX_SQL_SIZE);
+	 rstrcat(whereSQL, " OR ", MAX_SQL_SIZE_GQ);
       }
       else {
-	 rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+	 rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
       }
 
       if (strstr(condPart2, "||") == NULL &&
 	  strstr(condPart2, "&&") == NULL) {
-	 rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE);
+	 rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE_GQ);
 	 status = insertWhere(condPart2, 0);
 	 if (status) return(status);
 	 keepGoing=0;
@@ -903,7 +905,7 @@ handleCompoundCondition(char *condition, int prevWhereLen)
       first=0;
    }
 
-   rstrcat(whereSQL, " ) ", MAX_SQL_SIZE);
+   rstrcat(whereSQL, " ) ", MAX_SQL_SIZE_GQ);
    return(0);
 }
 
@@ -925,11 +927,11 @@ setOrderBy(genQueryInp_t genQueryInp, int column) {
 	    for (j=0;j<nColumns;j++) {
 	       if (Columns[j].defineValue == column) {
 		  if (strlen(orderBySQL)>10) {
-		     rstrcat(orderBySQL, ", ", MAX_SQL_SIZE);
+		     rstrcat(orderBySQL, ", ", MAX_SQL_SIZE_GQ);
 		  }
-		  rstrcat(orderBySQL, Columns[j].tableName, MAX_SQL_SIZE);
-		  rstrcat(orderBySQL, ".", MAX_SQL_SIZE);
-		  rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE);
+		  rstrcat(orderBySQL, Columns[j].tableName, MAX_SQL_SIZE_GQ);
+		  rstrcat(orderBySQL, ".", MAX_SQL_SIZE_GQ);
+		  rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE_GQ);
 		  break;
 	       }
 	    }
@@ -951,13 +953,13 @@ setOrderByUser(genQueryInp_t genQueryInp) {
 	 for (j=0;j<nColumns && done==0;j++) {
 	    if (Columns[j].defineValue == genQueryInp.selectInp.inx[i]) {
 	       if (strlen(orderBySQL)>10) {
-		  rstrcat(orderBySQL, ", ", MAX_SQL_SIZE);
+		  rstrcat(orderBySQL, ", ", MAX_SQL_SIZE_GQ);
 	       }
-	       rstrcat(orderBySQL, Columns[j].tableName, MAX_SQL_SIZE);
-	       rstrcat(orderBySQL, ".", MAX_SQL_SIZE);
-	       rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE);
+	       rstrcat(orderBySQL, Columns[j].tableName, MAX_SQL_SIZE_GQ);
+	       rstrcat(orderBySQL, ".", MAX_SQL_SIZE_GQ);
+	       rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE_GQ);
 	       if (genQueryInp.selectInp.value[i] & ORDER_BY_DESC) {
-		  rstrcat(orderBySQL, " DESC ", MAX_SQL_SIZE);
+		  rstrcat(orderBySQL, " DESC ", MAX_SQL_SIZE_GQ);
 	       }
 	       done=1;
 	    }
@@ -1022,39 +1024,40 @@ checkCondition(char *condition) {
 /*
 add an IN clause to the whereSQL string for the Parent_Of option
  */
-void
+int
 addInClauseToWhereForParentOf(char *inArg) {
    int i, len;
    int nput=0;
-   char tmpStr[MAX_SQL_SIZE];
-   static char inStrings[MAX_SQL_SIZE];
+   char tmpStr[MAX_SQL_SIZE_GQ];
+   static char inStrings[MAX_SQL_SIZE_GQ];
    int inStrIx=0;
 
-   rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
+   rstrcat(whereSQL, " IN (", MAX_SQL_SIZE_GQ);
    len = strlen(inArg);
    for (i=0;i<len+1;i++) {
       if (inArg[i]=='/' || inArg[i]==' ' || inArg[i]=='\0') {
 	 int ncopy=i;
 	 if (nput==0) ncopy++;
 	 if (nput==0) {
-	    rstrcat(whereSQL, "?", MAX_SQL_SIZE);
+	    rstrcat(whereSQL, "?", MAX_SQL_SIZE_GQ);
 	 }
 	 else {
-	    rstrcat(whereSQL, ", ?", MAX_SQL_SIZE);
+	    rstrcat(whereSQL, ", ?", MAX_SQL_SIZE_GQ);
 	 }
 	 nput++;
 
          /* Add the substing as a bind variable in case there are quotes */
 	 tmpStr[0]='\0';
-	 rstrncat(tmpStr, inArg, ncopy, MAX_SQL_SIZE);
+	 rstrncat(tmpStr, inArg, ncopy, MAX_SQL_SIZE_GQ);
 	 rstrcpy((char *)&inStrings[inStrIx], tmpStr,
-		 (MAX_SQL_SIZE)-inStrIx);
+		 (MAX_SQL_SIZE_GQ)-inStrIx);
 	 inStrings[inStrIx+ncopy]='\0';
 	 cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
 	 inStrIx = inStrIx+ncopy+1;
       }
    }
-   rstrcat(whereSQL, ")", MAX_SQL_SIZE);
+   rstrcat(whereSQL, ")", MAX_SQL_SIZE_GQ);
+   return 0;
 }
 
 
@@ -1067,8 +1070,8 @@ addInClauseToWhereForIn(char *inArg, int option) {
    int startIx, endIx;
    int nput=0;
    int quoteState=0;
-   char tmpStr[MAX_SQL_SIZE];
-   static char inStrings[MAX_SQL_SIZE*2];
+   char tmpStr[MAX_SQL_SIZE_GQ];
+   static char inStrings[MAX_SQL_SIZE_GQ*2];
    static int inStrIx;
    int ncopy;
 
@@ -1076,7 +1079,7 @@ addInClauseToWhereForIn(char *inArg, int option) {
       inStrIx=0;
       return(0);
    }
-   rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
+   rstrcat(whereSQL, " IN (", MAX_SQL_SIZE_GQ);
    len = strlen(inArg);
    for (i=0;i<len+1;i++) {
       if (inArg[i]=='\'') {
@@ -1088,10 +1091,10 @@ addInClauseToWhereForIn(char *inArg, int option) {
 	    quoteState=0;
 	    endIx = i-1;
 	    if (nput==0) {
-	       rstrcat(whereSQL, "?", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, "?", MAX_SQL_SIZE_GQ);
 	    }
 	    else {
-	       rstrcat(whereSQL, ", ?", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, ", ?", MAX_SQL_SIZE_GQ);
 	    }
 	    nput++;
 
@@ -1099,16 +1102,20 @@ addInClauseToWhereForIn(char *inArg, int option) {
 	       execute arbitrary code */
 	    tmpStr[0]='\0';
 	    ncopy = endIx-startIx+1;
-	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE);
+	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE_GQ);
 	    rstrcpy((char *)&inStrings[inStrIx], tmpStr,
-		    (MAX_SQL_SIZE*2)-inStrIx);
+		    (MAX_SQL_SIZE_GQ*2)-inStrIx);
 	    inStrings[inStrIx+ncopy]='\0';
+        if (cllBindVarCount+1 >= MAX_BIND_VARS) { // JMC - backport 4848
+	           return(CAT_BIND_VARIABLE_LIMIT_EXCEEDED);
+	    }
+
 	    cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
 	    inStrIx = inStrIx+ncopy+1;
 	 }
       }
    }
-   rstrcat(whereSQL, ")", MAX_SQL_SIZE);
+   rstrcat(whereSQL, ")", MAX_SQL_SIZE_GQ);
    if (nput==0) return(CAT_INVALID_ARGUMENT);
    return(0);
 }
@@ -1122,11 +1129,11 @@ addBetweenClauseToWhere(char *inArg) {
    int startIx, endIx;
    int nput=0;
    int quoteState=0;
-   char tmpStr[MAX_SQL_SIZE];
-   static char inStrings[MAX_SQL_SIZE];
+   char tmpStr[MAX_SQL_SIZE_GQ];
+   static char inStrings[MAX_SQL_SIZE_GQ];
    int inStrIx=0;
    int ncopy;
-   rstrcat(whereSQL, " BETWEEN ", MAX_SQL_SIZE);
+   rstrcat(whereSQL, " BETWEEN ", MAX_SQL_SIZE_GQ);
    len = strlen(inArg);
    for (i=0;i<len+1;i++) {
       if (inArg[i]=='\'') {
@@ -1138,10 +1145,10 @@ addBetweenClauseToWhere(char *inArg) {
 	    quoteState=0;
 	    endIx = i-1;
 	    if (nput==0) {
-	       rstrcat(whereSQL, "?", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, "?", MAX_SQL_SIZE_GQ);
 	    }
 	    else {
-	       rstrcat(whereSQL, " AND ? ", MAX_SQL_SIZE);
+	       rstrcat(whereSQL, " AND ? ", MAX_SQL_SIZE_GQ);
 	    }
 	    nput++;
 
@@ -1149,10 +1156,14 @@ addBetweenClauseToWhere(char *inArg) {
 	       execute arbitrary code */
 	    tmpStr[0]='\0';
 	    ncopy = endIx-startIx+1;
-	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE);
+	    rstrncat(tmpStr, (char *)&inArg[startIx], ncopy, MAX_SQL_SIZE_GQ);
 	    rstrcpy((char *)&inStrings[inStrIx], tmpStr,
-		    MAX_SQL_SIZE-inStrIx);
+		    MAX_SQL_SIZE_GQ-inStrIx);
 	    inStrings[inStrIx+ncopy]='\0';
+        if (cllBindVarCount+1 >= MAX_BIND_VARS) { // JMC - backport 4848
+	        return(CAT_BIND_VARIABLE_LIMIT_EXCEEDED);
+	    }
+
 	    cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
 	    inStrIx = inStrIx+ncopy+1;
 	 }
@@ -1168,7 +1179,7 @@ insert a new where clause using bind-variables
 int
 insertWhere(char *condition, int option) {
    static int bindIx=0;
-   static char bindVars[MAX_SQL_SIZE+100];
+   static char bindVars[MAX_SQL_SIZE_GQ+100];
    char *cp1, *cpFirstQuote, *cpSecondQuote;
    char *cp;
    int i;
@@ -1211,15 +1222,15 @@ insertWhere(char *condition, int option) {
       }
    }
    if (strcmp(condition, "IS NULL")==0) {
-      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
-      rstrcat(whereSQL, condition, MAX_SQL_SIZE);
-      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, condition, MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE_GQ);
       return(0);
    }
    if (strcmp(condition, "IS NOT NULL")==0) {
-      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
-      rstrcat(whereSQL, condition, MAX_SQL_SIZE);
-      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, condition, MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE_GQ);
       return(0);
    }
    bindIx++;
@@ -1227,13 +1238,17 @@ insertWhere(char *condition, int option) {
    if (cpFirstQuote==0 || cpSecondQuote==0) {
       return(CAT_INVALID_ARGUMENT);
    }
-   if ((cpSecondQuote-cpFirstQuote)+bindIx > MAX_SQL_SIZE+90) 
+   if ((cpSecondQuote-cpFirstQuote)+bindIx > MAX_SQL_SIZE_GQ+90) 
       return(CAT_INVALID_ARGUMENT);
 
    for (cp1=cpFirstQuote+1;cp1<cpSecondQuote;cp1++) {
       bindVars[bindIx++]=*cp1;
    }
    bindVars[bindIx++]='\0';
+   if (cllBindVarCount+1 >= MAX_BIND_VARS) { // JMC - backport 4848
+      return(CAT_BIND_VARIABLE_LIMIT_EXCEEDED);
+   }
+
    cllBindVars[cllBindVarCount++]=thisBindVar;
 
  /* basic legality check on the condition */
@@ -1250,24 +1265,24 @@ insertWhere(char *condition, int option) {
 
    cp = strstr(myCondition,"begin_of");
    if (cp != NULL) {
-      char tmpStr2[MAX_SQL_SIZE];
+      char tmpStr2[MAX_SQL_SIZE_GQ];
       cp1=whereSQL+strlen(whereSQL)-1;
       while (*cp1!=' ') cp1--;
       cp1++;
-      rstrcpy(tmpStr2, cp1, MAX_SQL_SIZE); /*use table/column name just added*/
+      rstrcpy(tmpStr2, cp1, MAX_SQL_SIZE_GQ); /*use table/column name just added*/
 #if ORA_ICAT
-      rstrcat(whereSQL, "=substr(?,1,length(", MAX_SQL_SIZE);
-      rstrcat(whereSQL, tmpStr2, MAX_SQL_SIZE);
-      rstrcat(whereSQL, "))", MAX_SQL_SIZE);
-      rstrcat(whereSQL, " AND length(", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "=substr(?,1,length(", MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, tmpStr2, MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, "))", MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, " AND length(", MAX_SQL_SIZE_GQ);
 #else
-      rstrcat(whereSQL, "=substr(?,1,char_length(", MAX_SQL_SIZE);
-      rstrcat(whereSQL, tmpStr2, MAX_SQL_SIZE);
-      rstrcat(whereSQL, "))", MAX_SQL_SIZE);
-      rstrcat(whereSQL, " AND char_length(", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "=substr(?,1,char_length(", MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, tmpStr2, MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, "))", MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, " AND char_length(", MAX_SQL_SIZE_GQ);
 #endif
-      rstrcat(whereSQL, tmpStr2, MAX_SQL_SIZE);
-      rstrcat(whereSQL, ")>0", MAX_SQL_SIZE);
+      rstrcat(whereSQL, tmpStr2, MAX_SQL_SIZE_GQ);
+      rstrcat(whereSQL, ")>0", MAX_SQL_SIZE_GQ);
    }
    else {
       cp = strstr(myCondition, "parent_of");
@@ -1277,13 +1292,14 @@ insertWhere(char *condition, int option) {
             clause with each of the possible parent collection names;
             this is faster, sometimes very much faster. */
 	 cllBindVarCount--; /* undo bind-var as it is not included now */
-	 addInClauseToWhereForParentOf(thisBindVar);
+     int status = addInClauseToWhereForParentOf(thisBindVar); // JMC - backport 4848
+     if (status < 0) return(status);	  // JMC - backport 4848
       }
       else {
 	 tmpStr[i++]='?';
 	 tmpStr[i++]=' ';
 	 tmpStr[i++]='\0';
-	 rstrcat(whereSQL, tmpStr, MAX_SQL_SIZE);
+	 rstrcat(whereSQL, tmpStr, MAX_SQL_SIZE_GQ);
       }
    }
    return(checkCondition(myCondition));
@@ -1326,19 +1342,19 @@ genqAppendAccessCheck() {
    /* if an item in R_DATA_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
    if (strstr(selectSQL, "R_DATA_MAIN") != NULL) {
-      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
       cllBindVars[cllBindVarCount++]=accessControlUserName;
       cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ);
    }
 
    /* if an item in R_COLL_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
    if (strstr(selectSQL, "R_COLL_MAIN") != NULL) {
-      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+      if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE_GQ);
       cllBindVars[cllBindVarCount++]=accessControlUserName;
       cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE_GQ);
    }
    return(0);
 }
@@ -1397,7 +1413,7 @@ generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
 	 cllBindVars[cllBindVarCount++]=userZone;
 	 cllBindVars[cllBindVarCount++]=userName;
 	 cllBindVars[cllBindVarCount++]=userZone;
-	 strncpy(resultingSQL, quotaQuery1, MAX_SQL_SIZE);
+	 strncpy(resultingSQL, quotaQuery1, MAX_SQL_SIZE_GQ);
 	 valid=1;
       }
    }
@@ -1406,7 +1422,7 @@ generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
       if (genQueryInp.sqlCondInp.inx[i]==COL_R_RESC_NAME) {
 	 strncpy(rescName, genQueryInp.sqlCondInp.value[i], sizeof rescName);
 	 cllBindVars[cllBindVarCount++]=rescName;
-	 strncpy(resultingSQL, quotaQuery2, MAX_SQL_SIZE);
+	 strncpy(resultingSQL, quotaQuery2, MAX_SQL_SIZE_GQ);
       }
    }
    return (0);
@@ -1429,9 +1445,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    int N_col_meta_resc_attr_name=0;
    int N_col_meta_resc_group_attr_name=0;
 
-   char combinedSQL[MAX_SQL_SIZE];
+   char combinedSQL[MAX_SQL_SIZE_GQ];
 #if ORA_ICAT
-   char countSQL[MAX_SQL_SIZE];
+   char countSQL[MAX_SQL_SIZE_GQ];
 #else
    static char offsetStr[20];
 #endif
@@ -1449,17 +1465,17 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    insertWhere("",1); /* initialize */
 
    if (genQueryInp.options & NO_DISTINCT) {
-      rstrcpy(selectSQL, "select ", MAX_SQL_SIZE);
+      rstrcpy(selectSQL, "select ", MAX_SQL_SIZE_GQ);
    }
    else {
-      rstrcpy(selectSQL, "select distinct ", MAX_SQL_SIZE);
+      rstrcpy(selectSQL, "select distinct ", MAX_SQL_SIZE_GQ);
    }
    selectSQLInitFlag=1;   /* selectSQL is currently initialized (no Columns) */
 
-   rstrcpy(fromSQL, "from ", MAX_SQL_SIZE);
+   rstrcpy(fromSQL, "from ", MAX_SQL_SIZE_GQ);
    fromCount=0;
-   rstrcpy(whereSQL, "where ", MAX_SQL_SIZE);
-   rstrcpy(groupBySQL, "group by ", MAX_SQL_SIZE);
+   rstrcpy(whereSQL, "where ", MAX_SQL_SIZE_GQ);
+   rstrcpy(groupBySQL, "group by ", MAX_SQL_SIZE_GQ);
    mightNeedGroupBy=0;
 
    tableAbbrevs='a'; /* reset */
@@ -1592,27 +1608,27 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    if (debug && useGroupBy) printf("groupBySQL: %s\n",groupBySQL);
 
    combinedSQL[0]='\0';
-   rstrcat(combinedSQL, selectSQL, MAX_SQL_SIZE);
-   rstrcat(combinedSQL, " " , MAX_SQL_SIZE);
-   rstrcat(combinedSQL, fromSQL, MAX_SQL_SIZE);
+   rstrcat(combinedSQL, selectSQL, MAX_SQL_SIZE_GQ);
+   rstrcat(combinedSQL, " " , MAX_SQL_SIZE_GQ);
+   rstrcat(combinedSQL, fromSQL, MAX_SQL_SIZE_GQ);
 
    genqAppendAccessCheck();
 
    if (strlen(whereSQL)>6) {
-      rstrcat(combinedSQL, " " , MAX_SQL_SIZE);
-      rstrcat(combinedSQL, whereSQL, MAX_SQL_SIZE);
+      rstrcat(combinedSQL, " " , MAX_SQL_SIZE_GQ);
+      rstrcat(combinedSQL, whereSQL, MAX_SQL_SIZE_GQ);
    }
    if (useGroupBy) {
-      rstrcat(combinedSQL, " " , MAX_SQL_SIZE);
-      rstrcat(combinedSQL, groupBySQL, MAX_SQL_SIZE);
+      rstrcat(combinedSQL, " " , MAX_SQL_SIZE_GQ);
+      rstrcat(combinedSQL, groupBySQL, MAX_SQL_SIZE_GQ);
    }
-   rstrcpy(orderBySQL, " order by ", MAX_SQL_SIZE);
+   rstrcpy(orderBySQL, " order by ", MAX_SQL_SIZE_GQ);
    setOrderByUser(genQueryInp);
    setOrderBy(genQueryInp, COL_COLL_NAME);
    setOrderBy(genQueryInp, COL_DATA_NAME);
    setOrderBy(genQueryInp, COL_DATA_REPL_NUM);
    if (strlen(orderBySQL)>10) {
-      rstrcat(combinedSQL, orderBySQL, MAX_SQL_SIZE);
+      rstrcat(combinedSQL, orderBySQL, MAX_SQL_SIZE_GQ);
    }
 
    if (genQueryInp.rowOffset > 0) {
@@ -1625,32 +1641,32 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 #elif MY_ICAT
    /* MySQL/ODBC handles it nicely via just adding limit/offset */
       snprintf (offsetStr, sizeof offsetStr, "%d", genQueryInp.rowOffset);
-      rstrcat(combinedSQL, " limit ", MAX_SQL_SIZE);
-      rstrcat(combinedSQL, offsetStr, MAX_SQL_SIZE);
-      rstrcat(combinedSQL, ",18446744073709551615", MAX_SQL_SIZE);
+      rstrcat(combinedSQL, " limit ", MAX_SQL_SIZE_GQ);
+      rstrcat(combinedSQL, offsetStr, MAX_SQL_SIZE_GQ);
+      rstrcat(combinedSQL, ",18446744073709551615", MAX_SQL_SIZE_GQ);
 #else
    /* Postgres/ODBC handles it nicely via just adding offset */
       snprintf (offsetStr, sizeof offsetStr, "%d", genQueryInp.rowOffset);
       cllBindVars[cllBindVarCount++]=offsetStr;
-      rstrcat(combinedSQL, " offset ?", MAX_SQL_SIZE);
+      rstrcat(combinedSQL, " offset ?", MAX_SQL_SIZE_GQ);
 #endif
    }
 
    if (debug) printf("combinedSQL=:%s:\n",combinedSQL);
-   strncpy(resultingSQL, combinedSQL, MAX_SQL_SIZE);
+   strncpy(resultingSQL, combinedSQL, MAX_SQL_SIZE_GQ);
 
 #if ORA_ICAT
    countSQL[0]='\0';
-   rstrcat(countSQL, "select distinct count(*) ", MAX_SQL_SIZE);
-   rstrcat(countSQL, fromSQL, MAX_SQL_SIZE);
+   rstrcat(countSQL, "select distinct count(*) ", MAX_SQL_SIZE_GQ);
+   rstrcat(countSQL, fromSQL, MAX_SQL_SIZE_GQ);
 
    if (strlen(whereSQL)>6) {
-      rstrcat(countSQL, " " , MAX_SQL_SIZE);
-      rstrcat(countSQL, whereSQL, MAX_SQL_SIZE);
+      rstrcat(countSQL, " " , MAX_SQL_SIZE_GQ);
+      rstrcat(countSQL, whereSQL, MAX_SQL_SIZE_GQ);
    }
 
    if (debug) printf("countSQL=:%s:\n",countSQL);
-   strncpy(resultingCountSQL, countSQL, MAX_SQL_SIZE);
+   strncpy(resultingCountSQL, countSQL, MAX_SQL_SIZE_GQ);
 #endif
    return(0);
 }
@@ -1789,8 +1805,8 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
    int i, j, k;
    int needToGetNextRow;
 
-   char combinedSQL[MAX_SQL_SIZE];
-   char countSQL[MAX_SQL_SIZE]; /* For Oracle, sql to get the count */
+   char combinedSQL[MAX_SQL_SIZE_GQ];
+   char countSQL[MAX_SQL_SIZE_GQ]; /* For Oracle, sql to get the count */
 
    int status, statementNum;
    int numOfCols;

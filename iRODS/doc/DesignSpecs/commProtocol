@@ -139,7 +139,7 @@ typedef enum {
 i.e., a value of 0 means native and a value of 1 means XML. With the iCommands
 and the client C library, the default is NATIVE_PROT. The protocol can be  
 changed to XML by setting the env variable "irodsProt" to 1. In addition,
-if the env variable "irodsLogLevel" is set to 3 or lower, the generated XML
+if the env variable "irodsLogLevel" is set to 9 or higher, the generated XML
 will be output to stdout. Similarly, Similarly, on the server side, 
 the generated XML generated can be output to the log file by setting
 $spLogLevel=3 in the server/bin/start.pl file.

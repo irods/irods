@@ -42,11 +42,13 @@ agentProc_t *BadReqHead = NULL;
 	boost::mutex		  BadReqMutex;
 	boost::thread*		  ReadWorkerThread[NUM_READ_WORKER_THR];
 	boost::thread*		  SpawnManagerThread;
+	boost::thread*		  PurgeLockFileThread; // JMC - backport 4612
 	#else
 	pthread_mutex_t ConnectedAgentMutex;
 	pthread_mutex_t BadReqMutex;
 	pthread_t       ReadWorkerThread[NUM_READ_WORKER_THR];
 	pthread_t       SpawnManagerThread;
+	pthread_t       PurgeLockFileThread; // JMC - backport 4612
 	#endif
 #endif
 
@@ -267,7 +269,20 @@ serverMain (char *logDir)
     }
 #ifndef SINGLE_SVR_THR
     startProcConnReqThreads ();
-#endif
+#if RODS_CAT // JMC - backport 4612
+#ifdef USE_BOOST
+    PurgeLockFileThread = new boost::thread( purgeLockFileWorkerTask );
+#else
+    status = pthread_create(&PurgeLockFileThread, NULL,
+          (void *(*)(void *)) purgeLockFileWorkerTask, (void *) NULL);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "pthread_create of PurgeLockFileThread failed, errno = %d", errno);
+    }
+#endif /* USE_BOOST */
+#endif /* RODS_CAT */
+#endif /* SINGLE_SVR_THR */
+
     FD_ZERO(&sockMask);
 
     SvrSock = svrComm.sock;
@@ -797,6 +812,10 @@ initServer ( rsComm_t *svrComm)
     } 
     initConnectControl ();
 
+#if RODS_CAT // JMC - backport 4612
+    purgeLockFileDir (0);
+#endif
+
     return (status);
 }
 
@@ -1305,4 +1324,20 @@ procBadReq ()
 
     return 0;
 }
-    
+   
+// =-=-=-=-=-=-=-
+// JMC - backport 4612
+void
+purgeLockFileWorkerTask ()
+{
+    int status;
+    while (1) {
+       rodsSleep (LOCK_FILE_PURGE_TIME, 0);
+       status = purgeLockFileDir (1);
+       if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+             "purgeLockFileWorkerTask: purgeLockFileDir failed");
+       }
+    }
+}
+// =-=-=-=-=-=-=-

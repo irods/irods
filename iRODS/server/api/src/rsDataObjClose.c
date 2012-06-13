@@ -25,6 +25,8 @@
 #include "subStructFileClose.h"
 #include "regDataObj.h"
 #include "dataObjRepl.h"
+#include "dataObjTrim.h" // JMC - backport 4537
+#include "dataObjLock.h" // JMC - backport 4604
 #include "getRescQuota.h"
 
 #ifdef LOG_TRANSFERS
@@ -66,16 +68,22 @@ dataObjInfo_t **outDataObjInfo)
 
     if (outDataObjInfo != NULL) *outDataObjInfo = NULL;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
-	/* cross zone operation */
-	dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
-	/* XXXXX outDataObjInfo will not be returned in this call.
-	 * The only call that requires outDataObjInfo to be returned is
-	 * _rsDataObjReplS which does a remote repl early for cross zone */
-	status = rcDataObjClose (L1desc[l1descInx].remoteZoneHost->conn, 
-	  dataObjCloseInp);
-	dataObjCloseInp->l1descInx = l1descInx;
+		/* cross zone operation */
+		dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
+		/* XXXXX outDataObjInfo will not be returned in this call.
+		 * The only call that requires outDataObjInfo to be returned is
+		 * _rsDataObjReplS which does a remote repl early for cross zone */
+		status = rcDataObjClose (L1desc[l1descInx].remoteZoneHost->conn, dataObjCloseInp);
+		dataObjCloseInp->l1descInx = l1descInx;
     } else {
         status = _rsDataObjClose (rsComm, dataObjCloseInp);
+        // =-=-=-=-=-=-=-
+		// JMC - backport 4640
+        if (L1desc[l1descInx].lockFd > 0) {
+            rsDataObjUnlock (rsComm, L1desc[l1descInx].dataObjInp, L1desc[l1descInx].lockFd);
+            L1desc[l1descInx].lockFd = -1;
+        }
+        // =-=-=-=-=-=-=-
 
         if (status >= 0 && L1desc[l1descInx].oprStatus >= 0) {
 	    /* note : this may overlap with acPostProcForPut or 
@@ -99,6 +107,18 @@ dataObjInfo_t **outDataObjInfo)
                   NO_SAVE_REI);
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
+		   // =-=-=-=-=-=-=-
+		   // JMC - bacport 4623
+           } else if (L1desc[l1descInx].oprType == REPLICATE_DEST) {
+               initReiWithDataObjInp (&rei, rsComm,
+                  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
+                rei.status = status;
+                rei.status = applyRule ("acPostProcForRepl", NULL, &rei,
+                    NO_SAVE_REI);
+                /* doi might have changed */
+                L1desc[l1descInx].dataObjInfo = rei.doi;
+           // =-=-=-=-=-=-=-
 	    }
 
             if (L1desc[l1descInx].oprType == COPY_DEST) {
@@ -305,6 +325,18 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
       L1desc[l1descInx].oprType != PHYMV_DEST &&
       L1desc[l1descInx].oprType != COPY_DEST) {
         /* no write */
+       // =-=-=-=-=-=-=-
+	   // JMC - backport 4537
+        if (L1desc[l1descInx].purgeCacheFlag > 0) {
+           int status1 = trimDataObjInfo (rsComm, 
+             L1desc[l1descInx].dataObjInfo);
+            if (status1 < 0) {
+                rodsLogError (LOG_ERROR, status1,
+                  "_rsDataObjClose: trimDataObjInfo error for %s",
+                  L1desc[l1descInx].dataObjInfo->objPath);
+           }
+       }
+       // =-=-=-=-=-=-=-
 #ifdef LOG_TRANSFERS
        if (L1desc[l1descInx].oprType == GET_OPR) {
 	  logTransfer("get", L1desc[l1descInx].dataObjInfo->objPath,
@@ -352,8 +384,12 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	newSize = L1desc[l1descInx].dataSize;
     }
 
+#if 0  /* _dataObjChksum do COMPOUND_CL now */ // JMC - backport 4527
     if (getRescClass (L1desc[l1descInx].dataObjInfo->rescInfo) != COMPOUND_CL &&
       noChkCopyLenFlag == 0) {
+#else
+    if (noChkCopyLenFlag == 0) {
+#endif
         status = procChksumForClose (rsComm, l1descInx, &chksumStr);
         if (status < 0) return status;
     }
@@ -475,10 +511,15 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
 	if (status < 0) {
 	    L1desc[l1descInx].oprStatus = status;
-	    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
-            rodsLog (LOG_NOTICE,
-              "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
-              destDataObjInfo->objPath, status);
+		// =-=-=-=-=-=-=-
+		// JMC - backport 4608
+        /* don't delete replica with the same filePath */
+        if (status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME)
+            l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
+		// =-=-=-=-=-=-=-
+        rodsLog( LOG_NOTICE,
+                 "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
+                 destDataObjInfo->objPath, status );
 	    return (status);
 	}
     } else if (L1desc[l1descInx].dataObjInfo->specColl == NULL) {
@@ -581,6 +622,20 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             return status;
         }
     }
+    // =-=-=-=-=-=-=-
+	// JMC - backport 4537
+    /* purge the cache copy */
+    if (L1desc[l1descInx].purgeCacheFlag > 0) {
+        int status1 = trimDataObjInfo (rsComm,
+          L1desc[l1descInx].dataObjInfo);
+        if (status1 < 0) {
+           rodsLogError (LOG_ERROR, status1,
+              "_rsDataObjClose: trimDataObjInfo error for %s",
+              L1desc[l1descInx].dataObjInfo->objPath);
+        }
+    }
+    // =-=-=-=-=-=-=-
+
 
     /* XXXXXX need to replicate to moreRescGrpInfo */
 

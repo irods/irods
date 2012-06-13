@@ -1141,7 +1141,9 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
     }
 
   if (memoryParam->inpOutBuf != NULL)
-    free(memoryParam->inpOutBuf);
+      free(memoryParam->inpOutBuf);
+  if (memoryParam->inOutStruct != NULL) // JMC - backport 4829
+      free(memoryParam->inOutStruct);
   memoryParam->inpOutBuf = NULL;
   return(0);
   

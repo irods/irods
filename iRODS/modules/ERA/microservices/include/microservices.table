@@ -36,8 +36,6 @@
         table_[ "msiFlagDataObjwithAVU"] = ms_table_entry( "msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU );
         table_[ "msiFlagInfectedObjs"] = ms_table_entry( "msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs );
         table_[ "msiStripAVUs"] = ms_table_entry( "msiStripAVUs",				3,		(funcPtr) msiStripAVUs );
-	table_[ "msiStoreVersionWithTS"] = ms_table_entry( "msiStoreVersionWithTS",		3,              (funcPtr) msiStoreVersionWithTS );
-
 #else
 // ERA module microservices
 // Service name				# args		Service function
@@ -75,5 +73,4 @@
 {"msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU},
 {"msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs},
 {"msiStripAVUs",				3,		(funcPtr) msiStripAVUs},
-{"msiStoreVersionWithTS",               3,              (funcPtr) msiStoreVersionWithTS},
 #endif

@@ -543,6 +543,7 @@ create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name VARCHAR_MAX
 create index idx_data_main3 on R_DATA_MAIN (coll_id);
 create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_IDX_SIZE);
 create index idx_data_main5 on R_DATA_MAIN (data_type_name);
+create index idx_data_main6 on R_DATA_MAIN (data_path);
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
 create index idx_meta_main2 on R_META_MAIN (meta_attr_name VARCHAR_MAX_IDX_SIZE);
 create index idx_meta_main3 on R_META_MAIN (meta_attr_value VARCHAR_MAX_IDX_SIZE);
