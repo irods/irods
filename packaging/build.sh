@@ -11,7 +11,10 @@ Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
 Usage: $SCRIPTNAME clean
 
 Options:
- -s      Skip compilation of E-iRODS source.
+ -c      Build with coverage support (gcov)
+ -h      Show this help
+ -r      Build a release package (no debugging information, optimized)
+ -s      Skip compilation of E-iRODS source
 
 Examples:
  $SCRIPTNAME icat postgres
@@ -28,12 +31,28 @@ echo "+------------------------------------+"
 date
 echo ""
 
-# parse options
+# translate long options to short
+for arg
+do
+    delim=""
+    case "$arg" in
+        --coverage) args="${args}-c ";;
+        --help) args="${args}-h ";;
+        --release) args="${args}-r ";;
+        --skip) args="${args}-s ";;
+        # pass through anything else
+        *) [[ "${arg:0:1}" == "-" ]] || delim="\""
+            args="${args}${delim}${arg}${delim} ";;
+    esac
+done
+# reset the translated args
+eval set -- $args
+# now we can process with getopts
 while getopts ":chrs" opt; do
     case $opt in
         c)
             COVERAGE="1"
-            echo "-c detected -- Building E-iRODS with coverage support (GCOV)"
+            echo "-c detected -- Building E-iRODS with coverage support (gcov)"
             ;;
         h)
             echo "$USAGE"
