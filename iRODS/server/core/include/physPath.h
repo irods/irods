@@ -96,7 +96,7 @@ getDefDirMode ();
 int
 getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
 int
-rsMkOrhpanPath (rsComm_t *rsComm, char *objPath, char *orphanPath);
+rsMkOrphanPath (rsComm_t *rsComm, char *objPath, char *orphanPath);
 // =-=-=-=-=-=-=-
 // JMC - backport 4598
 int

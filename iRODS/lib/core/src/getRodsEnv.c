@@ -304,7 +304,7 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	       snprintf(tmpStr2,tmpLen,"irodsServerDn=%s", 
 			rodsEnvArg->rodsServerDn);
 	       putenv(tmpStr2);
-		   free( tmpStr2 ); // JMC cppcheck - leak
+		   //free( tmpStr2 ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
 	    }
 	 }
 	 key=strstr(buf, "irodsLogLevel");

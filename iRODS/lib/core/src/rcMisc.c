@@ -4416,7 +4416,7 @@ mySetenvStr (char *envname, char *envval)
     myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%s", envname, envval);
     status = putenv (myBuf);
-	free( myBuf ); // JMC cppcheck - leak
+//	free( myBuf ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
 #endif
     return status;
 }
@@ -4439,7 +4439,7 @@ mySetenvInt (char *envname, int envval)
     myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%d", envname, envval);
     status = putenv (myBuf);
-	free( myBuf ); // JMC cppcheck - leak
+//	free( myBuf ); // JMC cppcheck - leak ==> backport 'fix' from comm trunk for solaris
 #endif
     return status;
 }
