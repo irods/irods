@@ -237,6 +237,11 @@ make_subpackage(const char     *prodname,
     fprintf(fp, "Version: %s\n", dist->version);
   fprintf(fp, "Maintainer: %s\n", dist->vendor);
 
+  // TGR - adding for lintian clean
+  fprintf(fp, "Section: contrib/science\n");
+  fprintf(fp, "Priority: extra\n");
+  // TGR - end
+
  /*
   * The Architecture attribute needs to match the uname info
   * (which we change in get_platform to a common name)

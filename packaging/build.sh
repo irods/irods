@@ -346,7 +346,7 @@ else
         iexit         
         ifsck         
         iget          
-        igetwild.sh   
+        igetwild      
         ihelp         
         iinit         
         ilocate       

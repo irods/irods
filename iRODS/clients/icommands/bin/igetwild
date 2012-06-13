@@ -6,10 +6,10 @@
 # end or middle).
 #
 # For example:
-# igetwild.sh /newZone/home/rods .txt e
+# igetwild /newZone/home/rods .txt e
 # will get each irods file that ends with '.txt' in the collection.
 #
-#igetwild.sh /newZone/home/rods .txt e
+#igetwild /newZone/home/rods .txt e
 #   foo.txt                         0.000 MB | 0.164 sec | 0 thr |  0.000 MB/s
 #   foo2.txt                        0.000 MB | 0.101 sec | 0 thr |  0.000 MB/s
 
@@ -17,7 +17,7 @@
 # names and b,e,or m on the command line, to avoid prompts for them.
 
 # This is just a interim partial solution while we develop a more
-# comprehensive approach to handling wild cards.
+# comprehensive approach to handling wildcards.
 
 #
 #set -x
@@ -30,18 +30,18 @@ if [ $1 ]; then
   collName=$1
 else
   echo "This simple script allows you to iget a set of files"
-  echo "using wild-card type matching on file names."
+  echo "using wildcard type matching on file names."
   echo "This is just a interim partial solution while we develop a more"
   echo "comprehensive approach, but may be useful to some."
   echo "You can enter the arguments on the command-line if you'd prefer."
-  echo "Also see 'igetwild.sh -h'."
+  echo "Also see 'igetwild -h'."
   printf "Please enter the collection to iget from: "
   read collName
 fi
 
 if [ $collName = "-h" ]; then
   echo "Get one or more iRODS files using wildcard characters."
-  echo "Usage: igetwild.sh collection pattern b|m|e  (beginning, middle, or end)"
+  echo "Usage: igetwild collection pattern b|m|e  (beginning, middle, or end)"
   echo "Will prompt for missing items."
   exit 0
 fi

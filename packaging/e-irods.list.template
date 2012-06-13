@@ -4,7 +4,7 @@
 %product Enterprise iRODS
 %copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
 %vendor Renaissance Computing Institute <info@e-irods.org>
-%license COPYING
+%license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Storage system
 %version 3.0b2 300002
@@ -239,12 +239,12 @@ f 644 root root /usr/share/man/man1 ./man/*.gz
 d 755 root root ${EIRODS_DOC_DIR} -
 f 644 root root ${EIRODS_DOC_DIR}/manual.pdf ./manual.pdf
 %if DEB
-f 644 root root ${EIRODS_DOC_DIR}/copyright ./COPYING
+f 644 root root ${EIRODS_DOC_DIR}/copyright ./LICENSE
 #f 644 root root ${EIRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
 #f 644 root root ${EIRODS_DOC_DIR}/copyright_addendum ./iRODS/COPYRIGHT/Copyright_Addendum.txt
 f 644 root root ${EIRODS_DOC_DIR}/changelog.gz ./changelog.gz
 %else
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/COPYING ./COPYING
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/LICENSE ./LICENSE
 %endif
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/installLogs -
@@ -335,7 +335,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/hpssAuth.templ
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/packedRei -
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/irodsHost ./iRODS/server/config/irodsHost
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/s3Auth.template ./iRODS/server/config/s3Auth.template
-f 600 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/server.config ./iRODS/server/config/server.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/config/README.txt ./iRODS/server/config/README.txt
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin -
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/cmd -
@@ -451,7 +451,7 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/workflow.html ./iRODS
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/doxygen.config ./iRODS/config/doxygen.config
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/common.mk ./iRODS/config/common.mk
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/config/platform.mk.template ./iRODS/config/platform.mk.template
-f 744 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/irodsctl ./iRODS/irodsctl
 
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients -
@@ -465,6 +465,9 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/delUnu
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.ir          ./iRODS/clients/icommands/bin/runQuota.ir
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/runQuota.r           ./iRODS/clients/icommands/bin/runQuota.r
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/bin/showCore.ir          ./iRODS/clients/icommands/bin/showCore.ir
+
+# igetwild.sh - shouldn't have a binary with an extension, lintian complained it's not as future-proof
+f 755 root root /usr/bin/igetwild             ./iRODS/clients/icommands/bin/igetwild
 
 f 755 root root /usr/bin/genOSAuth            ./iRODS/clients/icommands/bin/genOSAuth
 f 755 root root /usr/bin/iadmin               ./iRODS/clients/icommands/bin/iadmin
@@ -481,7 +484,6 @@ f 755 root root /usr/bin/iexecmd              ./iRODS/clients/icommands/bin/iexe
 f 755 root root /usr/bin/iexit                ./iRODS/clients/icommands/bin/iexit
 f 755 root root /usr/bin/ifsck                ./iRODS/clients/icommands/bin/ifsck
 f 755 root root /usr/bin/iget                 ./iRODS/clients/icommands/bin/iget
-f 755 root root /usr/bin/igetwild.sh          ./iRODS/clients/icommands/bin/igetwild.sh
 f 755 root root /usr/bin/ihelp                ./iRODS/clients/icommands/bin/ihelp
 f 755 root root /usr/bin/iinit                ./iRODS/clients/icommands/bin/iinit
 f 755 root root /usr/bin/ilocate              ./iRODS/clients/icommands/bin/ilocate
