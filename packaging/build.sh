@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
 
 SCRIPTNAME=`basename $0`
 COVERAGE="0"
@@ -121,11 +123,9 @@ if [ "$1" == "clean" ]; then
     rm -f manual.pdf
     set +e
     echo "Cleaning EPM residuals..."
-    rm -rf linux-2.6-amd64
-    rm -rf linux-3.2-amd64
-    rm -rf linux-2.6-x86_64
-    rm -rf linux-3.1-x86_64
-    rm -rf macosx-10.7-x86_64
+    rm -rf linux-2.*
+    rm -rf linux-3.*
+    rm -rf macosx-10.*
     cd epm
     make clean > /dev/null 2>&1
     make distclean > /dev/null 2>&1
@@ -159,7 +159,6 @@ if [ $1 != "icat" -a $1 != "resource" ] ; then
     echo "      :: Only 'icat' or 'resource' available at this time" 1>&2
     echo "#######################################################" 1>&2
     exit 1
-  exit 1
 fi
 
 if [ "$1" == "icat" ]; then
@@ -182,6 +181,9 @@ if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
     exit 1
   fi
 fi
+
+# use error codes to determine dependencies
+set +e
 
 RST2PDF=`which rst2pdf`
 if [ "$?" -ne "0" ]; then
@@ -241,7 +243,8 @@ else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
 fi
 
-
+# reset to exit on an error
+set -e
 
 # set up own temporary configfile
 TMPCONFIGFILE=/tmp/$USER/irods.config.epm
