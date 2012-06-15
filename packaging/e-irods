@@ -2,7 +2,7 @@
 
 set -e
 
-IRODS_HOME=/usr/share/eirods/iRODS
+IRODS_HOME=/var/lib/e-irods/iRODS
 IRODS_CTL=./irodsctl
 
 cd $IRODS_HOME
