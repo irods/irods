@@ -114,7 +114,7 @@ echo "NOTE :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
 echo "     :: The Local System Administrator should delete these if necessary."
 if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
     echo "     :: try:"
-    echo "     ::      sudo userdel $OS_EIRODS_ACCT"
+    echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"
 elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
     echo "     :: try:"
     echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"

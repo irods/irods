@@ -54,6 +54,7 @@ force-reload)
     fi
     ;;
 *)
-    echo "/etc/init.d/e-irods :: [$1] is not supported."
+    echo "/etc/init.d/e-irods :: [$1] is not supported." 1>&2
+    echo "Usage: /etc/init.d/e-irods {start|stop|status|restart|force-reload}" 1>&2
     exit 1
 esac

@@ -63,6 +63,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "Active" | awk '{print $2}'`
         if [ "$PSQLSTATE" == "active" ] ; then
             PSQLSTATUS="running"
+        else
+            PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "running" | awk '{print $4}'`
+            if [ "$PSQLSTATE" == "..running" ] ; then
+                PSQLSTATUS="running"
+            fi
         fi
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "postmaster" | awk '{print $NF}'`
