@@ -126,25 +126,14 @@ elif [ "$DETECTEDOS" == "Ubuntu" ]; then  # Ubuntu
 fi
 
 # =-=-=-=-=-=-=-
-# remove runlevel symlinks
-
-# detect correct /etc location of rcX.d
-if [ -d "/etc/rc.d" ]; then
-    # SuSE
-    # CentOS (has /etc/rcX.d as aliases into rc.d/)
-    # Fedora (same as CentOS)
-    ETCPREFIX="/etc/rc.d"
-else
-    # Ubuntu
-    ETCPREFIX="/etc"
+# remove runlevels and aliases (use os-specific tools)
+if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    update-rc.d -f e-irods remove
+elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+    /sbin/chkconfig --del e-irods
+elif [ "$DETECTEDOS" == "SuSE" ] ; then
+    /sbin/chkconfig --del e-irods
 fi
-rm -f $ETCPREFIX/rc0.d/K15e-irods
-rm -f $ETCPREFIX/rc2.d/S95e-irods
-rm -f $ETCPREFIX/rc3.d/S95e-irods
-rm -f $ETCPREFIX/rc4.d/S95e-irods
-rm -f $ETCPREFIX/rc5.d/S95e-irods
-rm -f $ETCPREFIX/rc6.d/K15e-irods
-rm -f /etc/init.d/e-irods
 
 # =-=-=-=-=-=-=-
 # remove icommands symlinks

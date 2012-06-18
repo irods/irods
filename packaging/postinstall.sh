@@ -145,94 +145,16 @@ chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $IRODS_HOME
 touch $EIRODS_HOME_DIR/.odbc.ini
 chown $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR/.odbc.ini
 
+
 # =-=-=-=-=-=-=-
-# symlink init.d script to rcX.d
-PWD=`pwd`
-
-# detect correct /etc location of rcX.d
-if [ -d "/etc/rc.d" ]; then
-    # SuSE
-    # CentOS (has /etc/rcX.d as aliases into rc.d/)
-    # Fedora (same as CentOS)
-    ETCPREFIX="/etc/rc.d"
-else
-    # Ubuntu
-    ETCPREFIX="/etc"
+# setup runlevels and aliases (use os-specific tools)
+if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    update-rc.d e-irods defaults
+elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+    /sbin/chkconfig --add e-irods
+elif [ "$DETECTEDOS" == "SuSE" ] ; then
+    /sbin/chkconfig --add e-irods
 fi
-
-cd $ETCPREFIX/rc0.d
-file="K15e-irods"
-if [ -e ./$file ]; then
-    res=`ls -l ./$file | cut -d' ' -f11`
-    if [ "$res" != "../init.d/e-irods" ]; then
-		rm $file
-        ln -s ../init.d/e-irods ./$file
-	fi
-else
-    ln -s ../init.d/e-irods ./$file
-fi
-
-cd $ETCPREFIX/rc2.d
-file="S95e-irods"
-if [ -e ./$file ]; then
-    res=`ls -l ./$file | cut -d' ' -f11`
-    if [ "$res" != "../init.d/e-irods" ]; then
-		rm $file
-        ln -s ../init.d/e-irods ./$file
-	fi
-else
-    ln -s ../init.d/e-irods ./$file
-fi
-
-cd $ETCPREFIX/rc3.d
-file="S95e-irods"
-if [ -e ./$file ]; then
-    res=`ls -l ./$file | cut -d' ' -f11`
-    if [ "$res" != "../init.d/e-irods" ]; then
-		rm $file
-        ln -s ../init.d/e-irods ./$file
-	fi
-else
-    ln -s ../init.d/e-irods ./$file
-fi
-
-cd $ETCPREFIX/rc4.d
-file="S95e-irods"
-if [ -e ./$file ]; then
-    res=`ls -l ./$file | cut -d' ' -f11`
-    if [ "$res" != "../init.d/e-irods" ]; then
-		rm $file
-        ln -s ../init.d/e-irods ./$file
-	fi
-else
-    ln -s ../init.d/e-irods ./$file
-fi
-
-cd $ETCPREFIX/rc5.d
-file="S95e-irods"
-if [ -e ./$file ]; then
-    res=`ls -l ./$file | cut -d' ' -f11`
-    if [ "$res" != "../init.d/e-irods" ]; then
-		rm $file
-        ln -s ../init.d/e-irods ./$file
-	fi
-else
-    ln -s ../init.d/e-irods ./$file
-fi
-
-cd $ETCPREFIX/rc6.d
-file="K15e-irods"
-if [ -e ./$file ]; then
-    res=`ls -l ./$file | cut -d' ' -f11`
-    if [ "$res" != "../init.d/e-irods" ]; then
-		rm $file
-        ln -s ../init.d/e-irods ./$file
-	fi
-else
-    ln -s ../init.d/e-irods ./$file
-fi
-
-
 
 
 

@@ -1,4 +1,20 @@
-#!/bin/sh -e
+#!/bin/sh
+#
+# See "man chkconfig" for information on next two lines (RedHatCompatible Only)
+# chkconfig: 2345 90 10
+# description: Enterprise iRODS
+#
+#
+# Following lines are in conformance with LSB 1.2 spec
+### BEGIN INIT INFO
+# Provides:          e-irods
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Manages the E-iRODS service
+# Description:       Manages the E-iRODS service
+### END INIT INFO
 
 set -e
 
@@ -7,22 +23,35 @@ IRODS_CTL=./irodsctl
 
 cd $IRODS_HOME
 
+DETECTEDOS=`../packaging/find_os.sh`
 
 case $1 in
 status)
-    $IRODS_CTL status
+    su --shell=/bin/bash -c "$IRODS_CTL status" eirods
     ;;
 start)
     su --shell=/bin/bash -c "$IRODS_CTL istart" eirods
+    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+        touch /var/lock/subsys/e-irods
+    fi
     ;;
 stop)
     su --shell=/bin/bash -c "$IRODS_CTL istop" eirods
+    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+        rm /var/lock/subsys/e-irods
+    fi
     ;;
 restart)
     su --shell=/bin/bash -c "$IRODS_CTL irestart" eirods
+    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+        touch /var/lock/subsys/e-irods
+    fi
     ;;
 force-reload)
     su --shell=/bin/bash -c "$IRODS_CTL irestart" eirods
+    if [ "$DETECTEDOS" == "RedHatCompatible" -o "$DETECTEDOS" == "SuSE" ] ; then
+        touch /var/lock/subsys/e-irods
+    fi
     ;;
 *)
     echo "/etc/init.d/e-irods :: [$1] is not supported."
