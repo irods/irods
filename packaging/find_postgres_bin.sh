@@ -39,8 +39,8 @@ fi
 # if there are still more than one candidate, then something terrible has happened
 # we shall bail and eschew all responsibility, silly human.
 if [ ${#not_links[@]} -gt 1 ]; then
-	echo "Multiple versions of postgres found, aborting installation"
-	echo -e `find /usr -name "psql" -print 2> /dev/null `
+	echo "Multiple versions of postgres found, aborting installation" 1>&2
+	echo -e `find /usr -name "psql" -print 2> /dev/null ` 1>&2
 	ret="FAIL/FAIL"
 fi
 
