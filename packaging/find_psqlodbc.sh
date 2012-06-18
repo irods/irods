@@ -1,14 +1,20 @@
 #!/bin/bash
 
-# CentOS and Ubuntu
+# Ubuntu
 ODBC=`find /usr -name "psqlodbc*.so" 2> /dev/null | grep -v "w"`
-NONEWLINES=`echo $ODBC | perl -ne 'chomp and print'`
 
-# SuSE
-if [ "$NONEWLINES" == "" ]; then
-  ODBC=`find /usr -name "libodbcpsql.so" 2> /dev/null | grep -v "w"`
-  NONEWLINES=`echo $ODBC | perl -ne 'chomp and print'`
+# CentOS / SuSE
+if [ "$ODBC" == "" ]; then
+    # find 64bit version first, in case it exists alongside a 32bit version
+    ODBC=`find /usr -name "libodbcpsql.so" 2> /dev/null | grep "64"`
 fi
 
+# CentOS / SuSE
+if [ "$ODBC" == "" ]; then
+    ODBC=`find /usr -name "libodbcpsql.so" 2> /dev/null`
+fi
+
+
+NONEWLINES=`echo $ODBC | perl -ne 'chomp and print'`
 echo "$NONEWLINES"
 
