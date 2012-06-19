@@ -17,6 +17,7 @@
 #
 
 use File::Spec;
+use File::Path;
 use File::Copy;
 use Cwd;
 use Cwd "abs_path";
@@ -955,7 +956,9 @@ sub doTestIcommands
 	#	a bit secure, the temp file is chmod-ed to keep
 	#	it closed.  It's deleted when the tests are done.
 	my $program     = File::Spec->catfile( $icommandsTestDir, "testiCommands.pl" );
-	my $tmpDir      = File::Spec->tmpdir( );
+	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+	my $tmpDir   = File::Spec->catdir( File::Spec->tmpdir( ), $username );
+	mkpath($tmpDir);
 	my $passwordTmp = File::Spec->catfile( $tmpDir, "irods_test_$$.tmp" );
 
 # Use the same technique to get the hostname as testiCommands.pl
@@ -1051,7 +1054,10 @@ sub doTestIcat
 
 
 	# Create a temporary file
-	my $outputFile   = File::Spec->catfile( File::Spec->tmpdir( ), "icatSurvey_" . hostname( ) . ".txt" );
+	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
+	my $tmpDir   = File::Spec->catdir( File::Spec->tmpdir( ), $username );
+	mkpath($tmpDir);
+	my $outputFile   = File::Spec->catfile( $tmpDir, "icatSurvey_" . hostname( ) . ".txt" );
 
 	# Enable CATSQL debug mode in Server by changing user's env file
 	$homeDir=$ENV{'HOME'};
