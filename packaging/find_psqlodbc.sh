@@ -8,8 +8,6 @@ if [ "$ODBC" == "" ]; then
     # find 64bit version first, in case it exists alongside a 32bit version
     ODBC=`find /usr -name "libodbcpsql.so" 2> /dev/null | grep "64"`
 fi
-
-# CentOS / SuSE
 if [ "$ODBC" == "" ]; then
     ODBC=`find /usr -name "libodbcpsql.so" 2> /dev/null`
 fi
