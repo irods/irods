@@ -53,8 +53,43 @@ $RPM=true
 # =-=-=-=-=-=-=-
 # post install
 # =-=-=-=-=-=-=-
-#%postinstall 
+%postinstall << END_POSTINSTALL
+# tell user about their irodsenv
+#cat $EIRODS_HOME_DIR/packaging/user_irodsenv.txt
+#cat $EIRODS_HOME_DIR/.irods/.irodsEnv
+cat << EOF | cat
+###########################################################
+#
+# The iCommands have been installed into your path.
+# 
+# They require your environment to be configured
+# for communication with an iRODS server.
+#
+# Place the following configuration information into
+# your .irodsEnv file and edit as appropriate:
+#
+#    ~/.irods/.irodsEnv
+#
+###########################################################
 
+# iRODS server host name:
+irodsHost 'FULLY.QUALIFIED.DOMAIN.NAME'
+# iRODS server port number:
+irodsPort 1247
+# Default storage resource name:
+irodsDefResource 'demoResc'
+# Home directory in iRODS:
+irodsHome '/tempZone/home/USERNAME'
+# Current directory in iRODS:
+irodsCwd '/tempZone/home/USERNAME'
+# Account name:
+irodsUserName 'USERNAME'
+# Zone:
+irodsZone 'tempZone'
+
+EOF
+
+END_POSTINSTALL
 
 
 
