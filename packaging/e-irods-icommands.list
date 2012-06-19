@@ -55,8 +55,6 @@ $RPM=true
 # =-=-=-=-=-=-=-
 %postinstall << END_POSTINSTALL
 # tell user about their irodsenv
-#cat $EIRODS_HOME_DIR/packaging/user_irodsenv.txt
-#cat $EIRODS_HOME_DIR/.irods/.irodsEnv
 cat << EOF | cat
 ###########################################################
 #
