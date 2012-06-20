@@ -590,27 +590,37 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     echo "Running EPM :: Generating $DETECTEDOS RPMs"
     epmvar="REDHATRPM$SERVER_TYPE" 
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
-    ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "Running EPM :: Generating $DETECTEDOS RPMs"
     epmvar="SUSERPM$SERVER_TYPE" 
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
-    ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    fi
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     echo "Running EPM :: Generating $DETECTEDOS DEBs"
     epmvar="DEB$SERVER_TYPE" 
     ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
-    ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "Running EPM :: Generating $DETECTEDOS PKGs"
     epmvar="PKG$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
-    ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "Running EPM :: Generating $DETECTEDOS DMGs"
     epmvar="OSX$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
-    ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    if [ "$RELEASE" == "1" ] ; then
+        ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+    fi
 else
     echo "#######################################################" 1>&2
     echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
