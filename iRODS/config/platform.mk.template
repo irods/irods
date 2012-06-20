@@ -33,7 +33,7 @@ endif
 ifneq ($(findstring solaris, $(OS_platform)),)
 # On Solaris, still not using g++ (for now) so can't have no-write-flags
 else
-CCFLAGS += -Wno-write-strings -Wno-deprecated
+CCFLAGS += -Wno-write-strings
 endif
 
 # added by Terrell
@@ -56,6 +56,22 @@ LDRFLAGS+=-L$(BOOST_DIR)/lib -lboost_thread -lboost_filesystem -lboost_regex
 endif
 # =-=-=-=-=-=-=-
 
+# =-=-=-=-=-=-=-
+# TGR :: debugging and coverage
+EIRODS_BUILD_DEBUG=1
+ifeq ($(EIRODS_BUILD_DEBUG), 1)
+CCFLAGS += -g
+else
+# we'll change this to -O3 later to optimize... hit errors on first attempt
+CCFLAGS += -O0
+endif
+
+EIRODS_BUILD_COVERAGE=0
+ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+CCFLAGS += -fprofile-arcs -ftest-coverage
+LDRFLAGS += -lgcov
+endif
+# =-=-=-=-=-=-=-
 
 ifdef CCFLAGS
 MY_CFLAG += $(CCFLAGS)
@@ -98,21 +114,6 @@ endif
 #
 # Compiler and loader options
 #
-EIRODS_BUILD_DEBUG=1
-ifeq ($(EIRODS_BUILD_DEBUG), 1)
-MY_CFLAG+= -g
-else
-# we'll change this to -O3 later to optimize... hit errors on first attempt
-MY_CFLAG+= -O0
-endif
-
-EIRODS_BUILD_COVERAGE=0
-ifeq ($(EIRODS_BUILD_COVERAGE), 1)
-MY_CFLAG+= -fprofile-arcs -ftest-coverage
-LDADD+= -lgcov
-CL_LDADD+= -lgcov
-endif
-
 LDADD+= -lm -lpthread
 CL_LDADD+= -lm -lpthread
 
