@@ -6,7 +6,7 @@ This file contains a comprehensive listing of Free / Open Source Software (FOSS)
 iRODS/E-iRODS COTS
 ------------------
 Oracle
-WOS
+DDN WOS
 Amazon S3
 HPSS
 
@@ -43,6 +43,7 @@ DEVELOPMENT COTS
 ----------------
 VMWare VSphere
 Microsoft Windows
+Mac OS X
 
 DEVELOPMENT FOSS
 ----------------
