@@ -83,31 +83,23 @@ $RESOURCE=true
 
 # =-=-=-=-=-=-=-
 # Install variables
-# NOTE :: we need to consider whether the install
-#      :: scripts should take these values and
-#      :: modify the config/irods.config values
-#      :: to match or we assume that they do.
 # =-=-=-=-=-=-=-
 $EIRODS_PACKAGENAME=e-irods
 $EIRODS_DOC_DIR=/usr/share/doc/$EIRODS_PACKAGENAME
 $EIRODS_HOME_DIR=/var/lib/$EIRODS_PACKAGENAME
 $OS_EIRODS_ACCT=eirods
 $IRODS_HOME=$EIRODS_HOME_DIR/iRODS
-$DB_ADMIN_ROLE=postgres
-$DB_NAME=EICAT
-
+$DB_NAME=TEMPLATE_DB_NAME
 
 # =-=-=-=-=-=-=-
 # iRODS variables
-# NOTE :: these need to match the values in config/irods.config
 # =-=-=-=-=-=-=-
-$DB_TYPE=postgres
-$DB_HOST=localhost
-$DB_PORT=5432
+$DB_ADMIN_ROLE=postgres
+$DB_TYPE=TEMPLATE_DB_TYPE
+$DB_HOST=TEMPLATE_DB_HOST
+$DB_PORT=TEMPLATE_DB_PORT
 $DB_USER=$OS_EIRODS_ACCT
-$DB_PASS=SOMEPASSWORD
-
-
+$DB_PASS=TEMPLATE_DB_PASS
 
 
 

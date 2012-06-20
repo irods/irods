@@ -350,7 +350,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # change password for database to be consistent with that within the e-irods.list file 
     # for installation
-    sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
+    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
     mv /tmp/irods.config ./config/irods.config
 
     # handle issue with IRODS_HOME being overwritten by the configure script    
@@ -411,9 +411,30 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         exit 1
     fi
 
-    # generate randomized database password, replacing hardcoded placeholder
+    # update EPM list template with values from irods.config
     cd $BUILDDIR
-    sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./packaging/e-irods.list.template > /tmp/eirodslist.tmp
+    #   database name
+    NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME/ {print $2}' iRODS/config/irods.config`
+    sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/e-irods.list.template > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+#    #   database admin role
+#    NEW_DB_ADMIN_ROLE=`awk -F\' '/^\\$DB_ADMIN_NAME/ {print $2}' iRODS/config/irods.config`
+#    sed -e "s,TEMPLATE_DB_ADMIN_ROLE,$NEW_DB_ADMIN_ROLE," ./packaging/e-irods.list > /tmp/eirodslist.tmp
+#    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    #   database type
+    NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
+    sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/e-irods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    #   database host
+    NEW_DB_HOST=`awk -F\' '/^\\$DATABASE_HOST/ {print $2}' iRODS/config/irods.config`
+    sed -e "s,TEMPLATE_DB_HOST,$NEW_DB_HOST," ./packaging/e-irods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    #   database port
+    NEW_DB_PORT=`awk -F\' '/^\\$DATABASE_PORT/ {print $2}' iRODS/config/irods.config`
+    sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/e-irods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    #   database password
+    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/e-irods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 
 
