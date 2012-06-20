@@ -6,6 +6,7 @@ SCRIPTNAME=`basename $0`
 COVERAGE="0"
 RELEASE="0"
 BUILDEIRODS="1"
+COVERAGEBUILDDIR="/var/lib/e-irods"
 
 USAGE="
 
@@ -13,16 +14,16 @@ Usage: $SCRIPTNAME [OPTIONS] <serverType> [databaseType]
 Usage: $SCRIPTNAME clean
 
 Options:
- -c      Build with coverage support (gcov)
- -h      Show this help
- -r      Build a release package (no debugging information, optimized)
- -s      Skip compilation of E-iRODS source
+-c      Build with coverage support (gcov)
+-h      Show this help
+-r      Build a release package (no debugging information, optimized)
+-s      Skip compilation of E-iRODS source
 
 Examples:
- $SCRIPTNAME icat postgres
- $SCRIPTNAME resource
- $SCRIPTNAME -s icat postgres
- $SCRIPTNAME -s resource
+$SCRIPTNAME icat postgres
+$SCRIPTNAME resource
+$SCRIPTNAME -s icat postgres
+$SCRIPTNAME -s resource
 "
 
 # boilerplate
@@ -44,7 +45,7 @@ do
         --skip) args="${args}-s ";;
         # pass through anything else
         *) [[ "${arg:0:1}" == "-" ]] || delim="\""
-            args="${args}${delim}${arg}${delim} ";;
+        args="${args}${delim}${arg}${delim} ";;
     esac
 done
 # reset the translated args
@@ -53,23 +54,23 @@ eval set -- $args
 while getopts ":chrs" opt; do
     case $opt in
         c)
-            COVERAGE="1"
-            echo "-c detected -- Building E-iRODS with coverage support (gcov)"
-            ;;
+        COVERAGE="1"
+        echo "-c detected -- Building E-iRODS with coverage support (gcov)"
+        ;;
         h)
-            echo "$USAGE"
-            ;;
+        echo "$USAGE"
+        ;;
         r)
-            RELEASE="1"
-            echo "-r detected -- Building a RELEASE package of E-iRODS"
-            ;;
+        RELEASE="1"
+        echo "-r detected -- Building a RELEASE package of E-iRODS"
+        ;;
         s)
-            BUILDEIRODS="0"
-            echo "-s detected -- Skipping E-iRODS compilation"
-            ;;
+        BUILDEIRODS="0"
+        echo "-s detected -- Skipping E-iRODS compilation"
+        ;;
         \?)
-            echo "Invalid option: -$OPTARG" >&2
-            ;;
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
     esac
 done
 echo ""
@@ -100,6 +101,22 @@ if [ "$COVERAGE" == "1" -a "$RELEASE" == "1" ] ; then
     exit 1
 fi
 
+if [ "$COVERAGE" == "1" ] ; then
+    if [ -d "$COVERAGEBUILDDIR" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: $COVERAGEBUILDDIR already exists" 1>&2
+        echo "      :: Cannot build in place with coverage enabled" 1>&2
+        echo "#######################################################" 1>&2
+        exit 1
+    fi
+    if [ "$(id -u)" != "0" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
+        echo "      :: when building in place (coverage enabled)" 1>&2
+        echo "#######################################################" 1>&2
+        exit 1
+    fi
+fi
 
 
 
@@ -108,13 +125,13 @@ shift $((OPTIND-1))
 
 # check arguments
 if [ $# -ne 1 -a $# -ne 2 ] ; then
-  echo "$USAGE" 1>&2
-  exit 1
+    echo "$USAGE" 1>&2
+    exit 1
 fi
 
 MANDIR=man
 # check for clean
-if [ "$1" == "clean" ]; then
+if [ "$1" == "clean" ] ; then
     # clean up any build-created files
     echo "Clean..."
     echo "Cleaning $SCRIPTNAME residuals..."
@@ -144,10 +161,13 @@ fi
 
 
 # get into the correct directory 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR/../iRODS
-
-
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DETECTEDDIR/../
+GITDIR=`pwd`
+BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
+cd $BUILDDIR/iRODS
+echo "Detected Packaging Directory [$DETECTEDDIR]"
+echo "Build Directory set to [$BUILDDIR]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
@@ -161,84 +181,84 @@ if [ $1 != "icat" -a $1 != "resource" ] ; then
     exit 1
 fi
 
-if [ "$1" == "icat" ]; then
-#  if [ "$2" != "postgres" -a "$2" != "mysql" ]
-  if [ "$2" != "postgres" ]; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: Invalid iCAT databaseType [$2]" 1>&2
-    echo "      :: Only 'postgres' available at this time" 1>&2
-    echo "#######################################################" 1>&2
-    exit 1
-  fi
+if [ "$1" == "icat" ] ; then
+    #  if [ "$2" != "postgres" -a "$2" != "mysql" ]
+    if [ "$2" != "postgres" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: Invalid iCAT databaseType [$2]" 1>&2
+        echo "      :: Only 'postgres' available at this time" 1>&2
+        echo "#######################################################" 1>&2
+        exit 1
+    fi
 fi
 
-if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
-  if [ "$(id -u)" != "0" ]; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
-    echo "      :: because dpkg demands to be run as root" 1>&2
-    echo "#######################################################" 1>&2
-    exit 1
-  fi
+if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$(id -u)" != "0" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
+        echo "      :: because dpkg demands to be run as root" 1>&2
+        echo "#######################################################" 1>&2
+        exit 1
+    fi
 fi
 
 # use error codes to determine dependencies
 set +e
 
 RST2PDF=`which rst2pdf`
-if [ "$?" -ne "0" ]; then
-  echo "#######################################################" 1>&2
-  echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
-  if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
-    echo "      :: try: apt-get install rst2pdf" 1>&2
-  else
-    echo "      :: try: easy_install rst2pdf" 1>&2
-  fi
-  echo "#######################################################" 1>&2
-  exit 1
+if [ "$?" -ne "0" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+        echo "      :: try: apt-get install rst2pdf" 1>&2
+    else
+        echo "      :: try: easy_install rst2pdf" 1>&2
+    fi
+    echo "#######################################################" 1>&2
+    exit 1
 fi
 
 ROMAN=`python -c "import roman"`
-if [ "$?" -ne "0" ]; then
-  echo "#######################################################" 1>&2
-  echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
-  echo "      :: try: easy_install roman" 1>&2
-  echo "#######################################################" 1>&2
-  exit 1
+if [ "$?" -ne "0" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
+    echo "      :: try: easy_install roman" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
 fi
 
 DOXYGEN=`which doxygen`
-if [ "$?" -ne "0" ]; then
-  echo "#######################################################" 1>&2
-  echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
-  if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
-    echo "      :: try: apt-get install doxygen" 1>&2
-  elif [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
-    echo "      :: try: yum install doxygen" 1>&2
-  elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
-    echo "      :: try: zypper install doxygen" 1>&2
-  else
-    echo "      :: download from: http://doxygen.org" 1>&2
-  fi
-  echo "#######################################################" 1>&2
-  exit 1
+if [ "$?" -ne "0" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+        echo "      :: try: apt-get install doxygen" 1>&2
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+        echo "      :: try: yum install doxygen" 1>&2
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+        echo "      :: try: zypper install doxygen" 1>&2
+    else
+        echo "      :: download from: http://doxygen.org" 1>&2
+    fi
+    echo "#######################################################" 1>&2
+    exit 1
 fi
 
 HELP2MAN=`which help2man`
-if [ "$?" -ne "0" ]; then
-  echo "#######################################################" 1>&2
-  echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
-  if [ "$DETECTEDOS" == "Ubuntu" ]; then # Ubuntu
-    echo "      :: try: apt-get install help2man" 1>&2
-  elif [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
-    echo "      :: try: yum install help2man" 1>&2
-  elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
-    echo "      :: try: zypper install help2man" 1>&2
-  else
-    echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
-  fi
-  echo "#######################################################" 1>&2
-  exit 1
+if [ "$?" -ne "0" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+        echo "      :: try: apt-get install help2man" 1>&2
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+        echo "      :: try: yum install help2man" 1>&2
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+        echo "      :: try: zypper install help2man" 1>&2
+    else
+        echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
+    fi
+    echo "#######################################################" 1>&2
+    exit 1
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
 fi
@@ -258,7 +278,7 @@ if [ $1 == "icat" ] ; then
     DB_TYPE=$2
     EPMFILE="../packaging/irods.config.icat.epm"
 
-    if [ "$BUILDEIRODS" == "1" ]; then
+    if [ "$BUILDEIRODS" == "1" ] ; then
         # =-=-=-=-=-=-=-
         # bake SQL files for different database types
         # NOTE:: icatSysInserts.sql is handled by the packager as we rely on the default zone name
@@ -267,7 +287,7 @@ if [ $1 == "icat" ] ; then
 
         echo "Converting SQL: [$convertScript] [$DB_TYPE] [$serverSqlDir]"
         `perl $convertScript $2 $serverSqlDir &> /dev/null`
-        if [ "$?" -ne "0" ]; then
+        if [ "$?" -ne "0" ] ; then
             echo "Failed to convert SQL forms" 1>&2
             exit 1
         fi
@@ -278,7 +298,7 @@ if [ $1 == "icat" ] ; then
             # need to do a dirname here, as the irods.config is expected to have a path
             # which will be appended with a /bin
             EIRODSPOSTGRESPATH=`../packaging/find_postgres_bin.sh`
-            if [ "$EIRODSPOSTGRESPATH" == "FAIL" ]; then
+            if [ "$EIRODSPOSTGRESPATH" == "FAIL" ] ; then
                 exit 1
             fi
             EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
@@ -290,7 +310,7 @@ if [ $1 == "icat" ] ; then
             echo "TODO: irods.config for DBTYPE other than postgres"
         fi
     fi
-# set up variables for resource configuration
+    # set up variables for resource configuration
 else
     SERVER_TYPE="RESOURCE"
     EPMFILE="../packaging/irods.config.resource.epm"
@@ -302,9 +322,21 @@ fi
 # generate random password for database
 RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
 
-if [ "$BUILDEIRODS" == "1" ]; then
-	rm -f config/config.mk
-	rm -f config/platform.mk
+if [ "$BUILDEIRODS" == "1" ] ; then
+
+    if [ "$COVERAGE" == "1" ] ; then
+        # change context for BUILDDIR - we're building in place for gcov linking
+        BUILDDIR=$COVERAGEBUILDDIR
+        echo "Switching context to [$BUILDDIR] for coverage-enabled build"
+        # copy entire local tree to real package target location
+        echo "Copying files into place..."
+        cp -r $GITDIR $BUILDDIR
+        # go there
+        cd $BUILDDIR/iRODS
+    fi
+
+    rm -f ./config/config.mk
+    rm -f ./config/platform.mk
 
     # =-=-=-=-=-=-=-
     # run configure to create Makefile, config.mk, platform.mk, etc.
@@ -331,19 +363,19 @@ if [ "$BUILDEIRODS" == "1" ]; then
         sed -e "s,EIRODS_BUILD_COVERAGE=0,EIRODS_BUILD_COVERAGE=1," ./config/platform.mk > /tmp/eirods-platform.mk
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
-    
+
     # twiddle debug flag in platform.mk based on whether this is a release build
     if [ "$RELEASE" == "1" ] ; then
         sed -e "s,EIRODS_BUILD_DEBUG=1,EIRODS_BUILD_DEBUG=0," ./config/platform.mk > /tmp/eirods-platform.mk
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
-    
+
     # =-=-=-=-=-=-=-
     # modify the eirods_ms_home.h file with the proper path to the binary directory
     irods_msvc_home=`./scripts/find_irods_home.sh`
     irods_msvc_home="$irods_msvc_home/server/bin/"
-    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
-    mv /tmp/eirods_ms_home.h server/re/include/
+    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
+    mv /tmp/eirods_ms_home.h ./server/re/include/
 
 
 
@@ -375,46 +407,60 @@ if [ "$BUILDEIRODS" == "1" ]; then
     make -j 4
     set -e
     make -j 4
-    if [ "$?" != "0" ]; then
-     exit 1
+    if [ "$?" != "0" ] ; then
+        exit 1
     fi
 
     # generate randomized database password, replacing hardcoded placeholder
-    cd $DIR/../
+    cd $BUILDDIR
     sed -e "s,SOMEPASSWORD,$RANDOMDBPASS," ./packaging/e-irods.list.template > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 
 
+    set +e
     # generate manual in pdf format
-    cd $DIR/../
+    cd $BUILDDIR
     rst2pdf manual.rst -o manual.pdf
-    if [ "$?" != "0" ]; then
-      echo "#######################################################" 1>&2
-      echo "ERROR :: Failed generating manual.pdf" 1>&2
-      echo "#######################################################" 1>&2
-      exit 1
+    if [ "$?" != "0" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: Failed generating manual.pdf" 1>&2
+        echo "#######################################################" 1>&2
+        exit 1
     fi
-
     # generate doxygen for microservices
-    cd $DIR/../iRODS
+    cd $BUILDDIR/iRODS
     doxygen ./config/doxygen-saved.cfg
-    if [ "$?" != "0" ]; then
-      echo "#######################################################" 1>&2
-      echo "ERROR :: Failed generating doxygen output" 1>&2
-      echo "#######################################################" 1>&2
-      exit 1
+    if [ "$?" != "0" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: Failed generating doxygen output" 1>&2
+        echo "#######################################################" 1>&2
+        exit 1
+    fi
+    set -e
+
+    # generate tgz file for inclusion in coverage package
+    if [ "$COVERAGE" == "1" ] ; then
+        set +e
+        GCOVFILELIST="gcovfilelist.txt"
+        GCOVFILENAME="gcovfiles.tgz"
+        cd $BUILDDIR
+        find ./iRODS -name "*.h" -o -name "*.c" -o -name "*.gcno" > $GCOVFILELIST
+        tar czf $GCOVFILENAME -T $GCOVFILELIST
+        ls -al $GCOVFILELIST
+        ls -al $GCOVFILENAME
+        set -e
     fi
 
 fi # if $BUILDEIRODS
 
 
 # prepare changelog for various platforms
-cd $DIR/../
+cd $BUILDDIR
 gzip -9 -c changelog > changelog.gz
 
 
 # prepare man pages for the icommands
-cd $DIR/../
+cd $BUILDDIR
 rm -rf $MANDIR
 mkdir -p $MANDIR
 if [ "$H2MVERSION" \< "1.37" ] ; then
@@ -424,55 +470,55 @@ else
     EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
-        genOSAuth     
-        iadmin        
-        ibun          
-        icd           
-        ichksum       
-        ichmod        
-        icp           
-        idbo          
-        idbug         
-        ienv          
-        ierror        
-        iexecmd       
-        iexit         
-        ifsck         
-        iget          
-        igetwild      
-        igroupadmin   
-        ihelp         
-        iinit         
-        ilocate       
-        ils           
-        ilsresc       
-        imcoll        
-        imeta         
-        imiscsvrinfo  
-        imkdir        
-        imv           
-        ipasswd       
-        iphybun       
-        iphymv        
-        ips           
-        iput          
-        ipwd          
-        iqdel         
-        iqmod         
-        iqstat        
-        iquest        
-        iquota        
-        ireg          
-        irepl         
-        irm           
-        irmtrash      
-        irsync        
-        irule         
-        iscan         
-        isysmeta      
-        itrim         
-        iuserinfo     
-        ixmsg         
+    genOSAuth     
+    iadmin        
+    ibun          
+    icd           
+    ichksum       
+    ichmod        
+    icp           
+    idbo          
+    idbug         
+    ienv          
+    ierror        
+    iexecmd       
+    iexit         
+    ifsck         
+    iget          
+    igetwild      
+    igroupadmin   
+    ihelp         
+    iinit         
+    ilocate       
+    ils           
+    ilsresc       
+    imcoll        
+    imeta         
+    imiscsvrinfo  
+    imkdir        
+    imv           
+    ipasswd       
+    iphybun       
+    iphymv        
+    ips           
+    iput          
+    ipwd          
+    iqdel         
+    iqmod         
+    iqstat        
+    iquest        
+    iquota        
+    ireg          
+    irepl         
+    irm           
+    irmtrash      
+    irsync        
+    irule         
+    iscan         
+    isysmeta      
+    itrim         
+    iuserinfo     
+    ixmsg         
     )
     for ICMD in "${ICMDS[@]}"
     do
@@ -493,56 +539,79 @@ fi
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
-cd $DIR/../epm
-if [ "$BUILDEIRODS" == "1" ]; then
+cd $BUILDDIR/epm
+if [ "$BUILDEIRODS" == "1" ] ; then
     echo "Configuring EPM"
+    set +e
     ./configure > /dev/null
-    if [ "$?" != "0" ]; then
-     exit 1
+    if [ "$?" != "0" ] ; then
+        exit 1
     fi
     echo "Building EPM"
     make > /dev/null
-    if [ "$?" != "0" ]; then
-     exit 1
+    if [ "$?" != "0" ] ; then
+        exit 1
     fi
+    set -e
 fi
 
-if [ "$COVERAGE" == "1" ]; then
+if [ "$COVERAGE" == "1" ] ; then
     # sets EPM to not strip binaries of debugging information
     EPMOPTS="-g"
+    # sets listfile coverage options
+    EPMOPTS="$EPMOPTS COVERAGE=true"
 else
     EPMOPTS=""
 fi
 
-cd $DIR/../
-if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
-  echo "Running EPM :: Generating $DETECTEDOS RPMs"
-  epmvar="REDHATRPM$SERVER_TYPE" 
-  ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
-  ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-elif [ "$DETECTEDOS" == "SuSE" ]; then # SuSE
-  echo "Running EPM :: Generating $DETECTEDOS RPMs"
-  epmvar="SUSERPM$SERVER_TYPE" 
-  ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
-  ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-elif [ "$DETECTEDOS" == "Ubuntu" ]; then  # Ubuntu
-  echo "Running EPM :: Generating $DETECTEDOS DEBs"
-  epmvar="DEB$SERVER_TYPE" 
-  ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
-  ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-elif [ "$DETECTEDOS" == "Solaris" ]; then  # Solaris
-  echo "Running EPM :: Generating $DETECTEDOS PKGs"
-  epmvar="PKG$SERVER_TYPE"
-  ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
-  ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-elif [ "$DETECTEDOS" == "MacOSX" ]; then  # MacOSX
-  echo "Running EPM :: Generating $DETECTEDOS DMGs"
-  epmvar="OSX$SERVER_TYPE"
-  ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
-  ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+cd $BUILDDIR
+if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+    echo "Running EPM :: Generating $DETECTEDOS RPMs"
+    epmvar="REDHATRPM$SERVER_TYPE" 
+    ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+    echo "Running EPM :: Generating $DETECTEDOS RPMs"
+    epmvar="SUSERPM$SERVER_TYPE" 
+    ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
+    echo "Running EPM :: Generating $DETECTEDOS DEBs"
+    epmvar="DEB$SERVER_TYPE" 
+    ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
+    echo "Running EPM :: Generating $DETECTEDOS PKGs"
+    epmvar="PKG$SERVER_TYPE"
+    ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
+    echo "Running EPM :: Generating $DETECTEDOS DMGs"
+    epmvar="OSX$SERVER_TYPE"
+    ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
 else
-  echo "#######################################################" 1>&2
-  echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
-  echo "#######################################################" 1>&2
-  exit 1
+    echo "#######################################################" 1>&2
+    echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
 fi
+
+
+if [ "$COVERAGE" == "1" ] ; then
+    # copy important bits back up
+    echo "Copying generated packages back to original working directory..."
+    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then EXTENSION="rpm"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then EXTENSION="rpm"
+    elif [ "$DETECTEDOS" == "Ubuntu" ] ; then EXTENSION="deb"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then EXTENSION="pkg"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then EXTENSION="dmg"
+    fi
+    # get packages
+    for f in `find . -name "*.$EXTENSION"` ; do mkdir -p $GITDIR/`dirname $f`; cp $f $GITDIR/$f; done
+    # delete target build directory, so a package install can go there
+    cd $GITDIR
+    rm -rf $COVERAGEBUILDDIR
+fi
+
+
