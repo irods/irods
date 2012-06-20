@@ -36,6 +36,13 @@ if [ -f /tmp/irodsServer.* ]; then
   rm /tmp/irodsServer.*
 fi
 
+# =-=-=-=-=-=-=-
+# explode tarball of necessary coverage files if it exists
+if [ -f "$EIRODS_HOME_DIR/gcovfiles.tgz" ] ; then
+    cd $EIRODS_HOME_DIR
+    tar xzf gcovfiles.tgz
+fi
+
 if [ "$SERVER_TYPE" == "icat" ] ; then
 
   if [ "$DB_TYPE" == "postgres" ] ; then
