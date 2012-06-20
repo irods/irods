@@ -39,6 +39,8 @@ endif
 # added by Terrell
 # silence deprecation warnings until we can use newer compilers on CentOS
 CCFLAGS += -Wno-deprecated
+# show all code that is not reachable
+CCFLAGS += -Wunreachable-code
 
 # =-=-=-=-=-=-=-
 # JMC :: build using E-iRODS Extensions
