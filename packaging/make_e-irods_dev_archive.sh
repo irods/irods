@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -e
 
 ar_file="libe-irods.a"
 
-rm $ar_file
+rm -f $ar_file
 
 touch dummy
 
