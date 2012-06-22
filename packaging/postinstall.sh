@@ -135,6 +135,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     ALTERPASSCMD="alter user $DB_USER with password '$DB_PASS'"
     su --shell=/bin/bash -c "$PSQL -c \"$ALTERPASSCMD\"" $DB_ADMIN_ROLE &> /dev/null
 
+    # =-=-=-=-=-=-=-
+    # create the database
+	echo "Creating Database: $DB_NAME as $DB_USER"
+	su --shell=/bin/bash -c "createdb $DB_NAME" $DB_USER &> /dev/null
+
   else 
     # =-=-=-=-=-=-=-
     # catch other database types
