@@ -661,17 +661,10 @@ RuleDesc* getRuleDesc(int ri)
 int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 
 	std::string str_act( _action );
-  
+
     if( str_act[0] == 'a' && str_act[1] == 'c' )
 		return -1;
-		 
-    // filter out queryies for PEP Rules which begin with 'ac' 
-	if( str_act[0] == 'a' && str_act[1] == 'c' ) {
-		return -1;
-	}
-
-	rodsLog( LOG_NOTICE, "actionTableLookUp - find a msvc [%s]", _action );
-
+	
 	// =-=-=-=-=-=-=
 	// look up Action in microservice table.  If it returns
 	// the end() iterator, is is not found so try to load it.
@@ -684,7 +677,7 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 		} // else
 	}  // if not found
 
-	_entry = MicrosTable[ str_act ];
+	_entry = *MicrosTable[ str_act ];
 
 	return 0;
 

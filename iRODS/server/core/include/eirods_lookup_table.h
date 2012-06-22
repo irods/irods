@@ -11,25 +11,25 @@ namespace eirods {
 	// =-=-=-=-=-=-=-
 	// class to manage tables of plugins.  employing a class in order to use
 	// RAII for adding entries to the table now that it is not a static array
-	template< typename ValueType >
+	template< typename ValueType, typename KeyType=std::string, typename HashType=eirods_string_hash >
 	class lookup_table {
-		private:
-			hash_map< std::string, ValueType, eirods_string_hash > table_;
+		protected:
+			hash_map< KeyType, ValueType, HashType > table_;
 			
 		public:
-			lookup_table();
+			lookup_table(){};
 			virtual ~lookup_table() {}
-			ValueType& operator[]( std::string _s ) {
-				return table_[ _s ];
+			ValueType& operator[]( KeyType _k ) {
+				return table_[ _k ];
 			}
 			int size() {
 				return table_.size();
 			}
-			bool has_entry( std::string _s ) {
-				return !( table_.end() == table_.find( _s ) );
+			bool has_entry( KeyType _k ) {
+				return !( table_.end() == table_.find( _k ) );
 			}
 	}; // class lookup_table
-		
+	
 };
 
 

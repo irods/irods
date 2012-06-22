@@ -5,7 +5,6 @@
 // =-=-=-=-=-=-=-
 // STL Includes
 #include <string>
-#include <iostream>
 
 // =-=-=-=-=-=-=-
 // dlopen, etc
@@ -13,59 +12,49 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_ms_home.h"
 #include "eirods_lookup_table.h"
+#include "eirods_plugin.h"
 
 namespace eirods {
 
 	// =-=-=-=-=-=-=-
 	// MicroService Table Entry - holds fcn call name, number of args for fcn and fcn pointer
-	typedef int((*funcPtr)(...));
-	struct ms_table_entry {
+	class ms_table_entry : public eirods_plugin {
+        public:
+		 
+		typedef int (*ms_func_ptr)( ... ); 
 
 		std::string  action_;
 		int          numberOfStringArgs_;
-		funcPtr      callAction_;
+		ms_func_ptr  callAction_;
 
 		// =-=-=-=-=-=-=-
-		// Constructors 
-		ms_table_entry( ) : 
-			action_(""), 
-			numberOfStringArgs_( 0 ), 
-			callAction_( 0 ) { 
-		} // def ctor
+		// Constructor
+		ms_table_entry( );
 
-		ms_table_entry( std::string _s, int _n, funcPtr _fp ) : 
-			action_(_s), 
-			numberOfStringArgs_( _n ), 
-			callAction_( _fp ) {
-		} // ctor
+		ms_table_entry( std::string _s, int _n, ms_func_ptr _fp = 0 );
 
-		ms_table_entry( const ms_table_entry& _rhs ) :
-			action_(_rhs.action_ ), 
-			numberOfStringArgs_( _rhs.numberOfStringArgs_ ), 
-			callAction_( _rhs.callAction_ ) {
-		} // cctor
+        // =-=-=-=-=-=-=-
+		// copy ctor
+		ms_table_entry( const ms_table_entry& _rhs ); 
 
 		// =-=-=-=-=-=-=-
 		// Assignment Operator - necessary for stl containers
-		ms_table_entry& operator=( const ms_table_entry& _rhs ) { 
-			action_             = _rhs.action_;
-			numberOfStringArgs_ = _rhs.numberOfStringArgs_;
-			callAction_         = _rhs.callAction_;
-			return *this;
-		} // operator=
+		ms_table_entry& operator=( const ms_table_entry& _rhs );
 
 		// =-=-=-=-=-=-=-
 		// Destructor
-		~ms_table_entry() {
-		} // dtor
+		virtual ~ms_table_entry();
 
-	}; // ms_table_entry
+		// =-=-=-=-=-=-=-
+		// Lazy Loader for MS Fcn Ptr
+		bool delay_load( void* _h );
+
+	}; // class ms_table_entry
 
 	// =-=-=-=-=-=-=-
     // create a lookup table for ms_table_entry value type
-	typedef lookup_table<ms_table_entry> ms_table;	
+	typedef lookup_table<ms_table_entry*> ms_table;	
 	
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object

@@ -50,7 +50,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/fileDriverNoOpFunctions.o
+		$(svrCoreObjDir)/fileDriverNoOpFunctions.o\
+		$(svrCoreObjDir)/eirods_plugin_loader.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -294,7 +295,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
 		$(svrReObjDir)/sysBackupMS.o \
-		$(svrReObjDir)/eirods_ms_plugin.o
+		$(svrReObjDir)/eirods_ms_plugin.o 
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer

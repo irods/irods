@@ -1,89 +1,76 @@
 // =-=-=-=-=-=-=-
 // My Includes
+#include "eirods_ms_home.h"
 #include "eirods_ms_plugin.h"
 
+// =-=-=-=-=-=-=-
+// STL Includes
+#include <iostream>
+
 namespace eirods {
+	// =-=-=-=-=-=-=-
+	// ms_table_entry definition
+
+	ms_table_entry::ms_table_entry( ) : 
+		action_(""), 
+		numberOfStringArgs_( 0 ), 
+		callAction_( 0 ) { 
+	} // def ctor
+
+	ms_table_entry::ms_table_entry( std::string _s, int _n, ms_func_ptr _fp ) :
+		action_(_s), 
+		numberOfStringArgs_( _n ), 
+		callAction_( _fp ) {
+	} // ctor
+
+	ms_table_entry::ms_table_entry( const ms_table_entry& _rhs ) :
+		action_( _rhs.action_ ), 
+		numberOfStringArgs_( _rhs.numberOfStringArgs_ ), 
+		callAction_( _rhs.callAction_ ) {
+	} // cctor
+
+	ms_table_entry& ms_table_entry::operator=( const ms_table_entry& _rhs ) { 
+		action_             = _rhs.action_;
+		numberOfStringArgs_ = _rhs.numberOfStringArgs_;
+		callAction_         = _rhs.callAction_;
+		return *this;
+	} // operator=
+
+	ms_table_entry::~ms_table_entry() {
+	} // dtor
+
+	bool ms_table_entry::delay_load( void* _h ) {
+		if( !_h ) {
+			return false;
+		}
+
+		callAction_ = reinterpret_cast< ms_func_ptr >( dlsym( _h, action_.c_str() ) );
+		
+		if( !callAction_ ) {
+			std::cout << "delay_load :: failed to load msvc function [" << action_ << "]" << std::endl;
+			return false;
+		} else { 
+			#ifdef DEBUG
+			std::cout << "delay_load :: [" << action_ << "]" << std::endl;
+			#endif
+		}
+
+		return true;
+	} // delay_load
 
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object
 	// and then register that ms with the table
 	bool load_microservice_plugin( ms_table& _table, const std::string _ms ) {
-		using namespace std;
 
-		if( _ms.empty() ) {
-			cout << "load_microservice_plugin :: empty microservice name parameter" << endl;
+        ms_table_entry* entry = dynamic_cast< ms_table_entry* >( load_plugin( _ms, EIRODS_MS_HOME ) );
+        if( entry ) {
+            _table[ _ms ] = entry;
+		    return true;
+		} else {
+			std::cout << "load_microservice_plugin - Failed to create ms plugin entry." << std::endl;
 			return false;
 		}
-
-		// =-=-=-=-=-=-=-
-		// does that MS happen to be in the table already?
-		if( _table.has_entry( _ms ) )  {
-			cout << "load_microservice_plugin :: microservice already exists.  " << _ms << endl;
-			// return true as this ms can be used, it was just already loaded....
-			return true;
-		}
-
-		// =-=-=-=-=-=-=-
-		// if not then try to load the shared object
-		string so_name = EIRODS_MS_HOME + string("/lib") + _ms + string(".so");
-		void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
-
-		if( !handle ) {
-			cout << "load_microservice_plugin :: failed to load microservice plugin: " << so_name << endl;
-			cout << "                         :: dlerror is " << dlerror() << endl;
-			return false;
-		}
-
-		// =-=-=-=-=-=-=-
-		// clear any existing dlerrors
-		dlerror();
-
-		// =-=-=-=-=-=-=-
-		// attempt to load the plugin version m
-		int plugin_version = *static_cast< int* >( dlsym( handle, "EIRODS_PLUGIN_VERSION" ) );
-
-		char* err = 0;	
-		if( ( err = dlerror() ) != 0 ) {
-			cout << "load_microservice_plugin :: failed to load sybol from shared object handle - " 
-			     << "EIRODS_PLUGIN_VERSION" << endl;
-			cout << "                         :: dlerror is " << err << endl;
-		}
-
-		// =-=-=-=-=-=-=-
-        // Here is where we decide how to load the plugins based on the version...
-
-		// =-=-=-=-=-=-=-
-		// attempt to load the microservice symbol from the handle
-		funcPtr fcn = reinterpret_cast< funcPtr >( dlsym( handle, _ms.c_str() ) );
-
-		if( ( err = dlerror() ) != 0 ) {
-			cout << "load_microservice_plugin :: failed to load sybol from shared object handle - " << _ms << endl;
-			cout << "                         :: dlerror is " << err << endl;
-		}
-
-		// =-=-=-=-=-=-=-
-		// attempt to load the number of parameters symbol from the handle
-		int num_param = *static_cast< int* >( dlsym( handle, "NUMBER_OF_PARAMETERS" ) );
-
-		if( ( err = dlerror() ) != 0 ) {
-			cout << "load_microservice_plugin :: failed to load symbol from shared object handle - " 
-			     << "NUMBER_OF_PARAMETERS" << endl;
-			cout << "                         :: dlerror is " << err << endl;
-		}
-
-		// =-=-=-=-=-=-=-
-		// notify world of loading a microservice
-		// TODO :: add hash checking and provide hash value for log also
-		cout << "load_microservice_plugin :: loaded " << _ms << " with " << num_param << " parameters." << endl;
-
-		// =-=-=-=-=-=-=-
-		// add the new objects to the table via a new entry
-		_table[ _ms ] = ms_table_entry( _ms, num_param, fcn );
-
-		// =-=-=-=-=-=-=-
-		// and... were done.
-		return true;
-
 	} // load_microservice_plugin
 
 }; // namespace eirods

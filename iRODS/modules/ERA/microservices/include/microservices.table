@@ -2,40 +2,40 @@
 
 // ERA module microservices
 // Service name				# args		Service function
-        table_[ "msiRecursiveCollCopy"] = ms_table_entry( "msiRecursiveCollCopy",		3,		(funcPtr) msiRecursiveCollCopy );
-        table_[ "msiGetDataObjACL"] = ms_table_entry( "msiGetDataObjACL",			2,		(funcPtr) msiGetDataObjACL );
-        table_[ "msiGetCollectionACL"] = ms_table_entry( "msiGetCollectionACL",			3,		(funcPtr) msiGetCollectionACL );
-        table_[ "msiGetDataObjAVUs"] = ms_table_entry( "msiGetDataObjAVUs",			2,		(funcPtr) msiGetDataObjAVUs );
-        table_[ "msiGetDataObjPSmeta"] = ms_table_entry( "msiGetDataObjPSmeta",			2,		(funcPtr) msiGetDataObjPSmeta );
-        table_[ "msiGetCollectionPSmeta"] = ms_table_entry( "msiGetCollectionPSmeta",		2,		(funcPtr) msiGetCollectionPSmeta );
-        table_[ "msiGetDataObjAIP"] = ms_table_entry( "msiGetDataObjAIP",			2,		(funcPtr) msiGetDataObjAIP );
-        table_[ "msiLoadMetadataFromDataObj"] = ms_table_entry( "msiLoadMetadataFromDataObj",		2,		(funcPtr) msiLoadMetadataFromDataObj );
-        table_[ "msiExportRecursiveCollMeta"] = ms_table_entry( "msiExportRecursiveCollMeta",		2,		(funcPtr) msiExportRecursiveCollMeta );
-        table_[ "msiCopyAVUMetadata"] = ms_table_entry( "msiCopyAVUMetadata",			3,		(funcPtr) msiCopyAVUMetadata );
-        table_[ "msiGetUserInfo"] = ms_table_entry( "msiGetUserInfo",			3,		(funcPtr) msiGetUserInfo );
-        table_[ "msiGetUserACL"] = ms_table_entry( "msiGetUserACL",			3,		(funcPtr) msiGetUserACL );
-        table_[ "msiCreateUserAccountsFromDataObj"] = ms_table_entry( "msiCreateUserAccountsFromDataObj",	2,		(funcPtr) msiCreateUserAccountsFromDataObj );
-        table_[ "msiLoadUserModsFromDataObj"] = ms_table_entry( "msiLoadUserModsFromDataObj",		2,		(funcPtr) msiLoadUserModsFromDataObj );
-        table_[ "msiDeleteUsersFromDataObj"] = ms_table_entry( "msiDeleteUsersFromDataObj",		2,		(funcPtr) msiDeleteUsersFromDataObj );
-        table_[ "msiLoadACLFromDataObj"] = ms_table_entry( "msiLoadACLFromDataObj",		2,		(funcPtr) msiLoadACLFromDataObj );
-        table_[ "msiGetAuditTrailInfoByUserID"] = ms_table_entry( "msiGetAuditTrailInfoByUserID",	3,		(funcPtr) msiGetAuditTrailInfoByUserID );
-        table_[ "msiGetAuditTrailInfoByObjectID"] = ms_table_entry( "msiGetAuditTrailInfoByObjectID",	3,		(funcPtr) msiGetAuditTrailInfoByObjectID );
-        table_[ "msiGetAuditTrailInfoByActionID"] = ms_table_entry( "msiGetAuditTrailInfoByActionID",	3,		(funcPtr) msiGetAuditTrailInfoByActionID );
-        table_[ "GetAuditTrailInfoByKeywords"] = ms_table_entry( "msiGetAuditTrailInfoByKeywords",	3,		(funcPtr) msiGetAuditTrailInfoByKeywords );
-        table_[ "msiGetAuditTrailInfoByTimeStamp"] = ms_table_entry( "msiGetAuditTrailInfoByTimeStamp",	4,		(funcPtr) msiGetAuditTrailInfoByTimeStamp );
-        table_[ "msiSetDataType"] = ms_table_entry( "msiSetDataType",				4,		(funcPtr) msiSetDataType );
-        table_[ "msiGuessDataType"] = ms_table_entry( "msiGuessDataType",			3,		(funcPtr) msiGuessDataType );
-        table_[ "msiMergeDataCopies"] = ms_table_entry( "msiMergeDataCopies",			4,		(funcPtr) msiMergeDataCopies );
-        table_[ "msiIsColl"] = ms_table_entry( "msiIsColl",					3,		(funcPtr) msiIsColl );
-        table_[ "msiIsData"] = ms_table_entry( "msiIsData",					3,		(funcPtr) msiIsData );
-        table_[ "msiGetObjectPath"] = ms_table_entry( "msiGetObjectPath",			3,		(funcPtr) msiGetObjectPath );
-        table_[ "msiGetCollectionContentsReport"] = ms_table_entry( "msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport );
-        table_[ "msiGetCollectionSize"] = ms_table_entry( "msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize );
-        table_[ "msiStructFileBundle"] = ms_table_entry( "msiStructFileBundle",			4,		(funcPtr) msiStructFileBundle );
-        table_[ "msiCollectionSpider"] = ms_table_entry( "msiCollectionSpider",			4,		(funcPtr) msiCollectionSpider );
-        table_[ "msiFlagDataObjwithAVU"] = ms_table_entry( "msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU );
-        table_[ "msiFlagInfectedObjs"] = ms_table_entry( "msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs );
-        table_[ "msiStripAVUs"] = ms_table_entry( "msiStripAVUs",				3,		(funcPtr) msiStripAVUs );
+        table_[ "msiRecursiveCollCopy"] = new eirods::ms_table_entry( "msiRecursiveCollCopy",		3,		(funcPtr) msiRecursiveCollCopy );
+        table_[ "msiGetDataObjACL"] = new eirods::ms_table_entry( "msiGetDataObjACL",			2,		(funcPtr) msiGetDataObjACL );
+        table_[ "msiGetCollectionACL"] = new eirods::ms_table_entry( "msiGetCollectionACL",			3,		(funcPtr) msiGetCollectionACL );
+        table_[ "msiGetDataObjAVUs"] = new eirods::ms_table_entry( "msiGetDataObjAVUs",			2,		(funcPtr) msiGetDataObjAVUs );
+        table_[ "msiGetDataObjPSmeta"] = new eirods::ms_table_entry( "msiGetDataObjPSmeta",			2,		(funcPtr) msiGetDataObjPSmeta );
+        table_[ "msiGetCollectionPSmeta"] = new eirods::ms_table_entry( "msiGetCollectionPSmeta",		2,		(funcPtr) msiGetCollectionPSmeta );
+        table_[ "msiGetDataObjAIP"] = new eirods::ms_table_entry( "msiGetDataObjAIP",			2,		(funcPtr) msiGetDataObjAIP );
+        table_[ "msiLoadMetadataFromDataObj"] = new eirods::ms_table_entry( "msiLoadMetadataFromDataObj",		2,		(funcPtr) msiLoadMetadataFromDataObj );
+        table_[ "msiExportRecursiveCollMeta"] = new eirods::ms_table_entry( "msiExportRecursiveCollMeta",		2,		(funcPtr) msiExportRecursiveCollMeta );
+        table_[ "msiCopyAVUMetadata"] = new eirods::ms_table_entry( "msiCopyAVUMetadata",			3,		(funcPtr) msiCopyAVUMetadata );
+        table_[ "msiGetUserInfo"] = new eirods::ms_table_entry( "msiGetUserInfo",			3,		(funcPtr) msiGetUserInfo );
+        table_[ "msiGetUserACL"] = new eirods::ms_table_entry( "msiGetUserACL",			3,		(funcPtr) msiGetUserACL );
+        table_[ "msiCreateUserAccountsFromDataObj"] = new eirods::ms_table_entry( "msiCreateUserAccountsFromDataObj",	2,		(funcPtr) msiCreateUserAccountsFromDataObj );
+        table_[ "msiLoadUserModsFromDataObj"] = new eirods::ms_table_entry( "msiLoadUserModsFromDataObj",		2,		(funcPtr) msiLoadUserModsFromDataObj );
+        table_[ "msiDeleteUsersFromDataObj"] = new eirods::ms_table_entry( "msiDeleteUsersFromDataObj",		2,		(funcPtr) msiDeleteUsersFromDataObj );
+        table_[ "msiLoadACLFromDataObj"] = new eirods::ms_table_entry( "msiLoadACLFromDataObj",		2,		(funcPtr) msiLoadACLFromDataObj );
+        table_[ "msiGetAuditTrailInfoByUserID"] = new eirods::ms_table_entry( "msiGetAuditTrailInfoByUserID",	3,		(funcPtr) msiGetAuditTrailInfoByUserID );
+        table_[ "msiGetAuditTrailInfoByObjectID"] = new eirods::ms_table_entry( "msiGetAuditTrailInfoByObjectID",	3,		(funcPtr) msiGetAuditTrailInfoByObjectID );
+        table_[ "msiGetAuditTrailInfoByActionID"] = new eirods::ms_table_entry( "msiGetAuditTrailInfoByActionID",	3,		(funcPtr) msiGetAuditTrailInfoByActionID );
+        table_[ "GetAuditTrailInfoByKeywords"] = new eirods::ms_table_entry( "msiGetAuditTrailInfoByKeywords",	3,		(funcPtr) msiGetAuditTrailInfoByKeywords );
+        table_[ "msiGetAuditTrailInfoByTimeStamp"] = new eirods::ms_table_entry( "msiGetAuditTrailInfoByTimeStamp",	4,		(funcPtr) msiGetAuditTrailInfoByTimeStamp );
+        table_[ "msiSetDataType"] = new eirods::ms_table_entry( "msiSetDataType",				4,		(funcPtr) msiSetDataType );
+        table_[ "msiGuessDataType"] = new eirods::ms_table_entry( "msiGuessDataType",			3,		(funcPtr) msiGuessDataType );
+        table_[ "msiMergeDataCopies"] = new eirods::ms_table_entry( "msiMergeDataCopies",			4,		(funcPtr) msiMergeDataCopies );
+        table_[ "msiIsColl"] = new eirods::ms_table_entry( "msiIsColl",					3,		(funcPtr) msiIsColl );
+        table_[ "msiIsData"] = new eirods::ms_table_entry( "msiIsData",					3,		(funcPtr) msiIsData );
+        table_[ "msiGetObjectPath"] = new eirods::ms_table_entry( "msiGetObjectPath",			3,		(funcPtr) msiGetObjectPath );
+        table_[ "msiGetCollectionContentsReport"] = new eirods::ms_table_entry( "msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport );
+        table_[ "msiGetCollectionSize"] = new eirods::ms_table_entry( "msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize );
+        table_[ "msiStructFileBundle"] = new eirods::ms_table_entry( "msiStructFileBundle",			4,		(funcPtr) msiStructFileBundle );
+        table_[ "msiCollectionSpider"] = new eirods::ms_table_entry( "msiCollectionSpider",			4,		(funcPtr) msiCollectionSpider );
+        table_[ "msiFlagDataObjwithAVU"] = new eirods::ms_table_entry( "msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU );
+        table_[ "msiFlagInfectedObjs"] = new eirods::ms_table_entry( "msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs );
+        table_[ "msiStripAVUs"] = new eirods::ms_table_entry( "msiStripAVUs",				3,		(funcPtr) msiStripAVUs );
 #else
 // ERA module microservices
 // Service name				# args		Service function

@@ -1,6 +1,6 @@
 #ifdef USE_EIRODS
-         table_[ "msiHello" ] = ms_table_entry( "msiHello", 2, (funcPtr) msiHello );
-         table_[ "msiGetRescAddr" ] = ms_table_entry( "msiGetRescAddr", 2, (funcPtr) msiGetRescAddr );
+         table_[ "msiHello" ] = new eirods::ms_table_entry( "msiHello", 2, (funcPtr) msiHello );
+         table_[ "msiGetRescAddr" ] = new eirods::ms_table_entry( "msiGetRescAddr", 2, (funcPtr) msiGetRescAddr );
 #else
 /* Properties module microservices */
 /* Service name			# args		Service function */
