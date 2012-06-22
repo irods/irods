@@ -192,7 +192,7 @@ if [ "$1" == "icat" ] ; then
     fi
 fi
 
-if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+if [ "$DETECTEDOS" == "Ubuntu" ] ; then
     if [ "$(id -u)" != "0" ] ; then
         echo "#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
@@ -203,13 +203,14 @@ if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
 fi
 
 # use error codes to determine dependencies
+# does not work on solaris ('which' returns 0, regardless), so check the output as well
 set +e
 
 RST2PDF=`which rst2pdf`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" -ne "0" -o `echo $RST2PDF | awk '{print $1}'` == "no" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "      :: try: apt-get install rst2pdf" 1>&2
     else
         echo "      :: try: easy_install rst2pdf" 1>&2
@@ -223,20 +224,23 @@ if [ "$?" -ne "0" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
     echo "      :: try: easy_install roman" 1>&2
+    echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
     echo "#######################################################" 1>&2
     exit 1
 fi
 
 DOXYGEN=`which doxygen`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" -ne "0" -o `echo $DOXYGEN | awk '{print $1}'` == "no" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "      :: try: apt-get install doxygen" 1>&2
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         echo "      :: try: yum install doxygen" 1>&2
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
         echo "      :: try: zypper install doxygen" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: pkgutil --install doxygen" 1>&2
     else
         echo "      :: download from: http://doxygen.org" 1>&2
     fi
@@ -245,17 +249,20 @@ if [ "$?" -ne "0" ] ; then
 fi
 
 HELP2MAN=`which help2man`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" -ne "0" -o `echo $HELP2MAN | awk '{print $1}'` == "no" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "      :: try: apt-get install help2man" 1>&2
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         echo "      :: try: yum install help2man" 1>&2
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
         echo "      :: try: zypper install help2man" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: pkgutil --install help2man" 1>&2
     else
         echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
+        echo "      ::                http://mirrors.kernel.org/gnu/help2man/" 1>&2
     fi
     echo "#######################################################" 1>&2
     exit 1

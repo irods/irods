@@ -393,6 +393,7 @@ runCmd( "iput -R testresource /tmp/sfile2c $testuser2home/foo5" );
 runCmd( "irm -U $testuser2home/foo5", "failtest" );
 system ("irm -f $testuser2home/foo5" );
 $ENV{'clientUserName'}  = $username;
+system ( "rm /tmp/sfile2c" );
 
 # mcoll test
 runCmd( "imcoll -m link $irodshome/icmdtesta $irodshome/icmdtestb" );
