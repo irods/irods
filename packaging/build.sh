@@ -138,6 +138,7 @@ if [ "$1" == "clean" ] ; then
     rm -f changelog.gz
     rm -rf $MANDIR
     rm -f manual.pdf
+    rm -f libe-irods.a
     set +e
     echo "Cleaning EPM residuals..."
     rm -rf linux-2.*
