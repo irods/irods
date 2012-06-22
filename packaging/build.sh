@@ -379,6 +379,22 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
 
 
+    # find number of cpus
+    if [ "$DETECTEDOS" == "MacOSX" ] ; then
+        DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
+    else
+        DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
+    fi
+    if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
+        DETECTEDCPUCOUNT=1
+    fi
+    CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
+    MAKEJCMD="make -j $CPUCOUNT"
+    echo "-------------------------------------"
+    echo "Detected CPUs:    $DETECTEDCPUCOUNT"
+    echo "Compiling with:   $MAKEJCMD"
+    echo "-------------------------------------"
+    sleep 1
 
     ###########################################
     # single 'make' time on an 8 core machine
@@ -404,9 +420,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     #        time make -j 5      1m48.611s
     ###########################################
     set +e
-    make -j 4
+    $MAKEJCMD
     set -e
-    make -j 4
+    $MAKEJCMD
     if [ "$?" != "0" ] ; then
         exit 1
     fi
@@ -471,6 +487,14 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         ls -al $GCOVFILENAME
         set -e
     fi
+
+    # generate development package archive file
+    if [ "$RELEASE" == "1" ] ; then
+        echo "Building development package archive file..."
+        cd $BUILDDIR
+        ./packaging/make_e-irods_dev_archive.sh
+    fi
+
 
 fi # if $BUILDEIRODS
 
@@ -555,7 +579,6 @@ fi
 
 
 
-
 # run EPM for package type of this machine
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
@@ -592,6 +615,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "Running EPM :: Generating $DETECTEDOS RPMs"
@@ -599,6 +623,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     echo "Running EPM :: Generating $DETECTEDOS DEBs"
@@ -606,6 +631,7 @@ elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "Running EPM :: Generating $DETECTEDOS PKGs"
@@ -613,6 +639,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f pkg e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "Running EPM :: Generating $DETECTEDOS DMGs"
@@ -620,6 +647,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f osx e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 else
     echo "#######################################################" 1>&2
