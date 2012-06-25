@@ -8,40 +8,40 @@ Enterprise iRODS (E-iRODS) Manual
 .. contents:: Table of Contents
 .. section-numbering::
 
-..
-  ----------------
-  ReStructuredText
-  ----------------
-
-  Needs python modules::
-
-   $ easy_install docutils==0.7.0
-   $ easy_install roman
-   $ easy_install rst2pdf
-
-  Some links for learning in place:
-
-   http://docutils.sourceforge.net/docs/index.html
-
-   http://docutils.sourceforge.net/docs/user/rst/cheatsheet.txt
-
-   http://docutils.sourceforge.net/docs/user/rst/quickstart.txt
-
-   http://docutils.sourceforge.net/docs/user/rst/quickstart.html
-
-   http://docutils.sourceforge.net/docs/user/rst/demo.txt
-
-   http://docutils.sourceforge.net/docs/user/rst/demo.html
-
-   http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
-
-  Generate HTML::
-
-   $ rst2html.py -stg manual.rst > manual.html
-
-  Generate PDF::
-
-   $ rst2pdf manual.rst -o manual.pdf
+.. 
+..   ----------------
+..   ReStructuredText
+..   ----------------
+.. 
+..   Needs python modules::
+.. 
+..    $ easy_install docutils==0.7.0
+..    $ easy_install roman
+..    $ easy_install rst2pdf
+.. 
+..   Some links for learning in place:
+.. 
+..    http://docutils.sourceforge.net/docs/index.html
+.. 
+..    http://docutils.sourceforge.net/docs/user/rst/cheatsheet.txt
+.. 
+..    http://docutils.sourceforge.net/docs/user/rst/quickstart.txt
+.. 
+..    http://docutils.sourceforge.net/docs/user/rst/quickstart.html
+.. 
+..    http://docutils.sourceforge.net/docs/user/rst/demo.txt
+.. 
+..    http://docutils.sourceforge.net/docs/user/rst/demo.html
+.. 
+..    http://rst2pdf.googlecode.com/svn/trunk/doc/manual.txt
+.. 
+..   Generate HTML::
+.. 
+..    $ rst2html.py -stg manual.rst > manual.html
+.. 
+..   Generate PDF::
+.. 
+..    $ rst2pdf manual.rst -o manual.pdf
 
 --------
 Overview
@@ -51,7 +51,7 @@ This manual attempts to provide standalone documentation for E-iRODS as packaged
 
     http://e-irods.com
 
-    file://usr/share/eirods/iRODS/doc/html/index.html
+    file:///var/lib/e-rods/iRODS/doc/html/index.html
 
 Additional documentation is available on the iRODS wiki and in the two books published by the iRODS team:
 
@@ -74,20 +74,20 @@ E-iRODS is released in binary form.  RPM and DEB formats are available for both 
 
 More combinations will be made available as our testing matrix increases.
 
-The latest files can be downloaded from http://e-irods.com/download.
+The latest files can be downloaded from http://e-irods.org/download.
 
 
 ------------
 Installation
 ------------
 
-Installation of the Postgres iCAT RPM::
+Installation of the Postgres iCAT DEB::
 
- $ (sudo) rpm -i e-irods-3.0b2-icat-postgres-64bit.rpm
+ $ (sudo) dpkg -i e-irods-3.0b2-64bit-icat-postgres.deb
 
-Installation of the Resource DEB::
+Installation of the Resource RPM::
 
- $ (sudo) dpkg -i e-irods-3.0b2-resource-64bit.deb
+ $ (sudo) rpm -i e-irods-3.0b2-64bit-resource.rpm
 
 These packages install the dependencies necessary to run E-iRODS, a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
@@ -119,6 +119,128 @@ Successful installation will complete and leave a running iRODS server.  If you 
  $ eirods@hostname:~> ils
  /tempZone/home/rods:
 
+When moving into production, you will probably want to cover the next few basic steps::
+
+Changing the administrator account password
+-------------------------------------------
+
+The default installation of E-iRODS comes with a single account 'rods' that has rodsadmin privileges and password 'rods'.  You should change the password before letting anyone else onto the system::
+
+ $ eirods@hostname:~> iadmin moduser rods password <newpassword>
+
+To make sure everything succeeded, you'll need to reauthenticate and check the new connection::
+ 
+ $ eirods@hostname:~> iinit
+ Enter your current iRODS password:
+ $ eirods@hostname:~> ils
+ /tempZone/home/rods:
+
+Changing the Zone name
+----------------------
+
+The default installation of E-iRODS comes with a Zone named 'tempZone'.  You probably want to change the Zone name to something more domain-specific::
+
+ $ eirods@hostname:~> iadmin modzone tempZone name <newzonename>
+ If you modify the local zone name, you and other users will need to
+ change your .irodsEnv files to use it, you may need to update
+ irods.config and, if rules use the zone name, you'll need to update
+ core.re.  This command will update various tables with the new name
+ and rename the top-level collection.
+ Do you really want to modify the local zone name? (enter y or yes to do so):y
+ OK, performing the local zone rename
+ 
+The Zone has been renamed, but now you will need to update your .irodsEnv file to match (note the three places where the updated zone name is located)::
+
+ $ eirods@hostname:~> cat .irods/.irodsEnv
+ # iRODS server host name:
+ irodsHost 'ubuntu2'
+ # iRODS server port number:
+ irodsPort 1247
+ # Default storage resource name:
+ irodsDefResource 'demoResc'
+ # Home directory in iRODS:
+ irodsHome '/<newzonename>/home/rods'
+ # Current directory in iRODS:
+ irodsCwd '/<newzonename>/home/rods'
+ # Account name:
+ irodsUserName 'rods'
+ # Zone:
+ irodsZone '<newzonename>'
+
+Now, the connection should be reset and you should be able to list your empty iRODS collection again::
+
+ $ eirods@hostname:~> iinit
+ Enter your current iRODS password:
+ $ eirods@hostname:~> ils
+ /<newzonename>/home/rods:
+
+Add additional resource(s)
+--------------------------
+
+The default installation of E-iRODS comes with a single resource named 'demoResc' and which stores its files in the /var/lib/e-irods/iRODS/Vault directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
+
+ $ eirods@hostname:~> iadmin mkresc <newrescname> 'unix file system' cache <fully.qualified.domain.name> </full/path/to/new/vault>
+ 
+Additional information about creating resources can be found with::
+
+ $ eirods@hostname:~> iadmin help mkresc
+  mkresc Name Type Class Host [Path] (make Resource)
+ Create (register) a new storage or database resource.
+
+ Name is the name of the new resource.
+ Type is the resource type (see 'lt resc_type' for a list).
+ Class is the usage class of the resource (see 'lt resc_class').
+ Host is the DNS host name.
+ And Path is the defaultPath for the vault (not needed for resources of
+ type 'database' (DBRs)).
+
+ Tip: Also see the lt command for Type and Class token information.
+
+ $ eirods@hostname:~> iadmin lt resc_type
+ unix file system 
+ hpss file system 
+ windows file system 
+ s3 
+ MSS universal driver 
+ database 
+ mso 
+
+ $ eirods@hostname:~> iadmin lt resc_class
+ cache 
+ archive 
+ compound 
+ bundle 
+ postgresql 
+ mysql 
+ oracle 
+  
+Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
+
+Add additional user(s)
+----------------------
+
+The default installation of E-iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional 'rodsuser' type user accounts and set their passwords before allowing connections to your new grid::
+
+ $ eirods@hostname:~> iadmin mkuser <newusername> rodsuser 
+
+ $ eirods@hostname:~> iadmin lu
+ rodsBoot#tempZone
+ rods#tempZone
+ <newusername>#tempZone
+ 
+ $ eirods@hostname:~> iadmin help mkuser
+  mkuser Name[#Zone] Type (make user)
+ Create a new iRODS user in the ICAT database
+
+ Name is the user name to create
+ Type is the user type (see 'lt user_type' for a list)
+ Zone is the user's zone (for remote-zone users)
+
+ Tip: Use moduser to set a password or other attributes,
+ use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)
+
+Best practice suggests changing your Zone name before adding new users as any existing users would need to be informed of the new connection information and changes that would need to be made to their local .irodsEnv files.
+
 ---------
 Upgrading
 ---------
@@ -137,7 +259,7 @@ Backing up E-iRODS consists of three major parts:  The data, the iRODS system an
 
 2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup`_ microservice.  When run on a regular schedule, the `msiServerBackup` microservice will contain all the necessary configuration information to reconstruct your iRODS setup during disaster recovery.
 
-.. _msiServerBackup: file://usr/share/eirods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
+.. _msiServerBackup: file:///var/lib/e-irods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
 
 3) The iCAT database itself can be backed up in a variety of ways.  A Postgres database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, Postgres 8.4 includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of Postgres where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in Postgres 9.0+ and can keep two Postgres servers in sync with sub-second delay.
 
@@ -150,81 +272,107 @@ Configuration and maintenance of this type of backup system is out of scope for 
 Assumptions
 -----------
 
-E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.
+E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.  MySQL is not yet supported with a binary release.
 
-------
-How To
-------
+The iRODS setting 'StrictACL' is configured on by default in E-iRODS.  This is different from the community version of iRODS and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
 
-Troubleshooting
----------------
 
-These will be cross-referenced with each feature.
-
-- where to check
-- what to expect
-- error codes - with numeric to string translation
-
-Manage Resources
-----------------
-- cache
-  - cache cleanup
-  - monitoring
-- compound
-- database
-- WOS
-- HPSS
-- S3
-- Group Population
-   - Random
-   - Round Robin
-   - Least Populated
-
-Manage Users
-------------
-- groups
-- ACLs (always surprising)
-   - multiple people / groups
-   - inheritance
-   - StrictACL
-
-Examples
---------
-- Least Recently Used (LRU)
-- First In First Out (FIFO)
-- Failover checking
-
-----------
-Monitoring
-----------
-- nagios plugins (Jean-Yves)
-- other
-
----------------
-Delay Execution
----------------
-- how
-- what
-- when
-- where
-- why
-- errors
-- queue management
-
---------------
-Authentication
---------------
-- iRODS
-- OSAuth
-- GSI
-
---------------
-Best Practices
---------------
-- microservice objects (MSO)
-- tickets
-- realizable objects
-- quota management
+.. 
+.. ------
+.. How To
+.. ------
+.. 
+.. Troubleshooting
+.. ---------------
+.. 
+.. These will be cross-referenced with each feature.
+.. 
+.. - where to check
+.. - what to expect
+.. - error codes - with numeric to string translation
+.. 
+.. Common Errors
+.. -------------
+.. iRODS Server is down
+.. credentials
+.. file not found
+.. port/firewall
+.. wrong server/port
+.. client version mismatch
+.. rule engine syntax
+.. iRODS permissions
+.. 
+.. Steps
+.. -----
+.. - ienv
+.. - networking
+..  - reachable?
+..  - port open?
+..  - server up?
+.. - check logs
+..  - on server
+..  - on client
+.. 
+.. Manage Resources
+.. ----------------
+.. - cache
+..   - cache cleanup (itrim via cronjob)
+..   - monitoring
+.. - compound
+.. - database
+.. - WOS
+.. - HPSS
+.. - S3
+.. - Group Population
+..    - Random
+..    - Round Robin
+..    - Least Populated
+.. 
+.. Manage Users
+.. ------------
+.. - groups
+.. - ACLs (always surprising)
+..    - multiple people / groups
+..    - inheritance
+..    - StrictACL
+.. 
+.. Examples
+.. --------
+.. - Least Recently Used (LRU)
+.. - First In First Out (FIFO)
+.. - Failover checking
+.. 
+.. ----------
+.. Monitoring
+.. ----------
+.. - nagios plugins (Jean-Yves)
+.. - other
+.. 
+.. ---------------
+.. Delay Execution
+.. ---------------
+.. - how
+.. - what
+.. - when
+.. - where
+.. - why
+.. - errors
+.. - queue management
+.. 
+.. --------------
+.. Authentication
+.. --------------
+.. - iRODS
+.. - OSAuth
+.. - GSI
+.. 
+.. --------------
+.. Best Practices
+.. --------------
+.. - microservice objects (MSO)
+.. - tickets
+.. - realizable objects
+.. - quota management
 
 -------------
 Configuration
@@ -366,9 +514,10 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2012-06-01   3.0b2      Second Beta Release.
+2012-06-25   3.0b2      Second Beta Release.
                           This is the second release from RENCI.  It includes
-                          four packages: DEB and RPM of iCAT and Resource.
+                          packages for iCAT, Resource, iCommands, and
+                          development, in both DEB and RPM formats.
                           Also includes more documentation.
 2012-03-01   3.0b1      Initial Beta Release.
                           This is the first release from RENCI, based on the
