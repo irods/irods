@@ -5,16 +5,19 @@
 
 #include <string>
 
-class HashStrategy
-{
-public:
+namespace eirods {
+    
+    class HashStrategy
+    {
+    public:
 
-    virtual ~HashStrategy(void) {};
+        virtual ~HashStrategy(void) {};
 
-    virtual std::string name(void) const = 0;
-    virtual unsigned int init(void) = 0;
-    virtual unsigned int update(char const* data, unsigned int size) = 0;
-    virtual unsigned int digest(std::string& messageDigest) = 0;
-};
+        virtual std::string name(void) const = 0;
+        virtual unsigned int init(void) = 0;
+        virtual unsigned int update(char const* data, unsigned int size) = 0;
+        virtual unsigned int digest(std::string& messageDigest) = 0;
+    };
+}; // namespace eirods
 
 #endif // _HashStrategy_H_
