@@ -20,23 +20,21 @@ generateHash(
     hasher.addStrategy(sha256Strategy);
     
     // Read the file and hash it
-    ifstream input(filename);
+    ifstream input(filename, ios_base::in | ios_base::binary);
     if(input.is_open()) {
 	char buffer[1024];
 	hasher.init();
-	while(input.good()) {
-	    input.get(buffer, 1024);
-	    if(input.good()) {
-		string data(buffer);
-		hasher.update(data);
-	    }
+	while(!input.eof()) {
+	    input.read(buffer, 1023);
+	    int numRead = input.gcount();
+	    hasher.update(buffer, numRead);
 	}
 	input.close();
 	string messageDigest;
 	hasher.digest("MD5", messageDigest);
-	cout << "MD5 Hash Digest: " << messageDigest << endl;
+	cout << messageDigest << " ";
 	hasher.digest("SHA256", messageDigest);
-	cout << "SHA256 Hash Digest: " << messageDigest << endl;
+	cout << messageDigest << endl;
     } else {
 	cerr << "ERROR: Unable to open file: " << filename << endl;
     }

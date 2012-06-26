@@ -45,14 +45,15 @@ init(void)
 
 unsigned int Hasher::
 update(
-    const std::string& data)
+    char const* data,
+    unsigned int size)
 {
     unsigned int result = 0;
     for(std::vector<HashStrategy*>::iterator it = _strategies.begin();
         result == 0 && it != _strategies.end();
         ++it) {
         HashStrategy* strategy = *it;
-        result = strategy->update(data);
+        result = strategy->update(data, size);
     }
     return result;
 }
