@@ -2917,7 +2917,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 "select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0 and user_name=? and R_USER_MAIN.zone_name=?",
 ""
    };
-
+//rodsLog( LOG_NOTICE, "JMC :: sql - %s", sql );
    if (logSQL!=0) rodsLog(LOG_SQL, "chlSimpleQuery");
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -2936,9 +2936,11 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 	 break;
       }
    }
+
    if (OK == 0) {
 	   return(CAT_INVALID_ARGUMENT);
    }
+
    /* done with multiple log calls so that each form will be checked
       via checkIcatLog.pl */
    if (i==0 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 1 ");

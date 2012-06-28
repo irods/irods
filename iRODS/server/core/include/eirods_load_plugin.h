@@ -1,7 +1,9 @@
 
-#ifndef __EIRODS_PLUGIN_LOADER_H__
-#define __EIRODS_PLUGIN_LOADER_H__
-#if 0
+
+
+#ifndef __EIRODS_LOAD_PLUGIN_H__
+#define __EIRODS_LOAD_PLUGIN_H__
+
 // =-=-=-=-=-=-=-
 // STL Includes
 #include <string>
@@ -10,7 +12,6 @@
 // =-=-=-=-=-=-=-
 // dlopen, etc
 #include <dlfcn.h>
-#include "eirods_plugin.h"
 
 namespace eirods {
 
@@ -39,10 +40,8 @@ namespace eirods {
 	 * \retval non-null on success
 	**/
 	template< typename PluginType >
-	PluginType* load_plugin(  const std::string _plugin_name, const std::string _dir  ) { 
+	PluginType load_plugin(  const std::string _plugin_name, const std::string _dir  ) { 
 		using namespace std;
-
-        PluginType* plugin = 0;
 
 		// =-=-=-=-=-=-=-
 		// quick parameter check
@@ -88,7 +87,7 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// attempt to load the plugin factory function from the shared object
-		typedef PluginType* (*factory_type)(  );
+		typedef PluginType (*factory_type)(  );
 		factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
 		if( ( err = dlerror() ) != 0 ) {
 			cout << "load_plugin :: failed to load sybol from shared object handle - plugin_factory" << endl;
@@ -105,7 +104,7 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// using the factory pointer create the plugin
-		plugin = factory();
+		PluginType plugin = factory();
         if( plugin ) {
 			// =-=-=-=-=-=-=-
 			// notify world of success
@@ -138,9 +137,12 @@ namespace eirods {
 	} // load_plugin
 
 
-}; // namepsace eirods
-#endif
-#endif // __EIRODS_PLUGIN_LOADER_H__
+
+}; // namespace eirods
+
+
+
+#endif // __EIRODS_LOAD_PLUGIN_H__
 
 
 

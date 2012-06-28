@@ -13,25 +13,26 @@
 // =-=-=-=-=-=-=-
 // My Includes
 #include "eirods_lookup_table.h"
-#include "eirods_plugin.h"
+#include "eirods_plugin_base.h"
 
 namespace eirods {
 
 	// =-=-=-=-=-=-=-
 	// MicroService Table Entry - holds fcn call name, number of args for fcn and fcn pointer
-	class ms_table_entry : public eirods_plugin {
+	class ms_table_entry : public plugin_base {
         public:
 		 
 		typedef int (*ms_func_ptr)( ... ); 
 
+        // =-=-=-=-=-=-=-
+		// Attributes
 		std::string  action_;
 		int          numberOfStringArgs_;
 		ms_func_ptr  callAction_;
 
 		// =-=-=-=-=-=-=-
-		// Constructor
+		// Constructors
 		ms_table_entry( );
-
 		ms_table_entry( std::string _s, int _n, ms_func_ptr _fp = 0 );
 
         // =-=-=-=-=-=-=-
