@@ -168,7 +168,7 @@ int loadDirToLocalResc(ruleExecInfo_t *rei, char *dirPath, size_t offset,
 char *getDBHomeDir()
 {
 	char configFilePath[MAX_PATH_ALLOWED + 1];
-	char buf[LONG_NAME_LEN * 3];
+	char buf[LONG_NAME_LEN * 5];
 	char *dbPath = NULL;
 	FILE *configFile;
 
@@ -223,7 +223,7 @@ char *getDBHomeDir()
 int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
 {
 	char configFilePath[MAX_PATH_ALLOWED + 1];
-	char buf[LONG_NAME_LEN * 3];
+	char buf[LONG_NAME_LEN * 5];
 	char *rescName = NULL;
 	FILE *configFile;
 	int status;

@@ -45,7 +45,7 @@ namespace eirods {
             unsigned char* charData = new unsigned char[size]; // overkill?
             memcpy(charData, data, size);
             MD5Update(&_context, charData, size);
-            delete charData;
+            delete [] charData;
         } else {
             result = 1;             // TODO - should be an enum or string
             // table value here

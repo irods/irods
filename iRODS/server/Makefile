@@ -50,8 +50,7 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/fileDriverNoOpFunctions.o\
-		$(svrCoreObjDir)/eirods_plugin_loader.o
+		$(svrCoreObjDir)/fileDriverNoOpFunctions.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
