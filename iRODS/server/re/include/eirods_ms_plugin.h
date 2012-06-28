@@ -18,7 +18,13 @@
 namespace eirods {
 
 	// =-=-=-=-=-=-=-
-	// MicroService Table Entry - holds fcn call name, number of args for fcn and fcn pointer
+	/**
+	  * \class ms_table_entry - holds fcn call name, number of args for fcn and fcn pointer
+	  * \author Jason M. Coposky 
+	  * \date   June 2010
+	  * \brief  This is to be used by a microservice developer to provide a dynamic plugin to the microservice table found in server/re/include/reActions.h.  Reference server/re/src/rules.c for loading and server/re/src/arithemetic.c for invokation.
+	  * 
+	  **/
 	class ms_table_entry : public plugin_base {
         public:
 		 
