@@ -1,7 +1,7 @@
 # =-=-=-=-=-=-=-
 # EPM Variables
 # =-=-=-=-=-=-=-
-%product Enterprise iRODS - Develoment Library
+%product Enterprise iRODS - Development Library
 %copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
 %vendor Renaissance Computing Institute <info@e-irods.org>
 %license LICENSE
@@ -80,18 +80,18 @@ $RPM=true
 f 644 root root /usr/lib/libe-irods.a ./libe-irods.a
 
 d 755 root root /usr/include/e-irods/
-f 755 root root /usr/include/e-irods/ ./iRODS/lib/core/include/*.h
-f 755 root root /usr/include/e-irods/ ./iRODS/lib/api/include/*.h
-f 755 root root /usr/include/e-irods/ ./iRODS/lib/md5/include/*.h 
-f 755 root root /usr/include/e-irods/ ./iRODS/server/core/include/*.h 
-f 755 root root /usr/include/e-irods/ ./iRODS/server/icat/include/*.h
-f 755 root root /usr/include/e-irods/ ./iRODS/server/re/include/*.h
-f 755 root root /usr/include/e-irods/ ./iRODS/server/drivers/include/*.h
+f 644 root root /usr/include/e-irods/ ./iRODS/lib/core/include/*.h
+f 644 root root /usr/include/e-irods/ ./iRODS/lib/api/include/*.h
+f 644 root root /usr/include/e-irods/ ./iRODS/lib/md5/include/*.h 
+f 644 root root /usr/include/e-irods/ ./iRODS/server/core/include/*.h 
+f 644 root root /usr/include/e-irods/ ./iRODS/server/icat/include/*.h
+f 644 root root /usr/include/e-irods/ ./iRODS/server/re/include/*.h
+f 644 root root /usr/include/e-irods/ ./iRODS/server/drivers/include/*.h
 
 d 755 root root /usr/share/e-irods/
 d 755 root root /usr/share/e-irods/examples
 d 755 root root /usr/share/e-irods/examples/microservices
-f 755 root root /usr/share/e-irods/examples/microservices ./examples/microservices/*
+f 644 root root /usr/share/e-irods/examples/microservices ./examples/microservices/*
 
 
 

@@ -9,7 +9,7 @@
 
 char *icmds[]={
    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
-   "ierror", "iexecmd", "iexit", "iget", "igetwild.sh",
+   "ierror", "iexecmd", "iexit", "iget", "igetwild",
    "ihelp", "iinit", "ils", "ilsresc",
    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
    "iphybun", "iphymv", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
@@ -40,7 +40,7 @@ printMainHelp()
 "iexit    - exit an irods session (un-iinit).",
 "ifsck    - check if local files/directories are consistent with the associated objects/collections in iRODS.",
 "iget     - get a file from iRODS.",
-"igetwild.sh - get one or more files from iRODS using wildcard characters.",
+"igetwild - get one or more files from iRODS using wildcard characters.",
 "ihelp    - display a synopsis list of the i-commands.",
 "iinit    - initialize a session, so you don't need to retype your password.",
 "ilocate  - search for data-object(s) OR collections (via a script).",

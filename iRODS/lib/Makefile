@@ -28,6 +28,7 @@ extendedICAT.h =	$(buildDir)/modules/extendedICAT/extendedICAT.h
 #	core	utility functions
 #	md5	MD5 hash generation functions
 #	api	client API functions (LIB_API_OBJS is set by api.mk)
+#       hasher  Utility classes for generating hash digests
 #
 # Core
 LIB_CORE_OBJS =	\
@@ -99,6 +100,13 @@ LIB_MD5_OBJS =	\
 		$(libMd5ObjDir)/md5Checksum.o
 INCLUDES +=	-I$(libMd5IncDir)
 
+# Hasher
+LIB_HASHER_OBJS = \
+		$(libHasherObjDir)/Hasher.o \
+		$(libHasherObjDir)/MD5Strategy.o \
+		$(libHasherObjDir)/SHA256Strategy.o
+INCLUDES +=	-I$(libHasherIncDir)
+
 # rbudp
 ifdef RBUDP_TRANSFER
 LIB_RBUDP_OBJS =  \
@@ -124,7 +132,7 @@ INCLUDES +=	-I$(libApiIncDir)
 
 # All objects
 OBJS =		$(LIB_CORE_OBJS) $(LIB_API_OBJS) $(LIB_MD5_OBJS)	\
-		$(LIB_RBUDP_OBJS)
+		$(LIB_RBUDP_OBJS) $(LIB_HASHER_OBJS)
 
 
 # Server configuration
@@ -157,7 +165,7 @@ endif
 #
 .PHONY:	all lib libs clean print_cflags
 vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
-		$(libRbudpSrcDir)
+		$(libRbudpSrcDir) $(libHasherSrcDir)
 
 
 
@@ -239,6 +247,11 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND)
 $(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
+
+# Build Hasher
+$(LIB_HASHER_OBJS): $(libHasherObjDir)/%.o: $(libHasherSrcDir)/%.c $(configMk) $(platformMk)
+	@echo "Compile Hasher `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 ifdef RBUDP_TRANSFER
 $(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.c $(configMk) $(platformMk)

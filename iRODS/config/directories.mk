@@ -29,7 +29,7 @@ export libCoreSrcDir	= $(buildDir)/lib/core/src
 export libMd5SrcDir	= $(buildDir)/lib/md5/src
 export libRbudpSrcDir	= $(buildDir)/lib/rbudp/src
 export libApiSrcDir	= $(buildDir)/lib/api/src
-
+export libHasherSrcDir  = $(buildDir)/lib/hasher/src
 
 
 
@@ -49,6 +49,7 @@ export libCoreIncDir	= $(buildDir)/lib/core/include
 export libMd5IncDir	= $(buildDir)/lib/md5/include
 export libRbudpIncDir	= $(buildDir)/lib/rbudp/include
 export libApiIncDir	= $(buildDir)/lib/api/include
+export libHasherIncDir	= $(buildDir)/lib/hasher/include
 
 
 
@@ -68,7 +69,7 @@ export libCoreObjDir	= $(buildDir)/lib/core/obj
 export libMd5ObjDir	= $(buildDir)/lib/md5/obj
 export libRbudpObjDir	= $(buildDir)/lib/rbudp/obj
 export libApiObjDir	= $(buildDir)/lib/api/obj
-
+export libHasherObjDir  = $(buildDir)/lib/hasher/obj
 
 
 

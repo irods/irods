@@ -138,6 +138,7 @@ if [ "$1" == "clean" ] ; then
     rm -f changelog.gz
     rm -rf $MANDIR
     rm -f manual.pdf
+    rm -f libe-irods.a
     set +e
     echo "Cleaning EPM residuals..."
     rm -rf linux-2.*
@@ -192,7 +193,7 @@ if [ "$1" == "icat" ] ; then
     fi
 fi
 
-if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+if [ "$DETECTEDOS" == "Ubuntu" ] ; then
     if [ "$(id -u)" != "0" ] ; then
         echo "#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
@@ -203,13 +204,14 @@ if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
 fi
 
 # use error codes to determine dependencies
+# does not work on solaris ('which' returns 0, regardless), so check the output as well
 set +e
 
 RST2PDF=`which rst2pdf`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" -ne "0" -o `echo $RST2PDF | awk '{print $1}'` == "no" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "      :: try: apt-get install rst2pdf" 1>&2
     else
         echo "      :: try: easy_install rst2pdf" 1>&2
@@ -223,20 +225,23 @@ if [ "$?" -ne "0" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
     echo "      :: try: easy_install roman" 1>&2
+    echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
     echo "#######################################################" 1>&2
     exit 1
 fi
 
 DOXYGEN=`which doxygen`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" -ne "0" -o `echo $DOXYGEN | awk '{print $1}'` == "no" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "      :: try: apt-get install doxygen" 1>&2
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         echo "      :: try: yum install doxygen" 1>&2
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
         echo "      :: try: zypper install doxygen" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: pkgutil --install doxygen" 1>&2
     else
         echo "      :: download from: http://doxygen.org" 1>&2
     fi
@@ -245,17 +250,20 @@ if [ "$?" -ne "0" ] ; then
 fi
 
 HELP2MAN=`which help2man`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" -ne "0" -o `echo $HELP2MAN | awk '{print $1}'` == "no" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then # Ubuntu
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "      :: try: apt-get install help2man" 1>&2
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         echo "      :: try: yum install help2man" 1>&2
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
         echo "      :: try: zypper install help2man" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: pkgutil --install help2man" 1>&2
     else
         echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
+        echo "      ::                http://mirrors.kernel.org/gnu/help2man/" 1>&2
     fi
     echo "#######################################################" 1>&2
     exit 1
@@ -379,6 +387,22 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
 
 
+    # find number of cpus
+    if [ "$DETECTEDOS" == "MacOSX" ] ; then
+        DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
+    else
+        DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
+    fi
+    if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
+        DETECTEDCPUCOUNT=1
+    fi
+    CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
+    MAKEJCMD="make -j $CPUCOUNT"
+    echo "-------------------------------------"
+    echo "Detected CPUs:    $DETECTEDCPUCOUNT"
+    echo "Compiling with:   $MAKEJCMD"
+    echo "-------------------------------------"
+    sleep 1
 
     ###########################################
     # single 'make' time on an 8 core machine
@@ -404,9 +428,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     #        time make -j 5      1m48.611s
     ###########################################
     set +e
-    make -j 4
+    $MAKEJCMD
     set -e
-    make -j 4
+    $MAKEJCMD
     if [ "$?" != "0" ] ; then
         exit 1
     fi
@@ -471,6 +495,14 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         ls -al $GCOVFILENAME
         set -e
     fi
+
+    # generate development package archive file
+    if [ "$RELEASE" == "1" ] ; then
+        echo "Building development package archive file..."
+        cd $BUILDDIR
+        ./packaging/make_e-irods_dev_archive.sh
+    fi
+
 
 fi # if $BUILDEIRODS
 
@@ -555,7 +587,6 @@ fi
 
 
 
-
 # run EPM for package type of this machine
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
@@ -592,6 +623,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "Running EPM :: Generating $DETECTEDOS RPMs"
@@ -599,6 +631,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     echo "Running EPM :: Generating $DETECTEDOS DEBs"
@@ -606,6 +639,7 @@ elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "Running EPM :: Generating $DETECTEDOS PKGs"
@@ -613,6 +647,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f pkg e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "Running EPM :: Generating $DETECTEDOS DMGs"
@@ -620,6 +655,7 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -f osx e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 else
     echo "#######################################################" 1>&2
