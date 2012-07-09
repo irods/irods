@@ -44,7 +44,7 @@ namespace eirods {
             unsigned char* charData = new unsigned char[size];
             memcpy(charData, data, size);
             SHA256_Update(&_context, charData, size);
-            delete charData;
+            delete [] charData;
         } else {
             result = 1;             // TODO - should be an enum or string
             // table value here

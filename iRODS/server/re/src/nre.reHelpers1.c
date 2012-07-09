@@ -250,9 +250,9 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 	ParserContext *context = newParserContext(&errmsg, r);
 	Pointer *e = newPointer2(readmsg);
 	int rulegen = 1;
-    int found;
+    int found = 0;
     int grdf[2];
-    int cmd;
+    int cmd = 0;
     snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
     PARSER_BEGIN(DbgCmd)
 		TRY(DbgCmd)

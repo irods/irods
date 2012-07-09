@@ -1,0 +1,27 @@
+
+
+
+#ifndef __EIRODS_PLUGIN_BASE_H__
+#define __EIRODS_PLUGIN_BASE_H__
+
+namespace eirods {
+    /**
+	  * \class plugin_base - ABC for E-iRODS Plugins
+	  * \author Jason M. Coposky 
+	  * \date   June 2010
+	  * \brief  This class enforces the delay_load interface necessary for the load_plugin call to load any other non-member symbols from the shared object.  Reference server/core/include/eirods_load_plugin.h
+	  **/
+    class plugin_base {
+        public:
+		plugin_base() {}
+		virtual ~plugin_base() {}
+		virtual bool delay_load( void* ) = 0;
+
+	}; // class plugin_base
+
+}; // namespace eirods
+
+#endif // __EIRODS_PLUGIN_BASE_H__
+
+
+

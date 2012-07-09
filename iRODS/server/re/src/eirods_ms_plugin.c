@@ -2,6 +2,7 @@
 // My Includes
 #include "eirods_ms_home.h"
 #include "eirods_ms_plugin.h"
+#include "eirods_load_plugin.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -10,7 +11,6 @@
 namespace eirods {
 	// =-=-=-=-=-=-=-
 	// ms_table_entry definition
-
 	ms_table_entry::ms_table_entry( ) : 
 		action_(""), 
 		numberOfStringArgs_( 0 ), 
@@ -63,7 +63,7 @@ namespace eirods {
 	// and then register that ms with the table
 	bool load_microservice_plugin( ms_table& _table, const std::string _ms ) {
 
-        ms_table_entry* entry = dynamic_cast< ms_table_entry* >( load_plugin( _ms, EIRODS_MS_HOME ) );
+        ms_table_entry* entry = load_plugin< ms_table_entry >( _ms, EIRODS_MS_HOME );
         if( entry ) {
             _table[ _ms ] = entry;
 		    return true;
