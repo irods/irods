@@ -124,6 +124,11 @@ OS_platform=solaris_platform
 hardware_platform=i86_hardware
 endif
 
+# added by Terrell - using system level unixodbc and openssl installation on Solaris
+ifeq ($(OS_platform), solaris_platform)
+CCFLAGS += -I/opt/csw/include -I/usr/sfw/include
+endif
+
 # 64-bit file addressing ("large files")
 ifeq ($(FILE_64BITS), 1)
 ifeq ($(OS_platform), solaris_platform)
