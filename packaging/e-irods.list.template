@@ -203,7 +203,6 @@ END_POSTREMOVE
 
 %if COVERAGE
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/gcovfiles.tgz ./gcovfiles.tgz
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/coverage.sh ./packaging/coverage.sh
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/coverage.sh ./tests/coverage.sh
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest -
