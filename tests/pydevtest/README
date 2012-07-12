@@ -6,7 +6,8 @@ It is currently written for Terrell by Terrell, but hopefully can be made more g
 
 on local:
 ---------
-rsync -avz --progress ./pydevtest/ tgr@ubuntu1.irods.renci.org:~/e-irods/iRODS/pydevtest/
+cd ~/Desktop/e-irods/tests/pydevtest
+rsync -avz --progress ./ tgr@ubuntu1.irods.renci.org:~/e-irods/tests/pydevtest/
 
 as tgr on ubuntu1:
 ------------------
@@ -18,9 +19,9 @@ sudo su - eirods
 as eirods on ubuntu1:
 ---------------------
 export PATH=$PATH:/projects/irods/gardenbin/ubuntu-10.04/bin
-cd /var/lib/e-irods/iRODS/pydevtest
+cd /var/lib/e-irods/tests/pydevtest
 
-D=`date +%Y%m%dT%H%M%S`;rsync -avz /home/tgr/e-irods/iRODS/pydevtest/ ./;nosetests *.py;if [ "$?" == "0" ]; then echo "--------------";/var/lib/e-irods/packaging/coverage.sh 2>&1 | tail -n3;echo "--> coverageresults-$D";mv ../coverageresults coverageresults-$D; fi
+D=`date +%Y%m%dT%H%M%S`;rsync -avz /home/tgr/e-irods/tests/pydevtest/ ./;nosetests *.py;if [ "$?" == "0" ]; then echo "--------------";/var/lib/e-irods/tests/coverage.sh 2>&1 | tail -n3;echo "--> coverageresults-$D";mv /var/lib/e-irods/coverageresults coverageresults-$D; fi
 
 rsync -az ./coverageresults-$D/ tgr@wwwserver-1.renci.org:~/public_html/dev/
 rm -rf coverageresults* *.pyc; ls -alrt
