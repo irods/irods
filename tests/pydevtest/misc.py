@@ -2,6 +2,15 @@ import sessions as s
 from nose import with_setup
 from zonetests_common import assertiCmd, assertiCmdFail
 
+def test_basic_python_assertions():
+  assert "a" in "abc"       # in
+  assert "d" not in "abc"   # not in
+  assert "abc" == "abc"     # equal
+  assert "abc" != "abcd"    # not equal
+  assert "234" > "123"      # string comparison
+  assert 324324 > 8443      # int comparison
+  assert 3445 > 8423      # int comparison
+  assert "546" > "30000"    # string comparison
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_attempt_bad_icommands():
@@ -10,6 +19,9 @@ def test_attempt_bad_icommands():
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_bad_test_formatting():
   assertiCmdFail(s.adminsession,"ils -L","badformat")
+
+
+
 
 #@with_setup(three_sessions_up,three_sessions_down)
 #def test_user1put_with_user2get():

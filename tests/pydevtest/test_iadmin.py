@@ -1,7 +1,7 @@
 import sessions as s
 from nose import with_setup
 from zonetests_common import assertiCmd, assertiCmdFail
-
+import commands
 
 # LISTS
 

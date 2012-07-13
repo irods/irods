@@ -120,6 +120,7 @@ class RodsSession(object):
                         'iget',
                         'iput',
                         'imv',
+                        'icp',
                         'irm',
                         'iexit' ]
 
