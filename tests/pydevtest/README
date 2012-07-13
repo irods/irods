@@ -18,10 +18,10 @@ sudo su - eirods
 
 as eirods on ubuntu1:
 ---------------------
-export PATH=$PATH:/projects/irods/gardenbin/ubuntu-10.04/bin
+export PATH=/projects/irods/gardenbin/Linux/bin:/projects/irods/gardenbin/ubuntu-10.04/bin:$PATH
 cd /var/lib/e-irods/tests/pydevtest
 
-D=`date +%Y%m%dT%H%M%S`;rsync -avz /home/tgr/e-irods/tests/pydevtest/ ./;nosetests *.py;if [ "$?" == "0" ]; then echo "--------------";/var/lib/e-irods/tests/coverage.sh 2>&1 | tail -n3;echo "--> coverageresults-$D";mv /var/lib/e-irods/coverageresults coverageresults-$D; fi
+D=`date +%Y%m%dT%H%M%S`;echo "----- SYNCING TEST FILES -----";rsync -avz /home/tgr/e-irods/tests/pydevtest/ ./;echo "----- GENERATING COVERAGE BASELINE -----";/var/lib/e-irods/tests/coverage-pre.sh 2>&1 | tail -n1;echo "----- RUNNING TESTS -----";nosetests *.py;if [ "$?" == "0" ]; then echo "----- GENERATING COVERAGE REPORT -----";/var/lib/e-irods/tests/coverage-post.sh 2>&1 | tail -n4;echo "--> coverageresults-$D";mv /var/lib/e-irods/coverageresults coverageresults-$D; fi
 
 rsync -az ./coverageresults-$D/ tgr@wwwserver-1.renci.org:~/public_html/dev/
 rm -rf coverageresults* *.pyc; ls -alrt
