@@ -9,7 +9,7 @@ def test_basic_python_assertions():
   assert "abc" != "abcd"    # not equal
   assert "234" > "123"      # string comparison
   assert 324324 > 8443      # int comparison
-  assert 3445 > 8423      # int comparison
+  assert 345 < 8423         # int comparison
   assert "546" > "30000"    # string comparison
 
 @with_setup(s.admin_session_up,s.admin_session_down)
