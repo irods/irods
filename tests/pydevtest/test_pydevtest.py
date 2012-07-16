@@ -1,6 +1,6 @@
-import sessions as s
+import pydevtest_sessions as s
 from nose import with_setup
-from zonetests_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail
 
 def test_basic_python_assertions():
   assert "a" in "abc"       # in
@@ -13,13 +13,8 @@ def test_basic_python_assertions():
   assert "546" > "30000"    # string comparison
 
 @with_setup(s.admin_session_up,s.admin_session_down)
-def test_attempt_bad_icommands():
+def test_attempt_bad_icommand():
   assertiCmdFail(s.adminsession,"idoesnotexist","LIST","nope")
-
-@with_setup(s.admin_session_up,s.admin_session_down)
-def test_bad_test_formatting():
-  assertiCmdFail(s.adminsession,"ils -L","badformat")
-
 
 
 

@@ -1,7 +1,6 @@
 import re
 import os
 import socket
-from icommands import *
 
 if os.name != "nt":
     import fcntl
@@ -24,6 +23,14 @@ def get_lan_ip():
             except IOError:
                 pass
     return ip
+
+def check_icmd_outputtype(fullcmd,outputtype):
+  allowed_outputtypes = ["LIST","EMPTY",""]
+  if outputtype not in allowed_outputtypes:
+    print "  full command: ["+fullcmd+"]"
+    print "  allowed outputtypes: "+str(allowed_outputtypes)
+    print "  unknown outputtype requested: ["+outputtype+"]"
+    assert False # hard fail, bad icommand output format requested
 
 def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
   result = False # should start as failing, then get set to pass
@@ -55,7 +62,9 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
       result = True
   # bad test formatting
   else:
+    print "  WEIRD - SHOULD ALREADY HAVE BEEN CAUGHT ABOVE"
     print "  unknown outputtype requested: ["+outputtype+"]"
+    assert False # WEIRD - DUPLICATE BRANCH - hard fail, bad icommand format
   # return error if thrown
   if output[1] != "":
     return False
@@ -63,10 +72,13 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
   return result
 
 def assertiCmd(mysession,fullcmd,outputtype="",expectedresults=""):
-  print "\nASSERTING PASS"
+  print "\n"
+  print "ASSERTING PASS"
+  check_icmd_outputtype(fullcmd,outputtype)
   assert getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults)
 
 def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults=""):
-  print "\nASSERTING FAIL"
+  print "\n"
+  print "ASSERTING FAIL"
+  check_icmd_outputtype(fullcmd,outputtype)
   assert not getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults)
-

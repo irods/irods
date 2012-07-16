@@ -1,12 +1,12 @@
-import sessions as s
+import pydevtest_sessions as s
 from nose import with_setup
-from zonetests_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail
 import commands
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_iput():
   # local setup
-  datafilename = "textfile.txt"
+  datafilename = "newfile.txt"
   f = open(datafilename,'wb')
   f.write("TESTFILE -- ["+datafilename+"]")
   f.close()
@@ -20,22 +20,20 @@ def test_local_iput():
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_iput_overwrite():
   # local setup
-  datafilename = "textfile.txt"
-  output = commands.getstatusoutput( 'echo "i am a testfile" > '+datafilename )
   # assertions
-  assertiCmd(s.adminsession,"iput "+datafilename) # iput
-  assertiCmdFail(s.adminsession,"iput "+datafilename) # fail, already exists
-  assertiCmd(s.adminsession,"iput -f "+datafilename) # iput again, force
+  assertiCmdFail(s.adminsession,"iput "+s.testfile) # fail, already exists
+  assertiCmd(s.adminsession,"iput -f "+s.testfile) # iput again, force
   # local cleanup
-  output = commands.getstatusoutput( 'rm '+datafilename )
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_iput_checksum():
   # local setup
-  datafilename = "textfile.txt"
-  output = commands.getstatusoutput( 'echo "i am a testfile" > '+datafilename )
+  datafilename = "newfile.txt"
+  f = open(datafilename,'wb')
+  f.write("TESTFILE -- ["+datafilename+"]")
+  f.close()
   # assertions
   assertiCmd(s.adminsession,"iput -K "+datafilename) # iput
-  assertiCmd(s.adminsession,"ils -L","LIST","423ff2c4ecca1307ac45e8a59e09bd3c") # check proper checksum
+  assertiCmd(s.adminsession,"ils -L","LIST","d60af3eb3251240782712eab3d8ef3b1") # check proper checksum
   # local cleanup
   output = commands.getstatusoutput( 'rm '+datafilename )

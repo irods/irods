@@ -1,45 +1,31 @@
-import sessions as s
+import pydevtest_sessions as s
 from nose import with_setup
-from zonetests_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail
 import commands
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_imv():
   # local setup
-  datafilename = "textfile.txt"
-  datafilename2 = "moved_file.txt"
-  output = commands.getstatusoutput( 'echo "i am a testfile" > '+datafilename )
+  movedfile = "moved_file.txt"
   # assertions
-  assertiCmd(s.adminsession,"iput "+datafilename) # iput
-  assertiCmd(s.adminsession,"imv "+datafilename+" "+datafilename2) # move
-  assertiCmd(s.adminsession,"ils -L "+datafilename2,"LIST",datafilename2) # should be listed
+  assertiCmd(s.adminsession,"imv "+s.testfile+" "+movedfile) # move
+  assertiCmd(s.adminsession,"ils -L "+movedfile,"LIST",movedfile) # should be listed
   # local cleanup
-  output = commands.getstatusoutput( 'rm '+datafilename )
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_imv_to_directory():
   # local setup
-  datafilename = "textfile.txt"
-  testdir = "testdir"
-  output = commands.getstatusoutput( 'echo "i am a testfile" > '+datafilename )
   # assertions
-  assertiCmd(s.adminsession,"imkdir "+testdir) # imkdir
-  assertiCmd(s.adminsession,"iput "+datafilename) # iput
-  assertiCmd(s.adminsession,"imv "+datafilename+" "+testdir) # move
-  assertiCmd(s.adminsession,"ils -L "+testdir,"LIST",datafilename) # should be listed
+  assertiCmd(s.adminsession,"imv "+s.testfile+" "+s.testdir) # move
+  assertiCmd(s.adminsession,"ils -L "+s.testdir,"LIST",s.testfile) # should be listed
   # local cleanup
-  output = commands.getstatusoutput( 'rm '+datafilename )
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_imv_to_existing_filename():
   # local setup
-  datafilename = "textfile.txt"
-  datafilename2 = "textfile2.txt"
-  output = commands.getstatusoutput( 'echo "i am a testfile" > '+datafilename )
+  copyfile = "anotherfile.txt"
   # assertions
-  assertiCmd(s.adminsession,"iput "+datafilename) # iput
-  assertiCmd(s.adminsession,"icp "+datafilename+" "+datafilename2) # icp
-  assertiCmdFail(s.adminsession,"imv "+datafilename+" "+datafilename2) # cannot overwrite existing file
+  assertiCmd(s.adminsession,"icp "+s.testfile+" "+copyfile) # icp
+  assertiCmdFail(s.adminsession,"imv "+s.testfile+" "+copyfile) # cannot overwrite existing file
   # local cleanup
-  output = commands.getstatusoutput( 'rm '+datafilename )
 
