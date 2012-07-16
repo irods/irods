@@ -21,36 +21,9 @@ as eirods on ubuntu1:
 export PATH=/projects/irods/gardenbin/ubuntu-10.04/bin:/projects/irods/gardenbin/Linux/bin:$PATH
 cd /var/lib/e-irods/tests/pydevtest
 
-D=`date +%Y%m%dT%H%M%S`;echo "----- SYNCING TEST FILES -----";rsync -avz /home/tgr/e-irods/tests/pydevtest/ ./;echo "----- GENERATING COVERAGE BASELINE -----";/var/lib/e-irods/tests/coverage-pre.sh 2>&1 | tail -n1;echo "----- RUNNING TESTS -----";nosetests *.py;if [ "$?" == "0" ]; then echo "----- GENERATING COVERAGE REPORT -----";/var/lib/e-irods/tests/coverage-post.sh 2>&1 | tail -n4;echo "--> coverageresults-$D";mv /var/lib/e-irods/coverageresults coverageresults-$D; fi
+time ./run_pydevtest_coverage.sh
 
 rsync -az ./coverageresults-$D/ tgr@wwwserver-1.renci.org:~/public_html/dev/
 rm -rf coverageresults* *.pyc; ls -alrt
 
 
-
-
-#################################
-#!/bin/bash
-
-# get datestamp
-D=`date +%Y%m%dT%H%M%S`
-
-# sync
-echo "----- SYNCING TEST FILES -----"
-rsync -avz /home/tgr/e-irods/tests/pydevtest/ ./
-
-# coverage baseline
-echo "----- GENERATING COVERAGE BASELINE -----"
-/var/lib/e-irods/tests/coverage-pre.sh 2>&1 | tail -n1
-
-# tests
-echo "----- RUNNING TESTS -----"
-nosetests *.py
-
-# coverage report
-if [ "$?" == "0" ] ; then
-  echo "----- GENERATING COVERAGE REPORT -----"
-  /var/lib/e-irods/tests/coverage-post.sh 2>&1 | tail -n4
-  echo "--> coverageresults-$D"
-  mv /var/lib/e-irods/coverageresults coverageresults-$D
-fi

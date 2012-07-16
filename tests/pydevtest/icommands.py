@@ -112,6 +112,7 @@ class RodsSession(object):
         '''
         valid_cmds = [  'iinit',
                         'ienv',
+                        'ihelp',
                         'ils',
                         'icd',
                         'imkdir',
