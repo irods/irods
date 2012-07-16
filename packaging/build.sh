@@ -174,7 +174,7 @@ DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
 
 
-if [ $1 != "icat" -a $1 != "resource" ] ; then
+if [[ $1 != "icat" && $1 != "resource" ]] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: Invalid serverType [$1]" 1>&2
     echo "      :: Only 'icat' or 'resource' available at this time" 1>&2
@@ -208,7 +208,7 @@ fi
 set +e
 
 RST2PDF=`which rst2pdf`
-if [ "$?" -ne "0" -o `echo $RST2PDF | awk '{print $1}'` == "no" ] ; then
+if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
@@ -221,7 +221,7 @@ if [ "$?" -ne "0" -o `echo $RST2PDF | awk '{print $1}'` == "no" ] ; then
 fi
 
 ROMAN=`python -c "import roman"`
-if [ "$?" -ne "0" ] ; then
+if [ "$?" != "0" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
     echo "      :: try: easy_install roman" 1>&2
@@ -231,7 +231,7 @@ if [ "$?" -ne "0" ] ; then
 fi
 
 DOXYGEN=`which doxygen`
-if [ "$?" -ne "0" -o `echo $DOXYGEN | awk '{print $1}'` == "no" ] ; then
+if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
@@ -250,7 +250,7 @@ if [ "$?" -ne "0" -o `echo $DOXYGEN | awk '{print $1}'` == "no" ] ; then
 fi
 
 HELP2MAN=`which help2man`
-if [ "$?" -ne "0" -o `echo $HELP2MAN | awk '{print $1}'` == "no" ] ; then
+if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
