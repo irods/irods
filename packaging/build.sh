@@ -271,6 +271,28 @@ else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
 fi
 
+BOOST=`grep -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b*`
+if [ "$BOOST" == "" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires boost to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        echo "      :: try: apt-get install libboost-dev" 1>&2
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        echo "      :: try: yum install boost" 1>&2
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        echo "      :: try: zypper install boost-devel" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: pkgutil --install boost_rt" 1>&2
+    else
+        echo "      :: download from: http://www.boost.org/users/download/" 1>&2
+    fi
+    echo "#######################################################" 1>&2
+    exit 1
+else
+    echo "BOOST libraries detected:"
+    echo "$BOOST"
+fi
+
 # reset to exit on an error
 set -e
 
