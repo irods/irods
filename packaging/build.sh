@@ -271,7 +271,12 @@ else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
 fi
 
-BOOST=`grep -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b*`
+if [ "$DETECTEDOS" == "Solaris" ] ; then
+    GREPCMD="ggrep"
+else
+    GREPCMD="grep"
+fi
+BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
 if [ "$BOOST" == "" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires boost to be installed" 1>&2
@@ -282,7 +287,9 @@ if [ "$BOOST" == "" ] ; then
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         echo "      :: try: zypper install boost-devel" 1>&2
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: pkgutil --install boost_rt" 1>&2
+        echo "      :: try: pkgutil --install boost_gcc_dev" 1>&2
+        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
+        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
     else
         echo "      :: download from: http://www.boost.org/users/download/" 1>&2
     fi
@@ -291,6 +298,25 @@ if [ "$BOOST" == "" ] ; then
 else
     echo "BOOST libraries detected:"
     echo "$BOOST"
+fi
+
+OPENSSLDEV=`find /usr/include/openssl -name sha.h 2> /dev/null`
+if [ "$OPENSSLDEV" == "" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires openssl (sha.h) to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        echo "      :: try: apt-get install libssl-dev" 1>&2
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        echo "      :: try: yum install openssl-devel" 1>&2
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        echo "      :: try: zypper install libopenssl-devel" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: pkgutil --install libssl_dev" 1>&2
+    else
+        echo "      :: download from: http://www.openssl.org/source/" 1>&2
+    fi
+    echo "#######################################################" 1>&2
+    exit 1
 fi
 
 # reset to exit on an error
