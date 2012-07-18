@@ -296,7 +296,9 @@ if [ "$BOOST" == "" ] ; then
     echo "#######################################################" 1>&2
     exit 1
 else
-    echo "BOOST libraries detected [$BOOST]"
+    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
+    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
+    echo "Detected BOOST libraries [$BOOSTFILE] [$BOOSTVERSION]"
 fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
@@ -317,7 +319,7 @@ if [ "$OPENSSLDEV" == "" ] ; then
     echo "#######################################################" 1>&2
     exit 1
 else
-    echo "OPENSSL sha.h library detected [$OPENSSLDEV]"
+    echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
 
 # reset to exit on an error
