@@ -207,6 +207,29 @@ fi
 # does not work on solaris ('which' returns 0, regardless), so check the output as well
 set +e
 
+if [ $1 == "icat" ] ; then
+    UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local sql.h`
+    if [ "$UNIXODBCDEV" == "" ] ; then
+        echo "#######################################################" 1>&2
+        echo "ERROR :: $SCRIPTNAME requires unixodbc-dev to be installed" 1>&2
+        if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+            echo "      :: try: apt-get install unixodbc-dev" 1>&2
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            echo "      :: try: yum install unixODBC-devel" 1>&2
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            echo "      :: try: zypper install unixODBC-devel" 1>&2
+        elif [ "$DETECTEDOS" == "Solaris" ] ; then
+            echo "      :: try: pkgutil --install unixodbc_dev" 1>&2
+        else
+            echo "      :: download from: http://www.unixodbc.org/download.html" 1>&2
+        fi
+        echo "#######################################################" 1>&2
+        exit 1
+    else
+        H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
+    fi
+fi
+
 RST2PDF=`which rst2pdf`
 if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
     echo "#######################################################" 1>&2
