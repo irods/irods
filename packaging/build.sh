@@ -208,7 +208,7 @@ fi
 set +e
 
 if [ $1 == "icat" ] ; then
-    UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local sql.h`
+    UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
     if [ "$UNIXODBCDEV" == "" ] ; then
         echo "#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME requires unixodbc-dev to be installed" 1>&2
@@ -226,7 +226,7 @@ if [ $1 == "icat" ] ; then
         echo "#######################################################" 1>&2
         exit 1
     else
-        H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
+        echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
     fi
 fi
 
@@ -241,6 +241,9 @@ if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
     fi
     echo "#######################################################" 1>&2
     exit 1
+else
+    RST2PDFVERSION=`rst2pdf --version`
+    echo "Detected rst2pdf [$RST2PDF] v[$RST2PDFVERSION]"
 fi
 
 ROMAN=`python -c "import roman"`
@@ -251,6 +254,9 @@ if [ "$?" != "0" ] ; then
     echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
     echo "#######################################################" 1>&2
     exit 1
+else
+    ROMANLOCATION=`find / 2> /dev/null | grep "/roman.pyc"`
+    echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
 DOXYGEN=`which doxygen`
@@ -270,6 +276,9 @@ if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     fi
     echo "#######################################################" 1>&2
     exit 1
+else
+    DOXYGENVERSION=`doxygen --version`
+    echo "Detected doxygen [$DOXYGEN] v[$DOXYGENVERSION]"
 fi
 
 HELP2MAN=`which help2man`
@@ -292,6 +301,7 @@ if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     exit 1
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
+    echo "Detected help2man [$HELP2MAN] v[$H2MVERSION]"
 fi
 
 if [ "$DETECTEDOS" == "Solaris" ] ; then
@@ -321,7 +331,7 @@ if [ "$BOOST" == "" ] ; then
 else
     BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
     BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
-    echo "Detected BOOST libraries [$BOOSTFILE] [$BOOSTVERSION]"
+    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
 fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
@@ -595,6 +605,7 @@ mkdir -p $MANDIR
 if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "NOTE :: Skipping man page generation -- help2man version needs to be >= 1.37"
     echo "     :: (or, add --version capability to all iCommands)"
+    echo "     :: (installed here: help2man version $H2MVERSION)"
 else
     EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
