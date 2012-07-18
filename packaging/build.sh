@@ -300,7 +300,7 @@ else
     echo "$BOOST"
 fi
 
-OPENSSLDEV=`find /usr/include/openssl -name sha.h 2> /dev/null`
+OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
     echo "#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires openssl (sha.h) to be installed" 1>&2

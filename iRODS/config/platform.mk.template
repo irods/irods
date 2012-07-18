@@ -126,7 +126,8 @@ endif
 
 # added by Terrell - using system level unixodbc and openssl installation on Solaris
 ifeq ($(OS_platform), solaris_platform)
-CCFLAGS += -I/opt/csw/include -I/usr/sfw/include
+CCFLAGS += -I/opt/csw/include -I/usr/sfw/include -I/opt/csw/gxx/include
+LDRFLAGS += -L/opt/csw/lib
 endif
 
 # 64-bit file addressing ("large files")
