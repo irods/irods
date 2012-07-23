@@ -255,7 +255,7 @@ if [ "$?" != "0" ] ; then
     echo "#######################################################" 1>&2
     exit 1
 else
-    ROMANLOCATION=`find / 2> /dev/null | grep "/roman.pyc"`
+    ROMANLOCATION=`find /usr 2> /dev/null | grep "/roman.pyc"`
     echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
