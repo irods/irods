@@ -37,3 +37,18 @@ def test_local_iput_checksum():
   assertiCmd(s.adminsession,"ils -L","LIST","d60af3eb3251240782712eab3d8ef3b1") # check proper checksum
   # local cleanup
   output = commands.getstatusoutput( 'rm '+datafilename )
+
+@with_setup(s.admin_session_up,s.admin_session_down)
+def test_local_iput_onto_specific_resource():
+  # local setup
+  datafilename = "anotherfile.txt"
+  f = open(datafilename,'wb')
+  f.write("TESTFILE -- ["+datafilename+"]")
+  f.close()
+  # assertions
+  assertiCmdFail(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should not be listed
+  assertiCmd(s.adminsession,"iput -R testResc "+datafilename) # iput
+  assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should be listed
+  assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST","testResc") # should be listed
+  # local cleanup
+  output = commands.getstatusoutput( 'rm '+datafilename )

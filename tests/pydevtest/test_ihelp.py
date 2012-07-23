@@ -26,7 +26,7 @@ def test_local_ihelp_with_good_icommand():
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_ihelp_with_bad_icommand():
   # assertions
-  assertiCmd(s.adminsession,"ihelp idoesnotexist","LIST","is not an i-command") # run ihelp with bad icommand
+  assertiCmdFail(s.adminsession,"ihelp idoesnotexist") # run ihelp with bad icommand
 
 @with_setup(s.admin_session_up,s.admin_session_down)
 def test_local_ihelp_with_bad_option():

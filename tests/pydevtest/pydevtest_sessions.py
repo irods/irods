@@ -55,12 +55,19 @@ def admin_session_up():
   testdir = "testdir"
   adminsession.runCmd('imkdir',[testdir])
   adminsession.runCmd('iput',[testfile])
+  global testresc
+  testresc = "testResc"
+  output = commands.getstatusoutput("hostname")
+  hostname = output[1]
+  adminsession.runCmd('iadmin',["mkresc",testresc,"unix file system","archive",hostname,"/tmp/pydevtest_"+testresc])
 
 def admin_session_down():
   # tear down admin session
   global adminsession
   adminsession.runCmd('icd')
   adminsession.runCmd('irm',['-r',sessionid])
+  adminsession.runCmd('irmtrash')
+  adminsession.runCmd('iadmin',['rmresc',testresc])
   adminsession.runCmd('iexit', ['full'])
   adminsession.deleteEnvFiles()
   # local file cleanup

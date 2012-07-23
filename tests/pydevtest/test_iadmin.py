@@ -20,6 +20,20 @@ def test_list_users():
   assertiCmd(s.adminsession,"iadmin lu","LIST","rods#"+s.myzone)
   assertiCmdFail(s.adminsession,"iadmin lu","LIST","notauser")
 
+# RESOURCES
+
+@with_setup(s.admin_session_up,s.admin_session_down)
+def test_create_and_remove_new_resource():
+  testresc1 = "testResc1"
+  assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
+  output = commands.getstatusoutput("hostname")
+  hostname = output[1]
+  assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unix file system\" archive "+hostname+" /tmp/pydevtest_"+testresc1) # add basic archive
+  assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
+  assertiCmdFail(s.adminsession,"iadmin rmresc notaresource") # bad remove
+  assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
+  assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
+
 # USERS
 
 @with_setup(s.admin_session_up,s.admin_session_down)

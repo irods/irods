@@ -1,6 +1,7 @@
 import re
 import os
 import socket
+import shlex
 
 if os.name != "nt":
     import fcntl
@@ -34,7 +35,8 @@ def check_icmd_outputtype(fullcmd,outputtype):
 
 def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
   result = False # should start as failing, then get set to pass
-  parameters = fullcmd.split(' ')
+#  parameters = fullcmd.split(' ')
+  parameters = shlex.split(fullcmd) # preserves quotes substrings
   print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
   if parameters[0] == "iadmin":
     output = mysession.runAdminCmd(parameters[0],parameters[1:])
