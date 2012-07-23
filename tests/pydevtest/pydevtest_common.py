@@ -48,7 +48,7 @@ def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
     lines = output[0].splitlines()
     for line in lines:
       print "  searching ["+line.strip()+"] for ["+expectedresults+"] ...",
-      if not re.search(expectedresults,line.strip()) == None:
+      if not re.search(re.escape(expectedresults),line.strip()) == None:
         print "found"
         result = True
         break

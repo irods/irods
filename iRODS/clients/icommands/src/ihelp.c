@@ -9,13 +9,12 @@
 
 char *icmds[]={
    "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
-   "ierror", "iexecmd", "iexit", "iget", "igetwild",
-   "ihelp", "iinit", "ils", "ilsresc",
+   "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild",
+   "ihelp", "iinit", "ilocate", "ils", "ilsresc",
    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
-   "iphybun", "iphymv", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
+   "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
    "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
-   "iscan", "isysmeta", "itrim", "iuserinfo",
-   ""};
+   "iscan", "isysmeta", "itrim", "iuserinfo", "ixmsg"};
 
 void usage ();
 

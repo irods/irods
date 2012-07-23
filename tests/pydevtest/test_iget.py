@@ -28,3 +28,8 @@ def test_local_iget_with_overwrite():
   assert output[1] == localfile
   # local cleanup
   output = commands.getstatusoutput( 'rm '+localfile )
+
+@with_setup(s.admin_session_up,s.admin_session_down)
+def test_local_iget_with_bad_option():
+  # assertions
+  assertiCmdFail(s.adminsession,"iget -z") # run iget with bad option

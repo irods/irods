@@ -52,3 +52,9 @@ def test_local_imkdir_with_parent():
   assertiCmdFail(s.adminsession,"ils -L "+mytestdir,"LIST",mytestdir) # should not be listed
   assertiCmd(s.adminsession,"imkdir -p "+mytestdir) # imkdir with parent
   assertiCmd(s.adminsession,"ils -L "+mytestdir,"LIST",mytestdir) # should be listed
+
+@with_setup(s.admin_session_up,s.admin_session_down)
+def test_local_imkdir_with_bad_option():
+  # assertions
+  assertiCmdFail(s.adminsession,"imkdir -z") # run imkdir with bad option
+
