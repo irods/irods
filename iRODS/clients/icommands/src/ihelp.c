@@ -14,7 +14,8 @@ char *icmds[]={
    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
    "iphybun", "iphymv", "ips", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
    "iquest", "iquota", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
-   "iscan", "isysmeta", "itrim", "iuserinfo", "ixmsg"};
+   "iscan", "isysmeta", "itrim", "iuserinfo", "ixmsg",
+   ""};
 
 void usage ();
 
