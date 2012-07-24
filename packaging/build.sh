@@ -300,7 +300,7 @@ if [ "$BOOST" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         PREFLIGHT="$PREFLIGHT libboost-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT boost"
+        PREFLIGHT="$PREFLIGHT boost-devel"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT boost-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
@@ -353,6 +353,27 @@ if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
 else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
 fi
+
+EASYINSTALL=`which easy_install`
+if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT python-setuptools"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT python-setuptools"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT python-setuptools"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT pysetuptools"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT"
+        # should have distribute included already
+    else
+        echo "      :: download from: http://pypi.python.org/pypi/setuptools/" 1>&2
+    fi
+else
+    echo "Detected easy_install [$EASYINSTALL]"
+fi
+
 
 # check python package prerequisites
 RST2PDF=`which rst2pdf`
