@@ -59,7 +59,7 @@ def admin_session_up():
   testresc = "testResc"
   output = commands.getstatusoutput("hostname")
   hostname = output[1]
-  adminsession.runCmd('iadmin',["mkresc",testresc,"unix file system","archive",hostname,"/tmp/pydevtest_"+testresc])
+  adminsession.runAdminCmd('iadmin',["mkresc",testresc,"unix file system","archive",hostname,"/tmp/pydevtest_"+testresc])
 
 def admin_session_down():
   # tear down admin session
@@ -67,7 +67,7 @@ def admin_session_down():
   adminsession.runCmd('icd')
   adminsession.runCmd('irm',['-r',sessionid])
   adminsession.runCmd('irmtrash')
-  adminsession.runCmd('iadmin',['rmresc',testresc])
+  adminsession.runAdminCmd('iadmin',['rmresc',testresc])
   adminsession.runCmd('iexit', ['full'])
   adminsession.deleteEnvFiles()
   # local file cleanup

@@ -123,6 +123,7 @@ class RodsSession(object):
                         'imv',
                         'icp',
                         'irm',
+                        'irmtrash',
                         'iexit' ]
 
         if icommand not in valid_cmds:
@@ -149,7 +150,7 @@ class RodsSession(object):
         
         if icommand != 'iadmin':
             # second value represents STDERR
-            return ("","Invalid Command - '"+icommand+"' not allowed")
+            return ("","Invalid Admin Command - '"+icommand+"' not allowed")
         
         # should probably also add a condition to restrict
         # possible values for icommandsDir
