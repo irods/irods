@@ -7,6 +7,8 @@ COVERAGE="0"
 RELEASE="0"
 BUILDEIRODS="1"
 COVERAGEBUILDDIR="/var/lib/e-irods"
+PREFLIGHT=""
+PYPREFLIGHT=""
 
 USAGE="
 
@@ -104,8 +106,9 @@ fi
 if [ "$COVERAGE" == "1" ] ; then
     if [ -d "$COVERAGEBUILDDIR" ] ; then
         echo "#######################################################" 1>&2
-        echo "ERROR :: $COVERAGEBUILDDIR already exists" 1>&2
+        echo "ERROR :: $COVERAGEBUILDDIR/ already exists" 1>&2
         echo "      :: Cannot build in place with coverage enabled" 1>&2
+        echo "      :: try: sudo rm -rf $COVERAGEBUILDDIR/" 1>&2
         echo "#######################################################" 1>&2
         exit 1
     fi
@@ -203,79 +206,63 @@ if [ "$DETECTEDOS" == "Ubuntu" ] ; then
     fi
 fi
 
+
+################################################################################
 # use error codes to determine dependencies
 # does not work on solaris ('which' returns 0, regardless), so check the output as well
 set +e
 
+GPLUSPLUS=`which g++`
+if [[ "$?" != "0" || `echo $GPLUSPLUS | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT g++"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT gcc-c++"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT gcc-c++"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT gcc4g++"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT doxygen"
+    fi
+fi
+
 if [ $1 == "icat" ] ; then
     UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
     if [ "$UNIXODBCDEV" == "" ] ; then
-        echo "#######################################################" 1>&2
-        echo "ERROR :: $SCRIPTNAME requires unixodbc-dev to be installed" 1>&2
         if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-            echo "      :: try: apt-get install unixodbc-dev" 1>&2
+            PREFLIGHT="$PREFLIGHT unixodbc-dev"
         elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-            echo "      :: try: yum install unixODBC-devel" 1>&2
+            PREFLIGHT="$PREFLIGHT unixODBC-devel"
         elif [ "$DETECTEDOS" == "SuSE" ] ; then
-            echo "      :: try: zypper install unixODBC-devel" 1>&2
+            PREFLIGHT="$PREFLIGHT unixODBC-devel"
         elif [ "$DETECTEDOS" == "Solaris" ] ; then
-            echo "      :: try: pkgutil --install unixodbc_dev" 1>&2
+            PREFLIGHT="$PREFLIGHT unixodbc_dev"
+        elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+            PREFLIGHT="$PREFLIGHT unixodbc" # not confirmed as successful
         else
             echo "      :: download from: http://www.unixodbc.org/download.html" 1>&2
         fi
-        echo "#######################################################" 1>&2
-        exit 1
     else
         echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
     fi
 fi
 
-RST2PDF=`which rst2pdf`
-if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires rst2pdf to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        echo "      :: try: apt-get install rst2pdf" 1>&2
-    else
-        echo "      :: try: easy_install rst2pdf" 1>&2
-    fi
-    echo "#######################################################" 1>&2
-    exit 1
-else
-    RST2PDFVERSION=`rst2pdf --version`
-    echo "Detected rst2pdf [$RST2PDF] v[$RST2PDFVERSION]"
-fi
-
-ROMAN=`python -c "import roman"`
-if [ "$?" != "0" ] ; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: rst2pdf requires python module 'roman' to be installed" 1>&2
-    echo "      :: try: easy_install roman" 1>&2
-    echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
-    echo "#######################################################" 1>&2
-    exit 1
-else
-    ROMANLOCATION=`find /usr 2> /dev/null | grep "/roman.pyc"`
-    echo "Detected python module 'roman' [$ROMANLOCATION]"
-fi
-
 DOXYGEN=`which doxygen`
 if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires doxygen to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        echo "      :: try: apt-get install doxygen" 1>&2
+        PREFLIGHT="$PREFLIGHT doxygen"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        echo "      :: try: yum install doxygen" 1>&2
+        PREFLIGHT="$PREFLIGHT doxygen"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        echo "      :: try: zypper install doxygen" 1>&2
+        PREFLIGHT="$PREFLIGHT doxygen"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: pkgutil --install doxygen" 1>&2
+        PREFLIGHT="$PREFLIGHT doxygen"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT doxygen"
     else
         echo "      :: download from: http://doxygen.org" 1>&2
     fi
-    echo "#######################################################" 1>&2
-    exit 1
 else
     DOXYGENVERSION=`doxygen --version`
     echo "Detected doxygen [$DOXYGEN] v[$DOXYGENVERSION]"
@@ -283,22 +270,20 @@ fi
 
 HELP2MAN=`which help2man`
 if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires help2man to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        echo "      :: try: apt-get install help2man" 1>&2
+        PREFLIGHT="$PREFLIGHT help2man"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        echo "      :: try: yum install help2man" 1>&2
+        PREFLIGHT="$PREFLIGHT help2man"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        echo "      :: try: zypper install help2man" 1>&2
+        PREFLIGHT="$PREFLIGHT help2man"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: pkgutil --install help2man" 1>&2
+        PREFLIGHT="$PREFLIGHT help2man"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT help2man"
     else
         echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
         echo "      ::                http://mirrors.kernel.org/gnu/help2man/" 1>&2
     fi
-    echo "#######################################################" 1>&2
-    exit 1
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
     echo "Detected help2man [$HELP2MAN] v[$H2MVERSION]"
@@ -311,23 +296,21 @@ else
 fi
 BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
 if [ "$BOOST" == "" ] ; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires boost to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        echo "      :: try: apt-get install libboost-dev" 1>&2
+        PREFLIGHT="$PREFLIGHT libboost-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        echo "      :: try: yum install boost" 1>&2
+        PREFLIGHT="$PREFLIGHT boost"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        echo "      :: try: zypper install boost-devel" 1>&2
+        PREFLIGHT="$PREFLIGHT boost-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: pkgutil --install boost_gcc_dev" 1>&2
+        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
         echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
         echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT boost-build"
     else
         echo "      :: download from: http://www.boost.org/users/download/" 1>&2
     fi
-    echo "#######################################################" 1>&2
-    exit 1
 else
     BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
     BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
@@ -336,24 +319,93 @@ fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
-    echo "#######################################################" 1>&2
-    echo "ERROR :: $SCRIPTNAME requires openssl (sha.h) to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        echo "      :: try: apt-get install libssl-dev" 1>&2
+        PREFLIGHT="$PREFLIGHT libssl-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        echo "      :: try: yum install openssl-devel" 1>&2
+        PREFLIGHT="$PREFLIGHT openssl-devel"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        echo "      :: try: zypper install libopenssl-devel" 1>&2
+        PREFLIGHT="$PREFLIGHT libopenssl-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: pkgutil --install libssl_dev" 1>&2
+        PREFLIGHT="$PREFLIGHT libssl_dev"
     else
         echo "      :: download from: http://www.openssl.org/source/" 1>&2
     fi
-    echo "#######################################################" 1>&2
-    exit 1
 else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
 fi
+
+FINDPOSTGRESBIN=`../packaging/find_postgres_bin.sh 2> /dev/null`
+if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT postgresql"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT postgresql"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT postgresql"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT postgresql_dev"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT postgresql"
+    else
+        echo "      :: DETECTED OTHER OS" 1>&2
+    fi
+else
+    echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
+fi
+
+# check python package prerequisites
+RST2PDF=`which rst2pdf`
+if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT rst2pdf"
+    else
+        PYPREFLIGHT="$PYPREFLIGHT rst2pdf"
+    fi
+else
+    RST2PDFVERSION=`rst2pdf --version`
+    echo "Detected rst2pdf [$RST2PDF] v[$RST2PDFVERSION]"
+fi
+
+# print out prerequisites error
+if [ "$PREFLIGHT" != "" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        echo "      :: try: sudo apt-get install$PREFLIGHT" 1>&2
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        echo "      :: try: sudo yum install$PREFLIGHT" 1>&2
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        echo "      :: try: sudo zypper install$PREFLIGHT" 1>&2
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        echo "      :: try: sudo pkgutil --install$PREFLIGHT" 1>&2
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        echo "      :: try: brew install$PREFLIGHT" 1>&2
+    else
+        echo "      :: NOT A DETECTED OPERATING SYSTEM" 1>&2
+    fi
+    echo "#######################################################" 1>&2
+    exit 1
+fi
+
+ROMAN=`python -c "import roman"`
+if [ "$?" != "0" ] ; then
+    PYPREFLIGHT="$PYPREFLIGHT roman"
+else
+    ROMANLOCATION=`find /usr /Library /opt 2> /dev/null | grep "/roman.pyc"`
+    echo "Detected python module 'roman' [$ROMANLOCATION]"
+fi
+
+# print out python prerequisites error
+if [ "$PYPREFLIGHT" != "" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: python requires some software to be installed" 1>&2
+    echo "      :: try: sudo easy_install$PYPREFLIGHT" 1>&2
+    echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
+fi
+################################################################################
+
 
 # reset to exit on an error
 set -e
@@ -396,7 +448,7 @@ if [ $1 == "icat" ] ; then
             EIRODSPOSTGRESPATH=`dirname $EIRODSPOSTGRESPATH`
             EIRODSPOSTGRESPATH="$EIRODSPOSTGRESPATH/"
 
-            echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESPATH]"
+            echo "Detected PostgreSQL path [$EIRODSPOSTGRESPATH]"
             sed -e s,EIRODSPOSTGRESPATH,$EIRODSPOSTGRESPATH, $EPMFILE > $TMPCONFIGFILE
         else
             echo "TODO: irods.config for DBTYPE other than postgres"
