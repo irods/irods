@@ -215,15 +215,16 @@ set +e
 GPLUSPLUS=`which g++`
 if [[ "$?" != "0" || `echo $GPLUSPLUS | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        PREFLIGHT="$PREFLIGHT g++"
+        PREFLIGHT="$PREFLIGHT g++ make"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT gcc-c++"
+        PREFLIGHT="$PREFLIGHT gcc-c++ make"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT gcc-c++"
+        PREFLIGHT="$PREFLIGHT gcc-c++ make"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT gcc4g++"
+        PREFLIGHT="$PREFLIGHT gcc4g++ gmake"
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT doxygen"
+        PREFLIGHT="$PREFLIGHT homebrew/versions/gcc45"
+        # mac comes with make preinstalled
     fi
 fi
 
