@@ -359,7 +359,7 @@ if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         PREFLIGHT="$PREFLIGHT python-setuptools"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT python-setuptools"
+        PREFLIGHT="$PREFLIGHT python-setuptools python-devel"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT python-setuptools"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
