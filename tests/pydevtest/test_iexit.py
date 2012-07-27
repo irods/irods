@@ -18,3 +18,8 @@ def test_iexit_with_bad_option():
   # assertions
   assertiCmdFail(s.adminsession,"iexit -z") # run iexit with bad option
 
+@with_setup(s.admin_session_up,s.admin_session_down)
+def test_iexit_with_bad_parameter():
+  # assertions
+  assertiCmdFail(s.adminsession,"iexit badparameter") # run iexit with bad parameter
+
