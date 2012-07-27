@@ -778,6 +778,12 @@ else
 fi
 
 cd $BUILDDIR
+unamem=`uname -m`
+if [[ "$unamem" == "x86_64" || "$unamem" == "amd64" ]] ; then
+    arch="amd64"
+else
+    arch="i386"
+fi
 if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     echo "Running EPM :: Generating $DETECTEDOS RPMs"
     epmvar="REDHATRPM$SERVER_TYPE" 
@@ -797,10 +803,10 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     echo "Running EPM :: Generating $DETECTEDOS DEBs"
     epmvar="DEB$SERVER_TYPE" 
-    ./epm/epm $EPMOPTS -a amd64 -f deb e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -a $arch -f deb e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-        ./epm/epm $EPMOPTS -a amd64 -f deb e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
+        ./epm/epm $EPMOPTS -a $arch -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
+        ./epm/epm $EPMOPTS -a $arch -f deb e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "Running EPM :: Generating $DETECTEDOS PKGs"
