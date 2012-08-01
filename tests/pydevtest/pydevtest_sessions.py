@@ -14,6 +14,7 @@ def admin_session_up():
   global myhost
   global myport
   global myzone
+  global myuser
   global myresc
   global mycwd
   global icommands_bin
@@ -24,6 +25,7 @@ def admin_session_up():
   myport         = "1247"
   myzone         = "tempZone"
   print "ZONE FOR ["+myhost+":"+myip+"] is ["+myzone+"]"
+  myuser         = "rods"
   myresc         = "demoResc"
   mycwd          = os.getcwd()
   icommands_bin  = "/usr/bin"
@@ -31,11 +33,11 @@ def admin_session_up():
   myenv          = icommands.RodsEnv(  myhost,
                                       myport,
                                       myresc,
-                                      '/'+myzone+'/home/rods',
-                                      '/'+myzone+'/home/rods',
-                                      'rods',
+                                      '/'+myzone+'/home/'+myuser,
+                                      '/'+myzone+'/home/'+myuser,
+                                      myuser,
                                       myzone,
-                                      'rods'
+                                      myuser
                                       )
   # create session
   global adminsession
