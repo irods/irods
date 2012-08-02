@@ -1,6 +1,8 @@
 import pydevtest_sessions as s
-from nose import with_setup
+from nose.tools import with_setup
+from nose.plugins.skip import SkipTest
 from pydevtest_common import assertiCmd, assertiCmdFail
+import commands
 
 def test_basic_python_assertions():
   assert "a" in "abc"       # in
@@ -16,7 +18,9 @@ def test_basic_python_assertions():
 def test_attempt_bad_icommand():
   assertiCmdFail(s.adminsession,"idoesnotexist","LIST","nope")
 
-
+@with_setup(s.admin_session_up.s.admin_session_down)
+def test_skip_this_test():
+  raise SKipTest
 
 #@with_setup(three_sessions_up,three_sessions_down)
 #def test_user1put_with_user2get():

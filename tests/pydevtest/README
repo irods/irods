@@ -1,29 +1,49 @@
-This file explains how to use this pydevtest directory...
-It is currently written for Terrell by Terrell, but hopefully can be made more generic over time.
+###########################################################
+# This file is currently written for Terrell by Terrell.  #
+# It should be made more generic over time.               #  
+###########################################################
+
+The tests in this directory have been designed to run with E-iRODS.  E-iRODS is owned by the eirods user and, therefore, the tests must be run by the eirods user.  The best way to work with this requirement is to run this test suite in a VM.
+
+Recommended: A VirtualBox guest of Ubuntu 12.04.
+
+########################################
 
 
+To ease development, the following environment conventions were found useful:
+
+#### VirtualBox - use the default NAT network interface for VM
+# set up port forwarding to be able to see into the VM from host OS
+# for ssh
+VBoxManage modifyvm "Your_VM_Image_Name" --natpf1 "guestssh,tcp,,2222,,22"
+# for www
+VBoxManage modifyvm "Your_VM_Image_Name" --natpf1 "guestweb,tcp,,8080,,80"
+
+#### connect to your VM from host OS terminal - removes copy/paste pain
+ssh -Y -p 2222 trelvb@127.0.0.1
 
 
-on local:
----------
-cd ~/Desktop/e-irods/tests/pydevtest
-rsync -avz --progress ./ tgr@ubuntu1.irods.renci.org:~/e-irods/tests/pydevtest/
+########################################
 
-as tgr on ubuntu1:
-------------------
+
+#### On the VM, build E-iRODS with coverage enabled, and install:
 cd e-irods
 sudo ./packaging/build.sh -c icat postgres
 sudo dpkg -i linux-2.6-amd64/e-irods-3.0b2-linux-2.6-amd64.deb
 sudo su - eirods
 
-as eirods on ubuntu1:
----------------------
-export PATH=/projects/irods/gardenbin/ubuntu-10.04/bin:/projects/irods/gardenbin/Linux/bin:$PATH
+
+#### Run the test suite as eirods:
 cd /var/lib/e-irods/tests/pydevtest
+# this command will generate a coverage report for the tests run and copy to /var/www/dev
+time ./run_pydevtest_coverage.sh username [nose params]
+# the resulting html should be visible from host OS
+open http://127.0.0.1:8080/dev
 
-time ./run_pydevtest_coverage.sh
 
-rsync -az ./coverageresults-$D/ tgr@wwwserver-1.renci.org:~/public_html/dev/
-rm -rf coverageresults* *.pyc; ls -alrt
+#### Clean up (delete coverage directories and .pyc files):
+./cleanup.sh
 
+
+########################################
 

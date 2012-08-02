@@ -34,7 +34,7 @@ echo "----- GENERATING COVERAGE BASELINE -----"
 
 # tests
 echo "----- RUNNING TESTS -----"
-echo "running: [$NOSECMD]..."
+echo "running: [$NOSECMD]"
 $NOSECMD
 
 # coverage report

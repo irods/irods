@@ -1,5 +1,6 @@
 import pydevtest_sessions as s
-from nose import with_setup
+from nose.tools import with_setup
+from nose.plugins.skip import SkipTest
 from pydevtest_common import assertiCmd, assertiCmdFail
 import commands
 
