@@ -1,11 +1,32 @@
 #!/bin/bash
 
-# get datestamp
+SCRIPTNAME=`basename $0`
+# check arguments
+if [ $# -lt 1 -o $# -gt 2 ] ; then
+  echo "Usage: $SCRIPTNAME username [nose parameter(s)]"
+  exit 1
+fi
+if [ $# -eq 2 ] ; then
+  NOSECMD="nosetests $2"
+else
+  NOSECMD="nosetests *.py"
+fi
+
+# check lcov version
+LCOVVERSION=`lcov --version | awk '{print $4}'`
+if [ "$LCOVVERSION" \< "1.8" ]; then
+  echo "ERROR: LCOV is version [$LCOVVERSION] ... this script requires >= 1.8"
+  exit 1
+fi
+
+# prep
+USERNAME=$1
 D=`date +%Y%m%dT%H%M%S`
+echo "DETECTED: username[$USERNAME] timestamp[$D]"
 
 # sync
 echo "----- SYNCING TEST FILES -----"
-rsync -avz /home/tgr/e-irods/tests/pydevtest/ ./
+rsync -avz /home/$USERNAME/e-irods/tests/pydevtest/ ./
 
 # coverage baseline
 echo "----- GENERATING COVERAGE BASELINE -----"
@@ -13,7 +34,8 @@ echo "----- GENERATING COVERAGE BASELINE -----"
 
 # tests
 echo "----- RUNNING TESTS -----"
-nosetests *.py
+echo "running: [$NOSECMD]..."
+$NOSECMD
 
 # coverage report
 if [ "$?" == "0" ] ; then
@@ -21,5 +43,7 @@ if [ "$?" == "0" ] ; then
   /var/lib/e-irods/tests/coverage-post.sh 2>&1 | tail -n4
   echo "--> coverageresults-$D"
   mv /var/lib/e-irods/coverageresults coverageresults-$D
+  echo "----- SYNCING COVERAGE REPORT TO WWW -----"
+  rsync -az ./coverageresults-$D/ /var/www/dev
+  echo "http://127.0.0.1:8080/dev"
 fi
-
