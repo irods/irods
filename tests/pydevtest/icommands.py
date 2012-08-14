@@ -2,15 +2,16 @@ import os
 import shutil
 import subprocess
 import datetime
+import time
 
 '''Originally written by Antoine deTorcy'''
 
 class RodsEnv(object):
     '''Contains Env/Auth variables.
-    
+
     Used as argument for RodsSession.createEnvFiles().
     '''
-    
+
     def __init__(self, host, port, defRes, homeColl, cwd, username, zone, auth):
         self.host = host
         self.port = port
@@ -20,7 +21,7 @@ class RodsEnv(object):
         self.username = username
         self.zone = zone
         self.auth = auth
-        
+
 
 
 class RodsSession(object):
@@ -36,14 +37,14 @@ class RodsSession(object):
 
     def createEnvFiles(self, myEnv):
         '''Creates session files in temporary directory.
-        
+
         Argument myEnv must be instance of RodsEnv defined above.
         This method is to be called prior to calling self.runCmd('iinit').
         '''
         # will have to add some testing for existing files
         # and acceptable argument values
         os.makedirs(self.sessionDir)
-        
+
         # create .irodsEnv file
         envFileAbsPath = "%s/%s" % (self.sessionDir, ".irodsEnv")
         ENVFILE = open(envFileAbsPath, "w")
@@ -58,7 +59,7 @@ class RodsSession(object):
 
     def deleteEnvFiles(self):
         '''Deletes temporary sessionDir recursively.
-        
+
         To be called after self.runCmd('iexit').
         '''
         shutil.rmtree(self.sessionDir)
@@ -86,6 +87,8 @@ class RodsSession(object):
         for line in envfile:
             if 'irodsZone' in line:
                 zone_name = line.split()[1]
+                zone_name = zone_name.replace('"',"")   # remove double quotes
+                zone_name = zone_name.replace("'","")   # remove single quotes
         envfile.close()
         return zone_name
 
@@ -95,14 +98,57 @@ class RodsSession(object):
         '''
         user_name = ""
         if not self.sessionFileExists():
-            return zone_name
+            return user_name
         envfilename = "%s/.irodsEnv" % (self.sessionDir)
         envfile = open(envfilename)
         for line in envfile:
             if 'irodsUserName' in line:
                 user_name = line.split()[1]
+                user_name = user_name.replace('"',"")   # remove double quotes
+                user_name = user_name.replace("'","")   # remove single quotes
         envfile.close()
         return user_name
+
+    def interruptCmd(self, icommand, argList=[], timeout=0):
+        '''Runs an icommand with optional argument list but
+        terminates the icommand subprocess after timeout seconds.
+
+        Returns 0  if subprocess was terminated.
+        Returns -1 if subprocess completed normally.
+
+        Not currently checking against allowed icommands.
+        '''
+
+        # should probably also add a condition to restrict
+        # possible values for icommandsDir
+        myenv = os.environ.copy()
+        myenv['irodsEnvFile'] = "%s/.irodsEnv" % (self.sessionDir)
+        myenv['irodsAuthFileName'] = "%s/.irodsA" % (self.sessionDir)
+
+        cmdStr = "%s/%s" % (self.icommandsDir, icommand)
+        argList = [cmdStr] + argList
+
+        p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
+            stderr = subprocess.PIPE, env = myenv)
+
+        # wait for subprocess to complete
+        granularity = 0.01
+        t = 0.0
+        while t < timeout and p.poll() is None:
+            time.sleep(granularity)
+            t += granularity
+
+        # if subprocess did not complete by timeout, we kill it
+        if p.poll() is None:
+            p.terminate()
+             # expected, so return 0
+            returncode = 0
+        # else the process finished before the timeout
+        else:
+            # unexpected, so return -1
+            returncode = -1
+
+        return returncode
 
     def runCmd(self, icommand, argList=[]):
         '''Runs an icommand with optional argument list and
@@ -147,20 +193,20 @@ class RodsSession(object):
         '''Runs the iadmin icommand with optional argument list and
         returns tuple (stdout, stderr) from subprocess execution.
         '''
-        
+
         if icommand != 'iadmin':
             # second value represents STDERR
             return ("","Invalid Admin Command - '"+icommand+"' not allowed")
-        
+
         # should probably also add a condition to restrict
         # possible values for icommandsDir
         myenv = os.environ.copy()
         myenv['irodsEnvFile'] = "%s/.irodsEnv" % (self.sessionDir)
         myenv['irodsAuthFileName'] = "%s/.irodsA" % (self.sessionDir)
-        
+
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
-        
+
         return subprocess.Popen(argList, stdin = subprocess.PIPE, \
             stdout = subprocess.PIPE, stderr = subprocess.PIPE, \
             env = myenv).communicate("yes\n")
@@ -181,26 +227,26 @@ class RodsSession(object):
 #                        'rods')
 #    mysession = RodsSession(working_path, icommands_bin, session_id)
 #    mysession.createEnvFiles(userInfo)
-#    
+#
 #    mysession.runCmd('iinit', [userInfo.auth])
-#    
+#
 #    output =  mysession.runCmd('ils')
 #    print output[0]
-#    
+#
 #    print "\nimeta ls -d beetle.jpg:\n"
 #    output = mysession.runCmd('imeta',['ls', '-d', 'beetle.jpg'])
 #    print output[0]
-#    
+#
 #    mysession.runCmd('icd',['testcoll0'])
-#    
+#
 #    output =  mysession.runCmd('ils')
 #    print output[0]
-#    
+#
 #    mysession.runCmd('icd',['..'])
-#    
+#
 #    print "\nimeta ls -C testcoll0:\n"
 #    output = mysession.runCmd('imeta',['ls', '-C', 'testcoll0'])
 #    print output[0]
-#    
+#
 #    mysession.runCmd('iexit', ['full'])
 #    mysession.deleteEnvFiles()

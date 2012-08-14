@@ -1,3 +1,3 @@
 #!/bin/bash -e
 
-rm -rf coverageresults* *.pyc
+rm -rf session-* coverageresults* *.pyc *.bak
