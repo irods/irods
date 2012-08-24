@@ -308,7 +308,7 @@ if [ "$BOOST" == "" ] ; then
         echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
         echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-build"
+        PREFLIGHT="$PREFLIGHT boost"
     else
         echo "      :: download from: http://www.boost.org/users/download/" 1>&2
     fi
