@@ -132,6 +132,10 @@ if [ $# -ne 1 -a $# -ne 2 ] ; then
     exit 1
 fi
 
+# get into the correct directory
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DETECTEDDIR/../
+
 MANDIR=man
 # check for clean
 if [ "$1" == "clean" ] ; then
@@ -164,9 +168,6 @@ if [ "$1" == "clean" ] ; then
 fi
 
 
-# get into the correct directory 
-DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DETECTEDDIR/../
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
