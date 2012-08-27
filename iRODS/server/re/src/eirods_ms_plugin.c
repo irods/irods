@@ -3,10 +3,12 @@
 #include "eirods_ms_home.h"
 #include "eirods_ms_plugin.h"
 #include "eirods_load_plugin.h"
+#include "eirods_log.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
 #include <iostream>
+#include <sstream>
 
 namespace eirods {
 	// =-=-=-=-=-=-=-
@@ -39,37 +41,40 @@ namespace eirods {
 	ms_table_entry::~ms_table_entry() {
 	} // dtor
 
-	bool ms_table_entry::delay_load( void* _h ) {
+	error ms_table_entry::delay_load( void* _h ) {
 		if( !_h ) {
-			return false;
+			return ERROR( false, -1, "delay_load - null handle parameter" );
 		}
 
 		callAction_ = reinterpret_cast< ms_func_ptr >( dlsym( _h, action_.c_str() ) );
 		
 		if( !callAction_ ) {
-			std::cout << "delay_load :: failed to load msvc function [" << action_ << "]" << std::endl;
-			return false;
+			std::stringstream msg;
+			msg << "delay_load :: failed to load msvc function [" << action_ << "]";
+			return ERROR( false, -1, msg.str() );
 		} else { 
 			#ifdef DEBUG
-			std::cout << "delay_load :: [" << action_ << "]" << std::endl;
+			std::cout << "[+]\teirods::ms_table_entry::delay_load :: [" << action_ << "]" << std::endl;
 			#endif
 		}
 
-		return true;
+		return SUCCESS();
 	} // delay_load
 
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object
 	// and then register that ms with the table
-	bool load_microservice_plugin( ms_table& _table, const std::string _ms ) {
+	error load_microservice_plugin( ms_table& _table, const std::string _ms ) {
 
-        ms_table_entry* entry = load_plugin< ms_table_entry >( _ms, EIRODS_MS_HOME );
-        if( entry ) {
+        ms_table_entry* entry;
+		error load_err = load_plugin< ms_table_entry >( _ms, EIRODS_MS_HOME, entry );
+        if( load_err.ok() && entry ) {
             _table[ _ms ] = entry;
-		    return true;
+		    return SUCCESS();
 		} else {
-			std::cout << "load_microservice_plugin - Failed to create ms plugin entry." << std::endl;
-			return false;
+			error ret = PASS( false, -1, "load_microservice_plugin - Failed to create ms plugin entry.", load_err );
+			log( ret );
+			return ret;
 		}
 	} // load_microservice_plugin
 

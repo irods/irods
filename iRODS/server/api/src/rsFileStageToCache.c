@@ -10,6 +10,7 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 #include "physPath.h"
+#include "eirods_log.h"
 
 int
 rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
@@ -90,51 +91,82 @@ fileStageSyncInp_t *fileStageToCacheInp, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-/* _rsFileStageToCache - this the local version of rsFileStageToCache.
- */
+// =-=-=-=-=-=-=-
+// _rsFileStageToCache - this the local version of rsFileStageToCache.
+int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp ) {
 
-int
-_rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
-{
+    // XXXX need to check resource permission and vault permission
+    // when RCAT is available 
     int status;
 
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
+    // =-=-=-=-=-=-=-
+    // need to make this now. It will be difficult to do it with
+    // parallel I/O
+    mkDirForFilePath( fileStageToCacheInp->cacheFileType, rsComm, "/", 
+	                  fileStageToCacheInp->cacheFilename, getDefDirMode() );
 
-    /* need to make this now. It will be difficult to do it with
-     * parallel I/O */
-    mkDirForFilePath (fileStageToCacheInp->cacheFileType, rsComm,
-      "/", fileStageToCacheInp->cacheFilename, getDefDirMode ());
-
-    status = fileStageToCache (fileStageToCacheInp->fileType, rsComm, 
-      fileStageToCacheInp->cacheFileType,
-      fileStageToCacheInp->mode, fileStageToCacheInp->flags,
-      fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename, 
-      fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput);
-
-    if (status < 0) {
+    // =-=-=-=-=-=-=-
+    // make the call to fileStageToCache via the resource plugin
+    eirods::error stage_err = fileStageToCache( fileStageToCacheInp->filename,  fileStageToCacheInp->cacheFilename, 
+                                                fileStageToCacheInp->mode,      fileStageToCacheInp->flags,
+                                                fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput,
+											    status );
+	// =-=-=-=-=-=-=-
+	// handle errors if any
+    if( !stage_err.ok() ) {
+		// =-=-=-=-=-=-=-
+        // an empty dir may be there 
         if (getErrno (status) == EEXIST) {
-            /* an empty dir may be there */
-            fileRmdir (fileStageToCacheInp->cacheFileType, rsComm,
-             fileStageToCacheInp->cacheFilename);
+
+			// =-=-=-=-=-=-=-
+			// make the call to rmdir via the resource plugin
+			eirods::error rmdir_err = fileRmdir( fileStageToCacheInp->cacheFilename, status );
+			if( !rmdir_err.ok() ) {
+				std::stringstream msg;
+				msg << "_rsFileStageToCache: fileRmdir for ";
+				msg << fileStageToCacheInp->cacheFilename;
+				msg << ", status = ";
+				msg << status;
+				eirods::error err = PASS( false, status, msg.str(), rmdir_err );
+				eirods::log ( err );
+			}
         } else {
-	    rodsLog (LOG_NOTICE, 
-	      "_rsFileStageToCache: fileStageToCache for %s, status = %d",
-	      fileStageToCacheInp->filename, status);
-            return (status);
-	}
-        status = fileStageToCache (fileStageToCacheInp->fileType, rsComm,
-          fileStageToCacheInp->cacheFileType,
-          fileStageToCacheInp->mode, fileStageToCacheInp->flags,
-          fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename,
-          fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput);
-	if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "_rsFileStageToCache: fileStageToCache for %s, status = %d",
-              fileStageToCacheInp->filename, status);
-        }
-    }
-    return (status);
-} 
- 
+			std::stringstream msg;
+			msg << "_rsFileStageToCache: fileStageTocache for ";
+			msg << fileStageToCacheInp->filename;
+			msg << ", status = ";
+			msg << status;
+			eirods::error err = PASS( false, status, msg.str(), stage_err );
+			eirods::log ( err );
+	    }
+
+		// =-=-=-=-=-=-=-
+		// try it again?  ( make the call to fileStageToCache via the resource plugin )
+        stage_err = fileStageToCache( fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename,
+                                      fileStageToCacheInp->mode,     fileStageToCacheInp->flags,
+                                      fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput,
+		                              status );
+		// =-=-=-=-=-=-=-
+		// handle errors if any
+		if( !stage_err.ok() ) {
+			std::stringstream msg;
+			msg << "_rsFileStageToCache: fileStageTocache for ";
+			msg << fileStageToCacheInp->filename;
+			msg << ", status = ";
+			msg << status;
+			eirods::error err = PASS( false, status, msg.str(), stage_err );
+			eirods::log ( err );
+	    }
+
+    } // if ! stage_err.ok
+    
+	return (status);
+
+} // _rsFileStageToCache 
+
+
+
+
+
+
+

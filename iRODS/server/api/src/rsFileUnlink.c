@@ -5,6 +5,7 @@
 
 #include "fileUnlink.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
 
 int
 rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
@@ -62,20 +63,36 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
-{
+// =-=-=-=-=-=-=-
+// local function for calling unlink via resource plugin
+int _rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp ) {
     int status;
-
-    status = fileUnlink (fileUnlinkInp->fileType, rsComm, 
-     fileUnlinkInp->fileName);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-          "_rsFileUnlink: fileUnlink for %s, status = %d",
-          fileUnlinkInp->fileName, status);
-        return (status);
+   
+    // =-=-=-=-=-=-=-
+    // call unlink via resource plugin
+    eirods::error unlink_err = fileUnlink( fileUnlinkInp->fileName, status );
+     
+    // =-=-=-=-=-=-=-
+    // log potential error message
+    if( status < 0 ) {
+		std::stringstream msg;
+		msg << "_rsFileUnlink: fileRead for ";
+		msg << fileUnlinkInp->fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error ret_err = PASS( false, status, msg.str(), unlink_err );
+		eirods::log( ret_err );
     }
 
     return (status);
-} 
+
+} // _rsFileUnlink
+
+
+
+
+
+
+
+
+

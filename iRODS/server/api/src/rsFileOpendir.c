@@ -8,7 +8,7 @@
 #include "fileOpendir.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
-
+#include "eirods_log.h"
 
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
@@ -75,29 +75,31 @@ rodsServerHost_t *rodsServerHost)
     return fileInx;
 }
 
-/* _rsFileOpendir - this the local version of rsFileOpendir.
- */
+// =-=-=-=-=-=-=-
+// _rsFileOpendir - this the local version of rsFileOpendir.
+int _rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, void **dirPtr ) {
+    // =-=-=-=-=-=-=-
+    // FIXME:: XXXX need to check resource permission and vault permission
+    // when RCAT is available 
+     
+    // =-=-=-=-=-=-=-
+	// make the call to opendir via resource plugin
+    int status = -1;
+    eirods::error opendir_err = fileOpendir( fileOpendirInp->dirName, dirPtr, status );
 
-int
-_rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp,
-void **dirPtr)
-{
-    int status;
-
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
-
-    status = fileOpendir (fileOpendirInp->fileType, rsComm, 
-      fileOpendirInp->dirName, dirPtr);
-
-    if (status < 0) {
-	rodsLog (LOG_NOTICE, 
-	  "_rsFileOpendir: fileOpendir for %s, status = %d",
-	  fileOpendirInp->dirName, status);
-        return (status);
-    }
+    // =-=-=-=-=-=-=-
+	// log an error, if any
+    if( !opendir_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileOpendir: fileOpendir for ";
+		msg <<fileOpendirInp->dirName; 
+		msg << ", status = ";
+		msg << status;
+		eirods::error err = PASS( false, status, msg.str(), opendir_err );
+		eirods::log ( err );
+	}
 
     return (status);
-} 
+
+} // _rsFileOpendir
  

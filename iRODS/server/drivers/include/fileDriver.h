@@ -18,6 +18,9 @@
 #include "objInfo.h"
 #include "msParam.h"
 
+#include "eirods_error.h"
+
+
 typedef struct {
     fileDriverType_t	driverType; 
     int         	(*fileCreate)( rsComm_t*, char*, int, rodsLong_t ); /* JMC */
@@ -44,69 +47,29 @@ typedef struct {
     int			(*fileSyncToArch)( rsComm_t*, fileDriverType_t, int, int, char*, char*, rodsLong_t, keyValPair_t*); /* JMC */
 } fileDriver_t;
 
+eirods::error fileCreate  ( std::string _file_name, int _mode, size_t _file_size, int& _file_desc );
+eirods::error fileOpen    ( std::string _file_name, int _mode, int    _flags,     int& _file_desc );
+eirods::error fileRead    ( std::string _file_name, int _fd,   void*  _buf,       int  _len,      int& _status );
+eirods::error fileWrite   ( std::string _file_name, int _fd,   void*  _buf,       int  _len,      int& _status );
+eirods::error fileClose   ( std::string _file_name, int _fd,   int&   _status );
+eirods::error fileUnlink  ( std::string _file_name, int& _status );
+eirods::error fileStat    ( std::string _file_name, struct stat* _statbuf, int& _status );
+eirods::error fileFstat   ( std::string _file_name, int _fd, struct stat* _statbuf, int& _status );
+eirods::error fileLseek   ( std::string _file_name, int _fd, size_t _offset, int _whence, size_t& _status ); 
+eirods::error fileFsync   ( std::string _file_name, int _fd, int& _status );
+eirods::error fileMkdir   ( std::string _file_name, int _mode, int& _status );
+eirods::error fileChmod   ( std::string _file_name, int _mode, int& _status );
+eirods::error fileRmdir   ( std::string _file_name, int& _status );
+eirods::error fileOpendir ( std::string _file_name, void** _out_dir_ptr, int& _status ); 
+eirods::error fileClosedir( std::string _file_name, void*  _dir_ptr,     int& _status );
+eirods::error fileReaddir ( std::string _file_name, void* _dir_ptr, struct dirent* _dirent_ptr, int& _status );
+eirods::error fileStage   ( std::string _file_name, int _flag, int& _status );
+eirods::error fileRename  ( std::string _old_file_name, std::string _new_file_name, int& _status );
+eirods::error fileGetFsFreeSpace( std::string _file_name, int _flag, size_t& _status );
+eirods::error fileTruncate( std::string _file_name, size_t _size, int& _status );
+eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
+                                size_t _data_size, keyValPair_t* _cond_input, int& _status );
+eirods::error fileSyncToArch( std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
+					          size_t _data_size, keyValPair_t* _cond_input, int& _status );
 
-
-int
-fileIndexLookup (fileDriverType_t myType);
-int
-fileCreate (fileDriverType_t myType, rsComm_t *rsComm, char *fileName,
-int mode, rodsLong_t mySize);
-int
-fileOpen (fileDriverType_t myType, rsComm_t *rsComm, char *fileName, int flags, int mode);
-int
-fileRead (fileDriverType_t myType, rsComm_t *rsComm, int fd, void *buf,
-int len);
-int
-fileWrite (fileDriverType_t myType, rsComm_t *rsComm, int fd, void *buf,
-int len);
-int
-fileClose (fileDriverType_t myType, rsComm_t *rsComm, int fd);
-int
-fileUnlink (fileDriverType_t myType, rsComm_t *rsComm, char *filename);
-int
-fileStat (fileDriverType_t myType, rsComm_t *rsComm, char *filename,
-struct stat *statbuf);
-int
-fileFstat (fileDriverType_t myType, rsComm_t *rsComm, int fd,
-struct stat *statbuf);
-rodsLong_t
-fileLseek (fileDriverType_t myType, rsComm_t *rsComm, int fd,
-rodsLong_t offset, int whence);
-int
-fileMkdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename, int mode);
-int
-fileChmod (fileDriverType_t myType, rsComm_t *rsComm, char *filename, int mode);
-int
-fileRmdir (fileDriverType_t myType, rsComm_t *rsComm, char *filename);
-int
-fileOpendir (fileDriverType_t myType, rsComm_t *rsComm, char *filename,
-void **outDirPtr);
-int
-fileClosedir (fileDriverType_t myType, rsComm_t *rsComm, void *dirPtr);
-int
-fileReaddir (fileDriverType_t myType, rsComm_t *rsComm, void *dirPtr,
-struct dirent *direntPtr);
-int
-fileStage (fileDriverType_t myType, rsComm_t *rsComm, char *path, int flag);
-int
-fileRename (fileDriverType_t myType, rsComm_t *rsComm, char *oldFileName,
-char *newFileName);
-rodsLong_t
-fileGetFsFreeSpace (fileDriverType_t myType, rsComm_t *rsComm,
-char *path, int flag);
-int
-fileFsync (fileDriverType_t myType, rsComm_t *rsComm, int fd);
-int
-fileTruncate (fileDriverType_t myType, rsComm_t *rsComm, char *path,
-rodsLong_t dataSize);
-int
-fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm,
-fileDriverType_t cacheFileType, int mode, int flag,
-char *filename, char *cacheFilename, rodsLong_t dataSize,
-keyValPair_t *condInput);
-int
-fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, 
-fileDriverType_t cacheFileType, int mode, int flag,
-char *filename, char *cacheFilename, rodsLong_t dataSize,
-keyValPair_t *condInput);
 #endif	/* FILE_DRIVER_H */

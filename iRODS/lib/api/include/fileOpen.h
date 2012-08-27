@@ -22,7 +22,14 @@
 #define UNIQUE_REM_COMM_FLAG	0x2 
 #define FORCE_FLAG		        0x4
 
+#ifdef USE_EIRODS
+#include <string>
+#endif
+
 typedef struct {
+	
+    char resc_name_[MAX_NAME_LEN];
+    
     fileDriverType_t fileType;
     int otherFlags;	/* for chkPerm, uniqueRemoteConn */
     rodsHostAddr_t addr;

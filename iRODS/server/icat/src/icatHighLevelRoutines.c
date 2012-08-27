@@ -1465,6 +1465,10 @@ int chlRegResc(rsComm_t *rsComm,
    }
 
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
+
+   // =-=-=-=-=-=-=-
+   // JMC :: remove the token name check as resources are now dynamically created
+   #if 0
    status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
    if (status !=0 ) {
       int i;
@@ -1475,11 +1479,13 @@ int chlRegResc(rsComm_t *rsComm,
       return(CAT_INVALID_RESOURCE_TYPE);
    }
 
-   if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 3");
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc S Q L 3");
    status = cmlCheckNameToken("resc_class", rescInfo->rescClass, &icss);
    if (status !=0 ) {
       return(CAT_INVALID_RESOURCE_CLASS);
    }
+   #endif
 
    if (strlen(rescInfo->rescLoc)<1) {
       return(CAT_INVALID_RESOURCE_NET_ADDR);

@@ -8,6 +8,8 @@
 #include "fileStat.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
+#include "eirods_log.h"
+
 
 int
 initFileDesc ()
@@ -117,12 +119,10 @@ char *filePath, int mode)
     return (status);
 }
 
-/* mk the directory resursively */ 
+// =-=-=-=-=-=-=-
+// mk the directory resursively 
+int mkFileDirR( int fileType, rsComm_t *rsComm, char *startDir, char *destDir, int mode ) {
 
-int
-mkFileDirR (int fileType, rsComm_t *rsComm, char *startDir, 
-char *destDir, int mode)
-{
     int status;
     int startLen;
     int pathLen, tmpLen;
@@ -136,35 +136,43 @@ char *destDir, int mode)
 
     tmpLen = pathLen;
 
-    while (tmpLen > startLen) {
-        status = fileStat ( (fileDriverType_t)fileType, rsComm, tmpPath, &statbuf);
-        if (status >= 0) {
-            if (statbuf.st_mode & S_IFDIR) {
-                break;
-            } else {
-		 rodsLog (LOG_NOTICE,
-                 "mkFileDirR: A local non-directory %s already exists \n",
-                  tmpPath);
-                return (status);
-            }
-        }
+	while (tmpLen > startLen) {
+		fileStat( tmpPath, &statbuf, status );
+		if (status >= 0) {
+			if (statbuf.st_mode & S_IFDIR) {
+				break;
+			} else {
+				rodsLog (LOG_NOTICE,
+				"mkFileDirR: A local non-directory %s already exists \n",
+				tmpPath);
+				return (status);
+			}
+		}
 
-        /* Go backward */
+		/* Go backward */
+		while (tmpLen && tmpPath[tmpLen] != '/')
+			tmpLen --;
 
-        while (tmpLen && tmpPath[tmpLen] != '/')
-            tmpLen --;
-        tmpPath[tmpLen] = '\0';
-    }
+		tmpPath[tmpLen] = '\0';
+
+	} // while
+
 
     /* Now we go forward and make the required dir */
     while (tmpLen < pathLen) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
-       status = fileMkdir ((fileDriverType_t)fileType, rsComm, tmpPath, mode);
-        if (status < 0 && (getErrno (status) != EEXIST)) { // JMC - backport 4834
-	    rodsLog (LOG_NOTICE,
-             "mkFileDirR: mkdir failed for %s, status =%d",
-              tmpPath, status);
+      
+	    eirods::error mkdir_err = fileMkdir( tmpPath, mode, status ); 
+        if ( !mkdir_err.ok() && (getErrno (status) != EEXIST)) { // JMC - backport 4834
+		    std::stringstream msg;
+			msg << "mkFileDirR: fileMkdir for ";
+			msg << tmpPath;
+			msg << ", status = ";
+			msg << status;
+			eirods::error ret_err = PASS( false, status, msg.str(), mkdir_err );
+			eirods::log( ret_err );
+
             return status;
         }
 #if 0	/* a fix from AndyS */
@@ -180,64 +188,108 @@ int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 {
     void *dirPtr = NULL;
-#if defined(solaris_platform)
+    #if defined(solaris_platform)
     char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];
     struct dirent *myFileDirent = (struct dirent *) fileDirent;
-#else
+    #else
     struct dirent fileDirent;
     struct dirent *myFileDirent = &fileDirent;
-#endif
+    #endif
     int status;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
 
-    status = fileOpendir ((fileDriverType_t)fileType, rsComm, cacheDir, &dirPtr);
+	// =-=-=-=-=-=-=-
+	// call opendir via resource plugin
+	eirods::error opendir_err = fileOpendir( cacheDir, &dirPtr, status );
 
-    if (status < 0) {
-        return (0);
-    }
-
-    while ((status = fileReaddir ((fileDriverType_t)fileType, rsComm, dirPtr, myFileDirent))
-      >= 0) {
-        if (strcmp (myFileDirent->d_name, ".") == 0 ||
-          strcmp (myFileDirent->d_name, "..") == 0) {
-            continue;
-        }
-        snprintf (childPath, MAX_NAME_LEN, "%s/%s", cacheDir, 
-	  myFileDirent->d_name);
-
-        status = fileStat ((fileDriverType_t)fileType, rsComm, childPath, &myFileStat);
-
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "chkEmptyDir: fileStat error for %s, status = %d",
-              childPath, status);
-	    break;
-        }
-	if (myFileStat.st_mode & S_IFREG) {
-            rodsLog (LOG_ERROR,
-              "chkEmptyDir: file %s exists",
-              childPath, status);
-	    status = SYS_DIR_IN_VAULT_NOT_EMPTY;
-            break;
-        }
-
-	if (myFileStat.st_mode & S_IFDIR) {
-	    status = chkEmptyDir ((fileDriverType_t)fileType, rsComm, childPath);
-	    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
-                rodsLog (LOG_ERROR,
-                  "chkEmptyDir: dir %s is not empty", childPath);
-	        break;
-	    }
+	// =-=-=-=-=-=-=-
+	// dont log an error as this is part
+	// of the functionality of this code
+	if( !opendir_err.ok() ) {
+		return 0;
 	}
+
+	// =-=-=-=-=-=-=-
+	// make call to readdir via resource plugin
+    eirods::error readdir_err = fileReaddir( cacheDir, dirPtr, myFileDirent, status );
+    while( readdir_err.ok() && 0 == status ) {
+		// =-=-=-=-=-=-=-
+		// handle relative paths
+		if( strcmp( myFileDirent->d_name, "." ) == 0 ||
+			strcmp( myFileDirent->d_name, "..") == 0) {
+	        readdir_err = fileReaddir( cacheDir, dirPtr, myFileDirent, status );
+			continue;
+		}
+
+		// =-=-=-=-=-=-=-
+		// get status of path
+		snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
+		fileStat( childPath, &myFileStat, status );
+
+		// =-=-=-=-=-=-=-
+		// handle hard error
+		if( status < 0 ) {
+			rodsLog( LOG_ERROR, "chkEmptyDir: fileStat error for %s, status = %d",
+			         childPath, status);
+			break;
+		}
+
+		// =-=-=-=-=-=-=-
+		// path exists
+		if( myFileStat.st_mode & S_IFREG ) {
+			rodsLog( LOG_ERROR, "chkEmptyDir: file %s exists",
+			         childPath, status);
+			status = SYS_DIR_IN_VAULT_NOT_EMPTY;
+			break;
+		}
+
+		// =-=-=-=-=-=-=-
+		// recurse for another directory
+		if (myFileStat.st_mode & S_IFDIR) {
+			status = chkEmptyDir ((fileDriverType_t)fileType, rsComm, childPath);
+			if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
+				rodsLog( LOG_ERROR, "chkEmptyDir: dir %s is not empty", childPath );
+				break;
+		    }
+		}
+		
+		// =-=-=-=-=-=-=-
+		// continue with child path
+	    readdir_err = fileReaddir( cacheDir, dirPtr, myFileDirent, status );
+
+    } // while
+
+	// =-=-=-=-=-=-=-
+	// make call to closedir via resource plugin, log error if necessary
+	eirods::error closedir_err = fileClosedir( cacheDir, dirPtr, status );
+    if( !closedir_err.ok() ) {
+		std::stringstream msg;
+		msg << "chkEmptyDir: fileClosedir for ";
+		msg << cacheDir;
+		msg << ", status = ";
+		msg << status;
+		eirods::error log_err = PASS( false, status, msg.str(), closedir_err );
+		eirods::log( log_err ); 
+	}
+
+	if( status != SYS_DIR_IN_VAULT_NOT_EMPTY ) {
+		eirods::error rmdir_err = fileRmdir( cacheDir, status );
+		if( !rmdir_err.ok() ) {
+			std::stringstream msg;
+			msg << "chkEmptyDir: fileRmdir for ";
+			msg << cacheDir;
+			msg << ", status = ";
+			msg << status;
+			eirods::error err = PASS( false, status, msg.str(), rmdir_err );
+			eirods::log ( err );
+		}
+		status = 0;
     }
-    fileClosedir ((fileDriverType_t)fileType, rsComm, dirPtr);
-    if (status != SYS_DIR_IN_VAULT_NOT_EMPTY) {
-	fileRmdir ((fileDriverType_t)fileType, rsComm, cacheDir);
-	status = 0;
-    }
+
     return status;
-}
+
+} // chkEmptyDir
 
 /* chkFilePathPerm - check the FilePath permission.
  * If rodsServerHost

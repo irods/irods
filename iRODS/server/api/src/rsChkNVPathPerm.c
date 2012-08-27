@@ -101,22 +101,17 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 
     sysUid = rsComm->clientUser.sysUid;
     if (sysUid < 0) {
-		rodsLog( LOG_NOTICE, "ZZZZ - sysUid < 0" );
         /* have tried before */
         return (SYS_NO_PATH_PERMISSION);
     } else if (sysUid == 0) {
-		rodsLog( LOG_NOTICE, "ZZZZ - sysUid == 0" );
 	    if (strstr (rsComm->clientUser.userName, "@") != NULL) {
-		    rodsLog( LOG_NOTICE, "ZZZZ - splitPathByKey" );
             splitPathByKey (rsComm->clientUser.userName, userName, tmpPath, '@');
 		} else {
-		    rodsLog( LOG_NOTICE, "ZZZZ - rstrcpy (userName, rsComm->clientUser.userName, NAME_LEN)" );
 			rstrcpy (userName, rsComm->clientUser.userName, NAME_LEN);
 		}
 
 		sysUid = rsComm->clientUser.sysUid = getUnixUid (userName);
 		if (sysUid < 0) {
-		    rodsLog( LOG_NOTICE, "ZZZZ - sysUid < 0 - 2" );
 			rsComm->clientUser.sysUid = sysUid;
 			return (SYS_NO_PATH_PERMISSION);
 		}
@@ -129,8 +124,8 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 
     status = -1;
     while (1) {
-        status = fileStat (chkNVPathPermInp->fileType, rsComm, tmpPath, &myFileStat);
-         
+        
+        eirods::error stat_err = fileStat( tmpPath, &myFileStat, status ); 
 		if (status >= 0) {
 			break;
 		} else if (errno == EEXIST || getErrno (status) == EEXIST) {
@@ -159,13 +154,11 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     }
 	    
     if (status < 0) {
-		rodsLog( LOG_NOTICE, "ZZZZ - status < 0" );
 	    return (SYS_NO_PATH_PERMISSION);
     }
 	    
     if( sysUid != (int) myFileStat.st_uid && 
         (myFileStat.st_mode & S_IWOTH) == 0) {
-	rodsLog( LOG_NOTICE, "ZZZZ -  foobar" );
 	    return (SYS_NO_PATH_PERMISSION);
     } else {
         return (0);

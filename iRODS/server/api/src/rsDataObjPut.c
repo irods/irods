@@ -405,80 +405,83 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     int chkType = 0; // JMC - backport 4774
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
 
     dataObjInp = L1desc[l1descInx].dataObjInp;
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
-        memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-          MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
+        
+		memset (&subFile, 0, sizeof (subFile));
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN);
+        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (dataObjInp);
         subFile.flags = O_WRONLY | dataObjInp->openFlags;
-#if 0
-        if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-#else
-	if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
-#endif
+	    
+		if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
             subFile.flags |= FORCE_FLAG;
         }
-        bytesWritten = rsSubStructFilePut (rsComm, &subFile, dataObjInpBBuf);
+        
+		bytesWritten = rsSubStructFilePut (rsComm, &subFile, dataObjInpBBuf);
         return (bytesWritten);
-    }
+
+    } // struct file type >= 0
 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-        memset (&filePutInp, 0, sizeof (filePutInp));
-#if 0
-	if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-#else
-	if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
-#endif
-	    filePutInp.otherFlags |= FORCE_FLAG;
-	}
-        filePutInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
-        rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-        filePutInp.mode = getFileMode (dataObjInp);
-        filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
-		// =-=-=-=-=-=-=-
-		// JMC - backport 4774
-        chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,L1desc[l1descInx].dataObjInfo);
+        case FILE_CAT:
+            memset (&filePutInp, 0, sizeof (filePutInp));
+	        if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
+	        filePutInp.otherFlags |= FORCE_FLAG;
+	        }
 
-		if(chkType == DISALLOW_PATH_REG) {
-			return PATH_REG_NOT_ALLOWED;
-		} else if (chkType == NO_CHK_PATH_PERM) {
-		// =-=-=-=-=-=-=-
-            filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
-        }
-        bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
-        /* file already exists ? */
-        while (bytesWritten < 0 && retryCnt < 10 &&
-          (filePutInp.otherFlags & FORCE_FLAG) == 0 &&
-	  getErrno (bytesWritten) == EEXIST) {
-            if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
-                break;
-            }
-            rstrcpy (filePutInp.fileName, dataObjInfo->filePath,
-              MAX_NAME_LEN);
-	    bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
-            retryCnt ++;
-        }
+			
+			filePutInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+			
+			rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
+			rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+			
+			filePutInp.mode = getFileMode (dataObjInp);
+			filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
+			
+			// =-=-=-=-=-=-=-
+			// JMC - backport 4774
+			chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,L1desc[l1descInx].dataObjInfo);
+
+			if(chkType == DISALLOW_PATH_REG) {
+				return PATH_REG_NOT_ALLOWED;
+			} else if (chkType == NO_CHK_PATH_PERM) {
+			// =-=-=-=-=-=-=-
+				filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
+			}
+			
+			bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
+			/* file already exists ? */
+			while( bytesWritten < 0 && retryCnt < 10 &&
+			       ( filePutInp.otherFlags & FORCE_FLAG ) == 0 &&
+		           getErrno (bytesWritten) == EEXIST) {
+
+				if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
+					break;
+				}
+				rstrcpy (filePutInp.fileName, dataObjInfo->filePath,MAX_NAME_LEN);
+			    bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
+				retryCnt ++;
+			} // while
 
         break;
+
       default:
-        rodsLog (LOG_NOTICE,
-          "l3Open: rescCat type %d is not recognized",
-          RescTypeDef[rescTypeInx].rescCat);
+        rodsLog( LOG_NOTICE,"l3Open: rescCat type %d is not recognized",
+                 RescTypeDef[rescTypeInx].rescCat );
         bytesWritten = SYS_INVALID_RESC_TYPE;
         break;
-    }
+
+    } // switch
+
     return (bytesWritten);
-}
+
+} // l3FilePutSingleBuf
 

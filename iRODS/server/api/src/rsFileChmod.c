@@ -5,6 +5,7 @@
 
 #include "fileChmod.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
 
 int
 rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
@@ -62,20 +63,32 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
-{
-    int status;
+// =-=-=-=-=-=-=-
+// call chmod throught the resource plugin for a given file
+int _rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp ) {
 
-    status = fileChmod (fileChmodInp->fileType, rsComm, fileChmodInp->fileName,
-     fileChmodInp->mode);
+    // =-=-=-=-=-=-=-
+	// make the call to chmod via the resource plugin
+    int status = -1;
+	eirods::error chmod_err = fileChmod( fileChmodInp->fileName, fileChmodInp->mode, status );
 
+    // =-=-=-=-=-=-=-
+	// log an error, if any
     if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-          "_rsFileChmod: fileChmod for %s, status = %d",
-          fileChmodInp->fileName, status);
-        return (status);
+		std::stringstream msg;
+		msg << "_rsFileChmod: fileChmod for ";
+		msg << fileChmodInp->fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error err = PASS( false, status, msg.str(), chmod_err );
+		eirods::log ( err );
     }
 
-    return (status);
-} 
+    return status;
+
+} // _rsFileChmod
+
+
+
+
+ 

@@ -24,7 +24,7 @@ main(int argc, char *argv[])
     char *tmpStr;
 
     ProcessType = AGENT_PT;
-
+//sleep(30);
 #ifdef RUN_SERVER_AS_ROOT
 #ifndef windows_platform
     if (initServiceUser() < 0) {

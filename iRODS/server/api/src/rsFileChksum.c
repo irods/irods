@@ -5,6 +5,7 @@
 
 #include "fileChksum.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
 
 #define SVR_MD5_BUF_SZ (1024*1024)
 
@@ -95,34 +96,47 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     int len;
     unsigned char buffer[SVR_MD5_BUF_SZ], digest[16];
     int status;
-#ifdef MD5_DEBUG
-    rodsLong_t bytesRead = 0;	/* XXXX debug */
-#endif
 
-    if ((fd = fileOpen ((fileDriverType_t)fileType, rsComm, fileName, O_RDONLY, 0)) < 0) {
+    #ifdef MD5_DEBUG
+    rodsLong_t bytesRead = 0;	/* XXXX debug */
+    #endif
+  
+    // =-=-=-=-=-=-=-
+	// call resource plugin to open file 
+    eirods::error ret = fileOpen( fileName, 0, O_RDONLY, fd );
+    if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
-        rodsLog (LOG_NOTICE,
-        "fileChksum; fileOpen failed for %s. status = %d", fileName, status);
+        rodsLog( LOG_NOTICE,"fileChksum; fileOpen failed for %s. status = %d", fileName, status );
         return (status);
     }
 
     MD5Init (&context);
-    while ((len = fileRead ((fileDriverType_t)fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ)) > 0) {
-#ifdef MD5_DEBUG
-	bytesRead += len;	/* XXXX debug */
-#endif
+
+    eirods::error read_err = fileRead( fileName, fd, buffer, SVR_MD5_BUF_SZ, len );	
+    while( read_err.ok() && len > 0 ) {
+        #ifdef MD5_DEBUG
+	    bytesRead += len;	/* XXXX debug */
+        #endif
         MD5Update (&context, buffer, len);
-    }
+    
+	    read_err = fileRead( fileName, fd, buffer, SVR_MD5_BUF_SZ, len );	
+
+    } // while
+
     MD5Final (digest, &context);
 
-    fileClose ((fileDriverType_t)fileType, rsComm, fd);
+    ret = fileClose( fileName, fd, status );
+    if( !ret.ok() ) {
+		eirods::error err = PASS( false, status, "fileChksum - error on close", ret );
+        eirods::log( err );
+	}
 
     md5ToStr (digest, chksumStr);
 
-#ifdef MD5_DEBUG
+    #ifdef MD5_DEBUG
     rodsLog (LOG_NOTICE,	/* XXXX debug */
     "fileChksum: chksum = %s, bytesRead = %lld", chksumStr, bytesRead);
-#endif
+    #endif
 
     return (0);
 

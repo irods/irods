@@ -32,6 +32,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     rodsServerHost_t *rodsServerHost;
     char phyBunDir[MAX_NAME_LEN];
     int flags = 0;
+
 #if 0
     dataObjInp_t dirRegInp;
     structFileOprInp_t structFileOprInp;

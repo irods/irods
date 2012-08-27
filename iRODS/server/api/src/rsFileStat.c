@@ -5,6 +5,7 @@
 
 #include "fileStat.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
 
 int
 rsFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp, 
@@ -91,31 +92,47 @@ rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
-rodsStat_t **fileStatOut)
+// =-=-=-=-=-=-=-
+// local function to handle call to stat via resource plugin
+int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut )
 {
-    int status;
+    int status = -1;
     struct stat myFileStat;
 
-    status = fileStat (fileStatInp->fileType, rsComm, fileStatInp->fileName,
-     &myFileStat);
+	// =-=-=-=-=-=-=-
+	// make call to stat via resource plugin
+    eirods::error stat_err = fileStat ( fileStatInp->fileName, &myFileStat, status );
 
-    if (status < 0) {
-        rodsLog (LOG_DEBUG, 
-          "_rsFileStat: fileStat for %s, status = %d",
-          fileStatInp->fileName, status);
-        return (status);
+	// =-=-=-=-=-=-=-
+	// log error if necessary
+    if( !stat_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileStat: fileStat for ";
+		msg << fileStatInp->fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error ret_err = PASS( false, status, msg.str(), stat_err );
+		eirods::log( ret_err );
+
+		return status;
     }
 
+	// =-=-=-=-=-=-=-
+	// convert unix stat struct to an irods stat struct
     *fileStatOut = (rodsStat_t*)malloc (sizeof (rodsStat_t));
-
     status = statToRodsStat (*fileStatOut, &myFileStat);
-
+	
+	// =-=-=-=-=-=-=-
+	// manage error if necessary
     if (status < 0) {
-	free (*fileStatOut);
-	*fileStatOut = NULL;
+		free (*fileStatOut);
+		*fileStatOut = NULL;
     }
 
-    return (status);
-} 
+    return status;
+
+} // _rsFileStat
+
+
+
+

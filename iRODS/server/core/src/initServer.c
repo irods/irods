@@ -27,6 +27,8 @@
 #include "hpssFileDriver.h"
 #endif
 
+#include "eirods_log.h"
+
 static time_t LastBrokenPipeTime = 0;
 static int BrokenPipeCnt = 0;
 
@@ -231,6 +233,13 @@ initServerInfo (rsComm_t *rsComm)
 	}
     }
 
+#if 1
+    eirods::error ret = resc_mgr.init_from_catalog( rsComm );
+    if( !ret.ok() ) {
+		eirods::error log_err = PASS( false, -1, "initServerInfo - init_from_catalog failed", ret );
+		eirods::log( log_err );
+	}
+#endif
     return (status);
 }
 

@@ -429,6 +429,11 @@ dataObjInfo_t *dataObjInfo)
     int chkType = 0; // JMC - backport 4774
 
 	fileCreateInp_t fileCreateInp;
+
+
+    rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+
+
 	memset (&fileCreateInp, 0, sizeof (fileCreateInp));
 	fileCreateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 	rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,

@@ -87,172 +87,182 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
     }
 
     if (strcmp(generalAdminInp->arg0,"add")==0) {
-       if (strcmp(generalAdminInp->arg1,"user")==0) { 
-	  /* run the acCreateUser rule */
-	  char *args[2];
-	  memset((char*)&rei,0,sizeof(rei));
-	  rei.rsComm = rsComm;
-	  strncpy(userInfo.userName, generalAdminInp->arg2, 
-		  sizeof userInfo.userName);
-	  strncpy(userInfo.userType, generalAdminInp->arg3, 
-		  sizeof userInfo.userType);
-	  strncpy(userInfo.rodsZone, generalAdminInp->arg4, 
-		  sizeof userInfo.rodsZone);
-	  strncpy(userInfo.authInfo.authStr, generalAdminInp->arg5, 
-		  sizeof userInfo.authInfo.authStr);
-	  rei.uoio = &userInfo;
-	  rei.uoic = &rsComm->clientUser;
-	  rei.uoip = &rsComm->proxyUser;
-	  status = applyRuleArg("acCreateUser", args, 0, &rei, SAVE_REI);
-	  if (status != 0) chlRollback(rsComm);
-          return(status);
-       }
-       if (strcmp(generalAdminInp->arg1,"dir")==0) {
-	  memset((char*)&collInfo,0,sizeof(collInfo));
-	  strncpy(collInfo.collName, generalAdminInp->arg2, 
-		  sizeof collInfo.collName);
-	  if (strlen(generalAdminInp->arg3) > 0) {
-	     strncpy(collInfo.collOwnerName, generalAdminInp->arg3,
-		     sizeof collInfo.collOwnerName);
-	     status = chlRegCollByAdmin(rsComm, &collInfo);
-	     if (status == 0) {
-		int status2;
-		status2 = chlCommit(rsComm);
-	     }
-	  }
-	  else {
-	     status = chlRegColl(rsComm, &collInfo);
-	  }
-	  if (status != 0) chlRollback(rsComm);
-	  return(status);
-       }
-       if (strcmp(generalAdminInp->arg1,"zone")==0) {
-	  status = chlRegZone(rsComm, generalAdminInp->arg2,
-			      generalAdminInp->arg3, 
-			      generalAdminInp->arg4,
-			      generalAdminInp->arg5);
-	  if (status == 0) {
-	     if (strcmp(generalAdminInp->arg3,"remote")==0) {
-		memset((char*)&collInfo,0,sizeof(collInfo));
-		strncpy(collInfo.collName, "/", sizeof collInfo.collName);
-		strncat(collInfo.collName, generalAdminInp->arg2,
+		if (strcmp(generalAdminInp->arg1,"user")==0) { 
+			/* run the acCreateUser rule */
+			char *args[2];
+			memset((char*)&rei,0,sizeof(rei));
+			rei.rsComm = rsComm;
+			strncpy(userInfo.userName, generalAdminInp->arg2, 
+			sizeof userInfo.userName);
+			strncpy(userInfo.userType, generalAdminInp->arg3, 
+			sizeof userInfo.userType);
+			strncpy(userInfo.rodsZone, generalAdminInp->arg4, 
+			sizeof userInfo.rodsZone);
+			strncpy(userInfo.authInfo.authStr, generalAdminInp->arg5, 
+			sizeof userInfo.authInfo.authStr);
+			rei.uoio = &userInfo;
+			rei.uoic = &rsComm->clientUser;
+			rei.uoip = &rsComm->proxyUser;
+			status = applyRuleArg("acCreateUser", args, 0, &rei, SAVE_REI);
+			if (status != 0) chlRollback(rsComm);
+			return(status);
+			}
+			if (strcmp(generalAdminInp->arg1,"dir")==0) {
+			memset((char*)&collInfo,0,sizeof(collInfo));
+			strncpy(collInfo.collName, generalAdminInp->arg2, 
 			sizeof collInfo.collName);
-		strncpy(collInfo.collOwnerName, rsComm->proxyUser.userName,
+			if (strlen(generalAdminInp->arg3) > 0) {
+			strncpy(collInfo.collOwnerName, generalAdminInp->arg3,
 			sizeof collInfo.collOwnerName);
-		status = chlRegCollByAdmin(rsComm, &collInfo);
-		if (status == 0) {
-		   chlCommit(rsComm);
+			status = chlRegCollByAdmin(rsComm, &collInfo);
+			if (status == 0) {
+			int status2;
+			status2 = chlCommit(rsComm);
+			}
+			}
+			else {
+			status = chlRegColl(rsComm, &collInfo);
+			}
+			if (status != 0) chlRollback(rsComm);
+			return(status);
+			}
+			if (strcmp(generalAdminInp->arg1,"zone")==0) {
+			status = chlRegZone(rsComm, generalAdminInp->arg2,
+			generalAdminInp->arg3, 
+			generalAdminInp->arg4,
+			generalAdminInp->arg5);
+			if (status == 0) {
+			if (strcmp(generalAdminInp->arg3,"remote")==0) {
+			memset((char*)&collInfo,0,sizeof(collInfo));
+			strncpy(collInfo.collName, "/", sizeof collInfo.collName);
+			strncat(collInfo.collName, generalAdminInp->arg2,
+			sizeof collInfo.collName);
+			strncpy(collInfo.collOwnerName, rsComm->proxyUser.userName,
+			sizeof collInfo.collOwnerName);
+			status = chlRegCollByAdmin(rsComm, &collInfo);
+			if (status == 0) {
+			chlCommit(rsComm);
+			}
+			}
+			}
+			return(status);
+		} // add user
+
+		// =-=-=-=-=-=-=-
+		// add a new resource to the data grid
+		if (strcmp(generalAdminInp->arg1,"resource")==0) {
+			// =-=-=-=-=-=-=-
+			// pull values out of api call args into rescInfo structure
+			strncpy(rescInfo.rescName,      generalAdminInp->arg2, sizeof rescInfo.rescName);
+			strncpy(rescInfo.rescType,      generalAdminInp->arg3, sizeof rescInfo.rescType);
+			strncpy(rescInfo.rescClass,     generalAdminInp->arg4, sizeof rescInfo.rescClass);
+			strncpy(rescInfo.rescLoc,       generalAdminInp->arg5, sizeof rescInfo.rescLoc);
+			strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
+			strncpy(rescInfo.zoneName,      generalAdminInp->arg7, sizeof rescInfo.zoneName);
+
+			// =-=-=-=-=-=-=-
+			// RAJA ADDED June 1 2009 for pre-post processing rule hooks 
+			args[0] = rescInfo.rescName;
+			args[1] = rescInfo.rescType;
+			args[2] = rescInfo.rescClass;
+			args[3] = rescInfo.rescLoc;
+			args[4] = rescInfo.rescVaultPath;
+			args[5] = rescInfo.zoneName;
+			argc = 6;
+
+			// =-=-=-=-=-=-=-
+			// apply preproc policy enforcement point for creating a resource, handle errors
+			i =  applyRuleArg("acPreProcForCreateResource", args, argc, &rei2, NO_SAVE_REI);
+			if (i < 0) {
+				if (rei2.status < 0) {
+					i = rei2.status;
+				}
+				rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
+						 rescInfo.rescName, i );
+				return i;
+			}
+			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+			// =-=-=-=-=-=-=-
+			// register resource with the metadata catalog, roll back on an error
+			status = chlRegResc( rsComm, &rescInfo );
+			if( status != 0 ) {
+				chlRollback( rsComm );
+				return( status );
+			}
+
+			// =-=-=-=-=-=-=-
+			// apply postproc policy enforcement point for creating a resource, handle errors
+			// ( RAJA ADDED June 1 2009 for pre-post processing rule hooks )
+			i =  applyRuleArg( "acPostProcForCreateResource", args, argc, &rei2, NO_SAVE_REI );
+			if( i < 0 ) {
+				if (rei2.status < 0) {
+					i = rei2.status;
+				}
+				rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
+						 rescInfo.rescName, i );
+				return i;
+			}
+			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+			return(status);
+
+		} // if create resource
+
+		if (strcmp(generalAdminInp->arg1,"token")==0) {
+			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+			args[0] = generalAdminInp->arg2;
+			args[1] = generalAdminInp->arg3;
+			args[2] = generalAdminInp->arg4;
+			args[3] = generalAdminInp->arg5;
+			args[4] = generalAdminInp->arg6;
+			args[5] = generalAdminInp->arg7;
+			argc = 6;
+			i =  applyRuleArg("acPreProcForCreateToken", args, argc, &rei2, NO_SAVE_REI);
+			if (i < 0) {
+			if (rei2.status < 0) {
+			i = rei2.status;
+			}
+			rodsLog (LOG_ERROR,
+			"rsGeneralAdmin:acPreProcForCreateToken error for %s.%s=%s,stat=%d",
+			args[0],args[1],args[2],i);
+			return i;
+			}
+			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+			status = chlRegToken(rsComm, generalAdminInp->arg2,
+			generalAdminInp->arg3, 
+			generalAdminInp->arg4,
+			generalAdminInp->arg5,
+			generalAdminInp->arg6,
+			generalAdminInp->arg7);
+			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+			if (status == 0) {
+			i =  applyRuleArg("acPostProcForCreateToken", args, argc, &rei2, NO_SAVE_REI);
+			if (i < 0) {
+			if (rei2.status < 0) {
+			i = rei2.status;
+			}
+			rodsLog (LOG_ERROR,
+			"rsGeneralAdmin:acPostProcForCreateToken error for %s.%s=%s,stat=%d",
+			args[0],args[1],args[2],i);
+			return i;
+			}
+			}
+			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+			if (status != 0) chlRollback(rsComm);
+			return(status);
+		} // token
+
+		if (strcmp(generalAdminInp->arg1,"specificQuery")==0) {
+		    status = chlAddSpecificQuery(rsComm, generalAdminInp->arg2,
+		    generalAdminInp->arg3);
+		    return(status);
 		}
-	     }
-	  }
-	  return(status);
-       }
-       if (strcmp(generalAdminInp->arg1,"resource")==0) {
-	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, 
-		  sizeof rescInfo.rescName);
-	  strncpy(rescInfo.rescType,  generalAdminInp->arg3, 
-		  sizeof rescInfo.rescType);
-	  strncpy(rescInfo.rescClass, generalAdminInp->arg4, 
-		  sizeof rescInfo.rescClass);
-	  strncpy(rescInfo.rescLoc,   generalAdminInp->arg5, 
-		  sizeof rescInfo.rescLoc);
-	  strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, 
-		  sizeof rescInfo.rescVaultPath);
-	  strncpy(rescInfo.zoneName,  generalAdminInp->arg7, 
-		  sizeof rescInfo.zoneName);
-	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-	  args[0] = rescInfo.rescName;
-	  args[1] = rescInfo.rescType;
-	  args[2] = rescInfo.rescClass;
-	  args[3] = rescInfo.rescLoc;
-	  args[4] = rescInfo.rescVaultPath;
-	  args[5] = rescInfo.zoneName;
-	  argc = 6;
-	  i =  applyRuleArg("acPreProcForCreateResource", args, argc, &rei2, NO_SAVE_REI);
-	  if (i < 0) {
-	    if (rei2.status < 0) {
-	      i = rei2.status;
-	    }
-	    rodsLog (LOG_ERROR,
-		     "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
-		     rescInfo.rescName,i);
-	    return i;
-	  }
-	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    
+	} // add
 
-	  status = chlRegResc(rsComm, &rescInfo);
-	  if (status != 0) {
-	    chlRollback(rsComm);
-	    return(status);
-	  }
-	  
-	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-	  i =  applyRuleArg("acPostProcForCreateResource",args,argc, &rei2, NO_SAVE_REI);
-	  if (i < 0) {
-	    if (rei2.status < 0) {
-	      i = rei2.status;
-	    }
-	    rodsLog (LOG_ERROR,
-		     "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
-                     rescInfo.rescName,i);
-            return i;
-          }
-          /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-	  return(status);
-       }
-       if (strcmp(generalAdminInp->arg1,"token")==0) {
-	 
-	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-	  args[0] = generalAdminInp->arg2;
-	  args[1] = generalAdminInp->arg3;
-	  args[2] = generalAdminInp->arg4;
-	  args[3] = generalAdminInp->arg5;
-	  args[4] = generalAdminInp->arg6;
-	  args[5] = generalAdminInp->arg7;
-	  argc = 6;
-	  i =  applyRuleArg("acPreProcForCreateToken", args, argc, &rei2, NO_SAVE_REI);
-	  if (i < 0) {
-	    if (rei2.status < 0) {
-	      i = rei2.status;
-	    }
-	    rodsLog (LOG_ERROR,
-		     "rsGeneralAdmin:acPreProcForCreateToken error for %s.%s=%s,stat=%d",
-		     args[0],args[1],args[2],i);
-	    return i;
-	  }
-	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-	  status = chlRegToken(rsComm, generalAdminInp->arg2,
-			       generalAdminInp->arg3, 
-			       generalAdminInp->arg4,
-			       generalAdminInp->arg5,
-			       generalAdminInp->arg6,
-			       generalAdminInp->arg7);
-          /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
- 	  if (status == 0) {
-	    i =  applyRuleArg("acPostProcForCreateToken", args, argc, &rei2, NO_SAVE_REI);
-	    if (i < 0) {
-	      if (rei2.status < 0) {
-		i = rei2.status;
-	      }
-	      rodsLog (LOG_ERROR,
-		       "rsGeneralAdmin:acPostProcForCreateToken error for %s.%s=%s,stat=%d",
-		       args[0],args[1],args[2],i);
-	      return i;
-	    }
-	  }
-          /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
- 
-	  if (status != 0) chlRollback(rsComm);
-	  return(status);
-       }
-       if (strcmp(generalAdminInp->arg1,"specificQuery")==0) {
-	  status = chlAddSpecificQuery(rsComm, generalAdminInp->arg2,
-				       generalAdminInp->arg3);
-	  return(status);
-       }
-    }
     if (strcmp(generalAdminInp->arg0,"modify")==0) {
        if (strcmp(generalAdminInp->arg1,"user")==0) {
 	 /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/

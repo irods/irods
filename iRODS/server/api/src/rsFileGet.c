@@ -5,6 +5,7 @@
 
 #include "fileGet.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
 
 /* rsFileGet - Get the content of a small file into a single buffer
  * in fileGetOutBBuf->buf.
@@ -68,10 +69,8 @@ bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, 
-bytesBuf_t *fileGetOutBBuf)
-{
+int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGetOutBBuf ) {
+
     int status;
     int fd;
     int len;
@@ -92,8 +91,10 @@ bytesBuf_t *fileGetOutBBuf)
     if (fileGetOutBBuf->buf == NULL) {
         fileGetOutBBuf->buf = malloc (len);
     }
-    status = fileRead (fileGetInp->fileType, rsComm,
-      fd, fileGetOutBBuf->buf, len);
+
+    eirods::error read_err = fileRead( fileGetInp->fileName, fd, 
+	                                   fileGetOutBBuf->buf, len,
+							           status );
 
     if (status != len) {
        if (status >= 0) {
@@ -106,16 +107,34 @@ bytesBuf_t *fileGetOutBBuf)
         fileGetOutBBuf->len = status;
 #endif
         } else {
-            rodsLog (LOG_NOTICE,
-              "_rsFileGet: fileRead for %s, status = %d",
-              fileGetInp->fileName, status);
+			std::stringstream msg;
+			msg << "_rsFileGet: fileRead for ";
+			msg << fileGetInp->fileName;
+			msg << ", status = ";
+			msg << status;
+			eirods::error ret_err = PASS( false, status, msg.str(), read_err );
+			eirods::log( ret_err );
         }
     } else {
         fileGetOutBBuf->len = status;
     }
 
-    fileClose (fileGetInp->fileType, rsComm, fd);
+    // =-=-=-=-=-=-=-
+	// call resource plugin close 
+    int close_stat;
+    eirods::error close_err = fileClose( fileGetInp->fileName, fd, close_stat );
+    if( !close_err.ok() ) {
+		eirods::error err = PASS( false, close_stat, "_rsFileGet - error on close", close_err );
+		eirods::log( err );
+	}
 
     return (status);
-} 
+
+} // _rsFileGet 
+
+
+
+
+
+
 

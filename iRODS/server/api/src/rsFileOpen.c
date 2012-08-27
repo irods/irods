@@ -8,6 +8,9 @@
 #include "fileOpen.h"
 #include "fileOpr.h"
 #include "miscServerFunct.h"
+#include "rsGlobalExtern.h"
+
+#include "eirods_log.h"
 
 int
 rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
@@ -43,7 +46,7 @@ rodsServerHost_t *rodsServerHost)
     remoteFlag = rodsServerHost->localFlag;
     
     if (remoteFlag == LOCAL_HOST) {
-	fd = _rsFileOpen (rsComm, fileOpenInp);
+	    fd = _rsFileOpen (rsComm, fileOpenInp);
     } else if (remoteFlag == REMOTE_HOST) {
         fd = remoteFileOpen (rsComm, fileOpenInp, rodsServerHost);
     } else {
@@ -58,7 +61,7 @@ rodsServerHost_t *rodsServerHost)
     }
 
     if (fd < 0) {
-	return (fd);
+	    return (fd);
     }
 
     fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->fileName,
@@ -95,32 +98,35 @@ rodsServerHost_t *rodsServerHost)
     return fileInx;
 }
 
-/* _rsFileOpen - this the local version of rsFileOpen.
- */
+// =-=-=-=-=-=-=-
+// _rsFileOpen - this the local version of rsFileOpen.
+int _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp) {
 
-int
-_rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
-{
-    int fd;
-
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
-
-    if ((fileOpenInp->flags & O_WRONLY) && (fileOpenInp->flags & O_RDWR)) {
-	/* both O_WRONLY and O_RDWR are on, can cause I/O to fail */
-	fileOpenInp->flags &= ~(O_WRONLY);
-    }
-    fd = fileOpen (fileOpenInp->fileType, rsComm, fileOpenInp->fileName,
-     fileOpenInp->flags, fileOpenInp->mode);
-
-    if (fd < 0) {
-	rodsLog (LOG_NOTICE, 
-	  "_rsFileOpen: fileOpen for %s, status = %d",
-	  fileOpenInp->fileName, fd);
-        return (fd);
+	// =-=-=-=-=-=-=-
+    // NOTE:: need to check resource permission and vault permission
+    //        when RCAT is available 
+    if( ( fileOpenInp->flags & O_WRONLY ) && ( fileOpenInp->flags & O_RDWR ) ) {
+		/* both O_WRONLY and O_RDWR are on, can cause I/O to fail */
+		fileOpenInp->flags &= ~(O_WRONLY);
     }
 
-    return (fd);
-} 
+    // =-=-=-=-=-=-=-
+	// call file open on the resource plugin 
+    int fd = -1;
+    eirods::error ret_err = fileOpen( fileOpenInp->fileName, fileOpenInp->mode, fileOpenInp->flags, fd );
+    
+	// =-=-=-=-=-=-=-
+	// log errors, if any    
+    if ( !ret_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileOpen: fileOpen for [";
+		msg << fileOpenInp->fileName;
+		msg << "], status = ";
+		msg << fd;
+        eirods::log( LOG_ERROR, msg.str() );
+    } // if
+
+    return fd;
+
+} // _rsFileOpen
  

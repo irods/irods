@@ -17,6 +17,7 @@ namespace eirods {
 			hash_map< KeyType, ValueType, HashType > table_;
 			
 		public:
+            typedef typename hash_map< KeyType, ValueType, HashType >::iterator iterator;
 			lookup_table(){};
 			virtual ~lookup_table() {}
 			ValueType& operator[]( KeyType _k ) {
@@ -31,9 +32,15 @@ namespace eirods {
 			size_t erase( KeyType _k ) {
 		        return table_.erase( _k );	
 			}
-			void clear() {
-				table.clear();
+            void clear() {
+				table_.clear();
 			}
+			bool empty() {
+				return table_.empty();
+			}
+			iterator begin() { return table_.begin(); }
+			iterator end()   { return table_.end();   }
+            
 	}; // class lookup_table
 	
 };

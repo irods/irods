@@ -132,6 +132,10 @@ if [ $# -ne 1 -a $# -ne 2 ] ; then
     exit 1
 fi
 
+# get into the correct directory
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DETECTEDDIR/../
+
 MANDIR=man
 # check for clean
 if [ "$1" == "clean" ] ; then
@@ -164,9 +168,6 @@ if [ "$1" == "clean" ] ; then
 fi
 
 
-# get into the correct directory 
-DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DETECTEDDIR/../
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
@@ -308,7 +309,7 @@ if [ "$BOOST" == "" ] ; then
         echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
         echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-build"
+        PREFLIGHT="$PREFLIGHT boost"
     else
         echo "      :: download from: http://www.boost.org/users/download/" 1>&2
     fi
@@ -595,6 +596,14 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         exit 1
     fi
 
+    # =-=-=-=-=-=-=-
+    # build resource plugins
+	
+	cd ../plugins/resources/
+	make 
+	cd ../../
+
+    # =-=-=-=-=-=-=-
     # update EPM list template with values from irods.config
     cd $BUILDDIR
     #   database name

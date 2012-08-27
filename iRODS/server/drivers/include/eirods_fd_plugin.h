@@ -5,7 +5,6 @@
 // =-=-=-=-=-=-=-
 // STL Includes
 #include <string>
-#include <iostream>
 
 // =-=-=-=-=-=-=-
 // dlopen, etc
@@ -13,7 +12,6 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_ms_home.h"
 #include "eirods_lookup_table.h"
 
 // =-=-=-=-=-=-=-
@@ -24,8 +22,8 @@ namespace eirods {
 
 	// =-=-=-=-=-=-=-
 	// create a lookup table for the filedriver value type
-    typedef lookup_table< fileDriver_t > fd_table;
-	
+    class fd_table;
+		
 	// =-=-=-=-=-=-=-
 	// given the name of a file driver, try to load the shared object
 	// and then register that fd with the table

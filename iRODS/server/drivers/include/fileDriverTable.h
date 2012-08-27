@@ -129,6 +129,235 @@ noSupportFsFileStageToCache, \
 noSupportFsFileSyncToArch
 
 
+#ifdef XXXUSE_EIRODS
+#include "eirods_fd_plugin.h"
+namespace eirods {
+
+    // =-=-=-=-=-=-=-
+	// use ctor for initialization	
+	//template<>
+	class fd_table : public lookup_table< fileDriver_t, int, hash<int> > {
+        public:	
+        fd_table() : lookup_table< fileDriver_t, int, hash<int> > () {
+        #ifndef windows_platform
+			// =-=-=-=-=-=-=-
+			// init UNIX_FILE_TYPE
+			{   fileDriverType_t driver_index = UNIX_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = unixFileCreate;
+				table_[ driver_index ].fileOpen           = unixFileOpen;
+				table_[ driver_index ].fileRead           = unixFileRead;
+				table_[ driver_index ].fileWrite          = unixFileWrite;
+				table_[ driver_index ].fileClose          = unixFileClose;
+				table_[ driver_index ].fileUnlink         = unixFileUnlink;
+				table_[ driver_index ].fileStat           = unixFileStat;
+				table_[ driver_index ].fileFstat          = unixFileFstat;
+				table_[ driver_index ].fileLseek          = unixFileLseek;
+				table_[ driver_index ].fileFsync          = unixFileFsync;
+				table_[ driver_index ].fileMkdir          = unixFileMkdir;
+				table_[ driver_index ].fileChmod          = unixFileChmod;
+				table_[ driver_index ].fileRmdir          = unixFileRmdir;
+				table_[ driver_index ].fileOpendir        = unixFileOpendir;
+				table_[ driver_index ].fileClosedir       = unixFileClosedir;
+				table_[ driver_index ].fileReaddir        = unixFileReaddir;
+				table_[ driver_index ].fileStage          = unixFileStage;
+				table_[ driver_index ].fileRename         = unixFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = unixFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = unixFileTruncate;
+				table_[ driver_index ].fileStageToCache   = unixStageToCache;
+				table_[ driver_index ].fileSyncToArch     = unixSyncToArch;    }
+			// =-=-=-=-=-=-=-
+			// init TEST_STAGE_FILE_TYPE
+			{   fileDriverType_t driver_index =	TEST_STAGE_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = noSupportFsFileCreate;
+				table_[ driver_index ].fileOpen           = noSupportFsFileOpen;
+				table_[ driver_index ].fileRead           = noSupportFsFileRead;
+				table_[ driver_index ].fileWrite          = noSupportFsFileWrite;
+				table_[ driver_index ].fileClose          = noSupportFsFileClose;
+				table_[ driver_index ].fileUnlink         = unixFileUnlink;
+				table_[ driver_index ].fileStat           = unixFileStat;
+				table_[ driver_index ].fileFstat          = unixFileFstat;
+				table_[ driver_index ].fileLseek          = noSupportFsFileLseek;
+				table_[ driver_index ].fileFsync          = noSupportFsFileFsync;
+				table_[ driver_index ].fileMkdir          = unixFileMkdir;
+				table_[ driver_index ].fileChmod          = unixFileChmod;
+				table_[ driver_index ].fileRmdir          = unixFileRmdir;
+				table_[ driver_index ].fileOpendir        = unixFileOpendir;
+				table_[ driver_index ].fileClosedir       = unixFileClosedir;
+				table_[ driver_index ].fileReaddir        = unixFileReaddir;
+				table_[ driver_index ].fileStage          = noSupportFsFileStage;
+				table_[ driver_index ].fileRename         = unixFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = unixFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = noSupportFsFileTruncate;
+				table_[ driver_index ].fileStageToCache   = unixStageToCache;
+				table_[ driver_index ].fileSyncToArch     = unixSyncToArch;    }
+			// =-=-=-=-=-=-=-
+			// init UNIV_MSS_FILE_TYPE
+			{   fileDriverType_t driver_index =	UNIV_MSS_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = noSupportFsFileCreate;
+				table_[ driver_index ].fileOpen           = noSupportFsFileOpen;
+				table_[ driver_index ].fileRead           = noSupportFsFileRead;
+				table_[ driver_index ].fileWrite          = noSupportFsFileWrite;
+				table_[ driver_index ].fileClose          = noSupportFsFileClose;
+				table_[ driver_index ].fileUnlink         = univMSSFileUnlink;
+				table_[ driver_index ].fileStat           = univMSSFileStat;
+				table_[ driver_index ].fileFstat          = noSupportFsFileFstat;
+				table_[ driver_index ].fileLseek          = noSupportFsFileLseek;
+				table_[ driver_index ].fileFsync          = noSupportFsFileFsync;
+				table_[ driver_index ].fileMkdir          = univMSSFileMkdir;
+				table_[ driver_index ].fileChmod          = univMSSFileChmod;
+				table_[ driver_index ].fileRmdir          = noSupportFsFileRmdir;
+				table_[ driver_index ].fileOpendir        = noSupportFsFileOpendir;
+				table_[ driver_index ].fileClosedir       = noSupportFsFileClosedir;
+				table_[ driver_index ].fileReaddir        = noSupportFsFileReaddir;
+				table_[ driver_index ].fileStage          = noSupportFsFileStage;
+				table_[ driver_index ].fileRename         = univMSSFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = noSupportFsFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = noSupportFsFileTruncate;
+				table_[ driver_index ].fileStageToCache   = univMSSStageToCache;
+				table_[ driver_index ].fileSyncToArch     = univMSSSyncToArch;    }
+			// =-=-=-=-=-=-=-
+			// init MSO_FILE_TYPE
+			{   fileDriverType_t driver_index =	MSO_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = noSupportFsFileCreate;
+				table_[ driver_index ].fileOpen           = noSupportFsFileOpen;
+				table_[ driver_index ].fileRead           = noSupportFsFileRead;
+				table_[ driver_index ].fileWrite          = noSupportFsFileWrite;
+				table_[ driver_index ].fileClose          = noSupportFsFileClose;
+				table_[ driver_index ].fileUnlink         = msoFileUnlink;
+				table_[ driver_index ].fileStat           = msoFileStat;
+				table_[ driver_index ].fileFstat          = noSupportFsFileFstat;
+				table_[ driver_index ].fileLseek          = noSupportFsFileLseek;
+				table_[ driver_index ].fileFsync          = noSupportFsFileFsync;
+				table_[ driver_index ].fileMkdir          = noSupportFsFileMkdir;
+				table_[ driver_index ].fileChmod          = noSupportFsFileChmod;
+				table_[ driver_index ].fileRmdir          = noSupportFsFileRmdir;
+				table_[ driver_index ].fileOpendir        = noSupportFsFileOpendir;
+				table_[ driver_index ].fileClosedir       = noSupportFsFileClosedir;
+				table_[ driver_index ].fileReaddir        = noSupportFsFileReaddir;
+				table_[ driver_index ].fileStage          = noSupportFsFileStage;
+				table_[ driver_index ].fileRename         = noSupportFsFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = noSupportFsFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = noSupportFsFileTruncate;
+				table_[ driver_index ].fileStageToCache   = msoStageToCache;
+				table_[ driver_index ].fileSyncToArch     = msoSyncToArch;    }
+			// =-=-=-=-=-=-=-
+			// init NON_BLOCKING_FILE_TYPE
+			{   fileDriverType_t driver_index =	NON_BLOCKING_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = unixFileCreate;
+				table_[ driver_index ].fileOpen           = unixFileOpen;
+				table_[ driver_index ].fileRead           = nbFileRead;
+				table_[ driver_index ].fileWrite          = nbFileWrite;
+				table_[ driver_index ].fileClose          = unixFileClose;
+				table_[ driver_index ].fileUnlink         = unixFileUnlink;
+				table_[ driver_index ].fileStat           = unixFileStat;
+				table_[ driver_index ].fileFstat          = unixFileFstat;
+				table_[ driver_index ].fileLseek          = unixFileLseek;
+				table_[ driver_index ].fileFsync          = unixFileFsync;
+				table_[ driver_index ].fileMkdir          = unixFileMkdir;
+				table_[ driver_index ].fileChmod          = unixFileChmod;
+				table_[ driver_index ].fileRmdir          = unixFileRmdir;
+				table_[ driver_index ].fileOpendir        = unixFileOpendir;
+				table_[ driver_index ].fileClosedir       = unixFileClosedir;
+				table_[ driver_index ].fileReaddir        = unixFileReaddir;
+				table_[ driver_index ].fileStage          = unixFileStage;
+				table_[ driver_index ].fileRename         = unixFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = unixFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = unixFileTruncate;
+				table_[ driver_index ].fileStageToCache   = noSupportFsFileStageToCache;
+				table_[ driver_index ].fileSyncToArch     = noSupportFsFileSyncToArch;    }
+			// =-=-=-=-=-=-=-
+			// init HPSS 
+			#ifdef HPSS
+			#else
+			{   fileDriverType_t driver_index =	HPSS_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = noSupportFsFileCreate;
+				table_[ driver_index ].fileRead           = noSupportFsFileRead;
+				table_[ driver_index ].fileWrite          = noSupportFsFileWrite;
+				table_[ driver_index ].fileClose          = noSupportFsFileClose;
+				table_[ driver_index ].fileUnlink         = noSupportFsFileUnlink;
+				table_[ driver_index ].fileStat           = noSupportFsFileStat;
+				table_[ driver_index ].fileFstat          = noSupportFsFileFstat;
+				table_[ driver_index ].fileLseek          = noSupportFsFileLseek;
+				table_[ driver_index ].fileFsync          = noSupportFsFileFsync;
+				table_[ driver_index ].fileMkdir          = noSupportFsFileMkdir;
+				table_[ driver_index ].fileChmod          = noSupportFsFileChmod;
+				table_[ driver_index ].fileRmdir          = noSupportFsFileRmdir;
+				table_[ driver_index ].fileOpendir        = noSupportFsFileOpendir;
+				table_[ driver_index ].fileClosedir       = noSupportFsFileClosedir;
+				table_[ driver_index ].fileReaddir        = noSupportFsFileReaddir;
+				table_[ driver_index ].fileStage          = noSupportFsFileStage;
+				table_[ driver_index ].fileRename         = noSupportFsFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = noSupportFsFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = noSupportFsFileTruncate;
+				table_[ driver_index ].fileStageToCache   = noSupportFsFileStageToCache;
+				table_[ driver_index ].fileSyncToArch     = noSupportFsFileSyncToArch;    }
+			#endif
+			// =-=-=-=-=-=-=-
+			// init AMAZON_S3 
+			#ifdef AMAZON_S3
+			#else
+			{   fileDriverType_t driver_index =	S3_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = noSupportFsFileCreate;
+				table_[ driver_index ].fileRead           = noSupportFsFileRead;
+				table_[ driver_index ].fileWrite          = noSupportFsFileWrite;
+				table_[ driver_index ].fileClose          = noSupportFsFileClose;
+				table_[ driver_index ].fileUnlink         = noSupportFsFileUnlink;
+				table_[ driver_index ].fileStat           = noSupportFsFileStat;
+				table_[ driver_index ].fileFstat          = noSupportFsFileFstat;
+				table_[ driver_index ].fileLseek          = noSupportFsFileLseek;
+				table_[ driver_index ].fileFsync          = noSupportFsFileFsync;
+				table_[ driver_index ].fileMkdir          = noSupportFsFileMkdir;
+				table_[ driver_index ].fileChmod          = noSupportFsFileChmod;
+				table_[ driver_index ].fileRmdir          = noSupportFsFileRmdir;
+				table_[ driver_index ].fileOpendir        = noSupportFsFileOpendir;
+				table_[ driver_index ].fileClosedir       = noSupportFsFileClosedir;
+				table_[ driver_index ].fileReaddir        = noSupportFsFileReaddir;
+				table_[ driver_index ].fileStage          = noSupportFsFileStage;
+				table_[ driver_index ].fileRename         = noSupportFsFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = noSupportFsFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = noSupportFsFileTruncate;
+				table_[ driver_index ].fileStageToCache   = noSupportFsFileStageToCache;
+				table_[ driver_index ].fileSyncToArch     = noSupportFsFileSyncToArch;    }
+			#endif
+			// =-=-=-=-=-=-=-
+			// init DDN_WOS 
+			#ifdef DDN_WOS
+			#else
+			{   fileDriverType_t driver_index =	WOS_FILE_TYPE;
+				table_[ driver_index ].fileCreate         = noSupportFsFileCreate;
+				table_[ driver_index ].fileRead           = noSupportFsFileRead;
+				table_[ driver_index ].fileWrite          = noSupportFsFileWrite;
+				table_[ driver_index ].fileClose          = noSupportFsFileClose;
+				table_[ driver_index ].fileUnlink         = noSupportFsFileUnlink;
+				table_[ driver_index ].fileStat           = noSupportFsFileStat;
+				table_[ driver_index ].fileFstat          = noSupportFsFileFstat;
+				table_[ driver_index ].fileLseek          = noSupportFsFileLseek;
+				table_[ driver_index ].fileFsync          = noSupportFsFileFsync;
+				table_[ driver_index ].fileMkdir          = noSupportFsFileMkdir;
+				table_[ driver_index ].fileChmod          = noSupportFsFileChmod;
+				table_[ driver_index ].fileRmdir          = noSupportFsFileRmdir;
+				table_[ driver_index ].fileOpendir        = noSupportFsFileOpendir;
+				table_[ driver_index ].fileClosedir       = noSupportFsFileClosedir;
+				table_[ driver_index ].fileReaddir        = noSupportFsFileReaddir;
+				table_[ driver_index ].fileStage          = noSupportFsFileStage;
+				table_[ driver_index ].fileRename         = noSupportFsFileRename;
+				table_[ driver_index ].fileGetFsFreeSpace = noSupportFsFileGetFsFreeSpace;
+				table_[ driver_index ].fileTruncate       = noSupportFsFileTruncate;
+				table_[ driver_index ].fileStageToCache   = noSupportFsFileStageToCache;
+				table_[ driver_index ].fileSyncToArch     = noSupportFsFileSyncToArch;    }
+			#endif
+
+        #endif // ifndef windows_platform 
+        } // ctor
+	}; // class fd_table
+
+}; // namespace eirods
+
+// =-=-=-=-=-=-=-
+// Declare actual file driver table
+eirods::fd_table FileDriverTable;
+
+#else
 
 fileDriver_t FileDriverTable[] = {
 
@@ -206,12 +435,12 @@ fileDriver_t FileDriverTable[] = {
       noSupportFsFileSyncToArch},
 
 };
-
-
-
-
-
-
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);
+#endif
+
+
+
+
+
 
 #endif	/* FILE_DRIVER_TABLE_H */
