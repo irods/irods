@@ -79,8 +79,14 @@ def admin_down():
     global testresc
     adminsession.runCmd('icd')
     adminsession.runCmd('irm',['-r',adminsession.sessionId])
-    adminsession.runCmd('irmtrash')
+    # trash
+    output = adminsession.runCmd('irmtrash',['-M']) # removes all trash for all users (admin mode)
+    # users
+    for u in users[1:]:
+        adminsession.runAdminCmd('iadmin',["rmuser",u['name']])
+    # resc
     adminsession.runAdminCmd('iadmin',['rmresc',testresc])
+    print "admin session exiting: user["+adminsession.getUserName()+"] zone["+adminsession.getZoneName()+"]"
     adminsession.runCmd('iexit', ['full'])
     adminsession.deleteEnvFiles()
     # local file cleanup
@@ -115,6 +121,7 @@ def user_down(usersession):
     # tear down user session
     usersession.runCmd('icd')
     usersession.runCmd('irm',['-r',usersession.sessionId])
+    print "user session exiting: user["+usersession.getUserName()+"] zone["+usersession.getZoneName()+"]"
     usersession.runCmd('iexit', ['full'])
     usersession.deleteEnvFiles()
 

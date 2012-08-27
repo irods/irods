@@ -1,10 +1,11 @@
 import pydevtest_sessions as s
 from nose.tools import with_setup
 from nose.plugins.skip import SkipTest
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, suspendiCmd, resumeiCmd
 import commands
 import os
 import datetime
+import time
 
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_local_iput():
@@ -156,7 +157,6 @@ def test_admin_local_iput_relative_physicalpath_into_server_bin():
 
 @with_setup(s.oneuser_up,s.oneuser_down)
 def test_local_iput_relative_physicalpath_into_server_bin():
-#    raise SkipTest
     # local setup
     datafilename = "newfile.txt"
     f = open(datafilename,'wb')
@@ -182,5 +182,52 @@ def test_local_iput_with_changed_target_filename():
     # local cleanup
     output = commands.getstatusoutput( 'rm '+datafilename )
 
+@with_setup(s.twousers_up,s.twousers_down)
+def test_local_iput_collision_with_wlock():
+    # local setup
+    datafilename = "collisionfile.txt"
+    print "-------------------"
+    print "creating "+datafilename+"..."
+    output = commands.getstatusoutput( 'dd if=/dev/zero of='+datafilename+' bs=1M count=30' )
+    print output[1]
+    assert output[0] == 0, "dd did not successfully exit"
+    # assertions
 
-#    assert False, "placeholder"
+    begin = time.time()
+    errorflag = False
+
+    procs = set()
+    pids = set()
+    
+    # start multiple icommands in parallel
+    for i in range(5):
+        if i == 0:
+            # add a three second delay before the first icommand
+            p = s.adminsession.runCmd('iput',["-vf","--wlock",datafilename],waitforresult=False,delay=3)
+        else:
+            p = s.adminsession.runCmd('iput',["-vf","--wlock",datafilename],waitforresult=False,delay=0)
+        procs.add(p)
+        pids.add(p.pid)
+
+    while pids:
+        pid,retval=os.wait()
+        for proc in procs:
+            if proc.pid == pid:
+                print "pid "+str(pid)+":"
+                if retval != 0:
+                    print "  * ERROR occurred *  <------------"
+                    errorflag = True
+                print "  retval ["+str(retval)+"]"
+                print "  stdout ["+proc.stdout.read().strip()+"]"
+                print "  stderr ["+proc.stderr.read().strip()+"]"
+                pids.remove(pid)
+
+    elapsed = time.time() - begin
+    print "\ntotal time ["+str(elapsed)+"]"
+
+    # local cleanup
+    output = commands.getstatusoutput( 'rm '+datafilename )
+
+    assert errorflag == False, "oops, had an error"
+
+

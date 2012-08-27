@@ -2,6 +2,8 @@ import re
 import os
 import socket
 import shlex
+import time
+import psutil
 
 if os.name != "nt":
     import fcntl
@@ -94,38 +96,107 @@ def assertiCmd(mysession,fullcmd,outputtype="",expectedresults=""):
     values in expected results list.
 
     Asserts that this result is correct.
+
+    Returns elapsed runtime.
     '''
+    begin = time.time()
     print "\n"
     print "ASSERTING PASS"
     check_icmd_outputtype(fullcmd,outputtype)
     assert getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults)
+    elapsed = time.time() - begin
+    return elapsed
 
 def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults=""):
     ''' Runs an icommand, detects output type, and searches for
     values in expected results list.
 
     Asserts that this result is NOT correct.
+
+    Returns elapsed runtime.
     '''
+    begin = time.time()
     print "\n"
     print "ASSERTING FAIL"
     check_icmd_outputtype(fullcmd,outputtype)
     assert not getiCmdBoolean(mysession,fullcmd,outputtype,expectedresults)
+    elapsed = time.time() - begin
+    return elapsed
 
-def interruptiCmd(mysession,fullcmd,timeout):
+def interruptiCmd(mysession,fullcmd,delay):
     ''' Runs an icommand, but does not let it complete.
 
-    This function terminates the icommand after timeout seconds.
+    This function terminates the icommand after delay seconds.
 
     Asserts that the icommand was successfully terminated early.
+
+    Returns 0 or -1.
     '''
     parameters = shlex.split(fullcmd) # preserves quoted substrings
     print "\n"
     print "INTERRUPTING iCMD"
     print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
-    print "  timeout set to: ["+str(timeout)+" seconds]"
-    resultcode = mysession.interruptCmd(parameters[0],parameters[1:],timeout)
+    print "  timeout set to: ["+str(delay)+" seconds]"
+    resultcode = mysession.interruptCmd(parameters[0],parameters[1:],delay)
     if resultcode == 0:
         print "  resultcode: [0], interrupted successfully"
     else:
         print "  resultcode: [-1], icommand completed"
     assert 0 == resultcode, "0 == resultcode"
+    return resultcode
+
+def suspendiCmd(mysession,fullcmd,delay):
+    ''' Begins an icommand, but suspends it after delay seconds.
+
+    Asserts that the icommand was successfully suspended.
+
+    Returns list of [status,process,elapsedtime].
+    '''
+    begin = time.time()
+    parameters = shlex.split(fullcmd) # preserves quoted substrings
+    print "\n"
+    print "SUSPENDING iCMD"
+    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
+    print "  delay set to: ["+str(delay)+" seconds]"
+    results = mysession.suspendCmd(parameters[0],parameters[1:],delay)
+    if results[0] == -1:
+        print "  results: [-1], icommand completed"
+        assert False, "suspendCmd failed"
+    else:
+        print "  results: [0,p], suspended successfully"
+    assert isinstance(results[1],psutil.Popen), "p is not a psutil.Popen"
+    elapsed = time.time() - begin
+    results.append(elapsed)
+    return results
+
+def resumeiCmd(mysession,p,elapsed,delay=0):
+    ''' Resumes an icommand subprocess, but only after delay seconds.
+
+    Asserts that the icommand successfully completed.
+
+    Returns list of [status,totalelapsed]
+    '''
+    begin = time.time()
+    print "\n"
+    print "RESUMING iCMD"
+#    print dir(p.parent)
+#    print str(p)
+    print "running icommand: "+str(mysession.getUserName())+str(p.cmdline)
+#    print p.cmdline
+    print p.get_cpu_times()
+#    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
+    print "  delay set to: ["+str(delay)+" seconds]"
+    if delay > 0:
+        time.sleep(delay)
+    resultcode = mysession.resumeCmd(p)
+    if resultcode == -1:
+        print "  resultcode: [-1], icommand did not resume successfully"
+    elif resultcode == 0:
+        print "  resultcode: [0], resumed, completed successfully"
+    else:
+        print "  resultcode: ["+str(resultcode)+"], icommand errored out"
+    assert resultcode == 0 # resume should have worked
+    resumeelapsed = time.time() - begin
+    totalelapsed = elapsed + resumeelapsed
+    return [resultcode,totalelapsed]
+

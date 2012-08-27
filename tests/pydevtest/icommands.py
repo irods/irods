@@ -3,6 +3,8 @@ import shutil
 import subprocess
 import datetime
 import time
+import psutil
+import sys
 
 '''Originally written by Antoine deTorcy'''
 
@@ -109,9 +111,9 @@ class RodsSession(object):
         envfile.close()
         return user_name
 
-    def interruptCmd(self, icommand, argList=[], timeout=0):
+    def interruptCmd(self, icommand, argList=[], delay=0):
         '''Runs an icommand with optional argument list but
-        terminates the icommand subprocess after timeout seconds.
+        terminates the icommand subprocess after delay seconds.
 
         Returns 0  if subprocess was terminated.
         Returns -1 if subprocess completed normally.
@@ -134,23 +136,89 @@ class RodsSession(object):
         # wait for subprocess to complete
         granularity = 0.01
         t = 0.0
-        while t < timeout and p.poll() is None:
+        while t < delay and p.poll() is None:
             time.sleep(granularity)
             t += granularity
 
-        # if subprocess did not complete by timeout, we kill it
+        # if subprocess did not complete by delay, we kill it
         if p.poll() is None:
             p.terminate()
              # expected, so return 0
             returncode = 0
-        # else the process finished before the timeout
+        # else the process finished before the delay expired
         else:
             # unexpected, so return -1
             returncode = -1
 
         return returncode
 
-    def runCmd(self, icommand, argList=[]):
+    def suspendCmd(self, icommand, argList=[], delay=0):
+        '''Runs an icommand with optional argument list but
+        suspends the icommand subprocess after delay seconds.
+
+        Returns list of returncode and subprocess.
+          [0,p] or [-1,None]
+
+        Not currently checking against allowed icommands.
+        '''
+
+        # should probably also add a condition to restrict
+        # possible values for icommandsDir
+        myenv = os.environ.copy()
+        myenv['irodsEnvFile'] = "%s/.irodsEnv" % (self.sessionDir)
+        myenv['irodsAuthFileName'] = "%s/.irodsA" % (self.sessionDir)
+
+        cmdStr = "%s/%s" % (self.icommandsDir, icommand)
+        argList = [cmdStr] + argList
+
+        p = psutil.Popen(argList, stdout = subprocess.PIPE, \
+            stderr = subprocess.PIPE, env = myenv)
+
+        # wait for subprocess to complete
+        granularity = 0.01
+        t = 0.0
+        while t < delay and p.poll() is None:
+            time.sleep(granularity)
+            t += granularity
+
+        # if subprocess did not complete by delay, we kill it
+        if p.poll() is None:
+            p.suspend()
+             # expected, so return [0,p]
+            returncode = [0,p]
+        # else the process finished before the delay expired
+        else:
+            # unexpected, so return [-1,None]
+            returncode = [-1,None]
+
+        return returncode
+
+    def resumeCmd(self, p):
+        '''Resumes an existing icommand process.
+
+        Returns 0 if subprocess completed normally.
+
+        Not currently checking against allowed icommands.
+        '''
+        # resume the suspended process
+        p.resume()
+        p.wait()
+        # check complete code
+        if p.poll() is None:
+            # did not complete, unexpected, so return -1
+            returncode = -1
+        # the process has finished
+        else:
+            # expected completion, so return 0
+            if p.poll() == 0:
+                returncode = 0
+            else:
+                print "resume errored out - stdout["+str(p.stdout)+"]"
+                print "resume errored out - stderr["+str(p.stderr)+"]"
+                returncode = p.poll()
+        return returncode
+
+    def runCmd(self, icommand, argList=[], waitforresult=True, delay=0):
         '''Runs an icommand with optional argument list and
         returns tuple (stdout, stderr) from subprocess execution.
 
@@ -185,8 +253,16 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        return subprocess.Popen(argList, stdout = subprocess.PIPE, \
-            stderr = subprocess.PIPE, env = myenv).communicate()
+        if delay > 0:
+            print "  runCmd: sleeping ["+str(delay)+"] seconds"
+            time.sleep(delay)
+
+        if waitforresult:
+            return subprocess.Popen(argList, stdout = subprocess.PIPE, \
+                stderr = subprocess.PIPE, env = myenv).communicate()
+        else:
+            return subprocess.Popen(argList, stdout = subprocess.PIPE, \
+                stderr = subprocess.PIPE, env = myenv)
 
 
     def runAdminCmd(self, icommand, argList=[]):
