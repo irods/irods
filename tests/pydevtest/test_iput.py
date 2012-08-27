@@ -185,7 +185,7 @@ def test_local_iput_with_changed_target_filename():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_local_iput_collision_with_wlock():
     # local setup
-    datafilename = "collisionfile.txt"
+    datafilename = "collisionfile1.txt"
     print "-------------------"
     print "creating "+datafilename+"..."
     output = commands.getstatusoutput( 'dd if=/dev/zero of='+datafilename+' bs=1M count=30' )
@@ -200,10 +200,11 @@ def test_local_iput_collision_with_wlock():
     pids = set()
     
     # start multiple icommands in parallel
+    initialdelay = 3  # seconds
     for i in range(5):
         if i == 0:
             # add a three second delay before the first icommand
-            p = s.adminsession.runCmd('iput',["-vf","--wlock",datafilename],waitforresult=False,delay=3)
+            p = s.adminsession.runCmd('iput',["-vf","--wlock",datafilename],waitforresult=False,delay=initialdelay)
         else:
             p = s.adminsession.runCmd('iput',["-vf","--wlock",datafilename],waitforresult=False,delay=0)
         procs.add(p)
@@ -225,9 +226,61 @@ def test_local_iput_collision_with_wlock():
     elapsed = time.time() - begin
     print "\ntotal time ["+str(elapsed)+"]"
 
+    assert elapsed > initialdelay
+
     # local cleanup
     output = commands.getstatusoutput( 'rm '+datafilename )
 
     assert errorflag == False, "oops, had an error"
 
+@with_setup(s.twousers_up,s.twousers_down)
+def test_local_iput_collision_without_wlock():
+    # local setup
+    datafilename = "collisionfile2.txt"
+    print "-------------------"
+    print "creating "+datafilename+"..."
+    output = commands.getstatusoutput( 'dd if=/dev/zero of='+datafilename+' bs=1M count=30' )
+    print output[1]
+    assert output[0] == 0, "dd did not successfully exit"
+    # assertions
+
+    begin = time.time()
+    errorflag = False
+
+    procs = set()
+    pids = set()
+    
+    # start multiple icommands in parallel
+    initialdelay = 3  # seconds
+    for i in range(7):
+        if i == 0:
+            # add a three second delay before the first icommand
+            p = s.adminsession.runCmd('iput',["-vf",datafilename],waitforresult=False,delay=initialdelay)
+        else:
+            p = s.adminsession.runCmd('iput',["-vf",datafilename],waitforresult=False,delay=0)
+        procs.add(p)
+        pids.add(p.pid)
+
+    while pids:
+        pid,retval=os.wait()
+        for proc in procs:
+            if proc.pid == pid:
+                print "pid "+str(pid)+":"
+                if retval != 0:
+                    errorflag = True
+                else:
+                    print "  * Unexpectedly, No ERROR occurred *  <------------"
+                print "  retval ["+str(retval)+"]"
+                print "  stdout ["+proc.stdout.read().strip()+"]"
+                print "  stderr ["+proc.stderr.read().strip()+"]"
+                pids.remove(pid)
+
+    elapsed = time.time() - begin
+    print "\ntotal time ["+str(elapsed)+"]"
+
+    # local cleanup
+    output = commands.getstatusoutput( 'rm '+datafilename )
+
+    assert errorflag == True, "Expected ERRORs did not occur"
+    
 
