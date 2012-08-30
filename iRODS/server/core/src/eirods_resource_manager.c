@@ -113,8 +113,6 @@ namespace eirods {
 	// public - connect to the catalog and query for all the 
 	//          attached resources and instantiate them
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {
-        std::cout << "resource_manager::init_from_catalog" << std::endl;	
-
         // =-=-=-=-=-=-=-
 		// clear existing resource map and initialize
 		resources_.clear();
