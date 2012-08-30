@@ -21,7 +21,7 @@ namespace eirods {
 	/**
 	  * \class ms_table_entry - holds fcn call name, number of args for fcn and fcn pointer
 	  * \author Jason M. Coposky 
-	  * \date   June 2010
+	  * \date   June 2012
 	  * \brief  This is to be used by a microservice developer to provide a dynamic plugin to the microservice table found in server/re/include/reActions.h.  Reference server/re/src/rules.c for loading and server/re/src/arithemetic.c for invokation.
 	  * 
 	  **/
@@ -55,7 +55,7 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// Lazy Loader for MS Fcn Ptr
-		bool delay_load( void* _h );
+		error delay_load( void* _h );
 
 	}; // class ms_table_entry
 
@@ -66,7 +66,7 @@ namespace eirods {
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object
 	// and then register that ms with the table
-	bool load_microservice_plugin( ms_table& _table, const std::string _ms );
+	error load_microservice_plugin( ms_table& _table, const std::string _ms );
 
 
 }; // namespace eirods

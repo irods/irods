@@ -18,11 +18,11 @@ genQueryOut_t **genQueryOut)
     rodsServerHost_t *rodsServerHost;
     int status;
     char *zoneHint;
-
     zoneHint = getZoneHintForGenQuery (genQueryInp);
- 
+
     status = getAndConnRcatHost(rsComm, SLAVE_RCAT, zoneHint,
 				&rodsServerHost);
+
     if (status < 0) {
        return(status);
     }

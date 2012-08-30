@@ -596,6 +596,14 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         exit 1
     fi
 
+    # =-=-=-=-=-=-=-
+    # build resource plugins
+	
+	cd ../plugins/resources/
+	make 
+	cd ../../
+
+    # =-=-=-=-=-=-=-
     # update EPM list template with values from irods.config
     cd $BUILDDIR
     #   database name

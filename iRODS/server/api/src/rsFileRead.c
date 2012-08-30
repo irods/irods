@@ -8,6 +8,7 @@
 #include "fileRead.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+#include "eirods_log.h"
 
 int
 rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
@@ -79,29 +80,34 @@ bytesBuf_t *fileReadOutBBuf, rodsServerHost_t *rodsServerHost)
 /* _rsFileRead - this the local version of rsFileRead.
  */
 
-int
-_rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
-bytesBuf_t *fileReadOutBBuf)
-{
-    int retVal;
-
+int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileReadOutBBuf ) {
     /* XXXX need to check resource permission and vault permission
      * when RCAT is available 
      */
 
-    retVal = fileRead (FileDesc[fileReadInp->fileInx].fileType, rsComm, 
-      FileDesc[fileReadInp->fileInx].fd, fileReadOutBBuf->buf,
-      fileReadInp->len);
-
-    if (retVal < 0) {
-	rodsLog (LOG_NOTICE, 
-	  "_rsFileRead: fileRead for %s, status = %d",
-	  FileDesc[fileReadInp->fileInx].fileName, retVal);
-        return (retVal);
+    // =-=-=-=-=-=-=-
+	// call resource plugin for POSIX read
+	int status = -1;
+    eirods::error ret = fileRead( FileDesc[fileReadInp->fileInx].fileName, 
+	                              FileDesc[fileReadInp->fileInx].fd,  
+	                              fileReadOutBBuf->buf, fileReadInp->len,
+							      status );
+	// =-=-=-=-=-=-=
+    // log an error if the read failed, 
+	// pass long read error
+    if( !ret.ok() ) {
+        std::stringstream msg;
+		msg << "_rsFileRead: fileRead for ";
+		msg << FileDesc[fileReadInp->fileInx].fileName;
+		msg << ", status = ";
+		msg << status;
+        eirods::error err = PASS( false, status, msg.str(), ret );
+        eirods::log( err );
     } else {
-	fileReadOutBBuf->len = retVal;
+	    fileReadOutBBuf->len = status;
     }
 
-    return (retVal);
-} 
+    return status;
+
+} // _rsFileRead
  

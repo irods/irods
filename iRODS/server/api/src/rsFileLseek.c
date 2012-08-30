@@ -6,6 +6,7 @@
 #include "fileLseek.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+#include "eirods_log.h"
 
 int
 rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
@@ -69,30 +70,42 @@ fileLseekOut_t **fileLseekOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
-fileLseekOut_t **fileLseekOut)
-{
-    int status;
-    rodsLong_t lStatus;
+// =-=-=-=-=-=-=-
+// local function to handle call to stat via resource plugin
+int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut) {
+    int    status  = -1;
+    size_t lStatus = -1;
 
-    lStatus = fileLseek (FileDesc[fileLseekInp->fileInx].fileType, 
-     rsComm, FileDesc[fileLseekInp->fileInx].fd,
-     fileLseekInp->offset, fileLseekInp->whence);
+    // =-=-=-=-=-=-=-
+	// make call to lseek via resource plugin
+	eirods::error lseek_err = fileLseek( FileDesc[fileLseekInp->fileInx].fileName,
+	                                     FileDesc[fileLseekInp->fileInx].fd,
+										 fileLseekInp->offset, fileLseekInp->whence,
+										 lStatus );
 
-    if (lStatus < 0) {
-	status = lStatus;
-        rodsLog (LOG_NOTICE, 
-          "_rsFileLseek: fileLseek failed for %d, status = %d",
-          fileLseekInp->fileInx, status);
-        return (status);
+    // =-=-=-=-=-=-=-
+	// handle error conditions and log
+    if( !lseek_err.ok() ) {
+	    status = lStatus;
+
+		std::stringstream msg;
+		msg << "_rsFileLseek: lseek for ";
+		msg << FileDesc[fileLseekInp->fileInx].fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error ret_err = PASS( false, status, msg.str(), lseek_err );
+		eirods::log( ret_err );
+       
     } else {
         *fileLseekOut = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
         memset (*fileLseekOut, 0, sizeof (fileLseekOut_t));
-
-	(*fileLseekOut)->offset = lStatus;
-	status = 0;
+	    (*fileLseekOut)->offset = lStatus;
+	    status = 0;
     }
 
     return (status);
-} 
+
+} // _rsFileLseek
+
+
+ 

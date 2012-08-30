@@ -271,12 +271,10 @@ dataObjInfo_t *dataObjInfo)
     ruleExecInfo_t rei;
 
     if (rsComm->clientUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH) {
-rodsLog( LOG_NOTICE, "getchkPathPerm - return NO_CHK_PATH_PERM" );
         return (NO_CHK_PATH_PERM);
     }
 
     if (dataObjInp == NULL || dataObjInfo == NULL) {
-rodsLog( LOG_NOTICE, "getchkPathPerm - NULL -- return NO_CHK_PATH_PERM" );
         return (NO_CHK_PATH_PERM);
     }
 
@@ -288,7 +286,6 @@ rodsLog( LOG_NOTICE, "getchkPathPerm - NULL -- return NO_CHK_PATH_PERM" );
         if (rescInfo == NULL) {
             chkPathPerm = NO_CHK_PATH_PERM;
         } else {
-rodsLog( LOG_NOTICE, "getchkPathPerm - ELSE!?" );
     	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 			rei.doi = dataObjInfo;
 			// =-=-=-=-=-=-=-
@@ -870,8 +867,8 @@ dataObjInfo_t *dataObjInfo, char *acLCollection)
     status = rsFileRename (rsComm, &fileRenameInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-         "syncDataObjPhyPath:rsFileRename from %s to %s failed,stat=%d",
-          fileRenameInp.oldFileName, fileRenameInp.newFileName);
+         "syncDataObjPhyPath:rsFileRename from %s to %s failed,status=%d",
+          fileRenameInp.oldFileName, fileRenameInp.newFileName, status);
 	return (status);
     }
 

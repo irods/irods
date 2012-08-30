@@ -16,6 +16,10 @@
 #endif
 #include "miscUtil.h"
 
+#include "eirods_resource_manager.h"
+
+eirods::resource_manager resc_mgr;
+
 int LogFd = -1;		/* the log file descriptor */
 char *CurLogfileName = NULL;        /* the path of the current logfile */
 char ProcLogDir[MAX_NAME_LEN];

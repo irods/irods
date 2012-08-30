@@ -6,6 +6,7 @@
 #include "fileClose.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+#include "eirods_log.h"
 
 int
 rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
@@ -72,17 +73,31 @@ rodsServerHost_t *rodsServerHost)
 int
 _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 {
-    int status;
-
-    status = fileClose (FileDesc[fileCloseInp->fileInx].fileType, 
-     rsComm, FileDesc[fileCloseInp->fileInx].fd);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-          "_rsFileClose: fileClose failed for %d, status = %d",
-          fileCloseInp->fileInx, status);
-        return (status);
+	// =-=-=-=-=-=-=-
+	// call the resource plugin close operation 
+    int status = -1;
+    eirods::error close_err = fileClose( FileDesc[fileCloseInp->fileInx].fileName, 
+                                         FileDesc[fileCloseInp->fileInx].fd,
+										 status );
+    // =-=-=-=-=-=-=-
+	// log an error, if any
+    if( !close_err.ok() ) {
+        std::stringstream msg;
+		msg << "_rsFileClose: fileClose failed for ";
+		msg << fileCloseInp->fileInx;
+		msg << ", status = ";
+		msg << status;
+        eirods::error err = PASS( false, status, msg.str(), close_err ); 
     }
 
-    return (status);
-} 
+    return status;
+
+} // _rsFileClose 
+
+
+
+
+
+
+
+

@@ -670,7 +670,8 @@ int actionTableLookUp ( eirods::ms_table_entry& _entry, char* _action ) {
 	// the end() iterator, is is not found so try to load it.
 	if( !MicrosTable.has_entry( str_act ) ) {
 		rodsLog( LOG_NOTICE, "actionTableLookUp - [%s] not found, load it.", _action );
-		if( !eirods::load_microservice_plugin( MicrosTable, str_act ) ) {
+		eirods::error ret = eirods::load_microservice_plugin( MicrosTable, str_act );
+		if( !ret.ok() ) {
 			return UNMATCHED_ACTION_ERR;
 		} else { // if loaded
 			rodsLog( LOG_NOTICE, "actionTableLookUp - loaded [%s]", _action );

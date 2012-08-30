@@ -10,6 +10,7 @@
 #include "fileOpr.h"
 #include "dataObjOpr.h"
 #include "physPath.h"
+#include "eirods_log.h"
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
@@ -20,20 +21,19 @@ rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
 
     remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
 
-    if (remoteFlag == LOCAL_HOST) {
-	status = _rsFileRename (rsComm, fileRenameInp, rodsServerHost);
-    } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteFileRename (rsComm, fileRenameInp, rodsServerHost);
-    } else {
-	if (remoteFlag < 0) {
-	    return (remoteFlag);
+	if (remoteFlag == LOCAL_HOST) {
+	    status = _rsFileRename (rsComm, fileRenameInp, rodsServerHost);
+	} else if (remoteFlag == REMOTE_HOST) {
+	    status = remoteFileRename (rsComm, fileRenameInp, rodsServerHost);
 	} else {
-	    rodsLog (LOG_NOTICE,
-	      "rsFileRename: resolveHost returned unrecognized value %d",
-	       remoteFlag);
-	    return (SYS_UNRECOGNIZED_REMOTE_FLAG);
+		if (remoteFlag < 0) {
+		    return (remoteFlag);
+		} else {
+			rodsLog( LOG_NOTICE, "rsFileRename: resolveHost returned unrecognized value %d",
+			         remoteFlag );
+			return (SYS_UNRECOGNIZED_REMOTE_FLAG);
+		}
 	}
-    }
 
     return (status);
 }
@@ -65,25 +65,35 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-/* _rsFileRename - this the local version of rsFileRename.
- */
+// =-=-=-=-=-=-=-
+// local function which makes the call to rename via the resource plugin
+int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerHost_t *rodsServerHost) {
+    // =-=-=-=-=-=-=-
+    // FIXME: need to check resource permission and vault permission
+    // when RCAT is available 
 
-int
-_rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
-rodsServerHost_t *rodsServerHost)
-{
-    int status;
+    mkDirForFilePath( fileRenameInp->fileType, rsComm, "/", fileRenameInp->newFileName, getDefDirMode () );
 
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
+    // =-=-=-=-=-=-=-
+	// make the call to rename via the resource plugin
+    int status = -1;
+    eirods::error rename_err = fileRename (fileRenameInp->oldFileName, fileRenameInp->newFileName, status );
 
-    mkDirForFilePath (fileRenameInp->fileType, rsComm,
-              "/", fileRenameInp->newFileName, getDefDirMode ());
-
-    status = fileRename (fileRenameInp->fileType, rsComm, 
-      fileRenameInp->oldFileName, fileRenameInp->newFileName);
+    // =-=-=-=-=-=-=-
+	// report errors if any
+    if( !rename_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileRename: fileRename for ";
+		msg << fileRenameInp->oldFileName;
+		msg << " to ";
+		msg << fileRenameInp->newFileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error err = PASS( false, status, msg.str(), rename_err );
+		eirods::log ( err );
+    }
 
     return (status);
-} 
+
+} // _rsFileRename
  

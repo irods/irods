@@ -58,9 +58,9 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
 	// predicate to determine if a char is not alphanumeric
-    static bool not_alnum( char _c ) {
-        return !std::isalnum( _c );
-	} // not_alnum
+    static bool not_allowed_char( char _c ) {
+        return ( !std::isalnum( _c ) && !( '_' == _c ) );
+	} // not_allowed_char
 
 	/**
 	 * \fn PluginType* load_plugin( const std::string _plugin_name, const std::string _dir );
@@ -94,7 +94,7 @@ namespace eirods {
 		std::string clean_plugin_name = _plugin_name;
         clean_plugin_name.erase( std::remove_if( clean_plugin_name.begin(), 
 		                                         clean_plugin_name.end(), 
-												 not_alnum ),
+												 not_allowed_char ),
 								 clean_plugin_name.end() );
 
         // =-=-=-=-=-=-=-
@@ -110,7 +110,7 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// try to open the shared object
 		std::string so_name = _dir  + std::string("/lib") + clean_plugin_name + std::string(".so");
-		void*  handle  = dlopen( so_name.c_str(), RTLD_NOW );//RTLD_LAZY );
+		void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
 		if( !handle ) {
 			std::stringstream msg;
 			std::string       err( dlerror() );
@@ -168,7 +168,7 @@ namespace eirods {
 			// notify world of success
 			// TODO :: add hash checking and provide hash value for log also
 			#ifdef DEBUG
-			std::cout << "load_plugin :: loaded " << clean_plugin_name << std::endl;
+			std::cout << "load_plugin :: loaded [" << clean_plugin_name << "]" << std::endl;
 			#endif
 
 			// =-=-=-=-=-=-=-
@@ -180,8 +180,8 @@ namespace eirods {
 				dlclose( handle );
 				return ERROR( false, -1, msg.str() );
 			}
-		
-			dlclose( handle );
+			
+			//dlclose( handle );
 			return SUCCESS();
 
 		} else {

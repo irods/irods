@@ -227,6 +227,11 @@ serverize (char *logDir)
 	     "serverize: setsid failed, errno = %d\n", errno);
             exit(1);
 	}
+
+
+//sleep( 60 );
+
+
 #ifndef IRODS_SYSLOG
         (void) dup2 (LogFd, 0);
         (void) dup2 (LogFd, 1);

@@ -5,6 +5,7 @@
 
 #include "fileStage.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
 
 int
 rsFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp)
@@ -62,20 +63,26 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp)
-{
-    int status;
+// =-=-=-=-=-=-=-
+// local function for calling stage via resource plugin
+int _rsFileStage( rsComm_t *rsComm, fileStageInp_t *fileStageInp ) {
+	// =-=-=-=-=-=-=-
+    // make call to readdir via resource plugin
+    int status = -1;
+    eirods::error stage_err = fileStage( fileStageInp->fileName, fileStageInp->flag, status );
 
-    status = fileStage (fileStageInp->fileType, rsComm, 
-     fileStageInp->fileName, fileStageInp->flag);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-          "_rsFileStage: fileStage for %s, status = %d",
-          fileStageInp->fileName, status);
-        return (status);
+     // =-=-=-=-=-=-=-
+	// handle errors, if necessary
+    if( !stage_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileStage: fileStage for ";
+		msg << fileStageInp->fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error err = PASS( false, status, msg.str(), stage_err );
+		eirods::log ( err );
     }
 
     return (status);
-} 
+
+} // _rsFileStage

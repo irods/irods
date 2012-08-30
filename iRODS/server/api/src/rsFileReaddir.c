@@ -6,6 +6,7 @@
 #include "fileReaddir.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+#include "eirods_log.h"
 
 int
 rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, 
@@ -71,40 +72,70 @@ rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
-rodsDirent_t **fileReaddirOut)
-{
-    int status;
-    /* have to do this for solaris for the odd d_name definition */
-#if defined(solaris_platform)
+// =-=-=-=-=-=-=-
+// local function to call readdir via resource plugin
+int _rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, rodsDirent_t **fileReaddirOut ) {
+
+	// =-=-=-=-=-=-=-
+    // have to do this for solaris for the odd d_name definition */
+    #if defined(solaris_platform)
     char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];  
     struct dirent *myFileDirent = (struct dirent *) fileDirent;
-#else
+    #else
     struct dirent fileDirent;
     struct dirent *myFileDirent = &fileDirent;
-#endif
+    #endif
 
-    status = fileReaddir (FileDesc[fileReaddirInp->fileInx].fileType, rsComm, 
-      FileDesc[fileReaddirInp->fileInx].driverDep, myFileDirent);
+	// =-=-=-=-=-=-=-
+    // make call to readdir via resource plugin
+    int status;
+    eirods::error readdir_err = fileReaddir( FileDesc[fileReaddirInp->fileInx].fileName,
+                                             FileDesc[fileReaddirInp->fileInx].driverDep, 
+						                     myFileDirent,
+						                     status );
+    // =-=-=-=-=-=-=-
+	// handle errors, if necessary
+    if( !readdir_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileReaddir: fileReaddir for ";
+		msg << FileDesc[fileReaddirInp->fileInx].fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error err = PASS( false, status, msg.str(), readdir_err );
+		eirods::log ( err );
 
-    if (status < 0) {
-	if (status != -1) {	/* eof */
-            rodsLog (LOG_NOTICE, 
-              "_rsFileReaddir: fileReaddir for %s, status = %d",
-              FileDesc[fileReaddirInp->fileInx].fileName, status);
+        return status;
+    } else {
+		// =-=-=-=-=-=-=-
+		// case for handle end of file 
+        if( -1 == status ) {
+			return status;
+		}
 	}
-        return (status);
-    }
 
+    // =-=-=-=-=-=-=-
+	// still in the beginning / middle of a read
     *fileReaddirOut = (rodsDirent_t*)malloc (sizeof (rodsDirent_t));
-
     status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
-
-    if (status < 0) {
-	free (*fileReaddirOut);
-	*fileReaddirOut = NULL;
+    if( status < 0 ) {
+		free (*fileReaddirOut);
+		*fileReaddirOut = NULL;
     }
 
     return (status);
-} 
+
+} // _rsFileReaddir 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

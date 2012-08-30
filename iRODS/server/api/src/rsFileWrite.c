@@ -8,6 +8,8 @@
 #include "fileWrite.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+#include "eirods_log.h"
+#include <sstream>
 
 int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
@@ -73,30 +75,34 @@ bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost)
     return retVal;
 }
 
-/* _rsFileWrite - this the local version of rsFileWrite.
- */
-
-int
-_rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
-bytesBuf_t *fileWriteInpBBuf)
-{
-    int retVal;
-
+// =-=-=-=-=-=-=-
+// _rsFileWrite - this the local version of rsFileWrite.
+int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fileWriteInpBBuf ) {
     /* XXXX need to check resource permission and vault permission
      * when RCAT is available 
      */
 
-    retVal = fileWrite (FileDesc[fileWriteInp->fileInx].fileType, rsComm, 
-      FileDesc[fileWriteInp->fileInx].fd, fileWriteInpBBuf->buf,
-      fileWriteInp->len);
-
-    if (retVal < 0) {
-	rodsLog (LOG_NOTICE, 
-	  "_rsFileWrite: fileWrite for %s, status = %d",
-	  FileDesc[fileWriteInp->fileInx].fileName, retVal);
-        return (retVal);
+    // =-=-=-=-=-=-=-
+	// make a call to the resource write
+    int status = -1;
+    eirods::error write_err = fileWrite( FileDesc[fileWriteInp->fileInx].fileName,
+                                         FileDesc[fileWriteInp->fileInx].fd, 
+										 fileWriteInpBBuf->buf,
+                                         fileWriteInp->len,
+										 status );
+    // =-=-=-=-=-=-=-
+	// log error if necessary
+    if( !write_err.ok() ) {
+        std::stringstream msg;
+		msg << "_rsFileWrite: fileWrite for ";
+		msg << FileDesc[fileWriteInp->fileInx].fileName;
+		msg << ", status = ";
+		msg << status;
+	    eirods::error err = PASS( false, status, msg.str(), write_err );
+		eirods::log( err ); 
     }
 
-    return (retVal);
-} 
+    return status;
+
+} // _rsFileWrite
  

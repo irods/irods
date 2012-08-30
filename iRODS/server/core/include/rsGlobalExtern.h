@@ -19,6 +19,9 @@
 #endif
 #include "miscUtil.h"
 
+#include "eirods_resource_manager.h"
+
+extern eirods::resource_manager resc_mgr;
 
 extern int LogFd;         		/* the log file descriptor */
 extern char *CurLogfileName;         	/* the path of the current logfile */

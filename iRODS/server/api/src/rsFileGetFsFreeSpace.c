@@ -5,6 +5,8 @@
 
 #include "fileGetFsFreeSpace.h"
 #include "miscServerFunct.h"
+#include "eirods_log.h"
+
 
 int
 rsFileGetFsFreeSpace (rsComm_t *rsComm, 
@@ -71,25 +73,41 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileGetFsFreeSpace (rsComm_t *rsComm, 
-fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
-fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut)
-{
-    rodsLong_t status;
-
-    status = fileGetFsFreeSpace (fileGetFsFreeSpaceInp->fileType, rsComm, 
-     fileGetFsFreeSpaceInp->fileName, fileGetFsFreeSpaceInp->flag);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-          "_rsFileGetFsFreeSpace: fileGetFsFreeSpace for %s, status = %lld",
-          fileGetFsFreeSpaceInp->fileName, status);
+// =-=-=-=-=-=-=-
+// local function to make call to freespace via resource plugin
+int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
+                           fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
+    // =-=-=-=-=-=-=-
+	// make call to freespace via resource plugin
+    size_t status = 0;
+    eirods::error free_err = fileGetFsFreeSpace( fileGetFsFreeSpaceInp->fileName, 
+	                                             fileGetFsFreeSpaceInp->flag,
+												 status );
+    // =-=-=-=-=-=-=-
+	// handle errors if any
+    if( !free_err.ok() ) {
+		std::stringstream msg;
+		msg << "_rsFileGetFsFreeSpace: fileGetFsFreeSpace for ";
+		msg << fileGetFsFreeSpaceInp->fileName;
+		msg << ", status = ";
+		msg << status;
+		eirods::error err = PASS( false, status, msg.str(), free_err );
+		eirods::log ( err );
         return ((int) status);
     }
 
+    // =-=-=-=-=-=-=-
+	// otherwise its a success, set size appropriately
     *fileGetFsFreeSpaceOut = (fileGetFsFreeSpaceOut_t*)malloc (sizeof (fileGetFsFreeSpaceOut_t));
     (*fileGetFsFreeSpaceOut)->size = status;
 
     return (0);
-} 
+
+} // _rsFileGetFsFreeSpace
+
+
+
+
+
+
+

@@ -10,6 +10,8 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 #include "physPath.h"
+#include "eirods_log.h"
+
 
 int
 rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
@@ -94,58 +96,82 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-/* _rsFileSyncToArch - this the local version of rsFileSyncToArch.
- */
-
-int
-_rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
-char **outFileName)
-{
-    int status;
+// =-=-=-=-=-=-=-=
+// _rsFileSyncToArch - this the local version of rsFileSyncToArch.
+int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, char **outFileName ) {
+    // =-=-=-=-=-=-=-
+    // XXXX need to check resource permission and vault permission
+    // when RCAT is available 
+    int status = -1;
     char myFileName[MAX_NAME_LEN];
+    
+    // =-=-=-=-=-=-=-
+	// prep 
+	*outFileName = NULL; // mem leak?
+    rstrcpy( myFileName, fileSyncToArchInp->filename, MAX_NAME_LEN );
 
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
+    // =-=-=-=-=-=-=-
+	// make call to synctoarch via resource plugin
+    eirods::error sync_err = fileSyncToArch( myFileName, fileSyncToArchInp->cacheFilename, 
+                                             fileSyncToArchInp->mode, fileSyncToArchInp->flags,
+                                             fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput, 
+											 status );
 
-    *outFileName = NULL;
-    rstrcpy (myFileName, fileSyncToArchInp->filename, MAX_NAME_LEN);
-    status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm, 
-      fileSyncToArchInp->cacheFileType, 
-      fileSyncToArchInp->mode, fileSyncToArchInp->flags,
-      myFileName, fileSyncToArchInp->cacheFilename, 
-      fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput);
+    if( !sync_err.ok() ) {
 
-    if (status < 0) {
         if (getErrno (status) == ENOENT) {
-            /* the directory does not exist */
-            mkDirForFilePath (fileSyncToArchInp->fileType, rsComm,
-              "/", fileSyncToArchInp->filename, getDefDirMode ());
+			// =-=-=-=-=-=-=-
+            // the directory does not exist, lets make one
+            mkDirForFilePath( fileSyncToArchInp->fileType, rsComm,"/", fileSyncToArchInp->filename, getDefDirMode() );
         } else if (getErrno (status) == EEXIST) {
-            /* an empty dir may be there */
-            fileRmdir (fileSyncToArchInp->fileType, rsComm,
-             fileSyncToArchInp->filename);
-	} else {
-	    rodsLog (LOG_NOTICE, 
-	      "_rsFileSyncToArch: fileSyncToArch for %s, status = %d",
-	      fileSyncToArchInp->filename, status);
-            return (status);
-	}
-        status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm,
-          fileSyncToArchInp->cacheFileType,
-          fileSyncToArchInp->mode, fileSyncToArchInp->flags,
-          myFileName, fileSyncToArchInp->cacheFilename,
-          fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput);
-	if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "_rsFileSyncToArch: fileSyncToArch for %s, status = %d",
-              fileSyncToArchInp->filename, status);
-        }
+			// =-=-=-=-=-=-=-
+			// an empty dir may be there, make the call to rmdir via the resource plugin
+			eirods::error rmdir_err = fileRmdir( fileSyncToArchInp->filename, status );
+			if( !rmdir_err.ok() ) {
+				std::stringstream msg;
+				msg << "_rsFileSyncToArch: fileRmdir for ";
+				msg << fileSyncToArchInp->filename;
+				msg << ", status = ";
+				msg << status;
+				eirods::error err = PASS( false, status, msg.str(), sync_err );
+				eirods::log ( err );
+			}
+		} else {
+			std::stringstream msg;
+			msg << "_rsFileSyncToArch: fileSyncToArch for ";
+			msg << myFileName;
+			msg << ", status = ";
+			msg << status;
+			eirods::error err = PASS( false, status, msg.str(), sync_err );
+			eirods::log ( err );
+			return status;
+		}
+	
+		// =-=-=-=-=-=-=-
+		// make call to synctoarch via resource plugin
+		sync_err = fileSyncToArch( myFileName, fileSyncToArchInp->cacheFilename, 
+								   fileSyncToArchInp->mode, fileSyncToArchInp->flags,
+								   fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput, 
+								   status );
+        if( !sync_err.ok() ) {
+			std::stringstream msg;
+			msg << "_rsFileSyncToArch: fileSyncToArch for ";
+			msg << myFileName;
+			msg << ", status = ";
+			msg << status;
+			eirods::error err = PASS( false, status, msg.str(), sync_err );
+			eirods::log ( err );
+		}
+
+    } // if !sync_err.ok()
+
+    // =-=-=-=-=-=-=-
+	// has the file name has changed?
+    if( strcmp( myFileName, fileSyncToArchInp->filename ) != 0 ) {
+		*outFileName = strdup (myFileName);
     }
-    if (strcmp (myFileName, fileSyncToArchInp->filename) != 0) {
-	/* file name has changed */
-	*outFileName = strdup (myFileName);
-    }
+
     return (status);
-} 
+
+} // _rsFileSyncToArch
  
