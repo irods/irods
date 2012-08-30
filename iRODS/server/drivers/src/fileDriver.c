@@ -11,11 +11,6 @@
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX Create
 eirods::error fileCreate( std::string _file_name, int _mode, size_t _file_size, int& _file_desc ) {
-    std::stringstream msg;
-	msg << "[?]\tfileCreate - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -50,11 +45,6 @@ eirods::error fileCreate( std::string _file_name, int _mode, size_t _file_size, 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX Open
 eirods::error fileOpen( std::string _file_name, int _mode, int _flags, int& _file_desc ) {
-    std::stringstream msg;
-	msg << "[?]\tfileOpen - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
- 
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -88,11 +78,6 @@ eirods::error fileOpen( std::string _file_name, int _mode, int _flags, int& _fil
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX Write
 eirods::error fileRead( std::string _file_name, int _fd, void* _buf, int _len, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileRead - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-	
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -126,11 +111,6 @@ eirods::error fileRead( std::string _file_name, int _fd, void* _buf, int _len, i
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX Read
 eirods::error fileWrite( std::string _file_name, int _fd, void* _buf, int  _len, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileWrite - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
- 
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -164,11 +144,6 @@ eirods::error fileWrite( std::string _file_name, int _fd, void* _buf, int  _len,
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileClose( std::string _file_name, int _fd, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileClose - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -202,11 +177,6 @@ eirods::error fileClose( std::string _file_name, int _fd, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileUnlink( std::string _file_name, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileUnlink - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -240,11 +210,6 @@ eirods::error fileUnlink( std::string _file_name, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX stat
 eirods::error fileStat( std::string _file_name, struct stat* _statbuf, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileStat - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -278,11 +243,6 @@ eirods::error fileStat( std::string _file_name, struct stat* _statbuf, int& _sta
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX fstat
 eirods::error fileFstat( std::string _file_name, int _fd, struct stat* _statbuf, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileFstat - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -316,11 +276,6 @@ eirods::error fileFstat( std::string _file_name, int _fd, struct stat* _statbuf,
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX lseek
 eirods::error fileLseek( std::string _file_name, int _fd, size_t _offset, int _whence, size_t& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileLseek - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -354,11 +309,6 @@ eirods::error fileLseek( std::string _file_name, int _fd, size_t _offset, int _w
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX fsync
 eirods::error fileFsync( std::string _file_name, int _fd, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileFsync - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -392,11 +342,6 @@ eirods::error fileFsync( std::string _file_name, int _fd, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX mkdir
 eirods::error fileMkdir( std::string _file_name, int _mode, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileMkdir - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -430,11 +375,6 @@ eirods::error fileMkdir( std::string _file_name, int _mode, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX mkdir
 eirods::error fileChmod( std::string _file_name, int _mode, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileChmod - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -468,11 +408,6 @@ eirods::error fileChmod( std::string _file_name, int _mode, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX mkdir
 eirods::error fileRmdir( std::string _file_name, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileRmdir - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -506,11 +441,6 @@ eirods::error fileRmdir( std::string _file_name, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX opendir
 eirods::error fileOpendir ( std::string _file_name, void ** _out_dir_ptr, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileOpendir - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -544,11 +474,6 @@ eirods::error fileOpendir ( std::string _file_name, void ** _out_dir_ptr, int& _
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileClosedir( std::string _file_name, void* _dir_ptr, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileClosedir - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -582,11 +507,6 @@ eirods::error fileClosedir( std::string _file_name, void* _dir_ptr, int& _status
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileReaddir( std::string _file_name, void* _dir_ptr, struct dirent* _dirent_ptr, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileReaddir - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -620,11 +540,6 @@ eirods::error fileReaddir( std::string _file_name, void* _dir_ptr, struct dirent
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin stage
 eirods::error fileStage( std::string _file_name, int _flag, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileStage - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -658,13 +573,6 @@ eirods::error fileStage( std::string _file_name, int _flag, int& _status ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX stage
 eirods::error fileRename( std::string _old_file_name, std::string _new_file_name, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileRename - ";
-	msg << _old_file_name;
-	msg << " to ";
-	msg << _new_file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _old_file_name.empty() ) {
@@ -699,11 +607,6 @@ eirods::error fileRename( std::string _old_file_name, std::string _new_file_name
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin freespace
 eirods::error fileGetFsFreeSpace( std::string _file_name, int _flag, size_t& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileGetFsFreeSpace - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -737,11 +640,6 @@ eirods::error fileGetFsFreeSpace( std::string _file_name, int _flag, size_t& _st
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin truncate
 eirods::error fileTruncate( std::string _file_name, size_t _size, int& _status ) {
-     std::stringstream msg;
-	msg << "[?]\tfileTruncate - ";
-	msg << _file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -776,13 +674,6 @@ eirods::error fileTruncate( std::string _file_name, size_t _size, int& _status )
 // Top Level Interface for Resource Plugin Stage to Cache
 eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
                                 size_t _data_size, keyValPair_t* _cond_input, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileStageToCache - ";
-	msg << _file_name;
-	msg << " to ";
-	msg << _cache_file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
@@ -819,13 +710,6 @@ eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_
 // Top Level Interface for Resource Plugin Sync to Arch
 eirods::error fileSyncToArch( std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
 					          size_t _data_size, keyValPair_t* _cond_input, int& _status ) {
-    std::stringstream msg;
-	msg << "[?]\tfileSyncToArch - ";
-	msg << _file_name;
-	msg << " to ";
-	msg << _cache_file_name;
-    eirods::log( LOG_NOTICE, msg.str() );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
