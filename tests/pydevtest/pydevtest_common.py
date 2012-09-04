@@ -199,4 +199,3 @@ def resumeiCmd(mysession,p,elapsed,delay=0):
     resumeelapsed = time.time() - begin
     totalelapsed = elapsed + resumeelapsed
     return [resultcode,totalelapsed]
-

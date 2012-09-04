@@ -1,7 +1,7 @@
 import pydevtest_sessions as s
 from nose.tools import with_setup
 from nose.plugins.skip import SkipTest
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, suspendiCmd, resumeiCmd
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import commands
 import os
 import datetime
@@ -27,6 +27,14 @@ def test_local_iput_overwrite():
     # assertions
     assertiCmdFail(s.adminsession,"iput "+s.testfile) # fail, already exists
     assertiCmd(s.adminsession,"iput -f "+s.testfile) # iput again, force
+    # local cleanup
+
+@with_setup(s.adminonly_up,s.adminonly_down)
+def test_local_iput_recursive():
+    # local setup
+    recursivedirname = "dir"
+    
+    # assertions
     # local cleanup
 
 @with_setup(s.adminonly_up,s.adminonly_down)
@@ -198,7 +206,7 @@ def test_local_iput_collision_with_wlock():
 
     procs = set()
     pids = set()
-    
+
     # start multiple icommands in parallel
     initialdelay = 3  # seconds
     for i in range(5):
@@ -249,7 +257,7 @@ def test_local_iput_collision_without_wlock():
 
     procs = set()
     pids = set()
-    
+
     # start multiple icommands in parallel
     initialdelay = 3  # seconds
     for i in range(7):
@@ -282,5 +290,3 @@ def test_local_iput_collision_without_wlock():
     output = commands.getstatusoutput( 'rm '+datafilename )
 
     assert errorflag == True, "Expected ERRORs did not occur"
-    
-
