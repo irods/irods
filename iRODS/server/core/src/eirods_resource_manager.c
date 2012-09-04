@@ -7,6 +7,10 @@
 #include "eirods_log.h"
 #include "getRescQuota.h"
 
+// =-=-=-=-=-=-=-
+// STL Includes
+#include <iostream>
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-

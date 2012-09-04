@@ -13,7 +13,6 @@
 // Boost Includes
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
-#include <boost/thread/mutex.hpp>
 
 // =-=-=-=-=-=-=-
 // My Includes
@@ -74,7 +73,6 @@ namespace eirods {
 		template< typename T1 >
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, T1 _t1 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -87,7 +85,6 @@ namespace eirods {
 		template< typename T1, typename T2 >
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, T1 _t1, T2 _t2 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -101,7 +98,6 @@ namespace eirods {
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, 
 		                               T1 _t1, T2 _t2, T3 _t3 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -115,9 +111,7 @@ namespace eirods {
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, 
 		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
-			  error foo =  operation_( _prop_map, _cmap, _t1, _t2, _t3, _t4 ); 
-			  return foo;
+			  return operation_( _prop_map, _cmap, _t1, _t2, _t3, _t4 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
 		   }
@@ -130,7 +124,6 @@ namespace eirods {
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, 
 		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -144,7 +137,6 @@ namespace eirods {
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, 
 		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -158,7 +150,6 @@ namespace eirods {
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, 
 		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6, _t7 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -172,7 +163,6 @@ namespace eirods {
 		error call( resource_property_map* _prop_map, resource_child_map* _cmap, 
 		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
 		   if( operation_ ) {
-			  boost::mutex::scoped_lock lock( mutex_ );
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 ); 
 		   } else {
 			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
@@ -185,10 +175,6 @@ namespace eirods {
 		// function pointer to actual operation
 		resource_operation operation_;
 		
-		// =-=-=-=-=-=-=-
-		// thread lock for this operation
-		boost::mutex mutex_;
-
 	}; // class operation_wrapper 
 
 }; // namespace eirods
