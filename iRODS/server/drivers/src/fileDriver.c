@@ -76,7 +76,7 @@ eirods::error fileOpen( std::string _file_name, int _mode, int _flags, int& _fil
 } // fileOpen
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX Write
+// Top Level Interface for Resource Plugin POSIX read
 eirods::error fileRead( std::string _file_name, int _fd, void* _buf, int _len, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -109,7 +109,7 @@ eirods::error fileRead( std::string _file_name, int _fd, void* _buf, int _len, i
 } // fileRead
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX Read
+// Top Level Interface for Resource Plugin POSIX write
 eirods::error fileWrite( std::string _file_name, int _fd, void* _buf, int  _len, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -175,7 +175,7 @@ eirods::error fileClose( std::string _file_name, int _fd, int& _status ) {
 } // fileClose
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX close
+// Top Level Interface for Resource Plugin POSIX unlink
 eirods::error fileUnlink( std::string _file_name, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -373,7 +373,7 @@ eirods::error fileMkdir( std::string _file_name, int _mode, int& _status ) {
 } // fileMkdir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX mkdir
+// Top Level Interface for Resource Plugin POSIX chmod
 eirods::error fileChmod( std::string _file_name, int _mode, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -406,7 +406,7 @@ eirods::error fileChmod( std::string _file_name, int _mode, int& _status ) {
 } // fileChmod
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX mkdir
+// Top Level Interface for Resource Plugin POSIX rmdir
 eirods::error fileRmdir( std::string _file_name, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -472,7 +472,7 @@ eirods::error fileOpendir ( std::string _file_name, void ** _out_dir_ptr, int& _
 } // fileOpendir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX close
+// Top Level Interface for Resource Plugin POSIX closedir
 eirods::error fileClosedir( std::string _file_name, void* _dir_ptr, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -505,7 +505,7 @@ eirods::error fileClosedir( std::string _file_name, void* _dir_ptr, int& _status
 } // fileClosedir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX close
+// Top Level Interface for Resource Plugin POSIX readdir
 eirods::error fileReaddir( std::string _file_name, void* _dir_ptr, struct dirent* _dirent_ptr, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -571,7 +571,7 @@ eirods::error fileStage( std::string _file_name, int _flag, int& _status ) {
 } // fileStage
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX stage
+// Top Level Interface for Resource Plugin POSIX rename
 eirods::error fileRename( std::string _old_file_name, std::string _new_file_name, int& _status ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -671,7 +671,7 @@ eirods::error fileTruncate( std::string _file_name, size_t _size, int& _status )
 } // fileTruncate
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin Stage to Cache
+// Top Level Interface for Resource Plugin StageToCache
 eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
                                 size_t _data_size, keyValPair_t* _cond_input, int& _status ) {
     // =-=-=-=-=-=-=-
@@ -707,7 +707,7 @@ eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_
 } // fileStageToCache
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin Sync to Arch
+// Top Level Interface for Resource Plugin SyncToArch
 eirods::error fileSyncToArch( std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
 					          size_t _data_size, keyValPair_t* _cond_input, int& _status ) {
     // =-=-=-=-=-=-=-
