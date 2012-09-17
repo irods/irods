@@ -10,7 +10,7 @@
 #include "eirods_first_class_object.h"
 
 // =-=-=-=-=-=-=-
-// Top Level Inteface for Resource Plugin POSIX Create
+// Top Level Inteface for Resource Plugin POSIX create
 eirods::error fileCreate( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -44,7 +44,7 @@ eirods::error fileCreate( eirods::first_class_object& _object ) {
 } // fileCreate
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX Open
+// Top Level Interface for Resource Plugin POSIX open
 eirods::error fileOpen( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -77,7 +77,7 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
 } // fileOpen
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX Write
+// Top Level Interface for Resource Plugin POSIX read
 eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _len ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -110,7 +110,7 @@ eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _le
 } // fileRead
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX Read
+// Top Level Interface for Resource Plugin POSIX write
 eirods::error fileWrite( eirods::first_class_object& _object, void* _buf, int  _len ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -176,7 +176,7 @@ eirods::error fileClose( eirods::first_class_object& _object ) {
 } // fileClose
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX close
+// Top Level Interface for Resource Plugin POSIX unlink
 eirods::error fileUnlink( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -374,7 +374,7 @@ eirods::error fileMkdir( eirods::first_class_object& _object ) {
 } // fileMkdir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX mkdir
+// Top Level Interface for Resource Plugin POSIX chmod
 eirods::error fileChmod( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -407,7 +407,7 @@ eirods::error fileChmod( eirods::first_class_object& _object ) {
 } // fileChmod
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX mkdir
+// Top Level Interface for Resource Plugin POSIX rmdir
 eirods::error fileRmdir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -473,7 +473,7 @@ eirods::error fileOpendir( eirods::first_class_object& _object ) {
 } // fileOpendir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX close
+// Top Level Interface for Resource Plugin POSIX closedir
 eirods::error fileClosedir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
@@ -506,7 +506,7 @@ eirods::error fileClosedir( eirods::first_class_object& _object ) {
 } // fileClosedir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX close
+// Top Level Interface for Resource Plugin POSIX readdir
 eirods::error fileReaddir( eirods::first_class_object& _object, struct dirent* _dirent_ptr ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
