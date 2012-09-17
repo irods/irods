@@ -120,12 +120,12 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
 	/* single buffer put */
         status = l3DataPutSingleBuf (rsComm, dataObjInp, dataObjInpBBuf);
         if (status >= 0 && allFlag == 1) {
-	    /* update the rest of copies */
-	    addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
-	    status = rsDataObjRepl (rsComm, dataObjInp, &transStat);
-	    if (transStat!= NULL) free (transStat);
-	}
-	if (status >= 0) {
+			/* update the rest of copies */
+			addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
+			status = rsDataObjRepl (rsComm, dataObjInp, &transStat);
+			if (transStat!= NULL) free (transStat);
+	    }
+	    if (status >= 0) {
             int status2;
             /** since the object is written here, we apply pre procesing RAJA
              * Dec 2 2010 **/
@@ -260,17 +260,18 @@ bytesBuf_t *dataObjInpBBuf)
     /* don't actually physically open the file */
     addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-
     if (l1descInx <= 2) {
-	if (l1descInx >= 0) {
+	    if (l1descInx >= 0) {
             rodsLog (LOG_ERROR,
              "l3DataPutSingleBuf: rsDataObjCreate of %s error, status = %d",
               dataObjInp->objPath, l1descInx);
-	    return SYS_FILE_DESC_OUT_OF_RANGE;
-	} else {
-	    return l1descInx;
-	}
+	        return SYS_FILE_DESC_OUT_OF_RANGE;
+		} else {
+			return l1descInx;
+		}
     }
+
+    
     bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp,
       dataObjInpBBuf);
 

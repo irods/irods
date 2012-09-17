@@ -5,7 +5,11 @@
 
 #include "fileChmod.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
@@ -69,22 +73,24 @@ int _rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp ) {
 
     // =-=-=-=-=-=-=-
 	// make the call to chmod via the resource plugin
-    int status = -1;
-	eirods::error chmod_err = fileChmod( fileChmodInp->fileName, fileChmodInp->mode, status );
+	// NOTE :: this should be passed in as a first_class_object as both 
+	//      :: a file and a collection could have this operation performed
+	eirods::file_object file_obj( fileChmodInp->fileName, 0, fileChmodInp->mode, 0 ); 
+	eirods::error chmod_err = fileChmod( file_obj );
 
     // =-=-=-=-=-=-=-
 	// log an error, if any
-    if (status < 0) {
+    if( chmod_err.code() < 0 ) {
 		std::stringstream msg;
 		msg << "_rsFileChmod: fileChmod for ";
 		msg << fileChmodInp->fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), chmod_err );
+		msg << chmod_err.code();
+		eirods::error err = PASS( false, chmod_err.code(), msg.str(), chmod_err );
 		eirods::log ( err );
     }
 
-    return status;
+    return chmod_err.code();
 
 } // _rsFileChmod
 

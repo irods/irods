@@ -11,7 +11,11 @@
 #include "dataObjOpr.h"
 #include "physPath.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
+#include "eirods_collection_object.h"
 
 int
 rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
@@ -77,21 +81,18 @@ rodsServerHost_t *rodsServerHost)
     return fileInx;
 }
 
-/* _rsFileCreate - this the local version of rsFileCreate.
- */
-
-int
-_rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,rodsServerHost_t *rodsServerHost ) {
-
-    int fd = -666;
-    int status = 0;
-
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
-	//sleep( 30 );
+// =-=-=-=-=-=-=-
+// _rsFileCreate - this the local version of rsFileCreate.
+int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
+                   rodsServerHost_t *rodsServerHost ) {
+	// =-=-=-=-=-=-=-
+    // XXXX need to check resource permission and vault permission when RCAT 
+	// is available 
+	
+	// =-=-=-=-=-=-=-
+	// check path permissions before creating the file
     if( fileCreateInp->otherFlags & NO_CHK_PERM_FLAG == 0 ) { // JMC - backport 4758
-        status = chkFilePathPerm (rsComm, fileCreateInp, rodsServerHost, DO_CHK_PATH_PERM); // JMC - backport 4774
+        int status = chkFilePathPerm (rsComm, fileCreateInp, rodsServerHost, DO_CHK_PATH_PERM); // JMC - backport 4774
 		if (status < 0) {
 			rodsLog( LOG_ERROR, "_rsFileCreate - chkFilePathPerm returned %d", status );
 			return (status);
@@ -101,19 +102,20 @@ _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,rodsServerHost_t
 	// =-=-=-=-=-=-=-
 	// dont capture the eirods results in the log here as there may be an issue with
 	// needing to create a directory, etc.
-	eirods::error create_err = fileCreate( fileCreateInp->fileName, fileCreateInp->mode, fileCreateInp->dataSize, fd );
-	                                      
+	eirods::file_object file_obj( *fileCreateInp );
+	eirods::error create_err = fileCreate( file_obj );
+
     // =-=-=-=-=-=-=-
 	// if we get a bad file descriptor
     if( !create_err.ok() ) {
 		// =-=-=-=-=-=-=-
 		// check error on fd, did the directory exist?
-	    if( getErrno ( fd ) == ENOENT ) {
+	    if( getErrno ( create_err.code() ) == ENOENT ) {
 			// =-=-=-=-=-=-=-
 			// the directory didnt exist, make it and then try the create once again.
-			mkDirForFilePath (fileCreateInp->fileType, rsComm, "/", fileCreateInp->fileName, getDefDirMode ()); 
+			mkDirForFilePath( fileCreateInp->fileType, rsComm, "/", fileCreateInp->fileName, getDefDirMode() ); 
 
-            create_err = fileCreate( fileCreateInp->fileName, fileCreateInp->mode, fileCreateInp->dataSize, fd );
+	        create_err = fileCreate( file_obj );
 			                        
 
 			// =-=-=-=-=-=-=-
@@ -124,27 +126,27 @@ _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,rodsServerHost_t
 				msg << "_rsFileCreate: ENOENT fileCreate for ";
 				msg << fileCreateInp->fileName;
                 msg << ", status = ";
-				msg << fd;
-		        eirods::error ret_err = PASS( false, fd, msg.str(), create_err );
+				msg << file_obj.file_descriptor();
+		        eirods::error ret_err = PASS( false, file_obj.file_descriptor(), msg.str(), create_err );
                 eirods::log( ret_err );
 			}
 
-		} else if( getErrno( fd ) == EEXIST ) {
+		} else if( getErrno( create_err.code() ) == EEXIST ) {
 			// =-=-=-=-=-=-=-
 			// remove a potentially empty directoy which is already in place
-			int rmdir_stat = -1;
-			eirods::error rmdir_err = fileRmdir( fileCreateInp->fileName, rmdir_stat );
+			eirods::collection_object coll_obj( fileCreateInp->fileName, 0, 0 );
+			eirods::error rmdir_err = fileRmdir( coll_obj );
 			if( !rmdir_err.ok() ) {
 				std::stringstream msg;
 				msg << "_rsFileCreate: EEXIST 1 fileRmdir for ";
 				msg << fileCreateInp->fileName;
 				msg << ", status = ";
-				msg << rmdir_stat;
-				eirods::error err = PASS( false, status, msg.str(), rmdir_err );
+				msg << rmdir_err.code();
+				eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
 				eirods::log ( err );
 			}
 			 
-			create_err = fileCreate( fileCreateInp->fileName, fileCreateInp->mode, fileCreateInp->dataSize, fd );
+	        create_err = fileCreate( file_obj );
 									
             // =-=-=-=-=-=-=-
 			// capture the eirods results in the log as our error mechanism
@@ -154,8 +156,8 @@ _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,rodsServerHost_t
 				msg << "_rsFileCreate: EEXIST 2 fileCreate for ";
 				msg << fileCreateInp->fileName;
                 msg << ", status = ";
-				msg << fd;
-		        eirods::error ret_err = PASS( false, fd, msg.str(), create_err );
+				msg << file_obj.file_descriptor();
+		        eirods::error ret_err = PASS( false, file_obj.file_descriptor(), msg.str(), create_err );
                 eirods::log( ret_err );
 			}
 
@@ -164,15 +166,15 @@ _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,rodsServerHost_t
 				msg << "_rsFileCreate: UNHANDLED fileCreate for ";
 				msg << fileCreateInp->fileName;
                 msg << ", status = ";
-				msg << fd;
-		        eirods::error ret_err = ERROR( false, fd, msg.str() );
+				msg << create_err.code();
+		        eirods::error ret_err = PASS( false, create_err.code(), msg.str(), create_err );
                 eirods::log( ret_err );
 		
 		} // else
 
     } // if !create_err.ok()
-    
-	return (fd);
+
+	return file_obj.file_descriptor();
 
 } // _rsFileCreate 
 

@@ -8,7 +8,11 @@
 #include "fileOpendir.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_collection_object.h"
 
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
@@ -84,8 +88,8 @@ int _rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, void **d
      
     // =-=-=-=-=-=-=-
 	// make the call to opendir via resource plugin
-    int status = -1;
-    eirods::error opendir_err = fileOpendir( fileOpendirInp->dirName, dirPtr, status );
+    eirods::collection_object coll_obj( fileOpendirInp->dirName, 0, 0 );
+    eirods::error opendir_err = fileOpendir( coll_obj );
 
     // =-=-=-=-=-=-=-
 	// log an error, if any
@@ -94,12 +98,14 @@ int _rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, void **d
 		msg << "_rsFileOpendir: fileOpendir for ";
 		msg <<fileOpendirInp->dirName; 
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), opendir_err );
+		msg << opendir_err.code();
+		eirods::error err = PASS( false, opendir_err.code(), msg.str(), opendir_err );
 		eirods::log ( err );
 	}
 
-    return (status);
+    (*dirPtr) = coll_obj.directory_pointer(); // JMC -- TEMPORARY 
+
+    return (opendir_err.code());
 
 } // _rsFileOpendir
  

@@ -73,7 +73,7 @@ namespace eirods {
 		    return SUCCESS();
 		} else {
 			error ret = PASS( false, -1, "load_microservice_plugin - Failed to create ms plugin entry.", load_err );
-			log( ret );
+			// JMC :: spams the log - log( ret );
 			return ret;
 		}
 	} // load_microservice_plugin

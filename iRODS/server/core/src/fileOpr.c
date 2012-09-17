@@ -8,8 +8,12 @@
 #include "fileStat.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
-#include "eirods_log.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_log.h"
+#include "eirods_file_object.h"
+#include "eirods_collection_object.h"
 
 int
 initFileDesc ()
@@ -137,15 +141,16 @@ int mkFileDirR( int fileType, rsComm_t *rsComm, char *startDir, char *destDir, i
     tmpLen = pathLen;
 
 	while (tmpLen > startLen) {
-		fileStat( tmpPath, &statbuf, status );
-		if (status >= 0) {
+        eirods::collection_object tmp_coll_obj( tmpPath, 0, 0 );
+		eirods::error stat_err = fileStat( tmp_coll_obj, &statbuf );
+		if ( stat_err.code() >= 0) {
 			if (statbuf.st_mode & S_IFDIR) {
 				break;
 			} else {
 				rodsLog (LOG_NOTICE,
 				"mkFileDirR: A local non-directory %s already exists \n",
 				tmpPath);
-				return (status);
+				return (stat_err.code() );
 			}
 		}
 
@@ -162,18 +167,19 @@ int mkFileDirR( int fileType, rsComm_t *rsComm, char *startDir, char *destDir, i
     while (tmpLen < pathLen) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
-      
-	    eirods::error mkdir_err = fileMkdir( tmpPath, mode, status ); 
-        if ( !mkdir_err.ok() && (getErrno (status) != EEXIST)) { // JMC - backport 4834
+     
+	    eirods::collection_object tmp_coll_obj( tmpPath, mode, 0 ); 
+	    eirods::error mkdir_err = fileMkdir( tmp_coll_obj );
+        if ( !mkdir_err.ok() && (getErrno ( mkdir_err.code()) != EEXIST)) { // JMC - backport 4834
 		    std::stringstream msg;
 			msg << "mkFileDirR: fileMkdir for ";
 			msg << tmpPath;
 			msg << ", status = ";
-			msg << status;
-			eirods::error ret_err = PASS( false, status, msg.str(), mkdir_err );
+			msg <<  mkdir_err.code();
+			eirods::error ret_err = PASS( false,  mkdir_err.code(), msg.str(), mkdir_err );
 			eirods::log( ret_err );
 
-            return status;
+            return  mkdir_err.code();
         }
 #if 0	/* a fix from AndyS */
         while (tmpLen && tmpPath[tmpLen] != '\0')
@@ -184,10 +190,9 @@ int mkFileDirR( int fileType, rsComm_t *rsComm, char *startDir, char *destDir, i
     return 0;
 }
 
-int
-chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
-{
-    void *dirPtr = NULL;
+// =-=-=-=-=-=-=-
+// 
+int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
     #if defined(solaris_platform)
     char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];
     struct dirent *myFileDirent = (struct dirent *) fileDirent;
@@ -201,7 +206,8 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 
 	// =-=-=-=-=-=-=-
 	// call opendir via resource plugin
-	eirods::error opendir_err = fileOpendir( cacheDir, &dirPtr, status );
+	eirods::collection_object cacheDir_obj( cacheDir, 0, 0 );
+	eirods::error opendir_err = fileOpendir( cacheDir_obj );
 
 	// =-=-=-=-=-=-=-
 	// dont log an error as this is part
@@ -212,24 +218,25 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 
 	// =-=-=-=-=-=-=-
 	// make call to readdir via resource plugin
-    eirods::error readdir_err = fileReaddir( cacheDir, dirPtr, myFileDirent, status );
-    while( readdir_err.ok() && 0 == status ) {
+    eirods::error readdir_err = fileReaddir( cacheDir_obj, myFileDirent );
+    while( readdir_err.ok() && 0 == readdir_err.code() ) {
 		// =-=-=-=-=-=-=-
 		// handle relative paths
 		if( strcmp( myFileDirent->d_name, "." ) == 0 ||
 			strcmp( myFileDirent->d_name, "..") == 0) {
-	        readdir_err = fileReaddir( cacheDir, dirPtr, myFileDirent, status );
+	        readdir_err = fileReaddir( cacheDir_obj, myFileDirent );
 			continue;
 		}
 
 		// =-=-=-=-=-=-=-
 		// get status of path
 		snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
-		fileStat( childPath, &myFileStat, status );
+        eirods::collection_object tmp_coll_obj( childPath, 0, 0 );
+		eirods::error stat_err = fileStat( tmp_coll_obj, &myFileStat );
 
 		// =-=-=-=-=-=-=-
 		// handle hard error
-		if( status < 0 ) {
+		if( stat_err.code() < 0 ) {
 			rodsLog( LOG_ERROR, "chkEmptyDir: fileStat error for %s, status = %d",
 			         childPath, status);
 			break;
@@ -256,32 +263,33 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 		
 		// =-=-=-=-=-=-=-
 		// continue with child path
-	    readdir_err = fileReaddir( cacheDir, dirPtr, myFileDirent, status );
+	    readdir_err = fileReaddir( cacheDir_obj, myFileDirent );
 
     } // while
 
 	// =-=-=-=-=-=-=-
 	// make call to closedir via resource plugin, log error if necessary
-	eirods::error closedir_err = fileClosedir( cacheDir, dirPtr, status );
+	eirods::error closedir_err = fileClosedir( cacheDir_obj );
     if( !closedir_err.ok() ) {
 		std::stringstream msg;
 		msg << "chkEmptyDir: fileClosedir for ";
 		msg << cacheDir;
 		msg << ", status = ";
-		msg << status;
-		eirods::error log_err = PASS( false, status, msg.str(), closedir_err );
+		msg << closedir_err.code();
+		eirods::error log_err = PASS( false, closedir_err.code(), msg.str(), closedir_err );
 		eirods::log( log_err ); 
 	}
 
 	if( status != SYS_DIR_IN_VAULT_NOT_EMPTY ) {
-		eirods::error rmdir_err = fileRmdir( cacheDir, status );
+        eirods::collection_object coll_obj( cacheDir, 0, 0 );
+		eirods::error rmdir_err = fileRmdir( coll_obj );
 		if( !rmdir_err.ok() ) {
 			std::stringstream msg;
 			msg << "chkEmptyDir: fileRmdir for ";
 			msg << cacheDir;
 			msg << ", status = ";
-			msg << status;
-			eirods::error err = PASS( false, status, msg.str(), rmdir_err );
+			msg << rmdir_err.code();
+			eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
 			eirods::log ( err );
 		}
 		status = 0;
@@ -392,10 +400,8 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
     int len;
-    rodsLog( LOG_NOTICE, "YYYY - filePath: %s", filePath );
     if (isValidFilePath (filePath) < 0) { // JMC - backport 4766
         /* no match */
-        rodsLog( LOG_NOTICE, "YYYY - invalid filePath: %s", filePath );
         return (0);
     }
     tmpRescGrpInfo = RescGrpInfo;
@@ -404,14 +410,9 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath)
 		tmpRescInfo = tmpRescGrpInfo->rescInfo;
 		/* match the rodsServerHost */
 		if (tmpRescInfo->rodsServerHost == rodsServerHost) {
-			rodsLog( LOG_NOTICE, "YYYY - filePath: %s vs tmpRescInfo->rescVaultPath: %s", filePath, tmpRescInfo->rescVaultPath );
 			len = strlen (tmpRescInfo->rescVaultPath);
-			rodsLog( LOG_NOTICE, "YYYY - len: %d", len );
-			rodsLog( LOG_NOTICE, "YYYY - strncmp: %d", strncmp ( tmpRescInfo->rescVaultPath, filePath, len ) );
-			rodsLog( LOG_NOTICE, "YYYY - filePath[len]: %c", filePath[len] );
 			if( strncmp ( tmpRescInfo->rescVaultPath, filePath, len ) == 0 && // JMC -backport 4767
 			  ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
-				rodsLog( LOG_NOTICE, "YYYY - match outVaultPath: %s", tmpRescInfo->rescVaultPath );
 				*outVaultPath = tmpRescInfo->rescVaultPath;
 				return (len);
 			}

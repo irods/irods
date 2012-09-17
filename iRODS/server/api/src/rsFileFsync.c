@@ -6,7 +6,11 @@
 #include "fileFsync.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 
 int
@@ -70,13 +74,13 @@ rodsServerHost_t *rodsServerHost)
 // =-=-=-=-=-=-=-
 // local function to handle call to fsync via resource plugin
 int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
-    int status = -1;
-
 	// =-=-=-=-=-=-=-
 	// make call to fsync via resource plugin
-    eirods::error fsync_err = fileFsync( FileDesc[fileFsyncInp->fileInx].fileName,
-                                         FileDesc[fileFsyncInp->fileInx].fd,
-										 status );
+    eirods::file_object file_obj(  FileDesc[fileFsyncInp->fileInx].fileName,
+                                   FileDesc[fileFsyncInp->fileInx].fd,
+								   0, 0 );
+    eirods::error fsync_err = fileFsync( file_obj );
+
 	// =-=-=-=-=-=-=-
 	// log error if necessary
     if( !fsync_err.ok() ) {
@@ -84,11 +88,11 @@ int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
 		msg << "_rsFileFsync: fsync for ";
 		msg << FileDesc[fileFsyncInp->fileInx].fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error ret_err = PASS( false, status, msg.str(), fsync_err );
+		msg << fsync_err.code();
+		eirods::error ret_err = PASS( false, fsync_err.code(), msg.str(), fsync_err );
 		eirods::log( ret_err );
     }
 
-    return (status);
+    return (fsync_err.code());
 
 } // _rsFileFsync

@@ -10,7 +10,11 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 #include "physPath.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_collection_object.h"
 
 int
 rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
@@ -120,14 +124,15 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 
 			// =-=-=-=-=-=-=-
 			// make the call to rmdir via the resource plugin
-			eirods::error rmdir_err = fileRmdir( fileStageToCacheInp->cacheFilename, status );
+			eirods::collection_object coll_obj( fileStageToCacheInp->cacheFilename, 0, 0 );
+			eirods::error rmdir_err = fileRmdir( coll_obj );
 			if( !rmdir_err.ok() ) {
 				std::stringstream msg;
 				msg << "_rsFileStageToCache: fileRmdir for ";
 				msg << fileStageToCacheInp->cacheFilename;
 				msg << ", status = ";
-				msg << status;
-				eirods::error err = PASS( false, status, msg.str(), rmdir_err );
+				msg << rmdir_err.code();
+				eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
 				eirods::log ( err );
 			}
         } else {

@@ -5,7 +5,12 @@
 
 #include "fileGet.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
+
 
 /* rsFileGet - Get the content of a small file into a single buffer
  * in fileGetOutBBuf->buf.
@@ -71,7 +76,6 @@ bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost)
 
 int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGetOutBBuf ) {
 
-    int status;
     int fd;
     int len;
 
@@ -92,43 +96,39 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
         fileGetOutBBuf->buf = malloc (len);
     }
 
-    eirods::error read_err = fileRead( fileGetInp->fileName, fd, 
-	                                   fileGetOutBBuf->buf, len,
-							           status );
+    eirods::file_object file_obj( *fileGetInp );
+	file_obj.file_descriptor( fd );
+    eirods::error read_err = fileRead( file_obj,
+	                                   fileGetOutBBuf->buf, 
+									   len );
+	int bytes_read = read_err.code();
+    if ( bytes_read != len ) {
+       if ( bytes_read >= 0) {
+        
+		fileGetOutBBuf->len = bytes_read;
 
-    if (status != len) {
-       if (status >= 0) {
-#if 0	/* XXXXXXXX take this out for now so that on the fly convert works */
-            rodsLog (LOG_NOTICE,
-              "_rsFileGet: fileRead for %s, toread %d, read %d",
-              fileGetInp->fileName, len, status);
-            status = SYS_COPY_LEN_ERR;
-#else
-        fileGetOutBBuf->len = status;
-#endif
         } else {
 			std::stringstream msg;
 			msg << "_rsFileGet: fileRead for ";
 			msg << fileGetInp->fileName;
 			msg << ", status = ";
-			msg << status;
-			eirods::error ret_err = PASS( false, status, msg.str(), read_err );
+			msg << bytes_read;
+			eirods::error ret_err = PASS( false, bytes_read, msg.str(), read_err );
 			eirods::log( ret_err );
         }
     } else {
-        fileGetOutBBuf->len = status;
+        fileGetOutBBuf->len = bytes_read;
     }
 
     // =-=-=-=-=-=-=-
 	// call resource plugin close 
-    int close_stat;
-    eirods::error close_err = fileClose( fileGetInp->fileName, fd, close_stat );
+    eirods::error close_err = fileClose( file_obj );
     if( !close_err.ok() ) {
-		eirods::error err = PASS( false, close_stat, "_rsFileGet - error on close", close_err );
+		eirods::error err = PASS( false, close_err.code(), "_rsFileGet - error on close", close_err );
 		eirods::log( err );
 	}
 
-    return (status);
+    return (bytes_read);
 
 } // _rsFileGet 
 

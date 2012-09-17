@@ -5,7 +5,11 @@
 
 #include "fileChksum.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 #define SVR_MD5_BUF_SZ (1024*1024)
 
@@ -91,19 +95,19 @@ char **chksumStr)
 int
 fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
 {
-    int fd;
     MD5_CTX context;
-    int len;
+    int bytes_read;
     unsigned char buffer[SVR_MD5_BUF_SZ], digest[16];
     int status;
 
     #ifdef MD5_DEBUG
-    rodsLong_t bytesRead = 0;	/* XXXX debug */
+    rodsLong_t total_bytes_read = 0;	/* XXXX debug */
     #endif
   
     // =-=-=-=-=-=-=-
-	// call resource plugin to open file 
-    eirods::error ret = fileOpen( fileName, 0, O_RDONLY, fd );
+	// call resource plugin to open file
+	eirods::file_object file_obj( fileName, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
+    eirods::error ret = fileOpen( file_obj );
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog( LOG_NOTICE,"fileChksum; fileOpen failed for %s. status = %d", fileName, status );
@@ -112,22 +116,24 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
 
     MD5Init (&context);
 
-    eirods::error read_err = fileRead( fileName, fd, buffer, SVR_MD5_BUF_SZ, len );	
-    while( read_err.ok() && len > 0 ) {
+    eirods::error read_err = fileRead( file_obj, buffer, SVR_MD5_BUF_SZ );	
+	bytes_read = read_err.code();
+    while( read_err.ok() && bytes_read > 0 ) {
         #ifdef MD5_DEBUG
-	    bytesRead += len;	/* XXXX debug */
+	    total_bytes_read += bytes_read;	/* XXXX debug */
         #endif
-        MD5Update (&context, buffer, len);
+        MD5Update (&context, buffer, bytes_read);
     
-	    read_err = fileRead( fileName, fd, buffer, SVR_MD5_BUF_SZ, len );	
+	    read_err = fileRead( file_obj, buffer, SVR_MD5_BUF_SZ );
+	    bytes_read = read_err.code();
 
     } // while
 
     MD5Final (digest, &context);
 
-    ret = fileClose( fileName, fd, status );
+    ret = fileClose( file_obj );
     if( !ret.ok() ) {
-		eirods::error err = PASS( false, status, "fileChksum - error on close", ret );
+		eirods::error err = PASS( false, ret.code(), "fileChksum - error on close", ret );
         eirods::log( err );
 	}
 
@@ -135,7 +141,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
 
     #ifdef MD5_DEBUG
     rodsLog (LOG_NOTICE,	/* XXXX debug */
-    "fileChksum: chksum = %s, bytesRead = %lld", chksumStr, bytesRead);
+    "fileChksum: chksum = %s, total_bytes_read = %lld", chksumStr, total_bytes_read);
     #endif
 
     return (0);

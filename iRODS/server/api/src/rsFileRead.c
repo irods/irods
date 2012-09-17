@@ -8,7 +8,11 @@
 #include "fileRead.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
@@ -87,27 +91,29 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
 
     // =-=-=-=-=-=-=-
 	// call resource plugin for POSIX read
-	int status = -1;
-    eirods::error ret = fileRead( FileDesc[fileReadInp->fileInx].fileName, 
+	eirods::file_object file_obj( FileDesc[fileReadInp->fileInx].fileName,
 	                              FileDesc[fileReadInp->fileInx].fd,  
-	                              fileReadOutBBuf->buf, fileReadInp->len,
-							      status );
+								  0, 0 );
+	                             
+    eirods::error ret = fileRead( file_obj,  
+	                              fileReadOutBBuf->buf, 
+								  fileReadInp->len );
 	// =-=-=-=-=-=-=
     // log an error if the read failed, 
 	// pass long read error
     if( !ret.ok() ) {
         std::stringstream msg;
 		msg << "_rsFileRead: fileRead for ";
-		msg << FileDesc[fileReadInp->fileInx].fileName;
+		msg << file_obj.physical_path();
 		msg << ", status = ";
-		msg << status;
-        eirods::error err = PASS( false, status, msg.str(), ret );
+		msg << ret.code();
+        eirods::error err = PASS( false, ret.code(), msg.str(), ret );
         eirods::log( err );
     } else {
-	    fileReadOutBBuf->len = status;
+	    fileReadOutBBuf->len = ret.code();
     }
 
-    return status;
+    return ret.code();
 
 } // _rsFileRead
  

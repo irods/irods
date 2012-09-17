@@ -24,6 +24,8 @@
 #include "genQuery.h"
 #include "rodsClient.h"
 
+#include <iostream>
+
 int
 getFileMode (dataObjInp_t *dataObjInp)
 {
@@ -620,6 +622,7 @@ int
 chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
 int replStatus)
 {
+
     fileRenameInp_t fileRenameInp;
     int status;
     dataObjInfo_t myDataObjInfo;

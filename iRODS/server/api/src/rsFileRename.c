@@ -10,7 +10,12 @@
 #include "fileOpr.h"
 #include "dataObjOpr.h"
 #include "physPath.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h" 
+
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
@@ -71,13 +76,13 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
     // =-=-=-=-=-=-=-
     // FIXME: need to check resource permission and vault permission
     // when RCAT is available 
-
+  
     mkDirForFilePath( fileRenameInp->fileType, rsComm, "/", fileRenameInp->newFileName, getDefDirMode () );
 
     // =-=-=-=-=-=-=-
 	// make the call to rename via the resource plugin
-    int status = -1;
-    eirods::error rename_err = fileRename (fileRenameInp->oldFileName, fileRenameInp->newFileName, status );
+    eirods::file_object file_obj( fileRenameInp->oldFileName, 0, 0, 0 );
+    eirods::error rename_err = fileRename ( file_obj, fileRenameInp->newFileName );
 
     // =-=-=-=-=-=-=-
 	// report errors if any
@@ -88,12 +93,12 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
 		msg << " to ";
 		msg << fileRenameInp->newFileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), rename_err );
+		msg << rename_err.code();
+		eirods::error err = PASS( false, rename_err.code(), msg.str(), rename_err );
 		eirods::log ( err );
     }
 
-    return (status);
+    return rename_err.code();
 
 } // _rsFileRename
  

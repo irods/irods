@@ -6,7 +6,13 @@
 #include "fileClose.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
+
+
 
 int
 rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
@@ -76,9 +82,11 @@ _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 	// =-=-=-=-=-=-=-
 	// call the resource plugin close operation 
     int status = -1;
-    eirods::error close_err = fileClose( FileDesc[fileCloseInp->fileInx].fileName, 
-                                         FileDesc[fileCloseInp->fileInx].fd,
-										 status );
+	eirods::file_object file_obj( FileDesc[fileCloseInp->fileInx].fileName, 
+                                  FileDesc[fileCloseInp->fileInx].fd,
+								  0, 0 );
+
+    eirods::error close_err = fileClose( file_obj );
     // =-=-=-=-=-=-=-
 	// log an error, if any
     if( !close_err.ok() ) {
@@ -86,11 +94,11 @@ _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 		msg << "_rsFileClose: fileClose failed for ";
 		msg << fileCloseInp->fileInx;
 		msg << ", status = ";
-		msg << status;
-        eirods::error err = PASS( false, status, msg.str(), close_err ); 
+		msg << close_err.code();
+        eirods::error err = PASS( false, close_err.code(), msg.str(), close_err ); 
     }
 
-    return status;
+    return close_err.code();
 
 } // _rsFileClose 
 

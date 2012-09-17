@@ -7,9 +7,18 @@
 #include "miscServerFunct.h"
 #include "fileCreate.h"
 #include "dataObjOpr.h"
-#include "eirods_log.h"
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 #include <sstream>
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_log.h"
+#include "eirods_file_object.h"
+
+
 
 /* rsFilePut - Put the content of a small file from a single buffer
  * in filePutInpBBuf->buf.
@@ -88,13 +97,13 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
     // NOTE:: this test does not seem to work for i86 solaris 
     if( ( filePutInp->otherFlags & FORCE_FLAG ) != 0 ) {
         // =-=-=-=-=-=-=-
-		// create on if it does not exist */
+		// create one if it does not exist */
 		filePutInp->flags |= O_CREAT;
-        fd = _rsFileOpen (rsComm, filePutInp);
+        fd = _rsFileOpen( rsComm, filePutInp );
 
     } else {
-	    fd = _rsFileCreate (rsComm, filePutInp, rodsServerHost);
-    
+	    fd = _rsFileCreate( rsComm, filePutInp, rodsServerHost );
+
 	} // else
 
     // =-=-=-=-=-=-=-
@@ -114,48 +123,49 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
 
     // =-=-=-=-=-=-=-
     // call write for resource plugin
-	int write_status = -1;
-    eirods::error write_err = fileWrite( filePutInp->fileName, fd, 
-	                                     filePutInpBBuf->buf, filePutInpBBuf->len,
-										 write_status );
+	eirods::file_object file_obj( filePutInp->fileName, fd, 0, 0 );
+    eirods::error write_err = fileWrite( file_obj, 
+	                                     filePutInpBBuf->buf, 
+										 filePutInpBBuf->len );
+	int write_code = write_err.code();
     // =-=-=-=-=-=-=-
     // log errors, if any
-    if ( !write_err.ok() || write_status != filePutInpBBuf->len ) {
-		if( write_status >= 0 ) {
+    //if ( !write_code || write_code != filePutInpBBuf->len ) {
+    if ( write_code != filePutInpBBuf->len ) {
+		if( write_code >= 0 ) {
 			std::stringstream msg;
 			msg << "_rsFilePut: fileWrite for ";
 			msg << filePutInp->fileName;
 			msg << ", towrite ";
             msg << filePutInpBBuf->len;
 			msg << ", status = ";
-			msg << write_status;
-			eirods::error err = PASS( false, write_status, msg.str(), write_err );
+			msg << write_code;
+			eirods::error err = PASS( false, write_code, msg.str(), write_err );
             eirods::log ( err );
-			write_status = SYS_COPY_LEN_ERR;
+			write_code = SYS_COPY_LEN_ERR;
 		} else {
 			std::stringstream msg;
 			msg << "_rsFilePut: fileWrite for ";
 			msg << filePutInp->fileName;
 			msg << ", status = ";
-			msg << write_status;
-			eirods::error err = PASS( false, write_status, msg.str(), write_err );
+			msg << write_code;
+			eirods::error err = PASS( false, write_code, msg.str(), write_err );
             eirods::log ( err );
 		}
     }
    
     // =-=-=-=-=-=-=-
 	// close up after ourselves 
-	int close_status = -1;
-    eirods::error close_err = fileClose( filePutInp->fileName, fd, close_status );
+    eirods::error close_err = fileClose( file_obj );
 	if( !close_err.ok() ) {
-		eirods::error err = PASS( false, close_status, "_rsFilePut - error on close", close_err );
+		eirods::error err = PASS( false, close_err.code(), "_rsFilePut - error on close", close_err );
 		eirods::log( err );
 	}
    
     // =-=-=-=-=-=-=-
-	// return 'write_status' as this includes this implementation
+	// return 'write_err code' as this includes this implementation
 	// assumes we are returning the size of the file 'put' via fileWrite 
-    return write_status;
+    return write_code;
 
 } // _rsFilePut
 

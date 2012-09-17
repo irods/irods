@@ -5,7 +5,11 @@
 
 #include "fileMkdir.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_collection_object.h"
 
 int
 rsFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp)
@@ -66,27 +70,26 @@ rodsServerHost_t *rodsServerHost)
 // =-=-=-=-=-=-=-
 // local function to handle call to mkdir via resource plugin
 int _rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
-    int status = -1;
-
     // =-=-=-=-=-=-=-
 	// make call to mkdir via resource plugin
-	eirods::error mkdir_err = fileMkdir( fileMkdirInp->dirName, fileMkdirInp->mode, status );
+	eirods::collection_object coll_obj( fileMkdirInp->dirName, fileMkdirInp->mode, 0 );
+	eirods::error mkdir_err = fileMkdir( coll_obj );
 
     // =-=-=-=-=-=-=-
 	// log error if necessary
     if( !mkdir_err.ok() ) {
-	    if( getErrno( status ) != EEXIST ) {
+	    if( getErrno( mkdir_err.code() ) != EEXIST ) {
 			std::stringstream msg;
 			msg << "_rsFileMkdir: fileMkdir for ";
 			msg << fileMkdirInp->dirName;
 			msg << ", status = ";
-			msg << status;
-			eirods::error ret_err = PASS( false, status, msg.str(), mkdir_err );
+			msg << mkdir_err.code();
+			eirods::error ret_err = PASS( false, mkdir_err.code(), msg.str(), mkdir_err );
 			eirods::log( ret_err );
 		}
     }
 
-    return (status);
+    return (mkdir_err.code());
 
 } // _rsFileMkdir
 

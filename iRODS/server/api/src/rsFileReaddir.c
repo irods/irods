@@ -6,7 +6,11 @@
 #include "fileReaddir.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_collection_object.h"
 
 int
 rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, 
@@ -88,11 +92,10 @@ int _rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, rodsDire
 
 	// =-=-=-=-=-=-=-
     // make call to readdir via resource plugin
-    int status;
-    eirods::error readdir_err = fileReaddir( FileDesc[fileReaddirInp->fileInx].fileName,
-                                             FileDesc[fileReaddirInp->fileInx].driverDep, 
-						                     myFileDirent,
-						                     status );
+	eirods::collection_object coll_obj( FileDesc[fileReaddirInp->fileInx].fileName, 0, 0 );
+	coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[fileReaddirInp->fileInx].driverDep ) ); // FIXME :: TEMP, need CTOR/Adaptor
+    eirods::error readdir_err = fileReaddir( coll_obj, myFileDirent );
+
     // =-=-=-=-=-=-=-
 	// handle errors, if necessary
     if( !readdir_err.ok() ) {
@@ -100,23 +103,23 @@ int _rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, rodsDire
 		msg << "_rsFileReaddir: fileReaddir for ";
 		msg << FileDesc[fileReaddirInp->fileInx].fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), readdir_err );
+		msg << readdir_err.code();
+		eirods::error err = PASS( false, readdir_err.code(), msg.str(), readdir_err );
 		eirods::log ( err );
 
-        return status;
+        return readdir_err.code();
     } else {
 		// =-=-=-=-=-=-=-
 		// case for handle end of file 
-        if( -1 == status ) {
-			return status;
+        if( -1 == readdir_err.code() ) {
+			return readdir_err.code();
 		}
 	}
 
     // =-=-=-=-=-=-=-
 	// still in the beginning / middle of a read
     *fileReaddirOut = (rodsDirent_t*)malloc (sizeof (rodsDirent_t));
-    status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
+    int status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
     if( status < 0 ) {
 		free (*fileReaddirOut);
 		*fileReaddirOut = NULL;

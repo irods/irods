@@ -5,7 +5,11 @@
 
 #include "fileStage.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp)
@@ -68,8 +72,8 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileStage( rsComm_t *rsComm, fileStageInp_t *fileStageInp ) {
 	// =-=-=-=-=-=-=-
     // make call to readdir via resource plugin
-    int status = -1;
-    eirods::error stage_err = fileStage( fileStageInp->fileName, fileStageInp->flag, status );
+    eirods::file_object file_obj( fileStageInp->fileName, 0, 0, fileStageInp->flag );
+    eirods::error stage_err = fileStage( file_obj );
 
      // =-=-=-=-=-=-=-
 	// handle errors, if necessary
@@ -78,11 +82,11 @@ int _rsFileStage( rsComm_t *rsComm, fileStageInp_t *fileStageInp ) {
 		msg << "_rsFileStage: fileStage for ";
 		msg << fileStageInp->fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), stage_err );
+		msg << stage_err.code();
+		eirods::error err = PASS( false, stage_err.code(), msg.str(), stage_err );
 		eirods::log ( err );
     }
 
-    return (status);
+    return stage_err.code();
 
 } // _rsFileStage

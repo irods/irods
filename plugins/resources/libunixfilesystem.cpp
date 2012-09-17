@@ -1,16 +1,24 @@
-// =-=-=-=-=-=-=-
-// E-iRODS Includes
-#include "msParam.h"
-#include "reGlobalsExtern.h"
-#include "eirods_resource_plugin.h"
+
+
 
 // =-=-=-=-=-=-=-
-// STL Includes
+// irods includes
+#include "msParam.h"
+#include "reGlobalsExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_plugin.h"
+#include "eirods_file_object.h"
+#include "eirods_collection_object.h"
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 #include <sstream>
 
 // =-=-=-=-=-=-=-
-// System Includes
+// system includes
 #ifndef _WIN32
 #include <sys/file.h>
 #include <sys/param.h>
@@ -53,17 +61,37 @@ extern "C" {
 #define NB_WRITE_TOUT_SEC	60	/* 60 sec timeout */
 
     // =-=-=-=-=-=-=-
-	// Direct Rip from iRODS/server/drivers/src/unixFileDriver.c 
+	// Define plugin Version Variable
     int EIRODS_PLUGIN_VERSION=1.0;
 
     // =-=-=-=-=-=-=-
+	// NOTE :: This was a Direct Rip from iRODS/server/drivers/src/unixFileDriver.c 
+    // =-=-=-=-=-=-=-
+	
+	// =-=-=-=-=-=-=-
 	// interface for POSIX create
-	eirods::error unixFileCreatePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap, 
-	                                    const char* _file_name, int _mode, size_t _mySize, int* _fd ) {
+    eirods::error unixFileCreatePlugin( eirods::resource_property_map* 
+	                                                        _prop_map,
+							            eirods::resource_child_map* 
+										                    _cmap, 
+                                        eirods::first_class_object* 
+										                    _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+		if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileCreatePlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileCreatePlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileCreatePlugin - null first_class_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// make call to umask & open for create
 		mode_t myMask = umask((mode_t) 0000);
-		int    fd     = open( _file_name, O_RDWR|O_CREAT|O_EXCL, _mode );
+		int    fd     = open( _object->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, _object->mode() );
 
         // =-=-=-=-=-=-=-
 		// reset the old mask 
@@ -75,55 +103,76 @@ extern "C" {
 			close (fd);
 		    rodsLog( LOG_NOTICE, "unixFileCreatePlugin: 0 descriptor" );
 			open ("/dev/null", O_RDWR, 0);
-			fd = open(  _file_name, O_RDWR|O_CREAT|O_EXCL, _mode );
+		    fd = open( _object->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, _object->mode() );
 		}
 
         // =-=-=-=-=-=-=-
 		// cache file descriptor in out-variable
-        (*_fd) = fd;
-		
+	    _object->file_descriptor( fd );
+			
         // =-=-=-=-=-=-=-
-		// 
+		// trap error case with bad fd
 		if( fd < 0 ) {
-			fd = UNIX_FILE_CREATE_ERR - errno;
+			int status = UNIX_FILE_CREATE_ERR - errno;
 			
 			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_fd) = fd;
-
+			// WARNING :: Major Assumptions are made upstream and use the FD also as a
+			//         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
+			_object->file_descriptor( status );
+			
 			std::stringstream msg;
-			msg << "unixFileCreatePlugin: open error for ";
-			msg << _file_name;
-			msg << ", status = ";
-			msg << fd;
+			msg << "unixFileCreatePlugin: create error for ";
+			msg << _object->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
+			msg << status;
  
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, status, msg.str() );
 		}
 
         // =-=-=-=-=-=-=-
 		// declare victory!
-		return SUCCESS();
+		return CODE( fd );
 
 	} // unixFileCreatePlugin
 
 	// =-=-=-=-=-=-=-
 	// interface for POSIX Open
-	eirods::error unixFileOpenPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap, 
-	                                  const char * _file_name, int _flags, int _mode, int* _fd ) {
+	eirods::error unixFileOpenPlugin( eirods::resource_property_map* 
+	                                                      _prop_map, 
+									  eirods::resource_child_map* 
+									                      _cmap, 
+	                                  eirods::first_class_object* 
+									                      _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+		if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileOpenPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileOpenPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileOpenPlugin - null first_class_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// handle OSX weirdness...
+		int flags = _object->flags();
+
         #if defined(osx_platform)
-		/* For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system */
-		if( _flags & 0x200) {
-			_flags = _flags ^ 0x200;
-			_flags = _flags | O_TRUNC;
+		// For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system 
+		if( flags & 0x200) {
+			flags = flags ^ 0x200;
+			flags = flags | O_TRUNC;
 		}
         #endif
 
         // =-=-=-=-=-=-=-
 		// make call to open
 		errno = 0;
-		int fd = open( _file_name, _flags, _mode );
+		int fd = open( _object->physical_path().c_str(), flags, _object->mode() );
 
         // =-=-=-=-=-=-=-
 		// if we got a 0 descriptor, try again
@@ -131,188 +180,239 @@ extern "C" {
 			close (fd);
 			rodsLog( LOG_NOTICE, "unixFileOpenPlugin: 0 descriptor" );
 			open ("/dev/null", O_RDWR, 0);
-			fd = open( _file_name, _flags, _mode );
-		}
-
-        // =-=-=-=-=-=-=-
-		// cache file descriptor in out-variable
-        (*_fd) = fd;
+			fd = open( _object->physical_path().c_str(), flags, _object->mode() );
+		}	
+			
+		// =-=-=-=-=-=-=-
+		// cache status in the file object
+	    _object->file_descriptor( fd );
 
         // =-=-=-=-=-=-=-
 		// did we still get an error?
-		if (fd < 0) {
+		if ( fd < 0 ) {
 			fd = UNIX_FILE_OPEN_ERR - errno;
 			
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_fd) = fd;
-
             std::stringstream msg;
 			msg << "unixFileOpenPlugin: open error for ";
-			msg << _file_name;
+			msg << _object->physical_path();
+			msg << ", errno = ";
+			msg << strerror( errno );
 			msg << ", status = ";
 			msg << fd;
+			msg << ", flags = ";
+			msg << flags;
  
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, fd, msg.str() );
 		}
 		
         // =-=-=-=-=-=-=-
 		// declare victory!
-		return SUCCESS();
+		return CODE( fd );
 
 	} // unixFileOpenPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX Read
-	eirods::error unixFileReadPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                  int _fd, void* _buf, int _len, int* _status )	{
+	eirods::error unixFileReadPlugin( eirods::resource_property_map* 
+	                                                      _prop_map, 
+						              eirods::resource_child_map* 
+									                      _cmap,
+                                      eirods::first_class_object* 
+									                      _object,
+									  void*               _buf, 
+									  int                 _len ) {
+									  
 		// =-=-=-=-=-=-=-
-		// make the call to read
-		int status = read( _fd, _buf, _len );
+        // check incoming parameters
+		if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
 
 		// =-=-=-=-=-=-=-
-		// cache status value into out variable
-		(*_status) = status;
+		// make the call to read
+		int status = read( _object->file_descriptor(), _buf, _len );
 
 		// =-=-=-=-=-=-=-
 		// pass along an error if it was not successful
 		if( status < 0 ) {
 			status = UNIX_FILE_READ_ERR - errno;
 			
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileReadPlugin - read error fd = ";
-			msg << _fd;
-			msg << ", status = ";
-			msg << _status;
-			return ERROR( false, errno, msg.str() );
+			msg << _object->file_descriptor();
+			msg << ", errno = ";
+			msg << strerror( errno );
+			return ERROR( false, status, msg.str() );
 		}
 		
 		// =-=-=-=-=-=-=-
 		// win!
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileReadPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX Write
-	eirods::error unixFileWritePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   int _fd, void* _buf, int _len, int* _status )	{
+	eirods::error unixFileWritePlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map*
+									                       _cmap,
+                                      eirods::first_class_object* 
+									                       _object,
+									   void*               _buf, 
+									   int                 _len ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+		if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
 	    // =-=-=-=-=-=-=-
 		// make the call to write
-		int status = write( _fd, _buf, _len );
-
-		// =-=-=-=-=-=-=-
-		// cache status value into out variable
-		(*_status) = status;
+		int status = write( _object->file_descriptor(), _buf, _len );
 
 		// =-=-=-=-=-=-=-
 		// pass along an error if it was not successful
 		if (status < 0) {
 			status = UNIX_FILE_WRITE_ERR - errno;
 			
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileWritePlugin - write fd = ";
-			msg << _fd;
-			msg << ", status = ";
-			msg << _status;
-			return ERROR( false, errno, msg.str() );
+			msg << _object->file_descriptor();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
+			msg << status;
+			return ERROR( false, status, msg.str() );
 		}
 		
 		// =-=-=-=-=-=-=-
 		// win!
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileWritePlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX Close
-	eirods::error unixFileClosePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   int _fd, int* _status ) {
-		int status = -1;
-
-        // =-=-=-=-=-=-=-
-		// make the call to close
-		status = close( _fd );
-
+	eirods::error unixFileClosePlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                      _cmap,
+                                      eirods::first_class_object* 
+									                      _object ) {
 		// =-=-=-=-=-=-=-
-		// cache status value into out variable
-		(*_status) = status;
-
-        // =-=-=-=-=-=-=-
-		// handle 0 file descriptor error
-		if( _fd == 0 ) {
-			rodsLog (LOG_NOTICE, "unixFileClosePlugin: 0 descriptor");
-			open ( "/dev/null", O_RDWR, 0 );
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
 		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+        
+		// =-=-=-=-=-=-=-
+		// make the call to close
+		int status = close( _object->file_descriptor() );
 
         // =-=-=-=-=-=-=-
 		// log any error
-		if (status < 0) {
+		if( status < 0 ) {
 			status = UNIX_FILE_CLOSE_ERR - errno;
 			
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
             std::stringstream msg;
 			msg << "unixFileClosePlugin: close error, ";
-			msg << " status = ";
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
-            return ERROR( false, errno, msg.str() );
+            return ERROR( false, status, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileClosePlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX Unlink
-	eirods::error unixFileUnlinkPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                    const char* _file_name, int* _status ) {
+	eirods::error unixFileUnlinkPlugin( eirods::resource_property_map* 
+	                                                        _prop_map, 
+										eirods::resource_child_map* 
+										                    _cmap,
+                                        eirods::first_class_object* 
+									                        _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
 	    // =-=-=-=-=-=-=-
 		// make the call to unlink	
-		int status = unlink( _file_name );
-
-        // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		int status = unlink( _object->physical_path().c_str() );
 
 	    // =-=-=-=-=-=-=-
 		// error handling
 		if( status < 0 ) {
 			status = UNIX_FILE_UNLINK_ERR - errno;
 			
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-            
 			std::stringstream msg;
 			msg << "unixFileUnlinkPlugin: unlink error for ";
-			msg << _file_name;
-			msg << ", status = ";
+			msg << _object->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
-            return ERROR( false, errno, msg.str() );
+            return ERROR( false, status, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileUnlinkPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX Stat
-	eirods::error unixFileStatPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                  const char* _file_name, struct stat* _statbuf, int* _status ) {
+	eirods::error unixFileStatPlugin( eirods::resource_property_map* 
+	                                                      _prop_map, 
+									  eirods::resource_child_map* 
+									                      _cmap,
+                                      eirods::first_class_object* 
+									                      _object,
+									  struct stat*        _statbuf ) { 
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// make the call to stat
-		int status = stat( _file_name, _statbuf );
+		int status = stat( _object->physical_path().c_str(), _statbuf );
 
         // =-=-=-=-=-=-=-
 		// if the file can't be accessed due to permission denied 
@@ -327,37 +427,48 @@ extern "C" {
         #endif
 
         // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
-
-        // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_STAT_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileStatPlugin: stat error for ";
-			msg << _file_name;
-			msg << ", status = ";
+			msg << _object->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
-            return ERROR( false, errno, msg.str() );
+            return ERROR( false, status, msg.str() );
 		}
 		
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileStatPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX Fstat
-	eirods::error unixFileFstatPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   int _fd, struct stat* _statbuf, int* _status ) {
+	eirods::error unixFileFstatPlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map*
+									                       _cmap,
+                                       eirods::first_class_object* 
+									                       _object,
+									   struct stat*        _statbuf ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+								   
         // =-=-=-=-=-=-=-
 		// make the call to fstat
-		int status = fstat( _fd, _statbuf );
+		int status = fstat( _object->file_descriptor(), _statbuf );
 
         // =-=-=-=-=-=-=-
 		// if the file can't be accessed due to permission denied 
@@ -365,119 +476,154 @@ extern "C" {
         #ifdef RUN_SERVER_AS_ROOT
 		if (status < 0 && errno == EACCES && isServiceUserSet()) {
 			if (changeToRootUser() == 0) {
-				status = fstat (fd, statbuf);
+				status = fstat( _object->file_descriptor(), statbuf );
 				changeToServiceUser();
 			}
 		}
         #endif
 
         // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
-
-        // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_STAT_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileFstatPlugin: fstat error for ";
-			msg << _fd;
-			msg << ", status = ";
+			msg << _object->file_descriptor();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
 
-            return ERROR( false, errno, msg.str() );
+            return ERROR( false, status, msg.str() );
 
 		} // if
 	   
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileFstatPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX lseek
-	eirods::error unixFileLseekPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   int _fd, size_t _offset, int _whence, size_t* _status ) {
+	eirods::error unixFileLseekPlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                       _cmap,
+                                       eirods::first_class_object* 
+									                       _object,
+									   size_t              _offset, 
+									   int                 _whence ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+									   
 	    // =-=-=-=-=-=-=-
 		// make the call to lseek	
-		size_t status = lseek( _fd,  _offset, _whence );
-
-        // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		size_t status = lseek( _object->file_descriptor(),  _offset, _whence );
 
         // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_LSEEK_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileLseekPlugin: lseek error for ";
-			msg << _fd;
-			msg << ", status = ";
+			msg << _object->file_descriptor();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
 			
-		    return ERROR( false, errno, msg.str() );
+		    return ERROR( false, status, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileLseekPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX fsync
-	eirods::error unixFileFsyncPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   int _fd, int* _status ) {
+	eirods::error unixFileFsyncPlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                       _cmap,
+	                                   eirods::first_class_object*
+														   _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
 	    // =-=-=-=-=-=-=-
 		// make the call to fsync	
-		int status = fsync( _fd );
-
-        // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		int status = fsync( _object->file_descriptor() );
 
         // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_LSEEK_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileFsyncPlugin: fsync error for ";
-			msg << _fd;
-			msg << ", status = ";
+			msg << _object->file_descriptor();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
 			
-		    return ERROR( false, errno, msg.str() );
+		    return ERROR( false, status, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileFsyncPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX mkdir
-	eirods::error unixFileMkdirPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   const char* _file_name, int _mode, int* _status ) {
+	eirods::error unixFileMkdirPlugin( eirods::resource_property_map*
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                       _cmap,
+                                       eirods::first_class_object*
+									                       _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
+		// =-=-=-=-=-=-=-
+		// cast down the chain to our understood object type
+		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
+        if( !coll_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// make the call to mkdir & umask
 		mode_t myMask = umask( ( mode_t ) 0000 );
-		int    status = mkdir( _file_name, _mode );
-
-        // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		int    status = mkdir( coll_obj->physical_path().c_str(), coll_obj->mode() );
 
         // =-=-=-=-=-=-=-
 		// reset the old mask 
@@ -488,102 +634,144 @@ extern "C" {
 		if( status < 0 ) {
 			status = UNIX_FILE_MKDIR_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 		    if (errno != EEXIST) {
 				std::stringstream msg;
 				msg << "unixFileMkdirPlugin: mkdir error for ";
-				msg << _file_name;
-				msg << ", status = ";
+				msg << coll_obj->physical_path();
+				msg << ", errno = '";
+				msg << strerror( errno );
+				msg << "', status = ";
 				msg << status;
 				
-				return ERROR( false, errno, msg.str() );
+				return ERROR( false, status, msg.str() );
 
 			} // if errno != EEXIST
 
 		} // if status < 0 
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileMkdirPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX mkdir
-	eirods::error unixFileChmodPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   const char* _file_name, int _mode, int* _status ) {
-        // =-=-=-=-=-=-=-
-		// make the call to chmod
-		int status = chmod( _file_name, _mode );
+	eirods::error unixFileChmodPlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                       _cmap,
+                                       eirods::first_class_object*
+									                       _object,
+									   int                 _mode ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
 
         // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		// make the call to chmod
+		int status = chmod( _object->physical_path().c_str(), _mode );
 
         // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_CHMOD_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileChmodPlugin: chmod error for ";
-			msg << _file_name;
-			msg << ", status = ";
+			msg << _object->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
 			
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, status, msg.str() );
 		} // if
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileChmodPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX mkdir
-	eirods::error unixFileRmdirPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   const char* _file_name, int* _status ) {
-        // =-=-=-=-=-=-=-
-		// make the call to chmod
-		int status = rmdir( _file_name );
+	eirods::error unixFileRmdirPlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                       _cmap,
+                                       eirods::first_class_object*
+									                       _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
 
         // =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		// make the call to chmod
+		int status = rmdir( _object->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_RMDIR_ERR - errno;
  
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileRmdirPlugin: mkdir error for ";
-			msg << _file_name;
-			msg << ", status = ";
+			msg << _object->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
 			msg << status;
 			
 			return ERROR( false, errno, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileRmdirPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX opendir
-	eirods::error unixFileOpendirPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                     const char* _dir_name, void** _out_dir_ptr, int* _status ) {
+	eirods::error unixFileOpendirPlugin( eirods::resource_property_map* 
+	                                                         _prop_map, 
+										 eirods::resource_child_map* 
+										                     _cmap,
+                                         eirods::first_class_object*
+									                         _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
+		// =-=-=-=-=-=-=-
+		// cast down the chain to our understood object type
+		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
+        if( !coll_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// make the callt to opendir
-		DIR* dir_ptr = opendir( _dir_name );
+		DIR* dir_ptr = opendir( coll_obj->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
 		// if the directory can't be accessed due to permission
@@ -591,7 +779,7 @@ extern "C" {
         #ifdef RUN_SERVER_AS_ROOT
 		if( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
 			if (changeToRootUser() == 0) {
-				dir_ptr = opendir ( _dir_name );
+				dir_ptr = opendir ( coll_obj->physical_path().c_str() );
 				changeToServiceUser();
 			} // if
 		} // if
@@ -602,21 +790,22 @@ extern "C" {
 		if( NULL == dir_ptr ) {
 			// =-=-=-=-=-=-=-
 			// cache status in out variable
-			(*_status) = UNIX_FILE_OPENDIR_ERR - errno;
+			int status = UNIX_FILE_OPENDIR_ERR - errno;
 
 			std::stringstream msg;
 			msg << "unixFileOpendirPlugin: opendir error for ";
-			msg << _dir_name;
+			msg << coll_obj->physical_path();
+			msg << ", errno = ";
+			msg << strerror( errno );
 			msg << ", status = ";
-			msg << (*_status);
+			msg << status;
 			
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, status, msg.str() );
 		}
 
 		// =-=-=-=-=-=-=-
 		// cache dir_ptr & status in out variables
-		(*_out_dir_ptr) = (void *) dir_ptr;
-		(*_status)      = 0;
+		coll_obj->directory_pointer( dir_ptr );
 
 		return SUCCESS();
 
@@ -624,178 +813,284 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX closedir
-	eirods::error unixFileClosedirPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                      const char* _dir_name, void* _dir_ptr, int* _status ) {
+	eirods::error unixFileClosedirPlugin( eirods::resource_property_map* 
+	                                                          _prop_map, 
+										  eirods::resource_child_map* 
+										                      _cmap,
+                                          eirods::first_class_object*
+									                          _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
+		// =-=-=-=-=-=-=-
+		// cast down the chain to our understood object type
+		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
+        if( !coll_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// make the callt to opendir
-		int status = closedir( (DIR*) _dir_ptr );
+		int status = closedir( coll_obj->directory_pointer() );
 			
-		// =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
-
         // =-=-=-=-=-=-=-
 		// return an error if necessary
 		if( status < 0 ) {
 			status = UNIX_FILE_CLOSEDIR_ERR - errno;
 
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = status;
-
 			std::stringstream msg;
 			msg << "unixFileClosedirPlugin: closedir error for ";
-			msg << _dir_name;
-			msg << ", status = ";
-			msg << (*_status);
+			msg << coll_obj->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
+			msg << status;
 			
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, status, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileClosedirPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX readdir
-	eirods::error unixFileReaddirPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                     void* _dir_ptr, struct dirent * _dirent_ptr, int* _status ) {
+	eirods::error unixFileReaddirPlugin( eirods::resource_property_map* 
+	                                                         _prop_map, 
+										 eirods::resource_child_map* 
+										                     _cmap,
+                                         eirods::first_class_object*
+									                         _object,
+										 struct dirent *     _dirent_ptr ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
+		// =-=-=-=-=-=-=-
+		// cast down the chain to our understood object type
+		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
+        if( !coll_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+		}
+
         // =-=-=-=-=-=-=-
 		// zero out errno?
 		errno = 0;
 
 		// =-=-=-=-=-=-=-
 		// make the call to readdir
-		struct dirent * tmpDirentPtr = readdir( (DIR*) _dir_ptr );
+		struct dirent * tmpDirentPtr = readdir( coll_obj->directory_pointer() );
 
         // =-=-=-=-=-=-=-
 		// handle error cases
-		int status = -1;
 		if( tmpDirentPtr == NULL ) {
 			if( errno == 0 ) { // just the end 
 				// =-=-=-=-=-=-=-
 				// cache status in out variable
-				(*_status) = -1;
-				return SUCCESS();
+				return CODE( -1 );
 			} else {
 				// =-=-=-=-=-=-=-
 				// cache status in out variable
-				(*_status) = UNIX_FILE_READDIR_ERR - errno;
+				int status = UNIX_FILE_READDIR_ERR - errno;
 
 				std::stringstream msg;
 				msg << "unixFileReaddirPlugin: closedir error, status = ";
-				msg << (*_status);
+				msg << status;
+				msg << ", errno = '";
+				msg << strerror( errno );
+				msg << "'";
 				
-				return ERROR( false, errno, msg.str() );
+				return ERROR( false, status, msg.str() );
 			}
 		} else {
 			// =-=-=-=-=-=-=-
 			// cache status and dirent ptr in out variables
-			(*_status) = 0;
 			(*_dirent_ptr) = (*tmpDirentPtr);
 
 			#if defined(solaris_platform)
 			rstrcpy( _dirent_ptr->d_name, tmpDirentPtr->d_name, MAX_NAME_LEN );
 			#endif
 
-		    return SUCCESS();
+		    return CODE( 0 );
 		}
 
     } // unixFileReaddirPlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX readdir
-	eirods::error unixFileStagePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                   const char* _path, int _flag, int* _status ) {
-    #ifdef SAMFS_STAGE
-		(*_status) = sam_stage (path, "i");
+	eirods::error unixFileStagePlugin( eirods::resource_property_map* 
+	                                                       _prop_map, 
+									   eirods::resource_child_map* 
+									                       _cmap,
+                                       eirods::first_class_object*
+									                       _object ) {
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
 
-		if ((*_status) < 0) {
-			(*_status) = UNIX_FILE_STAGE_ERR - errno;
-			rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n",
-			         (*_status) );
+    #ifdef SAMFS_STAGE
+		int status = sam_stage (path, "i");
+
+		if (status < 0) {
+			_status = UNIX_FILE_STAGE_ERR - errno;
+			rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n"
+			         , (*_status) );
 			return ERROR( false, errno, "unixFileStage: sam_stage error" );
 		}
 
-		return SUCCESS();
+		return CODE( 0 );
     #else
-		return SUCCESS();
+		return CODE( 0 );
     #endif
 	} // unixFileStagePlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX readdir
-	eirods::error unixFileRenamePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                    const char* _old_file_name, const char* _new_file_name, int* _status ) {
+	eirods::error unixFileRenamePlugin( eirods::resource_property_map* 
+	                                                        _prop_map, 
+										eirods::resource_child_map* 
+										                    _cmap,
+                                        eirods::first_class_object*
+									                        _object, 
+										const char*         _new_file_name ) {
 		// =-=-=-=-=-=-=-
-		// make the call to rename
-		int status = rename( _old_file_name, _new_file_name );
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
 
 		// =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		// make the call to rename
+		int status = rename( _object->physical_path().c_str(), _new_file_name );
 
         // =-=-=-=-=-=-=-
 		// handle error cases
 		if( status < 0 ) {
 			status = UNIX_FILE_RENAME_ERR - errno;
 				
-			// =-=-=-=-=-=-=-
-			// cache status in out variable
-			(*_status) = UNIX_FILE_READDIR_ERR - errno;
-
             std::stringstream msg;
 			msg << "unixFileRenamePlugin: rename error for ";
-			msg << _old_file_name;
+			msg <<  _object->physical_path();
 			msg << " to ";
 			msg << _new_file_name;
 			msg << ", status = ";
-			msg << (*_status);
+			msg << status;
 			
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, status, msg.str() );
 
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileRenamePlugin
 
     // =-=-=-=-=-=-=-
 	// interface for POSIX truncate
-	eirods::error unixFileTruncatePlugin( const char* _file_name, size_t _size, int* _status ) {
+	eirods::error unixFileTruncatePlugin( eirods::resource_property_map* 
+	                                                          _prop_map, 
+										  eirods::resource_child_map* 
+												             _cmap,
+                                          eirods::first_class_object*
+									                         _object ) { 
 		// =-=-=-=-=-=-=-
-		// make the call to rename
-		int status = truncate( _file_name, _size );
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+		
+		// =-=-=-=-=-=-=-
+		// cast down the chain to our understood object type
+		eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
+        if( !file_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to file_object" );
+		}
 
 		// =-=-=-=-=-=-=-
-		// cache status in out variable
-		(*_status) = status;
+		// make the call to rename
+		int status = truncate( file_obj->physical_path().c_str(), 
+		                       file_obj->size() );
 
         // =-=-=-=-=-=-=-
 		// handle any error cases
 		if( status < 0 ) {
 			// =-=-=-=-=-=-=-
 			// cache status in out variable
-			(*_status) = UNIX_FILE_TRUNCATE_ERR - errno;
+			status = UNIX_FILE_TRUNCATE_ERR - errno;
 
             std::stringstream msg;
 			msg << "unixFileTruncatePlugin: rename error for ";
-			msg << _file_name;
-			msg << ", status = ";
-			msg << (*_status);
+			msg << file_obj->physical_path();
+			msg << ", errno = '";
+			msg << strerror( errno );
+			msg << "', status = ";
+			msg << status;
 			
-			return ERROR( false, errno, msg.str() );
+			return ERROR( false, status, msg.str() );
 		}
 
-		return SUCCESS();
+		return CODE( status );
 
 	} // unixFileTruncatePlugin
 
 	
     // =-=-=-=-=-=-=-
 	// interface to determine free space on a device given a path
-	eirods::error unixFileGetFsFreeSpacePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                            const char* _path, int _flag, size_t* _size ) {
+	eirods::error unixFileGetFsFreeSpacePlugin( eirods::resource_property_map* 
+	                                                                _prop_map, 
+												eirods::resource_child_map* 
+												                    _cmap,
+                                                eirods::first_class_object*
+									                                _object ) { 
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
+
+
 		int status = -1;
 		rodsLong_t fssize = USER_NO_SUPPORT_ERR;
         #if defined(solaris_platform)
@@ -804,14 +1099,18 @@ extern "C" {
 		struct statfs statbuf;
         #endif
 
-        #if defined(solaris_platform) || defined(sgi_platform) || defined(aix_platform) || defined(linux_platform) || defined(osx_platform)
+        #if defined(solaris_platform) || defined(sgi_platform)   || \
+		    defined(aix_platform)     || defined(linux_platform) || \
+			defined(osx_platform)
             #if defined(solaris_platform)
-			status = statvfs( _path, &statbuf );
+			status = statvfs( _object->physical_path().c_str(), &statbuf );
             #else
                 #if defined(sgi_platform)
-		        status = statfs( _path, &statbuf, sizeof (struct statfs), 0 );
+		        status = statfs( _object->physical_path().c_str(), 
+				                 &statbuf, sizeof (struct statfs), 0 );
                 #else
-		        status = statfs( _path, &statbuf );
+		        status = statfs( _object->physical_path().c_str(), 
+				                 &statbuf );
                 #endif
             #endif
 
@@ -820,17 +1119,13 @@ extern "C" {
 			if( status < 0 ) {
 				status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
 
-				// =-=-=-=-=-=-=-
-				// cache error in _size
-				(*_size) = USER_NO_SUPPORT_ERR;
-
 				std::stringstream msg;
 				msg << "unixFileGetFsFreeSpacePlugin: statfs error for ";
-				msg << _path;
+				msg << _object->physical_path().c_str();
 				msg << ", status = ";
-				msg << status;
+				msg << USER_NO_SUPPORT_ERR;
 
-				return ERROR( false, errno, msg.str() );
+				return ERROR( false, USER_NO_SUPPORT_ERR, msg.str() );
 			}
             
 			#if defined(sgi_platform)
@@ -842,7 +1137,8 @@ extern "C" {
 			fssize *= statbuf.f_bavail;
             #endif
 
-            #if defined(aix_platform) || defined(osx_platform) || (linux_platform)
+            #if defined(aix_platform) || defined(osx_platform) || \
+			    defined(linux_platform)
 	        fssize = statbuf.f_bavail * statbuf.f_bsize;
             #endif
  
@@ -852,16 +1148,13 @@ extern "C" {
 
         #endif /* solaris_platform, sgi_platform .... */
 
-		// =-=-=-=-=-=-=-
-		// cache error in _size
-		(*_size) = fssize;
-
-		return SUCCESS();
+		return CODE( fssize );
 
 	} // unixFileGetFsFreeSpacePlugin
 
 	int
-	unixFileCopyPlugin (int mode, const char *srcFileName, const char *destFileName)
+	unixFileCopyPlugin( int mode, const char *srcFileName, 
+	                    const char *destFileName)
 	{
 		int inFd, outFd;
 		char myBuf[TRANS_BUF_SZ];
@@ -875,7 +1168,8 @@ extern "C" {
 
 		if (status < 0) {
 			status = UNIX_FILE_STAT_ERR - errno;
-			rodsLog (LOG_ERROR, "unixFileCopyPlugin: stat of %s error, status = %d",
+			rodsLog (LOG_ERROR, 
+			               "unixFileCopyPlugin: stat of %s error, status = %d",
 			 srcFileName, status);
 		return status;
 		}
@@ -884,8 +1178,8 @@ extern "C" {
 		if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
 			status = UNIX_FILE_OPEN_ERR - errno;
 			rodsLog (LOG_ERROR,
-			   "unixFileCopyPlugin: open error for srcFileName %s, status = %d",
-			   srcFileName, status);
+			  "unixFileCopyPlugin: open error for srcFileName %s, status = %d",
+			   srcFileName, status );
 			close( inFd ); // JMC cppcheck - resource
 			return status;
 		}
@@ -904,9 +1198,9 @@ extern "C" {
 		bytesWritten = write (outFd, (void *) myBuf, bytesRead);
 		if (bytesWritten <= 0) {
 			status = UNIX_FILE_WRITE_ERR - errno;
-				rodsLog (LOG_ERROR,
-				 "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
-				 destFileName, status);
+			rodsLog (LOG_ERROR,
+			 "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
+			 destFileName, status);
 			close (inFd);
 			close (outFd);
 				return status;
@@ -918,9 +1212,10 @@ extern "C" {
 		close (outFd);
 
 		if (bytesCopied != statbuf.st_size) {
-			rodsLog (LOG_ERROR,
-			 "unixFileCopyPlugin: Copied size %lld does not match source size %lld of %s",
-			 bytesCopied, statbuf.st_size, srcFileName);
+			rodsLog ( LOG_ERROR,
+			    "unixFileCopyPlugin: Copied size %lld does not match source \
+			     size %lld of %s",
+			     bytesCopied, statbuf.st_size, srcFileName );
 			return SYS_COPY_LEN_ERR;
 		} else {
 		return 0;
@@ -932,13 +1227,20 @@ extern "C" {
 	// unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
 	// Just copy the file from filename to cacheFilename. optionalInfo info
 	// is not used.
-	eirods::error unixStageToCachePlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                      const char* _file_name, const char* _cache_file_name, 
-	                                      int _mode, int flags,  size_t _data_size, 
-										  keyValPair_t *condInput, int* _status ) {
+	eirods::error unixStageToCachePlugin( eirods::resource_property_map* 
+	                                                          _prop_map, 
+										  eirods::resource_child_map* 
+										                      _cmap,
+	                                      const char*         _file_name, 
+										  const char*         _cache_file_name, 
+	                                      int                 _mode, 
+										  int                 _flags,  
+										  size_t              _data_size, 
+										  keyValPair_t*       _cond_input, 
+										  int*                _status ) {
 		(*_status) = unixFileCopyPlugin( _mode, _file_name, _cache_file_name );
         if( (*_status) < 0 ) {
-            return ERROR( false, (*_status), "unixStageToCachePlugin failed." );
+            return ERROR( false, *_status, "unixStageToCachePlugin failed." );
 		} else {
             return SUCCESS();
 		}
@@ -948,9 +1250,17 @@ extern "C" {
 	// unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
 	// Just copy the file from cacheFilename to filename. optionalInfo info
 	// is not used.
-	eirods::error unixSyncToArchPlugin( eirods::resource_property_map* _prop_map, eirods::resource_child_map* _cmap,
-	                                    const char* _file_name, char* _cache_file_name, int _mode, int _flags,  
-										rodsLong_t _data_size, keyValPair_t* _cond_input, int* _status ) {
+	eirods::error unixSyncToArchPlugin( eirods::resource_property_map* 
+	                                                        _prop_map, 
+										eirods::resource_child_map* 
+										                    _cmap,
+	                                    const char*         _file_name, 
+										char*               _cache_file_name, 
+										int                 _mode,
+										int                 _flags,  
+										rodsLong_t          _data_size, 
+										keyValPair_t*       _cond_input, 
+										int*                _status ) {
 
 		(*_status) = unixFileCopyPlugin( _mode, _cache_file_name, _file_name );
         if( (*_status) < 0 ) {
@@ -1075,28 +1385,13 @@ extern "C" {
 	}
 #endif
 
-
-
-
-
-
-
     // =-=-=-=-=-=-=-
-	// First Pass at a resource plugin
-    class eirods_unix_file_resource_plugin : public eirods::resource {
-        public: 
-		eirods_unix_file_resource_plugin() : eirods::resource() {}
-
-    }; // class eirods_unix_file_resource_plugin
-
-    // =-=-=-=-=-=-=-
-	// 2.  Create the plugin factory function which will return a microservice
-	//     table entry containing the microservice function pointer, the number
-	//     of parameters that the microservice takes and the name of the micro
-	//     service.  this will be called by the plugin loader in the irods server
-	//     to create the entry to the table when the plugin is requested.
+	// Create the plugin factory function which will return a microservice
+	// table entry containing the microservice function pointer, the number
+	// of parameters that the microservice takes and the name of the micro
+	// service.  this will be called by the plugin loader in the irods server
+	// to create the entry to the table when the plugin is requested.
 	eirods::resource* plugin_factory( ) {
-		//eirods_unix_file_resource_plugin* resc = new eirods_unix_file_resource_plugin();
 		eirods::resource* resc = new eirods::resource();
 
         resc->add_operation( "create",       "unixFileCreatePlugin" );

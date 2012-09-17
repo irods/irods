@@ -5,7 +5,11 @@
 
 #include "fileUnlink.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods include
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
@@ -70,21 +74,22 @@ int _rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp ) {
    
     // =-=-=-=-=-=-=-
     // call unlink via resource plugin
-    eirods::error unlink_err = fileUnlink( fileUnlinkInp->fileName, status );
+    eirods::file_object file_obj( fileUnlinkInp->fileName, 0, 0, 0 );
+    eirods::error unlink_err = fileUnlink( file_obj );
      
     // =-=-=-=-=-=-=-
     // log potential error message
-    if( status < 0 ) {
+    if( unlink_err.code() < 0 ) {
 		std::stringstream msg;
 		msg << "_rsFileUnlink: fileRead for ";
 		msg << fileUnlinkInp->fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error ret_err = PASS( false, status, msg.str(), unlink_err );
+		msg << unlink_err.code();
+		eirods::error ret_err = PASS( false, unlink_err.code(), msg.str(), unlink_err );
 		eirods::log( ret_err );
     }
 
-    return (status);
+    return (unlink_err.code());
 
 } // _rsFileUnlink
 

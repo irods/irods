@@ -4,7 +4,12 @@
 #ifndef __EIRODS_LOG_H__
 #define __EIRODS_LOG_H__
 
+// =-=-=-=-=-=-=-
+// irods includes
 #include "rodsLog.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_error.h"
 
 namespace eirods {

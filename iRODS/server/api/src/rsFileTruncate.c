@@ -5,7 +5,11 @@
 
 #include "fileTruncate.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
@@ -68,8 +72,9 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
     // =-=-=-=-=-=-=-
 	// make the call to rename via the resource plugin
-    int status = -1;
-    eirods::error trunc_err = fileTruncate( fileTruncateInp->fileName, fileTruncateInp->dataSize, status );
+    eirods::file_object file_obj( fileTruncateInp->fileName, 0, 0, 0 );
+	file_obj.size( fileTruncateInp->dataSize );
+	eirods::error trunc_err = fileTruncate( file_obj );
 
     // =-=-=-=-=-=-=-
 	// report errors if any
@@ -78,12 +83,12 @@ int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
 		msg << "_rsFileTruncate: fileTruncate for ";
 		msg << fileTruncateInp->fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), trunc_err );
+		msg << trunc_err.code();
+		eirods::error err = PASS( false, trunc_err.code(), msg.str(), trunc_err );
 		eirods::log ( err );
     }
 
-    return (status);
+    return trunc_err.code();
 
 } // _rsFileTruncate
 

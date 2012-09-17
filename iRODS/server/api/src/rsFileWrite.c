@@ -8,8 +8,12 @@
 #include "fileWrite.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
-#include "eirods_log.h"
 #include <sstream>
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
@@ -78,31 +82,32 @@ bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost)
 // =-=-=-=-=-=-=-
 // _rsFileWrite - this the local version of rsFileWrite.
 int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fileWriteInpBBuf ) {
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
+    // =-=-=-=-=-=-=-
+    // XXXX need to check resource permission and vault permission
+    // when RCAT is available 
 
     // =-=-=-=-=-=-=-
 	// make a call to the resource write
-    int status = -1;
-    eirods::error write_err = fileWrite( FileDesc[fileWriteInp->fileInx].fileName,
-                                         FileDesc[fileWriteInp->fileInx].fd, 
-										 fileWriteInpBBuf->buf,
-                                         fileWriteInp->len,
-										 status );
+    eirods::file_object file_obj( FileDesc[fileWriteInp->fileInx].fileName,
+                                  FileDesc[fileWriteInp->fileInx].fd,
+								  0, 0 ); 
+ 
+    eirods::error write_err = fileWrite( file_obj,										 
+	                                     fileWriteInpBBuf->buf,
+                                         fileWriteInp->len );
     // =-=-=-=-=-=-=-
 	// log error if necessary
     if( !write_err.ok() ) {
         std::stringstream msg;
 		msg << "_rsFileWrite: fileWrite for ";
-		msg << FileDesc[fileWriteInp->fileInx].fileName;
+		msg << file_obj.physical_path();
 		msg << ", status = ";
-		msg << status;
-	    eirods::error err = PASS( false, status, msg.str(), write_err );
+		msg << write_err.code();
+	    eirods::error err = PASS( false, write_err.code(), msg.str(), write_err );
 		eirods::log( err ); 
     }
 
-    return status;
+    return write_err.code();
 
 } // _rsFileWrite
  

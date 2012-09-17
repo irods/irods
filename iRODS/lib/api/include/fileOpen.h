@@ -14,7 +14,7 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
-#include "fileDriver.h"
+//#include "fileDriver.h"
 
 /* definition for otherFlags */
 
@@ -26,7 +26,7 @@
 #include <string>
 #endif
 
-typedef struct {
+struct fileOpenInp_t {
 	
     char resc_name_[MAX_NAME_LEN];
     
@@ -37,7 +37,7 @@ typedef struct {
     int flags;
     int mode;
     rodsLong_t dataSize;
-} fileOpenInp_t;
+}; // struct fileOpenInp_t
     
 #define fileOpenInp_PI "int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize;"
 

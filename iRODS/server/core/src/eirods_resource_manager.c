@@ -55,7 +55,8 @@ namespace eirods {
 	// =-=-=-=-=-=-=-
 	// public - retrieve a resource given a vault path
     error resource_manager::resolve_from_path( std::string _path, resource_ptr& _resc ) {
-        std::cout << "resource_manager::resolve_from_path" << std::endl;	
+        // =-=-=-=-=-=-=-
+		// simple flag to state a resource matching the vault path is found 
 	    bool found = false;	
 		
 		// =-=-=-=-=-=-=-
@@ -112,6 +113,13 @@ namespace eirods {
         }
 
 	} // resolve_from_path
+ 
+	// =-=-=-=-=-=-=-
+	// resolve a resource from a first_class_object
+	error resource_manager::resolve( const eirods::first_class_object& _object, resource_ptr& _resc ) {
+        return resolve_from_path( _object.physical_path(), _resc );
+	} // resolve
+
 
 	// =-=-=-=-=-=-=-
 	// public - connect to the catalog and query for all the 

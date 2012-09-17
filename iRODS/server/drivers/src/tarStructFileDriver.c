@@ -10,7 +10,7 @@
 # include <zlib.h>
 #endif
 
-#include <compat.h>
+// JMC - #include <compat.h>
 #endif	/* TAR_EXEC_PATH */
 #ifndef windows_platform
 #include <sys/wait.h>
@@ -1028,6 +1028,7 @@ irodsTarOpen (char *pathname, int oflags, int mode)
     rstrcpy (fileOpenInp.fileName, specColl->phyPath, MAX_NAME_LEN);
     fileOpenInp.mode = myMode;
     fileOpenInp.flags = oflags;
+
     l3descInx = rsFileOpen (StructFileDesc[structFileInx].rsComm, 
       &fileOpenInp);
     
@@ -1365,9 +1366,11 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
         #ifdef TAR_EXEC_PATH
         status = bundleCacheDirWithExec (structFileInx, oprType); // JMC - backport 4643
         #else
+
 		if ((oprType & ADD_TO_TAR_OPR) != 0) // JMC - backport 4643
 		    return SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED;
         status = bundleCacheDirWithLib (structFileInx);
+
         #endif
 	} // JMC - backport 4637
     if (status < 0) return status;

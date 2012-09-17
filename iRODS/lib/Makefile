@@ -70,7 +70,10 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
 		$(libCoreObjDir)/eirods_resource_plugin.o \
-		$(libCoreObjDir)/eirods_error.o 
+		$(libCoreObjDir)/eirods_error.o  \
+		$(libCoreObjDir)/eirods_first_class_object.o \
+		$(libCoreObjDir)/eirods_file_object.o \
+		$(libCoreObjDir)/eirods_collection_object.o 
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

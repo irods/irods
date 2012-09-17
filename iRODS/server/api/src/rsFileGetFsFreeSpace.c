@@ -5,7 +5,11 @@
 
 #include "fileGetFsFreeSpace.h"
 #include "miscServerFunct.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 
 int
@@ -79,10 +83,10 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
                            fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
     // =-=-=-=-=-=-=-
 	// make call to freespace via resource plugin
-    size_t status = 0;
-    eirods::error free_err = fileGetFsFreeSpace( fileGetFsFreeSpaceInp->fileName, 
-	                                             fileGetFsFreeSpaceInp->flag,
-												 status );
+    eirods::file_object file_obj( fileGetFsFreeSpaceInp->fileName, 
+	                              0, 0, fileGetFsFreeSpaceInp->flag );
+ 
+    eirods::error free_err = fileGetFsFreeSpace( file_obj );
     // =-=-=-=-=-=-=-
 	// handle errors if any
     if( !free_err.ok() ) {
@@ -90,16 +94,16 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
 		msg << "_rsFileGetFsFreeSpace: fileGetFsFreeSpace for ";
 		msg << fileGetFsFreeSpaceInp->fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error err = PASS( false, status, msg.str(), free_err );
+		msg << free_err.code();
+		eirods::error err = PASS( false, free_err.code(), msg.str(), free_err );
 		eirods::log ( err );
-        return ((int) status);
+        return ((int) free_err.code());
     }
 
     // =-=-=-=-=-=-=-
 	// otherwise its a success, set size appropriately
     *fileGetFsFreeSpaceOut = (fileGetFsFreeSpaceOut_t*)malloc (sizeof (fileGetFsFreeSpaceOut_t));
-    (*fileGetFsFreeSpaceOut)->size = status;
+    (*fileGetFsFreeSpaceOut)->size = free_err.code();
 
     return (0);
 

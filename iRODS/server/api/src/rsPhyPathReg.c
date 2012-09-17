@@ -18,6 +18,8 @@
 #include "miscServerFunct.h"
 #include "apiHeaderAll.h"
 
+#include <iostream>
+
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with 
  * no checking for path Perm.
  */
@@ -398,10 +400,10 @@ rescInfo_t *rescInfo)
 	forceFlag = 0;
     }
 
-    while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))
-      >= 0) {
+    while ((status = rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent))>= 0) {
+
         fileStatInp_t fileStatInp;
-	rodsStat_t *myStat = NULL;
+	    rodsStat_t *myStat = NULL;
 
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
           strcmp (rodsDirent->d_name, "..") == 0) {
@@ -456,6 +458,7 @@ rescInfo_t *rescInfo)
 	free (myStat);
 	free (rodsDirent); // JMC - backport 4835
     }
+
     if (status == -1) {         /* just EOF */
         status = 0;
     }

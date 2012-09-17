@@ -7,6 +7,7 @@
 // =-=-=-=-=-=-=-
 // My Includes
 #include "eirods_resource_plugin.h"
+#include "eirods_first_class_object.h"
 
 namespace eirods {
 
@@ -25,12 +26,16 @@ namespace eirods {
         // =-=-=-=-=-=-=-
 		// interface to get a resource given a name
 		error resolve( std::string, resource_ptr& );
-        
+         
+        // =-=-=-=-=-=-=-
+		// resolve a resource from a first_class_object
+		error resolve( const eirods::first_class_object&, resource_ptr& );
+
         // =-=-=-=-=-=-=-
 		// resolve a resource from a given vault path
 		error resolve_from_path( std::string, resource_ptr& );
-
-        // =-=-=-=-=-=-=-
+        
+		// =-=-=-=-=-=-=-
 		// populate resource table from icat database
 		error init_from_catalog( rsComm_t* );
 

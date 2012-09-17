@@ -12,6 +12,9 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 
+#include "eirods_log.h"
+#include "eirods_file_object.h"
+
 int
 rsStructFileBundle (rsComm_t *rsComm,
 structFileExtAndRegInp_t *structFileBundleInp)
@@ -122,26 +125,32 @@ structFileExtAndRegInp_t *structFileBundleInp)
         l1descInx = rsDataObjOpen (rsComm, &dataObjInp);
     } else {
         l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
+// foo1.tar exists here exit(0);
     }
+
+
     if (l1descInx < 0) {
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
           dataObjInp.objPath, l1descInx);
         return (l1descInx);
     }
+
 	clearKeyVal (&dataObjInp.condInput); // JMC - backport 4637
     l3Close (rsComm, l1descInx);
+// foo1.tar exists here exit( 0 );
     L1desc[l1descInx].l3descInx = 0;
     /* zip does not like a zero length file as target */ 
-    if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0) // JMC - backport 4643
+    if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0) { // JMC - backport 4643
         l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
+    }
 
-    memset (&chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
-    rstrcpy (chkObjPermAndStatInp.objPath, 
-      structFileBundleInp->collection, MAX_NAME_LEN); 
+    memset( &chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
+    rstrcpy( chkObjPermAndStatInp.objPath, 
+             structFileBundleInp->collection, MAX_NAME_LEN); 
     chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
-    addKeyVal (&chkObjPermAndStatInp.condInput, RESC_NAME_KW,
-      L1desc[l1descInx].dataObjInfo->rescName);
+    addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW,
+               L1desc[l1descInx].dataObjInfo->rescName);
 
     status = rsChkObjPermAndStat (rsComm, &chkObjPermAndStatInp);
 
@@ -155,7 +164,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return (status);
     }
-
+// foo1.tar DOESNT exist here exit( 0 );
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath,
       phyBunDir);
 
@@ -234,7 +243,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
 
     status = phyBundle( rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
 	                    collInp.collName, structFileBundleInp->oprType ); // JMC - backport 4643
-      
+
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: phyBundle of %s error. stat = %d",

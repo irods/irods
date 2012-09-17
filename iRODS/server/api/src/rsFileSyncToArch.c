@@ -10,7 +10,11 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 #include "physPath.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_collection_object.h"
 
 
 int
@@ -126,14 +130,15 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         } else if (getErrno (status) == EEXIST) {
 			// =-=-=-=-=-=-=-
 			// an empty dir may be there, make the call to rmdir via the resource plugin
-			eirods::error rmdir_err = fileRmdir( fileSyncToArchInp->filename, status );
+			eirods::collection_object coll_obj( fileSyncToArchInp->filename, 0, 0 );
+			eirods::error rmdir_err = fileRmdir( coll_obj );
 			if( !rmdir_err.ok() ) {
 				std::stringstream msg;
 				msg << "_rsFileSyncToArch: fileRmdir for ";
 				msg << fileSyncToArchInp->filename;
 				msg << ", status = ";
-				msg << status;
-				eirods::error err = PASS( false, status, msg.str(), sync_err );
+				msg << rmdir_err.code();
+				eirods::error err = PASS( false, rmdir_err.code(), msg.str(), sync_err );
 				eirods::log ( err );
 			}
 		} else {

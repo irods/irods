@@ -33,6 +33,7 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// Members
 		int         status();
+		int         code();
 		std::string result();
         bool        ok();
 
@@ -52,7 +53,8 @@ namespace eirods {
 
 #define ERROR( status_, code_, message_ ) ( eirods::error( status_, code_, message_, __LINE__, __FILE__ ) )
 #define PASS( status_, code_, message_, prev_error_ ) ( eirods::error( status_, code_, message_, __LINE__, __FILE__, prev_error_ ) )
-#define SUCCESS() ( eirods::error( true, 0, "", __LINE__, __FILE__ ) )
+#define CODE( code_ ) ( eirods::error( true, code_, "", __LINE__, __FILE__ ) )
+#define SUCCESS( ) ( eirods::error( true, 0, "", __LINE__, __FILE__ ) )
 
 
 #endif // __EIRODS_ERROR_H__

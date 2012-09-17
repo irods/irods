@@ -6,7 +6,11 @@
 #include "fileFstat.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 
 int
@@ -72,18 +76,16 @@ rodsStat_t **fileFstatOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp,
-rodsStat_t **fileFstatOut)
-{
-    int status = -1;
-    struct stat myFileStat;
-	
+// =-=-=-=-=-=-=-
+// 
+int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **fileFstatOut ) {
 	// =-=-=-=-=-=-=-
 	// make call to stat via resource plugin
-    eirods::error stat_err = fileFstat( FileDesc[fileFstatInp->fileInx].fileName, 
-	                                    FileDesc[fileFstatInp->fileInx].fd,
-									    &myFileStat, status );
+    struct stat myFileStat;
+    eirods::file_object file_obj( FileDesc[fileFstatInp->fileInx].fileName, 
+	                              FileDesc[fileFstatInp->fileInx].fd,
+								  0, 0 );
+    eirods::error stat_err = fileFstat( file_obj, &myFileStat );
 
 	// =-=-=-=-=-=-=-
 	// log error if necessary
@@ -92,17 +94,17 @@ rodsStat_t **fileFstatOut)
 		msg << "_rsFileFstat: fileFstat for ";
 		msg << FileDesc[fileFstatInp->fileInx].fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error ret_err = PASS( false, status, msg.str(), stat_err );
+		msg << stat_err.code();
+		eirods::error ret_err = PASS( false, stat_err.code(), msg.str(), stat_err );
 		eirods::log( ret_err );
 
-		return status;
+		return ret_err.code();
     }
 
 	// =-=-=-=-=-=-=-
 	// convert unix stat struct to an irods stat struct
     *fileFstatOut = (rodsStat_t*)malloc (sizeof (rodsStat_t));
-    status = statToRodsStat(*fileFstatOut, &myFileStat);
+    int status = statToRodsStat(*fileFstatOut, &myFileStat);
 
 	// =-=-=-=-=-=-=-
 	// manage error if necessary

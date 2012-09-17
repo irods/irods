@@ -10,7 +10,10 @@
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
@@ -112,8 +115,8 @@ int _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp) {
 
     // =-=-=-=-=-=-=-
 	// call file open on the resource plugin 
-    int fd = -1;
-    eirods::error ret_err = fileOpen( fileOpenInp->fileName, fileOpenInp->mode, fileOpenInp->flags, fd );
+    eirods::file_object file_obj( *fileOpenInp );
+    eirods::error ret_err = fileOpen( file_obj );
     
 	// =-=-=-=-=-=-=-
 	// log errors, if any    
@@ -122,11 +125,21 @@ int _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp) {
 		msg << "_rsFileOpen: fileOpen for [";
 		msg << fileOpenInp->fileName;
 		msg << "], status = ";
-		msg << fd;
-        eirods::log( LOG_ERROR, msg.str() );
+		msg << file_obj.file_descriptor();
+		eirods::error out_err = PASS( false, ret_err.code(), msg.str(), ret_err );
+        eirods::log( out_err );
     } // if
 
-    return fd;
+    return file_obj.file_descriptor();
 
 } // _rsFileOpen
+
+
+
+
+
+
+
+
+
  

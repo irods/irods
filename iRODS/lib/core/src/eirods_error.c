@@ -110,6 +110,13 @@ namespace eirods {
 	} // status
 
     // =-=-=-=-=-=-=-
+	// public - return the code of this error object
+	int error::code(  ) {
+		return code_;
+
+	} // code
+
+    // =-=-=-=-=-=-=-
 	// public - return the composite result for logging, etc.
 	std::string error::result(  ) {
 	

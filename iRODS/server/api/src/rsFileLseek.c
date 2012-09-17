@@ -6,7 +6,12 @@
 #include "fileLseek.h"
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
+
+
+// =-=-=-=-=-=-=-
+// eirods inludes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 
 int
 rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
@@ -73,37 +78,33 @@ fileLseekOut_t **fileLseekOut, rodsServerHost_t *rodsServerHost)
 // =-=-=-=-=-=-=-
 // local function to handle call to stat via resource plugin
 int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut) {
-    int    status  = -1;
-    size_t lStatus = -1;
-
     // =-=-=-=-=-=-=-
 	// make call to lseek via resource plugin
-	eirods::error lseek_err = fileLseek( FileDesc[fileLseekInp->fileInx].fileName,
-	                                     FileDesc[fileLseekInp->fileInx].fd,
-										 fileLseekInp->offset, fileLseekInp->whence,
-										 lStatus );
+	eirods::file_object file_obj( FileDesc[fileLseekInp->fileInx].fileName,
+	                              FileDesc[fileLseekInp->fileInx].fd,
+								  0, 0 );
 
+	eirods::error lseek_err = fileLseek( file_obj,
+	                                     fileLseekInp->offset, 
+										 fileLseekInp->whence );
     // =-=-=-=-=-=-=-
 	// handle error conditions and log
     if( !lseek_err.ok() ) {
-	    status = lStatus;
-
 		std::stringstream msg;
 		msg << "_rsFileLseek: lseek for ";
 		msg << FileDesc[fileLseekInp->fileInx].fileName;
 		msg << ", status = ";
-		msg << status;
-		eirods::error ret_err = PASS( false, status, msg.str(), lseek_err );
+		msg << lseek_err.code();
+		eirods::error ret_err = PASS( false, lseek_err.code(), msg.str(), lseek_err );
 		eirods::log( ret_err );
-       
+		return lseek_err.code();
+
     } else {
         *fileLseekOut = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
         memset (*fileLseekOut, 0, sizeof (fileLseekOut_t));
-	    (*fileLseekOut)->offset = lStatus;
-	    status = 0;
+	    (*fileLseekOut)->offset = lseek_err.code();
+	    return 0;
     }
-
-    return (status);
 
 } // _rsFileLseek
 

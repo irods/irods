@@ -8,6 +8,11 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_log.h"
+#include "eirods_file_object.h"
+
 int
 rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 {
@@ -90,7 +95,6 @@ rodsServerHost_t *rodsServerHost)
 int
 _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 {
-    int status;
     struct stat myFileStat;
     int sysUid;
     char userName[NAME_LEN], tmpPath[MAX_NAME_LEN];
@@ -121,14 +125,14 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     rstrcpy (tmpPath, chkNVPathPermInp->fileName, MAX_NAME_LEN);
 
     len = strlen (tmpPath);
-
-    status = -1;
+eirods::error stat_err;
     while (1) {
-        
-        eirods::error stat_err = fileStat( tmpPath, &myFileStat, status ); 
-		if (status >= 0) {
+       
+	    eirods::file_object file_obj( tmpPath, 0, 0, 0 ); 
+        stat_err = fileStat( file_obj, &myFileStat ); 
+		if ( stat_err.code() >= 0) {
 			break;
-		} else if (errno == EEXIST || getErrno (status) == EEXIST) {
+		} else if ( errno == EEXIST || getErrno ( stat_err.code() ) == EEXIST) {
 
 			/* go back */
 			tmpPtr =  tmpPath + len;
@@ -153,7 +157,7 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 		}
     }
 	    
-    if (status < 0) {
+    if ( stat_err.code() < 0) {
 	    return (SYS_NO_PATH_PERMISSION);
     }
 	    
