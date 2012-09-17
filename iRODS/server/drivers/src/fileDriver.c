@@ -77,13 +77,8 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
 } // fileOpen
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX Write
 eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _len ) {
-=======
-// Top Level Interface for Resource Plugin POSIX read
-eirods::error fileRead( std::string _file_name, int _fd, void* _buf, int _len, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -115,13 +110,8 @@ eirods::error fileRead( std::string _file_name, int _fd, void* _buf, int _len, i
 } // fileRead
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX Read
 eirods::error fileWrite( eirods::first_class_object& _object, void* _buf, int  _len ) {
-=======
-// Top Level Interface for Resource Plugin POSIX write
-eirods::error fileWrite( std::string _file_name, int _fd, void* _buf, int  _len, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -186,13 +176,8 @@ eirods::error fileClose( eirods::first_class_object& _object ) {
 } // fileClose
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileUnlink( eirods::first_class_object& _object ) {
-=======
-// Top Level Interface for Resource Plugin POSIX unlink
-eirods::error fileUnlink( std::string _file_name, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -389,13 +374,8 @@ eirods::error fileMkdir( eirods::first_class_object& _object ) {
 } // fileMkdir
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX mkdir
 eirods::error fileChmod( eirods::first_class_object& _object ) {
-=======
-// Top Level Interface for Resource Plugin POSIX chmod
-eirods::error fileChmod( std::string _file_name, int _mode, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -427,13 +407,8 @@ eirods::error fileChmod( std::string _file_name, int _mode, int& _status ) {
 } // fileChmod
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX mkdir
 eirods::error fileRmdir( eirods::first_class_object& _object ) {
-=======
-// Top Level Interface for Resource Plugin POSIX rmdir
-eirods::error fileRmdir( std::string _file_name, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -498,13 +473,8 @@ eirods::error fileOpendir( eirods::first_class_object& _object ) {
 } // fileOpendir
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileClosedir( eirods::first_class_object& _object ) {
-=======
-// Top Level Interface for Resource Plugin POSIX closedir
-eirods::error fileClosedir( std::string _file_name, void* _dir_ptr, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -536,13 +506,8 @@ eirods::error fileClosedir( std::string _file_name, void* _dir_ptr, int& _status
 } // fileClosedir
 
 // =-=-=-=-=-=-=-
-<<<<<<< HEAD
 // Top Level Interface for Resource Plugin POSIX close
 eirods::error fileReaddir( eirods::first_class_object& _object, struct dirent* _dirent_ptr ) {
-=======
-// Top Level Interface for Resource Plugin POSIX readdir
-eirods::error fileReaddir( std::string _file_name, void* _dir_ptr, struct dirent* _dirent_ptr, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -608,11 +573,7 @@ eirods::error fileStage( eirods::first_class_object& _object ) {
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rename
-<<<<<<< HEAD
 eirods::error fileRename( eirods::first_class_object& _object, std::string _new_file_name ) {
-=======
-eirods::error fileRename( std::string _old_file_name, std::string _new_file_name, int& _status ) {
->>>>>>> d2df7e3f6d35163f2f36201fb9e41fc5264fb869
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() || _new_file_name.empty() ) {
