@@ -250,6 +250,13 @@ if [ $1 == "icat" ] ; then
     fi
 fi
 
+RPMBUILD=`which rpmbuild`
+if [[ "$?" != "0" || `echo $RPMBUILD | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT rpm-build"
+    fi
+fi
+
 DOXYGEN=`which doxygen`
 if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
