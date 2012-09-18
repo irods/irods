@@ -796,7 +796,14 @@ fi
 if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     echo "Running EPM :: Generating $DETECTEDOS RPMs"
     epmvar="REDHATRPM$SERVER_TYPE" 
-    ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
+    ostype=`awk '{print $1}' /etc/redhat-release`
+    osversion=`awk '{print $3}' /etc/redhat-release`
+    if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
+        epmosversion="CENTOS6"
+    else
+        epmosversion="NOTCENTOS6"
+    fi
+    ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true $epmosversion=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
         ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
