@@ -152,6 +152,8 @@ primary ordering column.
 #define COL_R_MODIFY_TIME 312
 #define COL_R_RESC_STATUS 313
 #define COL_R_FREE_SPACE_TIME 314
+#define COL_R_RESC_CHILDREN 315
+#define COL_R_RESC_CONTEXT 316
 
 /* R_DATA_MAIN: */
 #define COL_D_DATA_ID 401

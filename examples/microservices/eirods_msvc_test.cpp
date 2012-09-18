@@ -10,7 +10,7 @@
 
 extern "C" {
 
-    int EIRODS_PLUGIN_VERSION=1.0;
+    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
 	
     // =-=-=-=-=-=-=-
 	// 1. Write a standard issue microservice	

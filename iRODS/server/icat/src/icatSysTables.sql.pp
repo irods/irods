@@ -128,7 +128,9 @@ create table R_RESC_MAIN
    r_comment            varchar(1000),
    resc_status          varchar(32),
    create_ts            varchar(32),
-   modify_ts            varchar(32)
+   modify_ts            varchar(32),
+   resc_children        varchar(1000),
+   resc_context         varchar(1000)
  ) SETCHARACTERSET;
 
 create table R_COLL_MAIN

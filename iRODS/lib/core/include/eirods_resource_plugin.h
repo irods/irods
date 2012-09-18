@@ -10,6 +10,12 @@
 
 namespace eirods {
 
+
+    // =-=-=-=-=-=-=-
+	// delimiter used for parsing resource context strings
+    const std::string RESOURCE_DELIMITER(";");
+
+
 	// =-=-=-=-=-=-=-
 	/**
 	  * \class 
@@ -23,7 +29,7 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// Constructors
-		resource( );
+		resource( std::string );
 
 		// =-=-=-=-=-=-=-
 		// Destructor
@@ -46,54 +52,17 @@ namespace eirods {
 		// the template types may not match and return sucess/fail
 		template< typename T >
 		error get_property( std::string _key, T& _val ) {
-			// =-=-=-=-=-=-=-
-			// check params
-			#ifdef DEBUG
-			if( _key.empty() ) {
-				std::cout << "[!]\teirods::resource::get_property - empty key" << std::endl;
-				return ERROR( false, -1, "empty key" );
-			}
-			#endif
-			
-			// =-=-=-=-=-=-=-
-			// attempt to any_cast property value to given type.  catch exception and log
-			// failure then exit
-			try {
-				_val = boost::any_cast< T >( properties_[ _key ] );
-				return SUCCESS();
-			} catch ( const boost::bad_any_cast & ) {
-				return ERROR( false, -1, "get_propery - type and property key mistmatch" );
-			}
-	 
-			return ERROR( false, -1, "get_property - shouldn't get here." );
-
+			error ret = properties_.get< T >( _key, _val );
+			return PASS( ret.status(), ret.code(), "resource::get_property", ret );
 		} // get_property
 
 		// =-=-=-=-=-=-=-
 		// set a property in the map
 		template< typename T >
 		error set_property( std::string _key, const T& _val ) {
-			// =-=-=-=-=-=-=-
-			// check params	
-			#ifdef DEBUG
-			if( _key.empty() ) {
-				return ERROR( false, -1, "set_property - empty key" );
-			}
-			
-			if( properties_.has_entry( _key ) ) {
-				std::cout << "[+]\teirods::resource::set_property - overwriting entry for key [" 
-						  << key << "]" << std::endl;
-			}
-			#endif	
-		
-			// =-=-=-=-=-=-=-
-			// add property to map
-			properties_[ _key ] = _val;
-				
-			return SUCCESS() ;
-
+			error ret = properties_.set< T >( _key, _val );
+			return PASS( ret.status(), ret.code(), "resource::set_property", ret );
 		} // set_property
-
 
 		// =-=-=-=-=-=-=-
 		// interface to add and remove children using the zone_name::resource_name
@@ -248,7 +217,7 @@ namespace eirods {
 	// =-=-=-=-=-=-=-
 	// given the name of a microservice, try to load the shared object
 	// and then register that ms with the table
-	error load_resource_plugin( resource_ptr&, const std::string );
+	error load_resource_plugin( resource_ptr&, const std::string, const std::string );
 
 
 }; // namespace eirods

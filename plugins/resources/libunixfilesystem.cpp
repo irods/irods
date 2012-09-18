@@ -11,11 +11,14 @@
 #include "eirods_resource_plugin.h"
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
+#include "eirods_string_tokenize.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <string>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -61,13 +64,23 @@ extern "C" {
 #define NB_WRITE_TOUT_SEC	60	/* 60 sec timeout */
 
     // =-=-=-=-=-=-=-
-	// Define plugin Version Variable
-    int EIRODS_PLUGIN_VERSION=1.0;
+	// 1. Define plugin Version Variable, used in plugin
+	//    creation when the factory function is called.
+	//    -- currently only 1.0 is supported.
+    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
 
     // =-=-=-=-=-=-=-
-	// NOTE :: This was a Direct Rip from iRODS/server/drivers/src/unixFileDriver.c 
+	// 2. Define operations which will be called by the file*
+	//    calls declared in server/driver/include/fileDriver.h
     // =-=-=-=-=-=-=-
-	
+
+    // =-=-=-=-=-=-=-
+    // NOTE :: to access properties in the _prop_map do the 
+	//      :: following :
+	//      :: double my_var = 0.0;
+	//      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
+    // =-=-=-=-=-=-=-
+
 	// =-=-=-=-=-=-=-
 	// interface for POSIX create
     eirods::error unixFileCreatePlugin( eirods::resource_property_map* 
@@ -1154,7 +1167,7 @@ extern "C" {
 
 	int
 	unixFileCopyPlugin( int mode, const char *srcFileName, 
-	                    const char *destFileName)
+	                    const char *destFileName )
 	{
 		int inFd, outFd;
 		char myBuf[TRANS_BUF_SZ];
@@ -1271,129 +1284,37 @@ extern "C" {
 
 	} // unixSyncToArchPlugin
 
-
-#if 0
-	int
-	nbFileReadPlugin (rsComm_t *rsComm, int fd, void *buf, int len)
-	{
-		int status;
-		struct timeval tv;
-		int nbytes;
-		int toRead;
-		char *tmpPtr;
-		fd_set set;
-
-		bzero (&tv, sizeof (tv));
-		tv.tv_sec = NB_READ_TOUT_SEC;
-
-		/* Initialize the file descriptor set. */
-		FD_ZERO (&set);
-		FD_SET (fd, &set);
-
-		toRead = len;
-		tmpPtr = (char *) buf;
-
-		while (toRead > 0) {
-#ifndef _WIN32
-			status = select (fd + 1, &set, NULL, NULL, &tv);
-			if (status == 0) {
-				/* timedout */
-				if (len - toRead > 0) {
-					return (len - toRead);
-				} else {
-					return UNIX_FILE_OPR_TIMEOUT_ERR - errno;
-				}
-			} else if (status < 0) {
-				if ( errno == EINTR) {
-					errno = 0;
-					continue;
-				} else {
-					return UNIX_FILE_READ_ERR - errno;
-				}
-			}
-#endif
-			nbytes = read (fd, (void *) tmpPtr, toRead);
-			if (nbytes < 0) {
-				if (errno == EINTR) {
-					/* interrupted */
-					errno = 0;
-					nbytes = 0;
-				} else if (toRead == len) {
-					return UNIX_FILE_READ_ERR - errno;
-				} else {
-					nbytes = 0;
-					break;
-				}
-			} else if (nbytes == 0) {
-				break;
-			}
-			toRead -= nbytes;
-			tmpPtr += nbytes;
-		}
-		return (len - toRead);
-	}
-	 
-	int
-	nbFileWritePlugin (rsComm_t *rsComm, int fd, void *buf, int len)
-	{
-		int nbytes;
-		int toWrite;
-		char *tmpPtr;
-		fd_set set;
-		struct timeval tv;
-		int status;
-
-		bzero (&tv, sizeof (tv));
-		tv.tv_sec = NB_WRITE_TOUT_SEC;
-
-		/* Initialize the file descriptor set. */
-		FD_ZERO (&set);
-		FD_SET (fd, &set);
-
-		toWrite = len;
-		tmpPtr = (char *) buf;
-
-		while (toWrite > 0) {
-#ifndef _WIN32
-			status = select (fd + 1, NULL, &set, NULL, &tv);
-			if (status == 0) {
-				/* timedout */
-				return UNIX_FILE_OPR_TIMEOUT_ERR - errno;
-			} else if (status < 0) {
-				if ( errno == EINTR) {
-					errno = 0;
-					continue;
-				} else {
-					return UNIX_FILE_WRITE_ERR - errno;
-				}
-			}
-#endif
-			nbytes = write (fd, (void *) tmpPtr, len);
-			if (nbytes < 0) {
-				if (errno == EINTR) {
-					/* interrupted */
-					errno = 0;
-					nbytes = 0;
-				} else  {
-					return UNIX_FILE_WRITE_ERR - errno;
-			}
-			}
-			toWrite -= nbytes;
-			tmpPtr += nbytes;
-		}
-		return (len);
-	}
-#endif
-
     // =-=-=-=-=-=-=-
-	// Create the plugin factory function which will return a microservice
-	// table entry containing the microservice function pointer, the number
-	// of parameters that the microservice takes and the name of the micro
-	// service.  this will be called by the plugin loader in the irods server
-	// to create the entry to the table when the plugin is requested.
-	eirods::resource* plugin_factory( ) {
-		eirods::resource* resc = new eirods::resource();
+	// 3. create derived class to handle unix file system resources
+	//    necessary to do custom parsing of the context string to place
+	//    any useful values into the property map for reference in later
+	//    operations.  semicolon is the preferred delimiter
+	class unixfilesystem_resource : public eirods::resource {
+    public:
+        unixfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
+			std::vector< std::string > props;
+			eirods::string_tokenize( _context, props, ";" );
+		}
 
+	}; // class unixfilesystem_resource
+  
+    // =-=-=-=-=-=-=-
+	// 4. create the plugin factory function which will return a dynamically
+	//    instantiated object of the previously defined derived resource.  use
+	//    the add_operation member to associate a 'call name' to the interfaces
+	//    defined above.  for resource plugins these call names are standardized
+	//    as used by the e-irods facing interface defined in 
+	//    server/drivers/src/fileDriver.c
+	eirods::resource* plugin_factory( std::string _context  ) {
+
+        // =-=-=-=-=-=-=-
+		// 4a. create unixfilesystem_resource
+		unixfilesystem_resource* resc = new unixfilesystem_resource( _context );
+
+        // =-=-=-=-=-=-=-
+		// 4b. map function names to operations.  this map will be used to load
+		//     the symbols from the shared object in the delay_load stage of 
+		//     plugin loading.
         resc->add_operation( "create",       "unixFileCreatePlugin" );
         resc->add_operation( "open",         "unixFileOpenPlugin" );
         resc->add_operation( "read",         "unixFileReadPlugin" );
@@ -1417,10 +1338,12 @@ extern "C" {
         resc->add_operation( "stagetocache", "unixStageToCachePlugin" );
         resc->add_operation( "synctoarch",   "unixSyncToArchPlugin" );
 
-	    //return dynamic_cast<eirods::resource*>( resc );
-        return resc;
+        // =-=-=-=-=-=-=-
+		// 4c. return the pointer through the generic interface of an
+		//     eirods::resource pointer
+	    return dynamic_cast<eirods::resource*>( resc );
+        
 	} // plugin_factory
-
 
 }; // extern "C" 
 

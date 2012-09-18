@@ -5,7 +5,11 @@
 #define __EIRODS_PLUGIN_BASE_H__
 
 // =-=-=-=-=-=-=-
-// My Includes
+// stl includes
+#include <string>
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_error.h"
 
 namespace eirods {
@@ -17,9 +21,12 @@ namespace eirods {
 	  **/
     class plugin_base {
         public:
-		plugin_base() {}
+		plugin_base( std::string _c ) : context_(_c) {}
 		virtual ~plugin_base() {}
 		virtual error delay_load( void* ) = 0;
+
+        protected:
+        std::string context_;
 
 	}; // class plugin_base
 

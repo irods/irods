@@ -21,7 +21,7 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
 	// public - ctor
-    resource::resource(  ) : 
+    resource::resource( std::string _ctx  ) : plugin_base( _ctx ), 
 	    start_operation_( eirods::resource::default_start_operation ), 
 		stop_operation_( default_stop_operation ) {
 	} // ctor
@@ -34,13 +34,15 @@ namespace eirods {
     
     // =-=-=-=-=-=-=-
 	// public - cctor
-	resource::resource( const resource& _rhs ) {
+	resource::resource( const resource& _rhs ) : 
+	    plugin_base( _rhs.context_ ) {
 		children_           = _rhs.children_;
 		operations_         = _rhs.operations_;
         ops_for_delay_load_ = _rhs.ops_for_delay_load_;
 		
 		if( properties_.size() > 0 ) {
-			std::cout << "[!]\tresource cctor - properties map is not empty." << __FILE__ << ":" << __LINE__ << std::endl;
+			std::cout << "[!]\tresource cctor - properties map is not empty." 
+			          << __FILE__ << ":" << __LINE__ << std::endl;
 		}
 		properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
 	} // cctor
@@ -52,12 +54,15 @@ namespace eirods {
 			return *this;
 		}
 
+        plugin_base::operator=( _rhs );
+
 		children_           = _rhs.children_;
 		operations_         = _rhs.operations_;
         ops_for_delay_load_ = _rhs.ops_for_delay_load_;
 
 		if( properties_.size() > 0 ) {
-			std::cout << "[!]\tresource cctor - properties map is not empty." << __FILE__ << ":" << __LINE__ << std::endl;
+			std::cout << "[!]\tresource cctor - properties map is not empty." 
+			          << __FILE__ << ":" << __LINE__ << std::endl;
 		}
 		properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
 
@@ -281,10 +286,10 @@ namespace eirods {
 
 	// =-=-=-=-=-=-=-
 	// function to load and return an initialized resource plugin
-	error load_resource_plugin( resource_ptr& _plugin, const std::string _name ) {
+	error load_resource_plugin( resource_ptr& _plugin, const std::string _name, const std::string _context ) {
 		
 		resource* resc = 0;
-        error ret = load_plugin< resource >( _name, EIRODS_MS_HOME, resc );
+        error ret = load_plugin< resource >( _name, EIRODS_MS_HOME, resc, _context );
 
         if( ret.ok() && resc ) {
 			_plugin.reset( resc );

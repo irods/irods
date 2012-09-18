@@ -1820,7 +1820,7 @@ sub configureIrodsUser
 	else
 	{
 		# Resource doesn't appear to exist.  Create it.
-		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unix file system' archive $thisHost $RESOURCE_DIR $ZONE_NAME" );
+		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unix file system' archive $thisHost CONTEXT_STRING $RESOURCE_DIR $ZONE_NAME" );
 		if ( $status != 0 )
 		{
 			printError( "\nInstall problem:\n" );

@@ -7,6 +7,7 @@
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 
+#include <iostream>
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 {
@@ -157,8 +158,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 			strncpy(rescInfo.rescType,      generalAdminInp->arg3, sizeof rescInfo.rescType);
 			strncpy(rescInfo.rescClass,     generalAdminInp->arg4, sizeof rescInfo.rescClass);
 			strncpy(rescInfo.rescLoc,       generalAdminInp->arg5, sizeof rescInfo.rescLoc);
-			strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
-			strncpy(rescInfo.zoneName,      generalAdminInp->arg7, sizeof rescInfo.zoneName);
+			strncpy(rescInfo.rescContext,   generalAdminInp->arg6, sizeof rescInfo.rescContext);
+			strncpy(rescInfo.rescVaultPath, generalAdminInp->arg7, sizeof rescInfo.rescVaultPath);
+			strncpy(rescInfo.zoneName,      generalAdminInp->arg8, sizeof rescInfo.zoneName);
+			strncpy(rescInfo.rescChildren,  "", 0 );
 
 			// =-=-=-=-=-=-=-
 			// RAJA ADDED June 1 2009 for pre-post processing rule hooks 

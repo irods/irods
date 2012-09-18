@@ -138,19 +138,21 @@ namespace eirods {
 
 		memset (&genQueryInp, 0, sizeof (genQueryInp));
 
-		addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,      1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,    1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,    1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,    1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,   1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_LOC,          1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,   1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,   1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,    1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT, 1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,  1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,  1 );
-		addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,  1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,       1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,     1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,     1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,     1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,    1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_LOC,           1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,    1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,    1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,     1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,  1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,   1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,   1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,   1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
+		addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
 
 		genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -223,9 +225,10 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
 		// values to extract from query
-		sqlResult_t *rescId = 0, *rescName = 0, *zoneName = 0, *rescType = 0, *rescClass = 0;
-		sqlResult_t *rescLoc = 0, *rescVaultPath = 0, *freeSpace = 0, *rescInfo = 0;
-		sqlResult_t *rescComments = 0, *rescCreate, *rescModify = 0, *rescStatus = 0;
+		sqlResult_t *rescId       = 0, *rescName      = 0, *zoneName   = 0, *rescType   = 0, *rescClass = 0;
+		sqlResult_t *rescLoc      = 0, *rescVaultPath = 0, *freeSpace  = 0, *rescInfo   = 0;
+		sqlResult_t *rescComments = 0, *rescCreate    = 0, *rescModify = 0, *rescStatus = 0;
+		sqlResult_t *rescChildren = 0, *rescContext   = 0;
 
 
         // =-=-=-=-=-=-=-
@@ -246,7 +249,7 @@ namespace eirods {
             return ERROR( false, UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_TYPE_NAME failed" );
 		}
 
-		if( ( rescClass = getSqlResultByInx( _result,COL_R_CLASS_NAME ) ) == NULL ) {
+		if( ( rescClass = getSqlResultByInx( _result, COL_R_CLASS_NAME ) ) == NULL ) {
             return ERROR( false, UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_CLASS_NAME failed" );
 		}
 		
@@ -282,6 +285,14 @@ namespace eirods {
             return ERROR( false, UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_STATUS failed" );
 		}
 
+		if( ( rescChildren = getSqlResultByInx( _result, COL_R_RESC_CHILDREN ) ) == NULL) {
+            return ERROR( false, UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CHILDREN failed" );
+		}
+
+		if( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_CONTEXT ) ) == NULL) {
+            return ERROR( false, UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
+		}
+
         // =-=-=-=-=-=-=-
 		// iterate through the rows, initialize a resource for each entry
 		for( size_t i = 0; i < _result->rowCnt; ++i ) {
@@ -301,6 +312,8 @@ namespace eirods {
 			std::string tmpRescStatus    = &rescStatus->value[ rescStatus->len * i ];
 			std::string tmpRescComments  = &rescComments->value[ rescComments->len * i ];
 			std::string tmpRescVaultPath = &rescVaultPath->value[ rescVaultPath->len * i ];
+			std::string tmpRescChildren  = &rescChildren->value[ rescChildren->len * i ];
+			std::string tmpRescContext   = &rescContext->value[ rescContext->len * i ];
 
             // =-=-=-=-=-=-=-
 			// resolve the host name into a rods server host structure
@@ -312,11 +325,11 @@ namespace eirods {
 			if( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
 				rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s",addr.hostAddr );
 			}
-            
+
 			// =-=-=-=-=-=-=-
 			// create the resource and add properties for column values
 			resource_ptr resc;
-			error ret = load_resource_plugin( resc, tmpRescType );
+			error ret = load_resource_plugin( resc, tmpRescType, tmpRescContext );
 		    if( !ret.ok() ) {
 			    return PASS( false, -1, "Failed to load Resource Plugin", ret );	
 			}
@@ -327,7 +340,7 @@ namespace eirods {
 			resc->set_property<long>( "id", strtoll( tmpRescId.c_str(), 0, 0 ) );
 			resc->set_property<long>( "freespace", strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
 			resc->set_property<long>( "quota", RESC_QUOTA_UNINIT );
-
+			
 			resc->set_property<std::string>( "zone",     tmpZoneName );
 			resc->set_property<std::string>( "name",     tmpRescName );
 			resc->set_property<std::string>( "location", tmpRescLoc );

@@ -600,7 +600,8 @@ showResourceQuotas(char *inputUserOrGroup)
 
 int
 generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3, 
-	     char *arg4, char *arg5, char *arg6, char *arg7, rodsArguments_t* _rodsArgs = 0 ) {
+	     char *arg4, char *arg5, char *arg6, char *arg7, char* arg8, char* arg9,
+		 rodsArguments_t* _rodsArgs = 0 ) {
 /* If userOption is 1, try userAdmin if generalAdmin gets a permission
  * failure */
 
@@ -623,8 +624,8 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
    generalAdminInp.arg5 = arg5;
    generalAdminInp.arg6 = arg6;
    generalAdminInp.arg7 = arg7;
-   generalAdminInp.arg8 ="";
-   generalAdminInp.arg9 ="";
+   generalAdminInp.arg8 = arg8;
+   generalAdminInp.arg9 = arg9;
 
    status = rcGeneralAdmin(Conn, &generalAdminInp);
    lastCommandStatus = status;
@@ -639,8 +640,8 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
       userAdminInp.arg5 = arg5;
       userAdminInp.arg6 = arg6;
       userAdminInp.arg7 = arg7;
-      userAdminInp.arg8 = "";
-      userAdminInp.arg9 = "";
+      userAdminInp.arg8 = arg8;
+      userAdminInp.arg9 = arg8;
       status = rcUserAdmin(Conn, &userAdminInp);
       funcName = "rcGeneralAdmin and rcUserAdmin";
    }
@@ -865,11 +866,11 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 	    without #localZone as is needed to differentiate
             local and remote user creation */
 	 generalAdmin(0, "add", "user", userName, cmdToken[2], "",
-		      cmdToken[3], cmdToken[4], cmdToken[5]);
+		      cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
       }
       else {
 	 generalAdmin(0, "add", "user", cmdToken[1], cmdToken[2], "",
-		      cmdToken[3], cmdToken[4], cmdToken[5]);  /* "" is unused
+		      cmdToken[3], cmdToken[4], cmdToken[5], "", "" );  /* "" is unused
 		      zoneName as that's part of the username now */
       }
       return(0);
@@ -910,17 +911,17 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 	 cmdToken[3]=buf2;
       }
       generalAdmin(0, "modify", "user", cmdToken[1], cmdToken[2],
-		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"aua") == 0) {
       generalAdmin(0, "modify", "user", cmdToken[1], "addAuth", 
-		  cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5]);
+		  cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"rua") == 0) {
       generalAdmin(0, "modify", "user", cmdToken[1], "rmAuth", 
-		  cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5]);
+		  cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"lua") == 0) {
@@ -942,19 +943,19 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    }
    if (strcmp(cmdToken[0],"cu") == 0) {
       generalAdmin(0, "calculate-usage", "", "", "", 
-		   "", "", "", "");
+		   "", "", "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"suq") == 0) {
       generalAdmin(0, "set-quota", "user", 
 		   cmdToken[1], cmdToken[2], cmdToken[3], 
-		   "", "", "");
+		   "", "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"sgq") == 0) {
       generalAdmin(0, "set-quota", "group", 
 		   cmdToken[1], cmdToken[2], cmdToken[3], 
-		   "", "", "");
+		   "", "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"lq") == 0) {
@@ -964,13 +965,16 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    }
    if (strcmp(cmdToken[0],"mkdir") == 0) {
       generalAdmin(0, "add", "dir", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"mkresc") ==0) {
+	   
+	   printf( "tok7 %s, tok8 %s\n", cmdToken[7], cmdToken[8] );
+
       generalAdmin(0, "add", "resource", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
       /* (add resource name type class host path zone) */
       return(0);
    }
@@ -989,7 +993,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 	     strcmp(ttybuf, "yes\n") == 0) {
 	    printf("OK, performing the resource rename\n");
 	    generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2], 
-			 cmdToken[3], "", "", "");
+			 cmdToken[3], "", "", "", "", "" );
 	 }
 	 else {
 	    printf("Resource rename aborted\n");
@@ -997,13 +1001,13 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
       }
       else {
 	 generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2], 
-		      cmdToken[3], "", "", "");
+		      cmdToken[3], "", "", "", "", "" );
       }
       return(0);
    }
    if (strcmp(cmdToken[0],"mkzone") == 0) {
       generalAdmin(0, "add", "zone", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], cmdToken[4], "", "");
+		  cmdToken[3], cmdToken[4], "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"modzone") == 0) {
@@ -1023,7 +1027,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 	     strcmp(ttybuf, "yes\n") == 0) {
 	    printf("OK, performing the local zone rename\n");
 	    generalAdmin(0, "modify","localzonename",cmdToken[1],cmdToken[3], 
-			 "", "", "", "");
+			 "", "", "", "", "", "" );
 	 }
 	 else {
 	    printf("Local zone rename aborted\n");
@@ -1031,59 +1035,59 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
       }
       else {
 	 generalAdmin(0,"modify", "zone", cmdToken[1], cmdToken[2], 
-		      cmdToken[3], "", "", "");
+		      cmdToken[3], "", "", "", "", "" );
       }
       return(0);
    }
    if (strcmp(cmdToken[0],"rmzone") == 0) {
       generalAdmin(0, "rm", "zone", cmdToken[1], "",
-		   "", "", "", "");
+		   "", "", "", "", "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"mkgroup") == 0) {
       generalAdmin(0, "add", "user", cmdToken[1], "rodsgroup",
-		   myEnv.rodsZone, "", "", "");
+		   myEnv.rodsZone, "", "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"rmgroup") == 0) {
       generalAdmin(0, "rm", "user", cmdToken[1], 
-		   myEnv.rodsZone, "", "", "", "");
+		   myEnv.rodsZone, "", "", "", "", "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"atg") == 0) {
       generalAdmin(1, "modify", "group", cmdToken[1], "add", cmdToken[2],
-		   cmdToken[3], "", "");
+		   cmdToken[3], "", "", "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"rfg") == 0) {
       generalAdmin(1, "modify", "group", cmdToken[1], "remove", cmdToken[2],
-		   cmdToken[3], "", "");
+		   cmdToken[3], "", "", "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"atrg") == 0) {
       generalAdmin(0, "modify", "resourcegroup", cmdToken[1], "add", cmdToken[2],
-		   "", "", "");
+		   "", "", "", "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"rfrg") == 0) {
       generalAdmin(0, "modify", "resourcegroup", cmdToken[1], "remove", 
-		   cmdToken[2],  "", "", "");
+		   cmdToken[2],  "", "", "", "", "" );
       return(0);
    }
 
    if (strcmp(cmdToken[0],"rmresc") ==0) {
-      generalAdmin(0, "rm", "resource", cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], _rodsArgs );
+      generalAdmin(0, "rm", "resource", cmdToken[1], cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "", _rodsArgs );
 		  
       return(0);
    }
    if (strcmp(cmdToken[0],"rmdir") ==0) {
       generalAdmin(0, "rm", "dir", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"rmuser") ==0) {
@@ -1104,17 +1108,17 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
           }
       }
       generalAdmin(0, "rm", "user", cmdToken[1], 
-	 cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]); 
+	 cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" ); 
       return(0);
    }
    if (strcmp(cmdToken[0],"at") == 0) {
       generalAdmin(0, "add", "token", cmdToken[1], cmdToken[2], 
-		   cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+		   cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"rt") == 0) {
       generalAdmin(0, "rm", "token", cmdToken[1], cmdToken[2],
-		   cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+		   cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"spass") ==0) {
@@ -1150,7 +1154,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    }
    if (strcmp(cmdToken[0],"pv") == 0) {
       generalAdmin(0, "pvacuum", cmdToken[1], cmdToken[2], "", ""
-		   "", "", "", "");
+		   "", "", "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"ctime") == 0) {
@@ -1177,7 +1181,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    if (strcmp(cmdToken[0],"rum") == 0) {
       int status;
       status = generalAdmin(0, "rm", "unusedAVUs", "", "", 
-		   "", "", "", "");
+		   "", "", "", "", "", "" );
       if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 printf(
 	    "The return of CAT_SUCCESS_BUT_WITH_NO_INFO in this case means that the\n");
@@ -1192,13 +1196,13 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    if (strcmp(cmdToken[0],"asq") == 0) {
       int status;
       status = generalAdmin(0, "add", "specificQuery", cmdToken[1], 
-			    cmdToken[2], "", "", "", "");
+			    cmdToken[2], "", "", "", "", "", "" );
       return(0);
    }
    if (strcmp(cmdToken[0],"rsq") == 0) {
       int status;
       status = generalAdmin(0, "rm", "specificQuery", cmdToken[1], 
-			    "", "", "", "", "");
+			    "", "", "", "", "", "", "" );
       return(0);
    }
 
@@ -1402,7 +1406,7 @@ void usageMain()
 " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
 " mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
-" mkresc Name Type Class Host [Path] (make Resource)",
+" mkresc Name Type Class Host ContextString [Path] (make Resource)",
 " modresc Name [name, type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",

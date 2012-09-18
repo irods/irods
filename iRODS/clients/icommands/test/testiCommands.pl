@@ -237,9 +237,9 @@ runCmd( "iadmin lg testgroup", "", "LIST", "testuser1,testuser2" );
 runCmd( "iadmin rfg testgroup testuser2" );
 runCmd( "iadmin lg testgroup", "negtest", "LIST", "testuser1,testuser2" );
 runCmd( "iadmin rfg testgroup testuser1" );
-runCmd( "iadmin mkresc testresource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
+runCmd( "iadmin mkresc testresource \"unix file system\" cache $irodshost CONTEXT_STRING \"/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
 # runCmd( "iadmin mkresc compresource \"test stage file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
-runCmd( "iadmin mkresc compresource \"unix file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
+runCmd( "iadmin mkresc compresource \"unix file system\" compound $irodshost CONTEXT_STRING \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin lr testresource", "", "resc_name:", "testresource", "irmtrash" );
 runCmd( "iadmin lr testresource", "", "resc_type_name:", "unix file system" );
 runCmd( "iadmin lr testresource", "", "resc_net:", "$irodshost" );
@@ -525,7 +525,7 @@ system ("rm  $dir_w/foo100" );
 
 # do test using xml protocol
 $ENV{'irodsProt'} = 1;
-runCmd( "iadmin mkresc test1resource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc test1resource" );
+runCmd( "iadmin mkresc test1resource \"unix file system\" cache $irodshost CONTEXT_STRING \"/tmp/foo\"", "", "", "", "iadmin rmresc test1resource" );
 runCmd( "ilsresc",  "", "LIST", "test1resource");
 runCmd( "imiscsvrinfo" );
 runCmd( "iuserinfo", "", "name:", $username );

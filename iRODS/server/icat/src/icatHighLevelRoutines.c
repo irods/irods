@@ -1530,11 +1530,13 @@ int chlRegResc(rsComm_t *rsComm,
    cllBindVars[6]=rescInfo->rescVaultPath;
    cllBindVars[7]=myTime;
    cllBindVars[8]=myTime;
+   cllBindVars[9]=rescInfo->rescChildren;
+   cllBindVars[10]=rescInfo->rescContext;
 
-   cllBindVarCount=9;
+   cllBindVarCount=11;
    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 4");
    status =  cmlExecuteNoAnswerSql(
-		"insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts) values (?,?,?,?,?,?,?,?,?)",
+		"insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context) values (?,?,?,?,?,?,?,?,?,?,?)",
 		&icss);
 
    if (status != 0) {
