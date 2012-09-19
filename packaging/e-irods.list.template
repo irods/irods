@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Storage system
-%version 3.0b2 300002
+%version 3.0b3 300003
 
 
 
@@ -36,7 +36,6 @@ $RPM=true
 $ICAT=true
 %requires postgresql 
 %requires postgresql-server
-#%requires postgresql-odbc
 %requires unixODBC
 %requires authd
 
@@ -53,6 +52,11 @@ $ICAT=true
 $RPM=true
 $RESOURCE=true
 
+%endif
+
+
+%if CENTOS6
+%requires postgresql-odbc
 %endif
 
 

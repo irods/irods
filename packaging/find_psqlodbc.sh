@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Ubuntu
+# Ubuntu (and CentOS 6.2+, via postgresql-odbc package)
 ODBC=`find /usr -name "psqlodbc*.so" 2> /dev/null | grep -v "w"`
 
 # CentOS / SuSE
