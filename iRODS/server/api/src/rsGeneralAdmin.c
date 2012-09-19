@@ -158,8 +158,8 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 			strncpy(rescInfo.rescType,      generalAdminInp->arg3, sizeof rescInfo.rescType);
 			strncpy(rescInfo.rescClass,     generalAdminInp->arg4, sizeof rescInfo.rescClass);
 			strncpy(rescInfo.rescLoc,       generalAdminInp->arg5, sizeof rescInfo.rescLoc);
-			strncpy(rescInfo.rescContext,   generalAdminInp->arg6, sizeof rescInfo.rescContext);
-			strncpy(rescInfo.rescVaultPath, generalAdminInp->arg7, sizeof rescInfo.rescVaultPath);
+			strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
+			strncpy(rescInfo.rescContext,   generalAdminInp->arg7, sizeof rescInfo.rescContext);
 			strncpy(rescInfo.zoneName,      generalAdminInp->arg8, sizeof rescInfo.zoneName);
 			strncpy(rescInfo.rescChildren,  "", 0 );
 
@@ -170,8 +170,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 			args[2] = rescInfo.rescClass;
 			args[3] = rescInfo.rescLoc;
 			args[4] = rescInfo.rescVaultPath;
-			args[5] = rescInfo.zoneName;
-			argc = 6;
+			args[5] = rescInfo.rescContext;
+			args[6] = rescInfo.zoneName;
+			argc = 7;
 
 			// =-=-=-=-=-=-=-
 			// apply preproc policy enforcement point for creating a resource, handle errors

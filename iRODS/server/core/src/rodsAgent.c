@@ -15,6 +15,11 @@
 static void NtAgentSetEnvsFromArgs(int ac, char **av);
 #endif
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_dynamic_cast.h"
+
+
 /* #define SERVER_DEBUG 1   */
 int
 main(int argc, char *argv[])
@@ -164,6 +169,13 @@ agentMain (rsComm_t *rsComm)
 {
     int status = 0;
     int retryCnt = 0;
+
+
+    // =-=-=-=-=-=-=-
+	// compiler backwards compatibility hack
+	// see header file for more details
+    eirods::dynamic_cast_hack();
+
 
     while (1) {
 

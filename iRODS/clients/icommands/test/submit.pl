@@ -227,7 +227,7 @@ for ( $cnt=1; $cnt<=$test_number; $cnt++ ) {
 	push( @commandlist, "iadmin rfg $testgroup $testuser2" );
 	push( @commandlist, "iadmin lg $testgroup" );
 	push( @commandlist, "iadmin rfg $testgroup $testuser1" );
-	push( @commandlist, "iadmin mkresc $testresource \"unix file system\" cache $irodshost CONTEXT_STRING \"$tmpdir\"" );
+	push( @commandlist, "iadmin mkresc $testresource \"unix file system\" cache $irodshost \"$tmpdir\"" );
 	push( @commandlist, "iadmin lr $testresource" );
 	push( @commandlist, "iadmin lr $testresource" );
 	push( @commandlist, "iadmin lr $testresource" );

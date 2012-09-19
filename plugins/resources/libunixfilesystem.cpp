@@ -1292,9 +1292,28 @@ extern "C" {
 	class unixfilesystem_resource : public eirods::resource {
     public:
         unixfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
+			// =-=-=-=-=-=-=-
+			// parse context string into property pairs assuming a ; as a separator
 			std::vector< std::string > props;
 			eirods::string_tokenize( _context, props, ";" );
-		}
+
+			// =-=-=-=-=-=-=-
+			// parse key/property pairs using = as a separator and
+			// add them to the property list
+			std::vector< std::string >::iterator itr = props.begin();
+			for( ; itr != props.end(); ++itr ) {
+				// =-=-=-=-=-=-=-
+				// break up key and value into two strings
+                std::vector< std::string > vals;
+				eirods::string_tokenize( *itr, vals, "=" );
+				
+				// =-=-=-=-=-=-=-
+				// break up key and value into two strings
+				properties_[ vals[0] ] = vals[1];
+			
+			} // for itr 
+
+		} // ctor
 
 	}; // class unixfilesystem_resource
   

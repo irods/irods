@@ -588,7 +588,7 @@ runCmd(2, "iadmin mkresc $Resc2 'unix file system'");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system' badClass");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache $hostName");
-runCmd(0, "iadmin mkresc $Resc2 'unix file system' cache $hostName CONTEXT_STRING $Resc2Path");
+runCmd(0, "iadmin mkresc $Resc2 'unix file system' cache $hostName $Resc2Path");
 runCmd(0, "iadmin modresc $Resc2 comment 'this is a comment'");
 runCmd(0, "iadmin modresc $Resc2 freespace 123456789");
 runCmd(0, "iadmin modresc $Resc2 info 'this is info field'");

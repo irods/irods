@@ -154,7 +154,7 @@ $ipIx=index($cmdStdout,"net:");
 $hostName=substr($cmdStdout, $ipIx+4);
 chomp($hostName);
 printf("hostName:%s\n",$hostName);
-runCmd(0,"iadmin mkresc $Resc2 'unix file system' cache $hostName CONTEXT_STRING $Resc2Path");
+runCmd(0,"iadmin mkresc $Resc2 'unix file system' cache $hostName $Resc2Path");
 runCmd(0, "iput $F1");
 runCmd(0, "iadmin ls $HOME | grep $F1");
 $index=index($cmdStdout," ");

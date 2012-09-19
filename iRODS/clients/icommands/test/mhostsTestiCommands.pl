@@ -259,10 +259,10 @@ if ( ! $noprompt_flag ) {
 
 #-- Basic admin commands to make the needed resources.
 
-runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $localHostAddr CONTEXT_STRING \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
-runCmd( "iadmin mkresc $resc2 \"unix file system\" cache $host2Addr CONTEXT_STRING \"/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
-runCmd( "iadmin mkresc $resc3 \"unix file system\" cache $host3Addr CONTEXT_STRING \"/tmp/myresc3\"", "", "", "", "iadmin rmresc $resc3" );
-runCmd( "iadmin mkresc compresource \"unix file system\" compound $host3Addr CONTEXT_STRING \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
+runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $localHostAddr \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
+runCmd( "iadmin mkresc $resc2 \"unix file system\" cache $host2Addr \"/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
+runCmd( "iadmin mkresc $resc3 \"unix file system\" cache $host3Addr \"/tmp/myresc3\"", "", "", "", "iadmin rmresc $resc3" );
+runCmd( "iadmin mkresc compresource \"unix file system\" compound $host3Addr \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin atrg resgroup $resc3", "", "", "", "iadmin rfrg resgroup $resc3" );
 runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
 
