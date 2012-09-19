@@ -3,7 +3,7 @@ Enterprise iRODS (E-iRODS) Manual
 =================================
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0beta2
+:Version: 3.0beta3
 
 .. contents:: Table of Contents
 .. section-numbering::
@@ -83,17 +83,17 @@ Installation
 
 Installation of the Postgres iCAT DEB::
 
- $ (sudo) dpkg -i e-irods-3.0b2-64bit-icat-postgres.deb
+ $ (sudo) dpkg -i e-irods-3.0b3-64bit-icat-postgres.deb
 
 Installation of the Resource RPM::
 
- $ (sudo) rpm -i e-irods-3.0b2-64bit-resource.rpm
+ $ (sudo) rpm -i e-irods-3.0b3-64bit-resource.rpm
 
 These packages install the dependencies necessary to run E-iRODS, a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
 For the iCAT-enabled server packages, the E-iRODS server and EICAT database are started automatically with default values::
 
- $ eirods@hostname:~> ienv
+ eirods@hostname:~/ $ ienv
  NOTICE: Release Version = rods3.0, API Version = d
  NOTICE: irodsHost=hostname
  NOTICE: irodsPort=1247
@@ -103,7 +103,7 @@ For the iCAT-enabled server packages, the E-iRODS server and EICAT database are 
  NOTICE: irodsUserName=rods
  NOTICE: irodsZone=tempZone 
 
-For the resource-only packages, the server is not started automatically.  The administrator will need to run the packaging/setup_resource.sh script and provide the following three pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
+For the resource-only packages, the server is not started automatically.  The administrator will need to run the ./packaging/setup_resource.sh script and provide the following three pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
 
 1) Hostname or IP
 2) iCAT Port
@@ -116,7 +116,7 @@ Quickstart
 
 Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
- $ eirods@hostname:~> ils
+ eirods@hostname:~/ $ ils
  /tempZone/home/rods:
 
 When moving into production, you will probably want to cover the next few basic steps::
@@ -126,13 +126,13 @@ Changing the administrator account password
 
 The default installation of E-iRODS comes with a single account 'rods' that has rodsadmin privileges and password 'rods'.  You should change the password before letting anyone else onto the system::
 
- $ eirods@hostname:~> iadmin moduser rods password <newpassword>
+ eirods@hostname:~ $ iadmin moduser rods password <newpassword>
 
 To make sure everything succeeded, you'll need to reauthenticate and check the new connection::
  
- $ eirods@hostname:~> iinit
+ eirods@hostname:~/ $ iinit
  Enter your current iRODS password:
- $ eirods@hostname:~> ils
+ eirods@hostname:~/ $ ils
  /tempZone/home/rods:
 
 Changing the Zone name
@@ -140,7 +140,7 @@ Changing the Zone name
 
 The default installation of E-iRODS comes with a Zone named 'tempZone'.  You probably want to change the Zone name to something more domain-specific::
 
- $ eirods@hostname:~> iadmin modzone tempZone name <newzonename>
+ eirods@hostname:~/ $ iadmin modzone tempZone name <newzonename>
  If you modify the local zone name, you and other users will need to
  change your .irodsEnv files to use it, you may need to update
  irods.config and, if rules use the zone name, you'll need to update
@@ -151,7 +151,7 @@ The default installation of E-iRODS comes with a Zone named 'tempZone'.  You pro
  
 The Zone has been renamed, but now you will need to update your .irodsEnv file to match (note the three places where the updated zone name is located)::
 
- $ eirods@hostname:~> cat .irods/.irodsEnv
+ eirods@hostname:~/ $ cat .irods/.irodsEnv
  # iRODS server host name:
  irodsHost 'ubuntu2'
  # iRODS server port number:
@@ -169,21 +169,21 @@ The Zone has been renamed, but now you will need to update your .irodsEnv file t
 
 Now, the connection should be reset and you should be able to list your empty iRODS collection again::
 
- $ eirods@hostname:~> iinit
+ eirods@hostname:~/ $ iinit
  Enter your current iRODS password:
- $ eirods@hostname:~> ils
+ eirods@hostname:~/ $ ils
  /<newzonename>/home/rods:
 
 Add additional resource(s)
 --------------------------
 
-The default installation of E-iRODS comes with a single resource named 'demoResc' and which stores its files in the /var/lib/e-irods/iRODS/Vault directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
+The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the /var/lib/e-irods/iRODS/Vault directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
 
- $ eirods@hostname:~> iadmin mkresc <newrescname> 'unix file system' cache <fully.qualified.domain.name> </full/path/to/new/vault>
+ eirods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' cache <fully.qualified.domain.name> </full/path/to/new/vault>
  
 Additional information about creating resources can be found with::
 
- $ eirods@hostname:~> iadmin help mkresc
+ eirods@hostname:~/ $ iadmin help mkresc
   mkresc Name Type Class Host [Path] (make Resource)
  Create (register) a new storage or database resource.
 
@@ -196,7 +196,7 @@ Additional information about creating resources can be found with::
 
  Tip: Also see the lt command for Type and Class token information.
 
- $ eirods@hostname:~> iadmin lt resc_type
+ eirods@hostname:~/ $ iadmin lt resc_type
  unix file system 
  hpss file system 
  windows file system 
@@ -205,7 +205,7 @@ Additional information about creating resources can be found with::
  database 
  mso 
 
- $ eirods@hostname:~> iadmin lt resc_class
+ eirods@hostname:~/ $ iadmin lt resc_class
  cache 
  archive 
  compound 
@@ -221,14 +221,13 @@ Add additional user(s)
 
 The default installation of E-iRODS comes with a single user 'rods' which is a designated 'rodsadmin' type user account.  You will want to create additional 'rodsuser' type user accounts and set their passwords before allowing connections to your new grid::
 
- $ eirods@hostname:~> iadmin mkuser <newusername> rodsuser 
+ eirods@hostname:~/ $ iadmin mkuser <newusername> rodsuser 
 
- $ eirods@hostname:~> iadmin lu
- rodsBoot#tempZone
+ eirods@hostname:~/ $ iadmin lu
  rods#tempZone
  <newusername>#tempZone
  
- $ eirods@hostname:~> iadmin help mkuser
+ eirods@hostname:~/ $ iadmin help mkuser
   mkuser Name[#Zone] Type (make user)
  Create a new iRODS user in the ICAT database
 
@@ -245,7 +244,7 @@ Best practice suggests changing your Zone name before adding new users as any ex
 Upgrading
 ---------
 
-The beta release of E-iRODS does not yet support upgrading.  Every install will be a clean install.
+The beta releases of E-iRODS do not yet support upgrading.  Every install will be a clean install.
 
 This section will be updated when support is included.
 
@@ -257,11 +256,11 @@ Backing up E-iRODS consists of three major parts:  The data, the iRODS system an
 
 1) The data itself can be handled by the iRODS system through replication and should not require any specific backup efforts worth noting here.
 
-2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup`_ microservice.  When run on a regular schedule, the `msiServerBackup` microservice will contain all the necessary configuration information to reconstruct your iRODS setup during disaster recovery.
+2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup`_ microservice.  When run on a regular schedule, the `msiServerBackup` microservice will gather and store all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
 
 .. _msiServerBackup: file:///var/lib/e-irods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
 
-3) The iCAT database itself can be backed up in a variety of ways.  A Postgres database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, Postgres 8.4 includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of Postgres where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in Postgres 9.0+ and can keep two Postgres servers in sync with sub-second delay.
+3) The iCAT database itself can be backed up in a variety of ways.  A Postgres database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, Postgres 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of Postgres where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in Postgres 9.0+ and can keep two Postgres servers in sync with sub-second delay.
 
 .. __: http://www.postgresql.org/docs/8.4/static/warm-standby.html#WARM-STANDBY-RECORD
 .. __: http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION
@@ -272,7 +271,9 @@ Configuration and maintenance of this type of backup system is out of scope for 
 Assumptions
 -----------
 
-E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.  MySQL is not yet supported with a binary release.
+.. E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.  MySQL is not yet supported with a binary release.
+
+E-iRODS enforces that the database in use (Postgres) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
 
 The iRODS setting 'StrictACL' is configured on by default in E-iRODS.  This is different from the community version of iRODS and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
 
@@ -383,16 +384,42 @@ There are a number of configuration files that control how an iRODS server behav
 This document is intended to explain how the various configuration files are connected, what their parameters are, and when to use them.
 
 ~/.odbc.ini
+    This file, in the eirods user's home directory, defines the unixODBC connection details needed for the iCommands to communicate with the iCAT database.  This file was created by the installer package and probably should not be changed by the sysadmin unless they know what they are doing.
 
 iRODS/config/irods.config
+    This file defines the main settings for the iRODS installation.  It is created by the installer package and comes preconfigured with approved and tested settings.  Changing this file will take effect after a restart of the iRODS server.  It is recommended not to change this file.
 
 iRODS/server/config/server.config
+    This file defines the behavior of the server Agent that answers individual requests coming into iRODS.  It is recommended not to change this file.
 
 ~/.irods/.irodsA
     This is the scrambled password file that is saved after an ``iinit`` is run.  If this file does not exist, then each iCommand will prompt for a password before authenticating with the iRODS server.  If this file does exist, then each iCommand will read this file and use the contents as a cached password token and skip the password prompt.  This file can be deleted manually or can be removed by running ``iexit full``.
 
 ~/.irods/.irodsEnv
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
+
+
+------------
+Architecture
+------------
+
+E-iRODS represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of E-iRODS.
+
+The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Exposed by the core will be six or seven major interfaces which will allow extensibility and separation of functionality into plugins.  A few plugins will be included by default in E-iRODS to provide core functionality.
+
+The planned plugin interfaces and their status are listed here:
+
+ ========================   ==========    ========
+ Plugin Interface           Status        Since
+ ========================   ==========    ========
+ Pluggable Microservices    Complete      3.0b2
+ Pluggable Resources        Complete      3.0b3
+ Pluggable Authentication   Planned
+ Pluggable Database         Planned
+ Pluggable Messaging        Planned
+ Pluggable RPC API          Planned
+ Pluggable Rule Engine      Requested
+ ========================   ==========    ========
 
 
 --------
@@ -403,17 +430,17 @@ This glossary attempts to cover most of the terms you may encounter when first i
 
 Action
     An external (logical) name given to an iRODS Rule(s) that defines a set of macro-level tasks.
-    These tasks are performed by a chain of Micro-services in accordance with external input parameters.
-    Analogous to head atom in a Prolog rule or trigger-name in a relational database.
+    These tasks are performed by a chain of microservices in accordance with external input parameters.
+    This is analogous to head atom in a Prolog rule or trigger-name in a relational database.
 
 Agent
-    A type of iRODS server process.  Each time a client connects to a server, and agent is created and a network connection established between it and the client.
+    A type of iRODS server process.  Each time a client connects to a server, an agent is created and a network connection established between it and the client.
 
 API
     An Application Programming Interface (API) is a piece of software's set of defined programmatic interfaces to enable other software to communicate with it.  iRODS defines a client API and expects that clients connect and communicate with iRODS servers in this controlled manner.  iRODS has an API written in C, and another written in Java (Jargon). 
 
 Authentication Mechanisms
-    iRODS can employ various mechanisms to verify user identity and control access to Data Objects (iRODS files), Collections, etc.  These currently includes the default iRODS secure password mechanism (challenge-response), Grid Security Infrastructure (GSI), and Operating System authentication (OSAuth).
+    iRODS can employ various mechanisms to verify user identity and control access to Data Objects (iRODS files), Collections, etc.  These currently include the default iRODS secure password mechanism (challenge-response), Grid Security Infrastructure (GSI), and Operating System authentication (OSAuth).
 
 Audit Trail
     List of all operations performed upon a Data Object, a Collection, a Resource, a User, or other iRODS entities.  When Auditing is enabled, significant events in the iRODS system (affecting the iCAT) are recorded.  Full activity reports can be compiled to verify important preservation and/or security policies have been enforced.
@@ -514,6 +541,10 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
+2012-09-     3.0b3      Third Beta Release.
+                          This is the third release from RENCI.  It includes
+                          a new package for CentOS 6+, support for pluggable
+                          resources, and additional documentation.
 2012-06-25   3.0b2      Second Beta Release.
                           This is the second release from RENCI.  It includes
                           packages for iCAT, Resource, iCommands, and
