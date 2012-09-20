@@ -447,12 +447,12 @@ acPostProcForDeleteUser { }
 # 28) acPreProcForCreateResource - This rule set the pre-processing policy for
 # creating a new resource.
 #
-acPreProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescZoneName) { }
+acPreProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescContext,*RescZoneName) { }
 #
 # 29) acPostProcForCreateResource - This rule set the post-processing policy for
 # creating a new resource.
 #
-acPostProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescZoneName) { }
+acPostProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescContext,*RescZoneName) { }
 #
 # 30) acPreProcForCreateToken - This rule set the pre-processing policy for
 # creating a new token.
