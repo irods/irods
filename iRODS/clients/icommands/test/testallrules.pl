@@ -172,7 +172,9 @@ if ( ! $input ) {
 runCmd( "iinit $input" );
 
 # prep and cleanup
-runCmd( "iadmin mkresc testResc 'unix file system' cache localhost /tmp/$unixuser/testResc", "", "", "", "iadmin rmresc testResc" );
+runCmd( "iadmin mkuser devtestuser rodsuser","","","","iadmin rmuser devtestuser" );
+#runCmd( "iadmin mkresc testResc 'unix file system' cache localhost /tmp/$unixuser/testResc I_AM_A_CONTEXT_STRING", "", "", "", "iadmin rmresc testResc" );
+runCmd( "iadmin mkresc testResc 'unix file system' cache localhost I_AM_A_CONTEXT_STRING /tmp/$unixuser/testResc", "", "", "", "iadmin rmresc testResc" );
 runCmd( "iadmin atrg testgroup testResc", "", "", "", "iadmin rfrg testgroup testResc");
 runCmd( "imkdir sub1", "", "", "", "irm -rf sub1" );
 runCmd( "imkdir forphymv", "", "", "", "irm -rf forphymv" );
@@ -192,7 +194,14 @@ runCmd( "irepl -RtestResc sub1/objunlink2");
 runCmd( "icp test/foo1 sub1/freebuffer");
 runCmd( "icp test/foo1 sub1/automove");
 runCmd( "icp test/foo1 test/versiontest.txt");
+runCmd( "icp test/foo1 test/metadata-target.txt");
+runCmd( "icp test/foo1 test/ERAtestfile.txt");
+runCmd( "ichmod read devtestuser test/ERAtestfile.txt");
+runCmd( "imeta add -d test/ERAtestfile.txt Fun 99 Balloons");
 runCmd( "imkdir sub1/SaveVersions" );
+runCmd( "iput $dir_w/misc/devtestuser-account-ACL.txt test");
+runCmd( "iput $dir_w/misc/load-metadata.txt test");
+runCmd( "iput $dir_w/misc/load-usermods.txt test");
 runCmd( "iput $dir_w/misc/sample.email test");
 runCmd( "iput $dir_w/misc/email.tag test");
 runCmd( "iput $dir_w/misc/sample.email test/sample2.email");
@@ -273,46 +282,14 @@ foreach $rulefile (@rules)
 
   if ($rulefile =~ /rulemsiobj/) { print "----- skipping msiobj -- $rulefile\n"; next; }
 
-  if ($rulefile =~ /rulemsiAddKeyVal.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiApplyDCMetadataTemplate.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiAssociateKeyValuePairsToObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiCollectionSpider.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiCopyAVUMetadata.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiCreateUserAccountsFromDataObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiDeleteUsersFromDataObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiExportRecursiveCollMeta.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiFlagDataObjwithAVU.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
+
   if ($rulefile =~ /rulemsiFlagInfectedObjs.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetAuditTrailInfoByActionID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
+#  if ($rulefile =~ /rulemsiGetAuditTrailInfoByActionID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
   if ($rulefile =~ /rulemsiGetAuditTrailInfoByKeywords.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetAuditTrailInfoByObjectID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetAuditTrailInfoByTimeStamp.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetAuditTrailInfoByUserID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetCollectionACL.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetCollectionContentsReport.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetCollectionPSmeta/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetCollectionSize.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetDataObjACL.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetDataObjAIP.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetDataObjAVUs.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetDataObjPSmeta.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetObjectPath.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetUserACL.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGetUserInfo.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiGuessDataType.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiIsColl.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiIsData.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiLoadACLFromDataObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiLoadMetadataFromDataObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiLoadUserModsFromDataObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
+#  if ($rulefile =~ /rulemsiGetAuditTrailInfoByObjectID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
+#  if ($rulefile =~ /rulemsiGetAuditTrailInfoByTimeStamp.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
+#  if ($rulefile =~ /rulemsiGetAuditTrailInfoByUserID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
   if ($rulefile =~ /rulemsiMergeDataCopies.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiRecursiveCollCopy.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiRemoveKeyValuePairsFromObj.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiSetDataType.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiString2KeyValPair.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiStripAVUs.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulemsiStructFileBundle.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-  if ($rulefile =~ /rulewriteKeyValPairs.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
 
   if ($rulefile =~ /rulemsiGetFormattedSystemTime/) { print "----- skipping guinot -- $rulefile\n"; next; }
 

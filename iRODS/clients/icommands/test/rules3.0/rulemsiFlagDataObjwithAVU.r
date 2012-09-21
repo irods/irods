@@ -7,9 +7,9 @@ myTestRule {
 #Output parameter is:
 #  Status
 #Output from running the example is:
-# Metadata attribute called State1 is added to  /tempZone/home/rods/sub1/foo1
+# Metadata attribute called State3 is added to  /tempZone/home/rods/test/ERAtestfile.txt
   msiFlagDataObjwithAVU(*Source,*Flag,*Status);
   writeLine("stdout","Metadata attribute called *Flag is added to *Source");
 }
-INPUT *Source="/tempZone/home/rods/sub1/foo1", *Flag="State1"
+INPUT *Source="/tempZone/home/rods/test/ERAtestfile.txt", *Flag="State3"
 OUTPUT ruleExecOut

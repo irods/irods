@@ -6,5 +6,5 @@ myTestRule {
   msiGetDataObjACL(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);
 }
-INPUT *Path="/tempZone/home/rods/sub1/foo1"
+INPUT *Path="/tempZone/home/rods/test/ERAtestfile.txt"
 OUTPUT ruleExecOut
