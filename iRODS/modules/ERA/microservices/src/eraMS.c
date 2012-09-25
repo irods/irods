@@ -975,8 +975,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       genQueryInp.selectInp.len = 1;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       if (rei->status==0) {
-	 printf("None\n");
-	 return(0);
+          freeGenQueryOut (&genQueryOut);
       }
       if (rei->status == CAT_NO_ROWS_FOUND) {
 
@@ -990,7 +989,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
-   while (rei->status==0 && genQueryOut->continueInx > 0) {
+   while (rei->status==0 && genQueryOut && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
@@ -1045,8 +1044,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       genQueryInp.selectInp.len = 1;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       if (rei->status==0) {
-	 printf("None\n");
-	 return(0);
+          freeGenQueryOut (&genQueryOut);
       }
       if (rei->status == CAT_NO_ROWS_FOUND) {
 
@@ -1060,7 +1058,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
-   while (rei->status==0 && genQueryOut->continueInx > 0) {
+   while (rei->status==0 && genQueryOut && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
@@ -1100,8 +1098,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       genQueryInp.selectInp.len = 1;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       if (rei->status==0) {
-	 printf("None\n");
-	 return(0);
+          freeGenQueryOut (&genQueryOut);
       }
       if (rei->status == CAT_NO_ROWS_FOUND) {
 
@@ -1115,7 +1112,7 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
       printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
-   while (rei->status==0 && genQueryOut->continueInx > 0) {
+   while (rei->status==0 && genQueryOut && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
       printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
