@@ -8,6 +8,8 @@
 #include "icatHighLevelRoutines.h"
 
 #include <iostream>
+#include <string>
+
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 {
@@ -43,6 +45,94 @@ rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 }
 
 #ifdef RODS_CAT
+int
+_addChildToResource(
+    generalAdminInp_t* _generalAdminInp,
+    ruleExecInfo_t _rei2,
+    rsComm_t* _rsComm)
+{
+    int result = 0;
+    rescInfo_t rescInfo;
+
+    strncpy(rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName);
+    std::string rescChild(_generalAdminInp->arg3);
+    std::string rescContext(_generalAdminInp->arg4);
+    std::string rescChildren = rescChild + "{" + rescContext + "}";
+
+#ifdef COMMENT
+    if((result = chlAddChildResc( _rsComm, &rescInfo)) != 0) {
+	chlRollback(_rsComm);
+    }
+#endif
+    
+    return result;
+}
+
+/* extracted out the functionality for adding a resource to the grid - hcj */
+int
+_addResource(
+    generalAdminInp_t* _generalAdminInp,
+    ruleExecInfo_t _rei2,
+    rsComm_t* _rsComm)
+{
+    int result = 0;
+    rescInfo_t rescInfo;
+    static const unsigned int argc = 7;
+    char *args[argc];
+    
+    // =-=-=-=-=-=-=-
+    // pull values out of api call args into rescInfo structure
+    strncpy(rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName);
+    strncpy(rescInfo.rescType,      _generalAdminInp->arg3, sizeof rescInfo.rescType);
+    strncpy(rescInfo.rescClass,     _generalAdminInp->arg4, sizeof rescInfo.rescClass);
+    strncpy(rescInfo.rescLoc,       _generalAdminInp->arg5, sizeof rescInfo.rescLoc);
+    strncpy(rescInfo.rescVaultPath, _generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
+    strncpy(rescInfo.rescContext,   _generalAdminInp->arg7, sizeof rescInfo.rescContext);
+    strncpy(rescInfo.zoneName,      _generalAdminInp->arg8, sizeof rescInfo.zoneName);
+    strncpy(rescInfo.rescChildren,  "", 0 );
+
+    // =-=-=-=-=-=-=-
+    // RAJA ADDED June 1 2009 for pre-post processing rule hooks 
+    args[0] = rescInfo.rescName;
+    args[1] = rescInfo.rescType;
+    args[2] = rescInfo.rescClass;
+    args[3] = rescInfo.rescLoc;
+    args[4] = rescInfo.rescVaultPath;
+    args[5] = rescInfo.rescContext;
+    args[6] = rescInfo.zoneName;
+
+    // =-=-=-=-=-=-=-
+    // apply preproc policy enforcement point for creating a resource, handle errors
+    if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
+	if (_rei2.status < 0) {
+	    result = _rei2.status;
+	}
+	rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
+		 rescInfo.rescName, result );
+	/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    }
+    
+    // =-=-=-=-=-=-=-
+    // register resource with the metadata catalog, roll back on an error
+    else if((result = chlRegResc( _rsComm, &rescInfo )) != 0) {
+	chlRollback( _rsComm );
+    }
+
+    // =-=-=-=-=-=-=-
+    // apply postproc policy enforcement point for creating a resource, handle errors
+    // ( RAJA ADDED June 1 2009 for pre-post processing rule hooks )
+    else if((result =  applyRuleArg( "acPostProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI )) < 0) {
+	if (_rei2.status < 0) {
+	    result = _rei2.status;
+	}
+	rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
+		 rescInfo.rescName, result );
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+    return result;
+}
+
 int
 _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 {
@@ -152,67 +242,14 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 		// =-=-=-=-=-=-=-
 		// add a new resource to the data grid
 		if (strcmp(generalAdminInp->arg1,"resource")==0) {
-			// =-=-=-=-=-=-=-
-			// pull values out of api call args into rescInfo structure
-			strncpy(rescInfo.rescName,      generalAdminInp->arg2, sizeof rescInfo.rescName);
-			strncpy(rescInfo.rescType,      generalAdminInp->arg3, sizeof rescInfo.rescType);
-			strncpy(rescInfo.rescClass,     generalAdminInp->arg4, sizeof rescInfo.rescClass);
-			strncpy(rescInfo.rescLoc,       generalAdminInp->arg5, sizeof rescInfo.rescLoc);
-			strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
-			strncpy(rescInfo.rescContext,   generalAdminInp->arg7, sizeof rescInfo.rescContext);
-			strncpy(rescInfo.zoneName,      generalAdminInp->arg8, sizeof rescInfo.zoneName);
-			strncpy(rescInfo.rescChildren,  "", 0 );
-
-			// =-=-=-=-=-=-=-
-			// RAJA ADDED June 1 2009 for pre-post processing rule hooks 
-			args[0] = rescInfo.rescName;
-			args[1] = rescInfo.rescType;
-			args[2] = rescInfo.rescClass;
-			args[3] = rescInfo.rescLoc;
-			args[4] = rescInfo.rescVaultPath;
-			args[5] = rescInfo.rescContext;
-			args[6] = rescInfo.zoneName;
-			argc = 7;
-
-			// =-=-=-=-=-=-=-
-			// apply preproc policy enforcement point for creating a resource, handle errors
-			i =  applyRuleArg("acPreProcForCreateResource", args, argc, &rei2, NO_SAVE_REI);
-			if (i < 0) {
-				if (rei2.status < 0) {
-					i = rei2.status;
-				}
-				rodsLog( LOG_ERROR, "rsGeneralAdmin:acPreProcForCreateResource error for %s,stat=%d",
-						 rescInfo.rescName, i );
-				return i;
-			}
-			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-			// =-=-=-=-=-=-=-
-			// register resource with the metadata catalog, roll back on an error
-			status = chlRegResc( rsComm, &rescInfo );
-			if( status != 0 ) {
-				chlRollback( rsComm );
-				return( status );
-			}
-
-			// =-=-=-=-=-=-=-
-			// apply postproc policy enforcement point for creating a resource, handle errors
-			// ( RAJA ADDED June 1 2009 for pre-post processing rule hooks )
-			i =  applyRuleArg( "acPostProcForCreateResource", args, argc, &rei2, NO_SAVE_REI );
-			if( i < 0 ) {
-				if (rei2.status < 0) {
-					i = rei2.status;
-				}
-				rodsLog( LOG_ERROR, "rsGeneralAdmin:acPostProcForCreateResource error for %s,stat=%d",
-						 rescInfo.rescName, i );
-				return i;
-			}
-			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-			return(status);
-
+		    return _addResource(generalAdminInp, rei2, rsComm);
 		} // if create resource
 
+		/* add a child resource to the specified parent resource */
+		if (strcmp(generalAdminInp->arg1, "childtoresc")==0) {
+		    return _addChildToResource(generalAdminInp, rei2, rsComm);
+		}
+		
 		if (strcmp(generalAdminInp->arg1,"token")==0) {
 			/** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 			args[0] = generalAdminInp->arg2;
