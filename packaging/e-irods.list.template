@@ -888,6 +888,9 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/email.tag ./iRODS/clients/icommands/test/misc/email.tag
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/addRepeatTest.txt ./iRODS/clients/icommands/test/misc/addRepeatTest.txt
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/repeatTest.txt ./iRODS/clients/icommands/test/misc/repeatTest.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/devtestuser-account-ACL.txt ./iRODS/clients/icommands/test/misc/devtestuser-account-ACL.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/load-metadata.txt ./iRODS/clients/icommands/test/misc/load-metadata.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/load-usermods.txt ./iRODS/clients/icommands/test/misc/load-usermods.txt
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/submit_time.pl ./iRODS/clients/icommands/test/submit_time.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest2.sh ./iRODS/clients/icommands/test/stresstest2.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testiCommands.pl ./iRODS/clients/icommands/test/testiCommands.pl
