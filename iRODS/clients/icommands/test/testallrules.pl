@@ -283,7 +283,7 @@ foreach $rulefile (@rules)
 
 
   if ($rulefile =~ /rulemsiFlagInfectedObjs.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
-#  if ($rulefile =~ /rulemsiGetAuditTrailInfoByActionID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
+  if ($rulefile =~ /rulemsiGetAuditTrailInfoByActionID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
   if ($rulefile =~ /rulemsiGetAuditTrailInfoByKeywords.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
 #  if ($rulefile =~ /rulemsiGetAuditTrailInfoByObjectID.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
 #  if ($rulefile =~ /rulemsiGetAuditTrailInfoByTimeStamp.r/) { print "----- skipping ERA -- $rulefile\n"; next; }
