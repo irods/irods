@@ -428,7 +428,7 @@ openLog( $logFile );
 # change permissions on it so that only the current user can read it.
 chmod( 0600, $logFile );
 
-printLog( "iRODS-E setup\n" );
+printLog( "E-iRODS setup\n" );
 printLog( "------------------------------------------------------------------------\n" );
 
 # When was this script run?
@@ -480,12 +480,30 @@ $IRODS_DEFAULT_ZONE="tempZone";
 
 # =-=-=-=-=-=-=-
 # JMC :: if arguments are 0, then we will assume this is a RESOURCE installation.  we hope...
-if( 1 == $icatInstall ) {
+if( 1 == $icatInstall )
+{
 	$DATABASE_TYPE           = $ARGV[0];
 	$DATABASE_HOST           = $ARGV[1];
 	$DATABASE_PORT           = $ARGV[2];
 	$DATABASE_ADMIN_NAME     = $ARGV[3];
 	$DATABASE_ADMIN_PASSWORD = $ARGV[4];
+}
+# =-=-=-=-=-=-=-
+# TGR :: for a resource server, prompt for icat admin password
+else
+{
+    # call out to external shell script so live password can be hidden
+    # and never shown to the user and never written to disk or visible to
+    # the unix process listing (ps)
+    print "\n";
+    print "The following password will not be written to disk\n";
+    print "or made visible to any process other than this setup script.\n";
+    print "\n";
+    print "  iCAT server's admin username: $IRODS_ADMIN_NAME\n";
+    print "  iCAT server's admin password: ";
+    $IRODS_ADMIN_PASSWORD = `/var/lib/e-irods/packaging/get_icat_server_password.sh`;
+    print "\n";
+    print "\n";
 }
 
 ########################################################################

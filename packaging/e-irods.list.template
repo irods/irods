@@ -239,6 +239,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
 
 %if RESOURCE
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/setup_resource.sh ./packaging/setup_resource.sh
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/get_icat_server_password.sh ./packaging/get_icat_server_password.sh
 %endif
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc -
