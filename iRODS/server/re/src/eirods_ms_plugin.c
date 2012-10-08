@@ -49,7 +49,7 @@ namespace eirods {
 
     error ms_table_entry::delay_load( void* _h ) {
         if( !_h ) {
-            return ERROR( false, -1, "delay_load - null handle parameter" );
+            return ERROR( -1, "delay_load - null handle parameter" );
         }
 
         callAction_ = reinterpret_cast< ms_func_ptr >( dlsym( _h, action_.c_str() ) );
@@ -57,7 +57,7 @@ namespace eirods {
         if( !callAction_ ) {
             std::stringstream msg;
             msg << "delay_load :: failed to load msvc function [" << action_ << "]";
-            return ERROR( false, -1, msg.str() );
+            return ERROR( -1, msg.str() );
         } else { 
 #ifdef DEBUG
             std::cout << "[+]\teirods::ms_table_entry::delay_load :: [" << action_ << "]" << std::endl;

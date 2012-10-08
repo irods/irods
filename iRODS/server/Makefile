@@ -51,7 +51,7 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/fileDriverNoOpFunctions.o \
-		$(svrCoreObjDir)/eirods_resource_manager.o 
+		$(svrCoreObjDir)/eirods_resource_manager.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -114,7 +114,8 @@ SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatHighLevelRoutines.o \
 		$(svrIcatObjDir)/icatGeneralQuery.o \
 		$(svrIcatObjDir)/icatGeneralQuerySetup.o \
-		$(svrIcatObjDir)/icatGeneralUpdate.o
+		$(svrIcatObjDir)/icatGeneralUpdate.o \
+		$(svrIcatObjDir)/eirods_zone_info.o
 INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer

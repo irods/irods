@@ -17,7 +17,7 @@ eirods::log( LOG_NOTICE, "fileCreate" );
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileCreate - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileCreate - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -51,7 +51,7 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileOpen - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileOpen - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -86,7 +86,7 @@ eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _le
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileRead - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileRead - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -119,7 +119,7 @@ eirods::error fileWrite( eirods::first_class_object& _object, void* _buf, int  _
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileWrite - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileWrite - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -152,7 +152,7 @@ eirods::error fileClose( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileClose - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileClose - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -185,7 +185,7 @@ eirods::error fileUnlink( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileUnlink - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileUnlink - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -218,7 +218,7 @@ eirods::error fileStat( eirods::first_class_object& _object, struct stat* _statb
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileStat - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileStat - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -251,7 +251,7 @@ eirods::error fileFstat( eirods::first_class_object& _object, struct stat* _stat
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileFstat - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileFstat - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -284,7 +284,7 @@ eirods::error fileLseek( eirods::first_class_object& _object, size_t _offset, in
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileLseek - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileLseek - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -317,7 +317,7 @@ eirods::error fileFsync( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileFsync - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileFsync - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -350,7 +350,7 @@ eirods::error fileMkdir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileMkdir - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileMkdir - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -383,7 +383,7 @@ eirods::error fileChmod( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileChmod - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileChmod - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -416,7 +416,7 @@ eirods::error fileRmdir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileRmdir - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileRmdir - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -449,7 +449,7 @@ eirods::error fileOpendir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileOpendir - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileOpendir - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -482,7 +482,7 @@ eirods::error fileClosedir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileClosedir - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileClosedir - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -515,7 +515,7 @@ eirods::error fileReaddir( eirods::first_class_object& _object, struct rodsDiren
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileReaddir - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileReaddir - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -548,7 +548,7 @@ eirods::error fileStage( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileStage - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileStage - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -581,7 +581,7 @@ eirods::error fileRename( eirods::first_class_object& _object, std::string _new_
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() || _new_file_name.empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileRename - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileRename - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -614,7 +614,7 @@ eirods::error fileGetFsFreeSpace( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileGetFsFreeSpace - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileGetFsFreeSpace - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -647,7 +647,7 @@ eirods::error fileTruncate( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileTruncate - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileTruncate - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -681,7 +681,7 @@ eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileStageToCache - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileStageToCache - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}
@@ -717,7 +717,7 @@ eirods::error fileSyncToArch( std::string _file_name, std::string _cache_file_na
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _file_name.empty() ) {
-		eirods::error ret_err = ERROR( false, -1, "fileSyncToArch - File Name is Empty." );
+		eirods::error ret_err = ERROR( -1, "fileSyncToArch - File Name is Empty." );
 		eirods::log( ret_err );
 		return ret_err;
 	}

@@ -59,6 +59,33 @@ _addChildToResource(
     std::string rescContext(_generalAdminInp->arg4);
     std::string rescChildren = rescChild + "{" + rescContext + "}";
 
+    rodsLog(LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
+	    rescInfo.rescName);
+    
+#ifdef COMMENT
+    if((result = chlAddChildResc( _rsComm, &rescInfo)) != 0) {
+	chlRollback(_rsComm);
+    }
+#endif
+    
+    return result;
+}
+
+int
+_removeChildFromResource(
+    generalAdminInp_t* _generalAdminInp,
+    ruleExecInfo_t _rei2,
+    rsComm_t* _rsComm)
+{
+    int result = 0;
+    rescInfo_t rescInfo;
+
+    strncpy(rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName);
+    std::string rescChild(_generalAdminInp->arg3);
+
+    rodsLog(LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescChild.c_str(),
+	    rescInfo.rescName);
+    
 #ifdef COMMENT
     if((result = chlAddChildResc( _rsComm, &rescInfo)) != 0) {
 	chlRollback(_rsComm);
@@ -584,6 +611,12 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  if (status != 0) chlRollback(rsComm);
 	  return(status); 
        }
+
+       /* remove a child resource from the specified parent resource */
+       if (strcmp(generalAdminInp->arg1, "childfromresc")==0) {
+	   return _removeChildFromResource(generalAdminInp, rei2, rsComm);
+       }
+		
        if (strcmp(generalAdminInp->arg1,"zone")==0) {
 	  status = chlDelZone(rsComm, generalAdminInp->arg2);
 	  if (status == 0) {

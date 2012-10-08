@@ -67,7 +67,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 		   
 		} // operator() - T1
@@ -79,7 +79,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 		   
 		} // operator() - T1, T2
@@ -92,7 +92,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3
@@ -105,7 +105,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return operation_( _prop_map, _cmap, _t1, _t2, _t3, _t4 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 		   
 		} // operator() - T1, T2, T3, T4
@@ -118,7 +118,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5
@@ -131,7 +131,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5, T6
@@ -144,7 +144,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6, _t7 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5, T6, T7
@@ -157,7 +157,7 @@ namespace eirods {
 		   if( operation_ ) {
 			  return (*operation_)( _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 ); 
 		   } else {
-			  return ERROR( false, -1, "operation_wrapper - null resource operation." );
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5, T6, T7, T8

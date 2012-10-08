@@ -77,11 +77,11 @@ namespace eirods {
         // =-=-=-=-=-=-=-
 		// check params
 		if( ! _handle ) {
-		    return ERROR( false, -1, "delay_load - void handle pointer" );	
+		    return ERROR( -1, "delay_load - void handle pointer" );	
 		}
 
         if( ops_for_delay_load_.empty() ) {
-			return ERROR( false, -1, "delay_load - empty operations list" );
+			return ERROR( -1, "delay_load - empty operations list" );
 		}
 
 
@@ -95,7 +95,7 @@ namespace eirods {
                 std::stringstream msg;
 				msg  << "delay_load - failed to load start function [" 
 				     << start_opr_name_ << "]";
-				return ERROR( false, -1, msg.str() );
+				return ERROR( -1, msg.str() );
 			} else {
                start_operation_ = start_op; 
 			}
@@ -112,7 +112,7 @@ namespace eirods {
 				std::stringstream msg;
                 msg << "delay_load - failed to load stop function [" 
 				          << stop_opr_name_ << "]";
-				return ERROR( false, -1, msg.str() );
+				return ERROR( -1, msg.str() );
 			} else {
                stop_operation_ = stop_op; 
 			}
@@ -164,7 +164,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
 		// see if we loaded anything at all
 		if( operations_.size() < 0 ) {
-			return ERROR( false, -1, "delay_load - operations map is emtpy" );
+			return ERROR( -1, "delay_load - operations map is emtpy" );
 		}
 
 
@@ -179,11 +179,11 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// check params	
 		if( _name.empty() ) {
-            return ERROR( false, -1, "add_child - empty name" );
+            return ERROR( -1, "add_child - empty name" );
 		}
 
 		if( 0 == _resc.get() ) {
-            return ERROR( false, -1, "add_child - null resource pointer" );
+            return ERROR( -1, "add_child - null resource pointer" );
 		}
 
 		// =-=-=-=-=-=-=-
@@ -214,7 +214,7 @@ namespace eirods {
 		} else {
 			std::stringstream msg;
             msg << "remove_child - resource has no child named [" << _name << "]";
-			return ERROR( false, -1, msg.str() );
+			return ERROR( -1, msg.str() );
 		}
 	
 	} // remove_child 
@@ -228,14 +228,14 @@ namespace eirods {
 		if( _op.empty() ) {
 			std::stringstream msg;
 			msg << "add_operation - empty operation [" << _op << "]";
-			return ERROR( false, -1, msg.str() );
+			return ERROR( -1, msg.str() );
 		}
 		
 		if( _fcn_name.empty() ) {
 			std::stringstream msg;
 			msg << ":add_operation - empty function name [" 
 			          << _fcn_name << "]";
-			return ERROR( false, -1, msg.str() );
+			return ERROR( -1, msg.str() );
 		}
 
 		// =-=-=-=-=-=-=-
@@ -274,7 +274,7 @@ namespace eirods {
         if( !operations_.has_entry( _op ) ) {
 			std::stringstream msg;
 			msg << "check_operation_params - operation [" << _op << "] doesn't exist.";
-			return ERROR( false, -1, msg.str() );
+			return ERROR( -1, msg.str() );
 		}
 		
 		return SUCCESS();

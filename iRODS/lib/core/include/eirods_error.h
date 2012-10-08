@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #ifndef __EIRODS_ERROR_H__
 #define __EIRODS_ERROR_H__
@@ -13,36 +12,36 @@
 namespace eirods {
 
     class error {
-        public:
+    public:
         // =-=-=-=-=-=-=-
-		// Constructors
+        // Constructors
         // status, code, message, line number, file
-		error();
+        error();
         error( bool, int, std::string, int, std::string );  
         error( bool, int, std::string, int, std::string, const error& );  
         error( const error& );   
 
-		// =-=-=-=-=-=-=-
-		// Destructor
+        // =-=-=-=-=-=-=-
+        // Destructor
         ~error();
 		 
-		// =-=-=-=-=-=-=-
-		// Operators
-		error& operator=( const error& );
+        // =-=-=-=-=-=-=-
+        // Operators
+        error& operator=( const error& );
 		
-		// =-=-=-=-=-=-=-
-		// Members
-		int         status();
-		int         code();
-		std::string result();
+        // =-=-=-=-=-=-=-
+        // Members
+        bool        status();
+        int         code();
+        std::string result();
         bool        ok();
 
-        private:
-		// =-=-=-=-=-=-=-
-		// Attributes
-		bool        status_;
-		int         code_;
-		std::string message_;
+    private:
+        // =-=-=-=-=-=-=-
+        // Attributes
+        bool        status_;
+        int         code_;
+        std::string message_;
         std::vector< std::string > result_stack_;
 		
     }; // class error
@@ -51,7 +50,7 @@ namespace eirods {
 
 
 
-#define ERROR( status_, code_, message_ ) ( eirods::error( status_, code_, message_, __LINE__, __FILE__ ) )
+#define ERROR( code_, message_ ) ( eirods::error( false, code_, message_, __LINE__, __FILE__ ) )
 #define PASS( status_, code_, message_, prev_error_ ) ( eirods::error( status_, code_, message_, __LINE__, __FILE__, prev_error_ ) )
 #define CODE( code_ ) ( eirods::error( true, code_, "", __LINE__, __FILE__ ) )
 #define SUCCESS( ) ( eirods::error( true, 0, "", __LINE__, __FILE__ ) )

@@ -978,11 +978,16 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
    }
    if (strcmp(cmdToken[0],"addchildtoresc") ==0) {
 	   
-	   printf( "tok7 %s, tok8 %s\n", cmdToken[7], cmdToken[8] );
-
       generalAdmin(0, "add", "childtoresc", cmdToken[1], cmdToken[2], 
 		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
       /* (add childtoresc parent child context) */
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rmchildfromresc") ==0) {
+	   
+      generalAdmin(0, "rm", "childfromresc", cmdToken[1], cmdToken[2], 
+		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
+      /* (rm childfromresc parent child) */
       return(0);
    }
    if (strcmp(cmdToken[0],"modresc") ==0) {
@@ -1417,7 +1422,7 @@ void usageMain()
 " modresc Name [name, type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " addchildtoresc Parent Child [ContextString]",
-" removechildfromresc Parent Child",
+" rmchildfromresc Parent Child",
 " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
 " modzone Name [ name | conn | comment ] newValue  (modify zone)",
 " rmzone Name (remove zone)",
@@ -1855,7 +1860,7 @@ usage(char *subOpt)
 		    "lg", "lgd", "lrg", "lf", "mkuser",
 		    "moduser", "aua", "rua",
 		    "rmuser", "mkdir", "rmdir", "mkresc",
-		    "modresc", "rmresc", "addchildtoresc", "removechildfromresc",
+		    "modresc", "rmresc", "addchildtoresc", "rmchildfromresc",
 		    "mkzone", "modzone", "rmzone",
 		    "mkgroup", "rmgroup", "atg",
 		    "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
