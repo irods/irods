@@ -257,6 +257,26 @@ if [[ "$?" != "0" || `echo $RPMBUILD | awk '{print $1}'` == "no" ]] ; then
     fi
 fi
 
+WGET=`which wget`
+if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT wget"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT wget"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT wget"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT wget"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT wget"
+    else
+        echo "      :: download from: http://www.gnu.org/software/wget/" 1>&2
+    fi
+else
+    WGETVERSION=`wget --version | head -n1 | awk '{print $3}'`
+    echo "Detected wget [$WGET] v[$WGETVERSION]"
+fi
+
 DOXYGEN=`which doxygen`
 if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
@@ -767,6 +787,14 @@ fi
 # run EPM for package type of this machine
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
+
+# get RENCI updates to EPM from repository
+cd $BUILDDIR
+RENCIEPM="epm42-renci.tar.gz"
+rm -rf epm
+rm -f $RENCIEPM
+wget ftp://ftp.renci.org/pub/e-irods/build/$RENCIEPM
+tar -xf $RENCIEPM
 
 cd $BUILDDIR/epm
 if [ "$BUILDEIRODS" == "1" ] ; then
