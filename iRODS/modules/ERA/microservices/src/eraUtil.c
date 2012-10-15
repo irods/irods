@@ -918,7 +918,6 @@ int
 parseMetadataModLine(char *inpLine, rsComm_t *rsComm)
 {
 	modAVUMetadataInp_t modAVUMetadataInp;
-	int authFlag;
 	int status;
 	char *objPath, *attribute, *value, *units=NULL;
 	char *tmpPtr;
@@ -944,7 +943,7 @@ parseMetadataModLine(char *inpLine, rsComm_t *rsComm)
 
 	/* get user privilege level */
 	/* maybe used to skip test in rsModAVUMetadata() */
-	authFlag = rsComm->clientUser.authInfo.authFlag;
+	rsComm->clientUser.authInfo.authFlag;
 
 
 	/* init modAVU input */

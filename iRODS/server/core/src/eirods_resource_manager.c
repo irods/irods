@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
 // E-iRODS Includes
@@ -37,18 +36,18 @@ namespace eirods {
         }
 
         if( resources_.has_entry( _key ) ) {
-		    _value = resources_[ _key ];
-			return SUCCESS();	
+            _value = resources_[ _key ];
+            return SUCCESS();	
 		
         } else {
             std::stringstream msg;
-			msg << "resource_manager::resolve - no resource found for name ["
-			    << _key << "]";
-			return ERROR( false, -1, msg.str() );
+            msg << "resource_manager::resolve - no resource found for name ["
+                << _key << "]";
+            return ERROR( false, -1, msg.str() );
 		
         }
 
-	} // resolve
+    } // resolve
 
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
@@ -56,67 +55,67 @@ namespace eirods {
                                                    std::string   _value,
                                                    resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
-	    // simple flag to state a resource matching the prop and value is found
-	    bool found = false;	
+        // simple flag to state a resource matching the prop and value is found
+        bool found = false;	
 		
-		// =-=-=-=-=-=-=-
-		// quick check on the resource table
-		if( resources_.empty() ) {
-			return ERROR( false, -1, "resource_manager::resolve_from_property - empty resource table" );
-		}
+        // =-=-=-=-=-=-=-
+        // quick check on the resource table
+        if( resources_.empty() ) {
+            return ERROR( false, -1, "resource_manager::resolve_from_property - empty resource table" );
+        }
        
-		// =-=-=-=-=-=-=-
-		// quick check on the path that it has something in it
-		if( _value.empty() ) {
-			return ERROR( false, -1, "resource_manager::resolve_from_property - empty property" );
-		}
+        // =-=-=-=-=-=-=-
+        // quick check on the path that it has something in it
+        if( _value.empty() ) {
+            return ERROR( false, -1, "resource_manager::resolve_from_property - empty property" );
+        }
 
         // =-=-=-=-=-=-=-
         // iterate through the map and search for our path
         lookup_table< resource_ptr >::iterator itr = resources_.begin();
-		for( ; itr != resources_.end(); ++itr ) {
-			// =-=-=-=-=-=-=-
-			// query resource for the property value
+        for( ; itr != resources_.end(); ++itr ) {
+            // =-=-=-=-=-=-=-
+            // query resource for the property value
             std::string value;
-			error ret = itr->second->get_property<std::string>( _prop, value );
+            error ret = itr->second->get_property<std::string>( _prop, value );
 
-			// =-=-=-=-=-=-=-
-			// if we get a good parameter 
-			if( ret.ok() ) {
-			    // =-=-=-=-=-=-=-
-			    // compare incoming value and stored value
+            // =-=-=-=-=-=-=-
+            // if we get a good parameter 
+            if( ret.ok() ) {
+                // =-=-=-=-=-=-=-
+                // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
                 if( _value.find( value ) != std::string::npos || 
                     value.find( _value ) != std::string::npos ) {
-			        // =-=-=-=-=-=-=-
-			        // if we get a match, cache the resource pointer
-					// in the given out variable
-					found = true;
+                    // =-=-=-=-=-=-=-
+                    // if we get a match, cache the resource pointer
+                    // in the given out variable
+                    found = true;
                     _resc = itr->second; 
-					break;
-				}
-			} else {
-				eirods::error err = PASS( false, -1, 
-				    "resource_manager::resolve_from_property - failed to get vault parameter from resource", ret );
+                    break;
+                }
+            } else {
+                eirods::error err = PASS( false, -1, 
+                                          "resource_manager::resolve_from_property - failed to get vault parameter from resource", ret );
 
             }
 
         } // for itr
 
         // =-=-=-=-=-=-=-
-	    // did we find a resource and is the ptr valid?
+        // did we find a resource and is the ptr valid?
         if( found = true && _resc.get() ) {
-		    return SUCCESS();
-		} else {
+            return SUCCESS();
+        } else {
             std::string msg( "resource_manager::resolve_from_property - failed to find resource for property [" );
             msg += _prop;
             msg += "] and value [";
-			msg += _value; 
-			msg += "]";
+            msg += _value; 
+            msg += "]";
             return ERROR( false, -1, msg );
         }
 
-	} // resolve_from_property
+    } // resolve_from_property
  
     // =-=-=-=-=-=-=-
     // resolve a resource from a first_class_object
@@ -146,25 +145,26 @@ namespace eirods {
 
         error proc_ret;
 
-        memset (&genQueryInp, 0, sizeof (genQueryInp));
+	memset (&genQueryInp, 0, sizeof (genQueryInp));
 
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,       1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,    1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_LOC,           1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,    1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,    1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,     1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,  1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,   1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
-        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
-
-        genQueryInp.maxRows = MAX_SQL_ROWS;
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,       1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,     1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,     1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,     1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,    1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_LOC,           1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,    1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,    1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,     1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,  1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,   1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,   1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,   1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,   1 );
+	
+	genQueryInp.maxRows = MAX_SQL_ROWS;
 
         // =-=-=-=-=-=-=-
         // init continueInx to pass for first loop
@@ -181,12 +181,12 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // perform the general query
             if( status < 0 ) {
-            if( status != CAT_NO_ROWS_FOUND ) {
-                rodsLog( LOG_NOTICE,"initResc: rsGenQuery error, status = %d",
-                     status );
-            }
-            clearGenQueryInp( &genQueryInp );
-            return ERROR( false, status, "init_from_catalog - genqery failed." );
+                if( status != CAT_NO_ROWS_FOUND ) {
+                    rodsLog( LOG_NOTICE,"initResc: rsGenQuery error, status = %d",
+                             status );
+                }
+                clearGenQueryInp( &genQueryInp );
+                return ERROR( false, status, "init_from_catalog - genqery failed." );
             } // if
                 
             // =-=-=-=-=-=-=-
@@ -304,9 +304,13 @@ namespace eirods {
             return ERROR( false, UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
         }
 
+	if( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL) {
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_PARENT failed" );
+	}
+
         // =-=-=-=-=-=-=-
-	    // iterate through the rows, initialize a resource for each entry
-	    for( size_t i = 0; i < _result->rowCnt; ++i ) {
+        // iterate through the rows, initialize a resource for each entry
+        for( size_t i = 0; i < _result->rowCnt; ++i ) {
             // =-=-=-=-=-=-=-
             // extract row values
             std::string tmpRescId        = &rescId->value[ rescId->len * i ];
@@ -333,7 +337,7 @@ namespace eirods {
 
             rodsServerHost_t* tmpRodsServerHost = 0;
             if( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
-               rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", addr.hostAddr );
+                rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", addr.hostAddr );
             }
 
             // =-=-=-=-=-=-=-

@@ -115,7 +115,8 @@ SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatGeneralQuery.o \
 		$(svrIcatObjDir)/icatGeneralQuerySetup.o \
 		$(svrIcatObjDir)/icatGeneralUpdate.o \
-		$(svrIcatObjDir)/eirods_zone_info.o
+		$(svrIcatObjDir)/eirods_zone_info.o \
+		$(svrIcatObjDir)/eirods_sql_logger.o
 INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer

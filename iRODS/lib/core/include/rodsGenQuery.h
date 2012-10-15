@@ -154,6 +154,7 @@ primary ordering column.
 #define COL_R_FREE_SPACE_TIME 314
 #define COL_R_RESC_CHILDREN 315
 #define COL_R_RESC_CONTEXT 316
+#define COL_R_RESC_PARENT 317
 
 /* R_DATA_MAIN: */
 #define COL_D_DATA_ID 401

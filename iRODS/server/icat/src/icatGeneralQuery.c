@@ -1397,8 +1397,7 @@ generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
 
    for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
       if (genQueryInp.sqlCondInp.inx[i]==COL_USER_NAME) {
-	 int status;
-	 status = parseUserName(genQueryInp.sqlCondInp.value[i], userName, 
+	 parseUserName(genQueryInp.sqlCondInp.value[i], userName, 
 				userZone);
 	 if (userZone[0]=='\0') {
 	    char *zoneName;
@@ -1893,14 +1892,13 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 #else
          else {
             int saveStatus;
-            int newStatus;
             if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT  &&
 	        genQueryInp.rowOffset > 0 ) {
 /* For Postgres in this  case, need to query again to determine total rows */
                saveStatus = status;
                recursiveCall=1;
                genQueryInp.rowOffset = 0;
-               newStatus = chlGenQuery(genQueryInp, result);
+               chlGenQuery(genQueryInp, result);
                return(saveStatus);
             }
          }
@@ -1941,8 +1939,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
       if (needToGetNextRow) {
 	 status = cmlGetNextRowFromStatement(statementNum, icss);
 	 if (status == CAT_NO_ROWS_FOUND) {
-            int status2;
-            status2 = cmlFreeStatement(statementNum, icss);
+            cmlFreeStatement(statementNum, icss);
 	    result->continueInx=0;
 	    if (result->rowCnt==0) return(status); /* NO ROWS; in this 
                        case a continuation call is finding no more rows */

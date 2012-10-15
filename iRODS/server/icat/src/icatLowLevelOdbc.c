@@ -157,7 +157,6 @@ cllCloseEnv(icatSessionStruct *icss) {
 int 
 cllConnect(icatSessionStruct *icss) {
    RETCODE stat;
-   RETCODE stat2;
 
    SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
    SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
@@ -189,8 +188,8 @@ cllConnect(icatSessionStruct *icss) {
         rodsLog(LOG_ERROR, "cllConnect: %s \n", buffer);
     }
 
-      stat2 = SQLDisconnect(myHdbc);
-      stat2 = SQLFreeConnect(myHdbc);
+      SQLDisconnect(myHdbc);
+      SQLFreeConnect(myHdbc);
       return (-1);
    }
 
@@ -217,7 +216,6 @@ cllConnect(icatSessionStruct *icss) {
 int 
 cllConnectRda(icatSessionStruct *icss) {
    RETCODE stat;
-   RETCODE stat2;
 
    SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
    SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
@@ -255,8 +253,8 @@ cllConnectRda(icatSessionStruct *icss) {
         rodsLog(LOG_ERROR, "cllConnect: %s \n", buffer);
     }
 
-      stat2 = SQLDisconnect(myHdbc);
-      stat2 = SQLFreeConnect(myHdbc);
+      SQLDisconnect(myHdbc);
+      SQLFreeConnect(myHdbc);
       return (-1);
    }
 
@@ -282,7 +280,6 @@ cllConnectRda(icatSessionStruct *icss) {
 int 
 cllConnectDbr(icatSessionStruct *icss, char *odbcEntryName) {
    RETCODE stat;
-   RETCODE stat2;
 
    SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
    SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
@@ -320,8 +317,8 @@ cllConnectDbr(icatSessionStruct *icss, char *odbcEntryName) {
         rodsLog(LOG_ERROR, "cllConnect: %s \n", buffer);
     }
 
-      stat2 = SQLDisconnect(myHdbc);
-      stat2 = SQLFreeConnect(myHdbc);
+      SQLDisconnect(myHdbc);
+      SQLFreeConnect(myHdbc);
       return (-1);
    }
 
@@ -857,9 +854,16 @@ logBindVars(int level, char *bindVar1, char *bindVar2, char *bindVar3,
   and bind the default row; and allow optional bind variables.
 */
 int
-cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
- 			 char *bindVar1, char *bindVar2, char *bindVar3,
-			 char *bindVar4, char *bindVar5, char *bindVar6) {
+cllExecSqlWithResultBV(
+    icatSessionStruct *icss,
+    int *stmtNum,
+    char *sql,
+    const char *bindVar1,
+    const char *bindVar2,
+    const char *bindVar3,
+    const char *bindVar4,
+    const char *bindVar5,
+    const char *bindVar6) {
 
    RETCODE stat;
    HDBC myHdbc;
@@ -1213,13 +1217,11 @@ cllFreeStatement(icatSessionStruct *icss, int statementNumber) {
 */
 int
 _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber) {
-   HSTMT hstmt;
    int i;
 
    icatStmtStrct *myStatement;
 
    myStatement=icss->stmtPtr[statementNumber];
-   hstmt = myStatement->stmtPtr;
 
    for (i=0;i<myStatement->numOfCols;i++) {
       free(myStatement->resultValue[i]);
@@ -1239,7 +1241,6 @@ int cllTest(char *userArg, char *pwArg) {
    int stmt;
    int numOfCols;
    char userName[500];
-   int ival;
 
    struct passwd *ppasswd;
    icatSessionStruct icss;
@@ -1324,7 +1325,6 @@ int cllTest(char *userArg, char *pwArg) {
       }
    }
 
-   ival=2;
    i = cllExecSqlWithResultBV(&icss, &stmt, 
 				"select * from test where i = ?",
 				"2",0,0,0,0,0);

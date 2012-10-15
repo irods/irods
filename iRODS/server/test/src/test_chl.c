@@ -72,7 +72,7 @@ int testRename(rsComm_t *rsComm, char *id, char *newName) {
 }
 
 int testLogin(rsComm_t *rsComm, char *User, char *pw, char *pw1) {
-   int status, stat2;
+   int status;
    rcComm_t *Conn;
    rErrMsg_t errMsg;
 
@@ -98,7 +98,7 @@ int testLogin(rsComm_t *rsComm, char *User, char *pw, char *pw1) {
       status = clientLoginWithPassword(Conn, pw);  /* then try other user */
    }
 
-   stat2 = rcDisconnect(Conn);
+   rcDisconnect(Conn);
 
    return(status);
 }

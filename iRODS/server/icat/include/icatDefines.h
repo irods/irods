@@ -127,4 +127,6 @@
 #define AU_REG_TOKEN                           2150
 #define AU_DEL_TOKEN                           2151
 
+#define AU_ADD_CHILD_RESOURCE                  2160
+
 #endif /* ICAT_DEFINES_H */

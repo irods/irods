@@ -51,7 +51,8 @@ columnName_t columnNames[] = {
    { COL_R_RESC_STATUS, "RESC_STATUS", },
    { COL_R_RESC_CHILDREN, "RESC_CHILDREN", },
    { COL_R_RESC_CONTEXT,  "RESC_CONTEXT", },
-
+   { COL_R_RESC_PARENT,   "RESC_PARENT", },
+   
    { COL_D_DATA_ID,        "DATA_ID", },
    { COL_D_COLL_ID,        "DATA_COLL_ID", },
    { COL_DATA_NAME,        "DATA_NAME", },

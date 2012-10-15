@@ -15,7 +15,7 @@
 #define MAX_BIND_VARS 120 // JMC - backport 4848 ( 40->120 )
 
 extern int cllBindVarCount;
-extern char *cllBindVars[40];
+extern char *cllBindVars[MAX_BIND_VARS];
 
 
 int cllOpenEnv(icatSessionStruct *icss);
@@ -27,8 +27,9 @@ int cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql, char *bindVar1,
 		       char *bindVar2, char *bindVar3);
 int cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql);
 int cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
-			     char *bindVar1, char *bindVar2, char *bindVar3,
-			     char *bindVar4, char *bindVar5, char *bindVar6);
+			   const char *bindVar1, const char *bindVar2,
+			   const char *bindVar3, const char *bindVar4,
+			   const char *bindVar5, const char *bindVar6);
 int cllGetRow(icatSessionStruct *icss, int statementNumber);
 int cllFreeStatement(icatSessionStruct *icss, int statementNumber);
 int cllNextValueString(char *itemName, char *outString, int maxSize);

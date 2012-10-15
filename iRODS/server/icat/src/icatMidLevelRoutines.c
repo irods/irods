@@ -116,14 +116,14 @@ int cmlGetOneRowFromSqlBV (char *sql,
 		   char *cVal[], 
 		   int cValSize[], 
 		   int numOfCols,
-		   char *bindVar1,
-		   char *bindVar2,
-		   char *bindVar3,
-		   char *bindVar4,
-		   char *bindVar5,
+		   const char *bindVar1,
+		   const char *bindVar2,
+		   const char *bindVar3,
+		   const char *bindVar4,
+		   const char *bindVar5,
 		   icatSessionStruct *icss)
 {
-    int i,j, stmtNum, ii;
+    int i,j, stmtNum;
     
     i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
 			       bindVar1,bindVar2,bindVar3,bindVar4,
@@ -134,11 +134,11 @@ int cmlGetOneRowFromSqlBV (char *sql,
     }
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_NO_ROWS_FOUND);
     }
     for (j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) 
@@ -155,7 +155,7 @@ int cmlGetOneRowFromSql (char *sql,
 		   int numOfCols,
 		   icatSessionStruct *icss)
 {
-    int i,j, stmtNum, ii;
+    int i,j, stmtNum;
     
     i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
 				 0,0,0,0,0,0);
@@ -165,11 +165,11 @@ int cmlGetOneRowFromSql (char *sql,
     }
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_NO_ROWS_FOUND);
     }
     for (j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) 
@@ -190,7 +190,7 @@ int cmlGetOneRowFromSqlV2 (char *sql,
 		   char *bindVar2,
 		   icatSessionStruct *icss)
 {
-    int i,j, stmtNum, ii;
+    int i,j, stmtNum;
     
     i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
 				 bindVar1, bindVar2,0,0,0,0);
@@ -201,7 +201,7 @@ int cmlGetOneRowFromSqlV2 (char *sql,
     }
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0)
@@ -223,7 +223,7 @@ int cmlGetOneRowFromSqlV3 (char *sql,
 		   int numOfCols,
 		   icatSessionStruct *icss)
 {
-    int i,j, stmtNum, ii;
+    int i,j, stmtNum;
     
     i = cllExecSqlWithResult(icss, &stmtNum, sql);
 
@@ -233,11 +233,11 @@ int cmlGetOneRowFromSqlV3 (char *sql,
     }
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_NO_ROWS_FOUND);
     }
     for (j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) 
@@ -262,7 +262,7 @@ int cmlGetFirstRowFromSql (char *sql,
 		   int skipCount,
 		   icatSessionStruct *icss)
 {
-    int i, stmtNum, ii;
+    int i, stmtNum;
 #ifdef ORA_ICAT
     int j;
 #endif
@@ -280,7 +280,7 @@ int cmlGetFirstRowFromSql (char *sql,
        for (j=0;j<skipCount;j++) {
 	  i = cllGetRow(icss,stmtNum);
 	  if (i != 0)  {
-	     ii = cllFreeStatement(icss,stmtNum);
+	     cllFreeStatement(icss,stmtNum);
 	     return(CAT_GET_ROW_ERR);
 	  }
 	  if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
@@ -293,7 +293,7 @@ int cmlGetFirstRowFromSql (char *sql,
 
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
@@ -311,7 +311,7 @@ int cmlGetFirstRowFromSqlBV (char *sql,
 		   int *statement,
 		   icatSessionStruct *icss)
 {
-    int i, stmtNum, ii;
+    int i, stmtNum;
 
     *statement=0;
     
@@ -324,7 +324,7 @@ int cmlGetFirstRowFromSqlBV (char *sql,
     }
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
@@ -339,11 +339,11 @@ int cmlGetFirstRowFromSqlBV (char *sql,
 int cmlGetNextRowFromStatement (int stmtNum, 
 		   icatSessionStruct *icss)
 {
-    int i, ii;
+    int i;
     
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
-      ii = cllFreeStatement(icss,stmtNum);
+      cllFreeStatement(icss,stmtNum);
       return(CAT_GET_ROW_ERR);
     }
     if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
@@ -356,9 +356,9 @@ int cmlGetNextRowFromStatement (int stmtNum,
 int cmlGetStringValueFromSql (char *sql, 
 			   char *cVal,
 			   int cValSize,
-                           char *bindVar1,
-                           char *bindVar2,
-                           char *bindVar3,
+                           const char *bindVar1,
+                           const char *bindVar2,
+                           const char *bindVar3,
 			   icatSessionStruct *icss)
 {
     int i;
@@ -405,7 +405,7 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
 			      char *bindVar2,
  		              icatSessionStruct *icss) {
 
-    int i,j, stmtNum, ii;
+    int i,j, stmtNum;
     int tsg; /* total strings gotten */
     char *pString;
     
@@ -422,12 +422,12 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
     for (;;) {
        i = cllGetRow(icss,stmtNum);
        if (i != 0)  {
-	  ii = cllFreeStatement(icss,stmtNum);
+	  cllFreeStatement(icss,stmtNum);
 	  if (tsg > 0) return(tsg);
 	  return(CAT_GET_ROW_ERR);
        }
        if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
-	  ii = cllFreeStatement(icss,stmtNum);
+	  cllFreeStatement(icss,stmtNum);
 	  if (tsg > 0) return(tsg);
 	  return(CAT_NO_ROWS_FOUND);
        }
@@ -640,7 +640,6 @@ int cmlTest( icatSessionStruct *icss) {
   char *cVal[2];
   char cValStr[MAX_INTEGER_SIZE+10];
   char sql[100];
-  rodsLong_t iVal;
 
   strncpy(icss->databaseUsername,"schroede", DB_USERNAME_LEN);
   strncpy(icss->databasePassword,"", DB_PASSWORD_LEN);
@@ -669,7 +668,7 @@ int cmlTest( icatSessionStruct *icss) {
     i = 0;
   }
 
-  iVal = cmlGetCurrentSeqVal(icss);
+  cmlGetCurrentSeqVal(icss);
 
   return(i);
 

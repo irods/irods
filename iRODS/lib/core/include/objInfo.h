@@ -69,8 +69,9 @@ typedef struct RescInfo
     void *rodsServerHost;
     rodsLong_t quotaLimit;
     rodsLong_t quotaOverrun;
-	char rescChildren[MAX_PATH_ALLOWED];
-	char rescContext[MAX_PATH_ALLOWED];
+    char rescChildren[MAX_PATH_ALLOWED];
+    char rescContext[MAX_PATH_ALLOWED];
+    char rescParent[MAX_PATH_ALLOWED];
 } rescInfo_t;
 
 /* link of resource in resource group */

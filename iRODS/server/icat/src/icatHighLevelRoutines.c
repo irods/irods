@@ -20,11 +20,18 @@
 #include "rcMisc.h"
 #include "eirods_error.h"
 #include "eirods_zone_info.h"
+#include "eirods_sql_logger.h"
+#include "eirods_string_tokenize.h"
+#include "eirods_log.h"
 
 #include "icatMidLevelRoutines.h"
 #include "icatMidLevelHelpers.h"
 #include "icatHighLevelRoutines.h"
 #include "icatLowLevel.h"
+
+#include <string>
+#include <sstream>
+#include <vector>
 
 extern int get64RandomBytes(char *buf);
 
@@ -600,17 +607,16 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
                                         rsComm->clientUser.rodsZone, 
                                         ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
     if (iVal < 0) {
-        int i; 
         char errMsg[105];
         if (iVal==CAT_UNKNOWN_COLLECTION) {
             snprintf(errMsg, 100, "collection '%s' is unknown", 
                      logicalDirName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
         if (iVal==CAT_NO_ACCESS_PERMISSION) {
             snprintf(errMsg, 100, "no permission to update collection '%s'", 
                      logicalDirName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
         return (iVal);
     }
@@ -965,7 +971,6 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     char logicalFileName[MAX_NAME_LEN];
     char logicalDirName[MAX_NAME_LEN];
     rodsLong_t status;
-    int i;
     char tSQL[MAX_SQL_SIZE];
     char replNumber[30];
     char dataObjNumber[30];
@@ -1024,8 +1029,8 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             snprintf(checkPath, MAX_NAME_LEN, "/%s/trash", localZone);
             len = strlen(checkPath);
             if (strncmp(checkPath, logicalDirName, len) != 0) {
-                i = addRErrorMsg (&rsComm->rError, 0, 
-                                  "TRASH_KW but not zone/trash path");
+                addRErrorMsg (&rsComm->rError, 0, 
+                              "TRASH_KW but not zone/trash path");
                 return(CAT_INVALID_ARGUMENT);
             }
             if (dataObjInfo->dataId > 0) {
@@ -1049,14 +1054,14 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     0,
                     &icss);
                 if (status != 0) {
-                    i = addRErrorMsg (&rsComm->rError, 0, 
-                                      "This is the last replica, removal by admin not allowed");
+                    addRErrorMsg (&rsComm->rError, 0, 
+                                  "This is the last replica, removal by admin not allowed");
                     return(CAT_LAST_REPLICA);
                 }
             }
             else {
-                i = addRErrorMsg (&rsComm->rError, 0, 
-                                  "dataId and replNum required");
+                addRErrorMsg (&rsComm->rError, 0, 
+                              "dataId and replNum required");
                 _rollback("chlUnregDataObj");
                 return (CAT_INVALID_ARGUMENT);
             }
@@ -1082,12 +1087,11 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     status =  cmlExecuteNoAnswerSql(tSQL, &icss);
     if (status != 0) {
         if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
-            int i;
             char errMsg[105];
             status = CAT_UNKNOWN_FILE;  /* More accurate, in this case */
             snprintf(errMsg, 100, "data object '%s' is unknown", 
                      logicalFileName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(status);
         }
         _rollback("chlUnregDataObj");
@@ -1440,16 +1444,136 @@ _resolveHostName(
 
     myHostEnt = gethostbyname(_rescInfo->rescLoc);
     if (myHostEnt <= 0) {
-        int i;
         char errMsg[155];
         snprintf(errMsg, 150, 
                  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
                  _rescInfo->rescLoc);
-        i = addRErrorMsg (&_rsComm->rError, 0, errMsg);
+        addRErrorMsg (&_rsComm->rError, 0, errMsg);
     }
     if (strcmp(_rescInfo->rescLoc, "localhost") == 0) {
         addRErrorMsg( &_rsComm->rError, 0, 
                       "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+    }
+
+    return result;
+}
+
+bool
+_childIsValid(
+    const std::string& _new_child) {
+
+    // Lookup the child resource and make sure its parent field is empty
+    bool result = true;
+    char parent[MAX_NAME_LEN];
+    int status;
+    std::string::size_type index = _new_child.find("{");
+    std::string resc_name = _new_child.substr(0, index);
+    eirods::log(LOG_NOTICE, std::string("qqq - Child resource: ") + resc_name);
+    eirods::sql_logger logger("_childIsValid", logSQL);
+    logger.log();
+    parent[0] = '\0';
+    if((status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                          parent, MAX_NAME_LEN, resc_name.c_str(), localZone, 0, &icss)) != 0) {
+        if(status == CAT_NO_ROWS_FOUND) {
+            std::stringstream ss(std::stringstream::in);
+            ss << "Child resource \"" << resc_name << "\" not found";
+            eirods::log(LOG_NOTICE, ss.str());
+        } else {
+            _rollback("_childIsValid");
+        }
+        result = false;
+    } else if(strlen(parent) != 0) {
+        std::stringstream ss(std::stringstream::in);
+        ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
+        eirods::log(LOG_NOTICE, ss.str());
+        result = false;
+    }
+    return result;
+}
+
+int
+_updateRescChildren(
+    char* _resc_id,
+    const std::string& _new_child_string) {
+
+    int result = 0;
+    int status;
+    char children[MAX_PATH_ALLOWED];
+    char myTime[50];
+    eirods::sql_logger logger("_updateRescChildren", logSQL);
+    
+    if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_id=?",
+                                          children, MAX_PATH_ALLOWED, _resc_id, 0, 0, &icss)) != 0) {
+        _rollback("_updateRescChildren");
+        result = status;
+    } else {
+        std::string children_string(children);
+        std::stringstream ss(std::stringstream::in);
+        ss << children_string << ";" << _new_child_string;
+        children_string = ss.str();
+        // have to do this to avoid const issues
+        char* tmp_children = strdup(children_string.c_str());
+        getNowStr(myTime);
+        cllBindVarCount = 0;
+        cllBindVars[cllBindVarCount++] = tmp_children;
+        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = _resc_id;
+        logger.log();
+        if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=?, "
+                                           "where resc_id=?", &icss)) != 0) {
+            std::stringstream ss(std::stringstream::in);
+            ss << "_updateRescChildren cmlExecuteNoAnswerSql update failure " << status;
+            eirods::log(LOG_NOTICE, ss.str());
+            _rollback("_updateRescChildren");
+            result = status;
+        }
+        free(tmp_children);
+    }
+    return result;
+}
+
+int
+_updateChildParent(
+    const std::string& _new_child,
+    const std::string& _parent) {
+
+    int result = 0;
+    std::string::size_type index = _new_child.find("{");
+    std::string child = _new_child.substr(0, index);
+    char resc_id[MAX_NAME_LEN];
+    char myTime[50];
+    eirods::sql_logger logger("_updateChildParent", logSQL);
+    int status;
+    
+    resc_id[0] = '\0';
+    if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                          resc_id, MAX_NAME_LEN, _parent.c_str(), localZone, 0,
+                                          &icss)) != 0) {
+        if(status == CAT_NO_ROWS_FOUND) {
+            result = CAT_INVALID_RESOURCE;
+        } else {
+            _rollback("_updateChildParent");
+            result = status;
+        }
+    } else {
+        // have to do this to get around const
+        char* tmp_parent = strdup(_parent.c_str());
+        getNowStr(myTime);
+        cllBindVarCount = 0;
+        cllBindVars[cllBindVarCount++] = tmp_parent;
+        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = resc_id;
+        logger.log();
+        if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=?, "
+                                           "where resc_id=?", &icss)) != 0) {
+            std::stringstream ss(std::stringstream::in);
+            ss << "_updateChildParent cmlExecuteNoAnswerSql update failure " << status;
+            eirods::log(LOG_NOTICE, ss.str());
+            _rollback("_updateChildParent");
+            result = status;
+        }
+        free(tmp_parent);
+        
     }
 
     return result;
@@ -1466,18 +1590,14 @@ chlAddChildResc(
     char idNum[MAX_SQL_SIZE];
     int status;
     char myTime[50];
-
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlAddChildResc");
+    eirods::sql_logger logger("chlAddChildResc", logSQL);
+    std::string new_child_string(rescInfo->rescChildren);
+    char resc_id[MAX_NAME_LEN];
+    
+    logger.log();
     if(!(result = _canConnectToCatalog(rsComm))) {
 
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlAddChildResc SQL 1 ");
-        if((seqNum = cmlGetNextSeqVal(&icss)) < 0) {
-            rodsLog(LOG_NOTICE, "chlAddChildResc cmlGetNextSeqVal failure %d",
-                    seqNum);
-            _rollback("chlAddChildResc");
-            result = seqNum;
-
-        } else if((status = getLocalZone())) {
+        if((status = getLocalZone())) {
             result = status;
 
         } else if (rescInfo->zoneName != NULL && strlen(rescInfo->zoneName) > 0 && strcmp(rescInfo->zoneName, localZone) !=0) {
@@ -1488,69 +1608,42 @@ chlAddChildResc(
 
         } else {
 
-            snprintf(idNum, MAX_SQL_SIZE, "%lld", seqNum);
-            
-            if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
-            
-            if (strlen(rescInfo->rescLoc) < 1) {
-                result = CAT_INVALID_RESOURCE_NET_ADDR;
+            logger.log();
 
-            } else if((status = _resolveHostName(rsComm, rescInfo)) != 0) {
-                result = status;
-
-            } else if((strcmp(rescInfo->rescType, "database") !=0) && (strcmp(rescInfo->rescType, "mso") !=0) &&
-                      strlen(rescInfo->rescVaultPath) < 1) {
-                result = CAT_INVALID_RESOURCE_VAULT_PATH;
-
-            } else {
-
-                getNowStr(myTime);
-
-                cllBindVars[0]=idNum;
-                cllBindVars[1]=rescInfo->rescName;
-                cllBindVars[2]=localZone;
-                cllBindVars[3]=rescInfo->rescType;
-                cllBindVars[4]=rescInfo->rescClass;
-                cllBindVars[5]=rescInfo->rescLoc;
-                cllBindVars[6]=rescInfo->rescVaultPath;
-                cllBindVars[7]=myTime;
-                cllBindVars[8]=myTime;
-                cllBindVars[9]=rescInfo->rescChildren;
-                cllBindVars[10]=rescInfo->rescContext;
-
-                cllBindVarCount=11;
-                if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 4");
-                status =  cmlExecuteNoAnswerSql(
-                    "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context) values (?,?,?,?,?,?,?,?,?,?,?)",
-                    &icss);
-
-                if (status != 0) {
-                    rodsLog(LOG_NOTICE,
-                            "chlRegResc cmlExectuteNoAnswerSql(insert) failure %d",
-                            status);
-                    _rollback("chlRegResc");
-                    return(status);
+            resc_id[0] = '\0';
+            if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                                  resc_id, MAX_NAME_LEN, rescInfo->rescName, localZone, 0,
+                                                  &icss)) != 0) {
+                if(status == CAT_NO_ROWS_FOUND) {
+                    result = CAT_INVALID_RESOURCE;
+                } else {
+                    _rollback("chlAddChildResc");
+                    result = status;
                 }
-
-                /* Audit */
-                status = cmlAudit3(AU_REGISTER_RESOURCE,  idNum,
-                                   rsComm->clientUser.userName,
-                                   rsComm->clientUser.rodsZone,
-                                   rescInfo->rescName, &icss);
-                if (status != 0) {
-                    rodsLog(LOG_NOTICE,
-                            "chlRegResc cmlAudit3 failure %d",
-                            status);
-                    _rollback("chlRegResc");
-                    return(status);
-                }
-
-                status =  cmlExecuteNoAnswerSql("commit", &icss);
-                if (status != 0) {
-                    rodsLog(LOG_NOTICE,
-                            "chlRegResc cmlExecuteNoAnswerSql commit failure %d",status);
-                    return(status);
-                }
+            } else if(_childIsValid(new_child_string)) {
+                if((status = _updateRescChildren(resc_id, new_child_string)) != 0) {
+                    result = status;
+                } else if((status = _updateChildParent(new_child_string, std::string(rescInfo->rescName))) != 0) {
+                    result = status;
+                } else {
+                    
+                    /* Audit */
+                    char commentStr[1024]; // this prolly should be better sized
+                    snprintf(commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, new_child_string.c_str()); 
+                    if((status = cmlAudit3(AU_ADD_CHILD_RESOURCE, resc_id, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+                                           commentStr, &icss)) != 0) {
+                        std::stringstream ss(std::stringstream::in);
+                        ss << "chlAddChildResc cmlAudit3 failure " << status;
+                        eirods::log(LOG_NOTICE, ss.str());
+                        _rollback("chlAddChildResc");
+                        result = status;
+                    } else if((status =  cmlExecuteNoAnswerSql("commit", &icss)) != 0) {
+                        std::stringstream ss(std::stringstream::in);
+                        ss << "chlAddChildResc cmlExecuteNoAnswerSql commit failure " << status;
+                        eirods::log(LOG_NOTICE, ss.str());
+                        result = status;
+                    }
+                }                
             }
         }
     }
@@ -1669,11 +1762,12 @@ int chlRegResc(rsComm_t *rsComm,
     cllBindVars[8]=myTime;
     cllBindVars[9]=rescInfo->rescChildren;
     cllBindVars[10]=rescInfo->rescContext;
-
-    cllBindVarCount=11;
+    cllBindVars[11]=rescInfo->rescParent;
+    
+    cllBindVarCount=12;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 4");
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context) values (?,?,?,?,?,?,?,?,?,?,?)",
+        "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?)",
         &icss);
 
     if (status != 0) {
