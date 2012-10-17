@@ -2,7 +2,7 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product Enterprise iRODS
-%copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
+%copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
 %vendor Renaissance Computing Institute <info@e-irods.org>
 %license LICENSE
 %readme README
