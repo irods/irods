@@ -1,12 +1,16 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # preflight
 CPPCHECK=`which cppcheck`
 if [[ "$?" != "0" || `echo $CPPCHECK | awk '{print $1}'` == "no" ]] ; then
     echo "cppcheck is required on this machine"
-    if [ "$DETECTEDOS" == "MacOSX" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         echo "try:"
         echo "  sudo apt-get install cppcheck"
+    fi
+    if [ "$DETECTEDOS" == "MacOSX" ] ; then
+        echo "try:"
+        echo "  brew install cppcheck"
     fi
     echo ""
     exit 1
@@ -37,11 +41,10 @@ fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
 MAKEJCMD="make -j $CPUCOUNT"
 echo "-----------------------------------"
-echo "Detected CPUs:          $DETECTEDCPUCOUNT"
-echo "Running cppcheck with:  $CPUCOUNT"
+echo "Detected CPUs:   $DETECTEDCPUCOUNT"
+echo "Running with:    cppcheck -j $CPUCOUNT"
 echo "-----------------------------------"
 sleep 1
 
-
 # run cppcheck
-cppcheck -j $CPUCOUNT -f -I/usr/include -I$H/nt/include -I$H/lib/md5/include -I$H/lib/rbudp/include -I$H/lib/api/include -I$H/lib/core/include -I$H/lib/isio/include -I$H/server/re/include -I$H/server/drivers/include -I$H/server/core/include -I$H/server/icat/include -i nt/ -i modules/msoDrivers/ -i modules/webservices/ -i boost_irods/ -i clients/icommands/rulegen/ -i modules . | grep error | grep -v "error\.c"
+cppcheck -j $CPUCOUNT --quiet -f -I/usr/include -I$H/nt/include -I$H/lib/md5/include -I$H/lib/rbudp/include -I$H/lib/api/include -I$H/lib/core/include -I$H/lib/isio/include -I$H/server/re/include -I$H/server/drivers/include -I$H/server/core/include -I$H/server/icat/include -i nt/ -i modules/msoDrivers/ -i modules/webservices/ -i boost_irods/ -i clients/icommands/rulegen/ -i modules .
