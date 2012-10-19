@@ -52,8 +52,9 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
-    error resource_manager::resolve_from_path( std::string _path, resource_ptr& _resc ) {
-
+    error resource_manager::resolve_from_property( std::string   _prop, 
+                                                   std::string   _value,
+                                                   resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
 	    // simple flag to state a resource matching the prop and value is found
 	    bool found = false;	
@@ -121,8 +122,13 @@ namespace eirods {
     // resolve a resource from a first_class_object
     error resource_manager::resolve( const eirods::first_class_object& _object, 
                                      resource_ptr&                     _resc ) {
-        return resolve_from_path( _object.physical_path(), _resc );
-    
+        error ret =  resolve_from_property( "path", _object.physical_path(), _resc );
+        if( !ret.ok() ) {
+            ret = resolve_from_property( "type", "unix file system", _resc );    
+        }
+
+        return ret;
+
     } // resolve
 
     // =-=-=-=-=-=-=-

@@ -314,6 +314,7 @@ struct rodsHostAddr_t {
         strncpy( zoneName, _rhs.zoneName, NAME_LEN );
         portNum  = _rhs.portNum;
         dummyInt = _rhs.dummyInt;
+        return *this;
     }
 };
 

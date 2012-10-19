@@ -59,7 +59,6 @@ namespace eirods {
         return _mgr.resolve( *this, _ptr ); 
 
     } // resolve
- 
     
 }; // namespace eirods
 

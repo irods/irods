@@ -19,6 +19,7 @@
 #include "eirods_plugin_base.h"
 #include "eirods_lookup_table.h"
 #include "eirods_resource_types.h"
+#include "eirods_error.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
