@@ -116,8 +116,9 @@ _addResource(
     strncpy(rescInfo.rescVaultPath, _generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
     strncpy(rescInfo.rescContext,   _generalAdminInp->arg7, sizeof rescInfo.rescContext);
     strncpy(rescInfo.zoneName,      _generalAdminInp->arg8, sizeof rescInfo.zoneName);
-    strncpy(rescInfo.rescChildren,  "", 0 );
-
+    strncpy(rescInfo.rescChildren,  "", 1);
+    strncpy(rescInfo.rescParent, "", 1);
+    
     // =-=-=-=-=-=-=-
     // RAJA ADDED June 1 2009 for pre-post processing rule hooks 
     args[0] = rescInfo.rescName;

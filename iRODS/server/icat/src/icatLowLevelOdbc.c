@@ -898,6 +898,12 @@ cllExecSqlWithResultBV(
     char *status;
     char tmpStr[TMP_STR_LEN+2];
 
+    eirods::tmp_string tmp_string1(bindVar1);
+    eirods::tmp_string tmp_string2(bindVar2);
+    eirods::tmp_string tmp_string3(bindVar3);
+    eirods::tmp_string tmp_string4(bindVar4);
+    eirods::tmp_string tmp_string5(bindVar5);
+    
     myHdbc = icss->connectPtr;
     rodsLog(LOG_DEBUG1, sql);
     stat = SQLAllocStmt(myHdbc, &hstmt); 
@@ -938,9 +944,8 @@ cllExecSqlWithResultBV(
         }
 
         if (bindVar1 != 0 && *bindVar1 != '\0') {
-            eirods::tmp_string tmp_string(bindVar1);
             stat = SQLBindParameter(hstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, tmp_string.str(), 0, 0);
+                                    SQL_C_CHAR, 0, 0, tmp_string1.str(), 0, 0);
             snprintf(tmpStr, TMP_STR_LEN, 
                      "bindVar1=%s", bindVar1);
             rodsLogSql(tmpStr);
@@ -951,9 +956,8 @@ cllExecSqlWithResultBV(
             }
         }
         if (bindVar2 != 0 && *bindVar2 != '\0') {
-            eirods::tmp_string tmp_string(bindVar2);
             stat = SQLBindParameter(hstmt, 2, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, tmp_string.str(), 0, 0);
+                                    SQL_C_CHAR, 0, 0, tmp_string2.str(), 0, 0);
             snprintf(tmpStr, TMP_STR_LEN, 
                      "bindVar2=%s", bindVar2);
             rodsLogSql(tmpStr);
@@ -964,9 +968,8 @@ cllExecSqlWithResultBV(
             }
         }
         if (bindVar3 != 0 && *bindVar3 != '\0') {
-            eirods::tmp_string tmp_string(bindVar3);
             stat = SQLBindParameter(hstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, tmp_string.str(), 0, 0);
+                                    SQL_C_CHAR, 0, 0, tmp_string3.str(), 0, 0);
             snprintf(tmpStr, TMP_STR_LEN, 
                      "bindVar3=%s", bindVar3);
             rodsLogSql(tmpStr);
@@ -977,9 +980,8 @@ cllExecSqlWithResultBV(
             }
         }
         if (bindVar4 != 0 && *bindVar4 != '\0') {
-            eirods::tmp_string tmp_string(bindVar4);
             stat = SQLBindParameter(hstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, tmp_string.str(), 0, 0);
+                                    SQL_C_CHAR, 0, 0, tmp_string4.str(), 0, 0);
             snprintf(tmpStr, TMP_STR_LEN, 
                      "bindVar4=%s", bindVar4);
             rodsLogSql(tmpStr);
@@ -990,9 +992,8 @@ cllExecSqlWithResultBV(
             }
         }
         if (bindVar5 != 0 && *bindVar5 != '\0') {
-            eirods::tmp_string tmp_string(bindVar4);
             stat = SQLBindParameter(hstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR,
-                                    SQL_C_CHAR, 0, 0, tmp_string.str(), 0, 0);
+                                    SQL_C_CHAR, 0, 0, tmp_string5.str(), 0, 0);
             snprintf(tmpStr, TMP_STR_LEN, 
                      "bindVar5=%s", bindVar5);
             rodsLogSql(tmpStr);

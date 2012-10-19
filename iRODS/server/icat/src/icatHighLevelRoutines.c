@@ -1763,8 +1763,12 @@ int chlRegResc(rsComm_t *rsComm,
     cllBindVars[9]=rescInfo->rescChildren;
     cllBindVars[10]=rescInfo->rescContext;
     cllBindVars[11]=rescInfo->rescParent;
-    
     cllBindVarCount=12;
+
+    rodsLog(LOG_ERROR, "qqq - should hit this");
+    rodsLog(LOG_NOTICE, "qqq - Parent: \"%s\",\tChildren: \"%s\",\tContext: \"%s\"",
+            cllBindVars[11], cllBindVars[9], cllBindVars[10]);
+    
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 4");
     status =  cmlExecuteNoAnswerSql(
         "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?)",

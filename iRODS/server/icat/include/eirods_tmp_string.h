@@ -9,14 +9,15 @@ namespace eirods {
 
     class tmp_string {
     public:
-	tmp_string(const std::string& orig);
+	tmp_string(const char* orig);
 	virtual ~tmp_string(void);
 
 	char* str(void) { return string_; }
-
+	
     private:
 	char* string_;
     };
+    
 }; // namespace eirods
 
 #endif // _tmp_string_H_
