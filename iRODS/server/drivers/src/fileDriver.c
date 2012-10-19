@@ -12,6 +12,8 @@
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create
 eirods::error fileCreate( eirods::first_class_object& _object ) {
+eirods::log( LOG_NOTICE, "fileCreate" );
+
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -23,7 +25,7 @@ eirods::error fileCreate( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
     eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
         eirods::log( ret_err );
 		return PASS( false, -1, "fileCreate - failed to resolve resource", ret_err );
@@ -57,7 +59,7 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileOpen - failed to resolve resource", ret_err );
 	}
@@ -69,7 +71,9 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// pass along an error from the interface or return SUCCESS
 	if( !ret_err.ok() ) {
-        return PASS( false, _object.file_descriptor(), "fileOpen - failed to call 'open'", ret_err );
+        eirods::error foo = PASS( false, _object.file_descriptor(), "fileOpen - failed to call 'open'", ret_err );
+        eirods::log( foo );
+        return foo;
 	} else {
         return CODE( _object.file_descriptor() );
 	}
@@ -90,7 +94,7 @@ eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _le
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileRead - failed to resolve resource", ret_err );
 	}
@@ -123,7 +127,7 @@ eirods::error fileWrite( eirods::first_class_object& _object, void* _buf, int  _
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileWrite - failed to resolve resource", ret_err );
 	}
@@ -156,7 +160,7 @@ eirods::error fileClose( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileClose - failed to resolve resource", ret_err );
 	}
@@ -189,7 +193,7 @@ eirods::error fileUnlink( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileUnlink - failed to resolve resource", ret_err );
 	}
@@ -222,7 +226,7 @@ eirods::error fileStat( eirods::first_class_object& _object, struct stat* _statb
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileStat - failed to resolve resource", ret_err );
 	}
@@ -255,7 +259,7 @@ eirods::error fileFstat( eirods::first_class_object& _object, struct stat* _stat
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileFstat - failed to resolve resource", ret_err );
 	}
@@ -288,7 +292,7 @@ eirods::error fileLseek( eirods::first_class_object& _object, size_t _offset, in
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileLseek - failed to resolve resource", ret_err );
 	}
@@ -321,7 +325,7 @@ eirods::error fileFsync( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileFsync - failed to resolve resource", ret_err );
 	}
@@ -354,7 +358,7 @@ eirods::error fileMkdir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileMkdir - failed to resolve resource", ret_err );
 	}
@@ -387,7 +391,7 @@ eirods::error fileChmod( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileChmod - failed to resolve resource", ret_err );
 	}
@@ -420,7 +424,7 @@ eirods::error fileRmdir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileRmdir - failed to resolve resource", ret_err );
 	}
@@ -453,7 +457,7 @@ eirods::error fileOpendir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileOpendir - failed to resolve resource", ret_err );
 	}
@@ -486,7 +490,7 @@ eirods::error fileClosedir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileClosedir - failed to resolve resource", ret_err );
 	}
@@ -507,7 +511,7 @@ eirods::error fileClosedir( eirods::first_class_object& _object ) {
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX readdir
-eirods::error fileReaddir( eirods::first_class_object& _object, struct dirent* _dirent_ptr ) {
+eirods::error fileReaddir( eirods::first_class_object& _object, struct rodsDirent** _dirent_ptr ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -519,14 +523,14 @@ eirods::error fileReaddir( eirods::first_class_object& _object, struct dirent* _
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileReaddir - failed to resolve resource", ret_err );
 	}
 
 	// =-=-=-=-=-=-=-
 	// make the call to the "readdir" interface
-	ret_err = resc->call< eirods::first_class_object*, struct dirent* >( "readdir", &_object, _dirent_ptr );
+	ret_err = resc->call< eirods::first_class_object*, struct rodsDirent** >( "readdir", &_object, _dirent_ptr );
 
     // =-=-=-=-=-=-=-
 	// pass along an error from the interface or return SUCCESS
@@ -552,7 +556,7 @@ eirods::error fileStage( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileStage - failed to resolve resource", ret_err );
 	}
@@ -585,7 +589,7 @@ eirods::error fileRename( eirods::first_class_object& _object, std::string _new_
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileRename - failed to resolve resource", ret_err );
 	}
@@ -618,7 +622,7 @@ eirods::error fileGetFsFreeSpace( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileGetFsFreeSpace - failed to resolve resource", ret_err );
 	}
@@ -651,7 +655,7 @@ eirods::error fileTruncate( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve( _object, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileTruncate - failed to resolve resource", ret_err );
 	}
@@ -685,7 +689,7 @@ eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve_from_path( _file_name, resc ); 
+    eirods::error ret_err = resc_mgr.resolve_from_property( "path", _file_name, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileStageToCache - failed to resolve resource", ret_err );
 	}
@@ -721,7 +725,7 @@ eirods::error fileSyncToArch( std::string _file_name, std::string _cache_file_na
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve_from_path( _file_name, resc ); 
+    eirods::error ret_err = resc_mgr.resolve_from_property( "path", _file_name, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileSyncToArch - failed to resolve resource", ret_err );
 	}

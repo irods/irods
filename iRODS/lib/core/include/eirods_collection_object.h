@@ -33,7 +33,11 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// Operators
 		virtual collection_object& operator=( const collection_object& );
-	
+		
+		// =-=-=-=-=-=-=-
+		// plugin resolution operation
+        virtual error resolve( resource_manager&, resource_ptr& );
+
 		// =-=-=-=-=-=-=-
 		// Accessors
 		inline DIR* directory_pointer() const { return directory_pointer_;   }

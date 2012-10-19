@@ -4,6 +4,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_file_object.h"
+#include "eirods_resource_manager.h"
 
 namespace eirods {
 
@@ -16,16 +17,6 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
 	// public - cctor
-    file_object::file_object( fileCreateInp_t& _inp ) :
-	             first_class_object(),
-				 size_( _inp.dataSize ) {
-	    physical_path_ = _inp.fileName;
-		mode_          = _inp.mode;
-		flags_         = _inp.flags;
-	} // file_object
-
-    // =-=-=-=-=-=-=-
-	// public - cctor
 	file_object::file_object( const file_object& _rhs ) : 
 	             first_class_object( _rhs ) {
         size_  = _rhs.size_;
@@ -34,9 +25,10 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
 	// public - ctor
-    file_object::file_object( std::string _fn, int _fd, int _m, int _f ) :
+    file_object::file_object( rsComm_t* _c, std::string _fn, int _fd, int _m, int _f ) :
 	             first_class_object(),
 				 size_( -1 ) {
+        comm_            = _c;
 	    physical_path_   = _fn;
 		file_descriptor_ = _fd;
 		mode_            = _m;
@@ -61,6 +53,14 @@ namespace eirods {
 
 	}  // operator=
 
+    // =-=-=-=-=-=-=-
+    // plugin - resolve resource plugin for this object
+    error file_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
+        return _mgr.resolve( *this, _ptr ); 
+
+    } // resolve
+ 
+    
 }; // namespace eirods
 
 

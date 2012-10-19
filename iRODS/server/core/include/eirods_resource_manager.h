@@ -15,29 +15,40 @@ namespace eirods {
         public:
 		
 		// =-=-=-=-=-=-=-
-		// constructor
+		// constructors
         resource_manager();
         resource_manager( const resource_manager& );
 		
 		// =-=-=-=-=-=-=-
 		// destructor
         virtual ~resource_manager();
-
-        // =-=-=-=-=-=-=-
-		// interface to get a resource given a name
-		error resolve( std::string, resource_ptr& );
-         
+        
         // =-=-=-=-=-=-=-
 		// resolve a resource from a first_class_object
-		error resolve( const eirods::first_class_object&, resource_ptr& );
+		error resolve( const eirods::first_class_object&, // FCO to resolve against
+                       resource_ptr& );                   // resource out variable
 
         // =-=-=-=-=-=-=-
-		// resolve a resource from a given vault path
-		error resolve_from_path( std::string, resource_ptr& );
-        
+		// resolve a resource from a key into the resource table
+		error resolve( std::string,     // resource key 
+                       resource_ptr& ); // resource out variable
+
+        // =-=-=-=-=-=-=-
+		// resolve a resource from a match with a given property 
+		error resolve_from_property( std::string,     // property key
+                                     std::string,     // property value 
+                                     resource_ptr& ); // resource our variable
+ 
 		// =-=-=-=-=-=-=-
 		// populate resource table from icat database
 		error init_from_catalog( rsComm_t* );
+ 
+		// =-=-=-=-=-=-=-
+		// load a resource plugin given a resource type
+		error init_from_type( std::string,     // resource type
+                              std::string,     // resource name ( key )
+                              std::string,     // resource context 
+                              resource_ptr& ); // resource out variable
 
         private:
         // =-=-=-=-=-=-=-

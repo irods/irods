@@ -4,6 +4,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_collection_object.h"
+#include "eirods_resource_manager.h"
 
 namespace eirods {
 
@@ -47,6 +48,13 @@ namespace eirods {
 		directory_pointer_  = _rhs.directory_pointer_;
 
 	}  // operator=
+
+    // =-=-=-=-=-=-=-
+    // plugin - resolve resource plugin for this object
+    error collection_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
+        return _mgr.resolve( *this, _ptr ); 
+
+    } // resolve
 
 }; // namespace eirods
 

@@ -20,8 +20,7 @@ namespace eirods {
 		// Constructors
         file_object();
         file_object( const file_object& );
-        file_object( fileCreateInp_t& _inp );
-		file_object( std::string, int, int, int );
+		file_object( rsComm_t*, std::string, int, int, int );
 	    
 		// =-=-=-=-=-=-=-
 		// Destructor
@@ -32,12 +31,17 @@ namespace eirods {
 		virtual file_object& operator=( const file_object& );
 	
 		// =-=-=-=-=-=-=-
+		// plugin resolution operation
+        virtual error resolve( resource_manager&, resource_ptr& );
+
+		// =-=-=-=-=-=-=-
 		// Accessors
 		inline size_t size()  const { return size_;     }
 
         // =-=-=-=-=-=-=-
 		// Mutators
         inline void size( size_t _s ) { size_ = _s; }
+
 	protected:
         // =-=-=-=-=-=-=-
 		// Attributes

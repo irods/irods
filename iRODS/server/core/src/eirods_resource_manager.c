@@ -27,6 +27,18 @@ namespace eirods {
 	// public - Destructor
 	resource_manager::~resource_manager(  ) {
 	} // cctor
+     
+	// =-=-=-=-=-=-=-
+	// resolve a resource from a first_class_object
+	error resource_manager::resolve( const eirods::first_class_object& _object, resource_ptr& _resc ) {
+        error res_err = resolve_from_property( "path", _object.physical_path(), _resc );
+        if( !res_err.ok() ) {
+            res_err = resolve_from_property( "type", "unix file system", _resc );
+        }
+
+        return res_err;
+	
+    } // resolve
 
 	// =-=-=-=-=-=-=-
 	// public - retrieve a resource given its key
@@ -34,7 +46,7 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// quick check on the resource table
 		if( resources_.empty() ) {
-			return ERROR( false, -1, "resource_manager::resolve_from_path - empty resource table" );
+			return ERROR( false, -1, "resource_manager::resolve - empty resource table" );
 		}
 
 		if( _key.empty() ) {
@@ -44,17 +56,20 @@ namespace eirods {
         if( resources_.has_entry( _key ) ) {
 		    _value = resources_[ _key ];
 			return SUCCESS();	
-		} else {
+		
+        } else {
             std::stringstream msg;
 			msg << "resource_manager::resolve - no resource found for name ["
 			    << _key << "]";
 			return ERROR( false, -1, msg.str() );
-		}
+		
+        }
+
 	} // resolve
 
 	// =-=-=-=-=-=-=-
 	// public - retrieve a resource given a vault path
-    error resource_manager::resolve_from_path( std::string _path, resource_ptr& _resc ) {
+    error resource_manager::resolve_from_property( std::string _prop, std::string _value, resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
 		// simple flag to state a resource matching the vault path is found 
 	    bool found = false;	
@@ -62,13 +77,13 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// quick check on the resource table
 		if( resources_.empty() ) {
-			return ERROR( false, -1, "resource_manager::resolve_from_path - empty resource table" );
+			return ERROR( false, -1, "resource_manager::resolve_from_property - empty resource table" );
 		}
-		
+       
 		// =-=-=-=-=-=-=-
 		// quick check on the path that it has something in it
-		if( _path.empty() ) {
-			return ERROR( false, -1, "resource_manager::resolve_from_path - empty path" );
+		if( _value.empty() ) {
+			return ERROR( false, -1, "resource_manager::resolve_from_property - empty property" );
 		}
 
 		// =-=-=-=-=-=-=-
@@ -76,18 +91,20 @@ namespace eirods {
         lookup_table< resource_ptr >::iterator itr = resources_.begin();
 		for( ; itr != resources_.end(); ++itr ) {
 			// =-=-=-=-=-=-=-
-			// query resource for the vault value
-            std::string vault;
-			error ret = itr->second->get_property<std::string>( "path", vault );
+			// query resource for the property value
+            std::string value;
+			error ret = itr->second->get_property<std::string>( _prop, value );
 
 			// =-=-=-=-=-=-=-
 			// if we get a good parameter 
 			if( ret.ok() ) {
 			    // =-=-=-=-=-=-=-
-			    // compare path and vault
-                if( vault.find_first_of( _path ) != std::string::npos ) {
+			    // compare incoming value and stored value
+                // one may be a subset of the other so compare both ways
+                if( _value.find( value ) != std::string::npos || 
+                    value.find( _value ) != std::string::npos ) {
 			        // =-=-=-=-=-=-=-
-			        // if we geta match, cache the resource pointer
+			        // if we get a match, cache the resource pointer
 					// in the given out variable
 					found = true;
                     _resc = itr->second; 
@@ -95,7 +112,7 @@ namespace eirods {
 				}
 			} else {
 				eirods::error err = PASS( false, -1, 
-				    "resource_manager::resolve_from_path - failed to get vault parameter from resource", ret );
+				    "resource_manager::resolve_from_property - failed to get vault parameter from resource", ret );
                 eirods::log( ret );
 			}
 
@@ -106,25 +123,22 @@ namespace eirods {
         if( found = true && _resc.get() ) {
 		    return SUCCESS();
 		} else {
-            std::string msg( "resource_manager::resolve_from_path - failed to find resource for path [" );
-			msg += _path; 
+            std::string msg( "resource_manager::resolve_from_property - failed to find resource for property [" );
+            msg += _prop;
+            msg += "] and value [";
+			msg += _value; 
 			msg += "]";
-			return ERROR( false, -1, msg );
+            return ERROR( false, -1, msg );
         }
 
-	} // resolve_from_path
- 
-	// =-=-=-=-=-=-=-
-	// resolve a resource from a first_class_object
-	error resource_manager::resolve( const eirods::first_class_object& _object, resource_ptr& _resc ) {
-        return resolve_from_path( _object.physical_path(), _resc );
-	} // resolve
-
+	} // resolve_from_property
 
 	// =-=-=-=-=-=-=-
 	// public - connect to the catalog and query for all the 
 	//          attached resources and instantiate them
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {
+
+
         // =-=-=-=-=-=-=-
 		// clear existing resource map and initialize
 		resources_.clear();
@@ -222,6 +236,7 @@ namespace eirods {
 		if ( !_result ) {
 			return ERROR( false, -1, "resource ctor :: _result parameter is null" );
 		}
+
 
         // =-=-=-=-=-=-=-
 		// values to extract from query
@@ -331,9 +346,11 @@ namespace eirods {
 			resource_ptr resc;
 			error ret = load_resource_plugin( resc, tmpRescType, tmpRescContext );
 		    if( !ret.ok() ) {
-			    return PASS( false, -1, "Failed to load Resource Plugin", ret );	
+			    eirods::error err = PASS( false, -1, "Failed to load Resource Plugin", ret );	
+                eirods::log( err );
+                return err;
 			}
-
+        
 			resc->set_property< boost::shared_ptr< rodsServerHost_t > >( 
 			    "host", boost::shared_ptr< rodsServerHost_t >( tmpRodsServerHost ) );
             
@@ -368,6 +385,25 @@ namespace eirods {
 
 	} // process_init_results
 
+
+    // =-=-=-=-=-=-=-
+    // public - given a type, load up a resource plugin
+    error resource_manager::init_from_type( std::string   _type, 
+                                            std::string   _key, 
+                                            std::string   _ctx, 
+                                            resource_ptr& _resc ) {
+        // =-=-=-=-=-=-=-
+        // create the resource and add properties for column values
+        error ret = load_resource_plugin( _resc, _type, _ctx );
+        if( !ret.ok() ) {
+            return PASS( false, -1, "Failed to load Resource Plugin", ret );	
+        }
+
+        resources_[ _key ] = _resc;
+
+        return SUCCESS();
+
+    } // init_from_type
 
 }; // namespace eirods
 

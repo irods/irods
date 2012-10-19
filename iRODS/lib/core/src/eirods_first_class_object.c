@@ -4,12 +4,14 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_first_class_object.h"
+#include "eirods_resource_manager.h"
 
 namespace eirods {
 
     // =-=-=-=-=-=-=-
 	// public - ctor
 	first_class_object::first_class_object() :
+                        comm_(0),
 	                    physical_path_(""),
 						logical_path_(""),
 						data_type_(""),
@@ -22,6 +24,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
 	// public - cctor
 	first_class_object::first_class_object( const first_class_object& _rhs ) {
+        comm_            = _rhs.comm_;
 		physical_path_   = _rhs.physical_path_;
 		logical_path_    = _rhs.logical_path_;
 		data_type_       = _rhs.data_type_;
@@ -40,6 +43,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
 	// public - assignment operator
 	first_class_object& first_class_object::operator=( const first_class_object& _rhs ) {
+        comm_            = _rhs.comm_;
 		physical_path_   = _rhs.physical_path_;
 		logical_path_    = _rhs.logical_path_;
 		data_type_       = _rhs.data_type_;
@@ -50,6 +54,12 @@ namespace eirods {
 
         return *this;
 	} // operator=
+
+    // =-=-=-=-=-=-=-
+    // public - default implementation of resource plugin resolution
+    error first_class_object::resolve( resource_manager&, resource_ptr& ) {
+        return ERROR( false, -1, "first_class_object::resolve - is not implemented" );
+    } // resolve
 
 }; // namespace eirods
 

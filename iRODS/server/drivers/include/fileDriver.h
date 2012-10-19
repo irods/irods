@@ -66,7 +66,7 @@ eirods::error fileChmod   ( eirods::first_class_object& );
 eirods::error fileRmdir   ( eirods::first_class_object& );
 eirods::error fileOpendir ( eirods::first_class_object& );
 eirods::error fileClosedir( eirods::first_class_object& );
-eirods::error fileReaddir ( eirods::first_class_object&, struct dirent* );
+eirods::error fileReaddir ( eirods::first_class_object&, struct rodsDirent** );
 eirods::error fileRename  ( eirods::first_class_object&, std::string );
 eirods::error fileGetFsFreeSpace( eirods::first_class_object& );
 eirods::error fileTruncate( eirods::first_class_object& );
