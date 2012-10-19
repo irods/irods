@@ -14,6 +14,8 @@
 // eirods includes
 #include "eirods_error.h"
 
+#include <string>
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-

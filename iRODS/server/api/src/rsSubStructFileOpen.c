@@ -82,7 +82,7 @@ _rsSubStructFileOpen( rsComm_t*  _comm,
         std::stringstream msg;
         msg << "_rsSubStructFIleOPen - failed on call to fileCreate for [";
         msg << struct_obj.sub_file_path();
-        eirods::log( ERROR( false, -1, msg.str() ) );
+        eirods::log( ERROR( -1, msg.str() ) );
     } else {
         return open_err.code();
 

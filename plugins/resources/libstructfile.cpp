@@ -1,4 +1,4 @@
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 
 // =-=-=-=-=-=-=-
@@ -72,13 +72,13 @@ extern "C" {
 
         if (upperInt > 60) {	/* 0x7c */
             rodsLog (LOG_NOTICE,
-              "encodeIrodsTarfdPlugin: upperInt %d larger than 60", lowerInt);
+                     "encodeIrodsTarfdPlugin: upperInt %d larger than 60", lowerInt);
             return (SYS_STRUCT_FILE_DESC_ERR);
         }
 
         if ((lowerInt & 0xfc000000) != 0) {
             rodsLog (LOG_NOTICE,
-              "encodeIrodsTarfdPlugin: lowerInt %d too large", lowerInt);
+                     "encodeIrodsTarfdPlugin: lowerInt %d too large", lowerInt);
             return (SYS_STRUCT_FILE_DESC_ERR);
         }
 
@@ -125,8 +125,8 @@ extern "C" {
         
         if (l3descInx < 0) {
             rodsLog (LOG_NOTICE, 
-          "irodsTarOpen: rsFileOpen of %s in Resc %s error, status = %d",
-          fileOpenInp.fileName, rescInfo->rescName, l3descInx);
+                     "irodsTarOpen: rsFileOpen of %s in Resc %s error, status = %d",
+                     fileOpenInp.fileName, rescInfo->rescName, l3descInx);
             return (-1);	/* libtar only accept -1 */
         }
         return (encodeIrodsTarfdPlugin(structFileInx, l3descInx));
@@ -141,7 +141,7 @@ extern "C" {
         memset (&fileCloseInp, 0, sizeof (fileCloseInp));
         fileCloseInp.fileInx = l3descInx;
         status = rsFileClose (StructFileDesc[structFileInx].rsComm, 
-          &fileCloseInp);
+                              &fileCloseInp);
 
         return (status);
     } // irodsTarClosePlugin
@@ -159,7 +159,7 @@ extern "C" {
         memset (&readOutBBuf, 0, sizeof (readOutBBuf));
         readOutBBuf.buf = buf;
         status = rsFileRead (StructFileDesc[structFileInx].rsComm, 
-          &fileReadInp, &readOutBBuf);
+                             &fileReadInp, &readOutBBuf);
 
         return (status);
 
@@ -178,13 +178,13 @@ extern "C" {
         memset (&writeInpBBuf, 0, sizeof (writeInpBBuf));
         writeInpBBuf.buf = buf;
         status = rsFileWrite (StructFileDesc[structFileInx].rsComm, 
-          &fileWriteInp, &writeInpBBuf);
+                              &fileWriteInp, &writeInpBBuf);
 
         return (status);
     } // irodsTarWritePlugin
 
     tartype_t irodstype = { (openfunc_t) irodsTarOpenPlugin, (closefunc_t) irodsTarClosePlugin,
-            (readfunc_t) irodsTarReadPlugin, (writefunc_t) irodsTarWritePlugin
+                            (readfunc_t) irodsTarReadPlugin, (writefunc_t) irodsTarWritePlugin
     };
      
     // End Tar Operations
@@ -193,60 +193,60 @@ extern "C" {
 
 
     // =-=-=-=-=-=-=-
-	// 1. Define plugin Version Variable, used in plugin
-	//    creation when the factory function is called.
-	//    -- currently only 1.0 is supported.
+    // 1. Define plugin Version Variable, used in plugin
+    //    creation when the factory function is called.
+    //    -- currently only 1.0 is supported.
     double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
 
     // =-=-=-=-=-=-=-
-	// 2. Define operations which will be called by the file*
-	//    calls declared in server/driver/include/fileDriver.h
+    // 2. Define operations which will be called by the file*
+    //    calls declared in server/driver/include/fileDriver.h
     // =-=-=-=-=-=-=-
 
     // =-=-=-=-=-=-=-
     // NOTE :: to access properties in the _prop_map do the 
-	//      :: following :
-	//      :: double my_var = 0.0;
-	//      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
+    //      :: following :
+    //      :: double my_var = 0.0;
+    //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 	
-	// =-=-=-=-=-=-=-
-	// helper function to check incoming parameters
-	inline eirods::error param_check( eirods::resource_property_map* 
-	                                                        _prop_map,
-							          eirods::resource_child_map* 
-										                    _cmap, 
+    // =-=-=-=-=-=-=-
+    // helper function to check incoming parameters
+    inline eirods::error param_check( eirods::resource_property_map* 
+                                      _prop_map,
+                                      eirods::resource_child_map* 
+                                      _cmap, 
                                       eirods::first_class_object* 
-										                    _object ) {
-		// =-=-=-=-=-=-=-
+                                      _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
-		bool status = true;
-		std::string msg = "tarFileCreatePlugin - ";
+        bool status = true;
+        std::string msg = "tarFileCreatePlugin - ";
 
-		if( !_prop_map ) {
-			status = false;
+        if( !_prop_map ) {
+            status = false;
             msg += "null resource_property_map";
-		}
-		if( !_cmap ) {
-			status = false;
-			if( !status ) 
-				msg += ", ";
+        }
+        if( !_cmap ) {
+            status = false;
+            if( !status ) 
+                msg += ", ";
             msg += "null resource_child_map";
-		}
-		if( !_object ) {
-			status = false;
-			if( !status ) 
-				msg += ", ";
+        }
+        if( !_object ) {
+            status = false;
+            if( !status ) 
+                msg += ", ";
             msg += "null first_class_object";
-		}
+        }
 
-		if( status ) {
+        if( status ) {
             return SUCCESS();
-		} else {
-            return ERROR( false, -1, msg );
-		}
+        } else {
+            return ERROR( -1, msg );
+        }
 
-	} // param_check
+    } // param_check
 
     // =-=-=-=-=-=-=-
     // external program call to unzip and extract
@@ -264,7 +264,7 @@ extern "C" {
             msg << "extract_file_with_unzip - index: ";
             msg << _index;
             msg << " is not in use.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -275,7 +275,7 @@ extern "C" {
             std::stringstream msg;
             msg << "extract_file_with_unzip - bad special collection for index: ";
             msg << _index;
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -297,7 +297,7 @@ extern "C" {
         if( status = forkAndExec (av) >= 0 ) {
             return CODE( status );
         } else {
-            return ERROR( false, status, "extract_file_with_unzip - forkAndExec failed." );
+            return ERROR( status, "extract_file_with_unzip - forkAndExec failed." );
         }
 
     } // extract_file_with_unzip
@@ -313,7 +313,7 @@ extern "C" {
             msg << "extract_tar_file_with_lib - struct file index: ";
             msg << _index;
             msg << " is not in use";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -325,7 +325,7 @@ extern "C" {
             std::stringstream msg;
             msg << "extract_tar_file_with_lib - bad special collection for index: ";
             msg << _index;
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
 
         }
 
@@ -333,7 +333,7 @@ extern "C" {
         // encode file mode?  default is 0600 Black Magic...
         int myMode = encodeIrodsTarfdPlugin( _index, getDefFileMode() );
         if( myMode < 0 ) {
-            return ERROR( false, myMode, "extract_tar_file_with_lib - failed in encodeIrodsTarfdPlugin" );
+            return ERROR( myMode, "extract_tar_file_with_lib - failed in encodeIrodsTarfdPlugin" );
         }
 
         // =-=-=-=-=-=-=-
@@ -341,24 +341,24 @@ extern "C" {
         TAR* tar_handle = 0;
         int status = tar_open( &tar_handle, spec_coll->phyPath, &irodstype, O_RDONLY, myMode, TAR_GNU );
         if( status < 0 ) {
-              std::stringstream msg;
-              msg << "extract_tar_file_with_lib - tar_open error for [";
-              msg << spec_coll->phyPath;
-              msg << "], errno = ";
-              msg << errno;
-            return ERROR( false, SYS_TAR_OPEN_ERR - errno, msg.str() );
+            std::stringstream msg;
+            msg << "extract_tar_file_with_lib - tar_open error for [";
+            msg << spec_coll->phyPath;
+            msg << "], errno = ";
+            msg << errno;
+            return ERROR( SYS_TAR_OPEN_ERR - errno, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // make call to extract
         status = tar_extract_all( tar_handle, spec_coll->cacheDir );
         if( status != 0 ) {
-              std::stringstream msg;
-              msg << "extract_tar_file_with_lib - tar_extract_all error for [";
-              msg << spec_coll->phyPath;
-              msg << "], errno = ";
-              msg << errno;
-            return ERROR( false, SYS_TAR_EXTRACT_ALL_ERR - errno, msg.str() );
+            std::stringstream msg;
+            msg << "extract_tar_file_with_lib - tar_extract_all error for [";
+            msg << spec_coll->phyPath;
+            msg << "], errno = ";
+            msg << errno;
+            return ERROR( SYS_TAR_EXTRACT_ALL_ERR - errno, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -370,7 +370,7 @@ extern "C" {
             msg << spec_coll->phyPath; 
             msg << ", errno = ";
             msg << errno;
-            return ERROR( false, SYS_TAR_CLOSE_ERR - errno, msg.str() );
+            return ERROR( SYS_TAR_CLOSE_ERR - errno, msg.str() );
         }
 
         return SUCCESS();
@@ -401,7 +401,7 @@ extern "C" {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null rsComm pointer for index: ";
             msg << _index;
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
         }
         
         // =-=-=-=-=-=-=-
@@ -411,7 +411,7 @@ extern "C" {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null specColl pointer for index: ";
             msg << _index;
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -421,7 +421,7 @@ extern "C" {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null rescInfo pointer for index: ";
             msg << _index;
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -454,7 +454,7 @@ extern "C" {
                     continue;
 
                 } else {
-                    return ERROR( false, status, "make_tar_cache_dir - failed to create cache directory" );
+                    return ERROR( status, "make_tar_cache_dir - failed to create cache directory" );
 
                 } // else
 
@@ -481,7 +481,7 @@ extern "C" {
         // extract the special collection from the struct file table
         specColl_t* spec_coll = StructFileDesc[_index].specColl;
         if( spec_coll == NULL ) {
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, "" );            
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "" );            
         }
 
         // =-=-=-=-=-=-=-
@@ -513,7 +513,7 @@ extern "C" {
             // register the CacheDir 
             status = modCollInfo2( StructFileDesc[ _index ].rsComm, spec_coll, 0 );
             if( status < 0 ) {
-               return ERROR( false, status, "stage_tar_struct_file - modCollInfo2 failed." ); 
+                return ERROR( status, "stage_tar_struct_file - modCollInfo2 failed." ); 
             }
 
         } // if empty cachedir  
@@ -552,12 +552,12 @@ extern "C" {
         // trap null parameters
         if( 0 == _spec_coll ) {
             std::string msg( "tar_struct_file_open - null special collection parameter" );
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg );
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg );
         }
 
         if( 0 == _comm ) {
             std::string msg( "tar_struct_file_open - null rsComm_t parameter" );
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg );
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, msg );
         }
 
         // =-=-=-=-=-=-=-
@@ -571,7 +571,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // alloc and trap bad alloc
         if( ( struct_desc_index = allocStructFileDesc() ) < 0 ) {
-            return ERROR( false, struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
+            return ERROR( struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
         }
 
         // =-=-=-=-=-=-=-
@@ -611,7 +611,7 @@ extern "C" {
             msg << "], status: ";
             msg << status;
             freeStructFileDesc( struct_desc_index );
-            return ERROR( false, struct_desc_index, msg.str() );
+            return ERROR( struct_desc_index, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -648,7 +648,7 @@ extern "C" {
             msg << "] sub file path [";
             msg << _sub_file_path;
             msg << "] mismatch";
-            return ERROR( false, SYS_STRUCT_FILE_PATH_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_PATH_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=- 
@@ -661,8 +661,8 @@ extern "C" {
 
     } // compose_cache_dir_physical_path
     
-	// =-=-=-=-=-=-=-
-	// 
+    // =-=-=-=-=-=-=-
+    // 
     int alloc_tar_sub_file_desc() {
         for( int i = 1; i < NUM_TAR_SUB_FILE_DESC; i++ ) {
             if (TarSubFileDesc[i].inuseFlag == FD_FREE) {
@@ -672,48 +672,48 @@ extern "C" {
         }
 
         rodsLog (LOG_NOTICE,
-         "alloc_tar_sub_file_desc: out of TarSubFileDesc");
+                 "alloc_tar_sub_file_desc: out of TarSubFileDesc");
 
         return (SYS_OUT_OF_FILE_DESC);
     }
 
-	// =-=-=-=-=-=-=-
-	// interface for POSIX create
+    // =-=-=-=-=-=-=-
+    // interface for POSIX create
     eirods::error tarFileCreatePlugin( eirods::resource_property_map* 
-	                                                        _prop_map,
-							           eirods::resource_child_map* 
-										                    _cmap, 
+                                       _prop_map,
+                                       eirods::resource_child_map* 
+                                       _cmap, 
                                        eirods::first_class_object* 
-										                    _object ) {
-		// =-=-=-=-=-=-=-
+                                       _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileCreatePlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileCreatePlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileCreatePlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileCreatePlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileCreatePlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -724,27 +724,27 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
         if( sub_index < 0 ) {
-            return ERROR( false, sub_index, "tarFileCreatePlugin - alloc_tar_sub_file_desc failed." );
+            return ERROR( sub_index, "tarFileCreatePlugin - alloc_tar_sub_file_desc failed." );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cache struct file index into sub file index
         TarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
         
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file create structure to pass off to the server api call
         fileCreateInp_t fileCreateInp;
         memset( &fileCreateInp, 0, sizeof( fileCreateInp ) );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileCreateInp.fileName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -760,7 +760,7 @@ extern "C" {
                  StructFileDesc[ struct_file_index ].rescInfo->rescLoc, 
                  NAME_LEN );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // make the call to create a file
         int status = rsFileCreate( comm, &fileCreateInp );
         if( status < 0 ) {
@@ -769,7 +769,7 @@ extern "C" {
             msg << fileCreateInp.fileName;
             msg << "], status = ";
             msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
         } else {
             TarSubFileDesc[ sub_index ].fd = status;
             StructFileDesc[ struct_file_index ].openCnt++;
@@ -777,45 +777,45 @@ extern "C" {
             return CODE(  sub_index  );
         }
 
-	} // tarFileCreatePlugin
+    } // tarFileCreatePlugin
 
-	// =-=-=-=-=-=-=-
-	// interface for POSIX Open
-	eirods::error tarFileOpenPlugin( eirods::resource_property_map* 
-	                                                      _prop_map, 
-									  eirods::resource_child_map* 
-									                      _cmap, 
-	                                  eirods::first_class_object* 
-									                      _object ) {
-		// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
+    // interface for POSIX Open
+    eirods::error tarFileOpenPlugin( eirods::resource_property_map* 
+                                     _prop_map, 
+                                     eirods::resource_child_map* 
+                                     _cmap, 
+                                     eirods::first_class_object* 
+                                     _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileOpenPlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileOpenPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileOpenPlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileOpenPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileOpenPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -826,27 +826,27 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
         if( sub_index < 0 ) {
-            return ERROR( false, sub_index, "tarFileOpenPlugin - alloc_tar_sub_file_desc failed." );
+            return ERROR( sub_index, "tarFileOpenPlugin - alloc_tar_sub_file_desc failed." );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cache struct file index into sub file index
         TarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
         
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file open structure to pass off to the server api call
         fileOpenInp_t fileOpenInp;
         memset( &fileOpenInp, 0, sizeof( fileOpenInp ) );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileOpenInp.fileName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -862,7 +862,7 @@ extern "C" {
                  StructFileDesc[ struct_file_index ].rescInfo->rescLoc, 
                  NAME_LEN );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // make the call to create a file
         int status = rsFileOpen( comm, &fileOpenInp );
         if( status < 0 ) {
@@ -871,7 +871,7 @@ extern "C" {
             msg << fileOpenInp.fileName;
             msg << "], status = ";
             msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
         } else {
             TarSubFileDesc[ sub_index ].fd = status;
             StructFileDesc[ struct_file_index ].openCnt++;
@@ -879,24 +879,24 @@ extern "C" {
             return CODE(  sub_index  );
         }
 
-	} // tarFileOpenPlugin
+    } // tarFileOpenPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX Read
-	eirods::error tarFileReadPlugin( eirods::resource_property_map* 
-	                                                      _prop_map, 
-						              eirods::resource_child_map* 
-									                      _cmap,
-                                      eirods::first_class_object* 
-									                      _object,
-									  void*               _buf, 
-									  int                 _len ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX Read
+    eirods::error tarFileReadPlugin( eirods::resource_property_map* 
+                                     _prop_map, 
+                                     eirods::resource_child_map* 
+                                     _cmap,
+                                     eirods::first_class_object* 
+                                     _object,
+                                     void*               _buf, 
+                                     int                 _len ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileReadPlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -907,7 +907,7 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -923,24 +923,24 @@ extern "C" {
 
         return CODE(status);
 
-	} // tarFileReadPlugin
+    } // tarFileReadPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX Write
-	eirods::error tarFileWritePlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map*
-									                       _cmap,
+    // interface for POSIX Write
+    eirods::error tarFileWritePlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map*
+                                      _cmap,
                                       eirods::first_class_object* 
-									                       _object,
-									   void*               _buf, 
-									   int                 _len ) {
-		// =-=-=-=-=-=-=-
+                                      _object,
+                                      void*               _buf, 
+                                      int                 _len ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileWritePlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -951,7 +951,7 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -982,22 +982,22 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileWritePlugin
+    } // tarFileWritePlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX Close
-	eirods::error tarFileClosePlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                      _cmap,
+    // interface for POSIX Close
+    eirods::error tarFileClosePlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
                                       eirods::first_class_object* 
-									                      _object ) {
-		// =-=-=-=-=-=-=-
+                                      _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileClosePlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -1008,7 +1008,7 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -1029,45 +1029,45 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileClosePlugin
+    } // tarFileClosePlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX Unlink
-	eirods::error tarFileUnlinkPlugin( eirods::resource_property_map* 
-	                                                        _prop_map, 
-										eirods::resource_child_map* 
-										                    _cmap,
-                                        eirods::first_class_object* 
-									                        _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX Unlink
+    eirods::error tarFileUnlinkPlugin( eirods::resource_property_map* 
+                                       _prop_map, 
+                                       eirods::resource_child_map* 
+                                       _cmap,
+                                       eirods::first_class_object* 
+                                       _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileUnlinkPlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileUnlinkPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileUnlinkPlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileUnlinkPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileUnlinkPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1078,16 +1078,16 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file unlink structure to pass off to the server api call
         fileUnlinkInp_t fileUnlinkInp;
         memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileUnlinkInp.fileName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -1098,7 +1098,7 @@ extern "C" {
         fileUnlinkInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         rstrcpy( fileUnlinkInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // make the call to unlink a file
         int status = rsFileUnlink( comm, &fileUnlinkInp );
         if( status >= 0 ) {
@@ -1115,46 +1115,46 @@ extern "C" {
 
         return SUCCESS();
 
-	} // tarFileUnlinkPlugin
+    } // tarFileUnlinkPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX Stat
-	eirods::error tarFileStatPlugin( eirods::resource_property_map* 
-	                                                      _prop_map, 
-									  eirods::resource_child_map* 
-									                      _cmap,
-                                      eirods::first_class_object* 
-									                      _object,
-									  struct stat*        _statbuf ) { 
-		// =-=-=-=-=-=-=-
+    // interface for POSIX Stat
+    eirods::error tarFileStatPlugin( eirods::resource_property_map* 
+                                     _prop_map, 
+                                     eirods::resource_child_map* 
+                                     _cmap,
+                                     eirods::first_class_object* 
+                                     _object,
+                                     struct stat*        _statbuf ) { 
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileStatPlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileStatPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileStatPlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileStatPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileStatPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1165,17 +1165,17 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
     
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file stat structure to pass off to the server api call
         fileStatInp_t fileStatInp;
         memset( &fileStatInp, 0, sizeof ( fileStatInp ) );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileStatInp.fileName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -1185,9 +1185,9 @@ extern "C" {
 
         fileStatInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         rstrcpy (fileStatInp.addr.hostAddr,  
-        StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN);
+                 StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN);
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // make the call to stat a file
         rodsStat_t* rods_stat;
         int status = rsFileStat( comm, &fileStatInp, &rods_stat );
@@ -1197,23 +1197,23 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileStatPlugin
+    } // tarFileStatPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX Fstat
-	eirods::error tarFileFstatPlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map*
-									                       _cmap,
-                                       eirods::first_class_object* 
-									                       _object,
-									   struct stat*        _statbuf ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX Fstat
+    eirods::error tarFileFstatPlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map*
+                                      _cmap,
+                                      eirods::first_class_object* 
+                                      _object,
+                                      struct stat*        _statbuf ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileFstatPlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -1224,14 +1224,14 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = _object->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileFstatPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileFstatPlugin - null comm pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
@@ -1248,24 +1248,24 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileFstatPlugin
+    } // tarFileFstatPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX lseek
-	eirods::error tarFileLseekPlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                       _cmap,
-                                       eirods::first_class_object* 
-									                       _object,
-									   size_t              _offset, 
-									   int                 _whence ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX lseek
+    eirods::error tarFileLseekPlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
+                                      eirods::first_class_object* 
+                                      _object,
+                                      size_t              _offset, 
+                                      int                 _whence ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileLseekPlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -1276,14 +1276,14 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = _object->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileLseekPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileLseekPlugin - null comm pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
@@ -1305,59 +1305,59 @@ extern "C" {
             return CODE( offset );
         }
 
-	} // tarFileLseekPlugin
+    } // tarFileLseekPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX fsync
-	eirods::error tarFileFsyncPlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                       _cmap,
-	                                   eirods::first_class_object*
-														   _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX fsync
+    eirods::error tarFileFsyncPlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
+                                      eirods::first_class_object*
+                                      _object ) {
+        // =-=-=-=-=-=-=-
         // Not Implemented for this plugin
-        return ERROR( false, -1, "tarFileFsyncPlugin is not implemented." );
+        return ERROR( -1, "tarFileFsyncPlugin is not implemented." );
 
-	} // tarFileFsyncPlugin
+    } // tarFileFsyncPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX mkdir
-	eirods::error tarFileMkdirPlugin( eirods::resource_property_map*
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                       _cmap,
-                                       eirods::first_class_object*
-									                       _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX mkdir
+    eirods::error tarFileMkdirPlugin( eirods::resource_property_map*
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
+                                      eirods::first_class_object*
+                                      _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileMkdirPlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileMkdirPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileMkdirPlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileMkdirPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileMkdirPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1368,18 +1368,18 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileMkdirInp_t fileMkdirInp;
         fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         rstrcpy( fileMkdirInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
         fileMkdirInp.mode = struct_obj->mode();
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileMkdirInp.dirName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -1387,7 +1387,7 @@ extern "C" {
                          "tarFileMkdirPlugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // make the call to the mkdir api
         int status = rsFileMkdir( comm, &fileMkdirInp );
         if( status >= 0 ) {
@@ -1399,7 +1399,7 @@ extern "C" {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
                 if (status1 < 0) {
-                    return ERROR( false, status1, "tarFileMkdirPlugin - Failed to call modCollInfo2" );
+                    return ERROR( status1, "tarFileMkdirPlugin - Failed to call modCollInfo2" );
                 }
             }
 
@@ -1407,60 +1407,60 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileMkdirPlugin
+    } // tarFileMkdirPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX mkdir
-	eirods::error tarFileChmodPlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                       _cmap,
-                                       eirods::first_class_object*
-									                       _object,
-									   int                 _mode ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX mkdir
+    eirods::error tarFileChmodPlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
+                                      eirods::first_class_object*
+                                      _object,
+                                      int                 _mode ) {
+        // =-=-=-=-=-=-=-
         // Not Implemented for this plugin
-        return ERROR( false, -1, "tarFileChmodPlugin is not implemented." );
+        return ERROR( -1, "tarFileChmodPlugin is not implemented." );
 
-	} // tarFileChmodPlugin
+    } // tarFileChmodPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX mkdir
-	eirods::error tarFileRmdirPlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                       _cmap,
-                                       eirods::first_class_object*
-									                       _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX mkdir
+    eirods::error tarFileRmdirPlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
+                                      eirods::first_class_object*
+                                      _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileRmdirPlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileRmdirPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileRmdirPlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileRmdirPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileRmdirPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1471,17 +1471,17 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileRmdirInp_t fileRmdirInp;
         fileRmdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         rstrcpy( fileRmdirInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileRmdirInp.dirName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -1489,7 +1489,7 @@ extern "C" {
                          "tarFileRmdirPlugin - compose_cache_dir_physical_path failed.", comp_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // make the call to the mkdir api
         int status = rsFileRmdir( comm, &fileRmdirInp );
         if( status >= 0 ) {
@@ -1501,7 +1501,7 @@ extern "C" {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
                 if (status1 < 0) {
-                    return ERROR( false, status1, "tarFileRmdirPlugin - Failed to call modCollInfo2" );
+                    return ERROR( status1, "tarFileRmdirPlugin - Failed to call modCollInfo2" );
                 }
             }
 
@@ -1509,45 +1509,45 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileRmdirPlugin
+    } // tarFileRmdirPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX opendir
-	eirods::error tarFileOpendirPlugin( eirods::resource_property_map* 
-	                                                         _prop_map, 
-										 eirods::resource_child_map* 
-										                     _cmap,
-                                         eirods::first_class_object*
-									                         _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX opendir
+    eirods::error tarFileOpendirPlugin( eirods::resource_property_map* 
+                                        _prop_map, 
+                                        eirods::resource_child_map* 
+                                        _cmap,
+                                        eirods::first_class_object*
+                                        _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileOpendirPlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "tarFileOpendirPlugin - failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "tarFileOpendirPlugin - failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileOpendirPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileOpendirPlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileOpendirPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileOpendirPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1558,18 +1558,18 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
         if( sub_index < 0 ) {
-            return ERROR( false, sub_index, "tarFileOpenPlugin - alloc_tar_sub_file_desc failed." );
+            return ERROR( sub_index, "tarFileOpenPlugin - alloc_tar_sub_file_desc failed." );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file open structure to pass off to the server api call
         fileOpendirInp_t fileOpendirInp;
         memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
@@ -1577,7 +1577,7 @@ extern "C" {
         rstrcpy( fileOpendirInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
         
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileOpendirInp.dirName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -1594,7 +1594,7 @@ extern "C" {
             msg << fileOpendirInp.dirName;
             msg << "], status: ";
             msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
         } else {
             TarSubFileDesc[ sub_index ].fd = status;
             StructFileDesc[ struct_file_index ].openCnt++;
@@ -1602,22 +1602,22 @@ extern "C" {
             return CODE( sub_index );
         }
 
-	} // tarFileOpendirPlugin
+    } // tarFileOpendirPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX closedir
-	eirods::error tarFileClosedirPlugin( eirods::resource_property_map* 
-	                                                          _prop_map, 
-										  eirods::resource_child_map* 
-										                      _cmap,
-                                          eirods::first_class_object*
-									                          _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX closedir
+    eirods::error tarFileClosedirPlugin( eirods::resource_property_map* 
+                                         _prop_map, 
+                                         eirods::resource_child_map* 
+                                         _cmap,
+                                         eirods::first_class_object*
+                                         _object ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileClosedirPlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -1628,26 +1628,26 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = _object->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileClosedirPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileClosedirPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file close dir structure to pass off to the server api call
         fileClosedirInp_t fileClosedirInp;
         fileClosedirInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
         int status = rsFileClosedir( comm, &fileClosedirInp );
         if( status < 0 ) {
-            return ERROR( false, -1, "tarFileClosedirPlugin - failed on call to rsFileClosedir" );
+            return ERROR( -1, "tarFileClosedirPlugin - failed on call to rsFileClosedir" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // close out the sub file index and free the allocation
         int struct_file_index = TarSubFileDesc[ _object->file_descriptor() ].structFileInx;
         StructFileDesc[ struct_file_index ].openCnt++;
@@ -1656,23 +1656,23 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileClosedirPlugin
+    } // tarFileClosedirPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX readdir
-	eirods::error tarFileReaddirPlugin( eirods::resource_property_map* 
-	                                                         _prop_map, 
-										 eirods::resource_child_map* 
-										                     _cmap,
-                                         eirods::first_class_object*
-									                         _object,
-										 struct rodsDirent** _dirent_ptr ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX readdir
+    eirods::error tarFileReaddirPlugin( eirods::resource_property_map* 
+                                        _prop_map, 
+                                        eirods::resource_child_map* 
+                                        _cmap,
+                                        eirods::first_class_object*
+                                        _object,
+                                        struct rodsDirent** _dirent_ptr ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileReaddirPlugin", chk_err );
-		}
+        }
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
@@ -1683,17 +1683,17 @@ extern "C" {
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
-            return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = _object->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileReaddirPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileReaddirPlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file read dir structure to pass off to the server api call
         fileReaddirInp_t fileReaddirInp; 
         fileReaddirInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
@@ -1702,7 +1702,7 @@ extern "C" {
         // make the api call to read the directory
         int status = rsFileReaddir( comm, &fileReaddirInp, _dirent_ptr );
         if( status < 0 ) {
-            return ERROR( false, status, "tarFileReaddirPlugin - failed in call to rsFileReaddir" );
+            return ERROR( status, "tarFileReaddirPlugin - failed in call to rsFileReaddir" );
         }
         
         return CODE( status );
@@ -1710,57 +1710,57 @@ extern "C" {
     } // tarFileReaddirPlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX readdir
-	eirods::error tarFileStagePlugin( eirods::resource_property_map* 
-	                                                       _prop_map, 
-									   eirods::resource_child_map* 
-									                       _cmap,
-                                       eirods::first_class_object*
-									                       _object ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX readdir
+    eirods::error tarFileStagePlugin( eirods::resource_property_map* 
+                                      _prop_map, 
+                                      eirods::resource_child_map* 
+                                      _cmap,
+                                      eirods::first_class_object*
+                                      _object ) {
+        // =-=-=-=-=-=-=-
         // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarFileStagePlugin - not implemented." );
+        return ERROR( -1, "tarFileStagePlugin - not implemented." );
 
-	} // tarFileStagePlugin
+    } // tarFileStagePlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX rename
-	eirods::error tarFileRenamePlugin( eirods::resource_property_map* 
-	                                                        _prop_map, 
-										eirods::resource_child_map* 
-										                    _cmap,
-                                        eirods::first_class_object*
-									                        _object, 
-										const char*         _new_file_name ) {
-		// =-=-=-=-=-=-=-
+    // interface for POSIX rename
+    eirods::error tarFileRenamePlugin( eirods::resource_property_map* 
+                                       _prop_map, 
+                                       eirods::resource_child_map* 
+                                       _cmap,
+                                       eirods::first_class_object*
+                                       _object, 
+                                       const char*         _new_file_name ) {
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileRenamePlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileRenamePlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileRenamePlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileRenamePlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileRenamePlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1771,18 +1771,18 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
         
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file rename structure to pass off to the server api call
         fileRenameInp_t fileRenameInp;
         memset (&fileRenameInp, 0, sizeof (fileRenameInp));
         fileRenameInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         rstrcpy( fileRenameInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
          
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err_old = compose_cache_dir_physical_path( fileRenameInp.oldFileName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err_old.ok() ) {
@@ -1808,7 +1808,7 @@ extern "C" {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2( comm, loc_spec_coll, 0 );
                 if (status1 < 0) {
-                    return ERROR( false, status1, "tarFileRenamePlugin - Failed to call modCollInfo2" );
+                    return ERROR( status1, "tarFileRenamePlugin - Failed to call modCollInfo2" );
                 }
             }
 
@@ -1816,45 +1816,45 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileRenamePlugin
+    } // tarFileRenamePlugin
 
     // =-=-=-=-=-=-=-
-	// interface for POSIX truncate
-	eirods::error tarFileTruncatePlugin( eirods::resource_property_map* 
-	                                                          _prop_map, 
-										  eirods::resource_child_map* 
-												             _cmap,
-                                          eirods::first_class_object*
-									                         _object ) { 
-		// =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error tarFileTruncatePlugin( eirods::resource_property_map* 
+                                         _prop_map, 
+                                         eirods::resource_child_map* 
+                                         _cmap,
+                                         eirods::first_class_object*
+                                         _object ) { 
+        // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
         if( !chk_err.ok() ) {
             return PASS( false, -1, "tarFileTruncatePlugin", chk_err );
-		}
+        }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileTruncatePlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileTruncatePlugin - null spec_coll pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileTruncatePlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileTruncatePlugin - null comm pointer in structure_object" );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
@@ -1865,29 +1865,29 @@ extern "C" {
             return PASS( false, -1, msg.str(), open_err );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = StructFileDesc[ struct_file_index ].specColl;
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // allocate yet another index into another table
         int sub_index = alloc_tar_sub_file_desc();
         if( sub_index < 0 ) {
-            return ERROR( false, sub_index, "tarFileTruncatePlugin - alloc_tar_sub_file_desc failed." );
+            return ERROR( sub_index, "tarFileTruncatePlugin - alloc_tar_sub_file_desc failed." );
         }
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // cache struct file index into sub file index
         TarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
         
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a file create structure to pass off to the server api call
         fileOpenInp_t fileTruncateInp;
         memset( &fileTruncateInp, 0, sizeof( fileTruncateInp ) );
         rstrcpy( fileTruncateInp.addr.hostAddr,  StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
         fileTruncateInp.dataSize = struct_obj->offset();
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileTruncateInp.fileName, spec_coll, struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
@@ -1913,103 +1913,103 @@ extern "C" {
 
         return CODE( status );
 
-	} // tarFileTruncatePlugin
+    } // tarFileTruncatePlugin
 
 	
     // =-=-=-=-=-=-=-
-	// interface to determine free space on a device given a path
-	eirods::error tarFileGetFsFreeSpacePlugin( eirods::resource_property_map* 
-	                                                                _prop_map, 
-												eirods::resource_child_map* 
-												                    _cmap,
-                                                eirods::first_class_object*
-									                                _object ) { 
+    // interface to determine free space on a device given a path
+    eirods::error tarFileGetFsFreeSpacePlugin( eirods::resource_property_map* 
+                                               _prop_map, 
+                                               eirods::resource_child_map* 
+                                               _cmap,
+                                               eirods::first_class_object*
+                                               _object ) { 
 
-		// =-=-=-=-=-=-=-
+        // =-=-=-=-=-=-=-
         // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarFileGetFsFreeSpacePlugin - is not implemented." );
+        return ERROR( -1, "tarFileGetFsFreeSpacePlugin - is not implemented." );
 
-	} // tarFileGetFsFreeSpacePlugin
+    } // tarFileGetFsFreeSpacePlugin
 
     // =-=-=-=-=-=-=-
-	// tarFileCopyPlugin
-	eirods::error tarFileCopyPlugin( eirods::resource_property_map*
-	                                                          _prop_map, 
-										  eirods::resource_child_map* 
-										                      _cmap,
-										  eirods::first_class_object*
-										                      _object,
-	                                      const char *destFileName ) {
-		// =-=-=-=-=-=-=-
+    // tarFileCopyPlugin
+    eirods::error tarFileCopyPlugin( eirods::resource_property_map*
+                                     _prop_map, 
+                                     eirods::resource_child_map* 
+                                     _cmap,
+                                     eirods::first_class_object*
+                                     _object,
+                                     const char *destFileName ) {
+        // =-=-=-=-=-=-=-
         // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarFileCopyPlugin - is not implemented." );
+        return ERROR( -1, "tarFileCopyPlugin - is not implemented." );
 
-	} // tarFileCopyPlugin
+    } // tarFileCopyPlugin
 
 
     // =-=-=-=-=-=-=-
-	// tarStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
-	// Just copy the file from filename to cacheFilename. optionalInfo info
-	// is not used.
-	eirods::error tarStageToCachePlugin( eirods::resource_property_map* 
-	                                                          _prop_map, 
-										  eirods::resource_child_map* 
-										                      _cmap,
-										  eirods::first_class_object*
-										                      _object,
-										  const char*         _cache_file_name ) { 
-		// =-=-=-=-=-=-=-
+    // tarStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
+    // Just copy the file from filename to cacheFilename. optionalInfo info
+    // is not used.
+    eirods::error tarStageToCachePlugin( eirods::resource_property_map* 
+                                         _prop_map, 
+                                         eirods::resource_child_map* 
+                                         _cmap,
+                                         eirods::first_class_object*
+                                         _object,
+                                         const char*         _cache_file_name ) { 
+        // =-=-=-=-=-=-=-
         // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarStageToCachePlugin - is not implemented." );
+        return ERROR( -1, "tarStageToCachePlugin - is not implemented." );
 										  
-	} // tarStageToCachePlugin
+    } // tarStageToCachePlugin
 
     // =-=-=-=-=-=-=-
-	// tarSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
-	// Just copy the file from cacheFilename to filename. optionalInfo info
-	// is not used.
-	eirods::error tarSyncToArchPlugin( eirods::resource_property_map* 
-	                                                        _prop_map, 
-										eirods::resource_child_map* 
-										                    _cmap,
-										eirods::first_class_object*
-										                    _object,
-										const char*         _cache_file_name ) { 
-		// =-=-=-=-=-=-=-
+    // tarSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
+    // Just copy the file from cacheFilename to filename. optionalInfo info
+    // is not used.
+    eirods::error tarSyncToArchPlugin( eirods::resource_property_map* 
+                                       _prop_map, 
+                                       eirods::resource_child_map* 
+                                       _cmap,
+                                       eirods::first_class_object*
+                                       _object,
+                                       const char*         _cache_file_name ) { 
+        // =-=-=-=-=-=-=-
         // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarSyncToArchPlugin - is not implemented." );
+        return ERROR( -1, "tarSyncToArchPlugin - is not implemented." );
 
-	} // tarSyncToArchPlugin
+    } // tarSyncToArchPlugin
 
     // =-=-=-=-=-=-=-
-	// 3. create derived class to handle tar file system resources
-	//    necessary to do custom parsing of the context string to place
-	//    any useful values into the property map for reference in later
-	//    operations.  semicolon is the preferred delimiter
-	class tarfilesystem_resource : public eirods::resource {
+    // 3. create derived class to handle tar file system resources
+    //    necessary to do custom parsing of the context string to place
+    //    any useful values into the property map for reference in later
+    //    operations.  semicolon is the preferred delimiter
+    class tarfilesystem_resource : public eirods::resource {
     public:
         tarfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
-		} // ctor
+        } // ctor
 
-	}; // class tarfilesystem_resource
+    }; // class tarfilesystem_resource
   
     // =-=-=-=-=-=-=-
-	// 4. create the plugin factory function which will return a dynamically
-	//    instantiated object of the previously defined derived resource.  use
-	//    the add_operation member to associate a 'call name' to the interfaces
-	//    defined above.  for resource plugins these call names are standardized
-	//    as used by the e-irods facing interface defined in 
-	//    server/drivers/src/fileDriver.c
-	eirods::resource* plugin_factory( std::string _context  ) {
+    // 4. create the plugin factory function which will return a dynamically
+    //    instantiated object of the previously defined derived resource.  use
+    //    the add_operation member to associate a 'call name' to the interfaces
+    //    defined above.  for resource plugins these call names are standardized
+    //    as used by the e-irods facing interface defined in 
+    //    server/drivers/src/fileDriver.c
+    eirods::resource* plugin_factory( std::string _context  ) {
 
         // =-=-=-=-=-=-=-
-		// 4a. create tarfilesystem_resource
-		tarfilesystem_resource* resc = new tarfilesystem_resource( _context );
+        // 4a. create tarfilesystem_resource
+        tarfilesystem_resource* resc = new tarfilesystem_resource( _context );
 
         // =-=-=-=-=-=-=-
-		// 4b. map function names to operations.  this map will be used to load
-		//     the symbols from the shared object in the delay_load stage of 
-		//     plugin loading.
+        // 4b. map function names to operations.  this map will be used to load
+        //     the symbols from the shared object in the delay_load stage of 
+        //     plugin loading.
         resc->add_operation( "create",       "tarFileCreatePlugin" );
         resc->add_operation( "open",         "tarFileOpenPlugin" );
         resc->add_operation( "read",         "tarFileReadPlugin" );
@@ -2034,11 +2034,11 @@ extern "C" {
         resc->add_operation( "synctoarch",   "tarSyncToArchPlugin" );
 
         // =-=-=-=-=-=-=-
-		// 4c. return the pointer through the generic interface of an
-		//     eirods::resource pointer
-	    return dynamic_cast<eirods::resource*>( resc );
+        // 4c. return the pointer through the generic interface of an
+        //     eirods::resource pointer
+        return dynamic_cast<eirods::resource*>( resc );
         
-	} // plugin_factory
+    } // plugin_factory
 
 }; // extern "C" 
 

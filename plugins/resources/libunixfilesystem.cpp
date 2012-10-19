@@ -899,7 +899,7 @@ extern "C" {
         // cast down the chain to our understood object type
         eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
         if( !coll_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+            return ERROR( -1, "failed to cast first_class_object to collection_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -929,7 +929,7 @@ extern "C" {
 				msg << strerror( errno );
 				msg << "'";
 				
-				return ERROR( false, status, msg.str() );
+				return ERROR( status, msg.str() );
 			}
 		} else {
 			// =-=-=-=-=-=-=-

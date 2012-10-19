@@ -9,7 +9,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
-
+#include "eirods_log.h"
 
 int
 rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
@@ -83,7 +83,7 @@ int _rsSubStructFileCreate( rsComm_t*  _comm,
         std::stringstream msg;
         msg << "_rsSubStructFileCreate - failed on call to fileCreate for [";
         msg << struct_obj.sub_file_path();
-        eirods::log( ERROR( false, -1, msg.str() ) );
+        eirods::log( ERROR( -1, msg.str() ) );
         return 0;
 
     } else {

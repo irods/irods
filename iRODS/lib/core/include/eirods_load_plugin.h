@@ -133,7 +133,7 @@ namespace eirods {
             msg << "load_plugin :: failed to load sybol from shared object handle - " 
                 << "EIRODS_PLUGIN_VERSION" << " :: dlerror is " << err;
             dlclose( handle );
-            return ERROR( false, -1, msg.str() );
+            return ERROR( -1, msg.str() );
         }
 
         // =-=-=-=-=-=-=-

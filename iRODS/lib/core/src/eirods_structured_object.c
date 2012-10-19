@@ -98,7 +98,7 @@ namespace eirods {
         if( resolveHost( &addr_, &tmpRodsServerHost ) < 0 ) {
             std::string msg(  "structured_object::resolve - resolveHost error for " );
             msg += addr_.hostAddr;
-            return ERROR( false, -1, msg );
+            return ERROR( -1, msg );
         }
         
         _ptr->set_property< boost::shared_ptr< rodsServerHost_t > >( 

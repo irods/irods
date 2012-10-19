@@ -113,7 +113,7 @@ namespace eirods {
             // check params
 #ifdef DEBUG
             if( _key.empty() ) {
-                return ERROR( false, -1, "empty key" );
+                return ERROR( -1, "empty key" );
             }
 #endif
 				
@@ -124,10 +124,10 @@ namespace eirods {
                 _val = boost::any_cast< T >( table_[ _key ] );
                 return SUCCESS();
             } catch ( const boost::bad_any_cast & ) {
-                return ERROR( false, -1, "lookup_table::get - type and property key ["+_key+"] mistmatch" );
+                return ERROR( -1, "lookup_table::get - type and property key ["+_key+"] mistmatch" );
             }
 		 
-            return ERROR( false, -1, "lookup_table::get - shouldn't get here." );
+            return ERROR( -1, "lookup_table::get - shouldn't get here." );
 
         } // get_property
 
@@ -139,7 +139,7 @@ namespace eirods {
             // check params	
 #ifdef DEBUG
             if( _key.empty() ) {
-                return ERROR( false, -1, "lookup_table::set - empty key" );
+                return ERROR( -1, "lookup_table::set - empty key" );
             }
                 
             if( table_.has_entry( _key ) ) {

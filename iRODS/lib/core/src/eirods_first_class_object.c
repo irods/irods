@@ -58,7 +58,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - default implementation of resource plugin resolution
     error first_class_object::resolve( resource_manager&, resource_ptr& ) {
-        return ERROR( false, -1, "first_class_object::resolve - is not implemented" );
+        return ERROR( -1, "first_class_object::resolve - is not implemented" );
     } // resolve
 
 }; // namespace eirods

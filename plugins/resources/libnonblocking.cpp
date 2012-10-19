@@ -92,13 +92,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
 		if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileCreatePlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileCreatePlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileCreatePlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileCreatePlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileCreatePlugin - null first_class_object" );
+            return ERROR( -1, "unixFileCreatePlugin - null first_class_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -141,7 +141,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
  
-			return ERROR( false, status, msg.str() );
+			return ERROR( status, msg.str() );
 		}
 
         // =-=-=-=-=-=-=-
@@ -161,13 +161,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
 		if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileOpenPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileOpenPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileOpenPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileOpenPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileOpenPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileOpenPlugin - null first_class_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -215,7 +215,7 @@ extern "C" {
 			msg << ", flags = ";
 			msg << flags;
  
-			return ERROR( false, fd, msg.str() );
+			return ERROR( fd, msg.str() );
 		}
 		
         // =-=-=-=-=-=-=-
@@ -237,13 +237,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
 		if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 		int status;
@@ -274,7 +274,7 @@ extern "C" {
 				} else {
                     std::stringstream msg;
                     msg << "nbFileReadPlugin - timeout error.";
-					return ERROR( false, UNIX_FILE_OPR_TIMEOUT_ERR - errno, msg.str() );
+					return ERROR( UNIX_FILE_OPR_TIMEOUT_ERR - errno, msg.str() );
 				}
 			} else if (status < 0) {
 				if ( errno == EINTR) {
@@ -283,7 +283,7 @@ extern "C" {
 				} else {
                     std::stringstream msg;
                     msg << "nbFileReadPlugin - file read error.";
-					return ERROR( false, UNIX_FILE_READ_ERR - errno, msg.str() );
+					return ERROR( UNIX_FILE_READ_ERR - errno, msg.str() );
 				}
 			}
             #endif
@@ -295,7 +295,7 @@ extern "C" {
 					errno = 0;
 					nbytes = 0;
 				} else if (toRead == _len) {
-					return ERROR( false, UNIX_FILE_READ_ERR - errno, "nbFileReadPlugin - file read error" );
+					return ERROR( UNIX_FILE_READ_ERR - errno, "nbFileReadPlugin - file read error" );
 				} else {
 					nbytes = 0;
 					break;
@@ -324,13 +324,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
 		if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 	
 		int nbytes;
@@ -356,13 +356,13 @@ extern "C" {
 			status = select (fd + 1, NULL, &set, NULL, &tv);
 			if (status == 0) {
 				/* timedout */
-				return ERROR( false, UNIX_FILE_OPR_TIMEOUT_ERR - errno, "nbFileWritePlugin - time out error" );;
+				return ERROR( UNIX_FILE_OPR_TIMEOUT_ERR - errno, "nbFileWritePlugin - time out error" );;
 			} else if (status < 0) {
 				if ( errno == EINTR) {
 					errno = 0;
 					continue;
 				} else {
-					return ERROR( false, UNIX_FILE_WRITE_ERR - errno, "nbFileWritePlugin - file write error" );
+					return ERROR( UNIX_FILE_WRITE_ERR - errno, "nbFileWritePlugin - file write error" );
 				}
 			}
             #endif
@@ -374,7 +374,7 @@ extern "C" {
 					errno = 0;
 					nbytes = 0;
 				} else  {
-					return ERROR( false, UNIX_FILE_WRITE_ERR - errno, "nbFileWritePlugin - file write error" );
+					return ERROR( UNIX_FILE_WRITE_ERR - errno, "nbFileWritePlugin - file write error" );
 			}
 			}
 			toWrite -= nbytes;
@@ -395,13 +395,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
         
 		// =-=-=-=-=-=-=-
@@ -419,7 +419,7 @@ extern "C" {
 			msg << strerror( errno );
 			msg << "', status = ";
 			msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
 		}
 
 		return CODE( status );
@@ -437,13 +437,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 	    // =-=-=-=-=-=-=-
@@ -462,7 +462,7 @@ extern "C" {
 			msg << strerror( errno );
 			msg << "', status = ";
 			msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
 		}
 
 		return CODE( status );
@@ -481,13 +481,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -518,7 +518,7 @@ extern "C" {
 			msg << strerror( errno );
 			msg << "', status = ";
 			msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
 		}
 		
 		return CODE( status );
@@ -537,13 +537,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 								   
         // =-=-=-=-=-=-=-
@@ -575,7 +575,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
 
 		} // if
 	   
@@ -596,13 +596,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 									   
 	    // =-=-=-=-=-=-=-
@@ -622,7 +622,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 			
-		    return ERROR( false, status, msg.str() );
+		    return ERROR( status, msg.str() );
 		}
 
 		return CODE( status );
@@ -640,13 +640,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 	    // =-=-=-=-=-=-=-
@@ -666,7 +666,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 			
-		    return ERROR( false, status, msg.str() );
+		    return ERROR( status, msg.str() );
 		}
 
 		return CODE( status );
@@ -684,20 +684,20 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 		// =-=-=-=-=-=-=-
 		// cast down the chain to our understood object type
 		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
         if( !coll_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+            return ERROR( -1, "failed to cast first_class_object to collection_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -723,7 +723,7 @@ extern "C" {
 				msg << "', status = ";
 				msg << status;
 				
-				return ERROR( false, status, msg.str() );
+				return ERROR( status, msg.str() );
 
 			} // if errno != EEXIST
 
@@ -745,13 +745,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -771,7 +771,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 			
-			return ERROR( false, status, msg.str() );
+			return ERROR( status, msg.str() );
 		} // if
 
 		return CODE( status );
@@ -789,13 +789,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -815,7 +815,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 			
-			return ERROR( false, errno, msg.str() );
+			return ERROR( errno, msg.str() );
 		}
 
 		return CODE( status );
@@ -833,20 +833,20 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 		// =-=-=-=-=-=-=-
 		// cast down the chain to our understood object type
 		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
         if( !coll_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+            return ERROR( -1, "failed to cast first_class_object to collection_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -880,7 +880,7 @@ extern "C" {
 			msg << ", status = ";
 			msg << status;
 			
-			return ERROR( false, status, msg.str() );
+			return ERROR( status, msg.str() );
 		}
 
 		// =-=-=-=-=-=-=-
@@ -902,20 +902,20 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 		// =-=-=-=-=-=-=-
 		// cast down the chain to our understood object type
 		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
         if( !coll_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+            return ERROR( -1, "failed to cast first_class_object to collection_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -935,7 +935,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 			
-			return ERROR( false, status, msg.str() );
+			return ERROR( status, msg.str() );
 		}
 
 		return CODE( status );
@@ -954,20 +954,20 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 		// =-=-=-=-=-=-=-
 		// cast down the chain to our understood object type
 		eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
         if( !coll_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to collection_object" );
+            return ERROR( -1, "failed to cast first_class_object to collection_object" );
 		}
 
         // =-=-=-=-=-=-=-
@@ -997,7 +997,7 @@ extern "C" {
 				msg << strerror( errno );
 				msg << "'";
 				
-				return ERROR( false, status, msg.str() );
+				return ERROR( status, msg.str() );
 			}
 		} else {
 			// =-=-=-=-=-=-=-
@@ -1030,13 +1030,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
     #ifdef SAMFS_STAGE
@@ -1046,7 +1046,7 @@ extern "C" {
 			_status = UNIX_FILE_STAGE_ERR - errno;
 			rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n"
 			         , (*_status) );
-			return ERROR( false, errno, "unixFileStage: sam_stage error" );
+			return ERROR( errno, "unixFileStage: sam_stage error" );
 		}
 
 		return CODE( 0 );
@@ -1067,13 +1067,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 		// =-=-=-=-=-=-=-
@@ -1093,7 +1093,7 @@ extern "C" {
 			msg << ", status = ";
 			msg << status;
 			
-			return ERROR( false, status, msg.str() );
+			return ERROR( status, msg.str() );
 
 		}
 
@@ -1112,20 +1112,20 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 		
 		// =-=-=-=-=-=-=-
 		// cast down the chain to our understood object type
 		eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
         if( !file_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to file_object" );
+            return ERROR( -1, "failed to cast first_class_object to file_object" );
 		}
 
 		// =-=-=-=-=-=-=-
@@ -1148,7 +1148,7 @@ extern "C" {
 			msg << "', status = ";
 			msg << status;
 			
-			return ERROR( false, status, msg.str() );
+			return ERROR( status, msg.str() );
 		}
 
 		return CODE( status );
@@ -1167,13 +1167,13 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
 
@@ -1211,7 +1211,7 @@ extern "C" {
 				msg << ", status = ";
 				msg << USER_NO_SUPPORT_ERR;
 
-				return ERROR( false, USER_NO_SUPPORT_ERR, msg.str() );
+				return ERROR( USER_NO_SUPPORT_ERR, msg.str() );
 			}
             
 			#if defined(sgi_platform)
@@ -1326,7 +1326,7 @@ extern "C" {
 										  int*                _status ) {
 		(*_status) = unixFileCopyPlugin( _mode, _file_name, _cache_file_name );
         if( (*_status) < 0 ) {
-            return ERROR( false, *_status, "unixStageToCachePlugin failed." );
+            return ERROR( *_status, "unixStageToCachePlugin failed." );
 		} else {
             return SUCCESS();
 		}
@@ -1350,7 +1350,7 @@ extern "C" {
 
 		(*_status) = unixFileCopyPlugin( _mode, _cache_file_name, _file_name );
         if( (*_status) < 0 ) {
-            return ERROR( false, (*_status), "unixSyncToArchPlugin failed." );
+            return ERROR( (*_status), "unixSyncToArchPlugin failed." );
 		} else {
             return SUCCESS();
 		}
