@@ -76,7 +76,7 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
 	// =-=-=-=-=-=-=-
 	// make call to fsync via resource plugin
-    eirods::file_object file_obj(  FileDesc[fileFsyncInp->fileInx].fileName,
+    eirods::file_object file_obj(  rsComm, FileDesc[fileFsyncInp->fileInx].fileName,
                                    FileDesc[fileFsyncInp->fileInx].fd,
 								   0, 0 );
     eirods::error fsync_err = fileFsync( file_obj );

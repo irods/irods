@@ -193,16 +193,11 @@ int mkFileDirR( int fileType, rsComm_t *rsComm, char *startDir, char *destDir, i
 // =-=-=-=-=-=-=-
 // 
 int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
-    #if defined(solaris_platform)
-    char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];
-    struct dirent *myFileDirent = (struct dirent *) fileDirent;
-    #else
-    struct dirent fileDirent;
-    struct dirent *myFileDirent = &fileDirent;
-    #endif
+    
     int status;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
+    struct rodsDirent* myFileDirent = 0;
 
 	// =-=-=-=-=-=-=-
 	// call opendir via resource plugin
@@ -218,13 +213,13 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
 
 	// =-=-=-=-=-=-=-
 	// make call to readdir via resource plugin
-    eirods::error readdir_err = fileReaddir( cacheDir_obj, myFileDirent );
+    eirods::error readdir_err = fileReaddir( cacheDir_obj, &myFileDirent );
     while( readdir_err.ok() && 0 == readdir_err.code() ) {
 		// =-=-=-=-=-=-=-
 		// handle relative paths
 		if( strcmp( myFileDirent->d_name, "." ) == 0 ||
 			strcmp( myFileDirent->d_name, "..") == 0) {
-	        readdir_err = fileReaddir( cacheDir_obj, myFileDirent );
+	        readdir_err = fileReaddir( cacheDir_obj, &myFileDirent );
 			continue;
 		}
 
@@ -263,7 +258,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
 		
 		// =-=-=-=-=-=-=-
 		// continue with child path
-	    readdir_err = fileReaddir( cacheDir_obj, myFileDirent );
+	    readdir_err = fileReaddir( cacheDir_obj, &myFileDirent );
 
     } // while
 

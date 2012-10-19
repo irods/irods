@@ -96,8 +96,7 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
         fileGetOutBBuf->buf = malloc (len);
     }
 
-    eirods::file_object file_obj( *fileGetInp );
-	file_obj.file_descriptor( fd );
+    eirods::file_object file_obj( rsComm, fileGetInp->fileName, fd, fileGetInp->mode, fileGetInp->flags  );
     eirods::error read_err = fileRead( file_obj,
 	                                   fileGetOutBBuf->buf, 
 									   len );

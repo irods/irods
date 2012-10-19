@@ -4,10 +4,10 @@ myTestRule {
 #Output parameter is:
 #   Format of the file is
 #   user-name|field|new-value
-#   guest|password|guest1
+#   devtestuser|password|changemeplease
 #  Status
   msiLoadUserModsFromDataObj(*Path,*Status);
   writeLine("stdout","Change password on a user account");
 }
-INPUT *Path="/tempZone/home/rods/testcoll/rodsaccountmod"
+INPUT *Path="/tempZone/home/rods/test/load-usermods.txt"
 OUTPUT ruleExecOut

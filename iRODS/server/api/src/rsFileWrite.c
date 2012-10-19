@@ -88,7 +88,8 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
 
     // =-=-=-=-=-=-=-
 	// make a call to the resource write
-    eirods::file_object file_obj( FileDesc[fileWriteInp->fileInx].fileName,
+    eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileWriteInp->fileInx].fileName,
                                   FileDesc[fileWriteInp->fileInx].fd,
 								  0, 0 ); 
  

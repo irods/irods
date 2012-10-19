@@ -1034,32 +1034,31 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     switch (RescTypeDef[rescTypeInx].rescCat) {
 	dataObjInfo_t tmpDataObjInfo;
       case FILE_CAT:
-	/* make sure the fileName is not already taken */
-	if (RescTypeDef[rescTypeInx].createPathFlag == CREATE_PATH) {
-	    status = chkOrphanFile (rsComm, destDataObjInfo->filePath,
-	      destDataObjInfo->rescName, &tmpDataObjInfo);
-	    if (status == 0 && tmpDataObjInfo.dataId != 
-	      destDataObjInfo->dataId) {
-	        /* someone is using it */
-	        snprintf (destDataObjInfo->filePath, MAX_NAME_LEN, 
-	          "%s.%-d", destDataObjInfo->filePath, (int) random());
-	    }
-	}
+        /* make sure the fileName is not already taken */
+        if (RescTypeDef[rescTypeInx].createPathFlag == CREATE_PATH) {
+            status = chkOrphanFile ( rsComm, destDataObjInfo->filePath, destDataObjInfo->rescName, &tmpDataObjInfo );
+            if (status == 0 && tmpDataObjInfo.dataId != destDataObjInfo->dataId) {
+                /* someone is using it */
+                snprintf (destDataObjInfo->filePath, MAX_NAME_LEN, 
+                  "%s.%-d", destDataObjInfo->filePath, (int) random());
+            }
+        }
+
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
-        dataObjInp = L1desc[destL1descInx].dataObjInp;
-	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
-        fileSyncToArchInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        fileSyncToArchInp.cacheFileType = 
-          (fileDriverType_t)RescTypeDef[cacheRescTypeInx].driverType;
-        rstrcpy (fileSyncToArchInp.addr.hostAddr,  
-	  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);
-	  /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
-        rstrcpy (fileSyncToArchInp.filename, destDataObjInfo->filePath, 
-	  MAX_NAME_LEN);
-        rstrcpy (fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath, 
-	  MAX_NAME_LEN);
+        dataObjInp                      = L1desc[destL1descInx].dataObjInp;
+	    fileSyncToArchInp.dataSize      = srcDataObjInfo->dataSize;
+        fileSyncToArchInp.fileType      = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        fileSyncToArchInp.cacheFileType = (fileDriverType_t)RescTypeDef[cacheRescTypeInx].driverType;
+        
+        rstrcpy( fileSyncToArchInp.addr.hostAddr,  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN );
+
+	    /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
+        rstrcpy( fileSyncToArchInp.filename,      destDataObjInfo->filePath, MAX_NAME_LEN);
+        rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN);
+
         fileSyncToArchInp.mode = getFileMode (dataObjInp);
         status = rsFileSyncToArch (rsComm, &fileSyncToArchInp, &outFileName);
+
 	if (status >= 0 && 
 	  RescTypeDef[rescTypeInx].createPathFlag == NO_CREATE_PATH &&
 	  outFileName != NULL) {

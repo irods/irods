@@ -15,23 +15,17 @@
 #include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
-// My Includes
+// eirods includes
 #include "eirods_plugin_base.h"
 #include "eirods_lookup_table.h"
+#include "eirods_resource_types.h"
+
+// =-=-=-=-=-=-=-
+// irods includes
 #include "reGlobalsExtern.h"
 #include "dataObjInpOut.h"
 
 namespace eirods {
-
-	// =-=-=-=-=-=-=-
-    // resource operation function signature, helpful typedefs
-	class resource;
-	typedef boost::shared_ptr< resource >                          resource_ptr;
-	typedef lookup_table<boost::any>                               resource_property_map;
-	typedef	lookup_table< std::pair< std::string, resource_ptr > > resource_child_map;
-
-	typedef error ((*resource_operation)( resource_property_map*, resource_child_map*, ... ));
-	typedef error (*resource_maintenance_operation)();
 	
 	// =-=-=-=-=-=-=-
 	/**

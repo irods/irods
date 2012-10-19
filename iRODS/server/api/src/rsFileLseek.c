@@ -80,7 +80,8 @@ fileLseekOut_t **fileLseekOut, rodsServerHost_t *rodsServerHost)
 int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut) {
     // =-=-=-=-=-=-=-
 	// make call to lseek via resource plugin
-	eirods::file_object file_obj( FileDesc[fileLseekInp->fileInx].fileName,
+	eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileLseekInp->fileInx].fileName,
 	                              FileDesc[fileLseekInp->fileInx].fd,
 								  0, 0 );
 

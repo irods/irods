@@ -5,6 +5,12 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
+
+
 int
 rsSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
 {
@@ -61,13 +67,28 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
-{
-    int fd;
+_rsSubStructFileOpen( rsComm_t*  _comm, 
+                      subFile_t* _sub_file ) {
 
-    fd = subStructFileOpen (rsComm, subFile);
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
-    return (fd);
-}
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to open a file
+    eirods::error open_err = fileOpen( struct_obj );
+    if( !open_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFIleOPen - failed on call to fileCreate for [";
+        msg << struct_obj.sub_file_path();
+        eirods::log( ERROR( false, -1, msg.str() ) );
+    } else {
+        return open_err.code();
+
+    }
+    
+
+} // _rsSubStructFileOpen
 
 

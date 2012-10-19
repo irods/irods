@@ -17,20 +17,12 @@ namespace eirods {
     // =-=-=-=-=-=-=-
 	// provide our own interface which will take stl types which can
 	// be refactored later
-    static void log( int _level, std::string _msg ) {
-        rodsLog( _level, const_cast< char* >( _msg.c_str() ) );
-	} // log
+    void log( int, std::string );
 
     // =-=-=-=-=-=-=-
 	// provide our own interface which will take our error which can
 	// be refactored later
-	static void log( eirods::error _err ) {
-        if( _err.ok() ) {
-            log( LOG_NOTICE, _err.result() );
-		} else {
-            log( LOG_ERROR, _err.result() );
-		}
-	} // log
+	void log( eirods::error );
 
 }; // namespace eirods
 

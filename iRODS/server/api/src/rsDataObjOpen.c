@@ -429,7 +429,9 @@ l3Open (rsComm_t *rsComm, int l1descInx)
 	subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = getFileFlags (l1descInx);
+    eirods::log( LOG_NOTICE, "XXXX l3Open - calling rsSubStructFileOpen" );
 	l3descInx = rsSubStructFileOpen (rsComm, &subFile); 
+    eirods::log( LOG_NOTICE, "XXXX l3Open - calling rsSubStructFileOpen. Done." );
     } else {
         mode = getFileMode (L1desc[l1descInx].dataObjInp);
         flags = getFileFlags (l1descInx);

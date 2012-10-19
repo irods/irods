@@ -92,8 +92,8 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 	// =-=-=-=-=-=-=-
 	// check path permissions before creating the file
     if( fileCreateInp->otherFlags & NO_CHK_PERM_FLAG == 0 ) { // JMC - backport 4758
-        int status = chkFilePathPerm (rsComm, fileCreateInp, rodsServerHost, DO_CHK_PATH_PERM); // JMC - backport 4774
-		if (status < 0) {
+        int status = chkFilePathPerm( rsComm, fileCreateInp, rodsServerHost, DO_CHK_PATH_PERM ); // JMC - backport 4774
+		if( status < 0 ) {
 			rodsLog( LOG_ERROR, "_rsFileCreate - chkFilePathPerm returned %d", status );
 			return (status);
 		}
@@ -102,7 +102,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 	// =-=-=-=-=-=-=-
 	// dont capture the eirods results in the log here as there may be an issue with
 	// needing to create a directory, etc.
-	eirods::file_object file_obj( *fileCreateInp );
+	eirods::file_object file_obj( rsComm, fileCreateInp->fileName, 0, fileCreateInp->mode, fileCreateInp->flags );
 	eirods::error create_err = fileCreate( file_obj );
 
     // =-=-=-=-=-=-=-

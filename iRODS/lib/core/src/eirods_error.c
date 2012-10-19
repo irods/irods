@@ -4,7 +4,7 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_error.h"
+#include "eirods_log.h"
 
 // =-=-=-=-=-=-=-
 // Boost Includes
@@ -99,7 +99,7 @@ namespace eirods {
         code_             = _rhs.code_;
 		message_          = _rhs.message_;
         result_stack_     = _rhs.result_stack_;
-
+        return *this;
 	} // assignment operator
 
     // =-=-=-=-=-=-=-

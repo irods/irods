@@ -91,7 +91,8 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
 
     // =-=-=-=-=-=-=-
 	// call resource plugin for POSIX read
-	eirods::file_object file_obj( FileDesc[fileReadInp->fileInx].fileName,
+	eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileReadInp->fileInx].fileName,
 	                              FileDesc[fileReadInp->fileInx].fd,  
 								  0, 0 );
 	                             

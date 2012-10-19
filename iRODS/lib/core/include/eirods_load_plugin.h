@@ -6,7 +6,7 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_error.h"
+#include "eirods_log.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -96,7 +96,7 @@ namespace eirods {
         clean_plugin_name.erase( std::remove_if( clean_plugin_name.begin(), 
 		                                         clean_plugin_name.end(), 
 												 not_allowed_char ),
-								 clean_plugin_name.end() );
+                                                 clean_plugin_name.end() );
 
         // =-=-=-=-=-=-=-
 		// static assertion to determine if the PluginType supports the delay_load interface properly
@@ -126,15 +126,20 @@ namespace eirods {
 
 		// =-=-=-=-=-=-=-
 		// attempt to load the plugin version
+        double* version_ptr = static_cast< double* >( dlsym( handle, "EIRODS_PLUGIN_INTERFACE_VERSION" ) );
+
 		char* err = 0;
-		double plugin_version = *static_cast< double* >( dlsym( handle, "EIRODS_PLUGIN_INTERFACE_VERSION" ) );
-		if( ( err = dlerror() ) != 0 ) {
+		if( !version_ptr || ( ( err = dlerror() ) != 0 ) ) {
 			std::stringstream msg;
 			msg << "load_plugin :: failed to load sybol from shared object handle - " 
 			    << "EIRODS_PLUGIN_VERSION" << " :: dlerror is " << err;
 		    dlclose( handle );
-	        return ERROR( false, -1, msg.str() );	
+	        return ERROR( false, -1, msg.str() );
 		}
+
+		// =-=-=-=-=-=-=-
+		// extract value from pointer to version 
+		double plugin_version = *version_ptr;
 
 		// =-=-=-=-=-=-=-
         // Here is where we decide how to load the plugins based on the version...
@@ -182,8 +187,7 @@ namespace eirods {
 				return ERROR( false, -1, msg.str() );
 			}
 			
-			//dlclose( handle );
-			return SUCCESS();
+            return SUCCESS();;
 
 		} else {
 			std::stringstream msg;

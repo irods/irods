@@ -2,11 +2,11 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product Enterprise iRODS
-%copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
+%copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
 %vendor Renaissance Computing Institute <info@e-irods.org>
 %license LICENSE
 %readme README
-%description Enterprise edition of the Integrated Rule Oriented Storage system
+%description Enterprise edition of the Integrated Rule Oriented Data System
 %version 3.0b3 300003
 
 
@@ -48,7 +48,13 @@ $ICAT=true
 %requires psqlODBC
 %requires unixODBC
 
-%elseif RPMRESOURCE
+%elseif REDHATRPMRESOURCE
+$REDHAT=true
+$RPM=true
+$RESOURCE=true
+
+%elseif SUSERPMRESOURCE
+$SUSE=true
 $RPM=true
 $RESOURCE=true
 
@@ -211,13 +217,8 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/coverage-pre.sh ./tests/coverage-pre.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/coverage-post.sh ./tests/coverage-post.sh
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest -
-<<<<<<< Updated upstream
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
-=======
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/README ./tests/pydevtest/README
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest ./tests/pydevtest/*.py
->>>>>>> Stashed changes
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/tests/pydevtest/run_pydevtest_coverage.sh ./tests/pydevtest/run_pydevtest_coverage.sh
 %endif
 
@@ -238,6 +239,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
 
 %if RESOURCE
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/setup_resource.sh ./packaging/setup_resource.sh
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/get_icat_server_password.sh ./packaging/get_icat_server_password.sh
 %endif
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc -
@@ -363,7 +365,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsServer ./iRO
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./iRODS/server/bin/irodsReServer
 %if ICAT
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer ./iRODS/server/bin/irodsXmsgServer
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/libunixfilesystem.so ./plugins/resources/libunixfilesystem.so
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./plugins/resources/*.so
 %endif
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsAgent ./iRODS/server/bin/irodsAgent
@@ -888,6 +890,9 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/email.tag ./iRODS/clients/icommands/test/misc/email.tag
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/addRepeatTest.txt ./iRODS/clients/icommands/test/misc/addRepeatTest.txt
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/repeatTest.txt ./iRODS/clients/icommands/test/misc/repeatTest.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/devtestuser-account-ACL.txt ./iRODS/clients/icommands/test/misc/devtestuser-account-ACL.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/load-metadata.txt ./iRODS/clients/icommands/test/misc/load-metadata.txt
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/load-usermods.txt ./iRODS/clients/icommands/test/misc/load-usermods.txt
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/submit_time.pl ./iRODS/clients/icommands/test/submit_time.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/stresstest2.sh ./iRODS/clients/icommands/test/stresstest2.sh
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testiCommands.pl ./iRODS/clients/icommands/test/testiCommands.pl

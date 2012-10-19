@@ -303,12 +303,19 @@ typedef struct {
 
 /* struct that defines a Host Addr */
 
-typedef struct {
+struct rodsHostAddr_t {
     char hostAddr[LONG_NAME_LEN];
     char zoneName[NAME_LEN];
     int portNum;
     int dummyInt;	/* make it to 64 bit boundary */
-} rodsHostAddr_t;
+
+    rodsHostAddr_t& operator=( const rodsHostAddr_t& _rhs ) {
+        strncpy( hostAddr, _rhs.hostAddr, LONG_NAME_LEN );
+        strncpy( zoneName, _rhs.zoneName, NAME_LEN );
+        portNum  = _rhs.portNum;
+        dummyInt = _rhs.dummyInt;
+    }
+};
 
 /* definition for restartState */
 

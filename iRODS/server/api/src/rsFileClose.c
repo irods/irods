@@ -82,7 +82,8 @@ _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 	// =-=-=-=-=-=-=-
 	// call the resource plugin close operation 
     int status = -1;
-	eirods::file_object file_obj( FileDesc[fileCloseInp->fileInx].fileName, 
+	eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileCloseInp->fileInx].fileName, 
                                   FileDesc[fileCloseInp->fileInx].fd,
 								  0, 0 );
 

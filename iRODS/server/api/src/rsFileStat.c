@@ -104,14 +104,14 @@ int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **file
 
 	// =-=-=-=-=-=-=-
 	// make call to stat via resource plugin
-	eirods::file_object file_obj( fileStatInp->fileName, 0, 0, 0 );
+	eirods::file_object file_obj( rsComm, fileStatInp->fileName, 0, 0, 0 );
     eirods::error stat_err = fileStat( file_obj, &myFileStat );
 
 	// =-=-=-=-=-=-=-
 	// log error if necessary
     if( !stat_err.ok() ) {
         #if 0
-		// NOTE :: this spams the log
+		// NOTE :: this spams the log - need to push errors out of rs-Calls
 		std::stringstream msg;
 		msg << "_rsFileStat: fileStat for ";
 		msg << fileStatInp->fileName;

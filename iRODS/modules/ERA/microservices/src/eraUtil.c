@@ -1035,9 +1035,11 @@ genQueryOutToXML(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char **tags)
 	int i, j;
 	size_t size;
 	
-	printCount=0;
-
+	if (!genQueryOut) {
+		return 0;
+	}
 	
+	printCount=0;
 	for (i=0;i<genQueryOut->rowCnt;i++) {
 		
 		if ( (tags[0] != NULL) && strlen(tags[0]) ) {

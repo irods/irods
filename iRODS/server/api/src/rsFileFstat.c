@@ -82,7 +82,8 @@ int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **f
 	// =-=-=-=-=-=-=-
 	// make call to stat via resource plugin
     struct stat myFileStat;
-    eirods::file_object file_obj( FileDesc[fileFstatInp->fileInx].fileName, 
+    eirods::file_object file_obj( rsComm, 
+                                  FileDesc[fileFstatInp->fileInx].fileName, 
 	                              FileDesc[fileFstatInp->fileInx].fd,
 								  0, 0 );
     eirods::error stat_err = fileFstat( file_obj, &myFileStat );

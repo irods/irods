@@ -78,30 +78,21 @@ rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
 
 // =-=-=-=-=-=-=-
 // local function to call readdir via resource plugin
-int _rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, rodsDirent_t **fileReaddirOut ) {
+int _rsFileReaddir( rsComm_t*         _comm, 
+                    fileReaddirInp_t* _file_readdir_inp, 
+                    rodsDirent_t**    _rods_dirent ) {
+	// =-=-=-=-=-=-=-
+    // create a collection_object, and extract dir ptr from the file desc table
+	eirods::collection_object coll_obj( FileDesc[ _file_readdir_inp->fileInx].fileName, 0, 0 );
+	coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[ _file_readdir_inp->fileInx].driverDep ) ); 
 
 	// =-=-=-=-=-=-=-
-    // have to do this for solaris for the odd d_name definition */
-    #if defined(solaris_platform)
-    char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];  
-    struct dirent *myFileDirent = (struct dirent *) fileDirent;
-    #else
-    struct dirent fileDirent;
-    struct dirent *myFileDirent = &fileDirent;
-    #endif
-
-	// =-=-=-=-=-=-=-
-    // make call to readdir via resource plugin
-	eirods::collection_object coll_obj( FileDesc[fileReaddirInp->fileInx].fileName, 0, 0 );
-	coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[fileReaddirInp->fileInx].driverDep ) ); // FIXME :: TEMP, need CTOR/Adaptor
-    eirods::error readdir_err = fileReaddir( coll_obj, myFileDirent );
-
-    // =-=-=-=-=-=-=-
-	// handle errors, if necessary
+    // make call to readdir via resource plugin and handle errors, if necessary
+    eirods::error readdir_err = fileReaddir( coll_obj, _rods_dirent );
     if( !readdir_err.ok() ) {
 		std::stringstream msg;
 		msg << "_rsFileReaddir: fileReaddir for ";
-		msg << FileDesc[fileReaddirInp->fileInx].fileName;
+		msg << FileDesc[ _file_readdir_inp->fileInx].fileName;
 		msg << ", status = ";
 		msg << readdir_err.code();
 		eirods::error err = PASS( false, readdir_err.code(), msg.str(), readdir_err );
@@ -117,15 +108,8 @@ int _rsFileReaddir( rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, rodsDire
 	}
 
     // =-=-=-=-=-=-=-
-	// still in the beginning / middle of a read
-    *fileReaddirOut = (rodsDirent_t*)malloc (sizeof (rodsDirent_t));
-    int status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
-    if( status < 0 ) {
-		free (*fileReaddirOut);
-		*fileReaddirOut = NULL;
-    }
-
-    return (status);
+    // error code holds 'status' of api call
+    return readdir_err.code();
 
 } // _rsFileReaddir 
 

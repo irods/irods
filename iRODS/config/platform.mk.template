@@ -47,7 +47,7 @@ CCFLAGS += -Wunreachable-code
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
 CCFLAGS += -DUSE_EIRODS -fPIC
-LDRFLAGS += -ldl
+LDRFLAGS += -ldl -rdynamic
 
 # =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking

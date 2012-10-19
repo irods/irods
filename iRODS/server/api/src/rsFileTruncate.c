@@ -72,7 +72,7 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
     // =-=-=-=-=-=-=-
 	// make the call to rename via the resource plugin
-    eirods::file_object file_obj( fileTruncateInp->fileName, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileTruncateInp->fileName, 0, 0, 0 );
 	file_obj.size( fileTruncateInp->dataSize );
 	eirods::error trunc_err = fileTruncate( file_obj );
 

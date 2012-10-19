@@ -883,7 +883,7 @@ extern "C" {
 										                     _cmap,
                                          eirods::first_class_object*
 									                         _object,
-										 struct dirent *     _dirent_ptr ) {
+										 struct rodsDirent** _dirent_ptr ) {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -909,11 +909,11 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
 		// make the call to readdir
-		struct dirent * tmpDirentPtr = readdir( coll_obj->directory_pointer() );
+		struct dirent * tmp_dirent = readdir( coll_obj->directory_pointer() );
 
         // =-=-=-=-=-=-=-
 		// handle error cases
-		if( tmpDirentPtr == NULL ) {
+		if( tmp_dirent == NULL ) {
 			if( errno == 0 ) { // just the end 
 				// =-=-=-=-=-=-=-
 				// cache status in out variable
@@ -934,11 +934,17 @@ extern "C" {
 			}
 		} else {
 			// =-=-=-=-=-=-=-
-			// cache status and dirent ptr in out variables
-			(*_dirent_ptr) = (*tmpDirentPtr);
+			// alloc dirent as necessary
+            if( !( *_dirent_ptr ) ) {
+                (*_dirent_ptr ) = reinterpret_cast< rodsDirent_t*>( malloc( sizeof( rodsDirent_t ) ) );
+            }
+
+			// =-=-=-=-=-=-=-
+			// convert standard dirent to rods dirent struct
+            direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
 
 			#if defined(solaris_platform)
-			rstrcpy( _dirent_ptr->d_name, tmpDirentPtr->d_name, MAX_NAME_LEN );
+			rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
 			#endif
 
 		    return CODE( 0 );

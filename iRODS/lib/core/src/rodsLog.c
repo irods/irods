@@ -1114,7 +1114,7 @@ static void rodsNtElog(char *msg);
  recorded.  This is used by both client and server code.
  */
 void
-rodsLog(int level, char *formatStr, ...) {
+rodsLog(int level, const char *formatStr, ...) {
    char bigString[BIG_STRING_LEN];
    char *prefix;
    time_t timeValue;

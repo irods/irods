@@ -9,5 +9,5 @@ myTestRule {
   msiGetCollectionPSmeta(*Coll,*Buf);
   writeBytesBuf("stdout",*Buf);
 }
-INPUT *Coll="/tempZone/home/rods/sub1"
+INPUT *Coll="/tempZone/home/rods/test"
 OUTPUT ruleExecOut

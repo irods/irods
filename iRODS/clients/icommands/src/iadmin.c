@@ -971,8 +971,6 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 
    if (strcmp(cmdToken[0],"mkresc") ==0) {
 	   
-	   printf( "tok7 %s, tok8 %s\n", cmdToken[7], cmdToken[8] );
-
       generalAdmin(0, "add", "resource", cmdToken[1], cmdToken[2], 
 		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
       /* (add resource name type class host path zone) */

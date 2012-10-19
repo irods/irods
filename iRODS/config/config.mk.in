@@ -284,12 +284,12 @@ TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
 GNU_TAR=1 
 # TAR_EXTENDED_HDR = 1
-ifeq ($(OS_platform), osx_platform)
+#ifeq ($(OS_platform), osx_platform)
 TAR_EXEC_PATH="`which tar`"
-else
+#else
 TAR_EXEC_PATH=/bin/tar
-endif
-# tarDir=/data/mwan/tar/libtar-1.2.11
+#endif
+#tarDir=/data/mwan/tar/libtar-1.2.11
 endif
 # ZIP_EXEC_PATH and UNZIP_EXEC_PATH define the paths of zip/unzip executable.
 ZIP_EXEC_PATH=/usr/bin/zip

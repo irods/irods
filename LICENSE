@@ -1,25 +1,9 @@
-UNC [RENCI] Open Source License Agreement
+Copyright (c) 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation
+All rights reserved.
 
-Beta Version Enterprise iRODS ("Software")
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+  * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+  * Neither the name of the University of California, San Diego (UCSD), the University of North Carolina at Chapel Hill nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-PLEASE READ THIS AGREEMENT CAREFULLY BEFORE USING THE SOFTWARE PROVIDED BY THE UNIVERSITY OF NORTH CAROLINA AT CHAPEL HILL ("UNC").  BY USING THE SOFTWARE, YOU SIGNIFY YOUR ASSENT TO AND ACCEPTANCE OF THIS AGREEMENT AND ACKNOWLEDGE YOU HAVE READ AND UNDERSTAND THIS AGREEMENT.  AN INDIVIDUAL ACTING ON BEHALF OF AN ENTITY REPRESENTS THAT HE OR SHE HAS THE AUTHORITY TO ENTER INTO THIS AGREEMENT ON BEHALF OF THAT ENTITY. IF YOU DO NOT ACCEPT THE TERMS OF THIS AGREEMENT, THEN YOU MUST NOT USE THIS SOFTWARE.
-
-1. This License Agreement ("Agreement") is effective as of your access to and/or use of the Software.  This Agreement shall expire upon the earlier of (a) written notice to you by UNC or (b) the first release of version 1.0 of the Software.
-
-2. UNC hereby grants you, during the Beta period, the limited license to access and use the Software.  This license is limited to internal, business or non-commercial use of the Software and does not permit you to sublicense, sell, or otherwise commercially distribute the Software.
-
-3. NOTWITHSTANDING ANYTHING TO THE CONTRARY CONTAINED IN THIS AGREEMENT, IN NO EVENT WILL UNC OR ITS AFFILIATES BE LIABLE TO YOU OR YOUR AFFILIATES FOR DIRECT DAMAGES OR OTHER DAMAGES, INCLUDING, WITHOUT LIMITATION: ANY INCIDENTAL, CONSEQUENTIAL, SPECIAL, INDIRECT, EXEMPLARY OR PUNITIVE DAMAGES, WHETHER ARISING IN TORT, CONTRACT, OR OTHERWISE; OR ANY DAMAGES ARISING OUT OF OR IN CONNECTION WITH ANY MALFUNCTIONS, REGULATORY NON-COMPLIANCE, DELAYS, LOSS OF DATA, LOST PROFITS, LOST SAVINGS, INTERRUPTION OF SERVICE, LOSS OF BUSINESS OR ANTICIPATORY PROFITS, EVEN IF UNC OR ITS AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. 
-
-4. THE SOFTWARE IS PROVIDED BY UNC "AS IS" AND WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE. UNC DOES NOT GUARANTEE OR WARRANT THAT THE USE OF THE SOFTWARE WILL BE UNINTERRUPTED, COMPLY WITH REGULATORY REQUIREMENTS, BE ERROR FREE OR THAT UNC WILL CORRECT ALL SOFTWARE ERRORS. 
-
-5. Miscellaneous.
-
-(a) Severability. If any provision of this Agreement is held invalid or unenforceable for any reason but would be valid and enforceable if appropriately modified, then such provision will apply with the modification necessary to make it valid and enforceable. If such provision cannot be so modified, the parties agree that such invalidity will not affect the validity of the remaining provisions of the Agreement.
-
-(b) Waiver. The delay or failure of either party to exercise any rights under this Agreement will not constitute or be deemed a waiver or forfeiture of such rights. No waiver will be valid unless in writing and signed by an authorized representative of the party against whom such waiver is sought to be enforced.
-
-(c) Amendment. This Agreement may only be amended or modified in a writing signed by the parties, which writing makes specific reference to this Agreement.
-
-(d) Counterparts and Facsimile Signature. In the event this Agreement is executed with signatures, this Agreement may be executed in counterparts, each of which will be deemed an original and all of which will constitute one and the same document. The parties may exchange signature pages by facsimile and such signatures will be effective to bind the parties to all the terms contained in this Agreement.
-
-(e) United States Government End Users. The Software and its documentation are "Commercial items," "Commercial computer software" and "Computer software documentation" as defined by the Federal Acquisition Regulations ("FAR") and Defense Federal Acquisition Regulations Supplement ("DFARS").  Pursuant to FAR 12.211, FAR 12.212, DFARS, 227.7202-1 through 227.7202-4, and their successors, the U.S. Government acquires the Software and its documentation subject to the terms of this Agreement.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

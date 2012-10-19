@@ -10,5 +10,5 @@ myTestRule {
   msiGetDataObjPSmeta(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);
 }
-INPUT *Str="Tester=rods%Event=document", *Path="/tempZone/home/rods/sub1/foo1"
+INPUT *Str="Testing=yes%Event='moon landing' in space!", *Path="/tempZone/home/rods/test/ERAtestfile.txt"
 OUTPUT ruleExecOut

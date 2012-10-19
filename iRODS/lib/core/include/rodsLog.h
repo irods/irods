@@ -45,7 +45,7 @@
 extern "C" {
 #endif
 
-void rodsLog(int level, char *formatStr, ...);
+void rodsLog(int level, const char *formatStr, ...);
 void rodsLogAndErrorMsg (int level, rError_t *myError, int status,
 char *formatStr, ...);
 void rodsLogLevel(int level);

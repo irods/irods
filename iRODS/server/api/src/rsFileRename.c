@@ -81,7 +81,7 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
 
     // =-=-=-=-=-=-=-
 	// make the call to rename via the resource plugin
-    eirods::file_object file_obj( fileRenameInp->oldFileName, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileRenameInp->oldFileName, 0, 0, 0 );
     eirods::error rename_err = fileRename ( file_obj, fileRenameInp->newFileName );
 
     // =-=-=-=-=-=-=-

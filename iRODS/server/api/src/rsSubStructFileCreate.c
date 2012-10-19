@@ -1,9 +1,15 @@
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 #include "structFileDriver.h"
-#include "subStructFileCreate.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+#include "subStructFileCreate.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 
 int
 rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
@@ -60,13 +66,30 @@ rodsServerHost_t *rodsServerHost)
     return fd;
 }
 
-int
-_rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
-{
-    int fd;
+// =-=-=-=-=-=-=-
+// local function to handle sub file creation
+int _rsSubStructFileCreate( rsComm_t*  _comm, 
+                            subFile_t* _sub_file ) {
 
-    fd = subStructFileCreate (rsComm, subFile);
 
-    return (fd);
-}
+    rodsLog( LOG_NOTICE, "XXXX - _rsSubStructFileCreate :: calling fileCreate with structured_object" );
+
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
+
+    eirods::error err = fileCreate( struct_obj );
+ 
+    if( !err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileCreate - failed on call to fileCreate for [";
+        msg << struct_obj.sub_file_path();
+        eirods::log( ERROR( false, -1, msg.str() ) );
+        return 0;
+
+    } else {
+        return err.code();
+
+    }
+
+} // _rsSubStructFileCreate
 

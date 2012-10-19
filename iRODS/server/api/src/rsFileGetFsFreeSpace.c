@@ -83,7 +83,7 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
                            fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
     // =-=-=-=-=-=-=-
 	// make call to freespace via resource plugin
-    eirods::file_object file_obj( fileGetFsFreeSpaceInp->fileName, 
+    eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->fileName, 
 	                              0, 0, fileGetFsFreeSpaceInp->flag );
  
     eirods::error free_err = fileGetFsFreeSpace( file_obj );

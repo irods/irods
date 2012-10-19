@@ -106,7 +106,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
   
     // =-=-=-=-=-=-=-
 	// call resource plugin to open file
-	eirods::file_object file_obj( fileName, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
+	eirods::file_object file_obj( rsComm, fileName, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
     eirods::error ret = fileOpen( file_obj );
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;

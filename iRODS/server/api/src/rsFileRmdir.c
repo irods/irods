@@ -85,14 +85,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 		// recursive. This is a very dangerous operation. curently
 		// it is only used to remove cache directory of structured 
 		// files 
-
-        #if defined(solaris_platform)
-		char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];
-		struct dirent *myFileDirent = (struct dirent *) fileDirent;
-        #else
-		struct dirent fileDirent;
-		struct dirent *myFileDirent = &fileDirent;
-        #endif
+		struct rodsDirent* myFileDirent = 0;
 
 		// =-=-=-=-=-=-=-
 		// if it is not a cache dir, return an error as we only do this
@@ -122,21 +115,22 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 
         // =-=-=-=-=-=-=-
         // read the directory via resource plugin and either handle files or recurse into another directory
-		eirods::error readdir_err = fileReaddir( coll_obj, myFileDirent );
+		eirods::error readdir_err = fileReaddir( coll_obj, &myFileDirent );
 		while( readdir_err.ok() && 0 == readdir_err.code() ) {
 			struct stat statbuf;
 			char myPath[MAX_NAME_LEN];
 
             // =-=-=-=-=-=-=-
 			// handle relative paths
-			if (strcmp (myFileDirent->d_name, ".") == 0 || strcmp (myFileDirent->d_name, "..") == 0) {
-		        readdir_err = fileReaddir( coll_obj, myFileDirent );
+			if( strcmp( myFileDirent->d_name, "."  ) == 0 || 
+                strcmp( myFileDirent->d_name, ".." ) == 0) {
+		        readdir_err = fileReaddir( coll_obj, &myFileDirent );
 				continue;
 			}
 
             // =-=-=-=-=-=-=-
 			// cache path name
-			snprintf( myPath, MAX_NAME_LEN, "%s/%s", fileRmdirInp->dirName, myFileDirent->d_name );
+			snprintf( myPath, MAX_NAME_LEN, "%s/%s", fileRmdirInp->dirName, &myFileDirent->d_name );
 
             // =-=-=-=-=-=-=-
 			// call stat via resource plugin, handle errors
@@ -223,7 +217,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 	
 	        // =-=-=-=-=-=-=-
 			// continue readdir via resource plugin	
-		    readdir_err = fileReaddir( coll_obj, myFileDirent );
+		    readdir_err = fileReaddir( coll_obj, &myFileDirent );
 		
 		} // while
 

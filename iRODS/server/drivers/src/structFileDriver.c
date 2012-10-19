@@ -11,6 +11,10 @@
 int
 subStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
 {
+    #if 1
+    rodsLog( LOG_ERROR, "subStructFileCreate - this should never happen!" );
+    #else
+    return -1;
     structFileType_t myType;
     int subStructFileInx;
     int fd;
@@ -23,6 +27,7 @@ subStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
     
     fd = StructFileDriverTable[subStructFileInx].subStructFileCreate (rsComm, subFile);
     return (fd);
+    #endif
 }
 
 
