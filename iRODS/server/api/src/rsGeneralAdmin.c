@@ -58,15 +58,14 @@ _addChildToResource(
     std::string rescChild(_generalAdminInp->arg3);
     std::string rescContext(_generalAdminInp->arg4);
     std::string rescChildren = rescChild + "{" + rescContext + "}";
-
+    strncpy(rescInfo.rescChildren, rescChildren.c_str(), sizeof rescInfo.rescChildren);
+    
     rodsLog(LOG_NOTICE, "rsGeneralAdmin add child \"%s\" to resource \"%s\"", rescChildren.c_str(),
 	    rescInfo.rescName);
     
-#ifdef COMMENT
     if((result = chlAddChildResc( _rsComm, &rescInfo)) != 0) {
 	chlRollback(_rsComm);
     }
-#endif
     
     return result;
 }
@@ -81,9 +80,9 @@ _removeChildFromResource(
     rescInfo_t rescInfo;
 
     strncpy(rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName);
-    std::string rescChild(_generalAdminInp->arg3);
+    strncpy(rescInfo.rescChildren, _generalAdminInp->arg3, sizeof rescInfo.rescChildren);
 
-    rodsLog(LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescChild.c_str(),
+    rodsLog(LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescInfo.rescChildren,
 	    rescInfo.rescName);
     
 #ifdef COMMENT
@@ -106,7 +105,7 @@ _addResource(
     rescInfo_t rescInfo;
     static const unsigned int argc = 7;
     char *args[argc];
-    
+
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
     strncpy(rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName);

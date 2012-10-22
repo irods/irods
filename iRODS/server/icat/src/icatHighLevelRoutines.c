@@ -30,6 +30,7 @@
 #include "icatLowLevel.h"
 
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -1475,7 +1476,7 @@ _childIsValid(
     if((status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           parent, MAX_NAME_LEN, resc_name.c_str(), localZone, 0, &icss)) != 0) {
         if(status == CAT_NO_ROWS_FOUND) {
-            std::stringstream ss(std::stringstream::in);
+            std::stringstream ss;
             ss << "Child resource \"" << resc_name << "\" not found";
             eirods::log(LOG_NOTICE, ss.str());
         } else {
@@ -1483,7 +1484,7 @@ _childIsValid(
         }
         result = false;
     } else if(strlen(parent) != 0) {
-        std::stringstream ss(std::stringstream::in);
+        std::stringstream ss;
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
         eirods::log(LOG_NOTICE, ss.str());
         result = false;
@@ -1508,20 +1509,25 @@ _updateRescChildren(
         result = status;
     } else {
         std::string children_string(children);
-        std::stringstream ss(std::stringstream::in);
-        ss << children_string << ";" << _new_child_string;
-        children_string = ss.str();
+        std::stringstream ss;
+        if(children_string.empty()) {
+            ss << _new_child_string;
+        } else {
+            ss << children_string << ";" << _new_child_string;
+        }
+        std::string combined_children = ss.str();
+
         // have to do this to avoid const issues
-        char* tmp_children = strdup(children_string.c_str());
+        char* tmp_children = strdup(combined_children.c_str());
         getNowStr(myTime);
         cllBindVarCount = 0;
         cllBindVars[cllBindVarCount++] = tmp_children;
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = _resc_id;
         logger.log();
-        if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=?, "
+        if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=? "
                                            "where resc_id=?", &icss)) != 0) {
-            std::stringstream ss(std::stringstream::in);
+            std::stringstream ss;
             ss << "_updateRescChildren cmlExecuteNoAnswerSql update failure " << status;
             eirods::log(LOG_NOTICE, ss.str());
             _rollback("_updateRescChildren");
@@ -1547,7 +1553,7 @@ _updateChildParent(
     
     resc_id[0] = '\0';
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                                          resc_id, MAX_NAME_LEN, _parent.c_str(), localZone, 0,
+                                          resc_id, MAX_NAME_LEN, child.c_str(), localZone, 0,
                                           &icss)) != 0) {
         if(status == CAT_NO_ROWS_FOUND) {
             result = CAT_INVALID_RESOURCE;
@@ -1556,6 +1562,7 @@ _updateChildParent(
             result = status;
         }
     } else {
+
         // have to do this to get around const
         char* tmp_parent = strdup(_parent.c_str());
         getNowStr(myTime);
@@ -1564,9 +1571,9 @@ _updateChildParent(
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = resc_id;
         logger.log();
-        if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=?, "
+        if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_parent=?, modify_ts=? "
                                            "where resc_id=?", &icss)) != 0) {
-            std::stringstream ss(std::stringstream::in);
+            std::stringstream ss;
             ss << "_updateChildParent cmlExecuteNoAnswerSql update failure " << status;
             eirods::log(LOG_NOTICE, ss.str());
             _rollback("_updateChildParent");
@@ -1595,6 +1602,7 @@ chlAddChildResc(
     char resc_id[MAX_NAME_LEN];
     
     logger.log();
+
     if(!(result = _canConnectToCatalog(rsComm))) {
 
         if((status = getLocalZone())) {
@@ -1632,13 +1640,13 @@ chlAddChildResc(
                     snprintf(commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, new_child_string.c_str()); 
                     if((status = cmlAudit3(AU_ADD_CHILD_RESOURCE, resc_id, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
                                            commentStr, &icss)) != 0) {
-                        std::stringstream ss(std::stringstream::in);
+                        std::stringstream ss;
                         ss << "chlAddChildResc cmlAudit3 failure " << status;
                         eirods::log(LOG_NOTICE, ss.str());
                         _rollback("chlAddChildResc");
                         result = status;
                     } else if((status =  cmlExecuteNoAnswerSql("commit", &icss)) != 0) {
-                        std::stringstream ss(std::stringstream::in);
+                        std::stringstream ss;
                         ss << "chlAddChildResc cmlExecuteNoAnswerSql commit failure " << status;
                         eirods::log(LOG_NOTICE, ss.str());
                         result = status;
@@ -1765,10 +1773,6 @@ int chlRegResc(rsComm_t *rsComm,
     cllBindVars[11]=rescInfo->rescParent;
     cllBindVarCount=12;
 
-    rodsLog(LOG_ERROR, "qqq - should hit this");
-    rodsLog(LOG_NOTICE, "qqq - Parent: \"%s\",\tChildren: \"%s\",\tContext: \"%s\"",
-            cllBindVars[11], cllBindVars[9], cllBindVars[10]);
-    
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 4");
     status =  cmlExecuteNoAnswerSql(
         "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?)",

@@ -26,6 +26,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
     keyValPair_t *condInput);
 int chlRegResc(rsComm_t *rsComm, rescInfo_t *rescInfo);
+int chlAddChildResc(rsComm_t* rsComm, rescInfo_t* rescInfo);
 int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun=0 ); // JMC
 int chlRollback(rsComm_t *rsComm);
 int chlCommit(rsComm_t *rsComm);
