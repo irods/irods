@@ -147,16 +147,16 @@ if [ "$1" == "clean" ] ; then
     rm -rf $MANDIR
     rm -f manual.pdf
     rm -f libe-irods.a
+    rm -f plugins/resources/*.so
     set +e
     echo "Cleaning EPM residuals..."
     rm -rf linux-2.*
     rm -rf linux-3.*
     rm -rf macosx-10.*
-    cd epm
-    make clean > /dev/null 2>&1
-    make distclean > /dev/null 2>&1
+    rm -rf epm
+    rm -rf epm*
     echo "Cleaning iRODS residuals..."
-    cd ../iRODS
+    cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1
     rm -rf doc/html
     rm -f server/config/reConfigs/raja1.re
