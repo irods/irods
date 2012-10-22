@@ -452,6 +452,14 @@ if [ "$PREFLIGHT" != "" ] ; then
     exit 1
 fi
 
+if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
+    echo "#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+    echo "$PREFLIGHTDOWNLOAD" 1>&2
+    echo "#######################################################" 1>&2
+    exit 1
+fi
+
 ROMAN=`python -c "import roman"`
 if [ "$?" != "0" ] ; then
     PYPREFLIGHT="$PYPREFLIGHT roman"
