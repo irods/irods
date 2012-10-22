@@ -347,7 +347,7 @@ else
     echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
 fi
 
-LIBTARDEV=`find /usr/include/ -name libtar.h 2> /dev/null`
+LIBTARDEV=`find /usr/ -name libtar.h 2> /dev/null`
 if [ "$LIBTARDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         PREFLIGHT="$PREFLIGHT libtar-dev"
