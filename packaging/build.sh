@@ -244,7 +244,7 @@ if [ $1 == "icat" ] ; then
         elif [ "$DETECTEDOS" == "MacOSX" ] ; then
             PREFLIGHT="$PREFLIGHT unixodbc" # not confirmed as successful
         else
-            PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html\n"
+            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html"
         fi
     else
         echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
@@ -271,7 +271,7 @@ if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/wget/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/wget/"
     fi
 else
     WGETVERSION=`wget --version | head -n1 | awk '{print $3}'`
@@ -291,7 +291,7 @@ if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org"
     fi
 else
     DOXYGENVERSION=`doxygen --version`
@@ -311,8 +311,8 @@ if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/help2man/\n"
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      ::                http://mirrors.kernel.org/gnu/help2man/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/help2man/"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      ::                http://mirrors.kernel.org/gnu/help2man/"
     fi
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
@@ -339,7 +339,7 @@ if [ "$BOOST" == "" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT boost"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
     fi
 else
     BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
@@ -354,7 +354,7 @@ if [ "$LIBTARDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT libtar-devel"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.feep.net/libtar/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.feep.net/libtar/"
     fi
 else
     echo "Detected libtar.h library [$LIBTARDEV]"
@@ -372,7 +372,7 @@ if [ "$OPENSSLDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT libssl_dev"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.openssl.org/source/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.openssl.org/source/"
     fi
 else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
@@ -391,7 +391,7 @@ if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.postgresql.org/download/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.postgresql.org/download/"
     fi
 else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
@@ -411,7 +411,7 @@ if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
         PREFLIGHT="$PREFLIGHT"
         # should have distribute included already
     else
-        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/\n"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/"
     fi
 else
     echo "Detected easy_install [$EASYINSTALL]"
