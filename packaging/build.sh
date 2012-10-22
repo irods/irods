@@ -8,6 +8,7 @@ RELEASE="0"
 BUILDEIRODS="1"
 COVERAGEBUILDDIR="/var/lib/e-irods"
 PREFLIGHT=""
+PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
 
 USAGE="
@@ -243,7 +244,7 @@ if [ $1 == "icat" ] ; then
         elif [ "$DETECTEDOS" == "MacOSX" ] ; then
             PREFLIGHT="$PREFLIGHT unixodbc" # not confirmed as successful
         else
-            echo "      :: download from: http://www.unixodbc.org/download.html" 1>&2
+            PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html\n"
         fi
     else
         echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
@@ -270,7 +271,7 @@ if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
     else
-        echo "      :: download from: http://www.gnu.org/software/wget/" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/wget/\n"
     fi
 else
     WGETVERSION=`wget --version | head -n1 | awk '{print $3}'`
@@ -290,7 +291,7 @@ if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
     else
-        echo "      :: download from: http://doxygen.org" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org\n"
     fi
 else
     DOXYGENVERSION=`doxygen --version`
@@ -310,8 +311,8 @@ if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
     else
-        echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
-        echo "      ::                http://mirrors.kernel.org/gnu/help2man/" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/help2man/\n"
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      ::                http://mirrors.kernel.org/gnu/help2man/\n"
     fi
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
@@ -338,7 +339,7 @@ if [ "$BOOST" == "" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT boost"
     else
-        echo "      :: download from: http://www.boost.org/users/download/" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/\n"
     fi
 else
     BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
@@ -353,7 +354,7 @@ if [ "$LIBTARDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT libtar-devel"
     else
-        echo "      :: download from: http://www.feep.net/libtar/" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.feep.net/libtar/\n"
     fi
 else
     echo "Detected libtar.h library [$LIBTARDEV]"
@@ -371,7 +372,7 @@ if [ "$OPENSSLDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT libssl_dev"
     else
-        echo "      :: download from: http://www.openssl.org/source/" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.openssl.org/source/\n"
     fi
 else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
@@ -390,7 +391,7 @@ if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
     else
-        echo "      :: DETECTED OTHER OS" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://www.postgresql.org/download/\n"
     fi
 else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
@@ -410,7 +411,7 @@ if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
         PREFLIGHT="$PREFLIGHT"
         # should have distribute included already
     else
-        echo "      :: download from: http://pypi.python.org/pypi/setuptools/" 1>&2
+        PREFLIGHTDOWNLOAD="$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/\n"
     fi
 else
     echo "Detected easy_install [$EASYINSTALL]"
@@ -455,7 +456,7 @@ ROMAN=`python -c "import roman"`
 if [ "$?" != "0" ] ; then
     PYPREFLIGHT="$PYPREFLIGHT roman"
 else
-    ROMANLOCATION=`find /usr /Library /opt 2> /dev/null | grep "/roman.pyc"`
+    ROMANLOCATION=`python -c "import roman; print roman.__file__"` # expecting ".../roman.pyc"
     echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
