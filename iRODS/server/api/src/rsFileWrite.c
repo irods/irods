@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsFileWrite.c - server routine that handles the fileWrite
@@ -17,7 +19,7 @@
 
 int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
-bytesBuf_t *fileWriteInpBBuf)
+             bytesBuf_t *fileWriteInpBBuf)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -25,20 +27,20 @@ bytesBuf_t *fileWriteInpBBuf)
 
 
     remoteFlag = getServerHostByFileInx (fileWriteInp->fileInx, 
-      &rodsServerHost);
+                                         &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
 	retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
         retVal = remoteFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf,
-          rodsServerHost);
+                                  rodsServerHost);
     } else {
 	if (remoteFlag < 0) {
 	    return (remoteFlag);
 	} else {
 	    rodsLog (LOG_NOTICE,
-	      "rsFileWrite: resolveHost returned unrecognized value %d",
-	       remoteFlag);
+                     "rsFileWrite: resolveHost returned unrecognized value %d",
+                     remoteFlag);
 	    return (SYS_UNRECOGNIZED_REMOTE_FLAG);
 	}
     }
@@ -52,13 +54,13 @@ bytesBuf_t *fileWriteInpBBuf)
 
 int
 remoteFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, 
-bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost)
+                 bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost)
 {
     int retVal;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-	  "remoteFileWrite: Invalid rodsServerHost");
+                 "remoteFileWrite: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -68,12 +70,12 @@ bytesBuf_t *fileWriteInpBBuf, rodsServerHost_t *rodsServerHost)
 
     fileWriteInp->fileInx = convL3descInx (fileWriteInp->fileInx);
     retVal = rcFileWrite (rodsServerHost->conn, fileWriteInp, 
-      fileWriteInpBBuf);
+                          fileWriteInpBBuf);
 
     if (retVal < 0) { 
         rodsLog (LOG_NOTICE,
-	 "remoteFileWrite: rcFileWrite failed for %s",
-	  FileDesc[fileWriteInp->fileInx].fileName);
+                 "remoteFileWrite: rcFileWrite failed for %s",
+                 FileDesc[fileWriteInp->fileInx].fileName);
     }
 
     return retVal;
@@ -87,25 +89,25 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
     // when RCAT is available 
 
     // =-=-=-=-=-=-=-
-	// make a call to the resource write
+    // make a call to the resource write
     eirods::file_object file_obj( rsComm,
                                   FileDesc[fileWriteInp->fileInx].fileName,
                                   FileDesc[fileWriteInp->fileInx].fd,
-								  0, 0 ); 
+                                  0, 0 ); 
  
     eirods::error write_err = fileWrite( file_obj,										 
-	                                     fileWriteInpBBuf->buf,
+                                         fileWriteInpBBuf->buf,
                                          fileWriteInp->len );
     // =-=-=-=-=-=-=-
-	// log error if necessary
+    // log error if necessary
     if( !write_err.ok() ) {
         std::stringstream msg;
-		msg << "_rsFileWrite: fileWrite for ";
-		msg << file_obj.physical_path();
-		msg << ", status = ";
-		msg << write_err.code();
-	    eirods::error err = PASS( false, write_err.code(), msg.str(), write_err );
-		eirods::log( err ); 
+        msg << "_rsFileWrite: fileWrite for ";
+        msg << file_obj.physical_path();
+        msg << ", status = ";
+        msg << write_err.code();
+        eirods::error err = PASS( false, write_err.code(), msg.str(), write_err );
+        eirods::log( err ); 
     }
 
     return write_err.code();

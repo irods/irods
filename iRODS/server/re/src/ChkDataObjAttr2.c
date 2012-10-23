@@ -1145,7 +1145,7 @@ int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei)
   int iErr = 0, iI = 0, i = 0;
   UserDefinedMetadata_t aAVUarray[1024];
   int iCountUserDefinedMetadata = 0;
-  char strOut[MAX_NAME_LEN * MAX_NAME_LEN], strTmp[1024];
+  char strOut[MAX_NAME_LEN * MAX_NAME_LEN], strTmp[MAX_NAME_LEN];
 
   /* For testing mode when used with irule --test */
   RE_TEST_MACRO
@@ -1205,7 +1205,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol2 (collInp_t * ptrInpColl,
 				       ruleExecInfo_t * rei)
 {
   char *chrPtr1 =
-    NULL, strAbsPath[MAX_NAME_LEN], v1[1024], v2[1024], v3[1024],
+    NULL, strAbsPath[MAX_NAME_LEN], v1[MAX_NAME_LEN], v2[MAX_NAME_LEN], v3[MAX_NAME_LEN],
     strDirName[MAX_NAME_LEN], strFileName[MAX_NAME_LEN], *condVal[10],
     attrName[256] = "MD5checkSumDataStamp";;
   genQueryInp_t genQueryInp;
