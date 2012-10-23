@@ -251,7 +251,7 @@ if [ $1 == "icat" ] ; then
     fi
 fi
 
-if [ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ] ; then
+if [[ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ]] ; then
     PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
     if [[ "$?" != "0" || `echo $PYTHONDEV | awk '{print $1}'` == "no" ]] ; then
         if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
