@@ -251,10 +251,22 @@ if [ $1 == "icat" ] ; then
     fi
 fi
 
-RPMBUILD=`which rpmbuild`
-if [[ "$?" != "0" || `echo $RPMBUILD | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT rpm-build"
+if [ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ] ; then
+    PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
+    if [[ "$?" != "0" || `echo $PYTHONDEV | awk '{print $1}'` == "no" ]] ; then
+        if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT python-devel"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT python-devel"
+        fi
+    fi
+    RPMBUILD=`which rpmbuild`
+    if [[ "$?" != "0" || `echo $RPMBUILD | awk '{print $1}'` == "no" ]] ; then
+        if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT rpm-build"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT rpm-build"
+       fi
     fi
 fi
 
