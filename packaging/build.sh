@@ -253,7 +253,7 @@ fi
 
 if [[ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ]] ; then
     PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
-    if [[ "$?" != "0" || `echo $PYTHONDEV | awk '{print $1}'` == "no" ]] ; then
+    if [[ "$PYTHONDEV" == "" ]] ; then
         if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
             PREFLIGHT="$PREFLIGHT python-devel"
         elif [ "$DETECTEDOS" == "SuSE" ] ; then
