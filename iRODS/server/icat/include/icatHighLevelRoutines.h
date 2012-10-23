@@ -28,6 +28,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 int chlRegResc(rsComm_t *rsComm, rescInfo_t *rescInfo);
 int chlAddChildResc(rsComm_t* rsComm, rescInfo_t* rescInfo);
 int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun=0 ); // JMC
+int chlDelChildResc(rsComm_t* rsComm, rescInfo_t* rescInfo);
 int chlRollback(rsComm_t *rsComm);
 int chlCommit(rsComm_t *rsComm);
 int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo);

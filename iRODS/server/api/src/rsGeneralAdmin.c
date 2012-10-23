@@ -85,11 +85,9 @@ _removeChildFromResource(
     rodsLog(LOG_NOTICE, "rsGeneralAdmin remove child \"%s\" from resource \"%s\"", rescInfo.rescChildren,
 	    rescInfo.rescName);
     
-#ifdef COMMENT
-    if((result = chlAddChildResc( _rsComm, &rescInfo)) != 0) {
+    if((result = chlDelChildResc( _rsComm, &rescInfo)) != 0) {
 	chlRollback(_rsComm);
     }
-#endif
     
     return result;
 }

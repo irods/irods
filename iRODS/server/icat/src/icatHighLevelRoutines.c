@@ -1808,6 +1808,122 @@ int chlRegResc(rsComm_t *rsComm,
     return(status);
 }
 
+int
+_removeRescChild(
+    char* _resc_id,
+    const std::string& _child_string) {
+
+    int result = 0;
+    int status;
+    char children[MAX_PATH_ALLOWED];
+    char myTime[50];
+    eirods::sql_logger logger("_removeRescChild", logSQL);
+    
+    if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_id=?",
+                                          children, MAX_PATH_ALLOWED, _resc_id, 0, 0, &icss)) != 0) {
+        _rollback("_updateRescChildren");
+        result = status;
+    } else {
+        std::string::size_type index = _child_string.find('{');
+        std::string child;
+        if(index != std::string::npos) {
+            child = _child_string.substr(0, index);
+        } else {
+            child = _child_string;
+        }
+
+        std::string children_string(children);
+        index = children_string.find(child);
+        if(index == std::string::npos) {
+            std::stringstream ss;
+            ss << "_removeChildFromResource parent has no child \"" << child << "\'";
+            eirods::log(LOG_NOTICE, ss.str());
+            result = CAT_INVALID_CHILD;
+        } else {
+            std::string::size_type end_index = children_string.find(';', index);
+            if(end_index != std::string::npos) {
+                children_string.erase(index, (end_index + 1) - index);
+            } else {
+                children_string.erase(index);
+            }
+            
+            // have to do this to avoid const issues
+            char* tmp_children = strdup(children_string.c_str());
+            getNowStr(myTime);
+            cllBindVarCount = 0;
+            cllBindVars[cllBindVarCount++] = tmp_children;
+            cllBindVars[cllBindVarCount++] = myTime;
+            cllBindVars[cllBindVarCount++] = _resc_id;
+            logger.log();
+            if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=? "
+                                               "where resc_id=?", &icss)) != 0) {
+                std::stringstream ss;
+                ss << "_removeRescChild cmlExecuteNoAnswerSql update failure " << status;
+                eirods::log(LOG_NOTICE, ss.str());
+                _rollback("_removeRescChild");
+                result = status;
+            }
+            free(tmp_children);
+        }
+    }
+    return result;
+}
+
+// Remove a child from its parent
+int
+chlDelChildResc(
+    rsComm_t* rsComm,
+    rescInfo_t* rescInfo) {
+
+    eirods::sql_logger logger("chlDelChildResc", logSQL);
+    int result = 0;
+    int status;
+    char resc_id[MAX_NAME_LEN];
+    std::string child_string(rescInfo->rescChildren);
+    
+    if(!(result = _canConnectToCatalog(rsComm))) {
+        if((status = getLocalZone())) {
+            result = status;
+        } else {
+            logger.log();
+
+            resc_id[0] = '\0';
+            if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                                  resc_id, MAX_NAME_LEN, rescInfo->rescName, localZone, 0,
+                                                  &icss)) != 0) {
+                if(status == CAT_NO_ROWS_FOUND) {
+                    result = CAT_INVALID_RESOURCE;
+                } else {
+                    _rollback("chlDelChildResc");
+                    result = status;
+                }
+            } else if((status = _updateChildParent(child_string, std::string(""))) != 0) {
+                result = status;
+            } else if((status = _removeRescChild(resc_id, child_string)) != 0) {
+                result = status;
+            } else {
+
+                /* Audit */
+                char commentStr[1024]; // this prolly should be better sized
+                snprintf(commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, child_string.c_str()); 
+                if((status = cmlAudit3(AU_DEL_CHILD_RESOURCE, resc_id, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+                                       commentStr, &icss)) != 0) {
+                    std::stringstream ss;
+                    ss << "chlDelChildResc cmlAudit3 failure " << status;
+                    eirods::log(LOG_NOTICE, ss.str());
+                    _rollback("chlDelChildResc");
+                    result = status;
+                } else if((status =  cmlExecuteNoAnswerSql("commit", &icss)) != 0) {
+                    std::stringstream ss;
+                    ss << "chlDelChildResc cmlExecuteNoAnswerSql commit failure " << status;
+                    eirods::log(LOG_NOTICE, ss.str());
+                    result = status;
+                }
+            }
+        }
+    }
+    return result;
+}
 
 /* delete a Resource */
 int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {

@@ -333,6 +333,7 @@
 #define CAT_UNKNOWN_SPECIFIC_QUERY       -853000
 #define CAT_PSEUDO_RESC_MODIFY_DISALLOWED -854000 // JMC - backport 4629
 #define CAT_BIND_VARIABLE_LIMIT_EXCEEDED  -856000 // JMC - backport 4848
+#define CAT_INVALID_CHILD                -857000
 
 /* 880,000 to 899,000  RDA errors  */
 #define RDA_NOT_COMPILED_IN             -880000
