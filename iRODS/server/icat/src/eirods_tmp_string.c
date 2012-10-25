@@ -4,7 +4,6 @@
 #include "eirods_tmp_string.h"
 
 #include <string.h>
-#include <malloc.h>
 
 namespace eirods {
 
@@ -12,14 +11,16 @@ namespace eirods {
         const char* orig) : string_(0){
 
         if(orig != 0) {
-            string_ = strdup(orig);
+            int length = strlen(orig);
+            string_ = new char[length + 1];
+            strncpy(string_, orig, length + 1);
         }
     }
 
     
     tmp_string::~tmp_string(void) {
         if(string_ != 0) {
-            free(string_);
+            delete string_;
         }
     }
 
