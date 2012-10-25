@@ -9,13 +9,13 @@ namespace eirods {
 
     class tmp_string {
     public:
-	tmp_string(const char* orig);
-	virtual ~tmp_string(void);
+        tmp_string(const char* orig);
+        virtual ~tmp_string(void);
 
-	char* str(void) { return string_; }
-	
+        char* str(void) { return string_; }
+        
     private:
-	char* string_;
+        char* string_;
     };
     
 }; // namespace eirods
