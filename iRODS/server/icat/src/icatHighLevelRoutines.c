@@ -280,17 +280,17 @@ chlGetLocalZone() {
  * chlModDataObjMeta - Modify the metadata of an existing data object. 
  * Input - rsComm_t *rsComm  - the server handle
  *         dataObjInfo_t *dataObjInfo - contains info about this copy of
- *	   a data object.
- *	   keyValPair_t *regParam - the keyword/value pair of items to be
- *	   modified. Valid keywords are given in char *dataObjCond[] in
- *	   rcGlobal.h. 
- *	   If the keyword ALL_REPL_STATUS_KW is used
- *	   the replStatus of the copy specified by dataObjInfo 
- *	   is marked NEWLY_CREATED_COPY and all other copies are
- *	   be marked OLD_COPY.  
+ *         a data object.
+ *         keyValPair_t *regParam - the keyword/value pair of items to be
+ *         modified. Valid keywords are given in char *dataObjCond[] in
+ *         rcGlobal.h. 
+ *         If the keyword ALL_REPL_STATUS_KW is used
+ *         the replStatus of the copy specified by dataObjInfo 
+ *         is marked NEWLY_CREATED_COPY and all other copies are
+ *         be marked OLD_COPY.  
  */
 int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-		      keyValPair_t *regParam) {
+                      keyValPair_t *regParam) {
     int i, j, status, upCols;
     rodsLong_t iVal = 0; // JMC cppcheck - uninit var
     int status2;
@@ -749,7 +749,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
  * from dstDataObjInfo, and a new row inserted.
  */
 int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
-		  dataObjInfo_t *dstDataObjInfo, keyValPair_t *condInput) {
+                  dataObjInfo_t *dstDataObjInfo, keyValPair_t *condInput) {
     char myTime[50];
     char logicalFileName[MAX_NAME_LEN];
     char logicalDirName[MAX_NAME_LEN];
@@ -965,7 +965,7 @@ static int removeAVUs() {
  * unregDataObj - Unregister a data object
  * Input - rsComm_t *rsComm  - the server handle
  *         dataObjInfo_t *dataObjInfo - contains info about the data object.
- *	   keyValPair_t *condInput - used to specify a admin-mode.
+ *         keyValPair_t *condInput - used to specify a admin-mode.
  */
 int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
                      keyValPair_t *condInput) {
@@ -1233,8 +1233,8 @@ int chlRegRuleExec(rsComm_t *rsComm,
  * Rule Execution object. 
  * Input - rsComm_t *rsComm  - the server handle
  *         char *ruleExecId - the id of the object to change
- *	   keyValPair_t *regParam - the keyword/value pair of items to be
- *	   modified.
+ *         keyValPair_t *regParam - the keyword/value pair of items to be
+ *         modified.
  */
 int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
                    keyValPair_t *regParam) {
@@ -1469,7 +1469,6 @@ _childIsValid(
     int status;
     std::string::size_type index = _new_child.find("{");
     std::string resc_name = _new_child.substr(0, index);
-    eirods::log(LOG_NOTICE, std::string("qqq - Child resource: ") + resc_name);
     eirods::sql_logger logger("_childIsValid", logSQL);
     logger.log();
     parent[0] = '\0';
@@ -1660,7 +1659,7 @@ chlAddChildResc(
 
 /* register a Resource */
 int chlRegResc(rsComm_t *rsComm, 
-	       rescInfo_t *rescInfo) {
+               rescInfo_t *rescInfo) {
     rodsLong_t seqNum;
     char idNum[MAX_SQL_SIZE];
     int status;
@@ -1925,9 +1924,47 @@ chlDelChildResc(
     return result;
 }
 
+bool
+_rescHasParentOrChild(
+    char* rescId) {
+
+    bool result = false;
+    char parent[MAX_NAME_LEN];
+    char children[MAX_NAME_LEN];
+    int status;
+    eirods::sql_logger logger("_rescHasParentOrChild", logSQL);
+
+    logger.log();
+    parent[0] = '\0';
+    children[0] = '\0';
+    if((status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_id=?",
+                                          parent, MAX_NAME_LEN, rescId, 0, 0, &icss)) != 0) {
+        if(status == CAT_NO_ROWS_FOUND) {
+            std::stringstream ss;
+            ss << "Resource \"" << rescId << "\" not found";
+            eirods::log(LOG_NOTICE, ss.str());
+        } else {
+            _rollback("_rescHasParentOrChild");
+        }
+        result = false;
+    } else if(strlen(parent) != 0) {
+        result = true;
+    } else if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_id=?",
+                                                 children, MAX_NAME_LEN, rescId, 0, 0, &icss)) !=0) {
+        if(status != CAT_NO_ROWS_FOUND) {
+            _rollback("_rescHasParentOrChild");
+        }
+        result = false;
+    } else if(strlen(children) != 0) {
+        result = true;
+    }
+    return result;
+    
+}
+
 /* delete a Resource */
 int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
-	  
+          
     int status;
     rodsLong_t iVal;
     char rescId[MAX_NAME_LEN];
@@ -1999,6 +2036,16 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
         return(status);
     }
 
+    if(_rescHasParentOrChild(rescId)) {
+        int i;
+        char errMsg[105];
+        snprintf(errMsg, 100, 
+                 "resource '%s' has a parent or child",
+                 rescInfo->rescName);
+        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        return(CAT_RESOURCE_NOT_EMPTY);
+    }
+    
     cllBindVars[cllBindVarCount++]=rescInfo->rescName;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlDelResc SQL 3");
     status = cmlExecuteNoAnswerSql(
@@ -2770,8 +2817,8 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
 /* register a Zone */
 int chlRegZone(rsComm_t *rsComm, 
-	       char *zoneName, char *zoneType, char *zoneConnInfo, 
-	       char *zoneComment) {
+               char *zoneName, char *zoneType, char *zoneConnInfo, 
+               char *zoneComment) {
     char nextStr[MAX_NAME_LEN];
     char tSQL[MAX_SQL_SIZE];
     int status;
@@ -3241,9 +3288,9 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
 
 */
 int chlSimpleQuery(rsComm_t *rsComm, char *sql, 
-		   char *arg1, char *arg2, char *arg3, char *arg4,
-		   int format, int *control,
-		   char *outBuf, int maxOutBuf) {
+                   char *arg1, char *arg2, char *arg3, char *arg4,
+                   int format, int *control,
+                   char *outBuf, int maxOutBuf) {
     int stmtNum, status, nCols, i, needToGet, didGet;
     int rowSize;
     int rows;
@@ -3683,8 +3730,8 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    Called from rsAuthCheck.
 */
 int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
-		 char *username, 
-		 int *userPrivLevel, int *clientPrivLevel) {
+                 char *username, 
+                 int *userPrivLevel, int *clientPrivLevel) {
 
     int status;
     char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
@@ -4978,7 +5025,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
     cllBindVars[cllBindVarCount++]=updateValueStr;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=rescName;
-	       
+               
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescFreeSpace SQL 1 ");
     status =  cmlExecuteNoAnswerSql(
         "update R_RESC_MAIN set free_space = ?, free_space_ts=? where resc_name=?",
@@ -6273,8 +6320,8 @@ checkModArgType(char *arg) {
 
 /* Modify an Attribute-Value [Units] pair/triple metadata item of an object*/
 int chlModAVUMetadata(rsComm_t *rsComm, char *type, 
-		      char *name, char *attribute, char *value,  
-		      char *unitsOrArg0, char *arg1, char *arg2, char *arg3) {
+                      char *name, char *attribute, char *value,  
+                      char *unitsOrArg0, char *arg1, char *arg2, char *arg3) {
     int status, atype;
     char myUnits[MAX_NAME_LEN]="";
     char *addAttr="", *addValue="", *addUnits="";
@@ -6354,8 +6401,8 @@ int chlModAVUMetadata(rsComm_t *rsComm, char *type,
 /* option is 0: normal, 1: use wildcards, 2: input is id not type,name,units */
 /* noCommit: if 1: skip the commit (only used by chlModAVUMetadata) */
 int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type, 
-			 char *name, char *attribute, char *value,  
-			 char *units, int noCommit ) {
+                         char *name, char *attribute, char *value,  
+                         char *units, int noCommit ) {
     int itype;
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
@@ -6914,8 +6961,8 @@ int chlModAccessControlResc(rsComm_t *rsComm, int recursiveFlag,
  * "n" (null or none) used to remove access.
  */
 int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
-			char* accessLevel, char *userName, char *zone, 
-			char* pathName) {
+                        char* accessLevel, char *userName, char *zone, 
+                        char* pathName) {
     char *myAccessLev=NULL;
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
@@ -7660,7 +7707,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
  * collection.
  */
 int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
-		  rodsLong_t targetCollId) {
+                  rodsLong_t targetCollId) {
     int status;
     rodsLong_t collId;
     rodsLong_t otherDataId;
@@ -8128,10 +8175,10 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
  *    input values.
  */
 int chlRegServerLoad(rsComm_t *rsComm, 
-		     char *hostName, char *rescName,
-		     char *cpuUsed, char *memUsed, char *swapUsed, 
-		     char *runqLoad, char *diskSpace, char *netInput, 
-		     char *netOutput) {
+                     char *hostName, char *rescName,
+                     char *cpuUsed, char *memUsed, char *swapUsed, 
+                     char *runqLoad, char *diskSpace, char *netInput, 
+                     char *netOutput) {
     char myTime[50];
     int status;
     int i;
@@ -8231,7 +8278,7 @@ int chlPurgeServerLoad(rsComm_t *rsComm, char *secondsAgo) {
  *    input values.
  */
 int chlRegServerLoadDigest(rsComm_t *rsComm, 
-			   char *rescName, char *loadFactor) {
+                           char *rescName, char *loadFactor) {
     char myTime[50];
     int status;
     int i;
@@ -8521,7 +8568,7 @@ int chlCalcUsageAndQuota(rsComm_t *rsComm) {
 }
 
 int chlSetQuota(rsComm_t *rsComm, char *type, char *name, 
-		char *rescName, char* limit) {
+                char *rescName, char* limit) {
     int status;
     rodsLong_t rescId;
     rodsLong_t userId;
@@ -8634,7 +8681,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
 
 int 
 chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
-	      rodsLong_t *userQuota, int *quotaStatus) {
+              rodsLong_t *userQuota, int *quotaStatus) {
 /* 
    Check on a user's quota status, returning the most-over or
    nearest-over value.
@@ -8724,9 +8771,9 @@ chlDelUnusedAVUs(rsComm_t *rsComm) {
  */
 int
 chlInsRuleTable(rsComm_t *rsComm, 
-		char *baseName, char *mapPriorityStr,  char *ruleName,
-		char *ruleHead, char *ruleCondition, char *ruleAction, 
-		char *ruleRecovery, char *ruleIdStr, char *myTime) {
+                char *baseName, char *mapPriorityStr,  char *ruleName,
+                char *ruleHead, char *ruleCondition, char *ruleAction, 
+                char *ruleRecovery, char *ruleIdStr, char *myTime) {
     int status;
     int i;
     rodsLong_t seqNum = -1;
@@ -9162,7 +9209,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
  */
 int
 chlVersionRuleBase(rsComm_t *rsComm,
-		   char *baseName, char *myTime) {
+                   char *baseName, char *myTime) {
 
     int i, status;
 
