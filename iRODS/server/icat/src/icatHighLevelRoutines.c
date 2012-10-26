@@ -23,6 +23,7 @@
 #include "eirods_sql_logger.h"
 #include "eirods_string_tokenize.h"
 #include "eirods_log.h"
+#include "eirods_tmp_string.h"
 
 #include "icatMidLevelRoutines.h"
 #include "icatMidLevelHelpers.h"
@@ -1877,19 +1878,11 @@ _removeRescChild(
         _rollback("_updateRescChildren");
         result = status;
     } else {
-        std::string::size_type index = _child_string.find('{');
-        std::string child;
-        if(index != std::string::npos) {
-            child = _child_string.substr(0, index);
-        } else {
-            child = _child_string;
-        }
-
         std::string children_string(children);
-        index = children_string.find(child);
+        std::string::size_type index = children_string.find(_child_string);
         if(index == std::string::npos) {
             std::stringstream ss;
-            ss << "_removeChildFromResource parent has no child \"" << child << "\'";
+            ss << "_removeChildFromResource parent has no child \"" << _child_string << "\'";
             eirods::log(LOG_NOTICE, ss.str());
             result = CAT_INVALID_CHILD;
         } else {
@@ -1901,10 +1894,10 @@ _removeRescChild(
             }
             
             // have to do this to avoid const issues
-            char* tmp_children = strdup(children_string.c_str());
+            eirods::tmp_string tmp_children(children_string.c_str());
             getNowStr(myTime);
             cllBindVarCount = 0;
-            cllBindVars[cllBindVarCount++] = tmp_children;
+            cllBindVars[cllBindVarCount++] = tmp_children.str();
             cllBindVars[cllBindVarCount++] = myTime;
             cllBindVars[cllBindVarCount++] = _resc_id;
             logger.log();
@@ -1916,10 +1909,33 @@ _removeRescChild(
                 _rollback("_removeRescChild");
                 result = status;
             }
-            free(tmp_children);
         }
     }
     return result;
+}
+
+/**
+ * @brief Returns true if the specified resource already has children
+ */
+static bool
+_rescHasChildren(
+    const std::string _resc_name) {
+
+    bool result = false;
+    int status;
+    char children[MAX_NAME_LEN];
+    eirods::sql_logger logger("_rescHasChildren", logSQL);
+
+    logger.log();
+    if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_name=?",
+                                          children, MAX_NAME_LEN, _resc_name.c_str(), 0, 0, &icss)) !=0) {
+        if(status != CAT_NO_ROWS_FOUND) {
+            _rollback("_rescHasChildren");
+        }
+        result = false;
+    } else if(strlen(children) != 0) {
+        result = true;
+    }
 }
 
 /**
@@ -1936,15 +1952,23 @@ chlDelChildResc(
     char resc_id[MAX_NAME_LEN];
     std::string child_string(rescInfo->rescChildren);
     
+    std::string::size_type index = child_string.find('{');
+    std::string child;
+    if(index != std::string::npos) {
+        child = child_string.substr(0, index);
+    } else {
+        child = child_string;
+    }
+
     if(!(result = _canConnectToCatalog(rsComm))) {
         if((status = getLocalZone())) {
             result = status;
-        } else if(_childHasData(child_string)) {
+        } else if(_rescHasData(child) || _rescHasChildren(child)) {
             int i;
             char errMsg[105];
             snprintf(errMsg, 100, 
                      "resource '%s' contains one or more dataObjects",
-                     rescInfo->rescName);
+                     child.c_str());
             i = addRErrorMsg (&rsComm->rError, 0, errMsg);
             result = CAT_RESOURCE_NOT_EMPTY;
         } else {
@@ -1960,9 +1984,9 @@ chlDelChildResc(
                     _rollback("chlDelChildResc");
                     result = status;
                 }
-            } else if((status = _updateChildParent(child_string, std::string(""))) != 0) {
+            } else if((status = _updateChildParent(child, std::string(""))) != 0) {
                 result = status;
-            } else if((status = _removeRescChild(resc_id, child_string)) != 0) {
+            } else if((status = _removeRescChild(resc_id, child)) != 0) {
                 result = status;
             } else {
 
