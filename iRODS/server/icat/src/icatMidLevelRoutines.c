@@ -447,11 +447,11 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
 
 int cmlGetIntegerValueFromSql (char *sql, 
 			       rodsLong_t *iVal,
-			       char *bindVar1,
-			       char *bindVar2,
-			       char *bindVar3,
-			       char *bindVar4,
-			       char *bindVar5,
+			       const char *bindVar1,
+			       const char *bindVar2,
+			       const char *bindVar3,
+			       const char *bindVar4,
+			       const char *bindVar5,
 			       icatSessionStruct *icss)
 {
   int i, cValSize;
