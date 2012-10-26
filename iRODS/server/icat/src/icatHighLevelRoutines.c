@@ -1585,6 +1585,52 @@ _updateChildParent(
     return result;
 }
 
+/**
+ * @brief Returns true if the specified resource has associated data objects
+ */
+bool
+_rescHasData(
+    const std::string& _resc_name) {
+
+    bool result = false;
+    eirods::sql_logger logger("_rescHasData", logSQL);
+    rodsLong_t iVal;
+    int status;
+    
+    logger.log();
+    if((status = cmlGetIntegerValueFromSql("select data_id from R_DATA_MAIN where resc_name=?",
+                                           &iVal, _resc_name.c_str(), 0, 0, 0, 0, &icss)) != 0) {
+        if (status != CAT_NO_ROWS_FOUND) {
+            _rollback("_rescHasData");
+        }
+    } else {
+        result = true;
+    }
+    return result;
+}
+
+/**
+ * @brief Returns true if the specified child, possibly including context, has data
+ */
+bool
+_childHasData(
+    const std::string& _child) {
+
+    bool result = true;
+    std::string::size_type index = _child.find('{');
+    std::string child;
+    if(index != std::string::npos) {
+        child = _child.substr(0, index);
+    } else {
+        child = _child;
+    }
+    result = _rescHasData(child);
+    return result;
+}
+
+/**
+ * @brief Adds the child, with context, to the resource all specified in the rescInfo
+ */
 int
 chlAddChildResc(
     rsComm_t* rsComm,
@@ -1613,6 +1659,14 @@ chlAddChildResc(
                               "Currently, resources must be in the local zone");
             result = CAT_INVALID_ZONE;
 
+        } else if(_childHasData(new_child_string)) {
+            int i;
+            char errMsg[105];
+            snprintf(errMsg, 100, 
+                     "resource '%s' contains one or more dataObjects",
+                     rescInfo->rescName);
+            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            result = CAT_RESOURCE_NOT_EMPTY;
         } else {
 
             logger.log();
@@ -1868,7 +1922,9 @@ _removeRescChild(
     return result;
 }
 
-// Remove a child from its parent
+/**
+ * @brief Remove a child from its parent
+ */
 int
 chlDelChildResc(
     rsComm_t* rsComm,
@@ -1883,6 +1939,14 @@ chlDelChildResc(
     if(!(result = _canConnectToCatalog(rsComm))) {
         if((status = getLocalZone())) {
             result = status;
+        } else if(_childHasData(child_string)) {
+            int i;
+            char errMsg[105];
+            snprintf(errMsg, 100, 
+                     "resource '%s' contains one or more dataObjects",
+                     rescInfo->rescName);
+            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            result = CAT_RESOURCE_NOT_EMPTY;
         } else {
             logger.log();
 
@@ -1995,22 +2059,14 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
     }
     // =-=-=-=-=-=-=-
 
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlDelResc SQL 1 ");
-    status = cmlGetIntegerValueFromSql(
-        "select data_id from R_DATA_MAIN where resc_name=?",
-        &iVal, rescInfo->rescName, 0, 0, 0, 0, &icss);
-    if (status != CAT_NO_ROWS_FOUND) {
-        if (status == 0) {
-            int i;
-            char errMsg[105];
-            snprintf(errMsg, 100, 
-                     "resource '%s' contains one or more dataObjects",
-                     rescInfo->rescName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-            return(CAT_RESOURCE_NOT_EMPTY);
-        }
-        _rollback("chlDelResc");
-        return(status);
+    if (_rescHasData(rescInfo->rescName)) {
+        int i;
+        char errMsg[105];
+        snprintf(errMsg, 100, 
+                 "resource '%s' contains one or more dataObjects",
+                 rescInfo->rescName);
+        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        return(CAT_RESOURCE_NOT_EMPTY);
     }
 
     status = getLocalZone();
