@@ -962,6 +962,10 @@ if [ "$COVERAGE" == "1" ] ; then
     rm -rf $COVERAGEBUILDDIR
 fi
 
+# grant write permission to all, in case this was run via sudo
+cd $BUILDDIR
+chmod -R a+w .
+
 # boilerplate
 TOTALTIME="$(($(date +%s)-STARTTIME))"
 echo "${text_cyan}${text_bold}"
