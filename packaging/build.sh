@@ -1,5 +1,15 @@
 #!/bin/bash
 
+echo
+echo
+echo "  You are on the 'master' branch of e-irods."
+echo "  Switch to the 'development' branch."
+echo
+echo "    git checkout development"
+echo
+echo
+exit 1
+
 set -e
 
 SCRIPTNAME=`basename $0`
