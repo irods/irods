@@ -291,7 +291,7 @@ runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "1 testresource" );
 runCmd( "itrim -S  $irodsdefresource -N1 $irodshome/icmdtest/foo1" );
 runCmd( "ils -L $irodshome/icmdtest/foo1", "negtest", "LIST", "$irodsdefresource" );
 runCmd( "iphymv -R  $irodsdefresource $irodshome/icmdtest/foo1" );
-$irodsdefresource20 = substr $irodsdefresource, 0, 20;
+my $irodsdefresource20 = substr $irodsdefresource, 0, 20;
 runCmd( "ils -l $irodshome/icmdtest/foo1", "", "LIST", "$irodsdefresource20" );
 runCmd( "imeta add -d $irodshome/icmdtest/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/icmdtest/foo1 testmeta1 180 cm" );
 runCmd( "imeta ls -d $irodshome/icmdtest/foo1", "", "LIST", "testmeta1,180,cm" );
