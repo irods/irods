@@ -608,6 +608,8 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # handle issue with IRODS_HOME being overwritten by the configure script    
     sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=\`./scripts/find_irods_home.sh\`," ./irodsctl > /tmp/irodsctl.tmp
+    irodsctl_irods_home=`./scripts/find_irods_home.sh`
+    sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > /tmp/irodsctl.tmp
     mv /tmp/irodsctl.tmp ./irodsctl
     chmod 755 ./irodsctl
 
