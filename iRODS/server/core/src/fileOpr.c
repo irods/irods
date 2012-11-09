@@ -249,7 +249,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
 		// =-=-=-=-=-=-=-
 		// recurse for another directory
 		if (myFileStat.st_mode & S_IFDIR) {
-			status = chkEmptyDir ((fileDriverType_t)fileType, rsComm, childPath);
+			status = chkEmptyDir( -1, rsComm, childPath);
 			if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
 				rodsLog( LOG_ERROR, "chkEmptyDir: dir %s is not empty", childPath );
 				break;
@@ -326,10 +326,7 @@ rodsServerHost_t *rodsServerHost, int chkType) // JMC - backport 4774
     // =-=-=-=-=-=-=-
 	// JMC - backport 4774
     if (chkType == CHK_NON_VAULT_PATH_PERM) {
-		rodsLog( LOG_NOTICE, "XXXX - chkType == CHK_NON_VAULT_PATH_PERM" );
         status = matchCliVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost);
-
-        rodsLog( LOG_NOTICE, "XXXX - status: %d", status );
 
         if (status == 1) {
            /* a match in vault */
@@ -339,9 +336,7 @@ rodsServerHost_t *rodsServerHost, int chkType) // JMC - backport 4774
            return CANT_REG_IN_VAULT_FILE;
        }
     } else if (chkType == DO_CHK_PATH_PERM) {
-		rodsLog( LOG_NOTICE, "XXXX - chkType == DO_CHK_PATH_PERM" );
 		int ret = matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost, &outVaultPath );
-		rodsLog( LOG_NOTICE, "XXXX - ret:%d ", ret );
 		if( ret > 0 ) {
         //if (matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost,&outVaultPath) > 0) {
             /* a match */
@@ -352,7 +347,6 @@ rodsServerHost_t *rodsServerHost, int chkType) // JMC - backport 4774
     // =-=-=-=-=-=-=-
     }
 
-    rodsLog( LOG_NOTICE, "XXXX - rsChkNVPathPermByHost" );
     status = rsChkNVPathPermByHost (rsComm, fileOpenInp, rodsServerHost);
     
     return (status);

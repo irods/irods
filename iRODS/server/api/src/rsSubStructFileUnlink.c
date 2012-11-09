@@ -4,6 +4,11 @@
 #include "subStructFileUnlink.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+ 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 
 int
 rsSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
@@ -59,13 +64,28 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
-{
-    int status;
+int _rsSubStructFileUnlink( rsComm_t*  _comm, 
+                            subFile_t* _sub_file ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
-    status = subStructFileUnlink (rsComm, subFile);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to unlink
+    eirods::error unlink_err = fileUnlink( struct_obj );
+    if( !unlink_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileUnlink - failed on call to fileUnlink for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), unlink_err ) );
+        return unlink_err.code();
 
-    return (status);
+    } else {
+        return unlink_err.code();
+
+    }
+
 }
 

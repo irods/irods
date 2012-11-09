@@ -154,12 +154,10 @@ rodsPathInp_t *rodsPathInp)
     }
 
     if (rodsArgs->condition == True) {  /* -c - create */ // JMC - backport 4644
-		printf( "******** CREATE ********" );
        structFileExtAndRegInp->oprType = PRESERVE_COLL_PATH;
     }
 
     if (rodsArgs->add == True) {  /* add to tar */ // JMC - backport 4643
-		printf( "******** ADD TO TAR ********" );
         structFileExtAndRegInp->oprType = ADD_TO_TAR_OPR | PRESERVE_COLL_PATH; // JMC - backport 4644
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }

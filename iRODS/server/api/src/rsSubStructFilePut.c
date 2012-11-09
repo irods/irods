@@ -71,29 +71,46 @@ int
 _rsSubStructFilePut( rsComm_t*   _comm, 
                      subFile_t*  _sub_file,
                      bytesBuf_t* _out_buf ) {
-    int status;
-    int fd;
+    int status = -1;
+    int fd     = -1;
+   
+    // =-=-=-=-=-=-=-
+    // create a structured object on which to operate    
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
+    // =-=-=-=-=-=-=-
+    // force the opening of a file?
     if (_sub_file->flags & FORCE_FLAG) {
-        fd = subStructFileOpen (_comm, _sub_file);
-    } else {
-eirods::log( LOG_NOTICE, "XXXX - _rsSubStructFilePut :: calling fileCreate with structured_object" );
-        //fd = subStructFileCreate (_comm, _sub_file);
-        eirods::structured_object struct_obj( *_sub_file );
-        struct_obj.comm( _comm );
-        eirods::error err = fileCreate( struct_obj );
+        eirods::error err = fileOpen( struct_obj );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "_rsSubStructFileCreate - failed on call to fileCreate for [";
+            msg << "_rsSubStructFilePut - failed on call to fileCreate for [";
             msg << struct_obj.sub_file_path();
             eirods::log( ERROR( false, -1, msg.str() ) );
             fd = -1;
+
+        } else {
+            fd =  err.code();
+        }
+
+    } else {
+        eirods::error err = fileCreate( struct_obj );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg << "_rsSubStructFilePut - failed on call to fileCreate for [";
+            msg << struct_obj.sub_file_path();
+            eirods::log( ERROR( false, -1, msg.str() ) );
+            fd = -1;
+
         } else {
             fd =  err.code();
         }
 
     }
 
+    // =-=-=-=-=-=-=-
+    // more error trapping, etc.
     if (fd < 0) {
        if (getErrno (fd) == EEXIST) {
             rodsLog (LOG_DEBUG1,
@@ -107,9 +124,25 @@ eirods::log( LOG_NOTICE, "XXXX - _rsSubStructFilePut :: calling fileCreate with 
         return (fd);
     }
 
-    status = subStructFileWrite (_sub_file->specColl->type, _comm,
-      fd, _out_buf->buf, _out_buf->len);
+    //status = subStructFileWrite (_sub_file->specColl->type, _comm,
+    //  fd, _out_buf->buf, _out_buf->len);
+    // =-=-=-=-=-=-=-
+    // write the buffer to our structured file
+    eirods::error write_err = fileWrite( struct_obj, _out_buf->buf, _out_buf->len );
+    if( !write_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFilePut - failed on call to fileWrite for [";
+        msg << struct_obj.sub_file_path();
+        eirods::log( ERROR( false, -1, msg.str() ) );
+        status = write_err.code();
 
+    } else {
+        status = write_err.code();
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // more error trapping, etc.
     if (status != _out_buf->len) {
        if (status >= 0) {
             rodsLog (LOG_NOTICE,
@@ -123,7 +156,17 @@ eirods::log( LOG_NOTICE, "XXXX - _rsSubStructFilePut :: calling fileCreate with 
         }
     }
 
-    subStructFileClose (_sub_file->specColl->type, _comm, fd);
+    // =-=-=-=-=-=-=-
+    // close up our file after writing
+    eirods::error close_err = fileClose( struct_obj );
+    if( !close_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFilePut - failed on call to fileWrite for [";
+        msg << struct_obj.sub_file_path();
+        eirods::log( ERROR( false, -1, msg.str() ) );
+        status = close_err.code();
+
+    }
 
     return (status);
 

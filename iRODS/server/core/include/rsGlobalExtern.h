@@ -57,9 +57,9 @@ extern int IcatConnState;
 
 extern specCollCache_t *SpecCollCacheHead;
 
-extern structFileDesc_t StructFileDesc[];
+//extern structFileDesc_t StructFileDesc[];
 #ifdef TAR_STRUCT_FILE
-extern tarSubFileDesc_t TarSubFileDesc[];
+//extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 
 #ifdef RULE_ENGINE_N

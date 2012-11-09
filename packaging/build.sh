@@ -11,13 +11,14 @@ echo
 exit 1
 
 set -e
-
+STARTTIME="$(date +%s)"
 SCRIPTNAME=`basename $0`
 COVERAGE="0"
 RELEASE="0"
 BUILDEIRODS="1"
 COVERAGEBUILDDIR="/var/lib/e-irods"
 PREFLIGHT=""
+PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
 
 USAGE="
@@ -38,13 +39,36 @@ $SCRIPTNAME -s icat postgres
 $SCRIPTNAME -s resource
 "
 
+# Color Manipulation Aliases
+if [[ "$TERM" == "dumb" || "$TERM" == "unknown" ]] ; then
+    text_bold=""      # No Operation
+    text_red=""       # No Operation
+    text_green=""     # No Operation
+    text_yellow=""    # No Operation
+    text_blue=""      # No Operation
+    text_purple=""    # No Operation
+    text_cyan=""      # No Operation
+    text_white=""     # No Operation
+    text_reset=""     # No Operation
+else
+    text_bold=$(tput bold)      # Bold
+    text_red=$(tput setaf 1)    # Red
+    text_green=$(tput setaf 2)  # Green
+    text_yellow=$(tput setaf 3) # Yellow
+    text_blue=$(tput setaf 4)   # Blue
+    text_purple=$(tput setaf 5) # Purple
+    text_cyan=$(tput setaf 6)   # Cyan
+    text_white=$(tput setaf 7)  # White
+    text_reset=$(tput sgr0)     # Text Reset
+fi
+
 # boilerplate
-echo ""
+echo "${text_cyan}${text_bold}"
 echo "+------------------------------------+"
 echo "| RENCI E-iRODS Build Script         |"
 echo "+------------------------------------+"
 date
-echo ""
+echo "${text_reset}"
 
 # translate long options to short
 for arg
@@ -89,44 +113,44 @@ echo ""
 
 # detect illogical combinations, and exit
 if [ "$BUILDEIRODS" == "0" -a "$RELEASE" == "1" ] ; then
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Incompatible options:" 1>&2
     echo "      :: -s   skip compilation" 1>&2
     echo "      :: -r   build for release" 1>&2
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 if [ "$BUILDEIRODS" == "0" -a "$COVERAGE" == "1" ] ; then
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Incompatible options:" 1>&2
     echo "      :: -s   skip compilation" 1>&2
     echo "      :: -c   coverage support" 1>&2
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 if [ "$COVERAGE" == "1" -a "$RELEASE" == "1" ] ; then
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Incompatible options:" 1>&2
     echo "      :: -c   coverage support" 1>&2
     echo "      :: -r   build for release" 1>&2
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 
 if [ "$COVERAGE" == "1" ] ; then
     if [ -d "$COVERAGEBUILDDIR" ] ; then
-        echo "#######################################################" 1>&2
+        echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $COVERAGEBUILDDIR/ already exists" 1>&2
         echo "      :: Cannot build in place with coverage enabled" 1>&2
         echo "      :: try: sudo rm -rf $COVERAGEBUILDDIR/" 1>&2
-        echo "#######################################################" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
     if [ "$(id -u)" != "0" ] ; then
-        echo "#######################################################" 1>&2
+        echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
         echo "      :: when building in place (coverage enabled)" 1>&2
-        echo "#######################################################" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
 fi
@@ -156,16 +180,16 @@ if [ "$1" == "clean" ] ; then
     rm -rf $MANDIR
     rm -f manual.pdf
     rm -f libe-irods.a
+    rm -f plugins/resources/*.so
     set +e
     echo "Cleaning EPM residuals..."
     rm -rf linux-2.*
     rm -rf linux-3.*
     rm -rf macosx-10.*
-    cd epm
-    make clean > /dev/null 2>&1
-    make distclean > /dev/null 2>&1
+    rm -rf epm
+    rm -rf epm*
     echo "Cleaning iRODS residuals..."
-    cd ../iRODS
+    cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1
     rm -rf doc/html
     rm -f server/config/reConfigs/raja1.re
@@ -173,11 +197,12 @@ if [ "$1" == "clean" ] ; then
     rm -f server/icat/src/icatCoreTables.sql
     rm -f server/icat/src/icatSysTables.sql
     set -e
-    echo "Done."
+    echo "${text_green}${text_bold}Done.${text_reset}"
     exit 0
 fi
 
 
+echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
@@ -189,30 +214,30 @@ echo "Detected OS [$DETECTEDOS]"
 
 
 if [[ $1 != "icat" && $1 != "resource" ]] ; then
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Invalid serverType [$1]" 1>&2
     echo "      :: Only 'icat' or 'resource' available at this time" 1>&2
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 
 if [ "$1" == "icat" ] ; then
     #  if [ "$2" != "postgres" -a "$2" != "mysql" ]
     if [ "$2" != "postgres" ] ; then
-        echo "#######################################################" 1>&2
+        echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: Invalid iCAT databaseType [$2]" 1>&2
         echo "      :: Only 'postgres' available at this time" 1>&2
-        echo "#######################################################" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
 fi
 
 if [ "$DETECTEDOS" == "Ubuntu" ] ; then
     if [ "$(id -u)" != "0" ] ; then
-        echo "#######################################################" 1>&2
+        echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
         echo "      :: because dpkg demands to be run as root" 1>&2
-        echo "#######################################################" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
 fi
@@ -253,17 +278,29 @@ if [ $1 == "icat" ] ; then
         elif [ "$DETECTEDOS" == "MacOSX" ] ; then
             PREFLIGHT="$PREFLIGHT unixodbc" # not confirmed as successful
         else
-            echo "      :: download from: http://www.unixodbc.org/download.html" 1>&2
+            PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.unixodbc.org/download.html"
         fi
     else
         echo "Detected unixODBC-dev library [$UNIXODBCDEV]"
     fi
 fi
 
-RPMBUILD=`which rpmbuild`
-if [[ "$?" != "0" || `echo $RPMBUILD | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT rpm-build"
+if [[ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ]] ; then
+    PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
+    if [[ "$PYTHONDEV" == "" ]] ; then
+        if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT python-devel"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT python-devel"
+        fi
+    fi
+    RPMBUILD=`which rpmbuild`
+    if [[ "$?" != "0" || `echo $RPMBUILD | awk '{print $1}'` == "no" ]] ; then
+        if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            PREFLIGHT="$PREFLIGHT rpm-build"
+        elif [ "$DETECTEDOS" == "SuSE" ] ; then
+            PREFLIGHT="$PREFLIGHT rpm-build"
+       fi
     fi
 fi
 
@@ -280,7 +317,7 @@ if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
     else
-        echo "      :: download from: http://www.gnu.org/software/wget/" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/wget/"
     fi
 else
     WGETVERSION=`wget --version | head -n1 | awk '{print $3}'`
@@ -300,7 +337,7 @@ if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
     else
-        echo "      :: download from: http://doxygen.org" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://doxygen.org"
     fi
 else
     DOXYGENVERSION=`doxygen --version`
@@ -320,8 +357,8 @@ if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
     else
-        echo "      :: download from: http://www.gnu.org/software/help2man/" 1>&2
-        echo "      ::                http://mirrors.kernel.org/gnu/help2man/" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/help2man/"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      ::                http://mirrors.kernel.org/gnu/help2man/"
     fi
 else
     H2MVERSION=`help2man --version | head -n1 | awk '{print $3}'`
@@ -348,13 +385,27 @@ if [ "$BOOST" == "" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT boost"
     else
-        echo "      :: download from: http://www.boost.org/users/download/" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
     fi
 else
     BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
     BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
     echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
 fi
+
+LIBTARDEV=`find /usr/ -name libtar.h 2> /dev/null`
+if [ "$LIBTARDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT libtar-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT libtar-devel"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.feep.net/libtar/"
+    fi
+else
+    echo "Detected libtar.h library [$LIBTARDEV]"
+fi
+
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
@@ -367,7 +418,7 @@ if [ "$OPENSSLDEV" == "" ] ; then
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT libssl_dev"
     else
-        echo "      :: download from: http://www.openssl.org/source/" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.openssl.org/source/"
     fi
 else
     echo "Detected OpenSSL sha.h library [$OPENSSLDEV]"
@@ -386,7 +437,7 @@ if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
     else
-        echo "      :: DETECTED OTHER OS" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.postgresql.org/download/"
     fi
 else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
@@ -406,7 +457,7 @@ if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
         PREFLIGHT="$PREFLIGHT"
         # should have distribute included already
     else
-        echo "      :: download from: http://pypi.python.org/pypi/setuptools/" 1>&2
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://pypi.python.org/pypi/setuptools/"
     fi
 else
     echo "Detected easy_install [$EASYINSTALL]"
@@ -428,22 +479,30 @@ fi
 
 # print out prerequisites error
 if [ "$PREFLIGHT" != "" ] ; then
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        echo "      :: try: sudo apt-get install$PREFLIGHT" 1>&2
+        echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        echo "      :: try: sudo yum install$PREFLIGHT" 1>&2
+        echo "      :: try: ${text_reset}sudo yum install$PREFLIGHT${text_red}" 1>&2
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        echo "      :: try: sudo zypper install$PREFLIGHT" 1>&2
+        echo "      :: try: ${text_reset}sudo zypper install$PREFLIGHT${text_red}" 1>&2
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        echo "      :: try: sudo pkgutil --install$PREFLIGHT" 1>&2
+        echo "      :: try: ${text_reset}sudo pkgutil --install$PREFLIGHT${text_red}" 1>&2
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        echo "      :: try: brew install$PREFLIGHT" 1>&2
+        echo "      :: try: ${text_reset}brew install$PREFLIGHT${text_red}" 1>&2
     else
         echo "      :: NOT A DETECTED OPERATING SYSTEM" 1>&2
     fi
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
+    exit 1
+fi
+
+if [ "$PREFLIGHTDOWNLOAD" != "" ] ; then
+    echo "${text_red}#######################################################" 1>&2
+    echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
+    echo "$PREFLIGHTDOWNLOAD" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 
@@ -451,17 +510,17 @@ ROMAN=`python -c "import roman"`
 if [ "$?" != "0" ] ; then
     PYPREFLIGHT="$PYPREFLIGHT roman"
 else
-    ROMANLOCATION=`find /usr /Library /opt 2> /dev/null | grep "/roman.pyc"`
+    ROMANLOCATION=`python -c "import roman; print roman.__file__"` # expecting ".../roman.pyc"
     echo "Detected python module 'roman' [$ROMANLOCATION]"
 fi
 
 # print out python prerequisites error
 if [ "$PYPREFLIGHT" != "" ] ; then
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: python requires some software to be installed" 1>&2
-    echo "      :: try: sudo easy_install$PYPREFLIGHT" 1>&2
+    echo "      :: try: ${text_reset}sudo easy_install$PYPREFLIGHT${text_red}" 1>&2
     echo "      ::   (easy_install provided by pysetuptools or pydistribute)" 1>&2
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 ################################################################################
@@ -531,9 +590,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ "$COVERAGE" == "1" ] ; then
         # change context for BUILDDIR - we're building in place for gcov linking
         BUILDDIR=$COVERAGEBUILDDIR
-        echo "Switching context to [$BUILDDIR] for coverage-enabled build"
+        echo "${text_green}${text_bold}Switching context to [$BUILDDIR] for coverage-enabled build${text_reset}"
         # copy entire local tree to real package target location
-        echo "Copying files into place..."
+        echo "${text_green}${text_bold}Copying files into place...${text_reset}"
         cp -r $GITDIR $BUILDDIR
         # go there
         cd $BUILDDIR/iRODS
@@ -596,10 +655,10 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
     MAKEJCMD="make -j $CPUCOUNT"
-    echo "-------------------------------------"
+    echo "${text_cyan}${text_bold}-------------------------------------"
     echo "Detected CPUs:    $DETECTEDCPUCOUNT"
     echo "Compiling with:   $MAKEJCMD"
-    echo "-------------------------------------"
+    echo "-------------------------------------${text_reset}"
     sleep 1
 
     ###########################################
@@ -670,21 +729,23 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     set +e
     # generate manual in pdf format
+    echo "${text_green}${text_bold}Building E-iRODS Manual${text_reset}"
     cd $BUILDDIR
     rst2pdf manual.rst -o manual.pdf
     if [ "$?" != "0" ] ; then
-        echo "#######################################################" 1>&2
+        echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: Failed generating manual.pdf" 1>&2
-        echo "#######################################################" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
     # generate doxygen for microservices
+    echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
     cd $BUILDDIR/iRODS
     doxygen ./config/doxygen-saved.cfg
     if [ "$?" != "0" ] ; then
-        echo "#######################################################" 1>&2
+        echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: Failed generating doxygen output" 1>&2
-        echo "#######################################################" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
     set -e
@@ -704,7 +765,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # generate development package archive file
     if [ "$RELEASE" == "1" ] ; then
-        echo "Building development package archive file..."
+        echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
         cd $BUILDDIR
         ./packaging/make_e-irods_dev_archive.sh
     fi
@@ -798,23 +859,25 @@ fi
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
-# get RENCI updates to EPM from repository
-cd $BUILDDIR
-RENCIEPM="epm42-renci.tar.gz"
-rm -rf epm
-rm -f $RENCIEPM
-wget ftp://ftp.renci.org/pub/e-irods/build/$RENCIEPM
-tar -xf $RENCIEPM
-
-cd $BUILDDIR/epm
 if [ "$BUILDEIRODS" == "1" ] ; then
-    echo "Configuring EPM"
+    # get RENCI updates to EPM from repository
+    echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
+    cd $BUILDDIR
+    RENCIEPM="epm42-renci.tar.gz"
+    rm -rf epm
+    rm -f $RENCIEPM
+    wget ftp://ftp.renci.org/pub/e-irods/build/$RENCIEPM
+    tar -xf $RENCIEPM
+    # configure
+    echo "${text_green}${text_bold}Configuring EPM${text_reset}"
+    cd $BUILDDIR/epm
     set +e
     ./configure > /dev/null
     if [ "$?" != "0" ] ; then
         exit 1
     fi
-    echo "Building EPM"
+    # build
+    echo "${text_green}${text_bold}Building EPM${text_reset}"
     make > /dev/null
     if [ "$?" != "0" ] ; then
         exit 1
@@ -839,7 +902,7 @@ else
     arch="i386"
 fi
 if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
-    echo "Running EPM :: Generating $DETECTEDOS RPMs"
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="REDHATRPM$SERVER_TYPE" 
     ostype=`awk '{print $1}' /etc/redhat-release`
     osversion=`awk '{print $3}' /etc/redhat-release`
@@ -854,7 +917,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
         ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
-    echo "Running EPM :: Generating $DETECTEDOS RPMs"
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE" 
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
@@ -862,7 +925,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
         ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
-    echo "Running EPM :: Generating $DETECTEDOS DEBs"
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE" 
     ./epm/epm $EPMOPTS -a $arch -f deb e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
@@ -870,7 +933,7 @@ elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
         ./epm/epm $EPMOPTS -a $arch -f deb e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
-    echo "Running EPM :: Generating $DETECTEDOS PKGs"
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
@@ -878,7 +941,7 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
         ./epm/epm $EPMOPTS -f pkg e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
-    echo "Running EPM :: Generating $DETECTEDOS DMGs"
+    echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
@@ -886,16 +949,16 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
         ./epm/epm $EPMOPTS -f osx e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
     fi
 else
-    echo "#######################################################" 1>&2
+    echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: Unknown OS, cannot generate packages with EPM" 1>&2
-    echo "#######################################################" 1>&2
+    echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
 
 
 if [ "$COVERAGE" == "1" ] ; then
     # copy important bits back up
-    echo "Copying generated packages back to original working directory..."
+    echo "${text_green}${text_bold}Copying generated packages back to original working directory...${text_reset}"
     if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then EXTENSION="rpm"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then EXTENSION="rpm"
     elif [ "$DETECTEDOS" == "Ubuntu" ] ; then EXTENSION="deb"
@@ -909,4 +972,19 @@ if [ "$COVERAGE" == "1" ] ; then
     rm -rf $COVERAGEBUILDDIR
 fi
 
+# grant write permission to all, in case this was run via sudo
+cd $BUILDDIR
+chmod -R a+w .
 
+# boilerplate
+TOTALTIME="$(($(date +%s)-STARTTIME))"
+echo "${text_cyan}${text_bold}"
+echo "+------------------------------------+"
+echo "| RENCI E-iRODS Build Script         |"
+echo "|                                    |"
+#echo "|   Completed in                     |"
+#echo "|                                    |"
+#printf "|   %02dd%02dh%02dm%02ds                     |\n" "$((TOTALTIME/86400))" "$((TOTALTIME/3600%24))" "$((TOTALTIME/60%60))" "$((TOTALTIME%60))"
+printf "|   Completed in %02dm%02ds              |\n" "$((TOTALTIME/60))" "$((TOTALTIME%60))"
+echo "+------------------------------------+"
+echo "${text_reset}"

@@ -88,6 +88,7 @@ int
 _rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut)
 {
+    
     int status;
     char *tmpStr;
     specCollCache_t *specCollCache;
@@ -116,11 +117,11 @@ rodsObjStat_t **rodsObjStatOut)
 
     /*  not normal dataObj or coll. now check specColl */
     /* XXXX need to check a rule if it supports spec collection */
-    status = statPathInSpecColl (rsComm, dataObjInp->objPath, 0,
-      rodsObjStatOut);
+    status = statPathInSpecColl (rsComm, dataObjInp->objPath, 0, rodsObjStatOut );
     /* use USER_FILE_DOES_NOT_EXIST instead of OBJ_PATH_DOES_NOT_EXIST
      * because icommand depends on it */
-    if (status < 0) status = USER_FILE_DOES_NOT_EXIST;
+    if (status < 0) 
+        status = USER_FILE_DOES_NOT_EXIST;
     return (status);
 }
 

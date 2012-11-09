@@ -52,22 +52,25 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
-       openStat_t *openStat = NULL;
+        openStat_t *openStat = NULL;
         addKeyVal (&dataObjInp->condInput, CROSS_ZONE_CREATE_KW, "");
-	status = rcDataObjCreateAndStat (rodsServerHost->conn, dataObjInp,
-	  &openStat);
-	/* rm it to avoid confusion */
-	rmKeyVal (&dataObjInp->condInput, CROSS_ZONE_CREATE_KW);
-	if (status < 0) return status;
-	l1descInx = allocAndSetL1descForZoneOpr (status, dataObjInp,
-	  rodsServerHost, openStat);
-	if (openStat != NULL) free (openStat);
-	return (l1descInx);
+        status = rcDataObjCreateAndStat( rodsServerHost->conn, dataObjInp, &openStat );
+        
+        /* rm it to avoid confusion */
+        rmKeyVal( &dataObjInp->condInput, CROSS_ZONE_CREATE_KW );
+        if (status < 0) 
+            return status;
+        l1descInx = allocAndSetL1descForZoneOpr( status, dataObjInp,rodsServerHost, openStat );
+        
+        if (openStat != NULL) 
+            free (openStat);
+        return (l1descInx);
     }
+
 
     // =-=-=-=-=-=-=-
 	// JMC - backport 4604
-    lockType = getValByKey (&dataObjInp->condInput, LOCK_TYPE_KW);
+    lockType = getValByKey( &dataObjInp->condInput, LOCK_TYPE_KW );
     if (lockType != NULL) {
        lockFd = rsDataObjLock (rsComm, dataObjInp);
        if (lockFd >= 0) {
@@ -84,43 +87,59 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	// =-=-=-=-=-=-=-
     // Gets here means local zone operation stat dataObj 
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
+
     status = rsObjStat (rsComm, dataObjInp, &rodsObjStatOut); 
+
     if(rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
 		if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
 	        return (USER_INPUT_PATH_ERR);
     }
 
-    if(rodsObjStatOut != NULL && rodsObjStatOut->specColl != NULL &&
-       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
+    if( rodsObjStatOut                      != NULL && 
+        rodsObjStatOut->specColl            != NULL &&
+        rodsObjStatOut->specColl->collClass == LINKED_COLL ) {
         /*  should not be here because if has been translated */
-		if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
-            return SYS_COLL_LINK_PATH_ERR;
+		if( lockFd >= 0 ) {
+            rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
+        }
+    
+        return SYS_COLL_LINK_PATH_ERR;
     }
 
-    if ( rodsObjStatOut == NULL || 
-       ( rodsObjStatOut->objType == UNKNOWN_OBJ_T &&
-         rodsObjStatOut->specColl == NULL)) {
+
+    if ( rodsObjStatOut  == NULL                     ||  
+         ( rodsObjStatOut->objType  == UNKNOWN_OBJ_T &&
+           rodsObjStatOut->specColl == NULL ) ) {
 		/* does not exist. have to create one */
 		/* use L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY instead */
 		/* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
+
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
 
     } else if( rodsObjStatOut->specColl != NULL &&
                rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+
 	    /* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
         l1descInx = specCollSubCreate (rsComm, dataObjInp);
     } else {
+
 	    /* dataObj exist */
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
+
             l1descInx = OVERWRITE_WITHOUT_FORCE_FLAG;
         }
     }
-    if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
+
+    if( rodsObjStatOut != NULL ) { 
+        freeRodsObjStat (rodsObjStatOut);
+    }
+
     // =-=-=-=-=-=-=-
 	// JMC - backport 4604
     if (lockFd >= 0) {
@@ -130,6 +149,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
            rsDataObjUnlock (rsComm, dataObjInp, lockFd);
        }
     }
+
     // =-=-=-=-=-=-=-
     return (l1descInx);
 }
@@ -318,9 +338,11 @@ rescInfo_t *rescInfo, char *rescGroupName)
      * dataObjInfo struct */
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
+        
         /* don't actually physically open the file */
         status = 0;
     } else {
+        
         status = dataObjCreateAndReg (rsComm, l1descInx);
     }
 

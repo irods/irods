@@ -5,6 +5,10 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 int
 rsSubStructFileClose (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileCloseInp)
 {
@@ -61,13 +65,30 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsSubStructFileClose (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileCloseInp)
-{
-    int status;
+_rsSubStructFileClose( rsComm_t*                _comm, 
+                       subStructFileFdOprInp_t* _close_inp ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj;
+    struct_obj.comm( _comm );
+    struct_obj.file_descriptor( _close_inp->fd );
 
-    status =  subStructFileClose (subStructFileCloseInp->type, rsComm,
-      subStructFileCloseInp->fd);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to open a file
+    eirods::error close_err = fileClose( struct_obj );
+    if( !close_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileClose - failed on call to fileClose for fd [ ";
+        msg << struct_obj.file_descriptor();
+        msg << " ]";
+        eirods::log( ERROR( false, -1, msg.str() ) );
+        return close_err.code();
 
-    return (status);
+    } else {
+        return close_err.code();
+
+    }
+
 }
+
 

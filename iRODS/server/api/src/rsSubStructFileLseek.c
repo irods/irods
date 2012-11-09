@@ -5,6 +5,11 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
+
 int
 rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
 fileLseekOut_t **subStructFileLseekOut)
@@ -62,31 +67,43 @@ fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
-fileLseekOut_t **subStructFileLseekOut)
-{
+int _rsSubStructFileLseek( rsComm_t* _comm, 
+                           subStructFileLseekInp_t* _lseek_inp,
+                           fileLseekOut_t**         _lseek_out ) {
+   // =-=-=-=-=-=-=-
+   // create a structured object fco
+   eirods::structured_object struct_obj;
+   struct_obj.comm( _comm );
+   struct_obj.file_descriptor( _lseek_inp->fd ); 
+    
+    
     rodsLong_t lStatus;
     int status;
+   
+    // =-=-=-=-=-=-=-
+    // call lseek interface
+    eirods::error lseek_err = fileLseek( struct_obj, _lseek_inp->offset, _lseek_inp->whence ); 
+    if( !lseek_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileLseek - fileLseek failed for fd [";
+        msg << struct_obj.file_descriptor();
+        msg << ", status = ";
+        msg << lseek_err.code();
+        eirods::log( PASS( false, -1, msg.str(), lseek_err ) );
+        return lseek_err.code();
 
-    *subStructFileLseekOut = (fileLseekOut_t *) malloc (sizeof (fileLseekOut_t));
-    memset (*subStructFileLseekOut, 0, sizeof (fileLseekOut_t));
-    lStatus = subStructFileLseek (subStructFileLseekInp->type, rsComm, subStructFileLseekInp->fd,
-      subStructFileLseekInp->offset, subStructFileLseekInp->whence);
-
-    if (lStatus < 0) {
-        status = lStatus;
-        rodsLog (LOG_ERROR,
-          "rsSubStructFileLseek: subStructFileLseek failed for %d, status = %d",
-          subStructFileLseekInp->fd, status);
-        return (status);
     } else {
-        *subStructFileLseekOut = (fileLseekOut_t *) malloc (sizeof (fileLseekOut_t));
-        memset (*subStructFileLseekOut, 0, sizeof (fileLseekOut_t));
-        (*subStructFileLseekOut)->offset = lStatus;
-        status = 0;
+        // =-=-=-=-=-=-=-
+        // allocate outgoing lseek buffer
+        if( ! *_lseek_out ) {
+            *_lseek_out = new fileLseekOut_t;
+            memset( *_lseek_out, 0, sizeof( fileLseekOut_t ) );
+        }
+        
+        (*_lseek_out)->offset = lseek_err.code();
+        return 0;
+
     }
 
-    return (status);
 }
 

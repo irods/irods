@@ -62,13 +62,13 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
     int status;
 
     if (getStructFileType (specColl) >= 0) { 	/* a struct file */
-	structFileOprInp_t structFileOprInp;
-	rescInfo_t *rescInfo;
+        structFileOprInp_t structFileOprInp;
+        rescInfo_t *rescInfo;
 
-	if (strlen (specColl->resource) == 0) {
-	    /* nothing to sync */
-	    return (0);
-	}
+        if (strlen (specColl->resource) == 0) {
+            /* nothing to sync */
+            return (0);
+        }
 
         memset (&structFileOprInp, 0, sizeof (structFileOprInp));
         status = resolveResc (specColl->resource, &rescInfo);
@@ -82,9 +82,10 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
         rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;
-	status = rsStructFileSync (rsComm, &structFileOprInp);
+        status = rsStructFileSync (rsComm, &structFileOprInp);
+
     } else {			/* not a struct file */
-	status = SYS_COLL_NOT_MOUNTED_ERR;
+        status = SYS_COLL_NOT_MOUNTED_ERR;
     }
 
     return (status);

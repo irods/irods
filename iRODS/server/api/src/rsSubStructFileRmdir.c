@@ -4,6 +4,11 @@
 #include "subStructFileRmdir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+ 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 
 int
 rsSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
@@ -60,13 +65,28 @@ rodsServerHost_t *rodsServerHost)
     return fd;
 }
 
-int
-_rsSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
-{
-    int fd;
+int _rsSubStructFileRmdir( rsComm_t*  _comm, 
+                           subFile_t* _sub_file ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
-    fd = subStructFileRmdir (rsComm, subFile);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to rmdir
+    eirods::error rmdir_err = fileRmdir( struct_obj );
+    if( !rmdir_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileRmdir - failed on call to fileRmdir for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), rmdir_err ) );
+        return rmdir_err.code();
 
-    return (fd);
+    } else {
+        return rmdir_err.code();
+
+    }
+   
 }
 

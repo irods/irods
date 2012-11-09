@@ -300,20 +300,20 @@ addSrcInPath (rodsPathInp_t *rodsPathInp, char *inPath)
         newNumSrc = rodsPathInp->numSrc + PTR_ARRAY_MALLOC_LEN;
         newSrcPath = (rodsPath_t *) malloc (newNumSrc * sizeof (rodsPath_t));
         newTargPath = (rodsPath_t *) malloc (newNumSrc * sizeof (rodsPath_t));
-	memset ((void *) newSrcPath, 0, newNumSrc * sizeof (rodsPath_t));
-	memset ((void *) newTargPath, 0, newNumSrc * sizeof (rodsPath_t));
-	if (rodsPathInp->numSrc > 0) {
-	    memcpy (newSrcPath, rodsPathInp->srcPath, 
-	      rodsPathInp->numSrc * sizeof (rodsPath_t));
-	    memcpy (newTargPath, rodsPathInp->targPath, 
-	      rodsPathInp->numSrc * sizeof (rodsPath_t));
-	    free (rodsPathInp->srcPath);
-	    free (rodsPathInp->targPath);
-	}
-	rodsPathInp->srcPath = newSrcPath;
-	rodsPathInp->targPath = newTargPath;
+        memset ((void *) newSrcPath, 0, newNumSrc * sizeof (rodsPath_t));
+        memset ((void *) newTargPath, 0, newNumSrc * sizeof (rodsPath_t));
+        if (rodsPathInp->numSrc > 0) {
+            memcpy (newSrcPath, rodsPathInp->srcPath, 
+              rodsPathInp->numSrc * sizeof (rodsPath_t));
+            memcpy (newTargPath, rodsPathInp->targPath, 
+              rodsPathInp->numSrc * sizeof (rodsPath_t));
+            free (rodsPathInp->srcPath);
+            free (rodsPathInp->targPath);
+        }
+        rodsPathInp->srcPath = newSrcPath;
+        rodsPathInp->targPath = newTargPath;
     } else {
-	newSrcPath = rodsPathInp->srcPath;
+	    newSrcPath = rodsPathInp->srcPath;
     }
     rstrcpy (newSrcPath[rodsPathInp->numSrc].inPath, inPath, MAX_NAME_LEN);
     rodsPathInp->numSrc++;
@@ -373,34 +373,33 @@ int srcFileType, int destFileType, int flag, rodsPathInp_t *rodsPathInp)
     nInput = argc - optInd;
 
     if (rodsPathInp == NULL) {
-	rodsLog (LOG_ERROR, 
-	  "parseCmdLinePath: NULL rodsPathInp input");
-	return (USER__NULL_INPUT_ERR);
+	    rodsLog( LOG_ERROR, "parseCmdLinePath: NULL rodsPathInp input");
+	    return (USER__NULL_INPUT_ERR);
     }
 
     memset (rodsPathInp, 0, sizeof (rodsPathInp_t));
 
     if (nInput <= 0) {
         if ((flag & ALLOW_NO_SRC_FLAG) == 0) {
-	    return (USER__NULL_INPUT_ERR);
-	} else {
-	    numSrc = 1;
-	}
+	        return (USER__NULL_INPUT_ERR);
+	    } else {
+	        numSrc = 1;
+	    }
     } else if (nInput == 1) {
-	numSrc = 1;
+	    numSrc = 1;
     } else if (destFileType == NO_INPUT_T) {		/* no dest input */
-	numSrc = nInput;
+	    numSrc = nInput;
     } else {
-	numSrc = nInput - 1;
+	    numSrc = nInput - 1;
     }
 
     for (i = 0; i < numSrc; i++) {
-	if (nInput <= 0) {
-	    /* just add cwd */
-            addSrcInPath (rodsPathInp, ".");
-	} else {
-            addSrcInPath (rodsPathInp, argv[optInd + i]);
-	}
+        if (nInput <= 0) {
+            /* just add cwd */
+                addSrcInPath (rodsPathInp, ".");
+        } else {
+                addSrcInPath (rodsPathInp, argv[optInd + i]);
+        }
         if (srcFileType <= COLL_OBJ_T) {
             status = parseRodsPath (&rodsPathInp->srcPath[i], myRodsEnv);
         } else {

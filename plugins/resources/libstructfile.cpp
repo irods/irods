@@ -35,6 +35,30 @@
 #endif
 
 // =-=-=-=-=-=-=-
+// structures and defines
+typedef struct structFileDesc {
+    int inuseFlag;
+    rsComm_t *rsComm;
+    specColl_t *specColl;
+    rescInfo_t *rescInfo;
+    int openCnt;
+	char dataType[NAME_LEN]; // JMC - backport 4634
+} structFileDesc_t;
+
+#define CACHE_DIR_STR "cacheDir"
+
+typedef struct tarSubFileDesc {
+    int inuseFlag;
+    int structFileInx;
+    int fd;                         /* the fd of the opened cached subFile */
+    char cacheFilePath[MAX_NAME_LEN];   /* the phy path name of the cached
+                                         * subFile */
+} tarSubFileDesc_t;
+
+#define NUM_TAR_SUB_FILE_DESC 20
+
+
+// =-=-=-=-=-=-=-
 // irods includes
 #include "tarSubStructFileDriver.h"
 #include "rsGlobalExtern.h"
@@ -53,12 +77,31 @@
 
 
 // =-=-=-=-=-=-=-=-
-// 
-structFileDesc_t StructFileDesc[ NUM_STRUCT_FILE_DESC  ];
-tarSubFileDesc_t TarSubFileDesc[ NUM_TAR_SUB_FILE_DESC ];
+// file descriptor tables which hold references to struct files
+// which are currently in flight
+const int NUM_STRUCT_FILE_DESC = 16;
+structFileDesc_t PluginStructFileDesc[ NUM_STRUCT_FILE_DESC  ];
+tarSubFileDesc_t PluginTarSubFileDesc[ NUM_TAR_SUB_FILE_DESC ];
+
+// =-=-=-=-=-=-=-=-
+// manager of resource plugins which are resolved and cached
 extern eirods::resource_manager resc_mgr;
 
 extern "C" {
+
+    // =-=-=-=-=-=-=-
+    // start operation used to allocate the FileDesc tables
+    void tarfilesystem_resource_start() {
+        memset( PluginStructFileDesc, 0, sizeof(structFileDesc_t) * NUM_STRUCT_FILE_DESC  );
+        memset( PluginTarSubFileDesc, 0, sizeof(tarSubFileDesc_t) * NUM_TAR_SUB_FILE_DESC );
+    }
+
+    // =-=-=-=-=-=-=-
+    // stop operation used to free the FileDesc tables
+    void tarfilesystem_resource_stop() {
+        memset( PluginStructFileDesc, 0, sizeof(structFileDesc_t) * NUM_STRUCT_FILE_DESC  );
+        memset( PluginTarSubFileDesc, 0, sizeof(tarSubFileDesc_t) * NUM_TAR_SUB_FILE_DESC );
+    }
 
     // =-=-=-=-=-=-=-
     // Begin Tar Operations used by libtar
@@ -67,124 +110,232 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // FIXME :: Black Magic that desperately needs fixed
-    int encodeIrodsTarfdPlugin(int upperInt, int lowerInt) {
+    int encode_irods_tar_fd_plugin(int upperInt, int lowerInt) {
         /* use the upper 5 of the 6 bits for upperInt */
 
         if (upperInt > 60) {	/* 0x7c */
             rodsLog (LOG_NOTICE,
-              "encodeIrodsTarfdPlugin: upperInt %d larger than 60", lowerInt);
+              "encode_irods_tar_fd_plugin: upperInt %d larger than 60", lowerInt);
             return (SYS_STRUCT_FILE_DESC_ERR);
         }
 
         if ((lowerInt & 0xfc000000) != 0) {
             rodsLog (LOG_NOTICE,
-              "encodeIrodsTarfdPlugin: lowerInt %d too large", lowerInt);
+              "encode_irods_tar_fd_plugin: lowerInt %d too large", lowerInt);
             return (SYS_STRUCT_FILE_DESC_ERR);
         }
 
         return (lowerInt | (upperInt << 26));
         
-    }
+    } // encode_irods_tar_fd_plugin
     
     // =-=-=-=-=-=-=-
     // FIXME :: Black Magic that desperately needs fixed
-    int decodeIrodsTarfdPlugin(int inpInt, int *upperInt, int *lowerInt) {
+    void decode_irods_tar_fd_plugin( int inpInt, int *upperInt, int *lowerInt ) {
         *lowerInt = inpInt & 0x03ffffff;
         *upperInt = (inpInt & 0x7c000000) >> 26;
 
-        return (0);
     }
 
-
-    int irodsTarOpenPlugin( char *pathname, int oflags, int mode ) {
-        int structFileInx;
-        int myMode;
-        int status;
-        fileOpenInp_t fileOpenInp;
-        rescInfo_t *rescInfo;
-        specColl_t *specColl = NULL;
-        int rescTypeInx;
-        int l3descInx;
-
-        /* the upper most 4 bits of mode is the structFileInx */ 
-        decodeIrodsTarfdPlugin(mode, &structFileInx, &myMode); 
-        status = verifyStructFileDesc (structFileInx, pathname, &specColl);
-        if (status < 0 || NULL == specColl ) return -1;	/* tar lib looks for -1 return */ // JMC cppcheck - nullptr
-
-        rescInfo = StructFileDesc[structFileInx].rescInfo;
-        rescTypeInx = rescInfo->rescTypeInx;
-
-        memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-        fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileOpenInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
-        rstrcpy (fileOpenInp.fileName, specColl->phyPath, MAX_NAME_LEN);
-        fileOpenInp.mode = myMode;
-        fileOpenInp.flags = oflags;
-
-        l3descInx = rsFileOpen( StructFileDesc[structFileInx].rsComm, &fileOpenInp );
-        
-        if (l3descInx < 0) {
-            rodsLog (LOG_NOTICE, 
-          "irodsTarOpen: rsFileOpen of %s in Resc %s error, status = %d",
-          fileOpenInp.fileName, rescInfo->rescName, l3descInx);
-            return (-1);	/* libtar only accept -1 */
+    int verify_struct_file_desc( int  _index, 
+                                 char* _path, 
+                                 specColl_t ** _spec_coll ) {
+        if (PluginStructFileDesc[_index].inuseFlag <= 0) {
+            rodsLog (LOG_NOTICE,
+              "verify_struct_file_desc: _index %d not in use", _index);
+            return (SYS_STRUCT_FILE_DESC_ERR);
         }
-        return (encodeIrodsTarfdPlugin(structFileInx, l3descInx));
-    } // irodsTarOpenPlugin
+        if (PluginStructFileDesc[_index].specColl == NULL) {
+            rodsLog (LOG_NOTICE,
+              "verify_struct_file_desc: NULL specColl for _index %d", 
+          _index);
+            return (SYS_STRUCT_FILE_DESC_ERR);
+        }
+        if (strcmp (PluginStructFileDesc[_index].specColl->phyPath, _path)
+          != 0) {
+            rodsLog (LOG_NOTICE,
+              "verify_struct_file_desc: phyPath %s in Inx %d does not match %s",
+              PluginStructFileDesc[_index].specColl->phyPath, _index, 
+          _path);
+            return (SYS_STRUCT_FILE_DESC_ERR);
+        }
+        if ( _spec_coll  != NULL) {
+        * _spec_coll  = PluginStructFileDesc[_index].specColl;
+        }
 
-    int irodsTarClosePlugin( int fd ) {
+        return 0;
+    }
+
+    // =-=-=-=-=-=-=-
+    // function which libtar uses to perform an open of a file
+    int irods_tar_open_operation( char * _pathname, int _oflags, int _mode ) {
+        int struct_file_index = 0;
+        int decoded_mode      = 0;
+        specColl_t* spec_coll = NULL;
+
+        // =-=-=-=-=-=-=-
+        // the upper most 4 bits of mode is the struct_file_index */ 
+        decode_irods_tar_fd_plugin( _mode, &struct_file_index, &decoded_mode ); 
+        int status = verify_struct_file_desc( struct_file_index, _pathname, &spec_coll );
+        if( status < 0 || NULL == spec_coll ) {
+            return -1;	
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the resource in order to get the hostname to pass to the rs open call
+        eirods::resource_ptr resc;
+        eirods::error resc_err = resc_mgr.resolve( spec_coll->resource, resc );
+        if( !resc_err.ok() ) {
+            std::stringstream msg;
+            msg << "irods_tar_open_operation - failed to resolve resource [";
+            msg << spec_coll->resource;
+            msg << "]";
+            eirods::log( PASS( false, -1, msg.str(), resc_err ) );
+            return -1;
+        }
+
+        // =-=-=-=-=-=-=-
+        // request the irodshost property from the resource
+        boost::shared_ptr< rodsServerHost_t > rods_host; 
+        eirods::error get_err = resc->get_property< boost::shared_ptr< rodsServerHost_t > >( "host", rods_host );
+        if( !get_err.ok() ) {
+            std::stringstream msg;
+            msg << "irods_tar_open_operation - failed to get host property from resource";
+            eirods::log( PASS( false, -1, msg.str(), get_err ) );
+            return -1;
+        }
+        
+        // =-=-=-=-=-=-=-
+        // error trap hostname ptr
+        if( !rods_host->hostName ) {
+            std::stringstream msg;
+            msg << "irods_tar_open_operation - rods_host->hostname is null";
+            eirods::log( ERROR( false, -1, msg.str() ) );
+            return -1;
+        }
+        
+        std::string host_name = rods_host->hostName->name;
+
+        // =-=-=-=-=-=-=-
+        // build a file input struct
+        fileOpenInp_t fileOpenInp;
+        memset( &fileOpenInp, 0, sizeof( fileOpenInp ) );
+        strncpy( fileOpenInp.addr.hostAddr,  host_name.c_str(), NAME_LEN );
+        strncpy( fileOpenInp.fileName,       spec_coll->phyPath, MAX_NAME_LEN );
+        fileOpenInp.mode  = decoded_mode;
+        fileOpenInp.flags = _oflags;
+
+        // =-=-=-=-=-=-=-
+        // hit the open file api call
+        int l3_desc_index = rsFileOpen( PluginStructFileDesc[ struct_file_index ].rsComm, &fileOpenInp );
+        if( l3_desc_index < 0 ) {
+            std::stringstream msg;
+            msg << "irods_tar_open_operation - failed in rsFileOpen for [";
+            msg << _pathname;
+            msg << "] with status of [";
+            msg << l3_desc_index;
+            msg << "]";
+            eirods::log( ERROR( false, -1, msg.str() ) );
+            return -1;
+        }
+
+        // =-=-=-=-=-=-=-
+        // re-encode the file desc index
+        int ret = encode_irods_tar_fd_plugin( struct_file_index, l3_desc_index );
+        if( ret < 0 ) {
+            std::stringstream msg;
+            msg << "irods_tar_open_operation - failed in encode_irods_tar_fd_plugin";
+            eirods::log( ERROR( false, -1, msg.str() ) );
+            return -1;
+        }
+
+        return ret;
+
+    } // irods_tar_open_operation
+
+    // =-=-=-=-=-=-=-
+    // function which libtar uses to perform a close of a file
+    int irods_tar_close_operation( int fd ) {
+        int struct_file_index = 0;
+        int l3_desc_index     = 0;
+        decode_irods_tar_fd_plugin( fd, &struct_file_index, &l3_desc_index );
+
+        // =-=-=-=-=-=-=-
+        // build a close structure
         fileCloseInp_t fileCloseInp;
-        int structFileInx, l3descInx;
-        int status;
+        memset( &fileCloseInp, 0, sizeof( fileCloseInp ) );
+        fileCloseInp.fileInx = l3_desc_index;
+        
+        // =-=-=-=-=-=-=-
+        // make the call to the irods close api
+        int status = rsFileClose( PluginStructFileDesc[ struct_file_index ].rsComm, &fileCloseInp );
 
-        decodeIrodsTarfdPlugin(fd, &structFileInx, &l3descInx);
-        memset (&fileCloseInp, 0, sizeof (fileCloseInp));
-        fileCloseInp.fileInx = l3descInx;
-        status = rsFileClose (StructFileDesc[structFileInx].rsComm, 
-          &fileCloseInp);
+        return status;
 
-        return (status);
-    } // irodsTarClosePlugin
+    } // irods_tar_close_operation
 
-    int irodsTarReadPlugin( int fd, char *buf, int len ) {
+    // =-=-=-=-=-=-=-
+    // function which libtar uses to perform a read of a file
+    int irods_tar_read_operation( int fd, char *buf, int len ) {
+        int struct_file_index = 0;
+        int l3_desc_index     = 0;
+        decode_irods_tar_fd_plugin( fd, &struct_file_index, &l3_desc_index );
+
+        // =-=-=-=-=-=-=-
+        // build a read structure
         fileReadInp_t fileReadInp;
-        int structFileInx, l3descInx;
-        int status;
+        memset( &fileReadInp, 0, sizeof( fileReadInp ) );
+        fileReadInp.fileInx = l3_desc_index;
+        fileReadInp.len     = len;
+        
+        // =-=-=-=-=-=-=-
+        // build a buffer for reading into 
         bytesBuf_t readOutBBuf;
-
-        decodeIrodsTarfdPlugin(fd, &structFileInx, &l3descInx);
-        memset (&fileReadInp, 0, sizeof (fileReadInp));
-        fileReadInp.fileInx = l3descInx;
-        fileReadInp.len = len;
-        memset (&readOutBBuf, 0, sizeof (readOutBBuf));
+        memset( &readOutBBuf, 0, sizeof( readOutBBuf ) );
         readOutBBuf.buf = buf;
-        status = rsFileRead (StructFileDesc[structFileInx].rsComm, 
-          &fileReadInp, &readOutBBuf);
 
-        return (status);
+        // =-=-=-=-=-=-=-
+        // make the call to the irods read api
+        int status = rsFileRead( PluginStructFileDesc[ struct_file_index ].rsComm, &fileReadInp, &readOutBBuf );
 
-    } // irodsTarReadPlugin
+        return status;
 
-    int irodsTarWritePlugin( int fd, char *buf, int len ) {
+    } // irods_tar_read_operation
+
+    // =-=-=-=-=-=-=-
+    // function which libtar uses to perform a write of a file
+    int irods_tar_write_operation( int fd, char *buf, int len ) {
+        int struct_file_index = 0;
+        int l3_desc_index     = 0;
+        decode_irods_tar_fd_plugin( fd, &struct_file_index, &l3_desc_index );
+        
+        // =-=-=-=-=-=-=-
+        // build a write structure
         fileWriteInp_t fileWriteInp;
-        int structFileInx, l3descInx;
-        int status;
+        memset( &fileWriteInp, 0, sizeof( fileWriteInp ) );
+        fileWriteInp.fileInx = l3_desc_index;
+        fileWriteInp.len     = len;
+
+        // =-=-=-=-=-=-=-
+        // build a buffer for writing into 
         bytesBuf_t writeInpBBuf;
-
-        decodeIrodsTarfdPlugin(fd, &structFileInx, &l3descInx);
-        memset (&fileWriteInp, 0, sizeof (fileWriteInp));
-        fileWriteInp.fileInx = l3descInx;
-        fileWriteInp.len = len;
-        memset (&writeInpBBuf, 0, sizeof (writeInpBBuf));
+        memset( &writeInpBBuf, 0, sizeof( writeInpBBuf ) );
         writeInpBBuf.buf = buf;
-        status = rsFileWrite (StructFileDesc[structFileInx].rsComm, 
-          &fileWriteInp, &writeInpBBuf);
 
-        return (status);
-    } // irodsTarWritePlugin
+        // =-=-=-=-=-=-=-
+        // make the call to the irods write api
+        int status = rsFileWrite( PluginStructFileDesc[ struct_file_index ].rsComm, &fileWriteInp, &writeInpBBuf );
 
-    tartype_t irodstype = { (openfunc_t) irodsTarOpenPlugin, (closefunc_t) irodsTarClosePlugin,
-            (readfunc_t) irodsTarReadPlugin, (writefunc_t) irodsTarWritePlugin
+        return status;
+
+    } // irods_tar_write_operation
+
+    // =-=-=-=-=-=-=-
+    // structure which holds function pointers for tar posix operations
+    tartype_t TarFcnPtrs = { (openfunc_t)  irods_tar_open_operation, 
+                             (closefunc_t) irods_tar_close_operation,
+                             (readfunc_t)  irods_tar_read_operation, 
+                             (writefunc_t) irods_tar_write_operation 
     };
      
     // End Tar Operations
@@ -258,8 +409,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // error check special collection
-        specColl_t* spec_coll = StructFileDesc[ _index ].specColl;
-        if( StructFileDesc[ _index ].inuseFlag <= 0 ) {
+        specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
+        if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
             std::stringstream msg;
             msg << "extract_file_with_unzip - index: ";
             msg << _index;
@@ -308,7 +459,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
-        if( StructFileDesc[ _index ].inuseFlag <= 0 ) {
+        if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
             std::stringstream msg;
             msg << "extract_tar_file_with_lib - struct file index: ";
             msg << _index;
@@ -318,7 +469,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
-        specColl_t* spec_coll = StructFileDesc[ _index ].specColl;
+        specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
         if( spec_coll == NULL                  || 
             strlen( spec_coll->cacheDir ) == 0 ||
             strlen( spec_coll->phyPath  ) == 0) {
@@ -331,21 +482,27 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // encode file mode?  default is 0600 Black Magic...
-        int myMode = encodeIrodsTarfdPlugin( _index, getDefFileMode() );
+        int myMode = encode_irods_tar_fd_plugin( _index, getDefFileMode() );
         if( myMode < 0 ) {
-            return ERROR( false, myMode, "extract_tar_file_with_lib - failed in encodeIrodsTarfdPlugin" );
+            return ERROR( false, myMode, "extract_tar_file_with_lib - failed in encode_irods_tar_fd_plugin" );
         }
 
         // =-=-=-=-=-=-=-
         // make call to tar open
         TAR* tar_handle = 0;
-        int status = tar_open( &tar_handle, spec_coll->phyPath, &irodstype, O_RDONLY, myMode, TAR_GNU );
+        errno = 0; // CLEAR ERRNO
+        int status = tar_open( &tar_handle, spec_coll->phyPath, &TarFcnPtrs, O_RDONLY, myMode, TAR_GNU );
         if( status < 0 ) {
               std::stringstream msg;
               msg << "extract_tar_file_with_lib - tar_open error for [";
               msg << spec_coll->phyPath;
-              msg << "], errno = ";
+              msg << "]  strerror [";
+              msg << strerror( errno );
+              msg << "], errno [";
               msg << errno;
+              msg << "] status [";
+              msg << status;
+              msg << "]";
             return ERROR( false, SYS_TAR_OPEN_ERR - errno, msg.str() );
         }
 
@@ -379,12 +536,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // call tar file extraction for struct file 
-    eirods::error extract_tar_file( int _index ) {
-       
-        std::string type = StructFileDesc[ _index ].dataType;
-        if( type == ZIP_DT_STR ) {
+    eirods::error extract_tar_file( int _index, std::string _data_type ) {
+        if( _data_type == ZIP_DT_STR ) {
             return extract_file_with_unzip( _index );
         } else {
+            rodsLog( LOG_NOTICE, "extract_tar_file - call extract_tar_file_with_lib" );
             return extract_tar_file_with_lib( _index );
         } 
 
@@ -392,11 +548,11 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     //  
-    eirods::error make_tar_cache_dir( int _index ) {
+    eirods::error make_tar_cache_dir( int _index, std::string _host ) {
 
         // =-=-=-=-=-=-=-
         // extract and test comm pointer
-        rsComm_t* rs_comm = StructFileDesc[ _index ].rsComm;
+        rsComm_t* rs_comm = PluginStructFileDesc[ _index ].rsComm;
         if( !rs_comm ) {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null rsComm pointer for index: ";
@@ -406,20 +562,10 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // extract and test special collection pointer
-        specColl_t* spec_coll = StructFileDesc[ _index ].specColl;
+        specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
         if( !spec_coll ) {
             std::stringstream msg;
             msg << "make_tar_cache_dir - null specColl pointer for index: ";
-            msg << _index;
-            return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // extract and test rescInfo pointer
-        rescInfo_t* resc_info = StructFileDesc[ _index ].rescInfo;
-        if( !resc_info ) {
-            std::stringstream msg;
-            msg << "make_tar_cache_dir - null rescInfo pointer for index: ";
             msg << _index;
             return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, msg.str() );
         }
@@ -430,7 +576,7 @@ extern "C" {
         memset( &fileMkdirInp, 0, sizeof( fileMkdirInp ) );
         fileMkdirInp.fileType = UNIX_FILE_TYPE;	  // the only type for cache
         fileMkdirInp.mode     = DEFAULT_DIR_MODE;
-        rstrcpy( fileMkdirInp.addr.hostAddr,  resc_info->rescLoc, NAME_LEN );
+        strncpy( fileMkdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN ); 
 
         // =-=-=-=-=-=-=-
         // loop over a series of indicies for the directory suffix and
@@ -464,7 +610,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // copy successful cache dir out of mkdir struct
-        rstrcpy( spec_coll->cacheDir, fileMkdirInp.dirName, MAX_NAME_LEN );
+        strncpy( spec_coll->cacheDir, fileMkdirInp.dirName, MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // Win!
@@ -474,12 +620,12 @@ extern "C" {
         
     // =-=-=-=-=-=-=-
     // extract the tar file into a cache dir
-    eirods::error stage_tar_struct_file( int _index ) {
+    eirods::error stage_tar_struct_file( int _index, std::string _host ) {
         int status = -1;
 
         // =-=-=-=-=-=-=-
         // extract the special collection from the struct file table
-        specColl_t* spec_coll = StructFileDesc[_index].specColl;
+        specColl_t* spec_coll = PluginStructFileDesc[_index].specColl;
         if( spec_coll == NULL ) {
             return ERROR( false, SYS_INTERNAL_NULL_INPUT_ERR, "" );            
         }
@@ -489,14 +635,14 @@ extern "C" {
         if( strlen( spec_coll->cacheDir ) == 0 ) {
             // =-=-=-=-=-=-=-
             // no cache. stage one. make the CacheDir first
-            eirods::error mk_err = make_tar_cache_dir( _index );
+            eirods::error mk_err = make_tar_cache_dir( _index, _host );
             if( !mk_err.ok() ) {
                 return PASS( false, mk_err.code(), "stage_tar_struct_file - failed to create cachedir", mk_err );
             }
 
             // =-=-=-=-=-=-=-
             // expand tar file into cache dir
-            eirods::error extract_err = extract_tar_file( _index );
+            eirods::error extract_err = extract_tar_file( _index, "" );
             if( !extract_err.ok() ) {
                 std::stringstream msg;
                 msg << "stage_tar_struct_file - extract_tar_file failed for [";
@@ -511,7 +657,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // register the CacheDir 
-            status = modCollInfo2( StructFileDesc[ _index ].rsComm, spec_coll, 0 );
+            status = modCollInfo2( PluginStructFileDesc[ _index ].rsComm, spec_coll, 0 );
             if( status < 0 ) {
                return ERROR( false, status, "stage_tar_struct_file - modCollInfo2 failed." ); 
             }
@@ -523,14 +669,42 @@ extern "C" {
     } // stage_tar_struct_file
   
     // =-=-=-=-=-=-=-
+    // find the next free PluginStructFileDesc slot, mark it in use and return the index
+    int alloc_struct_file_desc() {
+        for( int i = 1; i < NUM_STRUCT_FILE_DESC; i++ ) {
+            if (PluginStructFileDesc[i].inuseFlag == FD_FREE) {
+                PluginStructFileDesc[i].inuseFlag = FD_INUSE;
+                return (i);
+            };
+        } // for i
+
+        rodsLog( LOG_NOTICE, "allocStructFileDesc: out of PluginStructFileDesc" );
+        return (SYS_OUT_OF_FILE_DESC);
+
+    } // alloc_struct_file_desc
+
+    int free_struct_file_desc( int _idx ) {
+        if( _idx  < 0 || _idx  >= NUM_STRUCT_FILE_DESC ) {
+            rodsLog( LOG_NOTICE,
+             "free_struct_file_desc: index %d out of range", _idx );
+            return (SYS_FILE_DESC_OUT_OF_RANGE);
+        }
+
+        memset( &PluginStructFileDesc[ _idx ], 0, sizeof( structFileDesc_t ) );
+
+        return (0);
+    
+    } // free_struct_file_desc
+
+    // =-=-=-=-=-=-=-
     //  
     int match_struct_file_desc( specColl_t* _spec_coll ) {
 
         for( int i = 1; i < NUM_STRUCT_FILE_DESC; i++) {
-            if( StructFileDesc[i].inuseFlag == FD_INUSE &&
-                StructFileDesc[i].specColl  != NULL     &&
-                strcmp( StructFileDesc[i].specColl->collection, _spec_coll->collection ) == 0 &&
-                strcmp( StructFileDesc[i].specColl->objPath,    _spec_coll->objPath    ) == 0 ) {
+            if( PluginStructFileDesc[i].inuseFlag == FD_INUSE &&
+                PluginStructFileDesc[i].specColl  != NULL     &&
+                strcmp( PluginStructFileDesc[i].specColl->collection, _spec_coll->collection ) == 0 &&
+                strcmp( PluginStructFileDesc[i].specColl->objPath,    _spec_coll->objPath    ) == 0 ) {
                 return (i);
             };
         } // for
@@ -541,10 +715,10 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // local function to manage the open of a tar file 
-    eirods::error tar_struct_file_open( rsComm_t*   _comm, 
-                                        specColl_t* _spec_coll, 
-                                        int&        _struct_desc_index ) {
-        int struct_desc_index       = 0;
+    eirods::error tar_struct_file_open( rsComm_t*    _comm, 
+                                        specColl_t*  _spec_coll, 
+                                        int&         _struct_desc_index,
+                                        std::string& _resc_host ) {
         int status                  = 0;
         specCollCache_t* spec_cache = 0;
 
@@ -561,17 +735,16 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // look for opened StructFileDesc
-        struct_desc_index = match_struct_file_desc( _spec_coll );
-        if( struct_desc_index > 0 ) {
-            _struct_desc_index = struct_desc_index;
+        // look for opened PluginStructFileDesc
+        _struct_desc_index = match_struct_file_desc( _spec_coll );
+        if( _struct_desc_index > 0 ) {
             return SUCCESS();
         }
-     
+    
         // =-=-=-=-=-=-=-
         // alloc and trap bad alloc
-        if( ( struct_desc_index = allocStructFileDesc() ) < 0 ) {
-            return ERROR( false, struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
+        if( ( _struct_desc_index = alloc_struct_file_desc() ) < 0 ) {
+            return ERROR( false, _struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
         }
 
         // =-=-=-=-=-=-=-
@@ -580,7 +753,10 @@ extern "C" {
         if( ( status = getSpecCollCache( _comm,  _spec_coll->collection, 0, &spec_cache ) ) >= 0 ) {
             // =-=-=-=-=-=-=-
             // copy pointer to cached special collection
-            StructFileDesc[ struct_desc_index ].specColl = &spec_cache->specColl;
+            PluginStructFileDesc[ _struct_desc_index ].specColl = &spec_cache->specColl;
+            if( !PluginStructFileDesc[ _struct_desc_index ].specColl ) {
+                
+            }
 
             // =-=-=-=-=-=-=-
             // copy over physical path and resource name since getSpecCollCache 
@@ -594,40 +770,55 @@ extern "C" {
         } else {
             // =-=-=-=-=-=-=-
             // special collection is local to this server ??
-            StructFileDesc[ struct_desc_index ].specColl =  _spec_coll;
+            PluginStructFileDesc[ _struct_desc_index ].specColl =  _spec_coll;
         }
 
         // =-=-=-=-=-=-=-
         // cache pointer to comm struct
-        StructFileDesc[ struct_desc_index ].rsComm = _comm;
+        PluginStructFileDesc[ _struct_desc_index ].rsComm = _comm;
 
         // =-=-=-=-=-=-=-
-        // resolve resource - fill in rescInfo data structure...
-        status = resolveResc( StructFileDesc[ struct_desc_index ].specColl->resource, &StructFileDesc[ struct_desc_index ].rescInfo );
-        if( status < 0 ) {
+        // resolve resource by name
+        eirods::resource_ptr resc;
+        eirods::error resc_err = resc_mgr.resolve( PluginStructFileDesc[ _struct_desc_index ].specColl->resource, resc );
+        if( !resc_err.ok() ) {
             std::stringstream msg;
-            msg << "tar_struct_file_open - error returned from resolveResc for: [";
+            msg << "tar_struct_file_open - error returned from resolveResc for resource [";
             msg << _spec_coll->resource;
             msg << "], status: ";
-            msg << status;
-            freeStructFileDesc( struct_desc_index );
-            return ERROR( false, struct_desc_index, msg.str() );
+            msg << resc_err.code();
+            free_struct_file_desc( _struct_desc_index );
+            return PASS( false, _struct_desc_index, msg.str(), resc_err );
         }
+
+        // =-=-=-=-=-=-=-
+        // extract the name of the host of the resource from the resource plugin
+        boost::shared_ptr< rodsServerHost_t > rods_host; 
+        eirods::error get_err = resc->get_property< boost::shared_ptr< rodsServerHost_t > >( "host", rods_host );
+        if( !get_err.ok() ) {
+            return PASS( false, -1, "failed to call get_property", get_err );
+        }
+        
+        if( !rods_host->hostName ) {
+            return ERROR( false, -1, "null rods server host" );
+        }
+        
+        _resc_host = rods_host->hostName->name;
 
         // =-=-=-=-=-=-=-
         // TODO :: need to deal with remote open here 
 
         // =-=-=-=-=-=-=-
         // tage the tar file so we can get at its tasty innards
-        eirods::error stage_err = stage_tar_struct_file( struct_desc_index );
+        eirods::error stage_err = stage_tar_struct_file( _struct_desc_index, _resc_host );
         if( !stage_err.ok() ) {
-            freeStructFileDesc( struct_desc_index );
-            return PASS( false, struct_desc_index, "tar_struct_file_open - stage_tar_struct_file failed.", stage_err );
+            free_struct_file_desc( _struct_desc_index );
+            return PASS( false, _struct_desc_index, "tar_struct_file_open - stage_tar_struct_file failed.", stage_err );
         }
 
         // =-=-=-=-=-=-=-
         // Win!
-        return CODE( struct_desc_index );
+        return CODE( _struct_desc_index );
 
     } // tar_struct_file_open
 
@@ -662,20 +853,36 @@ extern "C" {
     } // compose_cache_dir_physical_path
     
 	// =-=-=-=-=-=-=-
-	// 
+	// assign an new entry in the tar desc table
     int alloc_tar_sub_file_desc() {
         for( int i = 1; i < NUM_TAR_SUB_FILE_DESC; i++ ) {
-            if (TarSubFileDesc[i].inuseFlag == FD_FREE) {
-                TarSubFileDesc[i].inuseFlag = FD_INUSE;
+            if (PluginTarSubFileDesc[i].inuseFlag == FD_FREE) {
+                PluginTarSubFileDesc[i].inuseFlag = FD_INUSE;
                 return (i);
             };
         }
 
         rodsLog (LOG_NOTICE,
-         "alloc_tar_sub_file_desc: out of TarSubFileDesc");
+         "alloc_tar_sub_file_desc: out of PluginTarSubFileDesc");
 
         return (SYS_OUT_OF_FILE_DESC);
+
+    } // alloc_tar_sub_file_desc
+
+	// =-=-=-=-=-=-=-
+	// free an entry in the tar desc table
+    int free_tar_sub_file_desc( int _idx ) {
+        if( _idx < 0 || _idx >= NUM_TAR_SUB_FILE_DESC ) {
+            rodsLog (LOG_NOTICE,
+             "free_tar_sub_file_desc: index %d out of range", _idx );
+            return (SYS_FILE_DESC_OUT_OF_RANGE);
+        }
+
+        memset( &PluginTarSubFileDesc[ _idx ], 0, sizeof( tarSubFileDesc_t ) );
+
+        return (0);
     }
+
 
 	// =-=-=-=-=-=-=-
 	// interface for POSIX create
@@ -685,6 +892,7 @@ extern "C" {
 										                    _cmap, 
                                        eirods::first_class_object* 
 										                    _object ) {
+rodsLog( LOG_NOTICE, "tarFileCreatePlugin - START" );
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
@@ -716,7 +924,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileCreatePlugin - tar_struct_file_open error for [";
@@ -726,7 +935,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
 		// =-=-=-=-=-=-=-
         // allocate yet another index into another table
@@ -737,7 +946,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // cache struct file index into sub file index
-        TarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
+        PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
         
 		// =-=-=-=-=-=-=-
         // build a file create structure to pass off to the server api call
@@ -756,9 +965,7 @@ extern "C" {
         fileCreateInp.flags      = struct_obj->flags();
         fileCreateInp.fileType   = UNIX_FILE_TYPE;	/* the only type for cache */
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
-        rstrcpy( fileCreateInp.addr.hostAddr,
-                 StructFileDesc[ struct_file_index ].rescInfo->rescLoc, 
-                 NAME_LEN );
+        strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
 
 		// =-=-=-=-=-=-=-
         // make the call to create a file
@@ -771,8 +978,8 @@ extern "C" {
             msg << status;
             return ERROR( false, status, msg.str() );
         } else {
-            TarSubFileDesc[ sub_index ].fd = status;
-            StructFileDesc[ struct_file_index ].openCnt++;
+            PluginTarSubFileDesc[ sub_index ].fd = status;
+            PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );
             return CODE(  sub_index  );
         }
@@ -818,7 +1025,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileOpenPlugin - tar_struct_file_open error for [";
@@ -828,7 +1036,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
 		// =-=-=-=-=-=-=-
         // allocate yet another index into another table
@@ -839,7 +1047,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // cache struct file index into sub file index
-        TarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
+        PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
         
 		// =-=-=-=-=-=-=-
         // build a file open structure to pass off to the server api call
@@ -858,8 +1066,8 @@ extern "C" {
         fileOpenInp.flags      = struct_obj->flags();
         fileOpenInp.fileType   = UNIX_FILE_TYPE;	/* the only type for cache */
         fileOpenInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
-        rstrcpy( fileOpenInp.addr.hostAddr,
-                 StructFileDesc[ struct_file_index ].rescInfo->rescLoc, 
+        strncpy( fileOpenInp.addr.hostAddr,
+                 resc_host.c_str(),
                  NAME_LEN );
 
 		// =-=-=-=-=-=-=-
@@ -873,8 +1081,8 @@ extern "C" {
             msg << status;
             return ERROR( false, status, msg.str() );
         } else {
-            TarSubFileDesc[ sub_index ].fd = status;
-            StructFileDesc[ struct_file_index ].openCnt++;
+            PluginTarSubFileDesc[ sub_index ].fd = status;
+            PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );
             return CODE(  sub_index  );
         }
@@ -902,7 +1110,7 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tarFileReadPlugin - sub file index ";
             msg << _object->file_descriptor();
@@ -916,11 +1124,13 @@ extern "C" {
         bytesBuf_t fileReadOutBBuf;
         memset (&fileReadInp, 0, sizeof (fileReadInp));
         memset (&fileReadOutBBuf, 0, sizeof (fileReadOutBBuf));
-        fileReadInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileReadInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
         fileReadInp.len     = _len;
         fileReadOutBBuf.buf = _buf;
-        int status = rsFileRead( _object->comm(), &fileReadInp, &fileReadOutBBuf );
 
+        // =-=-=-=-=-=-=-
+        // make the call to read a file
+        int status = rsFileRead( _object->comm(), &fileReadInp, &fileReadOutBBuf );
         return CODE(status);
 
 	} // tarFileReadPlugin
@@ -946,9 +1156,9 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
-            msg << "tarFileReadPlugin - sub file index ";
+            msg << "tarFileWritePlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
             return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -961,7 +1171,7 @@ extern "C" {
         memset( &fileWriteInp,     0, sizeof (fileWriteInp) );
         memset( &fileWriteOutBBuf, 0, sizeof (fileWriteOutBBuf) );
         fileWriteInp.len     = fileWriteOutBBuf.len = _len;
-        fileWriteInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileWriteInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
         fileWriteOutBBuf.buf = _buf;
 
         // =-=-=-=-=-=-=-
@@ -970,8 +1180,8 @@ extern "C" {
         if( status > 0 ) {
             // =-=-=-=-=-=-=-
             // cache has been written 
-            int         struct_idx = TarSubFileDesc[ _object->file_descriptor() ].structFileInx;
-            specColl_t* spec_coll   = StructFileDesc[ struct_idx ].specColl;
+            int         struct_idx = PluginTarSubFileDesc[ _object->file_descriptor() ].structFileInx;
+            specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
             if( spec_coll->cacheDirty == 0 ) {
                 spec_coll->cacheDirty = 1;    
                 int status1 = modCollInfo2( _object->comm(), spec_coll, 0 );
@@ -1003,9 +1213,9 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
-            msg << "tarFileReadPlugin - sub file index ";
+            msg << "tarFileClosePlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
             return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -1014,17 +1224,21 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a close structure and make the rs call
         fileCloseInp_t fileCloseInp;
-        fileCloseInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileCloseInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
         int status = rsFileClose( _object->comm(), &fileCloseInp );
         if( status < 0 ) {
-
+            std::stringstream msg;
+            msg << "tarFileClosePlugin - failed in rsFileClose for fd [ ";
+            msg << _object->file_descriptor();
+            msg << " ]";
+            return ERROR( false, status, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // close out the sub file allocation and free the space
-        int struct_file_index = TarSubFileDesc[ _object->file_descriptor() ].structFileInx;
-        StructFileDesc[ struct_file_index ].openCnt++;
-        freeTarSubFileDesc ( _object->file_descriptor() );
+        int struct_file_index = PluginTarSubFileDesc[ _object->file_descriptor() ].structFileInx;
+        PluginStructFileDesc[ struct_file_index ].openCnt++;
+        free_tar_sub_file_desc( _object->file_descriptor() );
         _object->file_descriptor( 0 );
 
         return CODE( status );
@@ -1070,7 +1284,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileUnlinkPlugin - tar_struct_file_open error for [";
@@ -1080,7 +1295,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
 		// =-=-=-=-=-=-=-
         // build a file unlink structure to pass off to the server api call
@@ -1096,7 +1311,7 @@ extern "C" {
         }
 
         fileUnlinkInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-        rstrcpy( fileUnlinkInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
+        strncpy( fileUnlinkInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
 
 		// =-=-=-=-=-=-=-
         // make the call to unlink a file
@@ -1104,7 +1319,7 @@ extern "C" {
         if( status >= 0 ) {
             specColl_t* specColl;
             /* cache has been written */
-            specColl_t* loc_spec_coll = StructFileDesc[ struct_file_index ].specColl;
+            specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             if (loc_spec_coll->cacheDirty == 0) {
                 loc_spec_coll->cacheDirty = 1;
                 int status1 = modCollInfo2 ( comm, loc_spec_coll, 0 );
@@ -1157,7 +1372,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileStatPlugin - tar_struct_file_open error for [";
@@ -1167,7 +1383,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
     
 		// =-=-=-=-=-=-=-
@@ -1184,8 +1400,7 @@ extern "C" {
         }
 
         fileStatInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-        rstrcpy (fileStatInp.addr.hostAddr,  
-        StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN);
+        strncpy( fileStatInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
 
 		// =-=-=-=-=-=-=-
         // make the call to stat a file
@@ -1193,6 +1408,8 @@ extern "C" {
         int status = rsFileStat( comm, &fileStatInp, &rods_stat );
         if( status >= 0 ) {
             rodsStatToStat( _statbuf, rods_stat );
+        } else {
+            return ERROR( false, status, "tarFileStatPlugin - rsFileStat failed." );
         }
 
         return CODE( status );
@@ -1219,9 +1436,9 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
-            msg << "tarFileReadPlugin - sub file index ";
+            msg << "tarFileFstatPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
             return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -1238,12 +1455,14 @@ extern "C" {
         // build a fstat structure and make the rs call
         fileFstatInp_t fileFstatInp;
         memset( &fileFstatInp, 0, sizeof( fileFstatInp ) );
-        fileFstatInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileFstatInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
         
         rodsStat_t* rods_stat;
         int status = rsFileFstat( comm, &fileFstatInp, &rods_stat );
         if( status >= 0 ) {
             rodsStatToStat( _statbuf, rods_stat );
+        } else {
+            return ERROR( false, status, "tarFileFStatPlugin - rsFileFstat failed." );
         }
 
         return CODE( status );
@@ -1271,9 +1490,9 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
-            msg << "tarFileReadPlugin - sub file index ";
+            msg << "tarFileLseekPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
             return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -1290,7 +1509,7 @@ extern "C" {
         // build a lseek structure and make the rs call
         fileLseekInp_t fileLseekInp;
         memset( &fileLseekInp, 0, sizeof( fileLseekInp ) );
-        fileLseekInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileLseekInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
         fileLseekInp.offset  = _offset;
         fileLseekInp.whence  = _whence;
         
@@ -1360,7 +1579,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileMkdirPlugin - tar_struct_file_open error for [";
@@ -1370,13 +1590,13 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
 		// =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileMkdirInp_t fileMkdirInp;
         fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-        rstrcpy( fileMkdirInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
+        strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         fileMkdirInp.mode = struct_obj->mode();
 
 		// =-=-=-=-=-=-=-
@@ -1391,8 +1611,8 @@ extern "C" {
         // make the call to the mkdir api
         int status = rsFileMkdir( comm, &fileMkdirInp );
         if( status >= 0 ) {
-            // use the specColl in StructFileDesc 
-            specColl_t* loc_spec_coll = StructFileDesc[ struct_file_index ].specColl;
+            // use the specColl in PluginStructFileDesc 
+            specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             // =-=-=-=-=-=-=-
             // cache has been written 
             if( loc_spec_coll->cacheDirty == 0 ) {
@@ -1463,7 +1683,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileRmdirPlugin - tar_struct_file_open error for [";
@@ -1473,13 +1694,13 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
 		// =-=-=-=-=-=-=-
         // build a file mkdir structure to pass off to the server api call
         fileRmdirInp_t fileRmdirInp;
         fileRmdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-        rstrcpy( fileRmdirInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
+        strncpy( fileRmdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
 
 		// =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1493,8 +1714,8 @@ extern "C" {
         // make the call to the mkdir api
         int status = rsFileRmdir( comm, &fileRmdirInp );
         if( status >= 0 ) {
-            // use the specColl in StructFileDesc 
-            specColl_t* loc_spec_coll = StructFileDesc[ struct_file_index ].specColl;
+            // use the specColl in PluginStructFileDesc 
+            specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             // =-=-=-=-=-=-=-
             // cache has been written 
             if( loc_spec_coll->cacheDirty == 0 ) {
@@ -1550,17 +1771,23 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileOpendirPlugin - tar_struct_file_open error for [";
             msg << spec_coll->objPath; 
-            return PASS( false, -1, msg.str(), open_err );
+            eirods::error ret = PASS( false, -1, msg.str(), open_err );
+            eirods::log( ret );
+            return ret;
         }
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
+        if( !spec_coll ) {
+            return ERROR( false, -1, "tarFileOpendirPlugin - null spec_coll pointer in PluginStructFileDesc" );
+        }
 
 		// =-=-=-=-=-=-=-
         // allocate yet another index into another table
@@ -1574,8 +1801,7 @@ extern "C" {
         fileOpendirInp_t fileOpendirInp;
         memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
         fileOpendirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-        rstrcpy( fileOpendirInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
-        
+        strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
 
 		// =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1594,11 +1820,21 @@ extern "C" {
             msg << fileOpendirInp.dirName;
             msg << "], status: ";
             msg << status;
-            return ERROR( false, status, msg.str() );
+            eirods::error ret = ERROR( false, status, msg.str() );
+            eirods::log( ret );
+            return ret;
         } else {
-            TarSubFileDesc[ sub_index ].fd = status;
-            StructFileDesc[ struct_file_index ].openCnt++;
+            std::stringstream msg;
+            msg << "tarFileOpendirPlugin - success :: dirname [";
+            msg << fileOpendirInp.dirName;
+            msg << "]  sub_index [";
+            msg << sub_index;
+            msg << "]";
+            eirods::log( ERROR( false, -666, msg.str() ) );
+            PluginTarSubFileDesc[ sub_index ].fd = status;
+            PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );
+
             return CODE( sub_index );
         }
 
@@ -1623,9 +1859,9 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
-            msg << "tarFileReadPlugin - sub file index ";
+            msg << "tarFileClosedirPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
             return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -1641,17 +1877,18 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // build a file close dir structure to pass off to the server api call
         fileClosedirInp_t fileClosedirInp;
-        fileClosedirInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileClosedirInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
         int status = rsFileClosedir( comm, &fileClosedirInp );
         if( status < 0 ) {
+            eirods::log( LOG_ERROR, "tarFileClosedirPlugin - failed." );
             return ERROR( false, -1, "tarFileClosedirPlugin - failed on call to rsFileClosedir" );
         }
 
 		// =-=-=-=-=-=-=-
         // close out the sub file index and free the allocation
-        int struct_file_index = TarSubFileDesc[ _object->file_descriptor() ].structFileInx;
-        StructFileDesc[ struct_file_index ].openCnt++;
-        freeTarSubFileDesc( _object->file_descriptor() );
+        int struct_file_index = PluginTarSubFileDesc[ _object->file_descriptor() ].structFileInx;
+        PluginStructFileDesc[ struct_file_index ].openCnt++;
+        free_tar_sub_file_desc( _object->file_descriptor() );
         _object->file_descriptor( 0 );
 
         return CODE( status );
@@ -1678,9 +1915,9 @@ extern "C" {
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
             _object->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            TarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
+            PluginTarSubFileDesc[ _object->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
-            msg << "tarFileReadPlugin - sub file index ";
+            msg << "tarFileReaddirPlugin - sub file index ";
             msg << _object->file_descriptor();
             msg << " is out of range.";
             return ERROR( false, SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -1696,15 +1933,15 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // build a file read dir structure to pass off to the server api call
         fileReaddirInp_t fileReaddirInp; 
-        fileReaddirInp.fileInx = TarSubFileDesc[ _object->file_descriptor() ].fd;
+        fileReaddirInp.fileInx = PluginTarSubFileDesc[ _object->file_descriptor() ].fd;
 
         // =-=-=-=-=-=-=-
         // make the api call to read the directory
         int status = rsFileReaddir( comm, &fileReaddirInp, _dirent_ptr );
-        if( status < 0 ) {
+        if( status < -1 ) {
             return ERROR( false, status, "tarFileReaddirPlugin - failed in call to rsFileReaddir" );
         }
-        
+
         return CODE( status );
 
     } // tarFileReaddirPlugin
@@ -1763,7 +2000,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileRenamePlugin - tar_struct_file_open error for [";
@@ -1773,14 +2011,14 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
         
 		// =-=-=-=-=-=-=-
         // build a file rename structure to pass off to the server api call
         fileRenameInp_t fileRenameInp;
         memset (&fileRenameInp, 0, sizeof (fileRenameInp));
         fileRenameInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-        rstrcpy( fileRenameInp.addr.hostAddr, StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
+        strncpy( fileRenameInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
          
 		// =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1800,8 +2038,8 @@ extern "C" {
         // make the api call for rename
         int status = rsFileRename( comm, &fileRenameInp );
         if( status >= 0 ) {
-            // use the specColl in StructFileDesc 
-            specColl_t* loc_spec_coll = StructFileDesc[ struct_file_index ].specColl;
+            // use the specColl in PluginStructFileDesc 
+            specColl_t* loc_spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
             // =-=-=-=-=-=-=-
             // cache has been written 
             if( loc_spec_coll->cacheDirty == 0 ) {
@@ -1857,7 +2095,8 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index );
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileTruncatePlugin - tar_struct_file_open error for [";
@@ -1867,7 +2106,7 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
-        spec_coll = StructFileDesc[ struct_file_index ].specColl;
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
 
 		// =-=-=-=-=-=-=-
         // allocate yet another index into another table
@@ -1878,13 +2117,13 @@ extern "C" {
 
 		// =-=-=-=-=-=-=-
         // cache struct file index into sub file index
-        TarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
+        PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
         
 		// =-=-=-=-=-=-=-
         // build a file create structure to pass off to the server api call
         fileOpenInp_t fileTruncateInp;
         memset( &fileTruncateInp, 0, sizeof( fileTruncateInp ) );
-        rstrcpy( fileTruncateInp.addr.hostAddr,  StructFileDesc[ struct_file_index ].rescInfo->rescLoc, NAME_LEN );
+        strncpy( fileTruncateInp.addr.hostAddr,  resc_host.c_str(), NAME_LEN );
         fileTruncateInp.dataSize = struct_obj->offset();
 
 		// =-=-=-=-=-=-=-
@@ -1901,8 +2140,8 @@ extern "C" {
         if( status > 0 ) {
             // =-=-=-=-=-=-=-
             // cache has been written 
-            int         struct_idx = TarSubFileDesc[ _object->file_descriptor() ].structFileInx;
-            specColl_t* spec_coll   = StructFileDesc[ struct_idx ].specColl;
+            int         struct_idx = PluginTarSubFileDesc[ _object->file_descriptor() ].structFileInx;
+            specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
             if( spec_coll->cacheDirty == 0 ) {
                 spec_coll->cacheDirty = 1;    
                 int status1 = modCollInfo2( _object->comm(), spec_coll, 0 );
@@ -1918,68 +2157,387 @@ extern "C" {
 	
     // =-=-=-=-=-=-=-
 	// interface to determine free space on a device given a path
-	eirods::error tarFileGetFsFreeSpacePlugin( eirods::resource_property_map* 
-	                                                                _prop_map, 
-												eirods::resource_child_map* 
-												                    _cmap,
-                                                eirods::first_class_object*
-									                                _object ) { 
+	eirods::error tarFileExtractPlugin( eirods::resource_property_map* _prop_map, 
+								        eirods::resource_child_map*    _cmap,
+                                        eirods::first_class_object*    _object ) { 
+        rodsLog( LOG_NOTICE, "tarFileExtractPlugin - START" );
+		// =-=-=-=-=-=-=-
+        // check incoming parameters
+        eirods::error chk_err = param_check( _prop_map, _cmap, _object );
+        if( !chk_err.ok() ) {
+            return PASS( false, -1, "tarFileExtractPlugin", chk_err );
+		}
 
 		// =-=-=-=-=-=-=-
-        // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarFileGetFsFreeSpacePlugin - is not implemented." );
+        // cast down the chain to our understood object type
+        eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
+        if( !struct_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+        }
 
-	} // tarFileGetFsFreeSpacePlugin
+		// =-=-=-=-=-=-=-
+        // extract and check the special collection pointer
+        specColl_t* spec_coll = struct_obj->spec_coll();
+        if( !spec_coll ) {
+            return ERROR( false, -1, "tarFileExtractPlugin - null spec_coll pointer in structure_object" );
+        }
+
+		// =-=-=-=-=-=-=-
+        // extract and check the comm pointer
+        rsComm_t* comm = struct_obj->comm();
+        if( !comm ) {
+            return ERROR( false, -1, "tarFileExtractPlugin - null comm pointer in structure_object" );
+        }
+
+		// =-=-=-=-=-=-=-
+        // allocate a position in the struct table
+        int struct_file_index = 0;
+        if( ( struct_file_index = alloc_struct_file_desc() ) < 0 ) {
+            return ERROR( false, struct_file_index, "tarFileExtractPlugin - failed to allocate struct file descriptor" );
+        }
+
+		// =-=-=-=-=-=-=-
+        // populate the file descriptor table
+        PluginStructFileDesc[ struct_file_index ].inuseFlag = 1;
+        PluginStructFileDesc[ struct_file_index ].specColl  = spec_coll;
+        PluginStructFileDesc[ struct_file_index ].rsComm    = comm;
+        strncpy( PluginStructFileDesc[ struct_file_index ].dataType, 
+                 struct_obj->data_type().c_str(), NAME_LEN );
+
+        rodsLog( LOG_NOTICE, "tarFileExtractPlugin - call extract_tar_file" );
+		// =-=-=-=-=-=-=-
+        // extract the file
+        eirods::error ext_err = extract_tar_file( struct_file_index, struct_obj->data_type() );
+        rodsLog( LOG_NOTICE, "tarFileExtractPlugin - call extract_tar_file. done." );
+        if( !ext_err.ok() ) {
+            // NOTE:: may need to remove the cacheDir too 
+            std::stringstream msg;
+            msg << "tarFileExtractPlugin - failed to extact structure file for [";
+            msg << spec_coll->objPath;
+            msg << "] in directory [";
+            msg << spec_coll->cacheDir;
+            msg << "] with errno of ";
+            msg << errno;
+            return PASS( false, SYS_TAR_STRUCT_FILE_EXTRACT_ERR - errno, msg.str(), ext_err );
+        }
+
+        return CODE( ext_err.code() );
+
+	} // tarFileExtractPlugin
+
+    // =-=-=-=-=-=-=-
+    // utility function to zip up the cache directory 
+    eirods::error bundle_cache_dir_with_zip( int _index ) {
+        char *av[NAME_LEN];
+        char tmpPath[MAX_NAME_LEN];
+        int status;
+        int inx = 0;
+
+        specColl_t *specColl = PluginStructFileDesc[ _index ].specColl;
+
+        if (specColl == NULL || 
+            specColl->cacheDirty <= 0 ||
+            strlen (specColl->cacheDir) == 0) {
+            return ERROR( false, 0, "bundle_cache_dir_with_zip - invalid spec coll" );
+        }
+
+        // cd to the cacheDir 
+        if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
+            rodsLog( LOG_ERROR, "bundle_cache_dir_with_zip: getcwd failed. errno = %d", errno );
+            return ERROR( false, SYS_EXEC_TAR_ERR - errno, "bundle_cache_dir_with_zip - failed on getcwd" );
+        }
+        chdir (specColl->cacheDir);
+        bzero (av, sizeof (av));
+        av[inx] = const_cast<char*>( ZIP_EXEC_PATH );
+        inx++;
+        av[inx] = const_cast<char*>( "-r" );
+        inx++;
+        av[inx] = const_cast<char*>( "-q" );
+        inx++;
+        av[inx] = specColl->phyPath;
+        inx++;
+        av[inx] = const_cast<char*>( "." );
+        status = forkAndExec (av);
+        chdir (tmpPath);
+
+        return CODE( status );
+
+    } // bundle_cache_dir_with_zip
+   
+    // =-=-=-=-=-=-=-
+    //  
+    eirods::error bundle_cache_dir_with_lib( int _index ) {
+        TAR *t = NULL;
+        int status = -1;
+        int myMode = -1;
+
+        // =-=-=-=-=-=-=-
+        // snag the special collection pointer from the table
+        specColl_t* spec_coll = PluginStructFileDesc[_index].specColl;
+        if( spec_coll == NULL              || 
+            spec_coll->cacheDirty <= 0     ||
+            strlen( spec_coll->cacheDir ) == 0 ) {
+             return ERROR( false, 0, "bundle_cache_dir_with_lib - invalid spec_coll" );
+        }
+
+        myMode = encode_irods_tar_fd_plugin( _index, getDefFileMode() );
+
+        // =-=-=-=-=-=-=-
+        // open the tar file
+        status = tar_open( &t, spec_coll->phyPath, &TarFcnPtrs, O_WRONLY, myMode, TAR_GNU );
+        if( status < 0 || NULL == t ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir_with_lib - tar_open error for [";
+            msg << spec_coll->phyPath;
+            msg << "] errno ";
+            msg << errno;
+            return ERROR( false, SYS_TAR_OPEN_ERR - errno, msg.str() );
+        }
+
+        // =-=-=-=-=-=-=-
+        // add directory worth of data into the tar file
+        status = tar_append_tree( t, spec_coll->cacheDir, const_cast<char*>( "." ) );
+        if (status != 0) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir_with_lib - tar_append_tree error for [";
+            msg << spec_coll->phyPath;
+            msg << "] errno ";
+            msg << errno;
+
+            if (status < 0) {
+                return ERROR( false, status, msg.str() );
+            } else {
+                return ERROR( false, SYS_TAR_APPEND_ERR - errno, msg.str() );
+            }
+        }
+
+        // =-=-=-=-=-=-=-
+        // close the tar directory
+        if( ( status = tar_close(t)) != 0 ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir_with_lib - tar_close error for [";
+            msg << spec_coll->phyPath;
+            msg << "] errno ";
+            msg << errno;
+              
+            if (status < 0) {
+                return ERROR( false, status, msg.str() );
+            } else {
+                return ERROR( false, SYS_TAR_CLOSE_ERR - errno, msg.str() );
+            }
+        }
+
+        return SUCCESS();
+
+    } // bundle_cache_dir_with_lib
+
+    // =-=-=-=-=-=-=-
+    // interface for tar / zip up of cache dir which also updates
+    // the icat with the new file size
+    eirods::error sync_cache_dir_to_tar_file( int         _index, 
+                                              int         _opr_type,
+                                              std::string _host ) {
+      
+        specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
+        rsComm_t*   comm      = PluginStructFileDesc[ _index ].rsComm;
+ 
+        // =-=-=-=-=-=-=-
+        // call bundle helper functions
+        eirods::error bundle_err = SUCCESS();
+        if( strstr( PluginStructFileDesc[ _index ].dataType, ZIP_DT_STR ) != 0 ) {
+            bundle_err = bundle_cache_dir_with_zip ( _index );
+
+        } else {
+            if( ( _opr_type & ADD_TO_TAR_OPR ) != 0 ) {
+                std::string msg = "sync_cache_dir_to_tar_file - ADD_TO_TAR_OPR not supported";
+                return ERROR( false, SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED, msg );
+            }
+
+            bundle_err = bundle_cache_dir_with_lib( _index );
+
+        } // JMC - backport 4637
+
+        if( !bundle_err.ok() ) {
+            return PASS( false, -1, "sync_cache_dir_to_tar_file - failed in bundle.", bundle_err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // create a file stat structure for the rs call
+        fileStatInp_t file_stat_inp;
+        memset( &file_stat_inp, 0, sizeof( file_stat_inp ) );
+        rstrcpy( file_stat_inp.fileName, spec_coll->phyPath, MAX_NAME_LEN );
+        strncpy( file_stat_inp.addr.hostAddr, _host.c_str(), NAME_LEN );
+
+        // =-=-=-=-=-=-=-
+        // call file stat api to get the size of the new file
+        rodsStat_t* file_stat_out = NULL;
+        int status = rsFileStat( comm, &file_stat_inp, &file_stat_out );
+        if( status < 0 || NULL ==  file_stat_out ) { 
+            std::stringstream msg;
+            msg << "sync_cache_dir_to_tar_file - failed on call to rsFileStat for [";
+            msg << spec_coll->phyPath;
+            msg << "] with status of ";
+            msg << status;
+            return ERROR( false, status, msg.str() );
+              
+        }
+
+        // =-=-=-=-=-=-=-
+        // update icat with the new size of the file
+        if( ( _opr_type & NO_REG_COLL_INFO ) == 0 ) {
+            // NOTE :: for bundle opr, done at datObjClose 
+            status = regNewObjSize( comm, spec_coll->objPath, spec_coll->replNum, file_stat_out->st_size );
+
+        }
+
+        free( file_stat_out );
+
+        return CODE( status );
+
+    } // sync_cache_dir_to_tar_file
 
     // =-=-=-=-=-=-=-
 	// tarFileCopyPlugin
-	eirods::error tarFileCopyPlugin( eirods::resource_property_map*
-	                                                          _prop_map, 
-										  eirods::resource_child_map* 
-										                      _cmap,
-										  eirods::first_class_object*
-										                      _object,
-	                                      const char *destFileName ) {
+	eirods::error tarFileSyncPlugin( eirods::resource_property_map* _prop_map, 
+                                     eirods::resource_child_map*    _cmap,
+                                     eirods::first_class_object*    _object ) {
+        // =-=-=-=-=-=-=-
+        // check incoming parameters
+        eirods::error chk_err = param_check( _prop_map, _cmap, _object );
+        if( !chk_err.ok() ) {
+            return PASS( false, -1, "tarFileSyncPlugin", chk_err );
+		}
+
 		// =-=-=-=-=-=-=-
-        // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarFileCopyPlugin - is not implemented." );
+        // cast down the chain to our understood object type
+        eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
+        if( !struct_obj ) {
+            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+        }
 
-	} // tarFileCopyPlugin
+		// =-=-=-=-=-=-=-
+        // extract and check the special collection pointer
+        specColl_t* spec_coll = struct_obj->spec_coll();
+        if( !spec_coll ) {
+            return ERROR( false, -1, "tarFileSyncPlugin - null spec_coll pointer in structure_object" );
+        }
 
+		// =-=-=-=-=-=-=-
+        // extract and check the comm pointer
+        rsComm_t* comm = struct_obj->comm();
+        if( !comm ) {
+            return ERROR( false, -1, "tarFileSyncPlugin - null comm pointer in structure_object" );
+        }
+
+		// =-=-=-=-=-=-=-
+        // open and stage the tar file, get its index
+        int struct_file_index = 0;
+        std::string resc_host;
+        eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        if( !open_err.ok() ) {
+            std::stringstream msg;
+            msg << "tarFileOpenPlugin - tar_struct_file_open error for [";
+            msg << spec_coll->objPath; 
+            return PASS( false, -1, msg.str(), open_err );
+        }
+
+		// =-=-=-=-=-=-=-
+        // use the cached specColl. specColl may have changed 
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
+
+		// =-=-=-=-=-=-=-
+        // we cant sync if the structured collection is currently in use
+        if( PluginStructFileDesc[ struct_file_index ].openCnt > 0 ) {
+            return ERROR( false, SYS_STRUCT_FILE_BUSY_ERR, "tarFileSyncPlugin - spec coll in use" );
+        }
+        
+		// =-=-=-=-=-=-=-
+        // delete operation
+        if( ( struct_obj->opr_type() & DELETE_STRUCT_FILE) != 0 ) {
+            /* remove cache and the struct file */
+            free_struct_file_desc( struct_file_index );
+            return SUCCESS();
+        }
+
+		// =-=-=-=-=-=-=-
+        // check if there is a specified cache directory,
+        // if not then any other operation isn't possible
+        if( strlen( spec_coll->cacheDir ) > 0 ) {
+            if( spec_coll->cacheDirty > 0) {
+
+		        // =-=-=-=-=-=-=-
+                // write the tar file and register no dirty 
+                eirods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index, 
+                                                                     struct_obj->opr_type(), 
+                                                                     resc_host );
+                if( !sync_err.ok() ) {
+                    std::stringstream msg;
+                    msg << "tarFileSyncPlugin - failed in sync_cache_dir_to_tar_file for [";
+                    msg << spec_coll->cacheDir;
+                    msg << "] with status of ";
+                    msg << sync_err.code();
+
+                    free_struct_file_desc ( struct_file_index );
+                    return PASS( false, -1, msg.str(), sync_err );
+                }
+
+                spec_coll->cacheDirty = 0;
+                if( ( struct_obj->opr_type() & NO_REG_COLL_INFO ) == 0 ) {
+                    int status = modCollInfo2( comm,  spec_coll, 0 );
+                    if( status < 0 ) {
+                        free_struct_file_desc( struct_file_index );
+                        return ERROR( false, status, "tarFileSyncPlugin - failed in modCollInfo2" );
+                    
+                    } // if status
+                
+                }
+
+            } // if cache is dirty
+
+            // =-=-=-=-=-=-=-
+            // remove cache dir if necessary
+            if( ( struct_obj->opr_type() & PURGE_STRUCT_FILE_CACHE ) != 0 ) {
+                // =-=-=-=-=-=-=-
+                // need to unregister the cache before removing it
+                int status = modCollInfo2( comm,  spec_coll, 1 );
+                if( status < 0 ) {
+                    free_struct_file_desc( struct_file_index );
+                    return ERROR( false, status, "tarFileSyncPlugin - failed in modCollInfo2" );
+                }
+
+                // =-=-=-=-=-=-=-
+                // use the irods api to remove the directory
+                fileRmdirInp_t rmdir_inp;
+                memset( &rmdir_inp, 0, sizeof( rmdir_inp ) );
+                rmdir_inp.flags    = RMDIR_RECUR;
+                rmdir_inp.fileType = UNIX_FILE_TYPE;  
+                rstrcpy( rmdir_inp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
+                strncpy( rmdir_inp.addr.hostAddr, resc_host.c_str(),   NAME_LEN );
+                
+                status = rsFileRmdir( comm, &rmdir_inp );
+                if( status < 0 ) {
+                    free_struct_file_desc( struct_file_index );
+                    return ERROR( false, status, "tarFileSyncPlugin - failed in call to rsFileRmdir" );
+                }
+
+            } // if purge file cache
+        
+        } // if we have a cache dir
+
+        free_struct_file_desc( struct_file_index );
+        
+        return SUCCESS();
+
+	} // tarFileSyncPlugin
 
     // =-=-=-=-=-=-=-
-	// tarStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
-	// Just copy the file from filename to cacheFilename. optionalInfo info
-	// is not used.
-	eirods::error tarStageToCachePlugin( eirods::resource_property_map* 
-	                                                          _prop_map, 
-										  eirods::resource_child_map* 
-										                      _cmap,
-										  eirods::first_class_object*
-										                      _object,
-										  const char*         _cache_file_name ) { 
-		// =-=-=-=-=-=-=-
-        // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarStageToCachePlugin - is not implemented." );
-										  
-	} // tarStageToCachePlugin
+	// tarFileCopyPlugin
+	eirods::error tarFileGetFsFreeSpacePlugin( eirods::resource_property_map* _prop_map, 
+                                               eirods::resource_child_map*    _cmap,
+                                               eirods::first_class_object*    _object ) {
+        return ERROR( false, -1, "tarFileGetFsFreeSpacePlugin is not implemented" );
 
-    // =-=-=-=-=-=-=-
-	// tarSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
-	// Just copy the file from cacheFilename to filename. optionalInfo info
-	// is not used.
-	eirods::error tarSyncToArchPlugin( eirods::resource_property_map* 
-	                                                        _prop_map, 
-										eirods::resource_child_map* 
-										                    _cmap,
-										eirods::first_class_object*
-										                    _object,
-										const char*         _cache_file_name ) { 
-		// =-=-=-=-=-=-=-
-        // this interface is not implemented in this plugin
-        return ERROR( false, -1, "tarSyncToArchPlugin - is not implemented." );
-
-	} // tarSyncToArchPlugin
+    } // tarFileGetFsFreeSpacePlugin
 
     // =-=-=-=-=-=-=-
 	// 3. create derived class to handle tar file system resources
@@ -2007,7 +2565,12 @@ extern "C" {
 		tarfilesystem_resource* resc = new tarfilesystem_resource( _context );
 
         // =-=-=-=-=-=-=-
-		// 4b. map function names to operations.  this map will be used to load
+		// 4b1. set start and stop operations for alloc / free of tables
+        resc->set_start_operation( "tarfilesystem_resource_start" );
+        resc->set_stop_operation ( "tarfilesystem_resource_stop"  );
+
+        // =-=-=-=-=-=-=-
+		// 4b2. map function names to operations.  this map will be used to load
 		//     the symbols from the shared object in the delay_load stage of 
 		//     plugin loading.
         resc->add_operation( "create",       "tarFileCreatePlugin" );
@@ -2026,12 +2589,12 @@ extern "C" {
         resc->add_operation( "readdir",      "tarFileReaddirPlugin" );
         resc->add_operation( "stage",        "tarFileStagePlugin" );
         resc->add_operation( "rename",       "tarFileRenamePlugin" );
-        resc->add_operation( "freespace",    "tarFileGetFsFreeSpacePlugin" );
         resc->add_operation( "rmdir",        "tarFileRmdirPlugin" );
         resc->add_operation( "closedir",     "tarFileClosedirPlugin" );
         resc->add_operation( "truncate",     "tarFileTruncatePlugin" );
-        resc->add_operation( "stagetocache", "tarStageToCachePlugin" );
-        resc->add_operation( "synctoarch",   "tarSyncToArchPlugin" );
+        resc->add_operation( "extract",      "tarFileExtractPlugin" );
+        resc->add_operation( "sync",         "tarFileSyncPlugin" );
+        resc->add_operation( "freespace",    "tarFileGetFsFreeSpacePlugin" );
 
         // =-=-=-=-=-=-=-
 		// 4c. return the pointer through the generic interface of an

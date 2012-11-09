@@ -4,6 +4,10 @@
 #include "subStructFileOpendir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+ 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
 
 int
 rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
@@ -60,13 +64,34 @@ rodsServerHost_t *rodsServerHost)
     return fd;
 }
 
-int
-_rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
-{
-    int fd;
+int _rsSubStructFileOpendir( rsComm_t*  _comm, 
+                             subFile_t* _sub_file ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
-    fd = subStructFileOpendir (rsComm, subFile);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to open a file
+    eirods::error opendir_err = fileOpendir( struct_obj );
+    if( !opendir_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileOpendir - failed on call to fileOpendir for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), opendir_err ) );
+        return opendir_err.code();
 
-    return (fd);
+    } else {
+        std::stringstream msg;
+        msg << "_rsSubStructFileOpendir - success for [";
+        msg << struct_obj.sub_file_path();
+        msg << "] fd [";
+        msg << struct_obj.file_descriptor();
+        msg << "]";
+        eirods::log( ERROR( false, -1, msg.str() ) );
+        return opendir_err.code();
+
+    }
 }
 

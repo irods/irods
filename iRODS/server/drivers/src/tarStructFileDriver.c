@@ -1,8 +1,11 @@
+
+#if 0
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 /* tarSubStructFileDriver.c - Module of the tar structFile driver.
  */
-
+#if 1
 #ifndef TAR_EXEC_PATH
 #include <libtar.h>
 
@@ -1005,6 +1008,9 @@ mkTarCacheDir (int structFileInx)
 int
 irodsTarOpen (char *pathname, int oflags, int mode)
 {
+    rodsLog( LOG_NOTICE, "!!!!!!!!!!!!! irodsTarOpen !!!!!!!!!" );
+    return -1;
+
     int structFileInx;
     int myMode;
     int status;
@@ -1016,7 +1022,7 @@ irodsTarOpen (char *pathname, int oflags, int mode)
 
     /* the upper most 4 bits of mode is the structFileInx */ 
     decodeIrodsTarfd (mode, &structFileInx, &myMode); 
-    status = verifyStructFileDesc (structFileInx, pathname, &specColl);
+//    status = verifyStructFileDesc (structFileInx, pathname, &specColl);
     if (status < 0 || NULL == specColl ) return -1;	/* tar lib looks for -1 return */ // JMC cppcheck - nullptr
 
     rescInfo = StructFileDesc[structFileInx].rescInfo;
@@ -1127,7 +1133,7 @@ irodsTarWrite (int fd, char *buf, int len)
 
     return (status);
 }
-
+#if 0
 int 
 verifyStructFileDesc (int structFileInx, char *tarPathname, 
 specColl_t **specColl)
@@ -1157,7 +1163,7 @@ specColl_t **specColl)
 
     return 0;
 }
-
+#endif
 int
 extractTarFile (int structFileInx)
 {
@@ -1662,3 +1668,7 @@ extractFileWithUnzip (int structFileInx)
 }
 #endif // JMC - backport 4639
 // =-=-=-=-=-=-=-
+#endif
+
+
+#endif

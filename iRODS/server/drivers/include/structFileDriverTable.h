@@ -8,7 +8,7 @@
 
 #ifndef STRUCT_FILE_DRIVER_TABLE_H
 #define STRUCT_FILE_DRIVER_TABLE_H
-
+#if 0
 #include "rods.h"
 #include "structFileDriver.h"
 #include "haawSubStructFileDriver.h"
@@ -47,5 +47,5 @@ structFileDriver_t StructFileDriverTable[] = {
 };
 
 int NumStructFileDriver = sizeof (StructFileDriverTable) / sizeof (structFileDriver_t);
-
+#endif
 #endif	/* STRUCT_FILE_DRIVER_TABLE_H */

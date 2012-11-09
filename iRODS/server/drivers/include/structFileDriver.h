@@ -9,6 +9,10 @@
 #ifndef STRUCT_FILE_DRIVER_H
 #define STRUCT_FILE_DRIVER_H
 
+
+#define CACHE_DIR_STR "cacheDir"
+
+#if 0
 #include "rods.h"
 #include "rcConnect.h"
 #include "objInfo.h"
@@ -97,5 +101,5 @@ int
 allocStructFileDesc ();
 int
 freeStructFileDesc (int structFileInx);
-
+#endif
 #endif	/* STRUCT_FILE_DRIVER_H */

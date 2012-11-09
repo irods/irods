@@ -89,6 +89,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
             PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "clusters" | awk '{print $3}'`
             if [ "$PSQLSTATE" != "" ] ; then
                 PSQLSTATUS="running"
+            else
+                PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "online" | awk '{print $4}'`
+                if [ "$PSQLSTATE" != "" ] ; then
+                    PSQLSTATUS="running"
+                fi
             fi
         fi
     else
