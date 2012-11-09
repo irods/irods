@@ -8,7 +8,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
-
+#include "eirods_error.h"
 
 int
 rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,
@@ -70,14 +70,13 @@ bytesBuf_t *subFileGetOutBBuf, rodsServerHost_t *rodsServerHost)
 int _rsSubStructFileGet( rsComm_t*   _comm, 
                          subFile_t*  _sub_file,
                          bytesBuf_t* _out_buf ) {
-rodsLog( LOG_NOTICE, "_rsSubStructFileGet - file %s, offset %d", _sub_file->subFilePath, _sub_file->offset );
     // =-=-=-=-=-=-=-
     // convert subfile to a first class object
     eirods::structured_object struct_obj( *_sub_file );
     struct_obj.comm( _comm );
 
     if( _sub_file->offset <= 0 ) {
-        eirods::log( ERROR( false, -1, "_rsSubStructFileGet - invalid length" ) );
+        eirods::log( ERROR( -1, "_rsSubStructFileGet - invalid length" ) );
         return -1;    
     }
 

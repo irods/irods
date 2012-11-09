@@ -210,7 +210,7 @@ extern "C" {
         if( !rods_host->hostName ) {
             std::stringstream msg;
             msg << "irods_tar_open_operation - rods_host->hostname is null";
-            eirods::log( ERROR( false, -1, msg.str() ) );
+            eirods::log( ERROR( -1, msg.str() ) );
             return -1;
         }
         
@@ -235,7 +235,7 @@ extern "C" {
             msg << "] with status of [";
             msg << l3_desc_index;
             msg << "]";
-            eirods::log( ERROR( false, -1, msg.str() ) );
+            eirods::log( ERROR( -1, msg.str() ) );
             return -1;
         }
 
@@ -245,7 +245,7 @@ extern "C" {
         if( ret < 0 ) {
             std::stringstream msg;
             msg << "irods_tar_open_operation - failed in encode_irods_tar_fd_plugin";
-            eirods::log( ERROR( false, -1, msg.str() ) );
+            eirods::log( ERROR( -1, msg.str() ) );
             return -1;
         }
 
@@ -484,7 +484,7 @@ extern "C" {
         // encode file mode?  default is 0600 Black Magic...
         int myMode = encode_irods_tar_fd_plugin( _index, getDefFileMode() );
         if( myMode < 0 ) {
-            return ERROR( false, myMode, "extract_tar_file_with_lib - failed in encode_irods_tar_fd_plugin" );
+            return ERROR( myMode, "extract_tar_file_with_lib - failed in encode_irods_tar_fd_plugin" );
         }
 
         // =-=-=-=-=-=-=-
@@ -503,7 +503,7 @@ extern "C" {
               msg << "] status [";
               msg << status;
               msg << "]";
-            return ERROR( false, SYS_TAR_OPEN_ERR - errno, msg.str() );
+            return ERROR( SYS_TAR_OPEN_ERR - errno, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -744,7 +744,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // alloc and trap bad alloc
         if( ( _struct_desc_index = alloc_struct_file_desc() ) < 0 ) {
-            return ERROR( false, _struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
+            return ERROR( _struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
         }
 
         // =-=-=-=-=-=-=-
@@ -800,7 +800,7 @@ extern "C" {
         }
         
         if( !rods_host->hostName ) {
-            return ERROR( false, -1, "null rods server host" );
+            return ERROR( -1, "null rods server host" );
         }
         
         _resc_host = rods_host->hostName->name;
@@ -1229,7 +1229,7 @@ extern "C" {
             msg << "tarFileClosePlugin - failed in rsFileClose for fd [ ";
             msg << _object->file_descriptor();
             msg << " ]";
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -1407,7 +1407,7 @@ extern "C" {
         if( status >= 0 ) {
             rodsStatToStat( _statbuf, rods_stat );
         } else {
-            return ERROR( false, status, "tarFileStatPlugin - rsFileStat failed." );
+            return ERROR( status, "tarFileStatPlugin - rsFileStat failed." );
         }
 
         return CODE( status );
@@ -1460,7 +1460,7 @@ extern "C" {
         if( status >= 0 ) {
             rodsStatToStat( _statbuf, rods_stat );
         } else {
-            return ERROR( false, status, "tarFileFStatPlugin - rsFileFstat failed." );
+            return ERROR( status, "tarFileFStatPlugin - rsFileFstat failed." );
         }
 
         return CODE( status );
@@ -1784,7 +1784,7 @@ extern "C" {
         // use the cached specColl. specColl may have changed 
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileOpendirPlugin - null spec_coll pointer in PluginStructFileDesc" );
+            return ERROR( -1, "tarFileOpendirPlugin - null spec_coll pointer in PluginStructFileDesc" );
         }
 
         // =-=-=-=-=-=-=-
@@ -1818,7 +1818,7 @@ extern "C" {
             msg << fileOpendirInp.dirName;
             msg << "], status: ";
             msg << status;
-            eirods::error ret = ERROR( false, status, msg.str() );
+            eirods::error ret = ERROR( status, msg.str() );
             eirods::log( ret );
             return ret;
         } else {
@@ -1828,7 +1828,7 @@ extern "C" {
             msg << "]  sub_index [";
             msg << sub_index;
             msg << "]";
-            eirods::log( ERROR( false, -666, msg.str() ) );
+            eirods::log( ERROR( -666, msg.str() ) );
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );
@@ -1879,7 +1879,7 @@ extern "C" {
         int status = rsFileClosedir( comm, &fileClosedirInp );
         if( status < 0 ) {
             eirods::log( LOG_ERROR, "tarFileClosedirPlugin - failed." );
-            return ERROR( false, -1, "tarFileClosedirPlugin - failed on call to rsFileClosedir" );
+            return ERROR( -1, "tarFileClosedirPlugin - failed on call to rsFileClosedir" );
         }
 
         // =-=-=-=-=-=-=-
@@ -1937,7 +1937,7 @@ extern "C" {
         // make the api call to read the directory
         int status = rsFileReaddir( comm, &fileReaddirInp, _dirent_ptr );
         if( status < -1 ) {
-            return ERROR( false, status, "tarFileReaddirPlugin - failed in call to rsFileReaddir" );
+            return ERROR( status, "tarFileReaddirPlugin - failed in call to rsFileReaddir" );
         }
 
         return CODE( status );
@@ -2170,28 +2170,28 @@ extern "C" {
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
 		// =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileExtractPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileExtractPlugin - null spec_coll pointer in structure_object" );
         }
 
 		// =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileExtractPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileExtractPlugin - null comm pointer in structure_object" );
         }
 
 		// =-=-=-=-=-=-=-
         // allocate a position in the struct table
         int struct_file_index = 0;
         if( ( struct_file_index = alloc_struct_file_desc() ) < 0 ) {
-            return ERROR( false, struct_file_index, "tarFileExtractPlugin - failed to allocate struct file descriptor" );
+            return ERROR( struct_file_index, "tarFileExtractPlugin - failed to allocate struct file descriptor" );
         }
 
 		// =-=-=-=-=-=-=-
@@ -2236,13 +2236,13 @@ extern "C" {
         if (specColl == NULL || 
             specColl->cacheDirty <= 0 ||
             strlen (specColl->cacheDir) == 0) {
-            return ERROR( false, 0, "bundle_cache_dir_with_zip - invalid spec coll" );
+            return ERROR( 0, "bundle_cache_dir_with_zip - invalid spec coll" );
         }
 
         // cd to the cacheDir 
         if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
             rodsLog( LOG_ERROR, "bundle_cache_dir_with_zip: getcwd failed. errno = %d", errno );
-            return ERROR( false, SYS_EXEC_TAR_ERR - errno, "bundle_cache_dir_with_zip - failed on getcwd" );
+            return ERROR( SYS_EXEC_TAR_ERR - errno, "bundle_cache_dir_with_zip - failed on getcwd" );
         }
         chdir (specColl->cacheDir);
         bzero (av, sizeof (av));
@@ -2275,7 +2275,7 @@ extern "C" {
         if( spec_coll == NULL              || 
             spec_coll->cacheDirty <= 0     ||
             strlen( spec_coll->cacheDir ) == 0 ) {
-             return ERROR( false, 0, "bundle_cache_dir_with_lib - invalid spec_coll" );
+             return ERROR( 0, "bundle_cache_dir_with_lib - invalid spec_coll" );
         }
 
         myMode = encode_irods_tar_fd_plugin( _index, getDefFileMode() );
@@ -2289,7 +2289,7 @@ extern "C" {
             msg << spec_coll->phyPath;
             msg << "] errno ";
             msg << errno;
-            return ERROR( false, SYS_TAR_OPEN_ERR - errno, msg.str() );
+            return ERROR( SYS_TAR_OPEN_ERR - errno, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -2303,9 +2303,9 @@ extern "C" {
             msg << errno;
 
             if (status < 0) {
-                return ERROR( false, status, msg.str() );
+                return ERROR( status, msg.str() );
             } else {
-                return ERROR( false, SYS_TAR_APPEND_ERR - errno, msg.str() );
+                return ERROR( SYS_TAR_APPEND_ERR - errno, msg.str() );
             }
         }
 
@@ -2319,9 +2319,9 @@ extern "C" {
             msg << errno;
               
             if (status < 0) {
-                return ERROR( false, status, msg.str() );
+                return ERROR( status, msg.str() );
             } else {
-                return ERROR( false, SYS_TAR_CLOSE_ERR - errno, msg.str() );
+                return ERROR( SYS_TAR_CLOSE_ERR - errno, msg.str() );
             }
         }
 
@@ -2348,7 +2348,7 @@ extern "C" {
         } else {
             if( ( _opr_type & ADD_TO_TAR_OPR ) != 0 ) {
                 std::string msg = "sync_cache_dir_to_tar_file - ADD_TO_TAR_OPR not supported";
-                return ERROR( false, SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED, msg );
+                return ERROR( SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED, msg );
             }
 
             bundle_err = bundle_cache_dir_with_lib( _index );
@@ -2376,7 +2376,7 @@ extern "C" {
             msg << spec_coll->phyPath;
             msg << "] with status of ";
             msg << status;
-            return ERROR( false, status, msg.str() );
+            return ERROR( status, msg.str() );
               
         }
 
@@ -2410,21 +2410,21 @@ extern "C" {
         // cast down the chain to our understood object type
         eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
-            return ERROR( false, -1, "failed to cast first_class_object to structured_object" );
+            return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }
 
 		// =-=-=-=-=-=-=-
         // extract and check the special collection pointer
         specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
-            return ERROR( false, -1, "tarFileSyncPlugin - null spec_coll pointer in structure_object" );
+            return ERROR( -1, "tarFileSyncPlugin - null spec_coll pointer in structure_object" );
         }
 
 		// =-=-=-=-=-=-=-
         // extract and check the comm pointer
         rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
-            return ERROR( false, -1, "tarFileSyncPlugin - null comm pointer in structure_object" );
+            return ERROR( -1, "tarFileSyncPlugin - null comm pointer in structure_object" );
         }
 
 		// =-=-=-=-=-=-=-
@@ -2446,7 +2446,7 @@ extern "C" {
 		// =-=-=-=-=-=-=-
         // we cant sync if the structured collection is currently in use
         if( PluginStructFileDesc[ struct_file_index ].openCnt > 0 ) {
-            return ERROR( false, SYS_STRUCT_FILE_BUSY_ERR, "tarFileSyncPlugin - spec coll in use" );
+            return ERROR( SYS_STRUCT_FILE_BUSY_ERR, "tarFileSyncPlugin - spec coll in use" );
         }
         
 		// =-=-=-=-=-=-=-
@@ -2484,7 +2484,7 @@ extern "C" {
                     int status = modCollInfo2( comm,  spec_coll, 0 );
                     if( status < 0 ) {
                         free_struct_file_desc( struct_file_index );
-                        return ERROR( false, status, "tarFileSyncPlugin - failed in modCollInfo2" );
+                        return ERROR( status, "tarFileSyncPlugin - failed in modCollInfo2" );
                     
                     } // if status
                 
@@ -2500,7 +2500,7 @@ extern "C" {
                 int status = modCollInfo2( comm,  spec_coll, 1 );
                 if( status < 0 ) {
                     free_struct_file_desc( struct_file_index );
-                    return ERROR( false, status, "tarFileSyncPlugin - failed in modCollInfo2" );
+                    return ERROR( status, "tarFileSyncPlugin - failed in modCollInfo2" );
                 }
 
                 // =-=-=-=-=-=-=-
@@ -2515,7 +2515,7 @@ extern "C" {
                 status = rsFileRmdir( comm, &rmdir_inp );
                 if( status < 0 ) {
                     free_struct_file_desc( struct_file_index );
-                    return ERROR( false, status, "tarFileSyncPlugin - failed in call to rsFileRmdir" );
+                    return ERROR( status, "tarFileSyncPlugin - failed in call to rsFileRmdir" );
                 }
 
             } // if purge file cache
@@ -2533,7 +2533,7 @@ extern "C" {
 	eirods::error tarFileGetFsFreeSpacePlugin( eirods::resource_property_map* _prop_map, 
                                                eirods::resource_child_map*    _cmap,
                                                eirods::first_class_object*    _object ) {
-        return ERROR( false, -1, "tarFileGetFsFreeSpacePlugin is not implemented" );
+        return ERROR( -1, "tarFileGetFsFreeSpacePlugin is not implemented" );
 
     } // tarFileGetFsFreeSpacePlugin
 

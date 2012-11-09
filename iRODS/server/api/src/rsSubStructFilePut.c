@@ -87,7 +87,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
             std::stringstream msg;
             msg << "_rsSubStructFilePut - failed on call to fileCreate for [";
             msg << struct_obj.sub_file_path();
-            eirods::log( ERROR( false, -1, msg.str() ) );
+            eirods::log( ERROR( -1, msg.str() ) );
             fd = -1;
 
         } else {
@@ -133,7 +133,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         std::stringstream msg;
         msg << "_rsSubStructFilePut - failed on call to fileWrite for [";
         msg << struct_obj.sub_file_path();
-        eirods::log( ERROR( false, -1, msg.str() ) );
+        eirods::log( ERROR( -1, msg.str() ) );
         status = write_err.code();
 
     } else {
@@ -163,7 +163,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         std::stringstream msg;
         msg << "_rsSubStructFilePut - failed on call to fileWrite for [";
         msg << struct_obj.sub_file_path();
-        eirods::log( ERROR( false, -1, msg.str() ) );
+        eirods::log( ERROR( -1, msg.str() ) );
         status = close_err.code();
 
     }

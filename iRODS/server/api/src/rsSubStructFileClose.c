@@ -81,7 +81,7 @@ _rsSubStructFileClose( rsComm_t*                _comm,
         msg << "_rsSubStructFileClose - failed on call to fileClose for fd [ ";
         msg << struct_obj.file_descriptor();
         msg << " ]";
-        eirods::log( ERROR( false, -1, msg.str() ) );
+        eirods::log( ERROR( -1, msg.str() ) );
         return close_err.code();
 
     } else {

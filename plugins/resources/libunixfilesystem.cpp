@@ -968,13 +968,13 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
 		}
 		if( !_cmap ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
 		}
 		if( !_object ) {
-            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
 		}
 
     #ifdef SAMFS_STAGE

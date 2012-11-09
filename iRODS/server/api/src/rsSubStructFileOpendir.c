@@ -89,7 +89,7 @@ int _rsSubStructFileOpendir( rsComm_t*  _comm,
         msg << "] fd [";
         msg << struct_obj.file_descriptor();
         msg << "]";
-        eirods::log( ERROR( false, -1, msg.str() ) );
+        eirods::log( ERROR( -1, msg.str() ) );
         return opendir_err.code();
 
     }
