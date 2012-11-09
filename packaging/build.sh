@@ -964,7 +964,7 @@ if [ "$COVERAGE" == "1" ] ; then
 fi
 
 # grant write permission to all, in case this was run via sudo
-cd $BUILDDIR
+cd $GITDIR
 chmod -R a+w .
 
 # boilerplate
