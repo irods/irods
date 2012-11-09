@@ -103,10 +103,10 @@ namespace eirods {
         } // for itr
 
         // =-=-=-=-=-=-=-
-        // did we find a resource and is the ptr valid?
-        if( found = true && _resc.get() ) {
-            return SUCCESS();
-        } else {
+	    // did we find a resource and is the ptr valid?
+        if( true == found && _resc.get() ) {
+		    return SUCCESS();
+		} else {
             std::string msg( "resource_manager::resolve_from_property - failed to find resource for property [" );
             msg += _prop;
             msg += "] and value [";

@@ -52,6 +52,7 @@
 #endif
 #include <sys/stat.h>
 
+#include <string.h>
 
 
 
@@ -914,10 +915,12 @@ extern "C" {
 		// handle error cases
 		if( tmp_dirent == NULL ) {
 			if( errno == 0 ) { // just the end 
+
 				// =-=-=-=-=-=-=-
 				// cache status in out variable
 				return CODE( -1 );
 			} else {
+
 				// =-=-=-=-=-=-=-
 				// cache status in out variable
 				int status = UNIX_FILE_READDIR_ERR - errno;
@@ -935,12 +938,15 @@ extern "C" {
 			// =-=-=-=-=-=-=-
 			// alloc dirent as necessary
             if( !( *_dirent_ptr ) ) {
-                (*_dirent_ptr ) = reinterpret_cast< rodsDirent_t*>( malloc( sizeof( rodsDirent_t ) ) );
+                (*_dirent_ptr ) = new rodsDirent_t;
             }
 
 			// =-=-=-=-=-=-=-
 			// convert standard dirent to rods dirent struct
-            direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
+            int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
+            if( status < 0 ) {
+
+            }
 
 			#if defined(solaris_platform)
 			rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
@@ -962,30 +968,29 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_property_map" );
+		}
+		if( !_cmap ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null resource_child_map" );
+		}
+		if( !_object ) {
+            return ERROR( false, -1, "unixFileReadPlugin - null first_class_object" );
+		}
 
-#ifdef SAMFS_STAGE
-        int status = sam_stage (path, "i");
+    #ifdef SAMFS_STAGE
+		int status = sam_stage (path, "i");
 
-        if (status < 0) {
-            _status = UNIX_FILE_STAGE_ERR - errno;
-            rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n"
-                     , (*_status) );
-            return ERROR( errno, "unixFileStage: sam_stage error" );
-        }
+		if (status < 0) {
+			_status = UNIX_FILE_STAGE_ERR - errno;
+			rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n", (*_status) );
+			return ERROR( false, errno, "unixFileStage: sam_stage error" );
+		}
 
-        return CODE( 0 );
-#else
-        return CODE( 0 );
-#endif
-    } // unixFileStagePlugin
+		return CODE( 0 );
+    #else
+		return CODE( 0 );
+    #endif
+	} // unixFileStagePlugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir

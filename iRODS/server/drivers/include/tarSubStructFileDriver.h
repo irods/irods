@@ -8,7 +8,7 @@
 
 #ifndef TAR_STRUCT_FILE_DRIVER_H_H
 #define TAR_STRUCT_FILE_DRIVER_H_H
-
+#if 0
 #include "rods.h"
 #include "structFileDriver.h"
 
@@ -70,9 +70,9 @@ int
 irodsTarRead (int fd, char *buf, int len);
 int
 irodsTarWrite (int fd, char *buf, int len);
-int
-verifyStructFileDesc (int structFileInx, char *tarPathname,
-specColl_t **specColl);
+//int
+//verifyStructFileDesc (int structFileInx, char *tarPathname,
+//specColl_t **specColl);
 int
 encodeIrodsTarfd (int upperInt, int lowerInt);
 int
@@ -112,4 +112,5 @@ int
 bundleCacheDirWithZip (int structFileInx); // JMC - backport 4637
 int
 extractFileWithUnzip (int structFileInx); // JMC - backport 4637
+#endif
 #endif	/* TAR_STRUCT_FILE_DRIVER_H_H */

@@ -5,6 +5,10 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 int
 rsSubStructFileFstat (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileFstatInp,
 rodsStat_t **subStructFileStatOut)
@@ -63,15 +67,39 @@ rodsStat_t **subStructFileStatOut, rodsServerHost_t *rodsServerHost)
 
 }
 
-int
-_rsSubStructFileFstat (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileFstatInp,
-rodsStat_t **subStructFileStatOut)
-{
-    int status;
+int _rsSubStructFileFstat( rsComm_t*                _comm, 
+                           subStructFileFdOprInp_t* _fstat_inp,
+                           rodsStat_t**             _stat_out ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj;
+    struct_obj.comm( _comm );
+    struct_obj.file_descriptor( _fstat_inp->fd );
 
-    status = subStructFileFstat (subStructFileFstatInp->type, rsComm, 
-      subStructFileFstatInp->fd, subStructFileStatOut);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to open a file
+    struct stat fs;
+    eirods::error fstat_err = fileFstat( struct_obj, &fs );
+    if( !fstat_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileFstat - failed on call to fileFstat for [";
+        msg << struct_obj.file_descriptor();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), fstat_err ) );
+        return fstat_err.code();
 
-    return (status);
+    } else {
+        // =-=-=-=-=-=-=-
+        // convert unix stat struct to an irods stat struct
+        if( !_stat_out ) {
+            *_stat_out = new rodsStat_t;
+        }
+        
+        int status = statToRodsStat( *_stat_out, &fs );
+
+        return fstat_err.code();
+
+    }
+
 }
 

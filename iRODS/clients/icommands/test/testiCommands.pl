@@ -446,8 +446,8 @@ runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
 runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
 runCmd( "irepl --purgec -Rcompresource $bunfile" );
-runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
-runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
+# jmc - resource groups are deprecated - runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
+# jmc - resource groups are deprecated - runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
 runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 # get the name of bundle file
 if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }

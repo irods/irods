@@ -92,6 +92,7 @@ rescGrpInfo_t *rescGrpInfo)
     int chksumFlag, maxSubFileCnt; // JMC - backport 4528, 4771
     char *dataType = NULL; // JMC - backport 4658
 
+
     myRescInfo = rescGrpInfo->rescInfo;
     myRescName = myRescInfo->rescName;
     bzero (&collInp, sizeof (collInp));
@@ -445,7 +446,7 @@ phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
 char *collection, int oprType ) // JMC - backport 4643
 {
     structFileOprInp_t structFileOprInp;
-    int status;
+    int status = 0;
     char *dataType; // JMC - backport 4633
 	int myOprType = oprType; // JMC - backport 4657
 

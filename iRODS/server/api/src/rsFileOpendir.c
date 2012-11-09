@@ -26,26 +26,25 @@ rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
     remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-	status = _rsFileOpendir (rsComm, fileOpendirInp, &dirPtr);
+	    status = _rsFileOpendir (rsComm, fileOpendirInp, &dirPtr);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteFileOpendir (rsComm, fileOpendirInp, rodsServerHost);
     } else {
-	if (remoteFlag < 0) {
-	    return (remoteFlag);
-	} else {
-	    rodsLog (LOG_NOTICE,
-	      "rsFileOpendir: resolveHost returned unrecognized value %d",
-	       remoteFlag);
-	    return (SYS_UNRECOGNIZED_REMOTE_FLAG);
-	}
+        if (remoteFlag < 0) {
+            return (remoteFlag);
+        } else {
+            rodsLog (LOG_NOTICE,
+              "rsFileOpendir: resolveHost returned unrecognized value %d",
+               remoteFlag);
+            return (SYS_UNRECOGNIZED_REMOTE_FLAG);
+        }
     }
 
     if (status < 0) {
-	return (status);
+	    return (status);
     }
-
-    fileInx = allocAndFillFileDesc (rodsServerHost, fileOpendirInp->dirName,
-      fileOpendirInp->fileType, status, 0);
+    
+    fileInx = allocAndFillFileDesc( rodsServerHost, fileOpendirInp->dirName, fileOpendirInp->fileType, status, 0);
     FileDesc[fileInx].driverDep = dirPtr;
 
     return (fileInx);

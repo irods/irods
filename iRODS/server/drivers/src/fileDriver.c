@@ -12,8 +12,6 @@
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create
 eirods::error fileCreate( eirods::first_class_object& _object ) {
-eirods::log( LOG_NOTICE, "fileCreate" );
-
     // =-=-=-=-=-=-=-
 	// trap empty file name
 	if( _object.physical_path().empty() ) {
@@ -43,6 +41,7 @@ eirods::log( LOG_NOTICE, "fileCreate" );
         return CODE( ret_err.code() );
 	}
 
+
 } // fileCreate
 
 // =-=-=-=-=-=-=-
@@ -63,7 +62,7 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileOpen - failed to resolve resource", ret_err );
 	}
-    
+   
 	// =-=-=-=-=-=-=-
 	// make the call to the "open" interface
 	ret_err = resc->call< eirods::first_class_object* >( "open", &_object );
@@ -85,11 +84,11 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
 eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _len ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
-	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( -1, "fileRead - File Name is Empty." );
-		eirods::log( ret_err );
-		return ret_err;
-	}
+	//if( _object.physical_path().empty() ) {
+	//	eirods::error ret_err = ERROR( false, -1, "fileRead - File Name is Empty." );
+	//	eirods::log( ret_err );
+	//	return ret_err;
+	//}
      
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
@@ -118,11 +117,11 @@ eirods::error fileRead( eirods::first_class_object& _object, void* _buf, int _le
 eirods::error fileWrite( eirods::first_class_object& _object, void* _buf, int  _len ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
-	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( -1, "fileWrite - File Name is Empty." );
-		eirods::log( ret_err );
-		return ret_err;
-	}
+	//if( _object.physical_path().empty() ) {
+	//	eirods::error ret_err = ERROR( false, -1, "fileWrite - File Name is Empty." );
+	//	eirods::log( ret_err );
+	//	return ret_err;
+	//}
    
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
@@ -222,7 +221,7 @@ eirods::error fileStat( eirods::first_class_object& _object, struct stat* _statb
 		eirods::log( ret_err );
 		return ret_err;
 	}
-    
+   
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
@@ -481,11 +480,11 @@ eirods::error fileOpendir( eirods::first_class_object& _object ) {
 eirods::error fileClosedir( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
 	// trap empty file name
-	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( -1, "fileClosedir - File Name is Empty." );
-		eirods::log( ret_err );
-		return ret_err;
-	}
+	//if( _object.physical_path().empty() ) {
+	//	eirods::error ret_err = ERROR( false, -1, "fileClosedir - File Name is Empty." );
+	//	eirods::log( ret_err );
+	//	return ret_err;
+	//}
     
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
@@ -512,14 +511,6 @@ eirods::error fileClosedir( eirods::first_class_object& _object ) {
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX readdir
 eirods::error fileReaddir( eirods::first_class_object& _object, struct rodsDirent** _dirent_ptr ) {
-    // =-=-=-=-=-=-=-
-	// trap empty file name
-	if( _object.physical_path().empty() ) {
-		eirods::error ret_err = ERROR( -1, "fileReaddir - File Name is Empty." );
-		eirods::log( ret_err );
-		return ret_err;
-	}
-    
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;

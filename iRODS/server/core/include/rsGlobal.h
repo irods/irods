@@ -20,6 +20,8 @@
 
 eirods::resource_manager resc_mgr;
 
+#define CACHE_DIR_STR "cacheDir"
+
 int LogFd = -1;		/* the log file descriptor */
 char *CurLogfileName = NULL;        /* the path of the current logfile */
 char ProcLogDir[MAX_NAME_LEN];
@@ -59,9 +61,9 @@ int IcatConnState = INITIAL_NOT_DONE;
 
 specCollCache_t *SpecCollCacheHead = NULL;
 
-structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
+//structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
 #ifdef TAR_STRUCT_FILE
-tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
+//tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
 #endif
 
 /* Server Authentication information */

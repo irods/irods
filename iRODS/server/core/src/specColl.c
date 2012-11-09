@@ -69,7 +69,7 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
  */
 
 int
-queueSpecCollCache ( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath) // JMC - backport 4680
+queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath ) // JMC - backport 4680
 {
     specCollCache_t *tmpSpecCollCache;
     int status;
@@ -157,22 +157,20 @@ queueSpecCollCache ( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath
             tmpCollInfo2 = &collInfo2->value[collInfo2->len * i];
 
             specColl = &tmpSpecCollCache->specColl;
-            status = resolveSpecCollType (tmpCollType, tmpCollection,
-              tmpCollInfo1, tmpCollInfo2, specColl);
-            if (status < 0) return status;
+            status = resolveSpecCollType( tmpCollType, tmpCollection,tmpCollInfo1, tmpCollInfo2, specColl );
+            if( status < 0 ) {
+                return status;
+            }
 
             // =-=-=-=-=-=-=-
 			// JMC - backport 4680
-           if (specColl->collClass == STRUCT_FILE_COLL && 
-             specColl->type == TAR_STRUCT_FILE_T) {
+           if( specColl->collClass == STRUCT_FILE_COLL && 
+               specColl->type      == TAR_STRUCT_FILE_T ) {
                /* tar struct file. need to get phyPath */
-               status = getPhyPath (rsComm, specColl->objPath,
-                 specColl->resource, specColl->phyPath);
-
-               if (status < 0) {
-                    rodsLog (LOG_ERROR,
-                      "queueSpecCollCache: getPhyPath failed for %s",
-                     specColl->objPath);
+               status = getPhyPath( rsComm, specColl->objPath, specColl->resource, specColl->phyPath );
+               if( status < 0 ) {
+                    rodsLog( LOG_ERROR, "queueSpecCollCache - getPhyPath failed for [%s] on resource [%s] with cache dir [%s] and collection [%s]",
+                             specColl->objPath, specColl->resource, specColl->cacheDir, specColl->collection );
                     return status;
                }
            }
@@ -184,6 +182,7 @@ queueSpecCollCache ( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath
             rstrcpy (tmpSpecCollCache->modifyTime, tmpModifyTime, NAME_LEN);
             tmpSpecCollCache->next = SpecCollCacheHead;
             SpecCollCacheHead = tmpSpecCollCache;
+
             return 0;
         }
     }
@@ -322,8 +321,8 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
     rstrcpy ((*rodsObjStatOut)->ownerName, specCollCache->ownerName, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerZone, specCollCache->ownerZone, NAME_LEN);
 
-    status = specCollSubStat (rsComm, specColl, objPath, UNKNOW_COLL_PERM,
-      &dataObjInfo);
+    status = specCollSubStat (rsComm, specColl, objPath, UNKNOW_COLL_PERM, &dataObjInfo );
+      
 
     if (status < 0) {
         if (dataObjInfo != NULL) {
@@ -396,8 +395,8 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
     if (specColl->collClass == MOUNTED_COLL) {
 
         /* a mount point */
-        myDataObjInfo = *dataObjInfo =
-          (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+        myDataObjInfo = *dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+          
         memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
 
         status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
@@ -445,6 +444,7 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
         if (status < 0) return status;
         if (specCollCache != NULL &&
           specCollCache->specColl.collClass != LINKED_COLL) {
+
             status = specCollSubStat (rsComm, &specCollCache->specColl,
               newPath, specCollPerm, dataObjInfo);
             return status;
@@ -572,9 +572,10 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
           specColl->collClass);
         return (SYS_UNKNOWN_SPEC_COLL_CLASS);
     }
-
     status = l3Stat (rsComm, *dataObjInfo, &rodsStat);
-    if (status < 0) return status;
+    if (status < 0) {
+        return status;
+    }
 
     if (rodsStat->st_ctim != 0) {
         snprintf ((*dataObjInfo)->dataCreate, NAME_LEN, "%d",

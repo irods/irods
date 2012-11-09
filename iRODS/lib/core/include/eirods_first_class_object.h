@@ -54,7 +54,8 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// Mutators
 		inline void file_descriptor( int _fd ) { file_descriptor_ = _fd; }
-        inline void comm( rsComm_t* _c )       { comm_ = _c;             } 
+        inline void comm ( rsComm_t* _c )      { comm_            = _c;  } 
+		inline void flags( int _f )            { flags_           = _f;  }
 
 	protected:
         // =-=-=-=-=-=-=-

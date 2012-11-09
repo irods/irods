@@ -341,7 +341,7 @@ statToRodsStat (rodsStat_t *rodsStat, struct stat *myFileStat)
 
     return (0);
 }
-#if 0 // JMC - UNUSED
+#if 1 // JMC - UNUSED
 int 
 rodsStatToStat (struct stat *myFileStat, rodsStat_t *rodsStat)
 {

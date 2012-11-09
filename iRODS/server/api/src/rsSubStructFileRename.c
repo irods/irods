@@ -4,6 +4,11 @@
 #include "subStructFileRename.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+ 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 
 int
 rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp)
@@ -60,13 +65,28 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp)
-{
-    int status;
+_rsSubStructFileRename( rsComm_t*                 _comm, 
+                        subStructFileRenameInp_t* _rename_inp ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj( _rename_inp->subFile );
+    struct_obj.comm( _comm );
 
-    status = subStructFileRename (rsComm, &subStructFileRenameInp->subFile,
-      subStructFileRenameInp->newSubFilePath);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to rename
+    eirods::error rename_err = fileRename( struct_obj, _rename_inp->newSubFilePath );
+    if( !rename_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileRename - failed on call to fileRename for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), rename_err ) );
+        return rename_err.code();
 
-    return (status);
+    } else {
+        return rename_err.code();
+
+    }
+
 }
 

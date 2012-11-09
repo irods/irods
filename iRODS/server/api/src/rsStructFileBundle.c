@@ -82,189 +82,234 @@ structFileExtAndRegInp_t *structFileBundleInp)
     return status;
 }
 
-int
-_rsStructFileBundle (rsComm_t *rsComm,
-structFileExtAndRegInp_t *structFileBundleInp)
-{
+int _rsStructFileBundle( rsComm_t*                 rsComm,
+                         structFileExtAndRegInp_t* structFileBundleInp ) {
     int status;
-    dataObjInp_t dataObjInp;
-    openedDataObjInp_t dataObjCloseInp;
-    collInp_t collInp;
-    collEnt_t *collEnt = NULL;
     int handleInx;
-    int collLen;
     char phyBunDir[MAX_NAME_LEN];
     char tmpPath[MAX_NAME_LEN];
-    chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
-    int savedStatus = 0;
     char* dataType = 0; // JMC - backport 4664
+    openedDataObjInp_t dataObjCloseInp;
 
-    /* open the structured file */
+    // =-=-=-=-=-=-=-
+    // create an empty data obj
+    dataObjInp_t dataObjInp;
     memset (&dataObjInp, 0, sizeof (dataObjInp));
-	// =-=-=-=-=-=-=-
-	// JMC - backport 4664
-    dataType = getValByKey (&structFileBundleInp->condInput, DATA_TYPE_KW);
-    if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) {
-       /* zipFile type. must end with .zip */
+    dataObjInp.openFlags = O_WRONLY;  
+
+    // =-=-=-=-=-=-=-
+    // get the data type of the structured file	
+    dataType = getValByKey( &structFileBundleInp->condInput, DATA_TYPE_KW );
+
+
+    // =-=-=-=-=-=-=-
+    // ensure that the file name will end in .zip, if necessary
+    if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
        int len = strlen (structFileBundleInp->objPath);
        if (strcmp (&structFileBundleInp->objPath[len - 4], ".zip") != 0) {
            strcat (structFileBundleInp->objPath, ".zip");
         }
     }
+
 	// =-=-=-=-=-=-=-
-    rstrcpy (dataObjInp.objPath, structFileBundleInp->objPath, 
-      MAX_NAME_LEN);
+    // capture the object path in the data obj struct
+    rstrcpy( dataObjInp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
  
-    /* replicate the condInput. may have resource input */
-    replKeyVal (&structFileBundleInp->condInput, &dataObjInp.condInput);
+	// =-=-=-=-=-=-=-
+    // replicate the condInput. may have resource input
+    replKeyVal( &structFileBundleInp->condInput, &dataObjInp.condInput );
 
-    dataObjInp.openFlags = O_WRONLY;  
+	// =-=-=-=-=-=-=-
+    // open the file if we are in an add operation, otherwise create the new file
+    if( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR ) != 0 ) { // JMC - backport 4643
+        l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
 
-    if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) != 0) { // JMC - backport 4643
-        l1descInx = rsDataObjOpen (rsComm, &dataObjInp);
     } else {
+        addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
         l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
 // foo1.tar exists here exit(0);
+
     }
 
-
-    if (l1descInx < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
-          dataObjInp.objPath, l1descInx);
-        return (l1descInx);
+	// =-=-=-=-=-=-=-
+    // error check create / open
+    if( l1descInx < 0 ) {
+        rodsLog( LOG_ERROR,"rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
+                 dataObjInp.objPath, l1descInx );
+        return l1descInx;
     }
 
+	// =-=-=-=-=-=-=-
+    // FIXME :: Why, when we replicate them above?
 	clearKeyVal (&dataObjInp.condInput); // JMC - backport 4637
     l3Close (rsComm, l1descInx);
 // foo1.tar exists here exit( 0 );
-    L1desc[l1descInx].l3descInx = 0;
-    /* zip does not like a zero length file as target */ 
-    if ((structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0) { // JMC - backport 4643
-        l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
+
+	// =-=-=-=-=-=-=-
+    // zip does not like a zero length file as target
+    L1desc[ l1descInx ].l3descInx = 0;
+    if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
+        if( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0 ) { // JMC - backport 4643
+            l3Unlink( rsComm, L1desc[l1descInx].dataObjInfo );
+        }
+
+    
     }
 
+	// =-=-=-=-=-=-=-
+    // check object permissions / stat
+    chkObjPermAndStat_t chkObjPermAndStatInp;
     memset( &chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
-    rstrcpy( chkObjPermAndStatInp.objPath, 
-             structFileBundleInp->collection, MAX_NAME_LEN); 
+    rstrcpy( chkObjPermAndStatInp.objPath, structFileBundleInp->collection, MAX_NAME_LEN); 
     chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
-    addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW,
-               L1desc[l1descInx].dataObjInfo->rescName);
+    addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW, L1desc[l1descInx].dataObjInfo->rescName );
 
-    status = rsChkObjPermAndStat (rsComm, &chkObjPermAndStatInp);
-
-    clearKeyVal (&chkObjPermAndStatInp.condInput);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
-          chkObjPermAndStatInp.objPath, status);
+    status = rsChkObjPermAndStat( rsComm, &chkObjPermAndStatInp );
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR,"rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
+                 chkObjPermAndStatInp.objPath, status );
         dataObjCloseInp.l1descInx = l1descInx;
-        rsDataObjClose (rsComm, &dataObjCloseInp);
-        return (status);
-    }
-// foo1.tar DOESNT exist here exit( 0 );
-    createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath,
-      phyBunDir);
-
-    bzero (&collInp, sizeof (collInp));
-    rstrcpy (collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN);
-    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG |
-      NO_TRIM_REPL_FG | INCLUDE_CONDINPUT_IN_QUERY;
-    addKeyVal (&collInp.condInput, RESC_NAME_KW, 
-      L1desc[l1descInx].dataObjInfo->rescName);
-    handleInx = rsOpenCollection (rsComm, &collInp);
-    if (handleInx < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: rsOpenCollection of %s error. status = %d",
-          collInp.collName, handleInx);
-        rmdir (phyBunDir);
-        return (handleInx);
+        rsDataObjClose( rsComm, &dataObjCloseInp );
+        return status;
     }
 
-    if ((structFileBundleInp->oprType & PRESERVE_COLL_PATH) != 0) { // JMC - backport 4644
-       /* preserver the last entry of the coll path */
-       char *tmpPtr = collInp.collName;
-       int tmpLen = 0;
+    clearKeyVal( &chkObjPermAndStatInp.condInput );
+// foo1.tar DOESNT exist here  exit( 0 );
+    
+	// =-=-=-=-=-=-=-
+    // create the special hidden directory where the bundling happens
+    createPhyBundleDir( rsComm, L1desc[ l1descInx ].dataObjInfo->filePath, phyBunDir );
+      
+	// =-=-=-=-=-=-=-
+    // build a collection open input structure
+    collInp_t collInp;
+    bzero( &collInp, sizeof( collInp ) );
+    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG | INCLUDE_CONDINPUT_IN_QUERY;
+    rstrcpy( collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN );
+    addKeyVal( &collInp.condInput, RESC_NAME_KW, L1desc[ l1descInx ].dataObjInfo->rescName );
+   
+    rodsLog( LOG_NOTICE, "rsStructFileBundle: calling rsOpenCollection for [%s]", structFileBundleInp->collection ); 
+    
+	// =-=-=-=-=-=-=-
+    // open the collection from which we will bundle
+    handleInx = rsOpenCollection( rsComm, &collInp );
+    if( handleInx < 0 ) {
+        rodsLog( LOG_ERROR, "rsStructFileBundle: rsOpenCollection of %s error. status = %d",
+                 collInp.collName, handleInx );
+        rmdir( phyBunDir );
+        return handleInx;
+    }
+
+	// =-=-=-=-=-=-=-
+    // preserve the collection path?
+    int collLen = 0;
+    if( ( structFileBundleInp->oprType & PRESERVE_COLL_PATH ) != 0 ) {
+       // =-=-=-=-=-=-=-
+       // preserver the last entry of the coll path 
+       char* tmpPtr = collInp.collName;
+       int   tmpLen = 0;
        collLen = 0;
-       /* find length to the last '/' */
-        while (*tmpPtr != '\0') {
-           if (*tmpPtr == '/') collLen = tmpLen;
+
+       // =-=-=-=-=-=-=-
+       // find length to the last '/'
+        while( *tmpPtr != '\0' ) {
+           if( *tmpPtr == '/' ) {
+               collLen = tmpLen;
+           }
+
            tmpLen++;
            tmpPtr++;
        }
+
     } else {
-        collLen = strlen (collInp.collName);
+        collLen = strlen( collInp.collName );
+
     }
 
-
-    while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
+	// =-=-=-=-=-=-=-
+    // preserve the collection path?
+    collEnt_t* collEnt = NULL;
+    while( ( status = rsReadCollection (rsComm, &handleInx, &collEnt ) ) >= 0 ) {
 		if( NULL == collEnt ) { // JMC cppcheck - nullptr
 			rodsLog( LOG_ERROR, "rsStructFileBundle: collEnt is NULL" );
 			continue; 
 		}
+
+        // =-=-=-=-=-=-=-
+        // entry is a data object
         if (collEnt->objType == DATA_OBJ_T) {
             if (collEnt->collName[collLen] == '\0') {
-                snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",
-                  phyBunDir, collEnt->dataName);
+                snprintf( tmpPath, MAX_NAME_LEN, "%s/%s", phyBunDir, collEnt->dataName );
+                  
             } else {
-                snprintf (tmpPath, MAX_NAME_LEN, "%s/%s/%s",
-                 phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName);               
-	        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
-	          tmpPath, getDefDirMode ());
+                snprintf( tmpPath, MAX_NAME_LEN, "%s/%s/%s", phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName );
+	            mkDirForFilePath( UNIX_FILE_TYPE, rsComm, phyBunDir, tmpPath, getDefDirMode() );
+	          
             }
-            /* add a link */
-            status = link (collEnt->phyPath, tmpPath);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "rsStructFileBundle: link error %s to %s. errno = %d",
-                  collEnt->phyPath, tmpPath, errno);
-                rmLinkedFilesInUnixDir (phyBunDir);
-                rmdir (phyBunDir);
-                return (UNIX_FILE_LINK_ERR - errno);
+ 
+            // =-=-=-=-=-=-=-
+            // add a link 
+            status = link( collEnt->phyPath, tmpPath );
+            if( status < 0 ) {
+                rodsLog( LOG_ERROR, "rsStructFileBundle: link error %s to %s. errno = %d",
+                         collEnt->phyPath, tmpPath, errno );
+                rmLinkedFilesInUnixDir( phyBunDir );
+                rmdir( phyBunDir );
+                return ( UNIX_FILE_LINK_ERR - errno );
             }
-        } else {        /* a collection */
-	    if ((int) strlen (collEnt->collName) + 1 <= collLen) {
-		free (collEnt);
-		continue;
-	    }
-            snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",
-              phyBunDir, collEnt->collName + collLen);
-            mkdirR (phyBunDir, tmpPath, getDefDirMode ());
-	}
-	if (collEnt != NULL) {
-	    free (collEnt);
-	    collEnt = NULL;
-	}
-    }
-    clearKeyVal (&collInp.condInput);
-    rsCloseCollection (rsComm, &handleInx);
 
+        } else {
+        // =-=-=-=-=-=-=-
+        // entry is a collection
+	        if ((int) strlen (collEnt->collName) + 1 <= collLen) {
+		        free (collEnt);
+		        continue;
+	        }
+            snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",phyBunDir, collEnt->collName + collLen);
+            mkdirR (phyBunDir, tmpPath, getDefDirMode ());
+	    } // else
+
+	    if( collEnt != NULL ) {
+            free( collEnt );
+            collEnt = NULL;
+	    }
+
+    } // while
+
+    // =-=-=-=-=-=-=-
+    // clean up key vals and close the collection
+    clearKeyVal( &collInp.condInput );
+    rsCloseCollection( rsComm, &handleInx );
+
+    // =-=-=-=-=-=-=-
+    // call the helper function to do the actual bundling
     status = phyBundle( rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
 	                    collInp.collName, structFileBundleInp->oprType ); // JMC - backport 4643
-
+    
+    int savedStatus = 0;
     if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: phyBundle of %s error. stat = %d",
-          L1desc[l1descInx].dataObjInfo->objPath, status);
-	L1desc[l1descInx].bytesWritten = 0;
-	savedStatus = status;
+        rodsLog( LOG_ERROR, "rsStructFileBundle: phyBundle of %s error. stat = %d",
+                 L1desc[ l1descInx ].dataObjInfo->objPath, status );
+        L1desc[ l1descInx ].bytesWritten = 0;
+        savedStatus = status;
     } else {
-        /* mark it was written so the size would be adjusted */
-        L1desc[l1descInx].bytesWritten = 1;
+        // mark it was written so the size would be adjusted
+        L1desc[ l1descInx ].bytesWritten = 1;
     }
 
-    rmLinkedFilesInUnixDir (phyBunDir);
-    rmdir (phyBunDir);
+    // =-=-=-=-=-=-=-
+    // clean up after the bundle directory
+    rmLinkedFilesInUnixDir( phyBunDir );
+    rmdir( phyBunDir );
 
     dataObjCloseInp.l1descInx = l1descInx;
-    status = rsDataObjClose (rsComm, &dataObjCloseInp);
+    status = rsDataObjClose( rsComm, &dataObjCloseInp );
+    if( status >= 0 ) {
+	    return savedStatus;
+    }
 
-    if (status >= 0)
-	return savedStatus;
-    else
-        return (status);
+    return (status);
 }
 
 int

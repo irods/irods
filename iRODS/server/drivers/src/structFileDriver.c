@@ -2,17 +2,17 @@
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 
 /* structFileDriver.c - The general driver for all structFile types. */
-
+#if 1
 #include "structFileDriver.h"
 #include "structFileDriverTable.h"
 #include "rsGlobalExtern.h"
 #include "apiHeaderAll.h"	/* XXXXX no needed open structFile api done */
-
+#if 0
 int
 subStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
 {
     #if 1
-    rodsLog( LOG_ERROR, "subStructFileCreate - this should never happen!" );
+    rodsLog( LOG_ERROR, "!!!!!!!!!!!!!!! subStructFileCreate - this should never happen!" );
     #else
     return -1;
     structFileType_t myType;
@@ -34,6 +34,9 @@ subStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
 int
 subStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
 {
+    #if 1
+    rodsLog( LOG_ERROR, "!!!!!!!!!!!!!!!1 subStructFileOpen - this should never happen!" );
+    #else
     structFileType_t myType;
     int subStructFileInx;
     int fd;
@@ -46,12 +49,16 @@ subStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
 
     fd = StructFileDriverTable[subStructFileInx].subStructFileOpen (rsComm, subFile);
     return (fd);
+#endif
 }
 
 int
 subStructFileRead (structFileType_t myType, rsComm_t *rsComm, int fd, void *buf,
 int len)
 {
+    #if 1
+    rodsLog( LOG_ERROR, "!!!!!!!!!!!!!!!1 subStructFileRead - this should never happen!" );
+    #else
     int subStructFileInx;
     int status;
 
@@ -61,6 +68,7 @@ int len)
 
     status = StructFileDriverTable[subStructFileInx].subStructFileRead (rsComm, fd, buf, len);
     return (status);
+    #endif
 }
 
 int
@@ -367,4 +375,8 @@ freeStructFileDesc (int structFileInx)
 
     return (0);
 }
+
+#endif
+
+#endif
 

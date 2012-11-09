@@ -5,6 +5,10 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 int
 rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
 bytesBuf_t *subStructFileReadOutBBuf)
@@ -69,20 +73,35 @@ bytesBuf_t *subStructFileReadOutBBuf, rodsServerHost_t *rodsServerHost)
 
 }
 
-int
-_rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
-bytesBuf_t *subStructFileReadOutBBuf)
-{
-    int status;
+// =-=-=-=-=-=-=-
+// api for file read of a structured file 
+int _rsSubStructFileRead( rsComm_t*                _comm, 
+                          subStructFileFdOprInp_t* _read_inp,
+                          bytesBuf_t*              _out_buf ) {
 
-    status =  subStructFileRead (subStructFileReadInp->type, rsComm,
-      subStructFileReadInp->fd, subStructFileReadOutBBuf->buf, subStructFileReadInp->len);
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj;
+    struct_obj.comm( _comm );
+    struct_obj.file_descriptor( _read_inp->fd );
 
-    if (status > 0) {
-        subStructFileReadOutBBuf->len = status;
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to read a file
+    eirods::error read_err = fileRead( struct_obj, _out_buf->buf, _read_inp->len );
+    if( !read_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileRead - failed on call to fileRead for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), read_err ) );
+        _out_buf->len = 0;
+        return read_err.code();
+
     } else {
-	subStructFileReadOutBBuf->len = 0;
+        _out_buf->len = read_err.code();
+        return read_err.code();
+
     }
-    return (status);
-}
+
+} // _rsSubStructFileRead
 

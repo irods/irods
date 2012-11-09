@@ -1326,8 +1326,8 @@ initAgent (rsComm_t *rsComm)
         return (status);
     }
 #ifdef TAR_STRUCT_FILE
-    initStructFileDesc ();
-    initTarSubFileDesc ();
+//    initStructFileDesc ();
+//    initTarSubFileDesc ();
 #endif
 
 #ifdef RULE_ENGINE_N

@@ -5,6 +5,10 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 int
 rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 {
@@ -59,13 +63,43 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
-{
-    int status;
+// =-=-=-=-=-=-=-
+// implementation for local rs call for sync
+int _rsStructFileSync( rsComm_t*           _comm, 
+                       structFileOprInp_t* _struct_inp ) {
+    // =-=-=-=-=-=-=-
+    // create a structured fco and resolve a resource plugin
+    // to handle the extract process
+    eirods::structured_object struct_obj;
+    struct_obj.spec_coll( _struct_inp->specColl );
+    struct_obj.addr( _struct_inp->addr );
+    struct_obj.flags( _struct_inp->flags );
+    struct_obj.comm( _comm );
+    struct_obj.opr_type( _struct_inp->oprType );
 
-    status = structFileSync (rsComm, structFileOprInp);
+    // =-=-=-=-=-=-=-
+	// retrieve the resource name given the object
+	eirods::resource_ptr resc;
+    eirods::error ret_err = struct_obj.resolve( resc_mgr, resc ); 
+	if( !ret_err.ok() ) {
+		eirods::error err = PASS( false, -1, "_rsStructFileSync - failed to resolve resource", ret_err );
+        eirods::log( err );
+        return ret_err.code();
+	}
+ 
+	// =-=-=-=-=-=-=-
+	// make the call to the "extract" interface
+	ret_err = resc->call< eirods::first_class_object* >( "sync", &struct_obj );
 
-    return (status);
-}
+    // =-=-=-=-=-=-=-
+	// pass along an error from the interface or return SUCCESS
+	if( !ret_err.ok() ) {
+        eirods::error err = PASS( false, ret_err.code(), "_rsStructFileSync - failed to call 'sync'", ret_err );
+        eirods::log( err );
+        return ret_err.code();
+	} else {
+        return ret_err.code();
+	}
+    
+} // _rsStructFileSync
 

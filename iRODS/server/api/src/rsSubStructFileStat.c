@@ -4,6 +4,11 @@
 #include "subStructFileStat.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+ 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 
 
 int
@@ -61,16 +66,44 @@ rodsStat_t **subStructFileStatOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile, rodsStat_t **subStructFileStatOut)
-{
-    int status;
+int _rsSubStructFileStat( rsComm_t*    _comm, 
+                          subFile_t*   _sub_file, 
+                          rodsStat_t** _stat_out ) {
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
-    status = subStructFileStat (rsComm, subFile, subStructFileStatOut);
-    if (status < 0) {
-	*subStructFileStatOut = NULL;
-    } 
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to stat
+    struct stat my_stat;
+    eirods::error stat_err = fileStat( struct_obj, &my_stat );
 
-    return (status);
+    if( !stat_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileStat - failed on call to fileStat for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), stat_err ) );
+        return stat_err.code();
+
+    } else {
+
+        // =-=-=-=-=-=-=-
+        // convert unix stat struct to an irods stat struct
+        *_stat_out = new rodsStat_t;
+        int status = statToRodsStat( *_stat_out, &my_stat );
+        
+        // =-=-=-=-=-=-=-
+        // manage error if necessary
+        if( status < 0 ) {
+            delete (*_stat_out);
+            *_stat_out = NULL;
+        }
+
+        return status;
+
+    }
+
 }
 

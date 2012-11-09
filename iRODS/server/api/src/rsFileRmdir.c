@@ -8,13 +8,14 @@
 #include "fileReaddir.h"
 #include "fileClosedir.h"
 #include "miscServerFunct.h"
-#include "tarSubStructFileDriver.h"
+//#include "tarSubStructFileDriver.h"
 
 // =-=-=-=-=-=-=-
 // eirods include
 #include "eirods_log.h"
 #include "eirods_collection_object.h"
 
+#define CACHE_DIR_STR "cacheDir" // FIXME JMC - need a better place for this.  also used in tar plugin
 
 int
 rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp)

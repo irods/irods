@@ -1043,7 +1043,7 @@ isInVault (dataObjInfo_t *dataObjInfo)
 
 #if 0 // JMC - UNUSED
 /* initStructFileOprInp - initialize the structFileOprInp struct for
- * rsStructFileBundle and rsStructFileExtAndReg
+ * UNUSED :: rsStructFileBundle and rsStructFileExtAndReg
  */
 
 int

@@ -71,9 +71,6 @@ rodsServerHost_t *rodsServerHost)
 int _rsSubStructFileCreate( rsComm_t*  _comm, 
                             subFile_t* _sub_file ) {
 
-
-    rodsLog( LOG_NOTICE, "XXXX - _rsSubStructFileCreate :: calling fileCreate with structured_object" );
-
     eirods::structured_object struct_obj( *_sub_file );
     struct_obj.comm( _comm );
 

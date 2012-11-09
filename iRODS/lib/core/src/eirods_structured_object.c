@@ -16,7 +16,9 @@ namespace eirods {
                        mode_(0),
                        flags_(0),
                        offset_(0),
-                       spec_coll_(0) {
+                       spec_coll_(0),
+                       data_type_(""),
+                       opr_type_(0) {
 	} // structured_object
 
     // =-=-=-=-=-=-=-
@@ -29,13 +31,23 @@ namespace eirods {
 		flags_         = _rhs.flags_;
         offset_        = _rhs.offset_;
         spec_coll_     = _rhs.spec_coll_;
+        data_type_     = _rhs.data_type_;
+        opr_type_      = _rhs.opr_type_;
 
 	} // cctor 
 
     // =-=-=-=-=-=-=-
 	// public - cctor
     structured_object::structured_object( subFile_t& _sub ) :
-	             first_class_object() {
+	             first_class_object(),
+                       sub_file_path_(""),
+                       mode_(0),
+                       flags_(0),
+                       offset_(0),
+                       spec_coll_(0),
+                       data_type_(""),
+                       opr_type_(0) {
+
         // =-=-=-=-=-=-=-
         // pull out subFile attributes
         addr_          = _sub.addr;
@@ -69,6 +81,8 @@ namespace eirods {
 		flags_         = _rhs.flags_;
         offset_        = _rhs.offset_;
         spec_coll_     = _rhs.spec_coll_;
+        data_type_     = _rhs.data_type_;
+        opr_type_      = _rhs.opr_type_;
 
 		return *this;
 
@@ -80,11 +94,14 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // try to find the resource based on the type 
-        eirods::error err = _mgr.resolve_from_property( "type", "struct file", _ptr );
-        if( !err.ok() ) {
+        eirods::error err = _mgr.resolve( "struct file", _ptr );
+        if( err.ok() ) {
+            return SUCCESS();
+
+        } else {
             // =-=-=-=-=-=-=-
             // otherwise create a resource and add properties from this object
-            error init_err = _mgr.init_from_type( "struct file", "structfile", "empty context", _ptr );
+            error init_err = _mgr.init_from_type( "structfile", "struct file", "empty context", _ptr );
             if( !init_err.ok() ) {
                 return PASS( false, -1, "structured_object::resolve - failed to load resource plugin", init_err );
             

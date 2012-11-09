@@ -5,6 +5,10 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
 int
 rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent)
@@ -63,21 +67,41 @@ rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost)
 
 }
 
-int
-_rsSubStructFileReaddir (rsComm_t *rsComm, 
-subStructFileFdOprInp_t *subStructFileReaddirInp, rodsDirent_t **rodsDirent)
-{
-    int status;
+int _rsSubStructFileReaddir( rsComm_t*                 _comm, 
+                             subStructFileFdOprInp_t*  _read_inp, 
+                             rodsDirent_t **           _dirent ) {
+    if( !_read_inp ) {
+        eirods::log( LOG_NOTICE, "XXXX _rsSubStructFileReaddir - null _read_inp" ); 
+        return -1;
+    }
+    
+    // =-=-=-=-=-=-=-
+    // create first class structured object 
+    eirods::structured_object struct_obj;
+    struct_obj.comm( _comm );
+    struct_obj.file_descriptor( _read_inp->fd );
 
-    status = subStructFileReaddir (subStructFileReaddirInp->type, rsComm, 
-      subStructFileReaddirInp->fd, rodsDirent);
+    // =-=-=-=-=-=-=-
+    // call abstrcated interface to read a file
+    eirods::error readdir_err = fileReaddir( struct_obj, _dirent );
+    if( !readdir_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileReaddir - failed on call to fileReaddir for [";
+        msg << struct_obj.physical_path();
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), readdir_err ) );
+        return readdir_err.code();
 
-    if (status < 0 && status != -1) {
-        rodsLog (LOG_NOTICE,
-         "_rsSubStructFileReaddir: subStructFileReaddir failed for fd %d",
-         subStructFileReaddirInp->fd);
+    } else {
+        std::stringstream msg;
+        msg << "_rsSubStructFileReaddir - success for fd [";
+        msg << struct_obj.file_descriptor();
+        msg << "]";
+        eirods::log( ERROR( false, -1, msg.str() ) );
+
+        return readdir_err.code();
+
     }
 
-    return (status);
 }
 

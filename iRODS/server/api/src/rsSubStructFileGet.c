@@ -5,6 +5,11 @@
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_structured_object.h"
+
+
 int
 rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,
 bytesBuf_t *subFileGetOutBBuf)
@@ -62,51 +67,85 @@ bytesBuf_t *subFileGetOutBBuf, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int
-_rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,
-bytesBuf_t *subFileGetOutBBuf)
-{
-    int status;
-    int fd;
-    int len;
+int _rsSubStructFileGet( rsComm_t*   _comm, 
+                         subFile_t*  _sub_file,
+                         bytesBuf_t* _out_buf ) {
+rodsLog( LOG_NOTICE, "_rsSubStructFileGet - file %s, offset %d", _sub_file->subFilePath, _sub_file->offset );
+    // =-=-=-=-=-=-=-
+    // convert subfile to a first class object
+    eirods::structured_object struct_obj( *_sub_file );
+    struct_obj.comm( _comm );
 
-    len = subFile->offset;
-    if (len <= 0)
-        return (0);
-
-    fd = subStructFileOpen (rsComm, subFile);
-
-    if (fd < 0) {
-        rodsLog (LOG_NOTICE,
-          "_rsSubStructFileGet: subStructFileOpen error for %s, status = %d",
-          subFile->subFilePath, fd);
-        return (fd);
+    if( _sub_file->offset <= 0 ) {
+        eirods::log( ERROR( false, -1, "_rsSubStructFileGet - invalid length" ) );
+        return -1;    
     }
 
-    if (subFileGetOutBBuf->buf == NULL) {
-        subFileGetOutBBuf->buf = malloc (len);
+    // =-=-=-=-=-=-=-
+    // open the structured object
+    eirods::error open_err = fileOpen( struct_obj );
+    if( !open_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileGet: subStructFileOpen error for [";
+        msg << struct_obj.sub_file_path();
+        msg << "], status = ";
+        msg << open_err.code();
+        eirods::log( PASS( false, -1, msg.str(), open_err ) );  
+        return open_err.code();
     }
-    status = subStructFileRead (subFile->specColl->type, rsComm,
-      fd, subFileGetOutBBuf->buf, len);
 
-    if (status != len) {
-       if (status >= 0) {
-            rodsLog (LOG_NOTICE,
-              "_rsSubStructFileGet:subStructFileRead for %s,toread %d,read %d",
-              subFile->subFilePath, len, status);
+    // =-=-=-=-=-=-=-
+    // allocte outgoing buffer if necessary
+    if( _out_buf->buf == NULL) {
+         _out_buf->buf = new unsigned char[ _sub_file->offset ];
+    }
+
+    // =-=-=-=-=-=-=-
+    // read structured file
+    eirods::error read_err = fileRead( struct_obj, _out_buf->buf, _sub_file->offset ); 
+    int status = read_err.code();
+
+    if( !read_err.ok() ) {
+       if( status >= 0 ) {
+            std::stringstream msg;
+            msg << "_rsSubStructFileGet - failed in fileRead for [";
+            msg << struct_obj.sub_file_path();
+            msg << ", toread ";
+            msg << _sub_file->offset;
+            msg << ", read ";
+            msg << read_err.code();
+            eirods::log( PASS( false, -1, msg.str(), read_err ) );
+             
             status = SYS_COPY_LEN_ERR;
         } else {
-            rodsLog (LOG_NOTICE,
-              "_rsSubStructFileGet: subStructFileRead for %s, status = %d",
-              subFile->subFilePath, status);
+            std::stringstream msg;
+            msg << "_rsSubStructFileGet - failed in fileRead for [";
+            msg << struct_obj.sub_file_path();
+            msg << ", status = ";
+            msg << read_err.code();
+            eirods::log( PASS( false, -1, msg.str(), read_err ) );
+
+            status = read_err.code();
         }
+
     } else {
-        subFileGetOutBBuf->len = status;
+         _out_buf->len = read_err.code();
     }
 
-    subStructFileClose (subFile->specColl->type, rsComm, fd);
-
+    // =-=-=-=-=-=-=-
+    // ok, done with that.  close the file.
+    eirods::error close_err = fileClose( struct_obj );
+    if( !close_err.ok() ) {
+        std::stringstream msg;
+        msg << "_rsSubStructFileGet - failed in fileClose for [";
+        msg << struct_obj.sub_file_path();
+        msg << ", status = ";
+        msg << close_err.code();
+        eirods::log( PASS( false, -1, msg.str(), read_err ) );
+    }
+    
     return (status);
+
 }
 
 

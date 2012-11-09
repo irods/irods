@@ -206,19 +206,24 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
     }
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
+
+
+
     rstrcpy (dataObjInp.objPath, rodsPath->outPath, MAX_NAME_LEN);
     status = rcObjStat (conn, &dataObjInp, &rodsObjStatOut);
 
     if (status < 0) {
+
         rodsPath->objState = NOT_EXIST_ST;
-	if (status == OBJ_PATH_DOES_NOT_EXIST || 
-	  status == USER_FILE_DOES_NOT_EXIST) {
-            return (NOT_EXIST_ST);
-	} else {
-	    rodsLogError (LOG_ERROR, status, 
-	     "rcObjStat of %s failed", rodsPath->outPath);
-	    return status;
-	}
+
+        if (status == OBJ_PATH_DOES_NOT_EXIST || 
+          status == USER_FILE_DOES_NOT_EXIST) {
+                return (NOT_EXIST_ST);
+        } else {
+            rodsLogError (LOG_ERROR, status, 
+             "rcObjStat of %s failed", rodsPath->outPath);
+            return status;
+        }
     } else if (rodsPath->objType == COLL_OBJ_T && 
       rodsObjStatOut->objType != COLL_OBJ_T) {
         rodsPath->objState = NOT_EXIST_ST;

@@ -80,14 +80,16 @@ _rsSubStructFileOpen( rsComm_t*  _comm,
     eirods::error open_err = fileOpen( struct_obj );
     if( !open_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFIleOPen - failed on call to fileCreate for [";
+        msg << "_rsSubStructFileOpen - failed on call to fileOpen for [";
         msg << struct_obj.sub_file_path();
-        eirods::log( ERROR( -1, msg.str() ) );
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), open_err ) );
+        return open_err.code();
+
     } else {
         return open_err.code();
 
     }
-    
 
 } // _rsSubStructFileOpen
 

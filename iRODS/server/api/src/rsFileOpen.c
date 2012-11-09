@@ -103,19 +103,26 @@ rodsServerHost_t *rodsServerHost)
 
 // =-=-=-=-=-=-=-
 // _rsFileOpen - this the local version of rsFileOpen.
-int _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp) {
+int _rsFileOpen( rsComm_t*      _comm, 
+                 fileOpenInp_t* _open_inp ) {
+	// =-=-=-=-=-=-=-
+    // pointer check
+    if( !_comm || !_open_inp ) {
+        rodsLog( LOG_ERROR, "_rsFileOpen - null comm or open_inp pointer(s)." );
+        return -1;
+    }
 
 	// =-=-=-=-=-=-=-
     // NOTE:: need to check resource permission and vault permission
     //        when RCAT is available 
-    if( ( fileOpenInp->flags & O_WRONLY ) && ( fileOpenInp->flags & O_RDWR ) ) {
+    if( ( _open_inp->flags & O_WRONLY ) && ( _open_inp->flags & O_RDWR ) ) {
 		/* both O_WRONLY and O_RDWR are on, can cause I/O to fail */
-		fileOpenInp->flags &= ~(O_WRONLY);
+		_open_inp->flags &= ~(O_WRONLY);
     }
 
     // =-=-=-=-=-=-=-
 	// call file open on the resource plugin 
-    eirods::file_object file_obj( rsComm, fileOpenInp->fileName, 0, fileOpenInp->mode, fileOpenInp->flags );
+    eirods::file_object file_obj( _comm, _open_inp->fileName, 0, _open_inp->mode, _open_inp->flags );
     eirods::error ret_err = fileOpen( file_obj );
     
 	// =-=-=-=-=-=-=-
@@ -123,7 +130,7 @@ int _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp) {
     if ( !ret_err.ok() ) {
 		std::stringstream msg;
 		msg << "_rsFileOpen: fileOpen for [";
-		msg << fileOpenInp->fileName;
+		msg << _open_inp->fileName;
 		msg << "], status = ";
 		msg << file_obj.file_descriptor();
 		eirods::error out_err = PASS( false, ret_err.code(), msg.str(), ret_err );
