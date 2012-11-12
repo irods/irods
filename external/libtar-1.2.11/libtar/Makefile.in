@@ -53,9 +53,8 @@ all: ${ALL}
 
 .PHONY: clean distclean install
 
-### JMC :: add -fPIC ###
 libtar: ${LIBTAR_OBJS} ${LIBTAR_LIBS} ${LIBTAR_HDRS}
-	${CC} ${CFLAGS} ${LDFLAGS} -fPIC -o libtar libtar.o ${LIBTAR_LIBS} ${LIBS}
+	${CC} ${CFLAGS} ${LDFLAGS} -o libtar libtar.o ${LIBTAR_LIBS} ${LIBS}
 
 ${LIBTAR_OBJS}: ${LIBTAR_HDRS}
 

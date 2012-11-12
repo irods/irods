@@ -74,8 +74,9 @@ libtar.a: ${LIBTAR_OBJS} ${LIBOBJS}
 
 ${LIBTAR_OBJS}: ${LIBTAR_HDRS}
 
+### JMC :: add -fPIC ###
 .c.o:
-	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
+	${CC} ${CFLAGS} ${CPPFLAGS} -fPIC -c -o $@ $<
 
 clean:
 	rm -f *~ *.o ${ALL} core
