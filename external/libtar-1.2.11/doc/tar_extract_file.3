@@ -1,0 +1,84 @@
+.TH tar_extract_file 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+tar_extract_file, tar_extract_regfile, tar_extract_hardlink,
+tar_extract_symlink, tar_extract_chardev, tar_extract_blockdev,
+tar_extract_dir, tar_extract_fifo, tar_skip_regfile, tar_set_file_perms \-
+extract files from a tar archive
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "int tar_extract_file(TAR *" t ", char *" realname ");"
+
+.BI "int tar_extract_regfile(TAR *" t ", char *" realname ");"
+
+.BI "int tar_skip_regfile(TAR *" t ");"
+
+.BI "int tar_extract_dir(TAR *" t ", char *" realname ");"
+
+.BI "int tar_extract_hardlink(TAR *" t ", char *" realname ");"
+
+.BI "int tar_extract_symlink(TAR *" t ", char *" realname ");"
+
+.BI "int tar_extract_blockdev(TAR *" t ", char *" realname ");"
+
+.BI "int tar_extract_chardev(TAR *" t ", char *" realname ");"
+
+.BI "int tar_extract_fifo(TAR *" t ", char *" realname ");"
+
+.BI "int tar_set_file_perms(TAR *" t ", char *" realname ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBtar_extract_file\fP() function acts as a front-end to the other
+\fBtar_extract_*\fP() functions.  It checks the current tar header
+associated with the \fITAR\fP handle \fIt\fP (which must be initialized
+first by calling \fBth_read\fP()) to determine what kind of file the
+header refers to.  It then calls the appropriate \fBtar_extract_*\fP()
+function to extract that kind of file.
+
+The \fBtar_skip_regfile\fP() function skips over the
+file content blocks and positions the file pointer at the expected
+location of the next tar header block.
+
+The \fBtar_set_file_perms\fP() function sets the attributes of the
+extracted file to match the encoded values.  This includes the file's
+modification time, mode, owner, and group.  This function is automatically
+called by \fBtar_extract_file\fP(), but applications which call the
+other \fBtar_extract_*\fP() functions directly will need to call
+\fBtar_set_file_perms\fP() manually if this behavior is desired.
+.SH RETURN VALUES
+On successful completion, the functions documented here will
+return 0.  On failure, they will return -1 and set \fIerrno\fP to an
+appropriate value.
+
+The \fBtar_extract_dir\fP() function will return 1 if the directory
+already exists.
+.SH ERRORS
+The \fBtar_extract_file\fP() function will fail if:
+.IP \fBEEXIST\fP
+If the \fBO_NOOVERWRITE\fP flag is set and the file already exists.
+.PP
+The \fBtar_extract_*\fP() functions will fail if:
+.IP \fBEINVAL\fP
+An entry could not be added to the internal file hash.
+.IP \fBEINVAL\fP
+Less than \fBT_BLOCKSIZE\fP bytes were read from the tar archive.
+.IP \fBEINVAL\fP
+The current file header associated with \fIt\fP refers to a kind of file
+other than the one which the called function knows about.
+.PP
+They may also fail if any of the following functions fail: \fBmkdir\fP(),
+\fBwrite\fP(), \fBlink\fP(), \fBsymlink\fP(), \fBmknod\fP(), \fBmkfifo\fP(),
+\fButime\fP(), \fBchown\fP(), \fBlchown\fP(), \fBchmod\fP(), or \fBlstat\fP().
+.SH SEE ALSO
+.BR mkdir (2),
+.BR write (2),
+.BR link (2),
+.BR symlink (2),
+.BR mknod (2),
+.BR mkfifo (2),
+.BR utime (2),
+.BR chown (2),
+.BR lchown (2),
+.BR chmod (2),
+.BR lstat (2)

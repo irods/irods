@@ -1,0 +1,51 @@
+# @configure_input@
+
+### Path settings
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+mandir		= @mandir@
+libdir		= @libdir@
+includedir	= @includedir@
+top_srcdir	= @top_srcdir@
+
+PACKAGE_NAME	= @PACKAGE_NAME@
+PACKAGE_VERSION	= @PACKAGE_VERSION@
+
+@ENCAP_DEFS@
+
+@SET_MAKE@
+
+INSTALL		= @INSTALL@
+INSTALL_DATA	= @INSTALL_DATA@
+
+SUBDIRS = lib libtar doc
+
+all:
+	for n in $(SUBDIRS); do \
+		( cd $$n && $(MAKE) $@ $(MAKE_FLAGS) ) || exit 1; \
+	done
+
+.PHONY: install install-recurse postinstall-encap clean distclean
+
+install: install-recurse @ENCAP_INSTALL_TARGET@
+
+install-recurse:
+	for n in $(SUBDIRS); do \
+		( cd $$n && $(MAKE) install $(MAKE_FLAGS) ) || exit 1; \
+	done
+
+postinstall-encap:
+	@ENCAP_INSTALL_RULES@
+
+clean:
+	for n in $(SUBDIRS); do \
+		( cd $$n && $(MAKE) $@ $(MAKE_FLAGS) ) || exit 1; \
+	done
+
+distclean:
+	for n in $(SUBDIRS); do \
+		( cd $$n && $(MAKE) $@ $(MAKE_FLAGS) ) || exit 1; \
+	done
+	rm -f config.cache config.log config.status config.h Makefile
+

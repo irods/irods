@@ -1,0 +1,92 @@
+# @configure_input@
+
+### Path settings
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+libdir		= @libdir@
+includedir	= @includedir@
+
+PACKAGE_NAME	= @PACKAGE_NAME@
+PACKAGE_VERSION	= @PACKAGE_VERSION@
+
+@ENCAP_DEFS@
+
+### Installation programs and flags
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@ -s
+INSTALL_DATA	= @INSTALL_DATA@
+LN_S		= @LN_S@
+MKDIR		= @MKDIR@
+
+### Compiler and link options
+CC		= @CC@
+CPPFLAGS	= -I. \
+		  -I.. \
+		  -I${srcdir} \
+		  -I${top_srcdir}/compat \
+		  -I../listhash \
+		  @CPPFLAGS@
+CFLAGS		= @CFLAGS@
+LDFLAGS		= @LDFLAGS@
+LIBS		= @LIBS@
+LIBOBJS		= @LIBOBJS@
+RANLIB		= @RANLIB@
+@SET_MAKE@
+VPATH		= @srcdir@:@top_srcdir@/compat:../listhash
+
+
+### Makefile rules - no user-servicable parts below
+
+LIBTAR_OBJS	= append.o \
+		  block.o \
+		  decode.o \
+		  encode.o \
+		  extract.o \
+		  handle.o \
+		  libtar_hash.o \
+		  libtar_list.o \
+		  output.o \
+		  util.o \
+		  wrapper.o
+LIBTAR_HDRS	= ../config.h \
+		  ${top_srcdir}/compat/compat.h \
+		  ${srcdir}/libtar.h \
+		  ${srcdir}/internal.h \
+		  ../listhash/libtar_listhash.h
+LIBTAR_LIBS	= ./libtar.a
+ALL		= libtar.a
+
+DISTCLEANFILES	= ../listhash/libtar_listhash.h \
+		  ../listhash/libtar_list.c \
+		  ../listhash/libtar_hash.c
+
+
+all: ${ALL}
+
+.PHONY: clean distclean install
+
+libtar.a: ${LIBTAR_OBJS} ${LIBOBJS}
+	${AR} rc libtar.a ${LIBTAR_OBJS} ${LIBOBJS}
+	${RANLIB} libtar.a
+
+${LIBTAR_OBJS}: ${LIBTAR_HDRS}
+
+.c.o:
+	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
+
+clean:
+	rm -f *~ *.o ${ALL} core
+
+distclean: clean
+	rm -f Makefile ${DISTCLEANFILES}
+
+install: ${ALL}
+	${MKDIR} ${DESTDIR}${libdir}
+	${INSTALL_DATA} libtar.a ${DESTDIR}${libdir}
+	${MKDIR} ${DESTDIR}${includedir}
+	${INSTALL_DATA} ${srcdir}/libtar.h ${DESTDIR}${includedir}
+	${INSTALL_DATA} ../listhash/libtar_listhash.h ${DESTDIR}${includedir}
+

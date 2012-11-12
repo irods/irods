@@ -1,0 +1,31 @@
+2003-01-08	added COMPAT_FUNC_MAKEDEV macro
+
+2002-12-20	added COMPAT_VAR___PROGNAME macro
+
+2002-12-19	include necessary header files from gethostbyname_r.c
+		and getservbyname_r.c
+
+		check for size_t in COMPAT_FUNC_GETHOSTBYNAME_R and
+		COMPAT_FUNC_GETSERVBYNAME_R macros
+
+2002-12-18	define _LINUX_SOURCE_COMPAT in compat.h if strsep()
+		is needed on AIX
+
+		avoid prototype syntax problem with IBM C compiler in
+		fnmatch.c
+
+2002-11-24	added COMPAT_PROTO_MACRO macro
+
+2002-11-22	updated gethostbyname_r() and getservbyname_r() code and
+		macros to detect and use weird AIX implementation
+
+		added warnings if thread-safe functions are not found
+
+2002-10-18	new macros and corresponding compat code:
+		 * COMPAT_FUNC_GETHOSTBYNAME_R
+		 * COMPAT_FUNC_GETSERVBYNAME_R
+
+2002-10-15	added COMPAT_FUNC_GETPWUID_R macro
+
+2002-07-17	added inet_aton.c
+

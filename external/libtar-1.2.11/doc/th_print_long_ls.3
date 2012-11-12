@@ -1,0 +1,22 @@
+.TH th_print_long_ls 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+th_print, th_print_long_ls \- print out information about a tar file header
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "void th_print_long_ls(TAR *" t ");"
+
+.BI "void th_print(TAR *" t ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBth_print_long_ls\fP() function prints a line to \fIstdout\fP which
+describes the file pointed to by the current file header associated with
+the \fITAR\fP handle \fIt\fP.  The output is similar to that of "ls -l".
+
+The \fBth_print\fP() function prints the value of each field of the
+current file header associated with the \fITAR\fP handle \fIt\fP to
+\fIstdout\fP.  This is mainly used for debugging purposes.
+.SH SEE ALSO
+.BR tar_open (3),
+.BR th_read (3)

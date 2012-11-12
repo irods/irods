@@ -1,0 +1,50 @@
+.TH tar_append_file 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+tar_append_file, tar_append_eof, tar_append_regfile \- append data to tar archives
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "int tar_append_file(TAR *" t ", char *" realname ","
+.BI "char *" savename ");"
+
+.BI "int tar_append_regfile(TAR *" t ", char *" realname ");"
+
+.BI "int tar_append_eof(TAR *" t ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBtar_append_file\fP() function creates a tar file header block
+describing the file named by the \fIrealname\fP argument, but with
+the encoded filename of \fIsavename\fP.  It then sets the current
+header associated with the \fITAR\fP handle \fIt\fP to the newly created
+header block, and writes this block to the tar archive associated with
+\fIt\fP.  If the file named by \fIrealname\fP is a regular file (and
+is not encoded as a hard link), \fBtar_append_file\fP() will call
+\fBtar_append_regfile\fP() to append the contents of the file.
+
+The \fBtar_append_regfile\fP() function appends the contents of a regular
+file to the tar archive associated with \fIt\fP.  Since this function is
+called by \fBtar_append_file\fP(), it should only be necessary for
+applications that construct and write the tar file header on their own.
+
+The \fBtar_append_eof\fP() function writes an EOF marker (two blocks of
+all zeros) to the tar file associated with \fIt\fP.
+.SH RETURN VALUES
+On successful completion, these functions will return 0.  On failure,
+they will return -1 and set \fIerrno\fP to an appropriate value.
+.SH ERRORS
+The \fBtar_append_*\fP() functions will fail if:
+.IP \fBEINVAL\fP
+Less than \fBT_BLOCKSIZE\fP bytes were written to the tar archive.
+.IP \fBEINVAL\fP
+Less than \fBT_BLOCKSIZE\fP bytes were read from the \fIrealname\fP file.
+.PP
+They may also fail if any of the following functions fail: \fBlstat\fP(),
+\fBmalloc\fP(), \fBopen\fP(), \fBread\fP(), \fBth_write\fP(), or the
+write function for the file type associated with the \fITAR\fP handle
+\fIt\fP.
+.SH SEE ALSO
+.BR read (2),
+.BR open (2),
+.BR lstat (2),
+.BR th_write (3)

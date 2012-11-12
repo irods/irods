@@ -1,0 +1,152 @@
+# @configure_input@
+
+### Path settings
+srcdir		= @srcdir@
+top_srcdir	= @top_srcdir@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+mandir		= @mandir@
+libdir		= @libdir@
+includedir	= @includedir@
+
+PACKAGE_NAME	= @PACKAGE_NAME@
+PACKAGE_VERSION	= @PACKAGE_VERSION@
+
+@ENCAP_DEFS@
+
+### Installation programs and flags
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@ -s
+INSTALL_DATA	= @INSTALL_DATA@
+LN_S		= @LN_S@
+MKDIR		= @MKDIR@
+@SET_MAKE@
+
+
+### Makefile rules - no user-servicable parts below
+
+TAR_OPEN_SO		= tar_fdopen \
+			  tar_fd \
+			  tar_close
+TAR_APPEND_FILE_SO	= tar_append_eof \
+			  tar_append_regfile
+TAR_BLOCK_READ_SO	= tar_block_write
+TH_READ_SO		= th_write
+TH_SET_FROM_STAT_SO	= th_finish \
+			  th_set_device \
+			  th_set_group \
+			  th_set_link \
+			  th_set_mode \
+			  th_set_path \
+			  th_set_type \
+			  th_set_user
+TAR_EXTRACT_FILE_SO	= tar_extract_blockdev \
+			  tar_extract_chardev \
+			  tar_extract_dir \
+			  tar_extract_fifo \
+			  tar_extract_hardlink \
+			  tar_extract_regfile \
+			  tar_extract_symlink \
+			  tar_skip_regfile \
+			  tar_set_file_perms
+TH_GET_PATHNAME_SO	= TH_ISBLK \
+			  TH_ISCHR \
+			  TH_ISDIR \
+			  TH_ISFIFO \
+			  TH_ISLNK \
+			  TH_ISLONGLINK \
+			  TH_ISLONGNAME \
+			  TH_ISREG \
+			  TH_ISSYM \
+			  th_get_crc \
+			  th_get_devmajor \
+			  th_get_devminor \
+			  th_get_gid \
+			  th_get_linkname \
+			  th_get_mode \
+			  th_get_mtime \
+			  th_get_size \
+			  th_get_uid
+TH_PRINT_LONG_LS_SO	= th_print
+TAR_EXTRACT_ALL_SO	= tar_extract_glob \
+			  tar_append_tree
+@LISTHASH_PREFIX@_HASH_NEW_SO = \
+			  @LISTHASH_PREFIX@_hash_free \
+			  @LISTHASH_PREFIX@_hash_next \
+			  @LISTHASH_PREFIX@_hash_prev \
+			  @LISTHASH_PREFIX@_hash_search \
+			  @LISTHASH_PREFIX@_hash_add \
+			  @LISTHASH_PREFIX@_hash_getkey \
+			  @LISTHASH_PREFIX@_hash_del
+@LISTHASH_PREFIX@_LIST_NEW_SO = \
+			  @LISTHASH_PREFIX@_list_free \
+			  @LISTHASH_PREFIX@_list_next \
+			  @LISTHASH_PREFIX@_list_prev \
+			  @LISTHASH_PREFIX@_list_search \
+			  @LISTHASH_PREFIX@_list_add \
+			  @LISTHASH_PREFIX@_list_add_str \
+			  @LISTHASH_PREFIX@_list_del \
+			  @LISTHASH_PREFIX@_list_dup \
+			  @LISTHASH_PREFIX@_list_merge
+
+DISTCLEANFILES		= ../listhash/@LISTHASH_PREFIX@_hash_new.3 \
+			  ../listhash/@LISTHASH_PREFIX@_list_new.3
+
+
+all:
+
+.PHONY: clean distclean install
+
+clean:
+
+distclean: clean
+	rm -f Makefile ${DISTCLEANFILES}
+
+install: all
+	${MKDIR} ${DESTDIR}${mandir}/man3
+	${INSTALL_DATA} ${srcdir}/tar_open.3 ${DESTDIR}${mandir}/man3
+	for i in ${TAR_OPEN_SO}; do \
+		echo ".so man3/tar_open.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/tar_append_file.3 ${DESTDIR}${mandir}/man3
+	for i in ${TAR_APPEND_FILE_SO}; do \
+		echo ".so man3/tar_append_file.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/tar_block_read.3 ${DESTDIR}${mandir}/man3
+	for i in ${TAR_BLOCK_READ_SO}; do \
+		echo ".so man3/tar_block_read.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/th_read.3 ${DESTDIR}${mandir}/man3
+	for i in ${TH_READ_SO}; do \
+		echo ".so man3/th_read.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/th_set_from_stat.3 ${DESTDIR}${mandir}/man3
+	for i in ${TH_SET_FROM_STAT_SO}; do \
+		echo ".so man3/th_set_from_stat.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/tar_extract_file.3 ${DESTDIR}${mandir}/man3
+	for i in ${TAR_EXTRACT_FILE_SO}; do \
+		echo ".so man3/tar_extract_file.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/th_get_pathname.3 ${DESTDIR}${mandir}/man3
+	for i in ${TH_GET_PATHNAME_SO}; do \
+		echo ".so man3/th_get_pathname.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/th_print_long_ls.3 ${DESTDIR}${mandir}/man3
+	for i in ${TH_PRINT_LONG_LS_SO}; do \
+		echo ".so man3/th_print_long_ls.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ${srcdir}/tar_extract_all.3 ${DESTDIR}${mandir}/man3
+	for i in ${TAR_EXTRACT_ALL_SO}; do \
+		echo ".so man3/tar_extract_all.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ../listhash/@LISTHASH_PREFIX@_hash_new.3 ${DESTDIR}${mandir}/man3
+	for i in ${@LISTHASH_PREFIX@_HASH_NEW_SO}; do \
+		echo ".so man3/@LISTHASH_PREFIX@_hash_new.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+	${INSTALL_DATA} ../listhash/@LISTHASH_PREFIX@_list_new.3 ${DESTDIR}${mandir}/man3
+	for i in ${@LISTHASH_PREFIX@_LIST_NEW_SO}; do \
+		echo ".so man3/@LISTHASH_PREFIX@_list_new.3" > ${DESTDIR}${mandir}/man3/$${i}.3; \
+	done
+

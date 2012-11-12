@@ -1,0 +1,10 @@
+* library API:
+  - revamp API (make analogs for Unix fs access calls)
+  - add dircache list to tar handle
+  - support star format(s)?
+  - add support for POSIX.1-2001 pax format
+  - large file support?
+  - support reading from tape devices with different block sizes?
+* libtar program:
+  - make the libtar program a much more fully-featured tar
+  - move output.c and wrapper.c from lib directory to libtar directory

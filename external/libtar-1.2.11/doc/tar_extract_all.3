@@ -1,0 +1,43 @@
+.TH tar_extract_all 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+tar_extract_all, tar_extract_glob, tar_append_tree \- high-level tar
+archive manipulation functions
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "int tar_extract_all(TAR *" t ", char *" prefix ");"
+
+.BI "int tar_extract_glob(TAR *" t ", char *" globname ","
+.BI "char *" prefix ");"
+
+.BI "int tar_append_tree(TAR *" t ", char *" realdir ","
+.BI "char *" savedir ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBtar_extract_all\fP() function extracts all files from the tar
+archive associated with the \fITAR\fP handle \fIt\fP into the path
+named by the \fIprefix\fP argument.
+
+The \fBtar_extract_glob\fP() function extracts all files matching
+the given \fIglob\fP pattern from the tar archive associated with the
+\fITAR\fP handle \fIt\fP into the path named by the \fIprefix\fP argument.
+
+The \fBtar_append_tree\fP() function appends all files from the
+directory tree named by \fIrealdir\fP to the tar archive associated with
+the \fITAR\fP handle \fIt\fP.  The pathnames stored in the tar archive
+are modified by replacing \fIrealdir\fP with \fIsavedir\fP, so that the
+files will be extracted into \fIsavedir\fP.
+.SH RETURN VALUES
+On successful completion, these functions will return 0.  On failure,
+they will return -1 and set \fIerrno\fP to an appropriate value.
+.SH ERRORS
+These functions will fail under the same conditions that the
+\fBtar_skip_regfile\fP(), \fBtar_extract_regfile\fP(), \fBopendir\fP(),
+\fBlstat\fP(), or \fBtar_append_file\fP() functions fail.
+.SH SEE ALSO
+.BR opendir (2),
+.BR lstat (2),
+.BR tar_skip_regfile (3),
+.BR tar_extract_regfile (3),
+.BR tar_append_file (3)

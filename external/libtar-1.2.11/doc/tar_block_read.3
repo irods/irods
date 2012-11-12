@@ -1,0 +1,24 @@
+.TH tar_block_read 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+tar_block_read, tar_block_write \- macros to call read and write functions
+for the correct tar archive type
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "int tar_block_read(TAR *" t ", char *" buf ");"
+
+.BI "int tar_block_write(TAR *" t ", char *" buf ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBtar_block_read\fP() and \fBtar_block_write\fP() macros call
+the read and write functions for the tar archive type associated with the
+\fITAR\fP handle \fIt\fP.  This type is set when the \fITAR\fP handle
+is created using \fBtar_open\fP().
+.SH RETURN VALUE
+These macros return the same values as the corresponding read and write
+functions.
+.SH SEE ALSO
+.BR read (2),
+.BR write (2),
+.BR tar_open (3)

@@ -1,0 +1,45 @@
+.TH th_set_from_stat 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+th_set_from_stat, th_finish, th_set_type, th_set_path, th_set_link, th_set_device, th_set_user, th_set_group, th_set_mode, th_set_mtime, th_set_size \- set fields of a tar file header
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "void th_set_from_stat(TAR *" t ", struct stat *" s ");"
+
+.BI "void th_set_type(TAR *" t ", mode_t " mode ");"
+
+.BI "void th_set_path(TAR *" t ", char *" pathname ");"
+
+.BI "void th_set_link(TAR *" t ", char *" linkname ");"
+
+.BI "void th_set_device(TAR *" t ", dev_t " device ");"
+
+.BI "void th_set_user(TAR *" t ", uid_t " uid ");"
+
+.BI "void th_set_group(TAR *" t ", gid_t " gid ");"
+
+.BI "void th_set_mode(TAR *" t ", mode_t " mode ");"
+
+.BI "void th_set_mtime(TAR *" t ", time_t " fmtime ");"
+
+.BI "void th_set_size(TAR *" t ", off_t " fsize ");"
+
+.BI "void th_finish(TAR *" t ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBth_set_*\fP() functions each set an individual field of the
+current tar header associated with the \fITAR\fP handle \fIt\fP.  The
+\fBth_set_user\fP() and \fBth_set_group\fP() functions set both the
+numeric user/group ID fields and the user/group name text fields.
+The other functions set only the field that they refer to.
+
+The \fBth_set_from_stat\fP() function uses the other \fBth_set_*\fP()
+functions to set all of the fields at once, based on the data passed to
+it in the argument \fIs\fP.
+
+The \fBth_finish\fP() function sets the appropriate constants for the
+magic and version fields.  It then calculates the header checksum and
+fills in the checksum field.
+.SH SEE ALSO
+.BR lstat (2)

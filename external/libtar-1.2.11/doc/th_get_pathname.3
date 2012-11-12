@@ -1,0 +1,63 @@
+.TH th_get_pathname 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+th_get_pathname, th_get_uid, th_get_gid, th_get_mode, th_get_crc, th_get_size, th_get_mtime, th_get_devmajor, th_get_devminor, th_get_linkname \- extract individual fields of a tar header
+
+TH_ISREG, TH_ISLNK, TH_ISSYM, TH_ISCHR, TH_ISBLK, TH_ISDIR, TH_ISFIFO \- determine what kind of file a tar header refers to
+
+TH_ISLONGNAME, TH_ISLONGLINK \- determine whether the GNU extensions are in use
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "char *th_get_linkname(TAR *" t ");"
+
+.BI "char *th_get_pathname(TAR *" t ");"
+
+.BI "mode_t th_get_mode(TAR *" t ");"
+
+.BI "uid_t th_get_uid(TAR *" t ");"
+
+.BI "gid_t th_get_gid(TAR *" t ");"
+
+.BI "int th_get_crc(TAR *" t ");"
+
+.BI "off_t th_get_size(TAR *" t ");"
+
+.BI "time_t th_get_mtime(TAR *" t ");"
+
+.BI "major_t th_get_devmajor(TAR *" t ");"
+
+.BI "minor_t th_get_devminor(TAR *" t ");"
+
+.BI "int TH_ISREG(TAR *" t ");"
+
+.BI "int TH_ISLNK(TAR *" t ");"
+
+.BI "int TH_ISSYM(TAR *" t ");"
+
+.BI "int TH_ISCHR(TAR *" t ");"
+
+.BI "int TH_ISBLK(TAR *" t ");"
+
+.BI "int TH_ISDIR(TAR *" t ");"
+
+.BI "int TH_ISFIFO(TAR *" t ");"
+
+.BI "int TH_ISLONGNAME(TAR *" t ");"
+
+.BI "int TH_ISLONGLINK(TAR *" t ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBth_get_*\fP() functions extract individual fields from the current
+tar header associated with the \fITAR\fP handle \fIt\fP.
+
+The \fBTH_IS*\fP() macros are used to evaluate what kind of file is
+pointed to by the current tar header associated with the \fITAR\fP
+handle \fIt\fP.
+
+The \fBTH_ISLONGNAME\fP() and \fBTH_ISLONGLINK\fP() macros evaluate
+whether or not the GNU extensions are used by the current tar header
+associated with the \fITAR\fP handle \fIt\fP.  This is only relevant
+if the \fBTAR_GNU\fP option was used when \fItar_open\fP() was called.
+.SH SEE ALSO
+.BR tar_open (3)

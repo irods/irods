@@ -1,0 +1,86 @@
+.TH @LISTHASH_PREFIX@_list_new 3 "Jan 2000" "University of Illinois" "C Library Calls"
+\" @configure_input@
+.SH NAME
+@LISTHASH_PREFIX@_list_new, @LISTHASH_PREFIX@_list_free, @LISTHASH_PREFIX@_list_next,
+@LISTHASH_PREFIX@_list_prev, @LISTHASH_PREFIX@_list_add, @LISTHASH_PREFIX@_list_del,
+@LISTHASH_PREFIX@_list_search, @LISTHASH_PREFIX@_list_dup, @LISTHASH_PREFIX@_list_merge,
+@LISTHASH_PREFIX@_list_add_str \- linked list routines
+.SH SYNOPSIS
+.B #include <@LISTHASH_PREFIX@.h>
+.P
+.BI "@LISTHASH_PREFIX@_list_t *@LISTHASH_PREFIX@_list_new(int " flags ","
+.BI "int (*" cmpfunc ")());"
+.br
+.BI "void @LISTHASH_PREFIX@_list_free(@LISTHASH_PREFIX@_list_t *" l ", void (*" freefunc ")());"
+.br
+.BI "int @LISTHASH_PREFIX@_list_add_str(@LISTHASH_PREFIX@_list_t *" l ", char *" str ","
+.BI "char *" delim ");"
+.br
+.BI "int @LISTHASH_PREFIX@_list_add(@LISTHASH_PREFIX@_list_t *" l ", void *" data ");"
+.br
+.BI "void @LISTHASH_PREFIX@_list_del(@LISTHASH_PREFIX@_list_t *" l ", @LISTHASH_PREFIX@_node_t **" n ");"
+.br
+.BI "int @LISTHASH_PREFIX@_list_search(@LISTHASH_PREFIX@_list_t *" l ", @LISTHASH_PREFIX@_node_t **" n ","
+.BI "void *" data ", int (*" matchfunc ")());"
+.br
+.BI "int @LISTHASH_PREFIX@_list_next(@LISTHASH_PREFIX@_list_t *" l ", @LISTHASH_PREFIX@_node_t **" n ");"
+.br
+.BI "int @LISTHASH_PREFIX@_list_prev(@LISTHASH_PREFIX@_list_t *" l ", @LISTHASH_PREFIX@_node_t **" n ");"
+.br
+.BI "@LISTHASH_PREFIX@_list_t *@LISTHASH_PREFIX@_list_dup(@LISTHASH_PREFIX@_list_t *" l ");"
+.br
+.BI "@LISTHASH_PREFIX@_list_t *@LISTHASH_PREFIX@_list_merge(int (*" cmpfunc ")(), int " flags ","
+.BI "@LISTHASH_PREFIX@_list_t *" list1 ", @LISTHASH_PREFIX@_list_t *" list2 ");"
+.SH DESCRIPTION
+The \fB@LISTHASH_PREFIX@_list_new\fP() function creates a new list.  The \fIflags\fP
+argument must be one of the following values:
+.IP \fBLIST_USERFUNC\fP
+The \fIcmpfunc\fP argument points to a user-supplied function which
+determines the ordering of the list.
+.IP \fBLIST_STACK\fP
+Use the list as a stack.  New elements are added to the front of the list.
+.IP \fBLIST_QUEUE\fP
+Use the list as a queue.  New elements are added to the end of the list.
+.PP
+The \fB@LISTHASH_PREFIX@_list_free\fP() function deallocates all memory associated
+with the list \fIl\fP.  If \fIfreefunc\fP is not \fINULL\fP, it is called
+to free memory associated with each node in the list.
+
+The \fB@LISTHASH_PREFIX@_list_add\fP() function adds the element pointed to by
+\fIdata\fP to the list \fIl\fP.  The position of the new element will
+be determined by the flags passed to \fB@LISTHASH_PREFIX@_list_new\fP() when the
+list was created.
+
+The \fB@LISTHASH_PREFIX@_list_add_str\fP() function tokenizes the string \fIstr\fP
+using the delimiter characters in the string \fIdelim\fP.  The resulting
+tokens are added to list \fIl\fP using \fB@LISTHASH_PREFIX@_list_add\fP().
+
+The \fB@LISTHASH_PREFIX@_list_search\fP() function searches for an element which
+matches \fIdata\fP using the matching function \fImatchfunc\fP.  If
+\fImatchfunc\fP is \fINULL\fP, a default matching function designed for
+ASCII strings is used.  Searching begins from the node pointed to by
+\fIn\fP.
+
+The \fB@LISTHASH_PREFIX@_list_del\fP() function removes the entry pointed to by
+\fIn\fP from the list pointed to by \fIl\fP.
+
+The \fB@LISTHASH_PREFIX@_list_dup\fP() function creates a copy of the list \fIl\fP
+using dynamically allocated memory.
+
+The \fB@LISTHASH_PREFIX@_list_merge\fP() function creates a new
+list with \fIflags\fP and \fIcmpfunc\fP, in the same way as
+\fB@LISTHASH_PREFIX@_list_new\fP().  It then adds all elements from \fIlist1\fP
+and \fIlist2\fP using \fB@LISTHASH_PREFIX@_list_add\fP().
+.SH RETURN VALUE
+The \fB@LISTHASH_PREFIX@_list_new\fP(), \fB@LISTHASH_PREFIX@_list_dup\fP(), and
+\fB@LISTHASH_PREFIX@_list_merge\fP() functions return a pointer to the new list
+structure, or \fINULL\fP on error.
+
+The \fB@LISTHASH_PREFIX@_list_next\fP(), \fB@LISTHASH_PREFIX@_list_prev\fP(), and
+\fB@LISTHASH_PREFIX@_list_search\fP() functions return 1 when valid data is
+returned, or 0 otherwise.
+
+The \fB@LISTHASH_PREFIX@_list_add\fP() and \fB@LISTHASH_PREFIX@_list_add_str\fP() functions
+return 0 on success, or -1 on error.
+.SH SEE ALSO
+.BR @LISTHASH_PREFIX@_hash_new (3)

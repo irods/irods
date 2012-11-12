@@ -1,0 +1,21 @@
+AC_DEFUN(subdir[_INIT], [
+  AC_REQUIRE([COMPAT_FUNC_STRLCPY])
+  AC_REQUIRE([COMPAT_FUNC_STRSEP])
+
+  if test -z "$2"; then
+    LISTHASH_PREFIX="${PACKAGE_NAME}";
+  else
+    LISTHASH_PREFIX="$2";
+  fi
+  AC_SUBST([LISTHASH_PREFIX])
+
+  LISTHASH_DIR="$1";
+  AC_SUBST([LISTHASH_DIR])
+
+  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_listhash.h:$1/listhash.h.in])
+  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_list.c:$1/list.c.in])
+  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_hash.c:$1/hash.c.in])
+  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_list_new.3:$1/list_new.3.in])
+  AC_CONFIG_FILES([$1/${LISTHASH_PREFIX}_hash_new.3:$1/hash_new.3.in])
+])
+

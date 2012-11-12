@@ -1,0 +1,4 @@
+- fix COMPAT_FUNC_INET_ATON to check for existing function in -lresolv
+- fix COMPAT_FUNC_MAKEDEV to avoid problems with IBM C compiler
+  (calling cpp macro with more args that necessary doesn't fail, but
+  calling it with too few macros does fail)

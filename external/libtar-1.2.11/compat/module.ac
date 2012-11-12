@@ -1,0 +1,591 @@
+# COMPAT_VAR___PROGNAME
+# ---------------------
+# Check if libc defines the __progname variable.
+AC_DEFUN([COMPAT_VAR___PROGNAME], [
+  AC_CACHE_CHECK([if libc defines __progname],
+    [ac_cv_libc_defines___progname],
+    [AC_TRY_LINK([],
+      [
+        extern char *__progname;
+        printf("%s", __progname);
+      ],
+      [ac_cv_libc_defines___progname=yes],
+      [ac_cv_libc_defines___progname=no]
+    )]
+  )
+  if test "$ac_cv_libc_defines___progname" = "yes"; then
+    AC_DEFINE([HAVE___PROGNAME], 1,
+      [Define if libc defines the __progname variable])
+  fi
+])
+
+
+# COMPAT_FUNC_BASENAME
+# --------------------
+# Check for working basename() function.
+AC_DEFUN([COMPAT_FUNC_BASENAME], [
+  AC_DEFINE([NEED_BASENAME], 1,
+            [Define if you want to use the basename function])
+  AC_CHECK_HEADERS([libgen.h])
+  AC_CACHE_CHECK([for working basename],
+    [compat_cv_func_basename_works],
+    [AC_TRY_RUN([
+#include <stdio.h>
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
+
+typedef struct {
+  char *test;
+  char *result;
+} test_t;
+
+const test_t tests[] = {
+  { "/usr/local/foo", "foo" },
+  { "/usr/local/foo/", "foo" },
+  { NULL, NULL }
+};
+
+int main() {
+  char test1[1024];
+  int i;
+
+  for (i = 0; tests[i].test; i++) {
+    strcpy(test1, tests[i].test);
+    if (strcmp(basename(test1), tests[i].result) ||
+        strcmp(test1, tests[i].test))
+      exit(1);
+  }
+
+  exit(0);
+}
+],
+      [compat_cv_func_basename_works=yes],
+      [compat_cv_func_basename_works=no],
+      [compat_cv_func_basename_works=no]
+    )]
+  )
+  if test "$compat_cv_func_basename_works" = "yes"; then
+    AC_DEFINE([HAVE_BASENAME], 1,
+              [Define if your system has a working basename])
+  else
+    AC_LIBOBJ([basename])
+  fi
+])
+
+
+# COMPAT_FUNC_DIRNAME
+# -------------------
+# Check for working dirname() function.
+AC_DEFUN([COMPAT_FUNC_DIRNAME], [
+  AC_DEFINE([NEED_DIRNAME], 1,
+            [Define if you want to use the dirname function])
+  AC_CHECK_HEADERS([libgen.h])
+  AC_CACHE_CHECK([for working dirname],
+    [compat_cv_func_dirname_works],
+    [AC_TRY_RUN([
+#include <stdio.h>
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
+
+typedef struct {
+  char *test;
+  char *result;
+} test_t;
+
+const test_t tests[] = {
+  { "foobar", "." },
+  { "/usr/local/foo", "/usr/local" },
+  { "/usr/local/foo/", "/usr/local" },
+  { "/", "/" },
+  { "", "." },
+  { NULL, NULL }
+};
+
+int main() {
+  char test1[1024];
+  int i;
+
+  for (i = 0; tests[i].test; i++) {
+    strcpy(test1, tests[i].test);
+    if (strcmp(dirname(test1), tests[i].result) ||
+        strcmp(test1, tests[i].test))
+      exit(1);
+  }
+
+  exit(0);
+}
+],
+      [compat_cv_func_dirname_works=yes],
+      [compat_cv_func_dirname_works=no],
+      [compat_cv_func_dirname_works=no]
+    )]
+  )
+  if test "$compat_cv_func_dirname_works" = "yes"; then
+    AC_DEFINE([HAVE_DIRNAME], 1,
+              [Define if your system has a working dirname])
+  else
+    AC_LIBOBJ([dirname])
+  fi
+])
+
+
+# COMPAT_FUNC_FNMATCH
+# -------------------
+# Check for working fnmatch() function.
+AC_DEFUN([COMPAT_FUNC_FNMATCH], [
+  AC_DEFINE([NEED_FNMATCH], 1, [Define if you want to use the fnmatch function])
+  AC_CHECK_HEADERS([fnmatch.h])
+  if test "$ac_cv_header_fnmatch_h" = "yes"; then
+    AC_FUNC_FNMATCH
+  fi
+  if test "$ac_cv_func_fnmatch_works" != "yes"; then
+    AC_CHECK_HEADERS([ctype.h])
+    AC_LIBOBJ([fnmatch])
+  fi
+])
+
+
+# COMPAT_FUNC_GLOB
+# ----------------
+# Check for working glob() function.
+AC_DEFUN([COMPAT_FUNC_GLOB], [
+  AC_DEFINE([NEED_GLOB], 1, [Define if you want to use the glob function])
+  AC_CHECK_HEADERS([glob.h])
+  AC_CACHE_CHECK([for working glob],
+    [compat_cv_func_glob_works],
+    [AC_TRY_RUN([
+#include <stdio.h>
+#ifdef HAVE_GLOB_H
+# include <glob.h>
+#endif
+
+#ifndef GLOB_ABORTED
+# define GLOB_ABORTED GLOB_ABEND
+#endif
+
+int main() {
+  glob_t g;
+  int status;
+
+  status = glob("conf*", 0, NULL, &g);
+  switch (status) {
+    case 0:
+    case GLOB_NOSPACE:
+    case GLOB_ABORTED:
+    case GLOB_NOMATCH:
+      exit(0);
+      break;
+    default:
+      exit(1);
+      break;
+  }
+}
+],
+      [compat_cv_func_glob_works=yes],
+      [compat_cv_func_glob_works=no],
+      [compat_cv_func_glob_works=no]
+    )]
+  )
+  if test "$compat_cv_func_glob_works" = "yes"; then
+    AC_DEFINE([HAVE_GLOB], 1, [Define if your system has a working glob])
+  else
+    AC_LIBOBJ([glob])
+    AC_CHECK_FUNCS([issetugid])
+  fi
+])
+
+
+# COMPAT_FUNC_MAKEDEV
+# -------------------
+# Check for number of arguments expected by makedev().
+AC_DEFUN([COMPAT_FUNC_MAKEDEV], [
+  AC_REQUIRE([AC_HEADER_MAJOR])
+  AC_DEFINE([NEED_MAKEDEV], 1,
+            [Define if you want to use the makedev function])
+  AC_CACHE_CHECK([whether makedev expects three arguments],
+    [compat_cv_func_makedev_three_args],
+    [AC_RUN_IFELSE([
+      AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#ifdef MAJOR_IN_MKDEV
+# include <sys/mkdev.h>
+#else
+# ifdef MAJOR_IN_SYSMACROS
+#  include <sys/sysmacros.h>
+# endif
+#endif
+]], [[
+dev_t dev;
+major_t maj = 5;
+minor_t min = 7;
+
+dev = makedev(0, maj, min);
+if (major(dev) != maj
+    || minor(dev) != min)
+  exit(1);
+exit(0);
+]])],
+      [compat_cv_func_makedev_three_args=yes],
+      [compat_cv_func_makedev_three_args=no]
+    )]
+  )
+  if test "$compat_cv_func_makedev_three_args" = "yes"; then
+    AC_DEFINE([MAKEDEV_THREE_ARGS], 1,
+              [Define as 1 if makedev expects three arguments])
+  fi
+])
+
+
+# COMPAT_FUNC_SNPRINTF
+# --------------------
+# Check for working snprintf() function.
+AC_DEFUN([COMPAT_FUNC_SNPRINTF], [
+  AC_DEFINE([NEED_SNPRINTF], 1,
+            [Define if you want to use the snprintf function])
+  AC_CACHE_CHECK([for working snprintf],
+    [compat_cv_func_snprintf_works],
+    [AC_TRY_RUN([
+#include <stdio.h>
+
+typedef struct {
+  int length;
+  char *test;
+  int retval;
+  char *result;
+} test_t;
+
+const test_t tests[] = {
+  { 10, "12345678901234567890", 20, "123456789" },
+#if 0
+  { 0, "12345678901234567890", 20, NULL },
+  { -1, "12345678901234567890", -1, NULL },
+#endif
+  { 0, NULL, 0, NULL }
+};
+
+int main() {
+  char test1[1024];
+  int i;
+
+  for (i = 0; tests[i].test; i++) {
+    memset(test1, 'X', sizeof(test1));
+    if ((snprintf(test1, tests[i].length, "%s", tests[i].test)
+         != tests[i].retval) ||
+        (tests[i].result && strcmp(tests[i].result, test1)))
+      exit(1);
+  }
+
+  exit(0);
+}
+],
+      [compat_cv_func_snprintf_works=yes],
+      [compat_cv_func_snprintf_works=no],
+      [compat_cv_func_snprintf_works=no]
+    )]
+  )
+  if test "$compat_cv_func_snprintf_works" = "yes"; then
+    AC_DEFINE([HAVE_SNPRINTF], 1,
+              [Define if your system has a working snprintf])
+  else
+    AC_LIBOBJ([snprintf])
+  fi
+])
+
+
+# COMPAT_PROTO_MACRO(FUNCTION, HEADER, MACRO-LIST, [BODY])
+# --------------------------------------------------------
+# Determine which C preprocessor macro is needed to expose prototype of
+# FUNCTION in HEADER.  First, we try with nothing special defined; then we
+# try with each macro from MACRO-LIST.  We stop as soon as it's found
+# and adjust $CFLAGS appropriately.
+AC_DEFUN([COMPAT_PROTO_MACRO],
+  [AC_CACHE_CHECK([what to define for $1 prototype],
+    [compat_cv_proto_]$1[_macro],
+    [AC_TRY_COMPILE(
+      [
+        #include <$2>
+      ],
+      [
+	void *funcptr;
+	$4
+        funcptr = $1;
+      ],
+      [compat_cv_proto_]$1[_macro="none"],
+      [for macro in $3; do
+	AC_TRY_COMPILE(
+	  [
+	    #define $macro
+	    #include <$2>
+	  ],
+	  [
+	    void *funcptr;
+	    $4
+            funcptr = $1;
+	  ],
+	  [
+	    compat_cv_proto_]$1[_macro="$macro"
+	    break
+	  ],
+	  [compat_cv_proto_]$1[_macro="not found"]
+	)
+      done]
+    )]
+  )]
+  if test -n "$compat_cv_proto_$1_macro" -a "$compat_cv_proto_$1_macro" != "not found" -a "$compat_cv_proto_$1_macro" != "none"; then
+    CFLAGS="${CFLAGS} -D$compat_cv_proto_$1_macro";
+  fi
+)
+
+
+# COMPAT_FUNC_STRTOK_R
+# --------------------
+# Check for working strtok_r().
+AC_DEFUN([COMPAT_FUNC_STRTOK_R], [
+  AC_DEFINE([NEED_STRTOK_R], 1,
+            [Define if you want to use the strtok_r function])
+  AC_REPLACE_FUNCS([strtok_r])
+  COMPAT_PROTO_MACRO([strtok_r], [string.h], [_REENTRANT _THREAD_SAFE])
+])
+
+
+# COMPAT_FUNC_GETPWUID_R
+# ----------------------
+# Check for POSIX-compliant getpwuid_r().
+AC_DEFUN([COMPAT_FUNC_GETPWUID_R], [
+  COMPAT_PROTO_MACRO([getpwuid_r], [pwd.h],
+    [_POSIX_PTHREAD_SEMANTICS _REENTRANT],
+    [
+      struct passwd pwd, *pwdp;
+      char buf[10240];
+      getpwuid_r(0, &pwd, buf, sizeof(buf), &pwdp);
+    ]
+  )
+  if test "$compat_cv_proto_getpwuid_r_macro" != "not found"; then
+    AC_DEFINE([HAVE_GETPWUID_R], 1,
+	      [Define if your system has a POSIX-compliant getpwuid_r])
+  else
+    AC_MSG_WARN([cannot find usable getpwuid_r - resulting libraries will not be thread-safe])
+  fi
+])
+
+
+# COMPAT_FUNC_GETHOSTBYNAME_R
+# ---------------------------
+# Check for gethostbyname_r().
+AC_DEFUN([COMPAT_FUNC_GETHOSTBYNAME_R], [
+  AC_REQUIRE([AC_TYPE_SIZE_T])
+  AC_DEFINE([NEED_GETHOSTBYNAME_R], 1,
+	    [Define if you want to use the gethostbyname_r function])
+  AC_SEARCH_LIBS([gethostbyname_r], [nsl])
+  if test "$ac_cv_search_gethostbyname_r" != "no"; then
+    COMPAT_PROTO_MACRO([gethostbyname_r], [netdb.h], [_REENTRANT])
+    AC_CACHE_CHECK(
+      [for number of arguments to gethostbyname_r],
+      [compat_cv_gethostbyname_r_args],
+      [AC_TRY_COMPILE(
+	[
+	  #include <netdb.h>
+	],
+	[
+	  struct hostent hent;
+	  char buf[10240];
+	  int herr;
+
+	  gethostbyname_r("localhost", &hent, buf, sizeof(buf), &herr);
+	],
+	[compat_cv_gethostbyname_r_args=5],
+	[AC_TRY_COMPILE(
+          [
+	    #include <netdb.h>
+	  ],
+	  [
+	    struct hostent hent, *hp;
+	    char buf[10240];
+	    int herr;
+
+	    gethostbyname_r("localhost", &hent, buf, sizeof(buf), &hp, &herr);
+	  ],
+	  [compat_cv_gethostbyname_r_args=6],
+	  [AC_TRY_COMPILE(
+	    [
+	      #include <netdb.h>
+	    ],
+	    [
+	      struct hostent hent;
+	      struct hostent_data hdata;
+
+	      gethostbyname_r("localhost", &hent, &hdata);
+	    ],
+	    [compat_cv_gethostbyname_r_args=3],
+	    [compat_cv_gethostbyname_r_args=no]
+	  )]
+	)]
+      )]
+    )
+    if test "$compat_cv_gethostbyname_r_args" != "no"; then
+      AC_DEFINE([HAVE_GETHOSTBYNAME_R], 1,
+		[Define if you have the gethostbyname_r function])
+      AC_DEFINE_UNQUOTED([GETHOSTBYNAME_R_NUM_ARGS],
+      			 [$compat_cv_gethostbyname_r_args],
+			 [Define to number of arguments for gethostbyname_r])
+      if test "$compat_cv_gethostbyname_r_args" != "6"; then
+        AC_LIBOBJ([gethostbyname_r])
+      fi
+    else
+      AC_MSG_WARN([unknown form of gethostbyname_r - resulting libraries will not be thread-safe])
+    fi
+  else
+    AC_MSG_WARN([cannot find gethostbyname_r - resulting libraries will not be thread-safe])
+  fi
+])
+
+
+# COMPAT_FUNC_GETSERVBYNAME_R
+# ---------------------------
+# Check for getservbyname_r().
+AC_DEFUN([COMPAT_FUNC_GETSERVBYNAME_R], [
+  AC_REQUIRE([AC_TYPE_SIZE_T])
+  AC_DEFINE([NEED_GETSERVBYNAME_R], 1,
+	    [Define if you want to use the getservbyname_r function])
+  AC_SEARCH_LIBS([getservbyname_r], [socket nsl])
+  if test "$ac_cv_search_getservbyname_r" != "no"; then
+    COMPAT_PROTO_MACRO([getservbyname_r], [netdb.h], [_REENTRANT])
+    AC_CACHE_CHECK(
+      [for number of arguments to getservbyname_r],
+      [compat_cv_getservbyname_r_args],
+      [AC_TRY_COMPILE(
+	[
+	  #include <netdb.h>
+	],
+	[
+	  struct servent sent;
+	  char buf[10240];
+
+	  getservbyname_r("telnet", "tcp", &sent, buf, sizeof(buf));
+	],
+	[compat_cv_getservbyname_r_args=5],
+	[AC_TRY_COMPILE(
+          [
+	    #include <netdb.h>
+	  ],
+	  [
+	    struct servent sent, *sp;
+	    char buf[10240];
+
+	    getservbyname_r("telnet", "tcp", &sent, buf, sizeof(buf), &sp);
+	  ],
+	  [compat_cv_getservbyname_r_args=6],
+	  [AC_TRY_COMPILE(
+	    [
+	      #include <netdb.h>
+	    ],
+	    [
+	      struct servent sent; 
+	      struct servent_data sdata;
+
+	      getservbyname_r("telnet", "tcp", &sent, &sdata);
+	    ],
+	    [compat_cv_getservbyname_r_args=4],
+	    [compat_cv_getservbyname_r_args=no]
+	  )]
+	)]
+      )]
+    )
+    if test "$compat_cv_getservbyname_r_args" != "no"; then
+      AC_DEFINE([HAVE_GETSERVBYNAME_R], 1,
+		[Define if you have the getservbyname_r function])
+      AC_DEFINE_UNQUOTED([GETSERVBYNAME_R_NUM_ARGS],
+      			 [$compat_cv_getservbyname_r_args],
+			 [Define to number of arguments for getservbyname_r])
+      if test "$compat_cv_getservbyname_r_args" != "6"; then
+        AC_LIBOBJ([getservbyname_r])
+      fi
+    else
+      AC_MSG_WARN([unknown form of getservbyname_r - resulting libraries will not be thread-safe])
+    fi
+  else
+    AC_MSG_WARN([cannot find getservbyname_r - resulting libraries will not be thread-safe])
+  fi
+])
+
+
+# COMPAT_REPLACE_FUNC(function)
+# -----------------------------
+# Replacement for AC_REPLACE_FUNCS.
+AC_DEFUN([COMPAT_REPLACE_FUNC], [
+  AC_DEFINE([NEED_]translit($1,[a-z],[A-Z]), 1,
+	    [Define if you want to use the ]$1[ function])
+  AC_CHECK_FUNC($1,
+    [AC_DEFINE([HAVE_]translit($1,[a-z],[A-Z]), 1,
+	       [Define if you have the ]$1[ function])],
+    [AC_LIBOBJ(]$1[)]
+  )
+])
+
+
+# COMPAT_FUNC_GETHOSTNAME
+# -----------------------
+# Check for gethostname().
+AC_DEFUN([COMPAT_FUNC_GETHOSTNAME], [
+  COMPAT_REPLACE_FUNC([gethostname])
+])
+
+
+# COMPAT_FUNC_INET_ATON
+# ---------------------
+# Check for inet_aton().
+AC_DEFUN([COMPAT_FUNC_INET_ATON], [
+  COMPAT_REPLACE_FUNC([inet_aton])
+])
+
+
+# COMPAT_FUNC_STRDUP
+# ------------------
+# Check for strdup().
+AC_DEFUN([COMPAT_FUNC_STRDUP], [
+  COMPAT_REPLACE_FUNC([strdup])
+])
+
+
+# COMPAT_FUNC_STRLCAT
+# -------------------
+# Check for strlcat().
+AC_DEFUN([COMPAT_FUNC_STRLCAT], [
+  COMPAT_REPLACE_FUNC([strlcat])
+])
+
+
+# COMPAT_FUNC_STRLCPY
+# -------------------
+# Check for strlcpy().
+AC_DEFUN([COMPAT_FUNC_STRLCPY], [
+  COMPAT_REPLACE_FUNC([strlcpy])
+])
+
+
+# COMPAT_FUNC_STRMODE
+# -------------------
+# Check for strmode().
+AC_DEFUN([COMPAT_FUNC_STRMODE], [
+  COMPAT_REPLACE_FUNC([strmode])
+])
+
+
+# COMPAT_FUNC_STRRSTR
+# -------------------
+# Check for strrstr().
+AC_DEFUN([COMPAT_FUNC_STRRSTR], [
+  COMPAT_REPLACE_FUNC([strrstr])
+])
+
+
+# COMPAT_FUNC_STRSEP
+# ------------------
+# Check for strsep().
+AC_DEFUN([COMPAT_FUNC_STRSEP], [
+  COMPAT_REPLACE_FUNC([strsep])
+])
+
+

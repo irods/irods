@@ -1,0 +1,34 @@
+.TH th_read 3 "Jan 2001" "University of Illinois" "C Library Calls"
+.SH NAME
+th_read, th_write \- read and write a file header block from a tar archive
+.SH SYNOPSIS
+.B #include <libtar.h>
+.P
+.BI "int th_read(TAR *" t ");"
+
+.BI "int th_write(TAR *" t ");"
+.SH VERSION
+This man page documents version 1.2 of \fBlibtar\fP.
+.SH DESCRIPTION
+The \fBth_read\fP() function reads the next block from the tar archive
+associated with the \fITAR\fP handle \fIt\fP.  It then sets the
+current tar header associated with \fIt\fP to the contents of the block
+read.
+
+The \fBth_write\fP() function writes the contents of the current
+tar header associated with \fIt\fP to the tar archive associated
+with \fIt\fP.
+.SH RETURN VALUE
+On successful completion, \fBth_read\fP() and \fBth_write\fP() will
+return 0.  On failure, they will return -1 and set \fIerrno\fP to an
+appropriate value.
+
+On \fIEOF\fP, \fBth_read\fP() will return 1.
+.SH ERRORS
+\fBth_read\fP() and \fBth_write\fP() will fail if:
+.IP \fBEINVAL\fP
+Less than \fBT_BLOCKSIZE\fP blocks were read or written.
+.PP
+.SH SEE ALSO
+.BR tar_block_read (3),
+.BR tar_block_write (3)

@@ -1,0 +1,74 @@
+.TH @LISTHASH_PREFIX@_hash_new 3 "Jan 2000" "University of Illinois" "C Library Calls"
+\" @configure_input@
+.SH NAME
+@LISTHASH_PREFIX@_hash_new, @LISTHASH_PREFIX@_hash_free, @LISTHASH_PREFIX@_hash_next,
+@LISTHASH_PREFIX@_hash_prev, @LISTHASH_PREFIX@_hash_getkey, @LISTHASH_PREFIX@_hash_search,
+@LISTHASH_PREFIX@_hash_add, @LISTHASH_PREFIX@_hash_del \- hash table routines
+.SH SYNOPSIS
+.B #include <@LISTHASH_PREFIX@.h>
+.P
+.BI "@LISTHASH_PREFIX@_hash_t *@LISTHASH_PREFIX@_hash_new(int " num ", int (*" hashfunc ")());"
+.br
+.BI "void @LISTHASH_PREFIX@_hash_free(@LISTHASH_PREFIX@_hash_t *" h ", void (*" freefunc ")());"
+.br
+.BI "int @LISTHASH_PREFIX@_hash_next(@LISTHASH_PREFIX@_hash_t *" h ", @LISTHASH_PREFIX@_hashptr_t *" hp ");"
+.br
+.BI "int @LISTHASH_PREFIX@_hash_prev(@LISTHASH_PREFIX@_hash_t *" h ", @LISTHASH_PREFIX@_hashptr_t *" hp ");"
+.br
+.BI "int @LISTHASH_PREFIX@_hash_search(@LISTHASH_PREFIX@_hash_t *" h ", @LISTHASH_PREFIX@_hashptr_t *" hp ","
+.BI "void *" data ", int (*" matchfunc ")());"
+.br
+.BI "int @LISTHASH_PREFIX@_hash_getkey(@LISTHASH_PREFIX@_hash_t *" h ", @LISTHASH_PREFIX@_hashptr_t *" hp ","
+.BI "void *" data ", int (*" matchfunc ")());"
+.br
+.BI "int @LISTHASH_PREFIX@_hash_add(@LISTHASH_PREFIX@_hash_t *" h ", void *" data ");"
+.br
+.BI "int @LISTHASH_PREFIX@_hash_del(@LISTHASH_PREFIX@_hash_t *" h ", @LISTHASH_PREFIX@_hashptr_t *" hp ");"
+.SH DESCRIPTION
+The \fB@LISTHASH_PREFIX@_hash_new\fP() function creates a new hash with \fInum\fP
+buckets and using hash function pointed to by \fIhashfunc\fP.  If
+\fIhashfunc\fP is \fINULL\fP, a default hash function designed for
+7-bit ASCII strings is used.
+
+The \fB@LISTHASH_PREFIX@_hash_free\fP() function deallocates all memory associated
+with the hash structure \fIh\fP.  If \fIfreefunc\fP is not \fINULL\fP,
+it is called to free memory associated with each node in the hash.
+
+The \fB@LISTHASH_PREFIX@_hash_next\fP() and \fB@LISTHASH_PREFIX@_hash_prev\fP() functions are
+used to iterate through the hash.  The \fI@LISTHASH_PREFIX@_hashptr_t\fP structure
+has two fields: \fIbucket\fP, which indicates the current bucket in the
+hash, and \fInode\fP, which is a pointer to the current node in the current
+bucket.  To start at the beginning or end of the hash, the caller should
+initialize \fIhp.bucket\fP to -1 and \fIhp.node\fP to \fINULL\fP.
+
+The \fB@LISTHASH_PREFIX@_hash_search\fP() function searches iteratively through the
+hash \fIh\fP until it finds a node whose contents match \fIdata\fP using
+the matching function \fImatchfunc\fP.  Searching begins at the location
+pointed to by \fIhp\fP.
+
+The \fB@LISTHASH_PREFIX@_hash_getkey\fP() function uses the hash function associated
+with \fIh\fP to determine which bucket \fIdata\fP should be in, and searches
+only that bucket for a matching node using \fImatchfunc\fP.  Searching
+begins at the location pointed to by \fIhp\fP.
+
+The \fB@LISTHASH_PREFIX@_hash_add\fP() function adds \fIdata\fP into hash \fIh\fP.
+
+The \fB@LISTHASH_PREFIX@_hash_del\fP() function removes the node referenced by
+\fIhp\fP.
+.SH RETURN VALUE
+The \fB@LISTHASH_PREFIX@_hash_new\fP() function returns a pointer to the new hash
+structure, or \fINULL\fP on error.
+
+The \fB@LISTHASH_PREFIX@_hash_next\fP() and \fB@LISTHASH_PREFIX@_hash_prev\fP() functions
+return 1 when valid data is returned, and 0 at the end of the hash.
+
+The \fB@LISTHASH_PREFIX@_hash_getkey\fP() and \fB@LISTHASH_PREFIX@_hash_search\fP() functions
+return 1 when a match is found, or 0 otherwise.
+
+The \fB@LISTHASH_PREFIX@_hash_add\fP() function returns 0 on success, or -1 on
+error (and sets \fIerrno\fP).
+
+The \fB@LISTHASH_PREFIX@_hash_del\fP() function returns 0 on success, or -1 on
+error (and sets \fIerrno\fP).
+.SH SEE ALSO
+.BR @LISTHASH_PREFIX@_list_new (3)
