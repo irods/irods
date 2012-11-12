@@ -33,6 +33,12 @@ sudo dpkg -i linux-2.6-amd64/e-irods-3.0b2-linux-2.6-amd64.deb
 sudo su - eirods
 
 
+#### Install nose on VM
+sudo apt-get install python-dev python-nose lcov apache2
+sudo easy_install psutil
+sudo mkdir /var/www/dev
+sudo chown -R eirods:eirods /var/www/dev
+
 #### Run the test suite as eirods:
 cd /var/lib/e-irods/tests/pydevtest
 # this command will generate a coverage report for the tests run and copy to /var/www/dev
