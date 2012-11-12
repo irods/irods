@@ -7,4 +7,4 @@ INC=-I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRO
 all:
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libnonblocking.so     libnonblocking.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp ./libtar.a
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp ../../external/libtar*/lib/libtar.a

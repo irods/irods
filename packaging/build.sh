@@ -383,18 +383,18 @@ else
     echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
 fi
 
-LIBTARDEV=`find /usr/ -name libtar.h 2> /dev/null`
-if [ "$LIBTARDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        PREFLIGHT="$PREFLIGHT libtar-dev"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT libtar-devel"
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.feep.net/libtar/"
-    fi
-else
-    echo "Detected libtar.h library [$LIBTARDEV]"
-fi
+#LIBTARDEV=`find /usr/ -name libtar.h 2> /dev/null`
+#if [ "$LIBTARDEV" == "" ] ; then
+#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+#        PREFLIGHT="$PREFLIGHT libtar-dev"
+#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+#        PREFLIGHT="$PREFLIGHT libtar-devel"
+#    else
+#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.feep.net/libtar/"
+#    fi
+#else
+#    echo "Detected libtar.h library [$LIBTARDEV]"
+#fi
 
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
@@ -515,11 +515,19 @@ if [ "$PYPREFLIGHT" != "" ] ; then
 fi
 ################################################################################
 
+# build our external/libtar
+cd $BUILDDIR/external/libtar*
+./configure
+make
+
+
+################################################################################
 
 # reset to exit on an error
 set -e
 
 # set up own temporary configfile
+cd $BUILDDIR/iRODS
 TMPCONFIGFILE=/tmp/$USER/irods.config.epm
 mkdir -p $(dirname $TMPCONFIGFILE)
 
