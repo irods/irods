@@ -6,10 +6,12 @@ import pydevtest_common as c
 import icommands
 
 global users
+output = commands.getstatusoutput("hostname")
+hostname = output[1]
 users = []
-users.append({'name': 'rods',  'passwd': 'rods',  'zone': 'tempZone', 'resc': 'demoResc', 'host': 'trelvb', 'port': '1247'})
-users.append({'name': 'alice', 'passwd': 'apass', 'zone': 'tempZone', 'resc': 'demoResc', 'host': 'trelvb', 'port': '1247'})
-users.append({'name': 'bobby', 'passwd': 'bpass', 'zone': 'tempZone', 'resc': 'demoResc', 'host': 'trelvb', 'port': '1247'})
+users.append({'name': 'rods',  'passwd': 'rods',  'zone': 'tempZone', 'resc': 'demoResc', 'host': hostname, 'port': '1247'})
+users.append({'name': 'alice', 'passwd': 'apass', 'zone': 'tempZone', 'resc': 'demoResc', 'host': hostname, 'port': '1247'})
+users.append({'name': 'bobby', 'passwd': 'bpass', 'zone': 'tempZone', 'resc': 'demoResc', 'host': hostname, 'port': '1247'})
 
 global mycwd
 mycwd          = os.getcwd()
