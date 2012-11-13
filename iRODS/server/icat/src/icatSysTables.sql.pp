@@ -131,7 +131,8 @@ create table R_RESC_MAIN
    modify_ts            varchar(32),
    resc_children        varchar(1000),
    resc_context         varchar(1000),
-   resc_parent          varchar(1000)
+   resc_parent          varchar(1000),
+   resc_objcount        varchar(1000)
  ) SETCHARACTERSET;
 
 create table R_COLL_MAIN

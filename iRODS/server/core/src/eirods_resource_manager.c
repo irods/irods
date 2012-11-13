@@ -163,6 +163,7 @@ namespace eirods {
 	addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
 	addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
 	addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,   1 );
+	addInxIval( &genQueryInp.selectInp, COL_R_RESC_OBJCOUNT, 1 );
 	
 	genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -240,7 +241,7 @@ namespace eirods {
         sqlResult_t *rescId       = 0, *rescName      = 0, *zoneName   = 0, *rescType   = 0, *rescClass = 0;
         sqlResult_t *rescLoc      = 0, *rescVaultPath = 0, *freeSpace  = 0, *rescInfo   = 0;
         sqlResult_t *rescComments = 0, *rescCreate    = 0, *rescModify = 0, *rescStatus = 0;
-        sqlResult_t *rescChildren = 0, *rescContext   = 0;
+        sqlResult_t *rescChildren = 0, *rescContext   = 0, *rescParent = 0, *rescObjCount = 0;
 
         // =-=-=-=-=-=-=-
         // extract results from query
@@ -304,8 +305,12 @@ namespace eirods {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
         }
 
-	if( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL) {
+	if( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_PARENT failed" );
+	}
+
+	if( ( rescObjCount = getSqlResultByInx( _result, COL_R_RESC_OBJCOUNT ) ) == NULL) {
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_OBJCOUNT failed" );
 	}
 
         // =-=-=-=-=-=-=-
@@ -328,7 +333,9 @@ namespace eirods {
             std::string tmpRescVaultPath = &rescVaultPath->value[ rescVaultPath->len * i ];
             std::string tmpRescChildren  = &rescChildren->value[ rescChildren->len * i ];
             std::string tmpRescContext   = &rescContext->value[ rescContext->len * i ];
-
+            std::string tmpRescParent    = &rescParent->value[ rescParent->len * i ];
+            std::string tmpRescObjCount  = &rescObjCount->value[ rescObjCount->len * i ];
+            
             // =-=-=-=-=-=-=-
             // resolve the host name into a rods server host structure
             rodsHostAddr_t addr;

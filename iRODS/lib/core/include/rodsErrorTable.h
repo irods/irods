@@ -334,6 +334,7 @@
 #define CAT_PSEUDO_RESC_MODIFY_DISALLOWED -854000 // JMC - backport 4629
 #define CAT_BIND_VARIABLE_LIMIT_EXCEEDED  -856000 // JMC - backport 4848
 #define CAT_INVALID_CHILD                -857000
+#define CAT_INVALID_OBJ_COUNT            -858000 // hcj
 
 /* 880,000 to 899,000  RDA errors  */
 #define RDA_NOT_COMPILED_IN             -880000

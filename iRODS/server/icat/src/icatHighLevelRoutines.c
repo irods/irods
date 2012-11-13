@@ -230,7 +230,7 @@ chlGetRcs()
   Called internally to rollback current transaction after an error.
 */
 int
-_rollback(char *functionName) {
+_rollback(const char *functionName) {
     int status;
 #if ORA_ICAT
     status = 0; 
@@ -453,13 +453,10 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             if (theVal != NULL && dataObjInfo->objPath != NULL &&
                 upCols==1 && strcmp(updateCols[0],"data_path")==0) {
                 int len, iVal = 0; // JMC cppcheck - uninit var ( shadows prev decl? )
-/*
-  In this case, the user is doing a 'imv' of a collection but one of
-  the sub-files is not owned by them.  We decided this should be
-  allowed and so we support it via this new ACL_COLLECTION_KW, checking
-  that the ACL_COLLECTION matches the beginning path of the object and
-  that the user has the appropriate access to that collection.
-*/
+                /*
+                  In this case, the user is doing a 'imv' of a collection but one of the sub-files is not owned by them.  We decided
+                  this should be allowed and so we support it via this new ACL_COLLECTION_KW, checking that the ACL_COLLECTION
+                  matches the beginning path of the object and that the user has the appropriate access to that collection.  */
                 len = strlen(theVal);
                 if (strncmp(theVal, dataObjInfo->objPath, len) == 0) {
 
@@ -561,6 +558,82 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         }
     }
     return status;
+}
+
+/**
+ * @brief Updates the specified resources object count by the specified amount
+ */
+static int
+_updateRescObjCount(
+    const char* _resc_name,
+    const char* _zone,
+    int _amount) {
+
+    int result = 0;
+    int status;
+    char resc_id[MAX_NAME_LEN];
+    char obj_count_string[MAX_NAME_LEN];
+    static const char* func_name = "_updateRescObjCount";
+    char myTime[50];
+    eirods::sql_logger logger(func_name, logSQL);
+
+    std::stringstream msg;
+    msg << "qqq - Updating object count for resource: \"" << _resc_name << "\"";
+    eirods::log(LOG_NOTICE, msg.str());
+    
+    resc_id[0] = '\0';
+    logger.log();
+    if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                          resc_id, MAX_NAME_LEN, _resc_name, _zone, 0,
+                                          &icss)) != 0) {
+        if(status == CAT_NO_ROWS_FOUND) {
+            result = CAT_INVALID_RESOURCE;
+        } else {
+            _rollback(func_name);
+            result = status;
+        }
+        std::stringstream msg;
+        msg << "qqq - Unable to get resource id for resource: " << _resc_name;
+        eirods::log(LOG_NOTICE, msg.str());
+    } else if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_id=?",
+                                                 obj_count_string, MAX_NAME_LEN, resc_id, 0, 0, &icss)) != 0) {
+        std::stringstream msg;
+        msg << "qqq - Unable to get object count for resource: " << _resc_name;
+        eirods::log(LOG_NOTICE, msg.str());
+        result = status;
+        
+    } else {
+        int obj_count = atoi(obj_count_string);
+        std::stringstream msg;
+        msg << "qqq - Updating object count " << obj_count << " by " << _amount << " to " << obj_count + _amount;
+        eirods::log(LOG_NOTICE, msg.str());
+        obj_count += _amount;
+        if(obj_count < 0) {
+            std::stringstream ss;
+            ss << func_name << " Invalid resource object count: " << obj_count;
+            eirods::log(LOG_ERROR, ss.str());
+            result = CAT_INVALID_OBJ_COUNT;
+        } else {
+            std::stringstream ss;
+            ss << obj_count;
+            eirods::tmp_string count_string(ss.str().c_str());
+            getNowStr(myTime);
+            cllBindVarCount = 0;
+            cllBindVars[cllBindVarCount++] = count_string.str();
+            cllBindVars[cllBindVarCount++] = myTime;
+            cllBindVars[cllBindVarCount++] = resc_id;
+            logger.log();
+            if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_objcount=?, modify_ts=? "
+                                               "where resc_id=?", &icss)) != 0) {
+                std::stringstream ss;
+                ss << func_name << " cmlExecuteNoAnswerSql update failure " << status;
+                eirods::log(LOG_NOTICE, ss.str());
+                _rollback(func_name);
+                result = status;
+            }
+        }
+    }
+    return result;
 }
 
 /* 
@@ -675,6 +748,10 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
         return(status);
     }
 
+    if((status = _updateRescObjCount(dataObjInfo->rescName, rsComm->clientUser.rodsZone, 1)) != 0) {
+        return status;
+    }
+    
     if (inheritFlag) {
         /* If inherit is set (sticky bit), then add access rows for this
            dataobject that match those of the parent collection */
@@ -1825,11 +1902,12 @@ int chlRegResc(rsComm_t *rsComm,
     cllBindVars[9]=rescInfo->rescChildren;
     cllBindVars[10]=rescInfo->rescContext;
     cllBindVars[11]=rescInfo->rescParent;
-    cllBindVarCount=12;
+    cllBindVars[12]="0";
+    cllBindVarCount=13;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 4");
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent) values (?,?,?,?,?,?,?,?,?,?,?,?)",
+        "insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name, resc_net, resc_def_path, create_ts, modify_ts, resc_children, resc_context, resc_parent, resc_objcount) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",
         &icss);
 
     if (status != 0) {
