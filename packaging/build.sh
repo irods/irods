@@ -174,7 +174,7 @@ if [ "$1" == "clean" ] ; then
     set +e
     echo "Cleaning libtar residuals..."
     cd $DETECTEDDIR/../external/libtar*
-    make distclean
+    make distclean > /dev/null 2>&1
     echo "Cleaning EPM residuals..."
     cd $DETECTEDDIR/../
     rm -rf linux-2.*
