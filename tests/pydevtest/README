@@ -51,5 +51,14 @@ open http://127.0.0.1:8080/dev
 ./cleanup.sh
 
 
+### For profiling... still a work in progress
+# http://stefaanlippens.net/python_profiling_with_pstats_interactive_mode
+# http://amjith.blogspot.com/2012/05/python-profiling-part-1.html
+sudo apt-get install python-profiler
+sudo easy_install nose-cprof nose-progressive
+python -m pstats stats.dat
+% sort time
+% stats 10
+
 ########################################
 
