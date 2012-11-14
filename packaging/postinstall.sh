@@ -80,6 +80,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
         PSQLSTATE=`/etc/init.d/postgresql status 2>&1 | grep "postmaster" | awk '{print $NF}'`
         if [ "$PSQLSTATE" == "running..." ] ; then
             PSQLSTATUS="running"
+        else
+            PSQLSTATE=`service postgresql status 2>&1 | grep "running"`
+            if [ "$PSQLSTATE" != "" ] ; then
+                PSQLSTATUS="running"
+            fi
         fi
     elif [ "$DETECTEDOS" == "Ubuntu" ] ; then
         PSQLSTATE=`/etc/init.d/postgresql-8.4 status 2>&1 | grep "clusters" | awk '{print $3}'`
