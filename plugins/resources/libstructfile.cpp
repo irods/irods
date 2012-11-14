@@ -1822,13 +1822,6 @@ extern "C" {
             eirods::log( ret );
             return ret;
         } else {
-            std::stringstream msg;
-            msg << "tarFileOpendirPlugin - success :: dirname [";
-            msg << fileOpendirInp.dirName;
-            msg << "]  sub_index [";
-            msg << sub_index;
-            msg << "]";
-            eirods::log( ERROR( -666, msg.str() ) );
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );

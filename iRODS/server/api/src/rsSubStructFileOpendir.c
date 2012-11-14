@@ -83,13 +83,6 @@ int _rsSubStructFileOpendir( rsComm_t*  _comm,
         return opendir_err.code();
 
     } else {
-        std::stringstream msg;
-        msg << "_rsSubStructFileOpendir - success for [";
-        msg << struct_obj.sub_file_path();
-        msg << "] fd [";
-        msg << struct_obj.file_descriptor();
-        msg << "]";
-        eirods::log( ERROR( -1, msg.str() ) );
         return opendir_err.code();
 
     }
