@@ -7,7 +7,7 @@
  */
 #if 1
 #ifndef TAR_EXEC_PATH
-#include <libtar.h>
+#include "libtar.h"
 
 #ifdef HAVE_LIBZ
 # include <zlib.h>
