@@ -277,6 +277,77 @@ chlGetLocalZone() {
     return(localZone);
 }
 
+/**
+ * @brief Updates the specified resources object count by the specified amount
+ */
+static int
+_updateRescObjCount(
+    const char* _resc_name,
+    const char* _zone,
+    int _amount) {
+
+    int result = 0;
+    int status;
+    char resc_id[MAX_NAME_LEN];
+    char obj_count_string[MAX_NAME_LEN];
+    static const char* func_name = "_updateRescObjCount";
+    char myTime[50];
+    eirods::sql_logger logger(func_name, logSQL);
+
+    if(_resc_name && strlen(_resc_name) != 0) {
+        resc_id[0] = '\0';
+        // logger.log();
+        std::stringstream msg;
+        msg << "qqq - resource name: \"" << _resc_name << "\" and zone: \"" << _zone << "\"";
+        eirods::log(LOG_NOTICE, msg.str());
+        if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+                                              resc_id, MAX_NAME_LEN, _resc_name, _zone, 0,
+                                              &icss)) != 0) {
+            if(status == CAT_NO_ROWS_FOUND) {
+                result = CAT_INVALID_RESOURCE;
+            } else {
+                _rollback(func_name);
+                result = status;
+            }
+        } else if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_id=?",
+                                                     obj_count_string, MAX_NAME_LEN, resc_id, 0, 0, &icss)) != 0) {
+            result = status;
+        
+        } else {
+            int obj_count = atoi(obj_count_string);
+            obj_count += _amount;
+            if(obj_count < 0) {
+                std::stringstream ss;
+                ss << func_name << " Invalid resource object count: " << obj_count;
+                eirods::log(LOG_ERROR, ss.str());
+                result = CAT_INVALID_OBJ_COUNT;
+            } else {
+                std::stringstream ss;
+                ss << obj_count;
+                eirods::tmp_string count_string(ss.str().c_str());
+                getNowStr(myTime);
+                cllBindVarCount = 0;
+                cllBindVars[cllBindVarCount++] = count_string.str();
+                cllBindVars[cllBindVarCount++] = myTime;
+                cllBindVars[cllBindVarCount++] = resc_id;
+                // logger.log();
+                if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_objcount=?, modify_ts=? "
+                                                   "where resc_id=?", &icss)) != 0) {
+                    std::stringstream ss;
+                    ss << func_name << " cmlExecuteNoAnswerSql update failure " << status;
+                    eirods::log(LOG_NOTICE, ss.str());
+                    _rollback(func_name);
+                    result = status;
+                }
+            }
+        }
+        std::stringstream msg2;
+        msg2 << "qqq - Done with updating object count";
+        eirods::log(LOG_NOTICE, msg2.str());
+    }
+    return result;
+}
+
 /* 
  * chlModDataObjMeta - Modify the metadata of an existing data object. 
  * Input - rsComm_t *rsComm  - the server handle
@@ -500,6 +571,23 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
     }
 
+    // If we are moving the data object from one resource to another resource, update the object counts for those resources
+    // appropriately - hcj
+    if(getValByKey(regParam, "rescName") != NULL) {
+        std::stringstream id_stream;
+        id_stream << dataObjInfo->dataId;
+        char resc_name[MAX_NAME_LEN];
+        if((status = cmlGetStringValueFromSql("select resc_name from R_DATA_MAIN where data_id=?",
+                                              resc_name, MAX_NAME_LEN, id_stream.str().c_str(), 0, 0, &icss)) != 0) {
+            return status;
+        }
+        else if((status = _updateRescObjCount(resc_name, rsComm->clientUser.rodsZone, -1)) != 0) {
+            return status;
+        } else if((status = _updateRescObjCount(getValByKey(regParam, "rescName"), rsComm->clientUser.rodsZone, +1)) != 0) {
+            return status;
+        }
+    }
+    
     if (mode == 0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModDataObjMeta SQL 4");
         status = cmlModifySingleTable("R_DATA_MAIN", updateCols, updateVals, 
@@ -538,6 +626,8 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                 _rollback("chlModDataObjMeta");
                 return(status2);
             }
+
+            // hcj;
         }
     }
     if (status != 0) {
@@ -558,82 +648,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         }
     }
     return status;
-}
-
-/**
- * @brief Updates the specified resources object count by the specified amount
- */
-static int
-_updateRescObjCount(
-    const char* _resc_name,
-    const char* _zone,
-    int _amount) {
-
-    int result = 0;
-    int status;
-    char resc_id[MAX_NAME_LEN];
-    char obj_count_string[MAX_NAME_LEN];
-    static const char* func_name = "_updateRescObjCount";
-    char myTime[50];
-    eirods::sql_logger logger(func_name, logSQL);
-
-    std::stringstream msg;
-    msg << "qqq - Updating object count for resource: \"" << _resc_name << "\"";
-    eirods::log(LOG_NOTICE, msg.str());
-    
-    resc_id[0] = '\0';
-    logger.log();
-    if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                                          resc_id, MAX_NAME_LEN, _resc_name, _zone, 0,
-                                          &icss)) != 0) {
-        if(status == CAT_NO_ROWS_FOUND) {
-            result = CAT_INVALID_RESOURCE;
-        } else {
-            _rollback(func_name);
-            result = status;
-        }
-        std::stringstream msg;
-        msg << "qqq - Unable to get resource id for resource: " << _resc_name;
-        eirods::log(LOG_NOTICE, msg.str());
-    } else if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_id=?",
-                                                 obj_count_string, MAX_NAME_LEN, resc_id, 0, 0, &icss)) != 0) {
-        std::stringstream msg;
-        msg << "qqq - Unable to get object count for resource: " << _resc_name;
-        eirods::log(LOG_NOTICE, msg.str());
-        result = status;
-        
-    } else {
-        int obj_count = atoi(obj_count_string);
-        std::stringstream msg;
-        msg << "qqq - Updating object count " << obj_count << " by " << _amount << " to " << obj_count + _amount;
-        eirods::log(LOG_NOTICE, msg.str());
-        obj_count += _amount;
-        if(obj_count < 0) {
-            std::stringstream ss;
-            ss << func_name << " Invalid resource object count: " << obj_count;
-            eirods::log(LOG_ERROR, ss.str());
-            result = CAT_INVALID_OBJ_COUNT;
-        } else {
-            std::stringstream ss;
-            ss << obj_count;
-            eirods::tmp_string count_string(ss.str().c_str());
-            getNowStr(myTime);
-            cllBindVarCount = 0;
-            cllBindVars[cllBindVarCount++] = count_string.str();
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = resc_id;
-            logger.log();
-            if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_objcount=?, modify_ts=? "
-                                               "where resc_id=?", &icss)) != 0) {
-                std::stringstream ss;
-                ss << func_name << " cmlExecuteNoAnswerSql update failure " << status;
-                eirods::log(LOG_NOTICE, ss.str());
-                _rollback(func_name);
-                result = status;
-            }
-        }
-    }
-    return result;
 }
 
 /* 
@@ -954,6 +968,10 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return(status);
     }
 
+    if((status = _updateRescObjCount(dstDataObjInfo->rescName, rsComm->clientUser.rodsZone, +1)) != 0) {
+        return status;
+    }
+    
     cmlFreeStatement(statementNumber, &icss);
     if (status < 0) {
         rodsLog(LOG_NOTICE, "chlRegReplica cmlFreeStatement failure %d", status);
@@ -1037,6 +1055,34 @@ static int removeAVUs() {
     rodsLog (LOG_NOTICE, "removeAVUs status=%d\n",status);
 
     return status;
+}
+
+/**
+ * @brief Returns true if there is only one repl associated with this data object
+ */
+static bool
+_dataIsLastRepl(
+    dataObjInfo_t* _dataObjInfo) {
+
+    bool result = true;
+    int status;
+    eirods::sql_logger logger("_dataIsLastRepl", logSQL);
+    static const unsigned int length = 30;
+    char cVal[length];
+    
+    logger.log();
+    std::stringstream id_stream;
+    id_stream << _dataObjInfo->dataId;
+    std::string id_string = id_stream.str();
+    std::stringstream repl_stream;
+    repl_stream << _dataObjInfo->replNum;
+    std::string repl_string = repl_stream.str();
+    status = cmlGetStringValueFromSql("select data_repl_num from R_DATA_MAIN where data_id=? and data_repl_num!=?",
+                                      cVal, length, id_string.c_str(), repl_string.c_str(), 0, &icss);
+    if(status != 0) {
+        result = false;
+    }
+    return result;
 }
 
 /*
@@ -1177,6 +1223,11 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return(status);
     }
 
+    // update the object count in the resource
+    if((status = _updateRescObjCount(dataObjInfo->rescName, rsComm->clientUser.rodsZone, -1)) != 0) {
+        return status;
+    }
+    
     /* delete the access rows, if we just deleted the last replica */
     if (dataObjNumber[0]!='\0') {
         cllBindVars[0]=dataObjNumber;
