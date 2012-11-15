@@ -81,35 +81,52 @@ class RodsSession(object):
         '''Returns current zone name from .irodsEnv or an empty string
         if the file does not exist.
         '''
-        zone_name = ""
+        returnstring = ""
         if not self.sessionFileExists():
-            return zone_name
+            return returnstring
         envfilename = "%s/.irodsEnv" % (self.sessionDir)
         envfile = open(envfilename)
         for line in envfile:
             if 'irodsZone' in line:
-                zone_name = line.split()[1]
-                zone_name = zone_name.replace('"',"")   # remove double quotes
-                zone_name = zone_name.replace("'","")   # remove single quotes
+                returnstring = line.split()[1]
+                returnstring = returnstring.replace('"',"")   # remove double quotes
+                returnstring = returnstring.replace("'","")   # remove single quotes
         envfile.close()
-        return zone_name
+        return returnstring
 
     def getUserName(self):
         '''Returns current irodsUserName from .irodsEnv or an empty string
         if the file does not exist.
         '''
-        user_name = ""
+        returnstring = ""
         if not self.sessionFileExists():
-            return user_name
+            return returnstring
         envfilename = "%s/.irodsEnv" % (self.sessionDir)
         envfile = open(envfilename)
         for line in envfile:
             if 'irodsUserName' in line:
-                user_name = line.split()[1]
-                user_name = user_name.replace('"',"")   # remove double quotes
-                user_name = user_name.replace("'","")   # remove single quotes
+                returnstring = line.split()[1]
+                returnstring = returnstring.replace('"',"")   # remove double quotes
+                returnstring = returnstring.replace("'","")   # remove single quotes
         envfile.close()
-        return user_name
+        return returnstring
+
+    def getDefResource(self):
+        '''Returns current default Resource Name from .irodsEnv or an empty string
+        if the file does not exist.
+        '''
+        returnstring = ""
+        if not self.sessionFileExists():
+            return returnstring
+        envfilename = "%s/.irodsEnv" % (self.sessionDir)
+        envfile = open(envfilename)
+        for line in envfile:
+            if 'irodsDefResource' in line:
+                returnstring = line.split()[1]
+                returnstring = returnstring.replace('"',"")   # remove double quotes
+                returnstring = returnstring.replace("'","")   # remove single quotes
+        envfile.close()
+        return returnstring
 
     def interruptCmd(self, icommand, argList=[], delay=0):
         '''Runs an icommand with optional argument list but
@@ -170,6 +187,7 @@ class RodsSession(object):
                         'iput',
                         'imv',
                         'icp',
+                        'irepl',
                         'irm',
                         'irmtrash',
                         'iexit' ]

@@ -62,6 +62,7 @@ def admin_up():
     testdir = "testdir"
     adminsession.runCmd('imkdir',[testdir])
     adminsession.runCmd('iput',[testfile])
+    adminsession.runCmd('icp',[testfile,"../../public/"]) # copy of testfile into public
     # resc
     global testresc
     testresc = "testResc"
@@ -72,7 +73,9 @@ def admin_up():
     for u in users[1:]:
         adminsession.runAdminCmd('iadmin',["mkuser",u['name'],"rodsuser"])
         adminsession.runAdminCmd('iadmin',["moduser",u['name'],"password",u['passwd']])
-
+    # permissions
+    adminsession.runCmd('ichmod',["read",users[1]['name'],"../../public/"+testfile]) # read for user1 
+    adminsession.runCmd('ichmod',["write",users[2]['name'],"../../public/"+testfile]) # write for user2
 
 
 def admin_down():
