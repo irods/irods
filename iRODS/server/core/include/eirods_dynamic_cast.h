@@ -21,12 +21,15 @@ namespace eirods {
 
         file_object       file_obj;
         collection_object coll_obj;
+        structured_object struct_obj;
 	
-	    first_class_object* file_fco = &file_obj;	
-	    first_class_object* coll_fco = &coll_obj;	
+	    first_class_object* file_fco   = &file_obj;	
+	    first_class_object* coll_fco   = &coll_obj;	
+	    first_class_object* struct_fco = &struct_obj;	
 	
-	    file_object* file_ptr       = dynamic_cast< file_object* >( file_fco );
-		collection_object* coll_ptr = dynamic_cast< collection_object* >( coll_fco );	
+	    file_object*       file_ptr   = dynamic_cast< file_object* >( file_fco );
+		collection_object* coll_ptr   = dynamic_cast< collection_object* >( coll_fco );	
+		structured_object* struct_ptr = dynamic_cast< structured_object* >( struct_fco );	
 		 
 	} // dynamic_cast_hack
 
