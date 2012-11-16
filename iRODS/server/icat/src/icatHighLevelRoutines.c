@@ -296,10 +296,7 @@ _updateRescObjCount(
 
     if(_resc_name && strlen(_resc_name) != 0) {
         resc_id[0] = '\0';
-        // logger.log();
-        std::stringstream msg;
-        msg << "qqq - resource name: \"" << _resc_name << "\" and zone: \"" << _zone << "\"";
-        eirods::log(LOG_NOTICE, msg.str());
+        logger.log();
         if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                               resc_id, MAX_NAME_LEN, _resc_name, _zone, 0,
                                               &icss)) != 0) {
@@ -341,9 +338,6 @@ _updateRescObjCount(
                 }
             }
         }
-        std::stringstream msg2;
-        msg2 << "qqq - Done with updating object count";
-        eirods::log(LOG_NOTICE, msg2.str());
     }
     return result;
 }
