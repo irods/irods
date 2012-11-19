@@ -38,7 +38,7 @@ def test_irm_specific_replica():
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_irm_recursive_file():
     assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be listed
-    assertiCmd(s.adminsession,"irm -r "+s.testfile) # should fail, not a collection
+    assertiCmd(s.adminsession,"irm -r "+s.testfile) # should not fail, even though a collection
 
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_irm_recursive():
