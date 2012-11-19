@@ -188,6 +188,7 @@ class RodsSession(object):
                         'imv',
                         'icp',
                         'irepl',
+                        'iquest',
                         'irm',
                         'irmtrash',
                         'iexit' ]

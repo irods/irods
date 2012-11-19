@@ -23,19 +23,12 @@ def test_local_iput():
 
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_local_iput_overwrite():
-    # local setup
-    # assertions
     assertiCmdFail(s.adminsession,"iput "+s.testfile) # fail, already exists
     assertiCmd(s.adminsession,"iput -f "+s.testfile) # iput again, force
-    # local cleanup
 
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_local_iput_recursive():
-    # local setup
     recursivedirname = "dir"
-    
-    # assertions
-    # local cleanup
 
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_local_iput_checksum():
