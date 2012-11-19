@@ -8,6 +8,7 @@
 // eirods includes
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
+#include "eirods_structured_object.h"
 
 namespace eirods {
 
