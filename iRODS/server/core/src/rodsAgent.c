@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -39,7 +41,7 @@ main(int argc, char *argv[])
 #endif
 
 #ifdef windows_platform
-	iRODSNtAgentInit(argc, argv);
+    iRODSNtAgentInit(argc, argv);
 #endif
 
 #ifndef windows_platform
@@ -70,7 +72,7 @@ main(int argc, char *argv[])
     status = initRsCommWithStartupPack (&rsComm, NULL);
 
     if (status < 0) {
-	sendVersion (rsComm.sock, status, 0, NULL, 0);
+        sendVersion (rsComm.sock, status, 0, NULL, 0);
         cleanupAndExit (status);
     }
 
@@ -78,21 +80,21 @@ main(int argc, char *argv[])
     tmpStr = getenv (SP_LOG_SQL);
     if (tmpStr != NULL) {
 #ifdef IRODS_SYSLOG
-       int j = atoi(tmpStr);
-       rodsLogSqlReq(j);
+        int j = atoi(tmpStr);
+        rodsLogSqlReq(j);
 #else
-       rodsLogSqlReq(1);
+        rodsLogSqlReq(1);
 #endif
     }
 
     /* Set the logging level */
     tmpStr = getenv (SP_LOG_LEVEL);
     if (tmpStr != NULL) {
-       int i;
-       i = atoi(tmpStr);
-       rodsLogLevel(i);
+        int i;
+        i = atoi(tmpStr);
+        rodsLogLevel(i);
     } else {
-       rodsLogLevel(LOG_NOTICE); /* default */
+        rodsLogLevel(LOG_NOTICE); /* default */
     }
 
 #ifdef IRODS_SYSLOG
@@ -103,13 +105,13 @@ main(int argc, char *argv[])
     status = getRodsEnv (&rsComm.myEnv);
 
     if (status < 0) {
-	sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         cleanupAndExit (status);
     }
 
 #if RODS_CAT
     if (strstr(rsComm.myEnv.rodsDebug, "CAT") != NULL) {
-       chlDebug(rsComm.myEnv.rodsDebug);
+        chlDebug(rsComm.myEnv.rodsDebug);
     }
 #endif
 
@@ -123,7 +125,7 @@ main(int argc, char *argv[])
 #endif
 
     if (status < 0) {
-	sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         cleanupAndExit (status);
     }
 
@@ -133,22 +135,22 @@ main(int argc, char *argv[])
 
     if (rsComm.clientUser.userName[0] != '\0') {
         status = chkAllowedUser (rsComm.clientUser.userName,
-         rsComm.clientUser.rodsZone);
+                                 rsComm.clientUser.rodsZone);
 
         if (status < 0) {
             sendVersion (rsComm.sock, status, 0, NULL, 0);
             cleanupAndExit (status);
-	}
+        }
     }
 
     /* send the server version and atatus as part of the protocol. Put
      * rsComm.reconnPort as the status */
 
     status = sendVersion (rsComm.sock, status, rsComm.reconnPort,
-      rsComm.reconnAddr, rsComm.cookie);
+                          rsComm.reconnAddr, rsComm.cookie);
 
     if (status < 0) {
-	sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         cleanupAndExit (status);
     }
 #ifdef SYS_TIMING
@@ -172,38 +174,38 @@ agentMain (rsComm_t *rsComm)
 
 
     // =-=-=-=-=-=-=-
-	// compiler backwards compatibility hack
-	// see header file for more details
+    // compiler backwards compatibility hack
+    // see header file for more details
     eirods::dynamic_cast_hack();
 
 
     while (1) {
 
         if (rsComm->gsiRequest==1) {
-	    status = igsiServersideAuth(rsComm) ;
-	    rsComm->gsiRequest=0; 
+            status = igsiServersideAuth(rsComm) ;
+            rsComm->gsiRequest=0; 
         }
         if (rsComm->gsiRequest==2) {
-	    status = ikrbServersideAuth(rsComm) ;
-	    rsComm->gsiRequest=0; 
+            status = ikrbServersideAuth(rsComm) ;
+            rsComm->gsiRequest=0; 
         }
 
-	status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
+        status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
 #if 0
-	status = readAndProcClientMsg (rsComm, 0);
+        status = readAndProcClientMsg (rsComm, 0);
 #endif
 
-	if (status >= 0) {
-	    retryCnt = 0;
-	    continue;
-	} else {
-	    if (status == DISCONN_STATUS) {
-		status = 0;
-		break;
-	    } else {
+        if (status >= 0) {
+            retryCnt = 0;
+            continue;
+        } else {
+            if (status == DISCONN_STATUS) {
+                status = 0;
                 break;
-	    }
-	}
+            } else {
+                break;
+            }
+        }
     }
     return (status);
 }
