@@ -1091,7 +1091,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     char tSQL[MAX_SQL_SIZE];
     char replNumber[30];
     char dataObjNumber[30];
-    char cVal[30];
+    char cVal[MAX_NAME_LEN];
     int adminMode;
     int trashMode;
     char *theVal;
