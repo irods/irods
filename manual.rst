@@ -49,7 +49,7 @@ Overview
 
 This manual attempts to provide standalone documentation for E-iRODS as packaged by the Renaissance Computing Institute (RENCI).
 
-    http://e-irods.com
+    http://e-irods.org
 
     file:///var/lib/e-rods/iRODS/doc/html/index.html
 
@@ -119,7 +119,7 @@ Successful installation will complete and leave a running iRODS server.  If you 
  eirods@hostname:~/ $ ils
  /tempZone/home/rods:
 
-When moving into production, you will probably want to cover the next few basic steps::
+When moving into production, you will probably want to cover the next few basic steps:
 
 Changing the administrator account password
 -------------------------------------------
@@ -278,6 +278,46 @@ E-iRODS enforces that the database in use (Postgres) is configured for UTF-8 enc
 The iRODS setting 'StrictACL' is configured on by default in E-iRODS.  This is different from the community version of iRODS and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
 
 
+-----------------------
+Pluggable Microservices
+-----------------------
+
+E-iRODS is in the process of being modularized whereby existing community iRODS functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed is pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing E-iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://e-irods.org/download, and explains how this works in more detail.
+
+--------------------
+Composable Resources
+--------------------
+
+The second area of modularity to be added to E-iRODS consists of composable resources.  Composable resources replace the concept of resource groups from community iRODS.  There are no resource groups in E-iRODS. 
+
+Composable resources are best modeled with a tree metaphor (and in computer science parlance, they are tree data structures).  An E-iRODS composable resource is a tree with one 'root' node.  Nodes that are at the bottom of the tree are 'leaf' nodes.  Nodes that are not leaf nodes are 'branch' nodes and have one more more 'child' nodes.  A child node can have one and only one 'parent' node.
+
+The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'logic' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a logic resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a logic resource or a storage resource.
+
+Storage resources represent storage interfaces and include the file driver information to talk with different types of storage. These include:
+
+- unix file system
+- MSSInterface
+- Fuse
+- proxy
+- HPSS
+- S3
+- WOS
+- non-blocking
+- structured file type (tar, zip, gzip, bzip)
+
+Logic resources contain the flow control logic which determines how its child resources will be allocated copies of data.  These include:
+
+- replicating
+- random
+- round robin
+- load balanced
+- storage balanced (%-full)
+- storage balanced (bytes)
+- tiered
+
+
+
 .. 
 .. ------
 .. How To
@@ -413,7 +453,7 @@ The planned plugin interfaces and their status are listed here:
  Plugin Interface           Status        Since
  ========================   ==========    ========
  Pluggable Microservices    Complete      3.0b2
- Pluggable Resources        Complete      3.0b3
+ Composable Resources       Complete      3.0b3
  Pluggable Authentication   Planned
  Pluggable Database         Planned
  Pluggable Messaging        Planned
@@ -501,7 +541,7 @@ Physical Resource
     A storage system onto which Data Objects may be deposited. iRODS supports a wide range of disk, tape, and remote storage resources.
 
 Resource
-    A resource, or storage resource, is a software/hardware system that stores digital data. Resources can be classified as cache, archive, or compound (a virtual type consisting of a cache resource affiliated with an archive resource).  iRODS clients can operate on local or remote data stored on different types of resources through a common interface.
+    A resource, or storage resource, is a software/hardware system that stores digital data. iRODS clients can operate on local or remote data stored on different types of resources through a common interface.
 
 Rules
     Rules are a major innovation in iRODS that let users automate data management tasks, essential as data collections scale to petabytes across hundreds of millions of files. Rules allow users to automate enforcement of complex Management Policies (workflows), controlling the server-side execution (via Micro-services) of all data access and manipulation operations, with the capability of verifying these operations.
@@ -541,9 +581,9 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2012-09-     3.0b3      Third Beta Release.
+2012-12-     3.0b3      Third Beta Release.
                           This is the third release from RENCI.  It includes
-                          a new package for CentOS 6+, support for pluggable
+                          a new package for CentOS 6+, support for composable
                           resources, and additional documentation.
 2012-06-25   3.0b2      Second Beta Release.
                           This is the second release from RENCI.  It includes
