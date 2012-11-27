@@ -132,7 +132,7 @@ if [ "$COVERAGE" == "1" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $COVERAGEBUILDDIR/ already exists" 1>&2
         echo "      :: Cannot build in place with coverage enabled" 1>&2
-        echo "      :: try: sudo rm -rf $COVERAGEBUILDDIR/" 1>&2
+        echo "      :: Try uninstalling the e-irods package" 1>&2
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
