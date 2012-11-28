@@ -47,6 +47,7 @@ namespace eirods {
         }
         iterator begin() { return table_.begin(); }
         iterator end()   { return table_.end();   }
+        iterator find(KeyType _k) { return table_.find(_k); }
  
         // =-=-=-=-=-=-=-
         // accessor function
@@ -103,7 +104,8 @@ namespace eirods {
         }
         iterator begin() { return table_.begin(); }
         iterator end()   { return table_.end();   }
- 
+        iterator find(KeyType _k) { return table_.find(_k); }
+        
         // =-=-=-=-=-=-=-
         // get a property from the table if it exists.  catch the exception in the case where
         // the template types may not match and return sucess/fail

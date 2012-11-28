@@ -5,6 +5,7 @@
 #include "eirods_resource_manager.h"
 #include "eirods_log.h"
 #include "getRescQuota.h"
+#include "eirods_children_parser.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -16,7 +17,7 @@ namespace eirods {
     // public - Constructor
     resource_manager::resource_manager() {
     } // ctor
-	
+        
     // =-=-=-=-=-=-=-
     // public - Copy Constructor
     resource_manager::resource_manager( const resource_manager& _rhs ) {
@@ -37,14 +38,14 @@ namespace eirods {
 
         if( resources_.has_entry( _key ) ) {
             _value = resources_[ _key ];
-            return SUCCESS();	
-		
+            return SUCCESS();   
+                
         } else {
             std::stringstream msg;
             msg << "resource_manager::resolve - no resource found for name ["
                 << _key << "]";
             return ERROR( -1, msg.str() );
-		
+                
         }
 
     } // resolve
@@ -56,8 +57,8 @@ namespace eirods {
                                                    resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
         // simple flag to state a resource matching the prop and value is found
-        bool found = false;	
-		
+        bool found = false;     
+                
         // =-=-=-=-=-=-=-
         // quick check on the resource table
         if( resources_.empty() ) {
@@ -103,10 +104,10 @@ namespace eirods {
         } // for itr
 
         // =-=-=-=-=-=-=-
-	    // did we find a resource and is the ptr valid?
+        // did we find a resource and is the ptr valid?
         if( true == found && _resc.get() ) {
-		    return SUCCESS();
-		} else {
+            return SUCCESS();
+        } else {
             std::string msg( "resource_manager::resolve_from_property - failed to find resource for property [" );
             msg += _prop;
             msg += "] and value [";
@@ -145,31 +146,31 @@ namespace eirods {
 
         error proc_ret;
 
-	memset (&genQueryInp, 0, sizeof (genQueryInp));
+        memset (&genQueryInp, 0, sizeof (genQueryInp));
 
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,       1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,     1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,     1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,     1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,    1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_LOC,           1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,    1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,    1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,     1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,  1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,   1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,   1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,   1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,   1 );
-	addInxIval( &genQueryInp.selectInp, COL_R_RESC_OBJCOUNT, 1 );
-	
-	genQueryInp.maxRows = MAX_SQL_ROWS;
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_ID,       1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_NAME,     1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_ZONE_NAME,     1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_TYPE_NAME,     1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_CLASS_NAME,    1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_LOC,           1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_VAULT_PATH,    1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_FREE_SPACE,    1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_INFO,     1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_COMMENT,  1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_CREATE_TIME,   1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_MODIFY_TIME,   1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_STATUS,   1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CHILDREN, 1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_CONTEXT,  1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_PARENT,   1 );
+        addInxIval( &genQueryInp.selectInp, COL_R_RESC_OBJCOUNT, 1 );
+        
+        genQueryInp.maxRows = MAX_SQL_ROWS;
 
         // =-=-=-=-=-=-=-
         // init continueInx to pass for first loop
-        int continueInx = 1;	
+        int continueInx = 1;    
             
         // =-=-=-=-=-=-=-
         // loop until continuation is not requested
@@ -221,12 +222,18 @@ namespace eirods {
             return PASS( false, -1, "process_init_results failed.", proc_ret );
         } 
 
+        // Update child resource maps
+        proc_ret = init_child_map();
+        if(!proc_ret.ok()) {
+            return PASS(false, -1, "init_child_map failed.", proc_ret);
+        }
+        
         // =-=-=-=-=-=-=-
         // win!
         return SUCCESS();
 
     } // init_from_catalog
-
+    
     // =-=-=-=-=-=-=-
     // public - take results from genQuery, extract values and create resources
     error resource_manager::process_init_results( genQueryOut_t* _result ) {
@@ -305,13 +312,13 @@ namespace eirods {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
         }
 
-	if( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL) {
+        if( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_PARENT failed" );
-	}
+        }
 
-	if( ( rescObjCount = getSqlResultByInx( _result, COL_R_RESC_OBJCOUNT ) ) == NULL) {
+        if( ( rescObjCount = getSqlResultByInx( _result, COL_R_RESC_OBJCOUNT ) ) == NULL) {
             return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_OBJCOUNT failed" );
-	}
+        }
 
         // =-=-=-=-=-=-=-
         // iterate through the rows, initialize a resource for each entry
@@ -352,7 +359,7 @@ namespace eirods {
             resource_ptr resc;
             error ret = load_resource_plugin( resc, tmpRescType, tmpRescContext );
             if( !ret.ok() ) {
-                return PASS( false, -1, "Failed to load Resource Plugin", ret );	
+                return PASS( false, -1, "Failed to load Resource Plugin", ret );        
             }
 
             resc->set_property< boost::shared_ptr< rodsServerHost_t > >( 
@@ -372,7 +379,10 @@ namespace eirods {
             resc->set_property<std::string>( "comments", tmpRescComments );
             resc->set_property<std::string>( "create",   tmpRescCreate );
             resc->set_property<std::string>( "modify",   tmpRescModify );
-                 
+            resc->set_property<std::string>( "children", tmpRescChildren );
+            resc->set_property<std::string>( "parent",   tmpRescParent );
+            resc->set_property<std::string>( "context",  tmpRescContext );
+            
             if( tmpRescStatus ==  std::string( RESC_DOWN ) ) {
                 resc->set_property<int>( "status", INT_RESC_STATUS_DOWN );
             } else {
@@ -384,7 +394,8 @@ namespace eirods {
             resources_[ tmpRescName ] = resc;
 
         } // for i
-		
+
+        
         return SUCCESS();
 
     } // process_init_results
@@ -400,7 +411,7 @@ namespace eirods {
         // create the resource and add properties for column values
         error ret = load_resource_plugin( _resc, _type, _ctx );
         if( !ret.ok() ) {
-            return PASS( false, -1, "Failed to load Resource Plugin", ret );	
+            return PASS( false, -1, "Failed to load Resource Plugin", ret );    
         }
 
         resources_[ _key ] = _resc;
@@ -408,6 +419,64 @@ namespace eirods {
         return SUCCESS();
 
     } // init_from_type
+
+    error resource_manager::init_child_map(void) {
+        error result = SUCCESS();
+
+        // Iterate over all the resources
+        lookup_table< boost::shared_ptr< resource > >::iterator it;
+        for(it = resources_.begin(); it != resources_.end(); ++it) {
+            resource_ptr resc = it->second;
+
+            // Get the children string and resource name
+            std::string children_string;
+            error ret = resc->get_property<std::string>("children", children_string);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "init_child_map failed.", ret);
+            } else {
+                std::string resc_name;
+                error ret = resc->get_property<std::string>("name", resc_name);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "init_child_map failed.", ret);
+                } else {
+
+                    // Get the list of children and their contexts from the resource
+                    children_parser parser;
+                    parser.set_string(children_string);
+                    children_parser::children_list_t children_list;
+                    error ret = parser.list(children_list);
+                    if(!ret.ok()) {
+                        result = PASS(false, -1, "init_child_map failed.", ret);
+                    } else {
+
+                        // Iterate over all of the children
+                        children_parser::children_list_t::const_iterator itr;
+                        for(itr = children_list.begin(); itr != children_list.end(); ++itr) {
+                            std::string child = itr->first;
+                            std::string context = itr->second;
+
+                            // Lookup the child resource pointer
+                            lookup_table< boost::shared_ptr< resource > >::iterator child_itr = resources_.find(child);
+                            if(child_itr == resources_.end()) {
+                                std::stringstream msg;
+                                msg << "init_child_map: Failed to find child \"" << child << "\" in resources.";
+                                result = ERROR(-1, msg.str());
+                            } else {
+
+                                // Add a reference to the child resource pointer and its context to the resource
+                                resource_ptr child_resc = child_itr->second;
+                                error ret = resc->add_child(child, context, child_resc);
+                                if(!ret.ok()) {
+                                    result = PASS(false, -1, "init_child_map failed.", ret);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    } // init_child_map
 
 }; // namespace eirods
 

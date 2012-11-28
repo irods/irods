@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #ifndef __EIRODS_RESOURCE_MANAGER_H__
 #define __EIRODS_RESOURCE_MANAGER_H__
@@ -12,54 +11,57 @@
 namespace eirods {
 
     class resource_manager {
-        public:
-		
-		// =-=-=-=-=-=-=-
-		// constructors
+    public:
+                
+        // =-=-=-=-=-=-=-
+        // constructors
         resource_manager();
         resource_manager( const resource_manager& );
-		
-		// =-=-=-=-=-=-=-
-		// destructor
+                
+        // =-=-=-=-=-=-=-
+        // destructor
         virtual ~resource_manager();
         
         // =-=-=-=-=-=-=-
-		// resolve a resource from a first_class_object
-		error resolve( const eirods::first_class_object&, // FCO to resolve against
+        // resolve a resource from a first_class_object
+        error resolve( const eirods::first_class_object&, // FCO to resolve against
                        resource_ptr& );                   // resource out variable
 
         // =-=-=-=-=-=-=-
-		// resolve a resource from a key into the resource table
-		error resolve( std::string,     // resource key 
+        // resolve a resource from a key into the resource table
+        error resolve( std::string,     // resource key 
                        resource_ptr& ); // resource out variable
 
         // =-=-=-=-=-=-=-
-		// resolve a resource from a match with a given property 
-		error resolve_from_property( std::string,     // property key
+        // resolve a resource from a match with a given property 
+        error resolve_from_property( std::string,     // property key
                                      std::string,     // property value 
                                      resource_ptr& ); // resource our variable
  
-		// =-=-=-=-=-=-=-
-		// populate resource table from icat database
-		error init_from_catalog( rsComm_t* );
+        // =-=-=-=-=-=-=-
+        // populate resource table from icat database
+        error init_from_catalog( rsComm_t* );
  
-		// =-=-=-=-=-=-=-
-		// load a resource plugin given a resource type
-		error init_from_type( std::string,     // resource type
+        // =-=-=-=-=-=-=-
+        // load a resource plugin given a resource type
+        error init_from_type( std::string,     // resource type
                               std::string,     // resource name ( key )
                               std::string,     // resource context 
                               resource_ptr& ); // resource out variable
 
-        private:
+        /// @brief Initialize the child map from the resources lookup table
+        error init_child_map(void);
+
+    private:
         // =-=-=-=-=-=-=-
-		// take results from genQuery, extract values and create resources
+        // take results from genQuery, extract values and create resources
         error process_init_results( genQueryOut_t* );
 
         // =-=-=-=-=-=-=-
-		// Attributes
-		lookup_table< boost::shared_ptr< resource > > resources_;
+        // Attributes
+        lookup_table< boost::shared_ptr< resource > > resources_;
 
-	}; // class resource_manager
+    }; // class resource_manager
 
 }; // namespace eirods
 
