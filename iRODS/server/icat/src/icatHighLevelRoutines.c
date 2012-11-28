@@ -24,6 +24,7 @@
 #include "eirods_string_tokenize.h"
 #include "eirods_log.h"
 #include "eirods_tmp_string.h"
+#include "eirods_children_parser.h"
 
 #include "icatMidLevelRoutines.h"
 #include "icatMidLevelHelpers.h"
@@ -1608,8 +1609,14 @@ _childIsValid(
     bool result = true;
     char parent[MAX_NAME_LEN];
     int status;
-    std::string::size_type index = _new_child.find("{");
-    std::string resc_name = _new_child.substr(0, index);
+
+    // Get the resource name from the child string
+    std::string resc_name;
+    eirods::children_parser parser;
+    parser.set_string(_new_child);
+    parser.first_child(resc_name);
+
+    // Get resources parent
     eirods::sql_logger logger("_childIsValid", logSQL);
     logger.log();
     parent[0] = '\0';
@@ -1623,7 +1630,9 @@ _childIsValid(
             _rollback("_childIsValid");
         }
         result = false;
+
     } else if(strlen(parent) != 0) {
+        // If the resource already has a parent it cannot be added as a child of another one
         std::stringstream ss;
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
         eirods::log(LOG_NOTICE, ss.str());
@@ -1684,13 +1693,18 @@ _updateChildParent(
     const std::string& _parent) {
 
     int result = 0;
-    std::string::size_type index = _new_child.find("{");
-    std::string child = _new_child.substr(0, index);
     char resc_id[MAX_NAME_LEN];
     char myTime[50];
     eirods::sql_logger logger("_updateChildParent", logSQL);
     int status;
     
+    // Get the resource name from the child string
+    eirods::children_parser parser;
+    std::string child;
+    parser.set_string(_new_child);
+    parser.first_child(child);
+
+    // Get the resource id for the child resource
     resc_id[0] = '\0';
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           resc_id, MAX_NAME_LEN, child.c_str(), localZone, 0,
@@ -1702,7 +1716,8 @@ _updateChildParent(
             result = status;
         }
     } else {
-
+        // Update the parent for the child resource
+        
         // have to do this to get around const
         char* tmp_parent = strdup(_parent.c_str());
         getNowStr(myTime);
@@ -1760,13 +1775,10 @@ _childHasData(
     const std::string& _child) {
 
     bool result = true;
-    std::string::size_type index = _child.find('{');
+    eirods::children_parser parser;
+    parser.set_string(_child);
     std::string child;
-    if(index != std::string::npos) {
-        child = _child.substr(0, index);
-    } else {
-        child = _child;
-    }
+    parser.first_child(child);
     result = _rescHasData(child);
     return result;
 }
@@ -1785,7 +1797,8 @@ chlAddChildResc(
     char idNum[MAX_SQL_SIZE];
     int status;
     char myTime[50];
-    eirods::sql_logger logger("chlAddChildResc", logSQL);
+    static const char* func_name = "chlAddChildResc";
+    eirods::sql_logger logger(func_name, logSQL);
     std::string new_child_string(rescInfo->rescChildren);
     char resc_id[MAX_NAME_LEN];
     
@@ -1821,7 +1834,7 @@ chlAddChildResc(
                 if(status == CAT_NO_ROWS_FOUND) {
                     result = CAT_INVALID_RESOURCE;
                 } else {
-                    _rollback("chlAddChildResc");
+                    _rollback(func_name);
                     result = status;
                 }
             } else if(_childIsValid(new_child_string)) {
@@ -1837,13 +1850,13 @@ chlAddChildResc(
                     if((status = cmlAudit3(AU_ADD_CHILD_RESOURCE, resc_id, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
                                            commentStr, &icss)) != 0) {
                         std::stringstream ss;
-                        ss << "chlAddChildResc cmlAudit3 failure " << status;
+                        ss << func_name << " cmlAudit3 failure " << status;
                         eirods::log(LOG_NOTICE, ss.str());
-                        _rollback("chlAddChildResc");
+                        _rollback(func_name);
                         result = status;
                     } else if((status =  cmlExecuteNoAnswerSql("commit", &icss)) != 0) {
                         std::stringstream ss;
-                        ss << "chlAddChildResc cmlExecuteNoAnswerSql commit failure " << status;
+                        ss << func_name<< " cmlExecuteNoAnswerSql commit failure " << status;
                         eirods::log(LOG_NOTICE, ss.str());
                         result = status;
                     }
@@ -2015,42 +2028,54 @@ _removeRescChild(
     char children[MAX_PATH_ALLOWED];
     char myTime[50];
     eirods::sql_logger logger("_removeRescChild", logSQL);
-    
+
+    // Get the resources current children string
     if((status = cmlGetStringValueFromSql("select resc_children from R_RESC_MAIN where resc_id=?",
                                           children, MAX_PATH_ALLOWED, _resc_id, 0, 0, &icss)) != 0) {
         _rollback("_updateRescChildren");
         result = status;
     } else {
-        std::string children_string(children);
-        std::string::size_type index = children_string.find(_child_string);
-        if(index == std::string::npos) {
+
+        // Parse the children string
+        eirods::children_parser parser;
+        eirods::error ret = parser.set_string(children);
+        if(!ret.ok()) {
             std::stringstream ss;
-            ss << "_removeChildFromResource parent has no child \"" << _child_string << "\'";
+            ss << "_removeChildFromResource resource has invalid children string \"" << children << "\'";
+            ss << ret.result();
             eirods::log(LOG_NOTICE, ss.str());
             result = CAT_INVALID_CHILD;
         } else {
-            std::string::size_type end_index = children_string.find(';', index);
-            if(end_index != std::string::npos) {
-                children_string.erase(index, (end_index + 1) - index);
-            } else {
-                children_string.erase(index);
-            }
-            
-            // have to do this to avoid const issues
-            eirods::tmp_string tmp_children(children_string.c_str());
-            getNowStr(myTime);
-            cllBindVarCount = 0;
-            cllBindVars[cllBindVarCount++] = tmp_children.str();
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = _resc_id;
-            logger.log();
-            if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=? "
-                                               "where resc_id=?", &icss)) != 0) {
+
+            // Remove the specified child from the children
+            ret = parser.remove_child(_child_string);
+            if(!ret.ok()) {
                 std::stringstream ss;
-                ss << "_removeRescChild cmlExecuteNoAnswerSql update failure " << status;
+                ss << "_removeChildFromResource parent has no child \"" << _child_string << "\'";
+                ss << ret.result();
                 eirods::log(LOG_NOTICE, ss.str());
-                _rollback("_removeRescChild");
-                result = status;
+                result = CAT_INVALID_CHILD;
+            } else {
+                // Update the database with the new children string
+                
+                // have to do this to avoid const issues
+                std::string children_string;
+                parser.str(children_string);
+                eirods::tmp_string tmp_children(children_string.c_str());
+                getNowStr(myTime);
+                cllBindVarCount = 0;
+                cllBindVars[cllBindVarCount++] = tmp_children.str();
+                cllBindVars[cllBindVarCount++] = myTime;
+                cllBindVars[cllBindVarCount++] = _resc_id;
+                logger.log();
+                if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_children=?, modify_ts=? "
+                                                   "where resc_id=?", &icss)) != 0) {
+                    std::stringstream ss;
+                    ss << "_removeRescChild cmlExecuteNoAnswerSql update failure " << status;
+                    eirods::log(LOG_NOTICE, ss.str());
+                    _rollback("_removeRescChild");
+                    result = status;
+                }
             }
         }
     }
@@ -2095,14 +2120,11 @@ chlDelChildResc(
     char resc_id[MAX_NAME_LEN];
     std::string child_string(rescInfo->rescChildren);
     
-    std::string::size_type index = child_string.find('{');
     std::string child;
-    if(index != std::string::npos) {
-        child = child_string.substr(0, index);
-    } else {
-        child = child_string;
-    }
-
+    eirods::children_parser parser;
+    parser.set_string(child_string);
+    parser.first_child(child);
+    
     if(!(result = _canConnectToCatalog(rsComm))) {
         if((status = getLocalZone())) {
             result = status;
