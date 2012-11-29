@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -9,49 +8,49 @@
 namespace eirods {
 
     // =-=-=-=-=-=-=-
-	// public - ctor
+    // public - ctor
     file_object::file_object() :
-	             first_class_object(),
-				 size_(0) {
-	} // file_object
+        first_class_object(),
+        size_(0) {
+    } // file_object
 
     // =-=-=-=-=-=-=-
-	// public - cctor
-	file_object::file_object( const file_object& _rhs ) : 
-	             first_class_object( _rhs ) {
+    // public - cctor
+    file_object::file_object( const file_object& _rhs ) : 
+        first_class_object( _rhs ) {
         size_  = _rhs.size_;
 
-	} // cctor 
+    } // cctor 
 
     // =-=-=-=-=-=-=-
-	// public - ctor
+    // public - ctor
     file_object::file_object( rsComm_t* _c, std::string _fn, int _fd, int _m, int _f ) :
-	             first_class_object(),
-				 size_( -1 ) {
+        first_class_object(),
+        size_( -1 ) {
         comm_            = _c;
-	    physical_path_   = _fn;
-		file_descriptor_ = _fd;
-		mode_            = _m;
-		flags_           = _f;
-	} // file_object
+        physical_path_   = _fn;
+        file_descriptor_ = _fd;
+        mode_            = _m;
+        flags_           = _f;
+    } // file_object
 
     // =-=-=-=-=-=-=-
-	// public - dtor
-	file_object::~file_object() {
-	} // dtor
+    // public - dtor
+    file_object::~file_object() {
+    } // dtor
 
-	// =-=-=-=-=-=-=-
-	// public - assignment operator
-	file_object& file_object::operator=( const file_object& _rhs ) {
-		// =-=-=-=-=-=-=-
-		// call base class assignment first
+    // =-=-=-=-=-=-=-
+    // public - assignment operator
+    file_object& file_object::operator=( const file_object& _rhs ) {
+        // =-=-=-=-=-=-=-
+        // call base class assignment first
         first_class_object::operator=( _rhs );
 
         size_  = _rhs.size_;
 
-		return *this;
+        return *this;
 
-	}  // operator=
+    }  // operator=
 
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
