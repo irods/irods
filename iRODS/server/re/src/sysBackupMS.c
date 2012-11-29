@@ -22,7 +22,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_manager.h"
+#include "eirods_resource_backport.h"
 
 
 /*
@@ -268,10 +268,8 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
             *rescInfo = new rescInfo_t;
         }
         eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( rescName, resc );
-        if( err.ok() ) {
-            eirods::resource_to_resc_info( **rescInfo, resc );
-        } else {
+        eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
+        if( !err.ok() ) {
             std::stringstream msg;
             msg << "getDefaultLocalRescInfo - failed to resolve resource ";
             msg << rescName;

@@ -33,13 +33,6 @@ namespace eirods {
                        resource_ptr& ); // resource out variable
 
         // =-=-=-=-=-=-=-
-		// resolve a resource from a match with a given property 
-        template< typename value_type >
-		error resolve_from_property( std::string,     // property key
-                                     value_type,      // property value 
-                                     resource_ptr& ); // outgoing resource variable
- 
-        // =-=-=-=-=-=-=-
         // @brief  resolve a resource from a match with a given property 
         error resolve_from_physical_path( std::string,     // physical path
                                           resource_ptr& ); // out variable
@@ -54,16 +47,84 @@ namespace eirods {
                               std::string,     // resource name ( key )
                               std::string,     // resource context 
                               resource_ptr& ); // resource out variable
-
-        private:
         // =-=-=-=-=-=-=-
-        /// @brief  take results from genQuery, extract values and create resources
-        error process_init_results( genQueryOut_t* );
+		/// @brief print the list of local resources out to stderr
+        void print_local_resources(); 
+ 
+        // =-=-=-=-=-=-=-
+		/// @brief resolve a resource from a match with a given property 
+        template< typename value_type >
+		error resolve_from_property( std::string   _prop,    // property key
+                                     value_type    _value,   // property value 
+                                     resource_ptr& _resc ) { // outgoing resource variable
+            // =-=-=-=-=-=-=-
+            // simple flag to state a resource matching the prop and value is found
+            bool found = false;     
+                    
+            // =-=-=-=-=-=-=-
+            // quick check on the resource table
+            if( resources_.empty() ) {
+                return ERROR( -1, "resource_manager::resolve_from_property - empty resource table" );
+            }
+           
+            // =-=-=-=-=-=-=-
+            // iterate through the map and search for our path
+            lookup_table< resource_ptr >::iterator itr = resources_.begin();
+            for( ; itr != resources_.end(); ++itr ) {
+                // =-=-=-=-=-=-=-
+                // query resource for the property value
+                value_type value;
+                error ret = itr->second->get_property< value_type >( _prop, value );
 
+                // =-=-=-=-=-=-=-
+                // if we get a good parameter 
+                if( ret.ok() ) {
+                    // =-=-=-=-=-=-=-
+                    // compare incoming value and stored value, assumes that the
+                    // values support the comparison operator
+                    if( _value == value ) {
+                        // =-=-=-=-=-=-=-
+                        // if we get a match, cache the resource pointer
+                        // in the given out variable and bail
+                        found = true;
+                        _resc = itr->second; 
+                        break;
+                    }
+                } else {
+                    std::stringstream msg;
+                    msg << "resource_manager::resolve_from_property - ";
+                    msg << "failed to get vault parameter from resource";
+                    eirods::error err = PASS( false, -1, msg.str(), ret ); 
+
+                }
+
+            } // for itr
+
+            // =-=-=-=-=-=-=-
+            // did we find a resource and is the ptr valid?
+            if( true == found && _resc.get() ) {
+                return SUCCESS();
+            } else {
+                std::stringstream msg;
+                msg <<  "resource_manager::resolve_from_property - ";
+                msg << "failed to find resource for property [";
+                msg << _prop;
+                msg << "] and value [";
+                msg << _value; 
+                msg << "]";
+                return ERROR( -1, msg.str() );
+            }
+
+        } // resolve_from_property 
+      
+    private:
+        // =-=-=-=-=-=-=-
+        /// @brief take results from genQuery, extract values and create resources
+        error process_init_results( genQueryOut_t* );
+ 
         // =-=-=-=-=-=-=-
         /// @brief Initialize the child map from the resources lookup table
         error init_child_map(void);
-
 
         // =-=-=-=-=-=-=-
         // Attributes

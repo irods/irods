@@ -795,7 +795,8 @@ initServer ( rsComm_t *svrComm)
         return (status);
     }
 
-    printLocalResc ();
+    // JMC - legcay resources - printLocalResc ();
+    resc_mgr.print_local_resources();
 
     printZoneInfo ();
 

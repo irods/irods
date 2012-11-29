@@ -568,8 +568,7 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
         }
     } else {   /*  The target data object exists */
-        status = procDataObjOpenForExistObj (rsComm, dataObjInp, 
-                                             dataObjInfoHead, cacheDataObjInfo, compDataObjInfo, compRescInfo);
+        // JMC - legacy resource - status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead, cacheDataObjInfo, compDataObjInfo, compRescInfo);
 #if 0  /* refactored by procDataObjOpenForExistObj */
         if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
             /* It is a COMPOUND_CL. Save the comp object because it can be 

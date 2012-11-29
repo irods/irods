@@ -426,6 +426,36 @@ namespace eirods {
     } // resolve_resource_name
 
     // =-=-=-=-=-=-=-
+    // helper function - get the status property of a resource given a 
+    // match to the incoming pointer
+    error get_host_status_by_host_info( rodsServerHost_t* _info ) {
+        // =-=-=-=-=-=-=-
+        // idiot check pointer
+        if( !_info ) {
+            return ERROR( -1, "get_host_status_by_host_info - null pointer" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // find a matching resource
+        resource_ptr resc;
+        error err = resc_mgr.resolve_from_property< rodsServerHost_t* >( "host", _info, resc );
+        if( !err.ok() ) {
+            return ERROR( -1, "get_host_status_by_host_info - failed to resolve resource" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the status property of the resource
+        int status;
+        err = resc->get_property< int >( "status", status );
+        if( !err.ok() ) {
+            return ERROR( -1, "get_host_status_by_host_info - failed to get resource property" );
+        }
+
+        return CODE( status );
+
+    } // get_host_status_by_host_info
+
+    // =-=-=-=-=-=-=-
     // helper function to save on typing - get legacy data struct
     // for resource given a resource name
     error get_resc_info( std::string _name, rescInfo_t& _info ) {

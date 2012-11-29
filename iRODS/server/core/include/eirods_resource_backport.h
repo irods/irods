@@ -10,7 +10,7 @@
 
 // =-=-=-=-=-=-=-
 // irods includes
-#include "rsGlobal.h"
+#include "rsGlobalExtern.h"
 
 namespace eirods {
 
@@ -20,7 +20,8 @@ namespace eirods {
     error resource_to_resc_grp_info( rescGrpInfo_t&, resource_ptr& );
     error set_default_resource( rsComm_t*, std::string, std::string, keyValPair_t*, rescGrpInfo_t& );
     error resolve_resource_name( std::string, keyValPair_t*, std::string& );
-
+     
+    error get_host_status_by_host_info( rodsServerHost_t* );
     error get_resc_info( std::string, rescInfo_t& );
     error get_resc_grp_info( std::string, rescGrpInfo_t& );
 

@@ -6,6 +6,11 @@
 #include "objMetaOpr.h"
 #include "resource.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 void *mallocAndZero(int s)
 {
   void *t;
@@ -464,12 +469,9 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
             myRei->doi->rescInfo = NULL;
         }*/
         eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( (char*)myRei->doi->rescInfo, resc );
-        if( err.ok() ) {
-            eirods::resource_to_resc_info( *rescInfo, resc );
-            myRei->doi->rescInfo = rescInfo;
-        } else {
-            savedStatus = err.code();;
+        eirods::error err = eirods::get_resc_info( (char*)myRei->doi->rescInfo, *rescInfo );
+        if( !err.ok() ) {
+            savedStatus = err.code();
             myRei->doi->rescInfo = NULL;
             std::stringstream msg;
             msg << "touchupPackedRei - failed to resolve resource ";
@@ -495,12 +497,8 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
             rescGrpInfo->rescInfo = NULL;
 	    }*/
         eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( (char*)rescGrpInfo->rescInfo, resc );
-        if( err.ok() ) {
-            eirods::resource_to_resc_info( *rescInfo, resc );
-            rescGrpInfo->rescInfo = rescInfo;
-        } else {
-            savedStatus = err.code();
+        eirods::error err = eirods::get_resc_info( (char*)rescGrpInfo->rescInfo, *rescInfo );
+        if( !err.ok() ) {
             rescGrpInfo->rescInfo = NULL;
             std::stringstream msg;
             msg << "touchupPackedRei - failed to resolve resource ";

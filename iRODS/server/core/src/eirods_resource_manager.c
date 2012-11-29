@@ -10,7 +10,7 @@
 // irods includes
 #include "getRescQuota.h"
 #include "eirods_children_parser.h"
-#include "rsGlobal.h"
+#include "rsGlobalExtern.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -59,71 +59,6 @@ namespace eirods {
         }
 
     } // resolve
-
-    // =-=-=-=-=-=-=-
-    // public - retrieve a resource given a vault path
-    template< typename value_type >
-    error resource_manager::resolve_from_property( std::string    _prop, 
-                                                   value_type     _value,
-                                                   resource_ptr&  _resc ) {
-        // =-=-=-=-=-=-=-
-        // simple flag to state a resource matching the prop and value is found
-        bool found = false;     
-                
-        // =-=-=-=-=-=-=-
-        // quick check on the resource table
-        if( resources_.empty() ) {
-            return ERROR( -1, "resource_manager::resolve_from_property - empty resource table" );
-        }
-       
-        // =-=-=-=-=-=-=-
-        // iterate through the map and search for our path
-        lookup_table< resource_ptr >::iterator itr = resources_.begin();
-        for( ; itr != resources_.end(); ++itr ) {
-            // =-=-=-=-=-=-=-
-            // query resource for the property value
-            value_type value;
-            error ret = itr->second->get_property< value_type >( _prop, value );
-
-            // =-=-=-=-=-=-=-
-            // if we get a good parameter 
-            if( ret.ok() ) {
-                // =-=-=-=-=-=-=-
-                // compare incoming value and stored value, assumes that the
-                // values support the comparison operator
-                if( _value == value ) {
-                    // =-=-=-=-=-=-=-
-                    // if we get a match, cache the resource pointer
-                    // in the given out variable and bail
-                    found = true;
-                    _resc = itr->second; 
-                    break;
-                }
-            } else {
-                std::stringstream msg;
-                msg << "resource_manager::resolve_from_property - ";
-                msg << "failed to get vault parameter from resource";
-                eirods::error err = PASS( false, -1, msg.str(), ret ); 
-
-            }
-
-        } // for itr
-
-        // =-=-=-=-=-=-=-
-        // did we find a resource and is the ptr valid?
-        if( true == found && _resc.get() ) {
-		    return SUCCESS();
-		} else {
-            std::stringstream msg;
-            msg << "failed to find resource for property [";
-            msg << _prop;
-            msg << "] and value [";
-            msg << _value; 
-            msg << "]";
-            return ERROR( -1, msg.str() );
-        }
-
-    } // resolve_from_property
  
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
@@ -584,6 +519,24 @@ namespace eirods {
         } // for it
         return result;
     } // init_child_map
+
+    // =-=-=-=-=-=-=-
+    // public - print the list of local resources out to stderr
+    void resource_manager::print_local_resources() { 
+        lookup_table< boost::shared_ptr< resource > >::iterator itr;
+        for( itr = resources_.begin(); itr != resources_.end(); ++itr ) {
+            std::string loc, path, name;
+            error path_err = itr->second->get_property< std::string >( "path", path );
+            error loc_err  = itr->second->get_property< std::string >( "location", loc );
+            if( path_err.ok() && loc_err.ok() && "localhost" == loc ) {
+                rodsLog( LOG_NOTICE, "   RescName: %s, VaultPath: %s\n",
+                         itr->first.c_str(), path.c_str() );
+            }
+
+        } // for itr
+
+    } // print_local_resources
+
 
 }; // namespace eirods
 

@@ -123,36 +123,37 @@ genQueryOut_t **procStatOut)
     bzero (&myProcStatInp, sizeof (myProcStatInp));
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
-	if (getHostStatusByRescInfo (tmpRodsServerHost) == 
-	  INT_RESC_STATUS_UP) {		/* don't do down resc */
-	    if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
-		setLocalSrvAddr (myProcStatInp.addr);
-	        status = localProcStat (rsComm, &myProcStatInp, 
-		  &singleProcStatOut);
-	    } else {
-		rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name,
-                  NAME_LEN);
+        // JMC - legacy code - if (getHostStatusByRescInfo (tmpRodsServerHost) == INT_RESC_STATUS_UP) {		/* don't do down resc */
+        eirods::error err = eirods::get_host_status_by_host_info( tmpRodsServerHost );
+        if( err.ok() && err.code() == INT_RESC_STATUS_UP ) {
+	        if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+		        setLocalSrvAddr (myProcStatInp.addr);
+	            status = localProcStat (rsComm, &myProcStatInp, &singleProcStatOut);
+	        } else {
+		        rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name, NAME_LEN);
                 addKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW, "");
-                status = remoteProcStat (rsComm, &myProcStatInp, 
-		  &singleProcStatOut, tmpRodsServerHost);
+                status = remoteProcStat (rsComm, &myProcStatInp, &singleProcStatOut, tmpRodsServerHost);
                 rmKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW);
-	    }
-	    if (status < 0) {
-	        savedStatus = status;
-	    }
-	    if (singleProcStatOut != NULL) {
-		if (*procStatOut == NULL) {
-		    *procStatOut = singleProcStatOut;
-		} else {
-		    catGenQueryOut (*procStatOut, singleProcStatOut,
-		      MAX_PROC_STAT_CNT);
-		    freeGenQueryOut (&singleProcStatOut);
-		}
-		singleProcStatOut = NULL;
-	    }
-	}
-	tmpRodsServerHost = tmpRodsServerHost->next;
-    }
+	        }
+           
+            if (status < 0) {
+                savedStatus = status;
+            }
+
+            if (singleProcStatOut != NULL) {
+                if (*procStatOut == NULL) {
+                    *procStatOut = singleProcStatOut;
+                } else {
+                    catGenQueryOut (*procStatOut, singleProcStatOut, MAX_PROC_STAT_CNT);
+                    freeGenQueryOut (&singleProcStatOut);
+                }
+                singleProcStatOut = NULL;
+            }
+        
+        } // if up
+
+        tmpRodsServerHost = tmpRodsServerHost->next;
+    } // while
     return savedStatus;
 }
 
