@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* bulkDataObjReg.h
@@ -16,23 +18,23 @@
 #include "dataObjInpOut.h"
 
 /* definition for opreration type */
-#define OPR_TYPE_INX	999999
-#define OFFSET_INX	999998
-#define REGISTER_OPR	"register"
-#define MODIFY_OPR	"modify"
+#define OPR_TYPE_INX    999999
+#define OFFSET_INX      999998
+#define REGISTER_OPR    "register"
+#define MODIFY_OPR      "modify"
 
 #if defined(RODS_SERVER)
 #define RS_BULK_DATA_OBJ_REG rsBulkDataObjReg
 /* prototype for the server handler */
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
-genQueryOut_t **bulkDataObjRegOut);
+                  genQueryOut_t **bulkDataObjRegOut);
 int
 _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
-genQueryOut_t **bulkDataObjRegOut);
+                   genQueryOut_t **bulkDataObjRegOut);
 int
 modDataObjSizeMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-char *strDataSize);
+                    char *strDataSize);
 int
 svrRegReplByDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo);
 #else
@@ -44,9 +46,9 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-int
-rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
-genQueryOut_t **bulkDataObjRegOut);
+    int
+    rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
+                      genQueryOut_t **bulkDataObjRegOut);
 
 /* rcBulkDataObjReg - Bulk Reg of iRODS data objects.
  * Input - 
@@ -65,4 +67,4 @@ genQueryOut_t **bulkDataObjRegOut);
 }
 #endif
 
-#endif	/* BULK_DATA_OBJ_REG_H */
+#endif  /* BULK_DATA_OBJ_REG_H */

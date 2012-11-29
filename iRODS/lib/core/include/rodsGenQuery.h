@@ -179,7 +179,7 @@ primary ordering column.
 #define COL_D_CREATE_TIME 419
 #define COL_D_MODIFY_TIME 420
 #define COL_DATA_MODE 421
-
+#define COL_D_RESC_HIER 422
 /* R_COLL_MAIN */
 #define COL_COLL_ID 500
 #define COL_COLL_NAME 501

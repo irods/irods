@@ -178,6 +178,7 @@ typedef struct PathCache {
 typedef struct DataObjInfo {
     char objPath[MAX_NAME_LEN];
     char rescName[NAME_LEN];       /* This could be resource group */
+    char hierString[MAX_NAME_LEN]; // The hierarchy of resources within which the object resides
     char rescGroupName[NAME_LEN];       /* This could be resource group */
     char dataType[NAME_LEN];
     rodsLong_t dataSize;

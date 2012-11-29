@@ -179,7 +179,8 @@ create table R_DATA_MAIN
    data_mode            varchar(32),
    r_comment            varchar(1000),
    create_ts            varchar(32),
-   modify_ts            varchar(32)
+   modify_ts            varchar(32),
+   resc_hier            varchar(1000)
  ) SETCHARACTERSET;
 
 create table R_META_MAIN
