@@ -6,6 +6,12 @@
 #include "resource.h"
 #include "miscServerFunct.h"
 #include "dboHighLevelRoutines.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_manager.h"
+#include "eirods_resource_backport.h"
+
 int
 remoteDatabaseRescClose(rsComm_t *rsComm,
 		      databaseRescCloseInp_t *databaseRescCloseInp,
@@ -36,6 +42,7 @@ rsDatabaseRescClose (rsComm_t *rsComm, databaseRescCloseInp_t *databaseRescClose
     rodsHostAddr_t rescAddr;
     rescGrpInfo_t *rescGrpInfo = NULL;
 
+#if 0 // JMC - legacy resource    
     status = _getRescInfo (rsComm, databaseRescCloseInp->dbrName, &rescGrpInfo);
     if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
 	 rodsLog (LOG_ERROR,
@@ -43,6 +50,13 @@ rsDatabaseRescClose (rsComm_t *rsComm, databaseRescCloseInp_t *databaseRescClose
 		  databaseRescCloseInp->dbrName, status);
 	return status;
     }
+#else
+    eirods::error err = eirods::get_resc_grp_info( databaseRescCloseInp->dbrName, *rescGrpInfo );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "rsDatabaseRescClose - failed.", err ) );
+        return -1;
+    }
+#endif // JMC - legacy resource
 
     bzero (&rescAddr, sizeof (rescAddr));
     rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);

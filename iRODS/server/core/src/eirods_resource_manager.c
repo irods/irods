@@ -1,14 +1,19 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// E-iRODS Includes
+// eirods includes
 #include "eirods_resource_manager.h"
 #include "eirods_log.h"
-#include "getRescQuota.h"
-#include "eirods_children_parser.h"
+#include "eirods_string_tokenize.h"
 
 // =-=-=-=-=-=-=-
-// STL Includes
+// irods includes
+#include "getRescQuota.h"
+#include "eirods_children_parser.h"
+#include "rsGlobal.h"
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 
 // global
@@ -37,7 +42,7 @@ namespace eirods {
 
         if( _key.empty() ) {
             error ret;
-            ret = resolve_from_property( "type", "unix file system", _value );
+            ret = resolve_from_property< std::string >( "type", "unix file system", _value );
             return ret;
         }
 
@@ -57,9 +62,10 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
-    error resource_manager::resolve_from_property( std::string   _prop, 
-                                                   std::string   _value,
-                                                   resource_ptr& _resc ) {
+    template< typename value_type >
+    error resource_manager::resolve_from_property( std::string    _prop, 
+                                                   value_type     _value,
+                                                   resource_ptr&  _resc ) {
         // =-=-=-=-=-=-=-
         // simple flag to state a resource matching the prop and value is found
         bool found = false;     
@@ -71,31 +77,24 @@ namespace eirods {
         }
        
         // =-=-=-=-=-=-=-
-        // quick check on the path that it has something in it
-        if( _value.empty() ) {
-            return ERROR( -1, "resource_manager::resolve_from_property - empty property" );
-        }
-
-        // =-=-=-=-=-=-=-
         // iterate through the map and search for our path
         lookup_table< resource_ptr >::iterator itr = resources_.begin();
         for( ; itr != resources_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // query resource for the property value
-            std::string value;
-            error ret = itr->second->get_property<std::string>( _prop, value );
+            value_type value;
+            error ret = itr->second->get_property< value_type >( _prop, value );
 
             // =-=-=-=-=-=-=-
             // if we get a good parameter 
             if( ret.ok() ) {
                 // =-=-=-=-=-=-=-
-                // compare incoming value and stored value
-                // one may be a subset of the other so compare both ways
-                if( _value.find( value ) != std::string::npos || 
-                    value.find( _value ) != std::string::npos ) {
+                // compare incoming value and stored value, assumes that the
+                // values support the comparison operator
+                if( _value == value ) {
                     // =-=-=-=-=-=-=-
                     // if we get a match, cache the resource pointer
-                    // in the given out variable
+                    // in the given out variable and bail
                     found = true;
                     _resc = itr->second; 
                     break;
@@ -105,6 +104,7 @@ namespace eirods {
                 msg << "resource_manager::resolve_from_property - ";
                 msg << "failed to get vault parameter from resource";
                 eirods::error err = PASS( false, -1, msg.str(), ret ); 
+
             }
 
         } // for itr
@@ -112,10 +112,9 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // did we find a resource and is the ptr valid?
         if( true == found && _resc.get() ) {
-            return SUCCESS();
-        } else {
-            std::stringstream msg; 
-            msg << "resource_manager::resolve_from_property - ";
+		    return SUCCESS();
+		} else {
+            std::stringstream msg;
             msg << "failed to find resource for property [";
             msg << _prop;
             msg << "] and value [";
@@ -287,8 +286,10 @@ namespace eirods {
                     rodsLog( LOG_NOTICE,"initResc: rsGenQuery error, status = %d",
                              status );
                 }
+                
                 clearGenQueryInp( &genQueryInp );
                 return ERROR( status, "init_from_catalog - genqery failed." );
+            
             } // if
                 
             // =-=-=-=-=-=-=-
@@ -452,7 +453,8 @@ namespace eirods {
 
             rodsServerHost_t* tmpRodsServerHost = 0;
             if( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
-                rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", addr.hostAddr );
+                rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", 
+                         addr.hostAddr );
             }
 
             // =-=-=-=-=-=-=-
@@ -463,8 +465,7 @@ namespace eirods {
                 return PASS( false, -1, "Failed to load Resource Plugin", ret );        
             }
 
-            resc->set_property< boost::shared_ptr< rodsServerHost_t > >( 
-                "host", boost::shared_ptr< rodsServerHost_t >( tmpRodsServerHost ) );
+            resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
                 
             resc->set_property<long>( "id", strtoll( tmpRescId.c_str(), 0, 0 ) );
             resc->set_property<long>( "freespace", strtoll( tmpFreeSpace.c_str(), 0, 0 ) );

@@ -219,7 +219,7 @@ initServerInfo (rsComm_t *rsComm)
         return (status);
     }
 
-    status = initResc (rsComm);
+    /*status = initResc (rsComm);
     if (status < 0) {
 	if (status == CAT_NO_ROWS_FOUND) {
 	    rodsLog (LOG_NOTICE, 
@@ -231,15 +231,14 @@ initServerInfo (rsComm_t *rsComm)
               status);
             return (status);
 	}
-    }
+    }*/
 
-#if 1
     eirods::error ret = resc_mgr.init_from_catalog( rsComm );
     if( !ret.ok() ) {
 		eirods::error log_err = PASS( false, -1, "initServerInfo - init_from_catalog failed", ret );
 		eirods::log( log_err );
 	}
-#endif
+
     return (status);
 }
 

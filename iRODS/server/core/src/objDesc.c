@@ -27,6 +27,10 @@
 #include <sys/time.h>
 #endif
 
+// =-=-=-=-=-=-=-
+// eirods_includes
+#include "eirods_resource_backport.h"
+
 int
 initL1desc ()
 {
@@ -289,12 +293,25 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     initReiWithDataObjInp (&rei, rsComm, &doinp);
 
     if (destRescName != NULL) {
-        rescGrpInfo = NULL;
-        status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
-        if (status >= 0) {
-            rei.rgi = rescGrpInfo;
+	    rescGrpInfo = new rescGrpInfo_t;
+        //status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
+        // =-=-=-=-=-=-=-
+        // resolve the resource
+        eirods::resource_ptr resc;
+        eirods::error err = resc_mgr.resolve( destRescName, resc );
+        if( !err.ok() ) {
+            delete rescGrpInfo;
+            eirods::log( PASS( false, -1, "getNumThreads - failed.", err ) );
+        }
+
+        // =-=-=-=-=-=-=-
+        // convert the resource into the rescGrpInfo_t
+        err = resource_to_resc_grp_info( *rescGrpInfo, resc );
+        if ( err.ok() ) {
+	        rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-            freeRescGrpInfo (rescGrpInfo);
+            delete rescGrpInfo;
+	    
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -313,14 +330,27 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     }
 
     if (srcRescName != NULL) {
-        if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
-            return numDestThr;
-        rescGrpInfo = NULL;
-        status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
-        if (status >= 0) {
+	    if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
+	        return numDestThr;
+        // =-=-=-=-=-=-=-
+        // resolve the resource
+        eirods::resource_ptr resc;
+        eirods::error err = resc_mgr.resolve( destRescName, resc );
+        if( !err.ok() ) {
+            delete rescGrpInfo;
+            eirods::log( PASS( false, -1, "getNumThreads - failed.", err ) );
+        }
+
+	    rescGrpInfo = new rescGrpInfo_t;
+        // =-=-=-=-=-=-=-
+        // convert the resource into the rescGrpInfo_t
+        err = resource_to_resc_grp_info( *rescGrpInfo, resc );
+
+        //status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
+        if ( err.ok() ) {
             rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-            freeRescGrpInfo (rescGrpInfo);
+	        delete rescGrpInfo;
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -329,7 +359,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                 numSrcThr = rei.status;
                 if (numSrcThr == 0) return 0;
             }
-        }
+	    }
     }
 
     if (numDestThr > 0) {
@@ -508,12 +538,14 @@ initDataObjInfoForRepl (
     } else if (strlen (destDataObjInfo->rescGroupName) > 0) {
         /* need to verify whether destRescInfo belongs to 
          * destDataObjInfo->rescGroupName */
-        if (getRescInGrp (rsComm, destRescInfo->rescName, 
-                          destDataObjInfo->rescGroupName, NULL) < 0) {
+         rodsLog( LOG_NOTICE, "JMC - initDataObjInfoForRepl destDataObjInfo->rescGroupName > 0" );
+        //if ( getRescInGrp( rsComm, destRescInfo->rescName, 
+        //                  destDataObjInfo->rescGroupName, NULL ) < 0 ) {
+        // 
             /* destResc is not in destRescGrp */
             destDataObjInfo->rescGroupName[0] = '\0';
-        }
-    }
+        //}
+    } // else
 
     return (0);
 }

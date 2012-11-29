@@ -15,13 +15,18 @@
 #include "specColl.h"
 #include "miscServerFunct.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsGetHostForPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 char **outHost)
 {
     int status;
     rescGrpInfo_t *myRescGrpInfo;
-    rescInfo_t *myRescInfo;
+    rescInfo_t *myRescInfo = new rescInfo_t;
     rodsServerHost_t *rodsServerHost;
     rodsHostAddr_t addr;
     specCollCache_t *specCollCache = NULL;
@@ -75,33 +80,45 @@ char **outHost)
 
     status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
     if (status >= 0 && NULL != specCollCache) { // JMC cppcheck - nullptr
-	if (specCollCache->specColl.collClass == MOUNTED_COLL) {
-            status = resolveResc (specCollCache->specColl.resource, 
-	      &myRescInfo);
+        if (specCollCache->specColl.collClass == MOUNTED_COLL) {
+            /* JMC - legacy resource - status = resolveResc (specCollCache->specColl.resource, &myRescInfo);
             if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "rsGetHostForPut: resolveResc error for %s, status = %d",
-                 specCollCache->specColl.resource, status);
-		return status;
+                rodsLog( LOG_ERROR,"rsGetHostForPut: resolveResc error for %s, status = %d",
+                         specCollCache->specColl.resource, status);
+                return status;
+            }*/
+
+            eirods::error err = eirods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
+            if( !err.ok() ) {
+                std::stringstream msg;
+                msg << "rsGetHostForPut - failed for [";
+                msg << specCollCache->specColl.resource;
+                msg << "]";
+                eirods::log( PASS( false, -1, msg.str(), err ) );
             }
-	    /* mounted coll will fall through */
+
+
+            /* mounted coll will fall through */
         } else {
             *outHost = strdup (THIS_ADDRESS);
             return 0;
-	}
+        }
     } else {
 	/* normal type */
         status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-        if (status < 0) return status;
+        if (status < 0) 
+            return status;
 
         myRescInfo = myRescGrpInfo->rescInfo;
-	freeAllRescGrpInfo (myRescGrpInfo);
+	    freeAllRescGrpInfo (myRescGrpInfo);
+#if 0 // JMC - legacy resource
         /* status == 1 means random sorting scheme */
-        if ((status == 1 && getRescCnt (myRescGrpInfo) > 1) || 
-          getRescClass (myRescInfo) == COMPOUND_CL) {
+        if( ( status == 1 && getRescCnt (myRescGrpInfo) > 1 ) || 
+            getRescClass (myRescInfo) == COMPOUND_CL) {
             *outHost = strdup (THIS_ADDRESS);
-	    return 0;
-	}
+	        return 0;
+	    }
+#endif // JMC - legacy resource
     }
     /* get down here when we got a valid myRescInfo */
     bzero (&addr, sizeof (addr));

@@ -101,6 +101,7 @@ getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
                rodsLong_t newSize);
+#if 0 // JMC - legacy resource
 int
 getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
                          dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
@@ -113,6 +114,7 @@ int
 getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
                            dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
                            dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+#endif // JMC - legacy resource
 int
 getDataObjByClass (dataObjInfo_t *dataObjInfoHead, int rescClass,
                    dataObjInfo_t **outDataObjInfo);

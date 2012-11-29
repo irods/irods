@@ -33,10 +33,11 @@ namespace eirods {
                        resource_ptr& ); // resource out variable
 
         // =-=-=-=-=-=-=-
-        // @brief  resolve a resource from a match with a given property 
-        error resolve_from_property( std::string,     // property key
-                                     std::string,     // property value 
-                                     resource_ptr& ); // resource our variable
+		// resolve a resource from a match with a given property 
+        template< typename value_type >
+		error resolve_from_property( std::string,     // property key
+                                     value_type,      // property value 
+                                     resource_ptr& ); // outgoing resource variable
  
         // =-=-=-=-=-=-=-
         // @brief  resolve a resource from a match with a given property 

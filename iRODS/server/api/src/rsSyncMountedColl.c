@@ -15,6 +15,10 @@
 #include "miscServerFunct.h"
 #include "apiHeaderAll.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
 int
 rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
 {
@@ -71,14 +75,21 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
         }
 
         memset (&structFileOprInp, 0, sizeof (structFileOprInp));
-        status = resolveResc (specColl->resource, &rescInfo);
-
+        /*status = resolveResc (specColl->resource, &rescInfo);
         if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "_rsSyncMountedColl: resolveResc error for %s, status = %d",
-              specColl->resource, status);
+            rodsLog( LOG_NOTICE,"_rsSyncMountedColl: resolveResc error for %s, status = %d",
+                     specColl->resource, status);
             return (status);
+        }*/
+
+        eirods::error err = eirods::get_resc_info( specColl->resource, *rescInfo );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg << "_rsSyncMountedColl - failed to resolve resource ";
+            msg << specColl->resource;
+            eirods::log( PASS( false, -1, msg.str(), err ) );
         }
+
         rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;

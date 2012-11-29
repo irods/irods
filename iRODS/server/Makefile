@@ -51,7 +51,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/fileDriverNoOpFunctions.o \
-		$(svrCoreObjDir)/eirods_resource_manager.o
+		$(svrCoreObjDir)/eirods_resource_manager.o \
+		$(svrCoreObjDir)/eirods_resource_backport.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
 

@@ -20,6 +20,12 @@
 #include "miscServerFunct.h"
 #include "apiHeaderAll.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with 
@@ -76,18 +82,29 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         return (status);
     }
 
-    status = getRescInfo (rsComm, NULL, &phyPathRegInp->condInput,
-                          &rescGrpInfo);
+    // =-=-=-=-=-=-=-
+    // 
+    // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
+    std::string resc_name;
+    eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
 
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-                 "rsPhyPathReg: getRescInfo error for %s, status = %d",
-                 phyPathRegInp->objPath, status);
-        return (status);
+    eirods::resource_ptr resc;
+    eirods::error res_err = resc_mgr.resolve( resc_name, resc );
+    if( res_err.ok() ) {
+        rescGrpInfo = new rescGrpInfo_t;
+        eirods::error grp_err = eirods::resource_to_resc_grp_info( *rescGrpInfo, resc );
+        if( !grp_err.ok() ) {
+            eirods::log( PASS( false, -1, "irsPhyPathReg - failed", grp_err ) );
+            return -1; 
+        }
+
+    } else {
+         eirods::log( PASS( false, -1, "irsPhyPathReg - failed", res_err ) );
+         return -1;
     }
 
+#if 0 // JMC - legacy resource
     rescCnt = getRescCnt (rescGrpInfo);
-
     if (rescCnt != 1) {
         rodsLog (LOG_ERROR,
                  "rsPhyPathReg: The input resource is not unique for %s",
@@ -95,29 +112,28 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         return (SYS_INVALID_RESC_TYPE);
     }
 
-    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,
-                                      RESC_GROUP_NAME_KW)) != NULL) {
-        status = getRescInGrp (rsComm, rescGrpInfo->rescInfo->rescName, 
-                               rescGroupName, &tmpRescInfo);
+    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,RESC_GROUP_NAME_KW)) != NULL) {
+        status = getRescInGrp (rsComm, rescGrpInfo->rescInfo->rescName, rescGroupName, &tmpRescInfo);
         if (status < 0) {
-            rodsLog (LOG_ERROR,
-                     "rsPhyPathReg: resc %s not in rescGrp %s for %s",
-                     rescGrpInfo->rescInfo->rescName, rescGroupName,
-                     phyPathRegInp->objPath);
-            return SYS_UNMATCHED_RESC_IN_RESC_GRP;
+                rodsLog (LOG_ERROR,
+                  "rsPhyPathReg: resc %s not in rescGrp %s for %s",
+                  rescGrpInfo->rescInfo->rescName, rescGroupName,
+              phyPathRegInp->objPath);
+                return SYS_UNMATCHED_RESC_IN_RESC_GRP;
         }
     }
-
+#endif
     memset (&addr, 0, sizeof (addr));
     
     rstrcpy (addr.hostAddr, rescGrpInfo->rescInfo->rescLoc, LONG_NAME_LEN);
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, 
-                                rodsServerHost);
+        status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
+	
     } else if (remoteFlag == REMOTE_HOST) {
         status = remotePhyPathReg (rsComm, phyPathRegInp, rodsServerHost);
+
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);

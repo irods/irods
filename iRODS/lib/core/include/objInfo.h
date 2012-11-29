@@ -78,23 +78,22 @@ extern "C" {
 
 /* link of resource in resource group */
 
-    typedef struct RescGrpInfo
-    {
-        char rescGroupName[NAME_LEN];
-        rescInfo_t *rescInfo;
-        int status;         /* SYS_RESC_IS_DOWN - one of the resource is down 
-                             * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
-        int dummy;
-        struct RescGrpInfo *cacheNext;      /* this is for cached resource grp */
-        struct RescGrpInfo *next; 
-    } rescGrpInfo_t;
+struct rescGrpInfo_t {
+    char rescGroupName[NAME_LEN];
+    rescInfo_t *rescInfo;
+    int status;		/* SYS_RESC_IS_DOWN - one of the resource is down 
+			 * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
+    int dummy;
+    struct rescGrpInfo_t *cacheNext; 	/* this is for cached resource grp */
+    struct rescGrpInfo_t *next; 
+};
 
-    typedef struct RescCacheInfo
-    {
-        char inpRescName[NAME_LEN];
-        rescGrpInfo_t *rescGrpInfo;
-        struct RescCacheInfo *next;
-    } rescCacheInfo_t;
+typedef struct RescCacheInfo
+{
+    char inpRescName[NAME_LEN];
+    rescGrpInfo_t *rescGrpInfo;
+    struct RescCacheInfo *next;
+} rescCacheInfo_t;
 
 /* special collection */
 

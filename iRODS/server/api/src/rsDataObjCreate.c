@@ -28,6 +28,11 @@
 
 #include "eirods_hierarchy_parser.h"
 
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 /* rsDataObjCreate - handle dataObj create request.
  *
  * The NO_OPEN_FLAG_KW in condInput specifies that no physical create
@@ -165,7 +170,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     
     int status;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t* myRescGrpInfo;
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
     int l1descInx;
@@ -175,9 +180,12 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
-    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
     if (status < 0) return status;
-
+#if 1 // JMC - remove resource.c
+    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, 
+                                  tmpRescInfo, myRescGrpInfo->rescGroupName );
+#else // JMC - remove resource.c
     rescCnt = getRescCnt (myRescGrpInfo);
 
     copiesNeeded = getCopiesFromCond (&dataObjInp->condInput);
@@ -213,13 +221,14 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
-
     /* should not be here */
+#endif // JMC - remove resource.c
 
-    freeAllRescGrpInfo (myRescGrpInfo);
+
+    //freeAllRescGrpInfo (myRescGrpInfo);
 
     if (status < 0) {
-        return (status);
+	    return (status);
     } else {
         rodsLog (LOG_NOTICE,
                  "rsDataObjCreate: Internal error");
@@ -289,10 +298,10 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
-    
-    if (getRescClass (rescInfo) == COMPOUND_CL) {
-        rescInfo_t *cacheResc = NULL;
-        char myRescGroupName[NAME_LEN];
+#if 0 // JMC - remove legacy resources 
+	if (getRescClass (rescInfo) == COMPOUND_CL) {
+	    rescInfo_t *cacheResc = NULL;
+	    char myRescGroupName[NAME_LEN];
 
         rstrcpy (myRescGroupName, rescGroupName, NAME_LEN);
         status = getCacheRescInGrp (rsComm, myRescGroupName, rescInfo, &cacheResc);
@@ -315,11 +324,14 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             L1desc[l1descInx].purgeCacheFlag = 1;
         }
     
-    } else {
+	} else {
+#endif
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+
+#if 0 // JMC - remove legacy resources
         // =-=-=-=-=-=-=-
         // JMC - backport 4544
         if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
@@ -331,9 +343,10 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 L1desc[l1descInx].purgeCacheFlag = 1;
             }
         }
-        // =-=-=-=-=-=-=-
     }
-    dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
+#endif // JMC - remove legacy resources
+        // =-=-=-=-=-=-=-
+	dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
 
@@ -570,53 +583,71 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * or an error code.
  */
 
-int
-getRescGrpForCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                     rescGrpInfo_t **myRescGrpInfo)
-{ 
-    int status;
+int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo_t** myRescGrpInfo ) { 
+    int            status;
     ruleExecInfo_t rei;
 
     /* query rcat for resource info and sort it */
 
-    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
+    initReiWithDataObjInp( &rei, rsComm, dataObjInp );
+
+#if 0 // JMC - dont need to call rules for scheme
     if (dataObjInp->oprType == REPLICATE_OPR) { // JMC - backport 4660
-        status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, 
-                            NO_SAVE_REI);
+        status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI);
+         
     } else {
-        status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, 
-                            NO_SAVE_REI);
+        status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
+         
     }
 
-
-    if (status < 0) {
-        if (rei.status < 0)
+    if( status < 0 ) {
+        if (rei.status < 0) {
             status = rei.status;
-        rodsLog (LOG_NOTICE,
-                 "getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
+        }
+
+        rodsLog( LOG_NOTICE,"getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
                  dataObjInp->objPath, status);
-        return (status);
+
+	    return (status);
     }
-    if (rei.rgi == NULL) {
+#endif // JMC
+
+    if( rei.rgi == NULL ) {
         /* def resc group has not been initialized yet */
-        status = setDefaultResc (rsComm, NULL, NULL,
-                                 &dataObjInp->condInput, myRescGrpInfo);
-        if (status < 0) status = SYS_INVALID_RESC_INPUT;
+        // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
+        if( !(*myRescGrpInfo) ) {
+            rodsLog( LOG_NOTICE, "getRescGrpForCreate - allocating a new rescGrpInfo_t" );
+            (*myRescGrpInfo) = new rescGrpInfo_t;
+        }
+
+        eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
+        if( set_err.code() < 0 ) {
+            status = SYS_INVALID_RESC_INPUT;
+
+        }
+
     } else {
         *myRescGrpInfo = rei.rgi;
+    
     }
 
-    status = setRescQuota (rsComm, dataObjInp->objPath, myRescGrpInfo,
-                           dataObjInp->dataSize);
-    if (status == SYS_RESC_QUOTA_EXCEEDED) return SYS_RESC_QUOTA_EXCEEDED;
+    status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
+      
+    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
+        return SYS_RESC_QUOTA_EXCEEDED;
+    } 
 
-    if (strstr (rei.statusStr, "random") == NULL) {
+#if 0 // JMC - legacy resource
+    if( strstr( rei.statusStr, "random" ) == NULL ) {
         /* not a random scheme */
         sortRescByLocation (myRescGrpInfo);
         return 0;
-    } else {
-        return 1;
-    }
 
+    } else {
+	    return 1;
+    }
+#else
+    return 0; // JMC - should this be 1 per above block?
+#endif
 }
 

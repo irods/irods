@@ -102,9 +102,9 @@ transferStat_t **transStat)
         return (status);
     }
 
-	
-    status = resolveInfoForPhymv (&dataObjInfoHead, &oldDataObjInfoHead,
-      &myRescGrpInfo, &dataObjInp->condInput, multiCopyFlag);
+    rodsLog( LOG_NOTICE, "JMC :: rsDataObjPhymv - calling resolveInfoForPhymv and it may explode." );
+    status = resolveInfoForPhymv (&dataObjInfoHead, &oldDataObjInfoHead, &myRescGrpInfo, &dataObjInp->condInput, multiCopyFlag);
+      
     if (status < 0) {
         freeAllDataObjInfo (dataObjInfoHead);
         freeAllDataObjInfo (oldDataObjInfoHead);

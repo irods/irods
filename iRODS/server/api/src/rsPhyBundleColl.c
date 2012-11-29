@@ -22,6 +22,11 @@
 #include "unbunAndRegPhyBunfile.h"
 #include "fileChksum.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 static rodsLong_t OneGig = (1024*1024*1024);
 
 int
@@ -51,6 +56,8 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
 	/* can only do local zone */
 	return SYS_INVALID_ZONE_NAME;
     }
+
+#if 0 // JMC - legacy resource
     status = _getRescInfo (rsComm, destRescName, &rescGrpInfo);
     if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
 	 rodsLog (LOG_ERROR,
@@ -58,6 +65,13 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
           destRescName, phyBundleCollInp->collection, status);
 	return status;
     }
+#endif // JMC - legacy resource
+
+    eirods::error err = eirods::get_resc_grp_info( destRescName, *rescGrpInfo );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "rsPhyBundleColl - failed.", err ) );
+    }
+
 
     bzero (&rescAddr, sizeof (rescAddr));
     rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
@@ -614,10 +628,13 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char* dataType ) // JMC - 
           "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
           rescGrpInfo->rescInfo->rescName);
         return SYS_INVALID_RESC_TYPE;
-    } else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
+    } 
+#if 0 // JMC legacy resources
+    else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
 	return SYS_NO_CACHE_RESC_IN_GRP;
     }
 
+#endif // JMC legacy resources
 	
     do {
 	int loopCnt = 0;

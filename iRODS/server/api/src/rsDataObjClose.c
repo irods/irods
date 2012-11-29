@@ -459,13 +459,16 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
             snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
             addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
-            if (chksumStr != NULL) {
-                addKeyVal (&regParam, CHKSUM_KW, chksumStr);
-            } else if (getRescClass (destDataObjInfo->rescInfo) == 
-                       COMPOUND_CL) {
-                /* can't chksum for compound resc */
+	    if (chksumStr != NULL) {
+		addKeyVal (&regParam, CHKSUM_KW, chksumStr);
+	    } 
+       #if 0 // JMC legacy resource 
+        else if (getRescClass (destDataObjInfo->rescInfo) == 
+	      COMPOUND_CL) {
+		/* can't chksum for compound resc */
                 addKeyVal (&regParam, CHKSUM_KW, "");
-            }
+	    }
+       #endif // JMC legacy resource 
 
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
                              IRODS_ADMIN_KW) != NULL) {
@@ -583,6 +586,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         chksumStr = NULL;
     }
 
+#if 0 // JMC legacy resource 
     if (L1desc[l1descInx].replRescInfo != NULL && 
         getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
         /* repl a new copy */
@@ -619,6 +623,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             return status;
         }
     }
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4537
     /* purge the cache copy */
@@ -632,7 +637,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         }
     }
     // =-=-=-=-=-=-=-
-
+#endif // JMC legacy resource 
 
     /* XXXXXX need to replicate to moreRescGrpInfo */
 

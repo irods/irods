@@ -9,6 +9,11 @@
 #include "modDataObjMeta.h"
 #include "getRemoteZoneResc.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
 char **outChksum)
@@ -121,7 +126,14 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
     while (tmpDataObjInfo != NULL) {
 	char *tmpChksumStr;
 	dataObjInfo_t *outDataObjInfo = NULL;
-	int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+	//JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+    std::string resc_class;
+    eirods::error err = eirods::get_resource_property< std::string >( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
+    if( !err.ok() ) {
+        eirods::log( ERROR( -1, "_rsDataObjChksum - failed in get_resource_property [class]" ) );
+    }
+
+    #if 0 // JMC - legacy resource 
 	if (rescClass  == COMPOUND_CL) {
 	    /* do we have a good cache copy ? */
             if ((status = getCacheDataInfoForRepl (rsComm, *dataObjInfoHead,
@@ -130,7 +142,9 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 		status = 0;
 		continue;
 	    }
-	} else if (rescClass == BUNDLE_CL) {
+   } else 
+   #endif // JMC - legacy resource 
+   if ( resc_class == "bundle" ) { // (rescClass == BUNDLE_CL) {
 	    /* don't do BUNDLE_CL. should be done on the bundle file */
             tmpDataObjInfo = tmpDataObjInfo->next;
             status = 0;

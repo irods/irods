@@ -13,6 +13,11 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut)
@@ -69,8 +74,11 @@ genQueryOut_t **procStatOut)
     } else if ((tmpStr = getValByKey (&procStatInp->condInput, RESC_NAME_KW)) 
       != NULL) {
 	rescGrpInfo_t *rescGrpInfo = NULL;
-        status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
-        if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
+        
+        
+        //status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
+        eirods::error err = eirods::get_resc_grp_info( tmpStr, *rescGrpInfo );
+        if( !err.ok() ) { // (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
             rodsLog (LOG_ERROR,
               "_rsProcStat: _getRescInfo of %s error. stat = %d",
               tmpStr, status);

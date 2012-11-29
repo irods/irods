@@ -9,6 +9,11 @@
 #include "objMetaOpr.h"
 #include "resource.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsGetRescQuota (rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
 rescQuota_t **rescQuota)
@@ -37,7 +42,7 @@ rescQuota_t **rescQuota)
 {
     int status = 0;
     rescGrpInfo_t *tmpRescGrpInfo;
-    rescGrpInfo_t *rescGrpInfo = NULL;
+    rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
     genQueryOut_t *genQueryOut = NULL;
 
     if (rescQuota == NULL) return USER__NULL_INPUT_ERR;
@@ -56,9 +61,9 @@ rescQuota_t **rescQuota)
     }
 
     /* not a resource. may be a resource group */
-    status = _getRescInfo (rsComm, getRescQuotaInp->rescName, &rescGrpInfo);
-
-   if (status < 0) {
+    //status = _getRescInfo (rsComm, getRescQuotaInp->rescName, &rescGrpInfo);
+    eirods::error err = eirods::get_resc_grp_info( getRescQuotaInp->rescName, *rescGrpInfo );
+   if ( !err.ok() ) {//(status < 0) {
          rodsLog (LOG_ERROR,
           "_rsGetRescQuota: _getRescInfo of %s error for %s. stat = %d",
           getRescQuotaInp->rescName, getRescQuotaInp->zoneHint, status);

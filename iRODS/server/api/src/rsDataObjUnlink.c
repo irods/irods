@@ -28,6 +28,10 @@
 #include "regDataObj.h"
 #include "physPath.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 {
@@ -244,29 +248,49 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
             ruleExecInfo_t rei;
 
-            initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
-            rei.doi = dataObjInfo;
-            rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
-            
-            applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-            if (rei.status != NO_CHK_PATH_PERM) {
-                char *outVaultPath;
-                rodsServerHost_t *rodsServerHost;
-                status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
-                                                &rodsServerHost);
-                if (status < 0) return status;
-                /* unregistering but not an admin user */
-                status = matchVaultPath (rsComm, dataObjInfo->filePath, 
-                                         rodsServerHost, &outVaultPath);
-                if (status != 0) {
-                    /* in the vault */
+        initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
+        rei.doi = dataObjInfo;
+        rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
+        
+        applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+        if (rei.status != NO_CHK_PATH_PERM) {
+            char *outVaultPath;
+            rodsServerHost_t *rodsServerHost;
+            status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
+              &rodsServerHost);
+            if (status < 0) return status;
+            /* unregistering but not an admin user */
+            status = matchVaultPath (rsComm, dataObjInfo->filePath, rodsServerHost, &outVaultPath);
+            if (status != 0) {
+            /* in the vault */
                     rodsLog (LOG_DEBUG,
-                             "dataObjUnlinkS: unregistering in vault file %s",
-                             dataObjInfo->filePath);
-                    return CANT_UNREG_IN_VAULT_FILE;
-                }
+                      "dataObjUnlinkS: unregistering in vault file %s",
+                      dataObjInfo->filePath);
+                        return CANT_UNREG_IN_VAULT_FILE;
+            }
+	    }
+#if 0	/* don't need this since we are doing orphan */
+	} else if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].driverType 
+	  == WOS_FILE_TYPE && dataObjUnlinkInp->oprType != UNREG_OPR) {
+	    /* WOS_FILE_TYPE, unlink first before unreg because orphan files
+	     * cannot be reclaimed */
+            status = l3Unlink (rsComm, dataObjInfo);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjUnlinkS: l3Unlink error for WOS file %s. status = %d",
+                  dataObjUnlinkInp->objPath, status);
+		return status;
+	    }
+            unregDataObjInp.dataObjInfo = dataObjInfo;
+            unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
+            status = rsUnregDataObj (rsComm, &unregDataObjInp);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjUnlinkS: rsUnregDataObj error for %s. status = %d",
+                  dataObjUnlinkInp->objPath, status);
             }
         }
+#endif // JMC - i THINNK this is right
         unregDataObjInp.dataObjInfo = dataObjInfo;
         unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
         status = rsUnregDataObj (rsComm, &unregDataObjInp);
@@ -330,7 +354,24 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileUnlinkInp_t fileUnlinkInp;
     int status;
 
-    if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
+    // =-=-=-=-=-=-=-
+    // JMC - legacy resource  if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
+    std::string resc_class;
+    eirods::error prop_err = eirods::get_resource_property<std::string>( dataObjInfo->rescInfo->rescName, "class", resc_class );
+    if( prop_err.ok() ) {
+        if( resc_class == "bundle" ) {//BUNDLE_CL ) {
+            return 0;
+        }
+    } else {
+        std::stringstream msg;
+        msg << "l3Unlink - failed to get proprty [class] for resource [";
+        msg << dataObjInfo->rescInfo->rescName;
+        msg << "]";
+        eirods::log( ERROR( -1, msg.str() ) );
+        return -1;
+    }
+    // =-=-=-=-=-=-=-
+
 
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) 
         return SYS_RESC_IS_DOWN;

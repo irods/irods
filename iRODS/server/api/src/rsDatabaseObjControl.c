@@ -9,6 +9,11 @@
 #include "miscServerFunct.h"
 #include "dboHighLevelRoutines.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 int
 remoteDatabaseObjControl(rsComm_t *rsComm,
 		      databaseObjControlInp_t *databaseObjControlInp,
@@ -43,8 +48,10 @@ rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjCont
     rodsHostAddr_t rescAddr;
     rescGrpInfo_t *rescGrpInfo = NULL;
 
-    status = _getRescInfo (rsComm, databaseObjControlInp->dbrName, &rescGrpInfo);
-    if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
+//    status = _getRescInfo (rsComm, databaseObjControlInp->dbrName, &rescGrpInfo);
+//    if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
+eirods::error err = eirods::get_resc_grp_info( databaseObjControlInp->dbrName, *rescGrpInfo );
+if( !err.ok() ) {
 	 rodsLog (LOG_ERROR,
 		  "rsDatabaseObjControl: _getRescInfo of %s error, stat = %d",
 		  databaseObjControlInp->dbrName, status);

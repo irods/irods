@@ -11,6 +11,10 @@
 #include "genQuery.h"
 #include "rodsClient.h"
 
+// =-=-=-=-=-=-=-
+// eirods include
+#include "eirods_resource_backport.h"
+
 static int HaveFailedSpecCollPath = 0;
 static char FailedSpecCollPath[MAX_NAME_LEN];
 
@@ -401,15 +405,30 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
           
         memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
 
-        status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
+        /*status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
         if (status < 0) {
-            rodsLog (LOG_ERROR,
-                     "specCollSubStat: resolveResc error for %s, status = %d",
+            rodsLog( LOG_ERROR,"specCollSubStat: resolveResc error for %s, status = %d",
                      specColl->resource, status);
             freeDataObjInfo (myDataObjInfo);
             *dataObjInfo = NULL;
             return (status);
+        }*/
+
+        eirods::resource_ptr resc;
+        eirods::error err = resc_mgr.resolve( specColl->resource, resc );
+        if( err.ok() ) {
+            eirods::resource_to_resc_info( *myDataObjInfo->rescInfo, resc );
+        } else {
+            std::stringstream msg;
+            msg << "specCollSubStat - failed to resolve resource ";
+            msg << specColl->resource;
+            eirods::log( PASS( false, -1, msg.str(), err ) );
+            freeDataObjInfo (myDataObjInfo);
+            *dataObjInfo = NULL;
+            return err.code();
         }
+
+
 
         rstrcpy (myDataObjInfo->objPath, subPath, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->subPath, subPath, MAX_NAME_LEN);

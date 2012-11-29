@@ -15,18 +15,24 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
+
 int
 rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int status;
     char *rescName;
-    rescGrpInfo_t *rescGrpInfo = NULL;
 
     if ((rescName = getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW)) 
         == NULL) {
         return USER_NO_RESC_INPUT_ERR;
     }
-
+#if 0 // JMC - legacy resource
+    rescGrpInfo_t *rescGrpInfo = NULL;
     status = resolveAndQueResc (rescName, NULL, &rescGrpInfo);
     if (status < 0|| NULL == rescGrpInfo) { // JMC cppcheck - nullptr
         rodsLog (LOG_NOTICE,
@@ -34,9 +40,20 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                  rescName, status);
         return (status);
     }
+#endif // JMC - legacy resource
 
-    status = _rsUnbunAndRegPhyBunfile (rsComm, dataObjInp, 
-                                       rescGrpInfo->rescInfo);
+    rescInfo_t* rescInfo = new rescInfo_t;
+    eirods::error err = eirods::get_resc_info( rescName, *rescInfo );
+    if( !err.ok() ) {
+        std::stringstream msg;
+        msg << "rsUnbunAndRegPhyBunfile - failed for [";
+        msg << rescName;
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), err ) );
+        return -1;
+    }
+    status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
+      //rescGrpInfo->rescInfo);
 
     return (status);
 }

@@ -28,6 +28,10 @@
 
 #include <iostream>
 
+// =-=-=-=-=-=-=-
+// eirods include
+#include "eirods_resource_backport.h"
+
 int
 getFileMode (dataObjInp_t *dataObjInp)
 {
@@ -374,13 +378,13 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     int destL1descInx = -1;
     rescInfo_t *cacheResc;
 
+#if 0 // JMC - removing compound resources 
     if (rescClass == COMPOUND_CL) {
 #if 0
         return SYS_CANT_CHKSUM_COMP_RESC_DATA;
-#else
-        dataObjInp_t dataObjInp;
-        status = getCacheRescInGrp (rsComm, inpDataObjInfo->rescGroupName,
-                                    inpDataObjInfo->rescInfo, &cacheResc);
+       #else
+       dataObjInp_t dataObjInp;
+        status = getCacheRescInGrp (rsComm, inpDataObjInfo->rescGroupName,inpDataObjInfo->rescInfo, &cacheResc);
         if (status < 0) {
             rodsLog (LOG_ERROR,
                      "_dataObjChksum: getCacheRescInGrp %s failed for %s stat=%d",
@@ -415,6 +419,11 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
 #endif
     } else if (rescClass == BUNDLE_CL) {
         return SYS_CANT_CHKSUM_BUNDLED_DATA;
+    } else 
+#endif // JMC
+    
+    if (rescClass == BUNDLE_CL) {
+       return SYS_CANT_CHKSUM_BUNDLED_DATA;
     } else {
         dataObjInfo = inpDataObjInfo;
     }
@@ -861,13 +870,24 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
                       tmpSubColl, tmpDataName);
             dataObjInfo.replNum = atoi (tmpReplNum);
             rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
-            status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
+            /*status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
             if (status < 0) {
-                rodsLog (LOG_ERROR,
-                         "syncCollPhyPath: resolveResc error for %s, status = %d",
+                rodsLog( LOG_ERROR,"syncCollPhyPath: resolveResc error for %s, status = %d",
                          tmpRescName, status);
                 return (status);
+            }*/
+            
+            eirods::resource_ptr resc;
+            eirods::error err = resc_mgr.resolve( tmpRescName, resc );
+            if( err.ok() ) {
+                eirods::resource_to_resc_info( *dataObjInfo.rescInfo, resc );
+            } else {
+                std::stringstream msg;
+                msg << "getDefaultLocalRescInfo - failed to resolve resource ";
+                msg << tmpRescName;
+                eirods::log( PASS( false, -1, msg.str(), err ) );
             }
+
             rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
 
             status = syncDataObjPhyPathS (rsComm, NULL, &dataObjInfo,
