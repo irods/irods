@@ -680,7 +680,7 @@ eirods::error fileStageToCache( std::string _file_name, std::string _cache_file_
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve_from_property( "path", _file_name, resc ); 
+    eirods::error ret_err = resc_mgr.resolve_from_physical_path( _file_name, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileStageToCache - failed to resolve resource", ret_err );
 	}
@@ -716,7 +716,7 @@ eirods::error fileSyncToArch( std::string _file_name, std::string _cache_file_na
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the path
 	eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve_from_property( "path", _file_name, resc ); 
+    eirods::error ret_err = resc_mgr.resolve_from_physical_path( _file_name, resc ); 
 	if( !ret_err.ok() ) {
 		return PASS( false, -1, "fileSyncToArch - failed to resolve resource", ret_err );
 	}

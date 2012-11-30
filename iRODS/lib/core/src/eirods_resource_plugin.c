@@ -217,6 +217,27 @@ namespace eirods {
         }
         
     } // remove_child 
+    
+    // =-=-=-=-=-=-=-
+    // public - mutator for parent pointer
+    error resource::set_parent( const resource_ptr& _resc ) {
+        parent_ = _resc;
+        return SUCCESS();
+
+    } // set_parent
+    
+    // =-=-=-=-=-=-=-
+    // public - accessor for parent pointer.  return value based on validity of the pointer
+    error resource::get_parent( resource_ptr& _resc ) {
+        _resc = parent_;
+        if( _resc.get() ) {
+            return SUCCESS();
+        } else {
+            return ERROR( -1, "resource::get_parent - null parent pointer" );
+        }
+
+    } // get_parent
+
 
     // =-=-=-=-=-=-=-
     // public - add an operation to the map given a key.  provide the function name such that it

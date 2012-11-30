@@ -96,9 +96,10 @@ namespace eirods {
                     break;
                 }
             } else {
-                eirods::error err = PASS( false, -1, 
-                                          "resource_manager::resolve_from_property - failed to get vault parameter from resource", ret );
-
+                std::stringstream msg;
+                msg << "resource_manager::resolve_from_property - ";
+                msg << "failed to get vault parameter from resource";
+                eirods::error err = PASS( false, -1, msg.str(), ret ); 
             }
 
         } // for itr
@@ -108,23 +109,117 @@ namespace eirods {
         if( true == found && _resc.get() ) {
             return SUCCESS();
         } else {
-            std::string msg( "resource_manager::resolve_from_property - failed to find resource for property [" );
-            msg += _prop;
-            msg += "] and value [";
-            msg += _value; 
-            msg += "]";
-            return ERROR( -1, msg );
+            std::stringstream msg; 
+            msg << "resource_manager::resolve_from_property - ";
+            msg << "failed to find resource for property [";
+            msg << _prop;
+            msg << "] and value [";
+            msg << _value; 
+            msg << "]";
+            return ERROR( -1, msg.str() );
         }
 
     } // resolve_from_property
  
     // =-=-=-=-=-=-=-
+    // public - retrieve a resource given a vault path
+    error resource_manager::resolve_from_physical_path( std::string   _physical_path, 
+                                                        resource_ptr& _resc ) {
+        // =-=-=-=-=-=-=-
+        // simple flag to state a resource matching the prop and value is found
+        bool found = false;     
+                
+        // =-=-=-=-=-=-=-
+        // quick check on the resource table
+        if( resources_.empty() ) {
+            return ERROR( -1, "resource_manager::resolve_from_physical_path - empty resource table" );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // quick check on the path that it has something in it
+        if( _physical_path.empty() ) {
+            return ERROR( -1, "resource_manager::resolve_from_physical_path - empty property" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // iterate through the map and search for our path
+        lookup_table< resource_ptr >::iterator itr = resources_.begin();
+        for( ; itr != resources_.end(); ++itr ) {
+            // =-=-=-=-=-=-=-
+            // query resource for the property value
+            std::string value;
+            error ret = itr->second->get_property<std::string>( "path", value );
+
+            // =-=-=-=-=-=-=-
+            // if we get a good parameter 
+            if( ret.ok() ) {
+                // =-=-=-=-=-=-=-
+                // compare incoming value and stored value
+                // one may be a subset of the other so compare both ways
+                if( _physical_path.find( value ) != std::string::npos || 
+                    value.find( _physical_path ) != std::string::npos ) {
+                    // =-=-=-=-=-=-=-
+                    // if we get a match, walk up the parents of the resource
+                    // until we hit the root as this could be a resource composition
+                    // and eirods should only be talking to the root of a composition.
+                    resource_ptr resc2, resc1 = itr->second;
+                    error        err  = resc1->get_parent( resc2 );
+                    while( err.ok() ) {
+                        resc1 = resc2;
+                        err = resc1->get_parent( resc2 );
+
+                    } // while
+
+                    // =-=-=-=-=-=-=-
+                    // finally set our flag and cache the resource pointer
+                    found = true;
+                    _resc = resc1;
+
+                    // =-=-=-=-=-=-=-
+                    // and... were done.
+                    break;
+                }
+            } else {
+                std::stringstream msg;
+                msg << "resource_manager::resolve_from_physical_path - ";
+                msg << "failed to get vault parameter from resource";
+                msg << ret.code();
+                eirods::error err = PASS( false, -1, msg.str(), ret );
+            }
+
+        } // for itr
+
+        // =-=-=-=-=-=-=-
+        // did we find a resource and is the ptr valid?
+        if( true == found && _resc.get() ) {
+            return SUCCESS();
+        } else {
+            std::stringstream msg;
+            msg << "resource_manager::resolve_from_physical_path - ";
+            msg << "failed to find resource for path [";
+            msg << _physical_path;
+            msg << "]";
+            return ERROR( -1, msg.str() );
+        }
+
+    } // resolve_from_physical_path
+
+    // =-=-=-=-=-=-=-
     // resolve a resource from a first_class_object
     error resource_manager::resolve( const eirods::first_class_object& _object, 
                                      resource_ptr&                     _resc ) {
-        error ret =  resolve_from_property( "path", _object.physical_path(), _resc );
+        // =-=-=-=-=-=-=-
+        // find a resource matching the vault path in the physical path
+        error ret =  resolve_from_physical_path( _object.physical_path(), _resc );
+
+        // =-=-=-=-=-=-=-
+        // if we cant find a resource for a given path, find any unix file system resource
+        // as this is necessary for some cases such as registration of a file which doesnt
+        // have a proper vault path.  this issue will be fixed when we push fcos up through
+        // the server api calls as we can treat them as a new class of fco
         if( !ret.ok() ) {
-            ret = resolve_from_property( "type", "unix file system", _resc );    
+            ret = resolve_from_property( "type", "unix file system", _resc );
+
         }
 
         return ret;
@@ -222,6 +317,7 @@ namespace eirods {
             return PASS( false, -1, "process_init_results failed.", proc_ret );
         } 
 
+        // =-=-=-=-=-=-=-
         // Update child resource maps
         proc_ret = init_child_map();
         if(!proc_ret.ok()) {
@@ -420,6 +516,8 @@ namespace eirods {
 
     } // init_from_type
 
+    // =-=-=-=-=-=-=-
+    // private - walk the resource map and wire children up to parents
     error resource_manager::init_child_map(void) {
         error result = SUCCESS();
 
@@ -469,12 +567,15 @@ namespace eirods {
                                 if(!ret.ok()) {
                                     result = PASS(false, -1, "init_child_map failed.", ret);
                                 }
+
+                                // set the parent for the child resource
+                                child_resc->set_parent( resc );
                             }
-                        }
-                    }
-                }
-            }
-        }
+                        } // for itr
+                    } // else parse list
+                } // else get name
+            } // else get child string
+        } // for it
         return result;
     } // init_child_map
 

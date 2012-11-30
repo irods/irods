@@ -11,7 +11,7 @@ namespace eirods {
 
 
     // =-=-=-=-=-=-=-
-    // delimiter used for parsing resource context strings
+    /// @brief delimiter used for parsing resource context strings
     const std::string RESOURCE_DELIMITER(";");
 
 
@@ -27,27 +27,27 @@ namespace eirods {
     public:
 
         // =-=-=-=-=-=-=-
-        // Constructors
+        /// @brief Constructors
         resource( std::string );
 
         // =-=-=-=-=-=-=-
-        // Destructor
+        /// @brief Destructor
         virtual ~resource();
 
         // =-=-=-=-=-=-=-
-        // copy ctor
+        /// @brief copy ctor
         resource( const resource& _rhs ); 
 
         // =-=-=-=-=-=-=-
-        // Assignment Operator - necessary for stl containers
+        /// @brief Assignment Operator - necessary for stl containers
         resource& operator=( const resource& _rhs );
 
         // =-=-=-=-=-=-=-
-        // override from parent plugin_base
+        /// @brief override from parent plugin_base
         virtual error delay_load( void* _h );
                 
         // =-=-=-=-=-=-=-
-        // get a property from the map if it exists.  catch the exception in the case where
+        /// @brief get a property from the map if it exists.  catch the exception in the case where
         // the template types may not match and return sucess/fail
         template< typename T >
         error get_property( std::string _key, T& _val ) {
@@ -56,7 +56,7 @@ namespace eirods {
         } // get_property
 
         // =-=-=-=-=-=-=-
-        // set a property in the map
+        /// @brief set a property in the map
         template< typename T >
         error set_property( std::string _key, const T& _val ) {
             error ret = properties_.set< T >( _key, _val );
@@ -64,16 +64,21 @@ namespace eirods {
         } // set_property
 
         // =-=-=-=-=-=-=-
-        // interface to add and remove children using the zone_name::resource_name
+        /// @brief interface to add and remove children using the zone_name::resource_name
         virtual error add_child( std::string, std::string, resource_ptr );
         virtual error remove_child( std::string );
+       
+        // =-=-=-=-=-=-=-
+        /// @brief interface to get and set a resource's parent pointer
+        virtual error set_parent( const resource_ptr& );
+        virtual error get_parent( resource_ptr& );
                 
         // =-=-=-=-=-=-=-
-        // interface to add operations - key, function name
+        /// @brief interface to add operations - key, function name
         error add_operation( std::string, std::string );
                 
         // =-=-=-=-=-=-=-
-        // interface to set start / stop functions
+        /// @brief interface to set start / stop functions
         void set_start_operation( std::string );
         void set_stop_operation ( std::string );
 
@@ -81,7 +86,7 @@ namespace eirods {
         static error default_stop_operation () { return SUCCESS(); };
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 1 param
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
         template< typename T1 >
         error call( std::string _op, T1 _t1 ) {
             error ret = check_operation_params( _op );
@@ -93,7 +98,7 @@ namespace eirods {
         } // call - T1
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 2 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 2 params
         template< typename T1, typename T2 >
         error call( std::string _op, T1 _t1, T2 _t2 ) {
             error ret = check_operation_params( _op );
@@ -105,7 +110,7 @@ namespace eirods {
         } // call - T1, T2
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 3 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 3 params
         template< typename T1, typename T2, typename T3 >
         error call( std::string _op, T1 _t1, T2 _t2, T3 _t3 ) {
             error ret = check_operation_params( _op );
@@ -117,7 +122,7 @@ namespace eirods {
         } // call - T1, T2, T3
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 4 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 4 params
         template< typename T1, typename T2, typename T3, typename T4 >
         error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
             error ret = check_operation_params( _op );
@@ -129,7 +134,7 @@ namespace eirods {
         } // call - T1, T2, T3, T4
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 5 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 5 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5 >
         error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
             error ret = check_operation_params( _op );
@@ -141,7 +146,7 @@ namespace eirods {
         } // call - T1, T2, T3, T4, T5
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 6 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 6 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
         error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
             error ret = check_operation_params( _op );
@@ -154,7 +159,7 @@ namespace eirods {
         } // call - T1, T2, T3, T4, T5, T6
  
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 7 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 7 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
         error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
             error ret = check_operation_params( _op );
@@ -167,7 +172,7 @@ namespace eirods {
         } // call - T1, T2, T3, T4, T5, T6, T7
 
         // =-=-=-=-=-=-=-
-        // delegate the call to the operation in question to the operation wrapper, with 8 params
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 8 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
         error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
             error ret = check_operation_params( _op );
@@ -193,7 +198,8 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Pointers to Child and Parent Resources
         resource_child_map  children_;
-        
+        resource_ptr        parent_;
+                
         // =-=-=-=-=-=-=-
         // Map holding resource operations
         lookup_table< operation_wrapper >                    operations_;
