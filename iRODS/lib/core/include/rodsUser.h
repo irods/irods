@@ -23,7 +23,7 @@
 
 /* env variable for overwriting clientUser */
 #define CLIENT_USER_NAME_KEYWD	"clientUserName"
-#define CLIENT_RODS_ZONE_KEYWD	"clientRodsZine"
+#define CLIENT_RODS_ZONE_KEYWD	"clientRodsZone"
 
 /* definition for authFlag in authInfo_t */
 /* REMOTE or LOCAL refers to the Zone */
