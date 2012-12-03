@@ -86,6 +86,21 @@ extern "C" {
     //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 
+    // Utility functions
+    eirods::error passthruGetFirstChildResc(
+        eirods::resource_child_map* _cmap,
+        resource_ptr& _resc) {
+        eirods::error result = SUCCESS();
+        std::pair<std::string, resource_ptr> child_pair;
+        if(_cmap->size() != 1) {
+            result = ERROR(-1, "passthruFileCreatePlugin - Passthru resource can have 1 and only 1 child.");
+        } else {
+            child_pair = _cmap->begin().second;
+            _resc = child_pair.second;
+        }
+        return result;
+    }
+    
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error passthruFileCreatePlugin( eirods::resource_property_map* 
@@ -94,22 +109,30 @@ extern "C" {
                                             _cmap, 
                                             eirods::first_class_object* 
                                             _object ) {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileCreatePlugin - null resource_property_map" );
+            result = ERROR( -1, "passthruFileCreatePlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileCreatePlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileCreatePlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileCreatePlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("create", _object);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileCreatePlugin - failed calling child create.", ret);
+                }
+            }
         }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileCreatePlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileCreatePlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // declare victory!
-        return CODE( fd );
-
+        return result;
     } // passthruFileCreatePlugin
 
     // =-=-=-=-=-=-=-
@@ -120,70 +143,29 @@ extern "C" {
                                           _cmap, 
                                           eirods::first_class_object* 
                                           _object ) {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileOpenPlugin - null resource_property_map" );
+            result = ERROR( -1, "passthruFileOpenPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileOpenPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileOpenPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileOpenPlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("open", _object);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileOpenPlugin - failed calling child open.", ret);
+                }
+            }
         }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileOpenPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileOpenPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // handle OSX weirdness...
-        int flags = _object->flags();
-
-#if defined(osx_platform)
-        // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system 
-        if( flags & 0x200) {
-            flags = flags ^ 0x200;
-            flags = flags | O_TRUNC;
-        }
-#endif
-
-        // =-=-=-=-=-=-=-
-        // make call to open
-        errno = 0;
-        int fd = open( _object->physical_path().c_str(), flags, _object->mode() );
-
-        // =-=-=-=-=-=-=-
-        // if we got a 0 descriptor, try again
-        if( fd == 0 ) {
-            close (fd);
-            rodsLog( LOG_NOTICE, "passthruFileOpenPlugin: 0 descriptor" );
-            open ("/dev/null", O_RDWR, 0);
-            fd = open( _object->physical_path().c_str(), flags, _object->mode() );
-        }       
-                        
-        // =-=-=-=-=-=-=-
-        // cache status in the file object
-        _object->file_descriptor( fd );
-
-        // =-=-=-=-=-=-=-
-        // did we still get an error?
-        if ( fd < 0 ) {
-            fd = UNIX_FILE_OPEN_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "passthruFileOpenPlugin: open error for ";
-            msg << _object->physical_path();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            msg << ", status = ";
-            msg << fd;
-            msg << ", flags = ";
-            msg << flags;
- 
-            return ERROR( fd, msg.str() );
-        }
-                
-        // =-=-=-=-=-=-=-
-        // declare victory!
-        return CODE( fd );
-
+        return result;
     } // passthruFileOpenPlugin
 
     // =-=-=-=-=-=-=-
@@ -196,40 +178,29 @@ extern "C" {
                                           _object,
                                           void*               _buf, 
                                           int                 _len ) {
+        eirods::error result = SUCCESS();
                                                                           
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileReadPlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("read", _object, _buf, _len);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileReadPlugin - failed calling child read.", ret);
+                }
+            }
         }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // make the call to read
-        int status = read( _object->file_descriptor(), _buf, _len );
-
-        // =-=-=-=-=-=-=-
-        // pass along an error if it was not successful
-        if( status < 0 ) {
-            status = UNIX_FILE_READ_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "passthruFileReadPlugin - read error fd = ";
-            msg << _object->file_descriptor();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            return ERROR( status, msg.str() );
-        }
-                
-        // =-=-=-=-=-=-=-
-        // win!
-        return CODE( status );
-
+        return result;
     } // passthruFileReadPlugin
 
     // =-=-=-=-=-=-=-
@@ -242,41 +213,29 @@ extern "C" {
                                            _object,
                                            void*               _buf, 
                                            int                 _len ) {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileWritePlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("write", _object, _buf, _len);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileWritePlugin - failed calling child write.", ret);
+                }
+            }
         }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // make the call to write
-        int status = write( _object->file_descriptor(), _buf, _len );
-
-        // =-=-=-=-=-=-=-
-        // pass along an error if it was not successful
-        if (status < 0) {
-            status = UNIX_FILE_WRITE_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "passthruFileWritePlugin - write fd = ";
-            msg << _object->file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-                
-        // =-=-=-=-=-=-=-
-        // win!
-        return CODE( status );
-
+        return result;
     } // passthruFileWritePlugin
 
     // =-=-=-=-=-=-=-
@@ -287,37 +246,29 @@ extern "C" {
                                            _cmap,
                                            eirods::first_class_object* 
                                            _object ) {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result  ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileClosePlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("close", _object);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileClosePlugin - failed calling child close.", ret);
+                }
+            }
         }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
-        }
-        
-        // =-=-=-=-=-=-=-
-        // make the call to close
-        int status = close( _object->file_descriptor() );
-
-        // =-=-=-=-=-=-=-
-        // log any error
-        if( status < 0 ) {
-            status = UNIX_FILE_CLOSE_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "passthruFileClosePlugin: close error, ";
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // passthruFileClosePlugin
 
@@ -329,39 +280,29 @@ extern "C" {
                                             _cmap,
                                             eirods::first_class_object* 
                                             _object ) {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileUnlinkPlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("unlink", _object);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileUnlinkPlugin - failed calling child unlink.", ret);
+                }
+            }
         }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // make the call to unlink      
-        int status = unlink( _object->physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // error handling
-        if( status < 0 ) {
-            status = UNIX_FILE_UNLINK_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "passthruFileUnlinkPlugin: unlink error for ";
-            msg << _object->physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
+        return result;
     } // passthruFileUnlinkPlugin
 
     // =-=-=-=-=-=-=-
@@ -372,52 +313,30 @@ extern "C" {
                                           _cmap,
                                           eirods::first_class_object* 
                                           _object,
-                                          struct stat*        _statbuf ) { 
+                                          struct stat*        _statbuf ) {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // make the call to stat
-        int status = stat( _object->physical_path().c_str(), _statbuf );
-
-        // =-=-=-=-=-=-=-
-        // if the file can't be accessed due to permission denied 
-        // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-        if( status < 0 && errno == EACCES && isServiceUserSet() ) {
-            if (changeToRootUser() == 0) {
-                status = stat (filename, statbuf);
-                changeToServiceUser();
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileStatPlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("stat", _object, _statbuf);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileStatPlugin - failed calling child stat.", ret);
+                }
             }
         }
-#endif
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "passthruFileStatPlugin: stat error for ";
-            msg << _object->physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-                
-        return CODE( status );
-
+        return result;
     } // passthruFileStatPlugin
 
     // =-=-=-=-=-=-=-
@@ -429,53 +348,29 @@ extern "C" {
                                            eirods::first_class_object* 
                                            _object,
                                            struct stat*        _statbuf ) {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
-        }
-                                                                   
-        // =-=-=-=-=-=-=-
-        // make the call to fstat
-        int status = fstat( _object->file_descriptor(), _statbuf );
-
-        // =-=-=-=-=-=-=-
-        // if the file can't be accessed due to permission denied 
-        // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-        if (status < 0 && errno == EACCES && isServiceUserSet()) {
-            if (changeToRootUser() == 0) {
-                status = fstat( _object->file_descriptor(), statbuf );
-                changeToServiceUser();
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "passthruFileReadPlugin - null first_class_object" );
+        } else {
+            resource_ptr resc;
+            ret = passthruGetFirstChildResc(_cmap, resc);
+            if(!ret.ok()) {
+                result = PASS(false, -1, "passthruFileFstatPlugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call<eirods::first_class_object*>("fstat", _object, _statbuf);
+                if(!ret.ok()) {
+                    result = PASS(false, -1, "passthruFileFstatPlugin - failed calling child fstat.", ret);
+                }
             }
         }
-#endif
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "passthruFileFstatPlugin: fstat error for ";
-            msg << _object->file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-
-            return ERROR( status, msg.str() );
-
-        } // if
-           
-        return CODE( status );
-
+        return result;
     } // passthruFileFstatPlugin
 
     // =-=-=-=-=-=-=-
