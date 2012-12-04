@@ -668,13 +668,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error unixFileChmodPlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object*
-                                       _object,
-                                       int                 _mode ) {
+    eirods::error unixFileChmodPlugin(
+        eirods::resource_property_map* _prop_map, 
+        eirods::resource_child_map* _cmap,
+        eirods::first_class_object* _object) {
+
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -689,7 +687,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make the call to chmod
-        int status = chmod( _object->physical_path().c_str(), _mode );
+        int status = chmod( _object->physical_path().c_str(), _object->mode() );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
