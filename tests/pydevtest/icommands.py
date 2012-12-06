@@ -191,7 +191,23 @@ class RodsSession(object):
                         'iquest',
                         'irm',
                         'irmtrash',
-                        'iexit' ]
+                        'iexit',
+                        # added for test_originaldevtest.py
+                        'ilsresc',
+                        'imiscsvrinfo',
+                        'iuserinfo',
+                        'ipwd',
+                        'ierror',
+                        'iexecmd',
+                        'ips',
+                        'iqstat',
+                        'ichksum',
+                        'itrim',
+                        'iphymv',
+                        'ibun',
+                        'iphybun',
+                        'ireg',
+                     ]
 
         if icommand not in valid_cmds:
             # second value represents STDERR

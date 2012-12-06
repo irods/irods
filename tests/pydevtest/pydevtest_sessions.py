@@ -65,32 +65,53 @@ def admin_up():
     adminsession.runCmd('icp',[testfile,"../../public/"]) # copy of testfile into public
     # resc
     global testresc
+    global anotherresc
+    global resgroup
     testresc = "testResc"
+    anotherresc = "anotherResc"
+    resgroup = "pydevtestResourceGroup"
     output = commands.getstatusoutput("hostname")
     hostname = output[1]
     adminsession.runAdminCmd('iadmin',["mkresc",testresc,"unix file system","archive",hostname,"/tmp/pydevtest_"+testresc])
-    # users
+    adminsession.runAdminCmd('iadmin',["mkresc",anotherresc,"unix file system","cache",hostname,"/tmp/pydevtest_"+anotherresc])
+    adminsession.runAdminCmd('iadmin',["mkgroup",resgroup])
+    adminsession.runAdminCmd('iadmin',["atrg",resgroup,testresc])
+    adminsession.runAdminCmd('iadmin',["atrg",resgroup,anotherresc])
+    # users, passwords, and groups
+    global testgroup
+    testgroup = "testgroup"
+    adminsession.runAdminCmd('iadmin',["mkgroup",testgroup])
     for u in users[1:]:
         adminsession.runAdminCmd('iadmin',["mkuser",u['name'],"rodsuser"])
         adminsession.runAdminCmd('iadmin',["moduser",u['name'],"password",u['passwd']])
+        adminsession.runAdminCmd('iadmin',["atg",testgroup,u['name']])
     # permissions
     adminsession.runCmd('ichmod',["read",users[1]['name'],"../../public/"+testfile]) # read for user1 
     adminsession.runCmd('ichmod',["write",users[2]['name'],"../../public/"+testfile]) # write for user2
-
 
 def admin_down():
     # tear down admin session
     global adminsession
     global testresc
+    global anotherresc
+    global resgroup
+    global testgroup
     adminsession.runCmd('icd')
     adminsession.runCmd('irm',['-r',adminsession.sessionId])
     # trash
     output = adminsession.runCmd('irmtrash',['-M']) # removes all trash for all users (admin mode)
     # users
     for u in users[1:]:
+        adminsession.runAdminCmd('iadmin',["rfg",testgroup,u['name']])
         adminsession.runAdminCmd('iadmin',["rmuser",u['name']])
+    # groups
+    adminsession.runAdminCmd('iadmin',['rmgroup',testgroup])    
     # resc
+    adminsession.runAdminCmd('iadmin',['rfrg',resgroup,testresc])
+    adminsession.runAdminCmd('iadmin',['rfrg',resgroup,anotherresc])
+    adminsession.runAdminCmd('iadmin',['rmgroup',resgroup])
     adminsession.runAdminCmd('iadmin',['rmresc',testresc])
+    adminsession.runAdminCmd('iadmin',['rmresc',anotherresc])
     print "admin session exiting: user["+adminsession.getUserName()+"] zone["+adminsession.getZoneName()+"]"
     adminsession.runCmd('iexit', ['full'])
     adminsession.deleteEnvFiles()
