@@ -21,12 +21,13 @@ def test_list_users():
     assertiCmd(s.adminsession,"iadmin lu","LIST","rods#"+s.adminsession.getZoneName())
     assertiCmdFail(s.adminsession,"iadmin lu","LIST","notauser")
 
-@with_setup(s.adminonly_up,s.adminonly_down)
+@with_setup(s.twousers_up,s.twousers_down)
 def test_list_groups():
-    assertiCmd(s.adminsession,"iadmin lg","LIST",testgroup)
+    assertiCmd(s.adminsession,"iadmin lg","LIST",s.testgroup)
     assertiCmdFail(s.adminsession,"iadmin lg","LIST","notagroup")
-    assertiCmd(s.adminsession,"iadmin lg "+testgroup,"LIST",[s.sessions[1]['name'],s.sessions[2]['name']])
-    assertiCmdFail(s.adminsession,"iadmin lg "+testgroup,"LIST","notauser")
+    assertiCmd(s.adminsession,"iadmin lg "+s.testgroup,"LIST",[s.sessions[1].getUserName()])
+    assertiCmd(s.adminsession,"iadmin lg "+s.testgroup,"LIST",[s.sessions[2].getUserName()])
+    assertiCmdFail(s.adminsession,"iadmin lg "+s.testgroup,"LIST","notauser")
 
 # RESOURCES
 
@@ -45,9 +46,9 @@ def test_create_and_remove_new_resource():
 @with_setup(s.adminonly_up,s.adminonly_down)
 def test_modify_resource_comment():
     mycomment = "thisisacomment with some spaces"
-    assertiCmdFail(s.adminsession,"iadmin lr "+testresc,"LIST",mycomment)
-    assertiCmd(s.adminsession,"iadmin modresc "+testresc+" comment '"+mycomment+"'")
-    assertiCmd(s.adminsession,"iadmin lr "+testresc,"LIST",mycomment)
+    assertiCmdFail(s.adminsession,"iadmin lr "+s.testresc,"LIST",mycomment)
+    assertiCmd(s.adminsession,"iadmin modresc "+s.testresc+" comment '"+mycomment+"'")
+    assertiCmd(s.adminsession,"iadmin lr "+s.testresc,"LIST",mycomment)
 
 # USERS
 
