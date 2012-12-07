@@ -1913,27 +1913,6 @@ int chlRegResc(rsComm_t *rsComm,
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
 
-    // =-=-=-=-=-=-=-
-    // JMC :: remove the token name check as resources are now dynamically created
-#if 0
-    status = cmlCheckNameToken("resc_type", rescInfo->rescType, &icss);
-    if (status !=0 ) {
-        int i;
-        char errMsg[105];
-        snprintf(errMsg, 100, "resource_type '%s' is not valid", 
-                 rescInfo->rescType);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-        return(CAT_INVALID_RESOURCE_TYPE);
-    }
-
-
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc S Q L 3");
-    status = cmlCheckNameToken("resc_class", rescInfo->rescClass, &icss);
-    if (status !=0 ) {
-        return(CAT_INVALID_RESOURCE_CLASS);
-    }
-#endif
-
     if (strlen(rescInfo->rescLoc)<1) {
         return(CAT_INVALID_RESOURCE_NET_ADDR);
     }
@@ -1954,9 +1933,8 @@ int chlRegResc(rsComm_t *rsComm,
                       "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
     }
 
-    // =-=-=-=-=-=-=-
-
-    if ((strcmp(rescInfo->rescType, "database") !=0) &&
+    if (false &&                // hcj - disable checking for vault path. this needs to be checked from the plugins
+        (strcmp(rescInfo->rescType, "database") !=0) &&
         (strcmp(rescInfo->rescType, "mso") !=0) ) {
         if (strlen(rescInfo->rescVaultPath)<1) {
             return(CAT_INVALID_RESOURCE_VAULT_PATH);

@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* resource.c - resorce metadata operation */
@@ -17,16 +19,16 @@
 
 int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput,
-rescGrpInfo_t **rescGrpInfo)
+             rescGrpInfo_t **rescGrpInfo)
 {
     char *rescName;
     int status;
 
     if ((rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL &&
-      (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
-      (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL &&
-      (rescName = getValByKey (condInput, RESC_NAME_KW)) == NULL &&
-      ((rescName = defaultResc) == NULL || strcmp (defaultResc, "null") == 0)) {
+        (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
+        (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL &&
+        (rescName = getValByKey (condInput, RESC_NAME_KW)) == NULL &&
+        ((rescName = defaultResc) == NULL || strcmp (defaultResc, "null") == 0)) {
         return (USER_NO_RESC_INPUT_ERR);
     }
     status = _getRescInfo (rsComm, rescName, rescGrpInfo);
@@ -43,7 +45,7 @@ rescGrpInfo_t **rescGrpInfo)
 
 int
 _getRescInfo (rsComm_t *rsComm, char *rescGroupName,
-rescGrpInfo_t **rescGrpInfo)
+              rescGrpInfo_t **rescGrpInfo)
 {
     int status;
 
@@ -75,8 +77,8 @@ getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput)
 
     if (inpRescName == NULL) {
         if ((rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL &&
-          (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
-          (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL) {
+            (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
+            (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL) {
             return (INT_RESC_STATUS_DOWN);
         }
     } else {
@@ -100,7 +102,7 @@ getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput)
 
 int
 resolveRescGrp (rsComm_t *rsComm, char *rescGroupName,
-rescGrpInfo_t **rescGrpInfo)
+                rescGrpInfo_t **rescGrpInfo)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
     int status;
@@ -113,7 +115,7 @@ rescGrpInfo_t **rescGrpInfo)
 
     while (tmpRescGrpInfo != NULL) {
         if (strcmp (rescGroupName, tmpRescGrpInfo->rescGroupName)
-          == 0) {
+            == 0) {
             replRescGrpInfo (tmpRescGrpInfo, rescGrpInfo);
             /* *rescGrpInfo = tmpRescGrpInfo; */
             return (0);
@@ -132,7 +134,7 @@ int
 replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
 {
     rescGrpInfo_t *tmpSrcRescGrpInfo, *tmpDestRescGrpInfo,
-      *lastDestRescGrpInfo;
+        *lastDestRescGrpInfo;
 
     *destRescGrpInfo = lastDestRescGrpInfo = NULL;
 
@@ -140,10 +142,10 @@ replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
     while (tmpSrcRescGrpInfo != NULL) {
         tmpDestRescGrpInfo = (rescGrpInfo_t *) malloc (sizeof (rescGrpInfo_t));
         memset (tmpDestRescGrpInfo, 0, sizeof (rescGrpInfo_t));
-	tmpDestRescGrpInfo->status = tmpSrcRescGrpInfo->status;
+        tmpDestRescGrpInfo->status = tmpSrcRescGrpInfo->status;
         tmpDestRescGrpInfo->rescInfo = tmpSrcRescGrpInfo->rescInfo;
         rstrcpy (tmpDestRescGrpInfo->rescGroupName,
-          tmpSrcRescGrpInfo->rescGroupName, NAME_LEN);
+                 tmpSrcRescGrpInfo->rescGroupName, NAME_LEN);
         if (*destRescGrpInfo == NULL) {
             *destRescGrpInfo = tmpDestRescGrpInfo;
         } else {
@@ -155,36 +157,7 @@ replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
 
     return (0);
 }
-#if 0 // JMC - UNUSED
-/* queryRescInRescGrp - Given the rescGroupName string which must be the
- * name of a resource group, query all resources in this resource group.
- * The output of the query is given in genQueryOut.
- */
 
-int
-queryRescInRescGrp (rsComm_t *rsComm, char *rescGroupName,
-genQueryOut_t **genQueryOut)
-{
-    genQueryInp_t genQueryInp;
-    char tmpStr[NAME_LEN];
-    int status;
-
-    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-
-    snprintf (tmpStr, NAME_LEN, "='%s'", rescGroupName);
-    addInxVal (&genQueryInp.sqlCondInp, COL_RESC_GROUP_NAME, tmpStr);
-    addInxIval (&genQueryInp.selectInp, COL_R_RESC_NAME, 1);
-
-    genQueryInp.maxRows = MAX_SQL_ROWS;
-
-    status =  rsGenQuery (rsComm, &genQueryInp, genQueryOut);
-
-    clearGenQueryInp (&genQueryInp);
-
-    return (status);
-
-}
-#endif // JMC - UNUSED
 /* resolveAndQueResc - Given the rescName string, get the resource info
  * in a rescGrpInfo_t struct and queue this struct in the rescGrpInfo
  * link list by resource type. Also copy the rescGroupName string to this 
@@ -192,7 +165,7 @@ genQueryOut_t **genQueryOut)
  */
 int
 resolveAndQueResc (char *rescName, char *rescGroupName,
-rescGrpInfo_t **rescGrpInfo)
+                   rescGrpInfo_t **rescGrpInfo)
 {
     rescInfo_t *myRescInfo;
     int status;
@@ -237,8 +210,8 @@ resolveResc (char *rescName, rescInfo_t **rescInfo)
     /* no match */
 #if 0  /* this has problem for subsequent query. need to mkresc to work  */ // JMC - backport 4632
     if (strcmp (rescName, BUNDLE_RESC) == 0) {
-       /* it is the virtual bundleResc. Make one */
-       rescInfo_t *myRescInfo;
+        /* it is the virtual bundleResc. Make one */
+        rescInfo_t *myRescInfo;
         myRescInfo = ( rescInfo_t* )malloc (sizeof (rescInfo_t));
         memset (myRescInfo, 0, sizeof (rescInfo_t));
         myRescInfo->rodsServerHost = ServerHostHead;
@@ -246,22 +219,22 @@ resolveResc (char *rescName, rescInfo_t **rescInfo)
         rstrcpy (myRescInfo->rescName, BUNDLE_RESC, NAME_LEN);
         rstrcpy (myRescInfo->rescLoc, "localhost", NAME_LEN);
         rstrcpy (myRescInfo->rescType, "unix file system", NAME_LEN);
-       myRescInfo->rescTypeInx = getRescTypeInx (myRescInfo->rescType);
-       rstrcpy (myRescInfo->rescClass, "bundle", NAME_LEN);
-       myRescInfo->rescClassInx = getRescClassInx (myRescInfo->rescClass);
-       rstrcpy (myRescInfo->rescVaultPath, "/bundle", MAX_NAME_LEN);
+        myRescInfo->rescTypeInx = getRescTypeInx (myRescInfo->rescType);
+        rstrcpy (myRescInfo->rescClass, "bundle", NAME_LEN);
+        myRescInfo->rescClassInx = getRescClassInx (myRescInfo->rescClass);
+        rstrcpy (myRescInfo->rescVaultPath, "/bundle", MAX_NAME_LEN);
         myRescInfo->quotaLimit = RESC_QUOTA_UNINIT;     /* not initialized */
         queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
-       *rescInfo = myRescInfo;
-       return 0;
+        *rescInfo = myRescInfo;
+        return 0;
     }
 #endif
     rodsLog (LOG_DEBUG1,
-      "resolveResc: resource %s not configured in RCAT", rescName);
+             "resolveResc: resource %s not configured in RCAT", rescName);
     return (SYS_INVALID_RESC_INPUT);
 }
 
-#if 0	/* replaced by getRescCnt */
+#if 0   /* replaced by getRescCnt */
 /* getNumResc - count the number of resources in the rescGrpInfo link list.
  */
 
@@ -288,7 +261,7 @@ getNumResc (rescGrpInfo_t *rescGrpInfo)
 
 int
 sortResc (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo,
-char *sortScheme)
+          char *sortScheme)
 {
     int numResc;
 
@@ -314,11 +287,11 @@ char *sortScheme)
         sortRescRandom (rescGrpInfo);
     } else if (strcmp (sortScheme, "byRescClass") == 0) {
         sortRescByType (rescGrpInfo);
-        } else if (strcmp (sortScheme, "byLoad") == 0) {
+    } else if (strcmp (sortScheme, "byLoad") == 0) {
         sortRescByLoad (rsComm, rescGrpInfo);
     } else {
-            rodsLog (LOG_ERROR,
-              "sortResc: unknown sortScheme %s", sortScheme);
+        rodsLog (LOG_ERROR,
+                 "sortResc: unknown sortScheme %s", sortScheme);
     }
 
     return (0);
@@ -405,7 +378,7 @@ sortRescByType (rescGrpInfo_t **rescGrpInfo)
                 if (tmp1RescGrpInfo == tmpRescGrpInfo) break;
                 tmp1RescInfo = tmp1RescGrpInfo->rescInfo;
                 if (RescClass[tmp1RescInfo->rescClassInx].classType > 
-		 ARCHIVAL_CL) {
+                    ARCHIVAL_CL) {
                     tmpRescGrpInfo->rescInfo = tmp1RescInfo;
                     tmp1RescGrpInfo->rescInfo = tmpRescInfo;
                     break;
@@ -427,7 +400,7 @@ int
 sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
 {
     int i, j, loadmin, loadList[MAX_NSERVERS], nresc, status, 
-     timeList[MAX_NSERVERS];
+        timeList[MAX_NSERVERS];
     char rescList[MAX_NSERVERS][MAX_NAME_LEN], *tResult;
     rescGrpInfo_t *tmpRescGrpInfo, *tmp1RescGrpInfo;
     rescInfo_t *tmpRescInfo;
@@ -451,19 +424,19 @@ sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
                 tResult = genQueryOut->sqlResult[i].value;
                 tResult += j*genQueryOut->sqlResult[i].len;
                 switch (i) {
-                  case 0:
+                case 0:
                     rstrcpy(rescList[j], tResult, 
-		      genQueryOut->sqlResult[i].len);
+                            genQueryOut->sqlResult[i].len);
                     break;
-                  case 1:
+                case 1:
                     loadList[j] = atoi(tResult);
                     break;
-                  case 2:
+                case 2:
                     timeList[j] = atoi(tResult);
                     break;
                 }
             }
-	}
+        }
     } else {
         return (0);
     }
@@ -483,7 +456,7 @@ sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
         for (i=0; i<nresc; i++) {
             if (strcmp(rescList[i], tmpRescGrpInfo->rescInfo->rescName) == 0) {
                 if ( loadList[i] >= 0 && loadmin > loadList[i] && 
-		  (timenow - timeList[i]) < MAX_ELAPSE_TIME ) {
+                     (timenow - timeList[i]) < MAX_ELAPSE_TIME ) {
                     loadmin = loadList[i];
                     tmpRescInfo = tmpRescGrpInfo->rescInfo;
                     tmp1RescGrpInfo = tmpRescGrpInfo;
@@ -522,8 +495,8 @@ sortRescByLocation (rescGrpInfo_t **rescGrpInfo)
                 tmp1RescInfo = tmp1RescGrpInfo->rescInfo;
                 tmp1Class = RescClass[tmp1RescInfo->rescClassInx].classType;
                 if (tmp1Class > tmpClass ||
-                 (tmp1Class == tmpClass &&
-                  isLocalHost (tmp1RescInfo->rescLoc) == 0)) {
+                    (tmp1Class == tmpClass &&
+                     isLocalHost (tmp1RescInfo->rescLoc) == 0)) {
                     tmpRescGrpInfo->rescInfo = tmp1RescInfo;
                     tmp1RescGrpInfo->rescInfo = tmpRescInfo;
                     break;
@@ -610,7 +583,7 @@ compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
  */
 int
 getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName,
-rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
+                   rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
 {
     int status;
     rescGrpInfo_t *myRescGrpInfo = NULL;
@@ -622,7 +595,7 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
 
         if (memberRescInfo == NULL) {
             rodsLog (LOG_ERROR,
-              "getCacheRescInGrp: no rescGroupName input");
+                     "getCacheRescInGrp: no rescGroupName input");
             return SYS_NO_CACHE_RESC_IN_GRP;
         }
 
@@ -630,8 +603,8 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
         status = getRescGrpOfResc (rsComm, memberRescInfo, &myRescGrpInfo);
         if (status < 0 || NULL == myRescGrpInfo ) { // JMC cppcheck - nullptr
             rodsLog (LOG_NOTICE,
-              "getCacheRescInGrp:getRescGrpOfResc err for %s. stat=%d",
-              memberRescInfo->rescName, status);
+                     "getCacheRescInGrp:getRescGrpOfResc err for %s. stat=%d",
+                     memberRescInfo->rescName, status);
             return status;
         } else if (rescGroupName != NULL) {
             rstrcpy (rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
@@ -657,7 +630,7 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
 
 int // JMC - backport 4544
 getRescInGrpByClass (rsComm_t *rsComm, char *rescGroupName,
-int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp) // JMC - backport 4547
+                     int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp) // JMC - backport 4547
 {
     int status;
     rescGrpInfo_t *myRescGrpInfo = NULL;
@@ -667,8 +640,8 @@ int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp) // JMC - b
 
     if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
         rodsLog (LOG_NOTICE,
-          "getRescInGrpByClass: NULL rescGroupName input");
-           return USER__NULL_INPUT_ERR;
+                 "getRescInGrpByClass: NULL rescGroupName input");
+        return USER__NULL_INPUT_ERR;
     }
     status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
     if (status < 0) return status;
@@ -678,11 +651,11 @@ int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp) // JMC - b
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
         if (RescClass[tmpRescInfo->rescClassInx].classType == rescClass) {
             *outCacheResc = tmpRescInfo;
-           if (outRescGrp != NULL) { // JMC - backport 4547
-               *outRescGrp = myRescGrpInfo;
-           } else {
+            if (outRescGrp != NULL) { // JMC - backport 4547
+                *outRescGrp = myRescGrpInfo;
+            } else {
                 freeAllRescGrpInfo (myRescGrpInfo);
-           }
+            }
 
             return 0;
         }
@@ -699,7 +672,7 @@ int rescClass, rescInfo_t **outCacheResc, rescGrpInfo_t **outRescGrp) // JMC - b
 
 int
 getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
-rescInfo_t **outRescInfo)
+              rescInfo_t **outRescInfo)
 {
     int status;
     rescGrpInfo_t *myRescGrpInfo = NULL;
@@ -736,7 +709,7 @@ rescInfo_t **outRescInfo)
   
 int
 getRescGrpOfResc (rsComm_t *rsComm, rescInfo_t * rescInfo,
-rescGrpInfo_t **rescGrpInfo)
+                  rescGrpInfo_t **rescGrpInfo)
 {
     rescGrpInfo_t *tmpRescGrpInfo, *myRescGrpInfo;
     rescGrpInfo_t *outRescGrpInfo = NULL;
@@ -777,7 +750,7 @@ rescGrpInfo_t **rescGrpInfo)
 
 int
 isRescsInSameGrp (rsComm_t *rsComm, char *rescName1, char *rescName2,
-rescGrpInfo_t **outRescGrpInfo)
+                  rescGrpInfo_t **outRescGrpInfo)
 {
     rescGrpInfo_t *tmpRescGrpInfo, *myRescGrpInfo;
     rescInfo_t *myRescInfo;
@@ -797,10 +770,10 @@ rescGrpInfo_t **outRescGrpInfo)
         while (myRescGrpInfo != NULL) {
             myRescInfo = myRescGrpInfo->rescInfo;
             if (match1 == 0 &&
-              strcmp (rescName1, myRescInfo->rescName) == 0) {
+                strcmp (rescName1, myRescInfo->rescName) == 0) {
                 match1 = 1;
             } else if (match2 == 0 &&
-              strcmp (rescName2, myRescInfo->rescName) == 0) {
+                       strcmp (rescName2, myRescInfo->rescName) == 0) {
                 match2 = 1;
             }
             if (match1 == 1 && match2 == 1) {
@@ -858,16 +831,16 @@ initRescGrp (rsComm_t *rsComm)
     }
 
     if ((rescName = getSqlResultByInx (genQueryOut, COL_R_RESC_NAME)) ==
-      NULL) {
+        NULL) {
         rodsLog (LOG_NOTICE,
-          "initRescGrp: getSqlResultByInx for COL_R_RESC_NAME failed");
+                 "initRescGrp: getSqlResultByInx for COL_R_RESC_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
     if ((rescGrpName = getSqlResultByInx (genQueryOut, COL_RESC_GROUP_NAME)) ==
-      NULL) {
+        NULL) {
         rodsLog (LOG_NOTICE,
-          "initRescGrp: getSqlResultByInx for COL_RESC_GROUP_NAME failed");
+                 "initRescGrp: getSqlResultByInx for COL_RESC_GROUP_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -877,16 +850,16 @@ initRescGrp (rsComm_t *rsComm)
         rescGrpNameStr = &rescGrpName->value[rescGrpName->len * i];
         if (tmpRescGrpInfo != NULL && curRescGrpNameStr != NULL) {
             if (strcmp (rescGrpNameStr, curRescGrpNameStr) != 0) {
-		rescGrpInfo_t *myRescGrpInfo;
+                rescGrpInfo_t *myRescGrpInfo;
                 /* a new rescGrp. queue the current one */
                 tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
-		if (savedRescGrpStatus != 0) {
-		    myRescGrpInfo = tmpRescGrpInfo;
-		    while (myRescGrpInfo != NULL) {
+                if (savedRescGrpStatus != 0) {
+                    myRescGrpInfo = tmpRescGrpInfo;
+                    while (myRescGrpInfo != NULL) {
                         myRescGrpInfo->status = savedRescGrpStatus;
-			myRescGrpInfo = myRescGrpInfo->next;
-		    }
-		}
+                        myRescGrpInfo = myRescGrpInfo->next;
+                    }
+                }
                 savedRescGrpStatus = 0;
                 CachedRescGrpInfo = tmpRescGrpInfo;
                 tmpRescGrpInfo = NULL;
@@ -894,14 +867,14 @@ initRescGrp (rsComm_t *rsComm)
         }
         curRescGrpNameStr = rescGrpNameStr;
         status = resolveAndQueResc (rescNameStr, rescGrpNameStr,
-          &tmpRescGrpInfo);
+                                    &tmpRescGrpInfo);
         if (status < 0) {
             if (status == SYS_RESC_IS_DOWN) {
                 savedRescGrpStatus = SYS_RESC_IS_DOWN;
             } else {
                 rodsLog (LOG_NOTICE,
-                  "initRescGrp: resolveAndQueResc error for %s. status = %d",
-                  rescNameStr, status);
+                         "initRescGrp: resolveAndQueResc error for %s. status = %d",
+                         rescNameStr, status);
                 freeGenQueryOut (&genQueryOut);
                 return (status);
             }
@@ -915,9 +888,9 @@ initRescGrp (rsComm_t *rsComm)
     }
     if (genQueryOut != NULL &&  genQueryOut->continueInx > 0) {
         rodsLog (LOG_NOTICE,
-          "initRescGrp: number of resources in resc groups exceed 2560");
+                 "initRescGrp: number of resources in resc groups exceed 2560");
         freeGenQueryOut (&genQueryOut);
-	return SYS_INVALID_RESC_INPUT;
+        return SYS_INVALID_RESC_INPUT;
     } else {
         freeGenQueryOut (&genQueryOut);
         return 0;
@@ -936,10 +909,9 @@ initRescGrp (rsComm_t *rsComm)
  * Otherwise, use the resource given in condInput, then in defaultRescList.
  * 
  */
-
 int
 setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr,
-keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
+                keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
 {
     rescGrpInfo_t *myRescGrpInfo = NULL;
     rescGrpInfo_t *defRescGrpInfo = NULL;
@@ -951,19 +923,14 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     int startInx;
 
     if (defaultRescList != NULL && strcmp (defaultRescList, "null") != 0 &&
-      optionStr != NULL &&  strcmp (optionStr, "forced") == 0 && // JMC - backport 4481
-      rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+        optionStr != NULL &&  strcmp (optionStr, "forced") == 0 && // JMC - backport 4481
+        rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         condInput = NULL;
     }
 
     memset (&strArray, 0, sizeof (strArray));
 
     status = parseMultiStr (defaultRescList, &strArray);
-
-#if 0   /* this will produce no output */
-    if (status <= 0)
-        return (0);
-#endif
 
     value = strArray.value;
     if (strArray.len <= 1) {
@@ -983,7 +950,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
             for (i = 0; i < strArray.len; i++) {
                 defaultResc =  &value[i * strArray.size];
                 status = getRescInfoAndStatus (rsComm, defaultResc, NULL,
-                &defRescGrpInfo);
+                                               &defRescGrpInfo);
                 if (status >= 0) break;
             }
             if (status < 0) defaultResc = NULL;
@@ -993,7 +960,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     if (strcmp (optionStr, "preferred") == 0) {
         /* checkinput first, then default */
         status = getRescInfoAndStatus (rsComm, NULL, condInput,
-          &myRescGrpInfo);
+                                       &myRescGrpInfo);
         if (status >= 0) {
             freeAllRescGrpInfo (defRescGrpInfo);
             if (strlen (myRescGrpInfo->rescGroupName) > 0) {
@@ -1009,7 +976,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
                     while (tmpRescGrpInfo != NULL) {
                         rescInfo_t *myResc = tmpRescGrpInfo->rescInfo;
                         if (strcmp (&value[j * strArray.size],
-                          myResc->rescName) == 0 &&
+                                    myResc->rescName) == 0 &&
                             myResc->rescStatus != INT_RESC_STATUS_DOWN) {
                             /* put it on top */
                             if (prevRescGrpInfo != NULL) {
@@ -1033,14 +1000,14 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
             }
         }
     } else if (strcmp (optionStr, "forced") == 0 &&
-	rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) { // JMC - backport 4481
+               rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) { // JMC - backport 4481
         if (defRescGrpInfo != NULL) {
             myRescGrpInfo = defRescGrpInfo;
         }
     } else {
         /* input first. If not good, use def */
         status = getRescInfo (rsComm, NULL, condInput,
-          &myRescGrpInfo);
+                              &myRescGrpInfo);
         if (status < 0) {
             if (status == USER_NO_RESC_INPUT_ERR && defRescGrpInfo != NULL) {
                 /* user have not input a resource. Use default */
@@ -1055,7 +1022,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     }
 
     if (status == CAT_NO_ROWS_FOUND)
-      status = SYS_RESC_DOES_NOT_EXIST;
+        status = SYS_RESC_DOES_NOT_EXIST;
 
 
     if (value != NULL)
@@ -1080,7 +1047,7 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
  */
 int
 getRescInfoAndStatus (rsComm_t *rsComm, char *rescName, keyValPair_t *condInput,
-rescGrpInfo_t **rescGrpInfo)
+                      rescGrpInfo_t **rescGrpInfo)
 {
     int status;
     rescGrpInfo_t *myRescGrpInfo = NULL;
@@ -1144,15 +1111,15 @@ initResc (rsComm_t *rsComm)
         RescGrpInfo = NULL;
     }
 
-    continueInx = 1;	/* a fake one so it will do the first query */
+    continueInx = 1;    /* a fake one so it will do the first query */
     while (continueInx > 0) {
         status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
         if (status < 0) {
             if (status !=CAT_NO_ROWS_FOUND) {
                 rodsLog (LOG_NOTICE,
-                  "initResc: rsGenQuery error, status = %d",
-                  status);
+                         "initResc: rsGenQuery error, status = %d",
+                         status);
             }
             clearGenQueryInp (&genQueryInp);
             return (status);
@@ -1162,18 +1129,18 @@ initResc (rsComm_t *rsComm)
 
         if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "initResc: rsGenQuery error, status = %d", status);
+                     "initResc: rsGenQuery error, status = %d", status);
             freeGenQueryOut (&genQueryOut);
-	    break;
+            break;
         } else {
-	    if (genQueryOut != NULL) {
-		continueInx = genQueryInp.continueInx = 
-		genQueryOut->continueInx;
+            if (genQueryOut != NULL) {
+                continueInx = genQueryInp.continueInx = 
+                    genQueryOut->continueInx;
                 freeGenQueryOut (&genQueryOut);
-	    } else {
-		continueInx = 0;
-	    }
-	}
+            } else {
+                continueInx = 0;
+            }
+        }
     }
     clearGenQueryInp (&genQueryInp);
     return (status);
@@ -1199,86 +1166,86 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 
     if (genQueryOut == NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: NULL genQueryOut");
+                 "procAndQueResResult: NULL genQueryOut");
         return (0);
     }
 
     if ((rescId = getSqlResultByInx (genQueryOut, COL_R_RESC_ID)) == NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: getSqlResultByInx for COL_R_RESC_ID failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_RESC_ID failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
     if ((rescName = getSqlResultByInx(genQueryOut, COL_R_RESC_NAME)) == NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: getSqlResultByInx for COL_R_RESC_NAME failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_RESC_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((zoneName = getSqlResultByInx(genQueryOut, COL_R_ZONE_NAME)) == NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: getSqlResultByInx for COL_R_ZONE_NAME failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_ZONE_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescType = getSqlResultByInx(genQueryOut, COL_R_TYPE_NAME)) == NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: getSqlResultByInx for COL_R_TYPE_NAME failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_TYPE_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescClass = getSqlResultByInx(genQueryOut,COL_R_CLASS_NAME))==NULL) {
         rodsLog (LOG_NOTICE,
-         "procAndQueResResult: getSqlResultByInx for COL_R_CLASS_NAME failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_CLASS_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescLoc = getSqlResultByInx (genQueryOut, COL_R_LOC)) == NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: getSqlResultByInx for COL_R_LOC failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_LOC failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescVaultPath = getSqlResultByInx (genQueryOut, COL_R_VAULT_PATH))
-      == NULL) {
+        == NULL) {
         rodsLog (LOG_NOTICE,
-         "procAndQueResResult: getSqlResultByInx for COL_R_VAULT_PATH failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_VAULT_PATH failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((freeSpace = getSqlResultByInx (genQueryOut, COL_R_FREE_SPACE)) ==
-      NULL) {
+        NULL) {
         rodsLog (LOG_NOTICE,
-         "procAndQueResResult: getSqlResultByInx for COL_R_FREE_SPACE failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_FREE_SPACE failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescInfo = getSqlResultByInx (genQueryOut, COL_R_RESC_INFO)) ==
-      NULL) {
+        NULL) {
         rodsLog (LOG_NOTICE,
-          "procAndQueResResult: getSqlResultByInx for COL_R_RESC_INFO failed");
+                 "procAndQueResResult: getSqlResultByInx for COL_R_RESC_INFO failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescComments = getSqlResultByInx (genQueryOut, COL_R_RESC_COMMENT))
-      == NULL) {
+        == NULL) {
         rodsLog (LOG_NOTICE,
-        "procAndQueResResult:getSqlResultByInx for COL_R_RESC_COMMENT failed");
+                 "procAndQueResResult:getSqlResultByInx for COL_R_RESC_COMMENT failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescCreate = getSqlResultByInx (genQueryOut, COL_R_CREATE_TIME))
-      == NULL) {
+        == NULL) {
         rodsLog (LOG_NOTICE,
-         "procAndQueResResult:getSqlResultByInx for COL_R_CREATE_TIME failed");
+                 "procAndQueResResult:getSqlResultByInx for COL_R_CREATE_TIME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
     if ((rescModify = getSqlResultByInx (genQueryOut, COL_R_MODIFY_TIME))
-      == NULL) {
+        == NULL) {
         rodsLog (LOG_NOTICE,
-         "procAndQueResResult:getSqlResultByInx for COL_R_MODIFY_TIME failed");
+                 "procAndQueResResult:getSqlResultByInx for COL_R_MODIFY_TIME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
     if ((rescStatus = getSqlResultByInx (genQueryOut, COL_R_RESC_STATUS))
-      == NULL) {
+        == NULL) {
         rodsLog (LOG_NOTICE,
-         "procAndQueResResult:getSqlResultByInx for COL_R_RESC_STATUS failed");
+                 "procAndQueResResult:getSqlResultByInx for COL_R_RESC_STATUS failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
-#if 0	/* do multiple continueInx */
+#if 0   /* do multiple continueInx */
     if (RescGrpInfo != NULL) {
         /* we are updating RescGrpInfo */
         freeAllRescGrp (RescGrpInfo);
@@ -1308,8 +1275,8 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         status = resolveHost (&addr, &tmpRodsServerHost);
         if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "procAndQueRescResult: resolveHost error for %s",
-              addr.hostAddr);
+                     "procAndQueRescResult: resolveHost error for %s",
+                     addr.hostAddr);
         }
         /* queue the resource */
         myRescInfo = ( rescInfo_t* )malloc (sizeof (rescInfo_t));
@@ -1324,30 +1291,30 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         myRescInfo->rescTypeInx = getRescTypeInx (tmpRescType);
         if (myRescInfo->rescTypeInx < 0) {
             rodsLog (LOG_ERROR,
-             "procAndQueResResult: Unknown rescType %s. Resource %s will not be configured",
-              tmpRescType, myRescInfo->rescName);
+                     "procAndQueResResult: Unknown rescType %s. Resource %s will not be configured",
+                     tmpRescType, myRescInfo->rescName);
             continue;
         }
         rstrcpy (myRescInfo->rescClass, tmpRescClass, NAME_LEN);
         myRescInfo->rescClassInx = getRescClassInx (tmpRescClass);
         if (myRescInfo->rescClassInx < 0) {
             rodsLog (LOG_ERROR,
-             "procAndQueResResult: Unknown rescClass %s. Resource %s will not be configured",
-              tmpRescClass, myRescInfo->rescName);
+                     "procAndQueResResult: Unknown rescClass %s. Resource %s will not be configured",
+                     tmpRescClass, myRescInfo->rescName);
             continue;
         }
         rstrcpy (myRescInfo->rescVaultPath, tmpRescVaultPath, MAX_NAME_LEN);
         if (RescTypeDef[myRescInfo->rescTypeInx].driverType == WOS_FILE_TYPE &&
-          tmpRodsServerHost->localFlag == LOCAL_HOST) {
-	    /* For WOS_FILE_TYPE, the vault path is wosHost/wosPolicy */
-	    char wosHost[MAX_NAME_LEN], wosPolicy[MAX_NAME_LEN];
-	    char *tmpStr;
+            tmpRodsServerHost->localFlag == LOCAL_HOST) {
+            /* For WOS_FILE_TYPE, the vault path is wosHost/wosPolicy */
+            char wosHost[MAX_NAME_LEN], wosPolicy[MAX_NAME_LEN];
+            char *tmpStr;
             if (splitPathByKey (tmpRescVaultPath, wosHost, wosPolicy, '/') < 0)
             {
-		rodsLog (LOG_ERROR,
-                  "procAndQueResResult:splitPathByKey of wosHost error for %s",
-		  wosHost, wosPolicy);
-	    } else {
+                rodsLog (LOG_ERROR,
+                         "procAndQueResResult:splitPathByKey of wosHost error for %s",
+                         wosHost, wosPolicy);
+            } else {
                 // We are using static chars here because the call to putenv
                 // requires a non-automatic variable.  Otherwise the ENV
                 // var dies with function.  Note that we could use setenv
@@ -1358,12 +1325,12 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
                 putenv (tmpStr);
                 snprintf (tmpStr1, MAX_NAME_LEN, "%s=%s",  WOS_POLICY_ENV, wosPolicy);
                 putenv (tmpStr1);
-		if (ProcessType == SERVER_PT) {
-		    rodsLog (LOG_NOTICE,
-		     "Set WOS env wosHost=%s, wosPolicy=%s", 
-		      wosHost, wosPolicy);
-		}
-	    }
+                if (ProcessType == SERVER_PT) {
+                    rodsLog (LOG_NOTICE,
+                             "Set WOS env wosHost=%s, wosPolicy=%s", 
+                             wosHost, wosPolicy);
+                }
+            }
         }
         rstrcpy (myRescInfo->rescInfo, tmpRescInfo, LONG_NAME_LEN);
         rstrcpy (myRescInfo->rescComments, tmpRescComments, LONG_NAME_LEN);
@@ -1424,12 +1391,12 @@ printLocalResc ()
 
 #ifndef windows_platform
 #ifdef IRODS_SYSLOG
-        rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
+    rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
 #else /* IRODS_SYSLOG */
     fprintf (stderr, "Local Resource configuration: \n");
 #endif /* IRODS_SYSLOG */
 #else
-        rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
+    rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
 #endif
 
     /* search the global RescGrpInfo */
@@ -1442,15 +1409,15 @@ printLocalResc ()
         if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
 #ifndef windows_platform
 #ifdef IRODS_SYSLOG
-        rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
-              myRescInfo->rescName, myRescInfo->rescVaultPath);
+            rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
+                     myRescInfo->rescName, myRescInfo->rescVaultPath);
 #else /* IRODS_SYSLOG */
             fprintf (stderr, "   RescName: %s, VaultPath: %s\n",
-              myRescInfo->rescName, myRescInfo->rescVaultPath);
+                     myRescInfo->rescName, myRescInfo->rescVaultPath);
 #endif /* IRODS_SYSLOG */
 #else
-        rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
-              myRescInfo->rescName, myRescInfo->rescVaultPath);
+            rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
+                     myRescInfo->rescName, myRescInfo->rescVaultPath);
 #endif
             localRescCnt ++;
         }
@@ -1459,7 +1426,7 @@ printLocalResc ()
 
 #ifndef windows_platform
 #ifdef IRODS_SYSLOG
-        rodsLog (LOG_NOTICE,"\n");
+    rodsLog (LOG_NOTICE,"\n");
 #else /* IRODS_SYSLOG */
     fprintf (stderr, "\n");
 #endif /* IRODS_SYSLOG */
@@ -1490,7 +1457,7 @@ printLocalResc ()
 
 int
 queResc (rescInfo_t *myRescInfo, char *rescGroupName,
-rescGrpInfo_t **rescGrpInfoHead, int topFlag)
+         rescGrpInfo_t **rescGrpInfoHead, int topFlag)
 {
     rescGrpInfo_t *myRescGrpInfo;
     int status;
@@ -1520,7 +1487,7 @@ rescGrpInfo_t **rescGrpInfoHead, int topFlag)
 
 int
 queRescGrp (rescGrpInfo_t **rescGrpInfoHead, rescGrpInfo_t *myRescGrpInfo,
-int flag)
+            int flag)
 {
     rescInfo_t *tmpRescInfo, *myRescInfo;
     rescGrpInfo_t *tmpRescGrpInfo, *lastRescGrpInfo = NULL;
@@ -1534,9 +1501,9 @@ int flag)
         while (tmpRescGrpInfo != NULL) {
             tmpRescInfo = tmpRescGrpInfo->rescInfo;
             if (flag == BY_TYPE_FLAG && myRescInfo != NULL &&
-              tmpRescInfo != NULL) {
+                tmpRescInfo != NULL) {
                 if (RescClass[myRescInfo->rescClassInx].classType <
-                  RescClass[tmpRescInfo->rescClassInx].classType) {
+                    RescClass[tmpRescInfo->rescClassInx].classType) {
                     break;
                 }
             }
@@ -1608,7 +1575,7 @@ getRescTypeInx (char *rescType)
         }
     }
     rodsLog (LOG_NOTICE,
-      "getRescTypeInx: No match for input rescType %s", rescType);
+             "getRescTypeInx: No match for input rescType %s", rescType);
 
     return (UNMATCHED_KEY_OR_INDEX);
 }
@@ -1629,7 +1596,7 @@ getRescClassInx (char *rescClass)
 
     for (i = 0; i < NumRescClass; i++) {
         if (strstr (rescClass, RescClass[i].className) != NULL) {
-	    /* "primary" is currently not used */
+            /* "primary" is currently not used */
             if (strstr (rescClass, "primary") != NULL) {
                 return (i | PRIMARY_FLAG);
             } else {
@@ -1638,7 +1605,7 @@ getRescClassInx (char *rescClass)
         }
     }
     rodsLog (LOG_NOTICE,
-      "getRescClassInx: No match for input rescClass %s", rescClass);
+             "getRescClassInx: No match for input rescClass %s", rescClass);
 
     return (UNMATCHED_KEY_OR_INDEX);
 }
@@ -1654,7 +1621,7 @@ getMultiCopyPerResc ( rsComm_t *rsComm ) // JMC - backport 4556
     ruleExecInfo_t rei;
 
     memset (&rei, 0, sizeof (rei));
-	rei.rsComm = rsComm; // JMC - backport 4556
+    rei.rsComm = rsComm; // JMC - backport 4556
     applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
         return 1;
@@ -1697,8 +1664,8 @@ updateResc (rsComm_t *rsComm)
     /* free the configured rescInfo */
     tmpRescGrpInfo = RescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
-	nextRescGrpInfo = tmpRescGrpInfo->next;
-	free (tmpRescGrpInfo->rescInfo);
+        nextRescGrpInfo = tmpRescGrpInfo->next;
+        free (tmpRescGrpInfo->rescInfo);
         free (tmpRescGrpInfo);
         tmpRescGrpInfo = nextRescGrpInfo;
     }

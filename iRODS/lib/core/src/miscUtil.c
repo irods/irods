@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -26,7 +28,7 @@ mkColl (rcComm_t *conn, char *collection)
     status = rcCollCreate (conn, &collCreateInp);
 
     if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME)
-	status = 0;
+        status = 0;
 
     return (status);
 }
@@ -52,15 +54,15 @@ mkCollR (rcComm_t *conn, char *startColl, char *destColl)
     memset (&rodsPath, 0, sizeof (rodsPath));
     while (tmpLen > startLen) {
         rodsPath.objType = COLL_OBJ_T;
-	rodsPath.objState = UNKNOWN_ST;
-	rstrcpy (rodsPath.outPath, tmpPath, MAX_NAME_LEN);
-	status =getRodsObjType (conn, &rodsPath);
+        rodsPath.objState = UNKNOWN_ST;
+        rstrcpy (rodsPath.outPath, tmpPath, MAX_NAME_LEN);
+        status =getRodsObjType (conn, &rodsPath);
         if (status >= 0 && rodsPath.objState == EXIST_ST) {
-	    clearRodsPath (&rodsPath);
-	    break;
+            clearRodsPath (&rodsPath);
+            break;
         } else {
-	    clearRodsPath (&rodsPath);
-	}
+            clearRodsPath (&rodsPath);
+        }
 
         /* Go backward */
 
@@ -73,11 +75,11 @@ mkCollR (rcComm_t *conn, char *startColl, char *destColl)
     while (tmpLen < pathLen) {
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
-       status = mkColl (conn, tmpPath);
+        status = mkColl (conn, tmpPath);
         if (status < 0) {
             rodsLog (LOG_NOTICE,
-             "mkCollR: mkdir failed for %s, status =%d",
-              tmpPath, status);
+                     "mkCollR: mkdir failed for %s, status =%d",
+                     tmpPath, status);
             return status;
         }
         while (tmpLen && tmpPath[tmpLen] != '\0')
@@ -99,7 +101,7 @@ mkdirR (char *startDir, char *destDir, int mode)
 #else
     struct irodsntstat statbuf;
 #endif
-#endif	/* USE_BOOST_FS */
+#endif  /* USE_BOOST_FS */
 
     startLen = strlen (startDir);
     pathLen = strlen (destDir);
@@ -110,18 +112,18 @@ mkdirR (char *startDir, char *destDir, int mode)
 
     while (tmpLen > startLen) {
 #ifdef USE_BOOST_FS
-	path p (tmpPath);
-	if (exists(p)) break;
-#else 	/* USE_BOOST_FS */
+        path p (tmpPath);
+        if (exists(p)) break;
+#else   /* USE_BOOST_FS */
 #ifndef windows_platform
-	if ((status = stat (tmpPath, &statbuf)) >= 0) break;
+        if ((status = stat (tmpPath, &statbuf)) >= 0) break;
 #else
-	if ((status = iRODSNt_stat(tmpPath, &statbuf)) >= 0) break;
+        if ((status = iRODSNt_stat(tmpPath, &statbuf)) >= 0) break;
 #endif
         if (status >= 0) {
-	    break;
+            break;
         }
-#endif	/* USE_BOOST_FS */
+#endif  /* USE_BOOST_FS */
 
         /* Go backward */
 
@@ -141,8 +143,8 @@ mkdirR (char *startDir, char *destDir, int mode)
 #endif
         if (status < 0) {
             rodsLog (LOG_NOTICE,
-             "mkdirR: mkdir failed for %s, errno =%d",
-              tmpPath, errno);
+                     "mkdirR: mkdir failed for %s, errno =%d",
+                     tmpPath, errno);
             return UNIX_FILE_MKDIR_ERR - errno;
         }
         while (tmpLen && tmpPath[tmpLen] != '\0')
@@ -159,8 +161,8 @@ mkdirForFilePath (char* filePath)
 
     if ((status = splitPathByKey (filePath, parent, child, '/')) < 0) {
         rodsLogError (LOG_ERROR, status,
-          "mkdirForFilePath:: splitPathByKey for %s error, status = %d",
-          filePath, status);
+                      "mkdirForFilePath:: splitPathByKey for %s error, status = %d",
+                      filePath, status);
         return (status);
     }
     status =  mkdirR ("/", parent, DEFAULT_DIR_MODE);
@@ -183,7 +185,7 @@ rmdirR (char *startDir, char *destDir)
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
-	rmdir (tmpPath);
+        rmdir (tmpPath);
 
         /* Go backward */
 
@@ -202,12 +204,10 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
     rodsObjStat_t *rodsObjStatOut = NULL;
 
     if (rodsPath == NULL) {
-	return (USER__NULL_INPUT_ERR);
+        return (USER__NULL_INPUT_ERR);
     }
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
-
-
 
     rstrcpy (dataObjInp.objPath, rodsPath->outPath, MAX_NAME_LEN);
     status = rcObjStat (conn, &dataObjInp, &rodsObjStatOut);
@@ -217,32 +217,32 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
         rodsPath->objState = NOT_EXIST_ST;
 
         if (status == OBJ_PATH_DOES_NOT_EXIST || 
-          status == USER_FILE_DOES_NOT_EXIST) {
-                return (NOT_EXIST_ST);
+            status == USER_FILE_DOES_NOT_EXIST) {
+            return (NOT_EXIST_ST);
         } else {
             rodsLogError (LOG_ERROR, status, 
-             "rcObjStat of %s failed", rodsPath->outPath);
+                          "rcObjStat of %s failed", rodsPath->outPath);
             return status;
         }
     } else if (rodsPath->objType == COLL_OBJ_T && 
-      rodsObjStatOut->objType != COLL_OBJ_T) {
+               rodsObjStatOut->objType != COLL_OBJ_T) {
         rodsPath->objState = NOT_EXIST_ST;
     } else if (rodsPath->objType == DATA_OBJ_T && 
-      rodsObjStatOut->objType != DATA_OBJ_T) {
+               rodsObjStatOut->objType != DATA_OBJ_T) {
         rodsPath->objState = NOT_EXIST_ST;
     } else {
-	if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-	    rodsPath->objState = NOT_EXIST_ST;
-	} else {
-	    rodsPath->objState = EXIST_ST;
-	}
-	rodsPath->objType = rodsObjStatOut->objType;
-	if (rodsPath->objType == DATA_OBJ_T) {
-	    rodsPath->objMode = rodsObjStatOut->dataMode;
+        if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+            rodsPath->objState = NOT_EXIST_ST;
+        } else {
+            rodsPath->objState = EXIST_ST;
+        }
+        rodsPath->objType = rodsObjStatOut->objType;
+        if (rodsPath->objType == DATA_OBJ_T) {
+            rodsPath->objMode = rodsObjStatOut->dataMode;
             rstrcpy (rodsPath->dataId, rodsObjStatOut->dataId, NAME_LEN);
             rodsPath->size = rodsObjStatOut->objSize;
             rstrcpy (rodsPath->chksum, rodsObjStatOut->chksum, NAME_LEN);
-	}
+        }
     }
     rodsPath->rodsObjStat = rodsObjStatOut;
 
@@ -251,41 +251,41 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 #if 0 // JMC - UNUSED
 int
 extractRodsObjType (rodsPath_t *rodsPath, sqlResult_t *dataId, 
-sqlResult_t *replStatus, sqlResult_t *chksum, sqlResult_t *dataSize, 
-int inx, int rowCnt)
+                    sqlResult_t *replStatus, sqlResult_t *chksum, sqlResult_t *dataSize, 
+                    int inx, int rowCnt)
 {
     int i;
     char *prevdataId = NULL;
     int gotCopy = 0;
 
     if (dataId == NULL) {
-	/* special coll */
+        /* special coll */
         rodsPath->size =
-          strtoll (&dataSize->value[dataSize->len * inx], 0, 0);
+            strtoll (&dataSize->value[dataSize->len * inx], 0, 0);
         rodsPath->objState = EXIST_ST;
-	return (inx);
+        return (inx);
     }
 
     i = inx;
 
     for (i = inx;i < rowCnt; i++) {
-	if (prevdataId != NULL) { 
-	    if (strcmp (prevdataId, &dataId->value[dataId->len * i]) != 0) {
-	        break;
-	    }
-	} else {
-	    prevdataId = &dataId->value[dataId->len * i];
-	}
+        if (prevdataId != NULL) { 
+            if (strcmp (prevdataId, &dataId->value[dataId->len * i]) != 0) {
+                break;
+            }
+        } else {
+            prevdataId = &dataId->value[dataId->len * i];
+        }
 
         if (gotCopy == 0 && 
-	  atoi (&replStatus->value[replStatus->len * i]) > 0) {
+            atoi (&replStatus->value[replStatus->len * i]) > 0) {
             rstrcpy (rodsPath->dataId, &dataId->value[dataId->len * i],
-              NAME_LEN);
+                     NAME_LEN);
             rodsPath->size =
-              strtoll (&dataSize->value[dataSize->len * i], 0, 0);
+                strtoll (&dataSize->value[dataSize->len * i], 0, 0);
             rstrcpy (rodsPath->chksum,
-              &chksum->value[chksum->len * i], NAME_LEN);
-	    gotCopy = 1;
+                     &chksum->value[chksum->len * i], NAME_LEN);
+            gotCopy = 1;
         }
     }
 
@@ -293,8 +293,8 @@ int inx, int rowCnt)
         /* just use the first one */
         rstrcpy (rodsPath->dataId, &dataId->value[dataId->len * inx], NAME_LEN);
         rodsPath->size = strtoll (&dataSize->value[dataSize->len * inx], 0, 0);
-            rstrcpy (rodsPath->chksum, 
-	      &chksum->value[chksum->len * inx], NAME_LEN);
+        rstrcpy (rodsPath->chksum, 
+                 &chksum->value[chksum->len * inx], NAME_LEN);
     }
 
     rodsPath->objState = EXIST_ST;
@@ -318,7 +318,7 @@ genAllInCollQCond (char *collection, char *collQCond)
     } else {
 
         snprintf (collQCond, MAX_NAME_LEN*2, " = '%s' || like '%s/%%' ",
-          collection, collection);
+                  collection, collection);
     }
     return (0);
 }
@@ -328,8 +328,8 @@ genAllInCollQCond (char *collection, char *collQCond)
 
 int
 queryCollInColl (queryHandle_t *queryHandle, char *collection,
-int flags, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut)
+                 int flags, genQueryInp_t *genQueryInp,
+                 genQueryOut_t **genQueryOut)
 {
     char collQCond[MAX_NAME_LEN];
     int status;
@@ -358,7 +358,7 @@ genQueryOut_t **genQueryOut)
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
     status = (*queryHandle->genQuery) (
-      (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
+        (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
 
     return (status);
 }
@@ -367,8 +367,8 @@ genQueryOut_t **genQueryOut)
  */
 int
 queryDataObjInColl (queryHandle_t *queryHandle, char *collection, 
-int flags, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut, keyValPair_t *condInput)
+                    int flags, genQueryInp_t *genQueryInp,
+                    genQueryOut_t **genQueryOut, keyValPair_t *condInput)
 {
     char collQCond[MAX_NAME_LEN];
     int status;
@@ -389,15 +389,15 @@ genQueryOut_t **genQueryOut, keyValPair_t *condInput)
     }
 
     if ((flags & INCLUDE_CONDINPUT_IN_QUERY) != 0 && 
-      condInput != NULL &&
-      (rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
+        condInput != NULL &&
+        (rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
         snprintf (collQCond, MAX_NAME_LEN, " = '%s'", rescName);
         addInxVal (&genQueryInp->sqlCondInp, COL_D_RESC_NAME, collQCond);
     }
 
     if ((flags & INCLUDE_CONDINPUT_IN_QUERY) != 0 &&
-      condInput != NULL &&
-      (rescName = getValByKey (condInput, RESC_GROUP_NAME_KW)) != NULL) {
+        condInput != NULL &&
+        (rescName = getValByKey (condInput, RESC_GROUP_NAME_KW)) != NULL) {
         snprintf (collQCond, MAX_NAME_LEN, " = '%s'", rescName);
         addInxVal (&genQueryInp->sqlCondInp, COL_D_RESC_GROUP_NAME, collQCond);
     }
@@ -408,7 +408,7 @@ genQueryOut_t **genQueryOut, keyValPair_t *condInput)
     genQueryInp->options = RETURN_TOTAL_ROW_COUNT;
 
     status = (*queryHandle->genQuery) (
-      (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
+        (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
 
     return (status);
 
@@ -430,18 +430,18 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
     addInxIval (&genQueryInp->selectInp, COL_D_MODIFY_TIME, 1);
     addInxIval (&genQueryInp->selectInp, COL_D_CREATE_TIME, 1);
     if ((flags & LONG_METADATA_FG) != 0 || 
-      (flags & VERY_LONG_METADATA_FG) != 0) {
+        (flags & VERY_LONG_METADATA_FG) != 0) {
         addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
         addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
 
         if ((flags & VERY_LONG_METADATA_FG) != 0) {
-             addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
-             addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
-             addInxIval (&genQueryInp->selectInp, COL_D_RESC_GROUP_NAME, 1);
-			 addInxIval (&genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1); // JMC - backport 4636
-	}
+            addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
+            addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
+            addInxIval (&genQueryInp->selectInp, COL_D_RESC_GROUP_NAME, 1);
+            addInxIval (&genQueryInp->selectInp, COL_DATA_TYPE_NAME, 1); // JMC - backport 4636
+        }
     }
 
     return (0);
@@ -449,7 +449,7 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
 
 int
 printTiming (rcComm_t *conn, char *objPath, rodsLong_t fileSize, 
-char *localFile, struct timeval *startTime, struct timeval *endTime)
+             char *localFile, struct timeval *startTime, struct timeval *endTime)
 {
     struct timeval diffTime;
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
@@ -459,8 +459,8 @@ char *localFile, struct timeval *startTime, struct timeval *endTime)
 
     if ((status = splitPathByKey (objPath, myDir, myFile, '/')) < 0) {
         rodsLogError (LOG_NOTICE, status,
-          "printTiming: splitPathByKey for %s error, status = %d",
-          objPath, status);
+                      "printTiming: splitPathByKey for %s error, status = %d",
+                      objPath, status);
         return (status);
     }
 
@@ -468,42 +468,42 @@ char *localFile, struct timeval *startTime, struct timeval *endTime)
     diffTime.tv_usec = endTime->tv_usec - startTime->tv_usec;
 
     if (diffTime.tv_usec < 0) {
-	diffTime.tv_sec --;
-	diffTime.tv_usec += 1000000;
+        diffTime.tv_sec --;
+        diffTime.tv_usec += 1000000;
     }
 
     timeInSec = (float) diffTime.tv_sec + ((float) diffTime.tv_usec /
-     1000000.0);
+                                           1000000.0);
 
     if (fileSize < 0) {
-	/* may be we can find it from the local file */
+        /* may be we can find it from the local file */
 
-	if (localFile != NULL) {
-	    fileSize = getFileSize (localFile);
-	}
+        if (localFile != NULL) {
+            fileSize = getFileSize (localFile);
+        }
     }
 
     
     if (fileSize <= 0) {
-	transRate = 0.0;
-	sizeInMb = 0.0;
+        transRate = 0.0;
+        sizeInMb = 0.0;
     } else {
-	sizeInMb = (float) fileSize / 1048600.0;
+        sizeInMb = (float) fileSize / 1048600.0;
         if (timeInSec == 0.0) {
-	    transRate = 0.0;
+            transRate = 0.0;
         } else {
-	    transRate = sizeInMb / timeInSec;
-	}
+            transRate = sizeInMb / timeInSec;
+        }
     }
 
     if (fileSize < 0) {
-	fprintf (stdout,
-	  "   %-25.25s  %.3f sec\n",    
-	    myFile, timeInSec);
+        fprintf (stdout,
+                 "   %-25.25s  %.3f sec\n",    
+                 myFile, timeInSec);
     } else {
         fprintf (stdout,
-          "   %-25.25s  %10.3f MB | %.3f sec | %d thr | %6.3f MB/s\n",
-            myFile, sizeInMb, timeInSec, conn->transStat.numThreads, transRate);
+                 "   %-25.25s  %10.3f MB | %.3f sec | %d thr | %6.3f MB/s\n",
+                 myFile, sizeInMb, timeInSec, conn->transStat.numThreads, transRate);
     }
 
     return (0);
@@ -518,19 +518,19 @@ initSysTiming (char *procName, char *action, int envVarFlag)
     (void) gettimeofday(&SysTimingVal, (struct timezone *)0);
 
     if (envVarFlag > 0) {
-	tmpStr = malloc (NAME_LEN);
-	snprintf(tmpStr, NAME_LEN, "%s=%u", 
-	  SYS_TIMING_SEC, (unsigned int) SysTimingVal.tv_sec);
-	putenv(tmpStr);
-	free( tmpStr ); // JMC cppcheck - leak
-	tmpStr = malloc (NAME_LEN);
-	snprintf(tmpStr, NAME_LEN, "%s=%u", 
-	  SYS_TIMING_USEC, (unsigned int) SysTimingVal.tv_usec);
-	putenv(tmpStr);
+        tmpStr = malloc (NAME_LEN);
+        snprintf(tmpStr, NAME_LEN, "%s=%u", 
+                 SYS_TIMING_SEC, (unsigned int) SysTimingVal.tv_sec);
+        putenv(tmpStr);
+        free( tmpStr ); // JMC cppcheck - leak
+        tmpStr = malloc (NAME_LEN);
+        snprintf(tmpStr, NAME_LEN, "%s=%u", 
+                 SYS_TIMING_USEC, (unsigned int) SysTimingVal.tv_usec);
+        putenv(tmpStr);
     }
     rodsLog (LOG_NOTICE,
-      "initSysTiming: %s at %s", procName, action);
-	free( tmpStr ); // JMC cppcheck - leak
+             "initSysTiming: %s at %s", procName, action);
+    free( tmpStr ); // JMC cppcheck - leak
     return 0;
 }
 
@@ -542,22 +542,22 @@ printSysTiming (char *procName, char *action, int envVarFlag)
     char *tmpStr;
 
     if (envVarFlag > 0) {
-	if ((tmpStr = getenv (SYS_TIMING_SEC)) == NULL) {
+        if ((tmpStr = getenv (SYS_TIMING_SEC)) == NULL) {
             rodsLog (LOG_ERROR,
-              "printSysTiming: env var SYS_TIMING_SEC  not set");
+                     "printSysTiming: env var SYS_TIMING_SEC  not set");
             return -1;
         }
-	SysTimingVal.tv_sec = atoi (tmpStr);
+        SysTimingVal.tv_sec = atoi (tmpStr);
         if ((tmpStr = getenv (SYS_TIMING_USEC)) == NULL) {
             rodsLog (LOG_ERROR,
-              "printSysTiming: env var SYS_TIMING_USEC  not set");
+                     "printSysTiming: env var SYS_TIMING_USEC  not set");
             return -1;
         }
         SysTimingVal.tv_usec = atoi (tmpStr);
     } else if (SysTimingVal.tv_sec == 0) {
         rodsLog (LOG_NOTICE,
-          "printSysTiming: SysTimingVal has not been initialized");
-	return -1;
+                 "printSysTiming: SysTimingVal has not been initialized");
+        return -1;
     }
     (void) gettimeofday(&curTime, (struct timezone *)0);
 
@@ -570,10 +570,10 @@ printSysTiming (char *procName, char *action, int envVarFlag)
     }
 
     timeInSec = (float) diffTime.tv_sec + ((float) diffTime.tv_usec /
-     1000000.0);
+                                           1000000.0);
 
     rodsLog (LOG_NOTICE,
-      "Time for %s to %s = %8.5f sec", procName, action, timeInSec);
+             "Time for %s to %s = %8.5f sec", procName, action, timeInSec);
 
     SysTimingVal = curTime;
 
@@ -591,8 +591,8 @@ printNoSync (char *objPath, rodsLong_t fileSize)
 
     if ((status = splitPathByKey (objPath, myDir, myFile, '/')) < 0) {
         rodsLogError (LOG_NOTICE, status,
-          "printNoSync: splitPathByKey for %s error, status = %d",
-          objPath, status);
+                      "printNoSync: splitPathByKey for %s error, status = %d",
+                      objPath, status);
         return (status);
     }
 
@@ -603,7 +603,7 @@ printNoSync (char *objPath, rodsLong_t fileSize)
     }
 
     fprintf (stdout,
-      "   %-25.25s  %10.3f MB --- no sync required \n", myFile, sizeInMb);
+             "   %-25.25s  %10.3f MB --- no sync required \n", myFile, sizeInMb);
 
     return (0);
 }
@@ -622,8 +622,8 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **g
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
     if (zoneHint != NULL) { // JMC - bacport 4516
-	    addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
-	}
+        addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
+    }
 
     addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
@@ -662,14 +662,14 @@ queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint, genQueryOut_t **ge
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
     myGenQueryOut = *genQueryOut = 
-      (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
+        (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
     memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
 
     clearGenQueryInp (&genQueryInp);
 
     if (zoneHint != NULL) { // JMC - bacport 4516
-	    addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
-	}
+        addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneHint);
+    }
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
@@ -694,7 +694,7 @@ queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint, genQueryOut_t **ge
 
 int
 queryCollInheritance (rcComm_t *conn, char *collName, 
-		      genQueryOut_t **genQueryOut)
+                      genQueryOut_t **genQueryOut)
 {
     genQueryInp_t genQueryInp;
     genQueryOut_t *myGenQueryOut;
@@ -708,7 +708,7 @@ queryCollInheritance (rcComm_t *conn, char *collName,
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
     myGenQueryOut = *genQueryOut = 
-      (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
+        (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
     memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
 
     clearGenQueryInp (&genQueryInp);
@@ -728,14 +728,14 @@ queryCollInheritance (rcComm_t *conn, char *collName,
 
 int
 genQueryOutToCollRes (genQueryOut_t **genQueryOut, 
-collSqlResult_t *collSqlResult)
+                      collSqlResult_t *collSqlResult)
 {
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *collType, *collInfo1, *collInfo2, *collOwner,
-      *collCreateTime, *collModifyTime, *tmpSqlResult;
+        *collCreateTime, *collModifyTime, *tmpSqlResult;
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
-      collSqlResult == NULL) 
+        collSqlResult == NULL) 
         return (USER__NULL_INPUT_ERR);
 
     collSqlResult->rowCnt = myGenQueryOut->rowCnt;
@@ -745,82 +745,82 @@ collSqlResult_t *collSqlResult)
     
     if ((collName = getSqlResultByInx (myGenQueryOut, COL_COLL_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
-          "genQueryOutToCollRes: getSqlResultByInx for COL_COLL_NAME failed");
+                 "genQueryOutToCollRes: getSqlResultByInx for COL_COLL_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     } else {
-	collSqlResult->collName = *collName;
+        collSqlResult->collName = *collName;
     }
 
     if ((collType = getSqlResultByInx (myGenQueryOut, COL_COLL_TYPE)) == NULL) {
-	/* should inherit parent's specColl */
-	setSqlResultValue (&collSqlResult->collType, COL_COLL_NAME, 
-	  INHERIT_PAR_SPEC_COLL_STR, myGenQueryOut->rowCnt); 
+        /* should inherit parent's specColl */
+        setSqlResultValue (&collSqlResult->collType, COL_COLL_NAME, 
+                           INHERIT_PAR_SPEC_COLL_STR, myGenQueryOut->rowCnt); 
         setSqlResultValue (&collSqlResult->collInfo1, COL_COLL_INFO1, "",
-        myGenQueryOut->rowCnt);
+                           myGenQueryOut->rowCnt);
         setSqlResultValue (&collSqlResult->collInfo2, COL_COLL_INFO2, "",
-        myGenQueryOut->rowCnt);
+                           myGenQueryOut->rowCnt);
         setSqlResultValue (&collSqlResult->collOwner, COL_COLL_OWNER_NAME, "",
-        myGenQueryOut->rowCnt);
+                           myGenQueryOut->rowCnt);
         setSqlResultValue (&collSqlResult->collCreateTime, COL_COLL_CREATE_TIME,
-	  "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
         setSqlResultValue (&collSqlResult->collModifyTime, COL_COLL_MODIFY_TIME,
-	  "", myGenQueryOut->rowCnt);
-	/* myGenQueryOut could came from rcQuerySpecColl call */
-	if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut, COL_DATA_NAME)) 
-	  != NULL) {
-	    if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
-	}
+                           "", myGenQueryOut->rowCnt);
+        /* myGenQueryOut could came from rcQuerySpecColl call */
+        if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut, COL_DATA_NAME)) 
+            != NULL) {
+            if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
+        }
         if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut,COL_D_CREATE_TIME))
-          != NULL) {
+            != NULL) {
             if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
         }
         if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut,COL_D_MODIFY_TIME))
-          != NULL) {
+            != NULL) {
             if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
         }
         if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut, COL_DATA_SIZE))
-          != NULL) {
+            != NULL) {
             if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
         }
     } else {
-	collSqlResult->collType = *collType;
+        collSqlResult->collType = *collType;
         if ((collInfo1 = getSqlResultByInx (myGenQueryOut, COL_COLL_INFO1)) == 
-	  NULL) {
+            NULL) {
             rodsLog (LOG_ERROR,
-              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO1 failed");
+                     "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO1 failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
-	    collSqlResult->collInfo1 = *collInfo1;
-	}
+            collSqlResult->collInfo1 = *collInfo1;
+        }
         if ((collInfo2 = getSqlResultByInx (myGenQueryOut, COL_COLL_INFO2)) == 
-          NULL) {
+            NULL) {
             rodsLog (LOG_ERROR,
-              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO2 failed");
+                     "genQueryOutToCollRes: getSqlResultByInx COL_COLL_INFO2 failed");
             free (collSqlResult);
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
             collSqlResult->collInfo2 = *collInfo2;
         }
         if ((collOwner = getSqlResultByInx (myGenQueryOut, 
-	  COL_COLL_OWNER_NAME)) == NULL) {
+                                            COL_COLL_OWNER_NAME)) == NULL) {
             rodsLog (LOG_ERROR,
-              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_OWNER_NAME failed");
+                     "genQueryOutToCollRes: getSqlResultByInx COL_COLL_OWNER_NAME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
             collSqlResult->collOwner = *collOwner;
         }
         if ((collCreateTime = getSqlResultByInx (myGenQueryOut,
-          COL_COLL_CREATE_TIME)) == NULL) {
+                                                 COL_COLL_CREATE_TIME)) == NULL) {
             rodsLog (LOG_ERROR,
-              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_CREATE_TIME failed");
+                     "genQueryOutToCollRes: getSqlResultByInx COL_COLL_CREATE_TIME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
             collSqlResult->collCreateTime = *collCreateTime;
         }
         if ((collModifyTime = getSqlResultByInx (myGenQueryOut,
-          COL_COLL_MODIFY_TIME)) == NULL) {
+                                                 COL_COLL_MODIFY_TIME)) == NULL) {
             rodsLog (LOG_ERROR,
-              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_MODIFY_TIME failed");
+                     "genQueryOutToCollRes: getSqlResultByInx COL_COLL_MODIFY_TIME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
             collSqlResult->collModifyTime = *collModifyTime;
@@ -834,27 +834,27 @@ collSqlResult_t *collSqlResult)
  
 int
 setSqlResultValue (sqlResult_t *sqlResult, int attriInx, char *valueStr,
-int rowCnt)
+                   int rowCnt)
 {
     if (sqlResult == NULL || rowCnt <= 0) return (0);
-	
+        
     sqlResult->attriInx = attriInx;
     if (valueStr == NULL) {
-	sqlResult->len = 1;
+        sqlResult->len = 1;
     } else {
         sqlResult->len = strlen (valueStr) + 1;
     }
     if (sqlResult->len == 1) {
-	sqlResult->value = (char *)malloc (rowCnt);
-	memset (sqlResult->value, 0, rowCnt);
+        sqlResult->value = (char *)malloc (rowCnt);
+        memset (sqlResult->value, 0, rowCnt);
     } else {
         int i;
-	char *tmpPtr;
-	tmpPtr = sqlResult->value = (char *)malloc (rowCnt * sqlResult->len);
-	for (i = 0; i < rowCnt; i++) {
-	    rstrcpy (tmpPtr, valueStr, sqlResult->len);
-	    tmpPtr += sqlResult->len;
-	}
+        char *tmpPtr;
+        tmpPtr = sqlResult->value = (char *)malloc (rowCnt * sqlResult->len);
+        for (i = 0; i < rowCnt; i++) {
+            rstrcpy (tmpPtr, valueStr, sqlResult->len);
+            tmpPtr += sqlResult->len;
+        }
     }
     return (0); 
 }
@@ -865,19 +865,19 @@ clearCollSqlResult (collSqlResult_t *collSqlResult)
     if (collSqlResult == NULL) return (USER__NULL_INPUT_ERR);
 
     if (collSqlResult->collName.value != NULL) 
-      free (collSqlResult->collName.value);
+        free (collSqlResult->collName.value);
     if (collSqlResult->collType.value != NULL) 
-      free (collSqlResult->collType.value);
+        free (collSqlResult->collType.value);
     if (collSqlResult->collInfo1.value != NULL) 
-      free (collSqlResult->collInfo1.value);
+        free (collSqlResult->collInfo1.value);
     if (collSqlResult->collInfo2.value != NULL) 
-      free (collSqlResult->collInfo2.value);
+        free (collSqlResult->collInfo2.value);
     if (collSqlResult->collOwner.value != NULL) 
-      free (collSqlResult->collOwner.value);
+        free (collSqlResult->collOwner.value);
     if (collSqlResult->collCreateTime.value != NULL) 
-      free (collSqlResult->collCreateTime.value);
+        free (collSqlResult->collCreateTime.value);
     if (collSqlResult->collModifyTime.value != NULL) 
-      free (collSqlResult->collModifyTime.value);
+        free (collSqlResult->collModifyTime.value);
 
     memset (collSqlResult, 0, sizeof (collSqlResult_t));
 
@@ -890,33 +890,33 @@ clearDataObjSqlResult (dataObjSqlResult_t *dataObjSqlResult)
     if (dataObjSqlResult == NULL) return (USER__NULL_INPUT_ERR);
 
     if (dataObjSqlResult->collName.value != NULL)
-      free (dataObjSqlResult->collName.value);
+        free (dataObjSqlResult->collName.value);
     if (dataObjSqlResult->dataName.value != NULL)
-      free (dataObjSqlResult->dataName.value);
+        free (dataObjSqlResult->dataName.value);
     if (dataObjSqlResult->dataMode.value != NULL)
-      free (dataObjSqlResult->dataMode.value);
+        free (dataObjSqlResult->dataMode.value);
     if (dataObjSqlResult->dataSize.value != NULL)
-      free (dataObjSqlResult->dataSize.value);
+        free (dataObjSqlResult->dataSize.value);
     if (dataObjSqlResult->createTime.value != NULL)
-      free (dataObjSqlResult->createTime.value);
+        free (dataObjSqlResult->createTime.value);
     if (dataObjSqlResult->modifyTime.value != NULL)
-      free (dataObjSqlResult->modifyTime.value);
+        free (dataObjSqlResult->modifyTime.value);
     if (dataObjSqlResult->chksum.value != NULL)
-      free (dataObjSqlResult->chksum.value);
+        free (dataObjSqlResult->chksum.value);
     if (dataObjSqlResult->replStatus.value != NULL)
-      free (dataObjSqlResult->replStatus.value);
+        free (dataObjSqlResult->replStatus.value);
     if (dataObjSqlResult->dataId.value != NULL)
-      free (dataObjSqlResult->dataId.value);
+        free (dataObjSqlResult->dataId.value);
     if (dataObjSqlResult->resource.value != NULL)
-      free (dataObjSqlResult->resource.value);
+        free (dataObjSqlResult->resource.value);
     if (dataObjSqlResult->phyPath.value != NULL)
-      free (dataObjSqlResult->phyPath.value);
+        free (dataObjSqlResult->phyPath.value);
     if (dataObjSqlResult->ownerName.value != NULL)
-      free (dataObjSqlResult->ownerName.value);
+        free (dataObjSqlResult->ownerName.value);
     if (dataObjSqlResult->replNum.value != NULL)
-      free (dataObjSqlResult->replNum.value);
+        free (dataObjSqlResult->replNum.value);
     if (dataObjSqlResult->rescGrp.value != NULL)
-      free (dataObjSqlResult->rescGrp.value);
+        free (dataObjSqlResult->rescGrp.value);
 
     memset (dataObjSqlResult, 0, sizeof (dataObjSqlResult_t));
 
@@ -925,15 +925,15 @@ clearDataObjSqlResult (dataObjSqlResult_t *dataObjSqlResult)
 
 int
 genQueryOutToDataObjRes (genQueryOut_t **genQueryOut,
-dataObjSqlResult_t *dataObjSqlResult)
+                         dataObjSqlResult_t *dataObjSqlResult)
 {
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime, 
-      *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
-      *ownerName, *replNum, *rescGrp, *dataType; // JMC - backport 4636
+        *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
+        *ownerName, *replNum, *rescGrp, *dataType; // JMC - backport 4636
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
-      dataObjSqlResult == NULL)
+        dataObjSqlResult == NULL)
         return (USER__NULL_INPUT_ERR);
 
     dataObjSqlResult->rowCnt = myGenQueryOut->rowCnt;
@@ -943,7 +943,7 @@ dataObjSqlResult_t *dataObjSqlResult)
 
     if ((collName = getSqlResultByInx (myGenQueryOut, COL_COLL_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
-         "genQueryOutToDataObjRes: getSqlResultByInx for COL_COLL_NAME failed");
+                 "genQueryOutToDataObjRes: getSqlResultByInx for COL_COLL_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     } else {
         dataObjSqlResult->collName = *collName;
@@ -951,7 +951,7 @@ dataObjSqlResult_t *dataObjSqlResult)
 
     if ((dataName = getSqlResultByInx (myGenQueryOut, COL_DATA_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
-         "genQueryOutToDataObjRes: getSqlResultByInx for COL_DATA_NAME failed");
+                 "genQueryOutToDataObjRes: getSqlResultByInx for COL_DATA_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     } else {
         dataObjSqlResult->dataName = *dataName;
@@ -959,101 +959,101 @@ dataObjSqlResult_t *dataObjSqlResult)
 
     if ((dataMode = getSqlResultByInx (myGenQueryOut, COL_DATA_MODE)) == NULL) {
         setSqlResultValue (&dataObjSqlResult->dataMode, COL_DATA_MODE, "",
-        myGenQueryOut->rowCnt);
+                           myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->dataMode = *dataMode;
     }
 
     if ((dataSize = getSqlResultByInx (myGenQueryOut, COL_DATA_SIZE)) == NULL) {
-	setSqlResultValue (&dataObjSqlResult->dataSize, COL_DATA_SIZE, "-1",
-        myGenQueryOut->rowCnt);
+        setSqlResultValue (&dataObjSqlResult->dataSize, COL_DATA_SIZE, "-1",
+                           myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->dataSize = *dataSize;
     }
 
     if ((createTime = getSqlResultByInx (myGenQueryOut, COL_D_CREATE_TIME)) 
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->createTime, COL_D_CREATE_TIME, 
-	  "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->createTime = *createTime;
     }
 
     if ((modifyTime = getSqlResultByInx (myGenQueryOut, COL_D_MODIFY_TIME)) 
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->modifyTime, COL_D_MODIFY_TIME, 
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->modifyTime = *modifyTime;
     }
 
     if ((dataId = getSqlResultByInx (myGenQueryOut, COL_D_DATA_ID))
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->dataId, COL_D_DATA_ID,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->dataId = *dataId;
     }
 
     if ((chksum = getSqlResultByInx (myGenQueryOut, COL_D_DATA_CHECKSUM)) 
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->chksum, COL_D_DATA_CHECKSUM,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->chksum = *chksum;
     }
 
     if ((replStatus = getSqlResultByInx (myGenQueryOut, COL_D_REPL_STATUS)) 
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->replStatus, COL_D_REPL_STATUS, 
-	  "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->replStatus = *replStatus;
     }
 
     if ((resource = getSqlResultByInx (myGenQueryOut, COL_D_RESC_NAME))
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->resource, COL_D_RESC_NAME,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->resource = *resource;
     }
 
     if ((rescGrp = getSqlResultByInx (myGenQueryOut, COL_D_RESC_GROUP_NAME))
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->rescGrp, COL_D_RESC_GROUP_NAME,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->rescGrp = *rescGrp;
     }
     if ((dataType = getSqlResultByInx (myGenQueryOut, COL_DATA_TYPE_NAME)) // JMC - backport 4636
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->dataType, COL_DATA_TYPE_NAME,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->dataType = *dataType;
     }
 
     if ((phyPath = getSqlResultByInx (myGenQueryOut, COL_D_DATA_PATH))
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->phyPath, COL_D_DATA_PATH,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->phyPath = *phyPath;
     }
 
     if ((ownerName = getSqlResultByInx (myGenQueryOut, COL_D_OWNER_NAME))
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->ownerName, COL_D_OWNER_NAME,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->ownerName = *ownerName;
     }
 
     if ((replNum = getSqlResultByInx (myGenQueryOut, COL_DATA_REPL_NUM))
-      == NULL) {
+        == NULL) {
         setSqlResultValue (&dataObjSqlResult->replNum, COL_DATA_REPL_NUM,
-          "", myGenQueryOut->rowCnt);
+                           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->replNum = *replNum;
     }
@@ -1066,19 +1066,19 @@ dataObjSqlResult_t *dataObjSqlResult)
 
 int
 rclOpenCollection (rcComm_t *conn, char *collection, int flags,
-collHandle_t *collHandle)
+                   collHandle_t *collHandle)
 {
     rodsObjStat_t *rodsObjStatOut = NULL;
     int status;
 
     if (conn == NULL || collection == NULL || collHandle == NULL) {
-	rodsLog (LOG_ERROR,
-          "rclOpenCollection: NULL conn, collection or collHandle input");
-	return USER__NULL_INPUT_ERR;
+        rodsLog (LOG_ERROR,
+                 "rclOpenCollection: NULL conn, collection or collHandle input");
+        return USER__NULL_INPUT_ERR;
     }
 
     if ((flags & INCLUDE_CONDINPUT_IN_QUERY) == 0) {
-	/* preserve collHandle->>dataObjInp.condInput if != 0 */
+        /* preserve collHandle->>dataObjInp.condInput if != 0 */
         memset (collHandle, 0, sizeof (collHandle_t));
     }
 
@@ -1087,19 +1087,19 @@ collHandle_t *collHandle)
 
     
     if (status < 0) return status;
-	
+        
     if (rodsObjStatOut->objType != COLL_OBJ_T) {
-	free (rodsObjStatOut);
-	return CAT_UNKNOWN_COLLECTION;
+        free (rodsObjStatOut);
+        return CAT_UNKNOWN_COLLECTION;
     }
 
     replSpecColl (rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl);
     if (rodsObjStatOut->specColl != NULL &&
-      rodsObjStatOut->specColl->collClass != STRUCT_FILE_COLL &&
-      strlen (rodsObjStatOut->specColl->objPath) > 0) {
+        rodsObjStatOut->specColl->collClass != STRUCT_FILE_COLL &&
+        strlen (rodsObjStatOut->specColl->objPath) > 0) {
         /* save the linked path */
         rstrcpy (collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath,
-          MAX_NAME_LEN);
+                 MAX_NAME_LEN);
     };
 
     collHandle->rodsObjStat = rodsObjStatOut;
@@ -1115,11 +1115,11 @@ collHandle_t *collHandle)
 
 int
 rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
-collEnt_t *collEnt)
+                   collEnt_t *collEnt)
 {
     int status;
 
-    collHandle->queryHandle.conn = conn;	/* in case it changed */
+    collHandle->queryHandle.conn = conn;        /* in case it changed */
     status = readCollection (collHandle, collEnt);
 
     return (status);
@@ -1135,7 +1135,7 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
 
     if (queryHandle == NULL || collHandle == NULL || collEnt == NULL) {
         rodsLog (LOG_ERROR,
-          "rclReadCollection: NULL queryHandle or collHandle input");
+                 "rclReadCollection: NULL queryHandle or collHandle input");
         return USER__NULL_INPUT_ERR;
     }
 
@@ -1144,10 +1144,10 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
     if (collHandle->state == COLL_CLOSED) return (CAT_NO_ROWS_FOUND);
 
     if ((collHandle->flags & DATA_QUERY_FIRST_FG) == 0) {
-	/* recursive - coll first, dataObj second */
+        /* recursive - coll first, dataObj second */
         if (collHandle->state == COLL_OPENED) {
-	    status = genCollResInColl (queryHandle, collHandle);
-	}
+            status = genCollResInColl (queryHandle, collHandle);
+        }
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
             memset (&collMetaInfo, 0, sizeof (collMetaInfo));
@@ -1157,14 +1157,14 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
             } else {
                 if (status != CAT_NO_ROWS_FOUND) {
                     rodsLog (LOG_ERROR,
-                      "rclReadCollection: getNextCollMetaInfo error for %s. status = %d",
-                      collHandle->dataObjInp.objPath, status);
+                             "rclReadCollection: getNextCollMetaInfo error for %s. status = %d",
+                             collHandle->dataObjInp.objPath, status);
                 }
                 if (collHandle->dataObjInp.specColl == NULL) {
                     clearGenQueryInp (&collHandle->genQueryInp);
                 }
             }
-	    status = genDataResInColl (queryHandle, collHandle);
+            status = genDataResInColl (queryHandle, collHandle);
         }
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
             memset (&dataObjMetaInfo, 0, sizeof (dataObjMetaInfo));
@@ -1175,8 +1175,8 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
             } else {
                 if (status != CAT_NO_ROWS_FOUND) {
                     rodsLog (LOG_ERROR,
-                      "rclReadCollection: getNextDataObjMetaInfo error for %s. status = %d",
-                      collHandle->dataObjInp.objPath, status);
+                             "rclReadCollection: getNextDataObjMetaInfo error for %s. status = %d",
+                             collHandle->dataObjInp.objPath, status);
                 }
                 /* cleanup */
                 if (collHandle->dataObjInp.specColl == NULL) {
@@ -1189,7 +1189,7 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
         }
     } else {
         if (collHandle->state == COLL_OPENED) {
-	    status = genDataResInColl (queryHandle, collHandle);
+            status = genDataResInColl (queryHandle, collHandle);
         }
 
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
@@ -1201,8 +1201,8 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
             } else {
                 if (status != CAT_NO_ROWS_FOUND) {
                     rodsLog (LOG_ERROR,
-                      "rclReadCollection: getNextDataObjMetaInfo error for %s. status = %d",
-                      collHandle->dataObjInp.objPath, status);
+                             "rclReadCollection: getNextDataObjMetaInfo error for %s. status = %d",
+                             collHandle->dataObjInp.objPath, status);
                 }
                 /* cleanup */
                 if (collHandle->dataObjInp.specColl == NULL) {
@@ -1210,17 +1210,17 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
                 }
             }
 
-	    status = genCollResInColl (queryHandle, collHandle);
+            status = genCollResInColl (queryHandle, collHandle);
         }
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
             memset (&collMetaInfo, 0, sizeof (collMetaInfo));
             status = getNextCollMetaInfo (collHandle, collEnt);
-	    if (status < 0) {
+            if (status < 0) {
                 if (status != CAT_NO_ROWS_FOUND) {
                     rodsLog (LOG_ERROR,
-                      "rclReadCollection: getNextCollMetaInfo error for %s. status = %d",
-                      collHandle->dataObjInp.objPath, status);
+                             "rclReadCollection: getNextCollMetaInfo error for %s. status = %d",
+                             collHandle->dataObjInp.objPath, status);
                 }
                 /* cleanup */
                 if (collHandle->dataObjInp.specColl == NULL) {
@@ -1229,7 +1229,7 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
                 /* Nothing else to do. cleanup */
                 collHandle->state = COLL_CLOSED;
             }
-	    return status;
+            return status;
         }
     }
     return (CAT_NO_ROWS_FOUND);
@@ -1247,36 +1247,36 @@ genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
         if (collHandle->dataObjInp.specColl->collClass == LINKED_COLL) {
             memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
             status = queryCollInColl (queryHandle,
-              collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
-              &collHandle->genQueryInp, &genQueryOut);
+                                      collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
+                                      &collHandle->genQueryInp, &genQueryOut);
         } else {
             if (strlen (collHandle->linkedObjPath) > 0) {
                 rstrcpy (collHandle->dataObjInp.objPath, 
-                  collHandle->linkedObjPath, MAX_NAME_LEN);
+                         collHandle->linkedObjPath, MAX_NAME_LEN);
             }
             addKeyVal (&collHandle->dataObjInp.condInput,
-              SEL_OBJ_TYPE_KW, "collection");
-	    collHandle->dataObjInp.openFlags = 0;    /* start over */
+                       SEL_OBJ_TYPE_KW, "collection");
+            collHandle->dataObjInp.openFlags = 0;    /* start over */
             status = (*queryHandle->querySpecColl) (
-	      (rcComm_t *) queryHandle->conn, &collHandle->dataObjInp, 
-	      &genQueryOut);
-	}
+                (rcComm_t *) queryHandle->conn, &collHandle->dataObjInp, 
+                &genQueryOut);
+        }
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
         status = queryCollInColl (queryHandle,
-          collHandle->dataObjInp.objPath, collHandle->flags,
-          &collHandle->genQueryInp, &genQueryOut);
+                                  collHandle->dataObjInp.objPath, collHandle->flags,
+                                  &collHandle->genQueryInp, &genQueryOut);
     }
 
     collHandle->rowInx = 0;
     collHandle->state = COLL_COLL_OBJ_QUERIED;
     if (status >= 0) {
         status = genQueryOutToCollRes (&genQueryOut,
-          &collHandle->collSqlResult);
+                                       &collHandle->collSqlResult);
     } else if (status != CAT_NO_ROWS_FOUND) {
         rodsLog (LOG_ERROR,
-          "genCollResInColl: query collection error for %s. status = %d",
-          collHandle->dataObjInp.objPath, status);
+                 "genCollResInColl: query collection error for %s. status = %d",
+                 collHandle->dataObjInp.objPath, status);
     }
     return status;
 }
@@ -1288,41 +1288,41 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
     int status = 0;
 
     if (collHandle->dataObjInp.specColl != NULL) {
-	if (collHandle->dataObjInp.specColl->collClass == LINKED_COLL) {
+        if (collHandle->dataObjInp.specColl->collClass == LINKED_COLL) {
             memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
             status = queryDataObjInColl (queryHandle,
-              collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
-              &collHandle->genQueryInp, &genQueryOut,
-              &collHandle->dataObjInp.condInput);
-	} else {
-	    if (strlen (collHandle->linkedObjPath) > 0) {
-		rstrcpy (collHandle->dataObjInp.objPath, 
-		  collHandle->linkedObjPath, MAX_NAME_LEN);
-	    }
+                                         collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
+                                         &collHandle->genQueryInp, &genQueryOut,
+                                         &collHandle->dataObjInp.condInput);
+        } else {
+            if (strlen (collHandle->linkedObjPath) > 0) {
+                rstrcpy (collHandle->dataObjInp.objPath, 
+                         collHandle->linkedObjPath, MAX_NAME_LEN);
+            }
             addKeyVal (&collHandle->dataObjInp.condInput,
-              SEL_OBJ_TYPE_KW, "dataObj");
-          collHandle->dataObjInp.openFlags = 0;    /* start over */ // JMC - backport 4577
+                       SEL_OBJ_TYPE_KW, "dataObj");
+            collHandle->dataObjInp.openFlags = 0;    /* start over */ // JMC - backport 4577
             status = (*queryHandle->querySpecColl) 
-	      ((rcComm_t *) queryHandle->conn,
-	      &collHandle->dataObjInp, &genQueryOut);
-	}
+                ((rcComm_t *) queryHandle->conn,
+                 &collHandle->dataObjInp, &genQueryOut);
+        }
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
         status = queryDataObjInColl (queryHandle,
-          collHandle->dataObjInp.objPath, collHandle->flags,
-          &collHandle->genQueryInp, &genQueryOut, 
-	  &collHandle->dataObjInp.condInput);
+                                     collHandle->dataObjInp.objPath, collHandle->flags,
+                                     &collHandle->genQueryInp, &genQueryOut, 
+                                     &collHandle->dataObjInp.condInput);
     }
 
     collHandle->rowInx = 0;
     collHandle->state = COLL_DATA_OBJ_QUERIED;
     if (status >= 0) {
         status = genQueryOutToDataObjRes (&genQueryOut,
-          &collHandle->dataObjSqlResult);
+                                          &collHandle->dataObjSqlResult);
     } else if (status != CAT_NO_ROWS_FOUND) {
         rodsLog (LOG_ERROR,
-          "genDataResInColl: query dataObj error for %s. status = %d",
-          collHandle->dataObjInp.objPath, status);
+                 "genDataResInColl: query dataObj error for %s. status = %d",
+                 collHandle->dataObjInp.objPath, status);
     }
     return status;
 }
@@ -1345,10 +1345,10 @@ clearCollHandle (collHandle_t *collHandle, int freeSpecColl)
     }
     if (collHandle->rodsObjStat != NULL) {
 #if 0
-	free (collHandle->rodsObjStat);
+        free (collHandle->rodsObjStat);
 #endif
-	freeRodsObjStat (collHandle->rodsObjStat);
-	collHandle->rodsObjStat = NULL;
+        freeRodsObjStat (collHandle->rodsObjStat);
+        collHandle->rodsObjStat = NULL;
     }
     clearKeyVal (&collHandle->dataObjInp.condInput);
     memset (&collHandle->dataObjInp, 0,  sizeof (dataObjInp_t));
@@ -1391,11 +1391,11 @@ getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
             if (dataObjInp->specColl != NULL) {
                 dataObjInp->openFlags = continueInx;
                 status = (*queryHandle->querySpecColl) (
-		  (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
+                    (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
             } else {
                 genQueryInp->continueInx = continueInx;
                 status = (*queryHandle->genQuery) (
-		  (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
+                    (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
             }
             if (status < 0) {
                 return (status);
@@ -1440,8 +1440,8 @@ getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
         if (strcmp (collType, INHERIT_PAR_SPEC_COLL_STR) == 0) {
             if (dataObjInp->specColl == NULL) {
                 rodsLog (LOG_ERROR,
-                  "getNextCollMetaInfo: parent specColl is NULL for %s",
-                  outCollEnt->collName);
+                         "getNextCollMetaInfo: parent specColl is NULL for %s",
+                         outCollEnt->collName);
                 outCollEnt->specColl.collClass = NO_SPEC_COLL;
             } else {
                 outCollEnt->specColl = *dataObjInp->specColl;
@@ -1449,7 +1449,7 @@ getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
             status = 0;
         } else {
             status = resolveSpecCollType (collType, outCollEnt->collName,
-              collInfo1, collInfo2, &outCollEnt->specColl);
+                                          collInfo1, collInfo2, &outCollEnt->specColl);
         }
     } else {
         outCollEnt->specColl.collClass = NO_SPEC_COLL;
@@ -1492,17 +1492,17 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
             if (dataObjInp->specColl != NULL) {
                 dataObjInp->openFlags = continueInx;
                 status = (*queryHandle->querySpecColl) (
-		  (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
+                    (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
             } else {
                 genQueryInp->continueInx = continueInx;
                 status = (*queryHandle->genQuery) (
-		  (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
+                    (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
             }
             if (status < 0) {
                 return (status);
             } else {
                 status = genQueryOutToDataObjRes (&genQueryOut,
-                  dataObjSqlResult);
+                                                  dataObjSqlResult);
                 collHandle->rowInx = 0;
                 free (genQueryOut);
             }
@@ -1524,29 +1524,29 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
          * screen out dup copies */
 
         for (i = collHandle->rowInx; i < dataObjSqlResult->rowCnt; i++) {
-	    if (selectedInx < 0) {
-		/* nothing selected yet. pick this if different */
-		if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) {
-		    rstrcpy (prevdataId, &dataId[dataIdLen * i], NAME_LEN);
-		    selectedInx = i;
-		    if (atoi (&dataId[dataIdLen * i]) != 0) gotCopy = 1;
-		}
-	    } else {
-		/* skip i to the next object */
-		if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) break;
+            if (selectedInx < 0) {
+                /* nothing selected yet. pick this if different */
+                if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) {
+                    rstrcpy (prevdataId, &dataId[dataIdLen * i], NAME_LEN);
+                    selectedInx = i;
+                    if (atoi (&dataId[dataIdLen * i]) != 0) gotCopy = 1;
+                }
+            } else {
+                /* skip i to the next object */
+                if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) break;
                 if (gotCopy == 0 &&
-                  atoi (&replStatus[replStatusLen * i]) > 0) {
+                    atoi (&replStatus[replStatusLen * i]) > 0) {
                     /* pick a good copy */
                     selectedInx = i;
                     gotCopy = 1;
-		}
+                }
             }
         }
-	if (selectedInx < 0) return CAT_NO_ROWS_FOUND;
-	collHandle->rowInx = i;
+        if (selectedInx < 0) return CAT_NO_ROWS_FOUND;
+        collHandle->rowInx = i;
     } else {
-	selectedInx = collHandle->rowInx;
-	collHandle->rowInx++;
+        selectedInx = collHandle->rowInx;
+        collHandle->rowInx++;
     }
 
     value = dataObjSqlResult->collName.value;
@@ -1576,7 +1576,7 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     outCollEnt->dataId = &dataId[dataIdLen * selectedInx];
 
     outCollEnt->replStatus = atoi (&replStatus[replStatusLen * 
-     selectedInx]);
+                                               selectedInx]);
 
     value = dataObjSqlResult->replNum.value;
     len = dataObjSqlResult->replNum.len;
@@ -1591,13 +1591,13 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     outCollEnt->dataType = &value[len * selectedInx]; // JMC - backport 4636
 
     if (rodsObjStat->specColl != NULL) {
-	outCollEnt->specColl = *rodsObjStat->specColl;
+        outCollEnt->specColl = *rodsObjStat->specColl;
     }
     if (rodsObjStat->specColl != NULL && 
-      rodsObjStat->specColl->collClass != LINKED_COLL) {
-	outCollEnt->resource = rodsObjStat->specColl->resource;
-	outCollEnt->ownerName = rodsObjStat->ownerName;
-	outCollEnt->replStatus = NEWLY_CREATED_COPY;
+        rodsObjStat->specColl->collClass != LINKED_COLL) {
+        outCollEnt->resource = rodsObjStat->specColl->resource;
+        outCollEnt->ownerName = rodsObjStat->ownerName;
+        outCollEnt->replStatus = NEWLY_CREATED_COPY;
     } else {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;
@@ -1690,7 +1690,7 @@ myChmod (char *inPath, uint dataMode)
 
     if (Myumask == INIT_UMASK_VAL) {
         Myumask = umask (0022);
-	umask (Myumask);
+        umask (Myumask);
     }
 
     chmod (inPath, dataMode & 0777 & ~(Myumask));
@@ -1707,71 +1707,71 @@ getZoneHintForGenQuery (genQueryInp_t *genQueryInp)
     if (genQueryInp == NULL) return NULL;
 
     if ((zoneHint = getValByKey (&genQueryInp->condInput, ZONE_KW)) != NULL) 
-	return (zoneHint);
+        return (zoneHint);
 
     for (i = 0; i < genQueryInp->sqlCondInp.len; i++) {
-	int inx = genQueryInp->sqlCondInp.inx[i];
-#if 0	/* COL_DATA_NAME does not contain zone info */
-	if (inx == COL_DATA_NAME ||
+        int inx = genQueryInp->sqlCondInp.inx[i];
+#if 0   /* COL_DATA_NAME does not contain zone info */
+        if (inx == COL_DATA_NAME ||
 #endif
-	if (inx == COL_COLL_NAME ||
-	  inx == COL_COLL_PARENT_NAME ||
-	  inx == COL_ZONE_NAME) {
-	    char *tmpPtr;
-	    zoneHint = genQueryInp->sqlCondInp.value[i];
-	    if ((tmpPtr = strchr (zoneHint, '/')) != NULL) zoneHint = tmpPtr;
-	    return (zoneHint);
-	}
+            if (inx == COL_COLL_NAME ||
+                inx == COL_COLL_PARENT_NAME ||
+                inx == COL_ZONE_NAME) {
+                char *tmpPtr;
+                zoneHint = genQueryInp->sqlCondInp.value[i];
+                if ((tmpPtr = strchr (zoneHint, '/')) != NULL) zoneHint = tmpPtr;
+                return (zoneHint);
+            }
+            }
+        return NULL; 
     }
-    return NULL; 
-}
 
 /* getZoneType - get the ZoneType of inZoneName. icatZone is the icat
  * to query.
  */ 
-int
-getZoneType (rcComm_t *conn, char *icatZone, char *inZoneName,
-char *outZoneType)
-{
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int status;
-    sqlResult_t *zoneType;
-    char tmpStr[MAX_NAME_LEN];
+    int
+        getZoneType (rcComm_t *conn, char *icatZone, char *inZoneName,
+                     char *outZoneType)
+    {
+        genQueryInp_t genQueryInp;
+        genQueryOut_t *genQueryOut = NULL;
+        int status;
+        sqlResult_t *zoneType;
+        char tmpStr[MAX_NAME_LEN];
 
-    if (inZoneName == NULL || outZoneType == NULL)
-        return (USER__NULL_INPUT_ERR);
+        if (inZoneName == NULL || outZoneType == NULL)
+            return (USER__NULL_INPUT_ERR);
 
-    memset (&genQueryInp, 0, sizeof (genQueryInp));
-    if (icatZone != NULL && strlen (icatZone) > 0) {
-        addKeyVal (&genQueryInp.condInput, ZONE_KW, icatZone);
+        memset (&genQueryInp, 0, sizeof (genQueryInp));
+        if (icatZone != NULL && strlen (icatZone) > 0) {
+            addKeyVal (&genQueryInp.condInput, ZONE_KW, icatZone);
+        }
+        addInxIval (&genQueryInp.selectInp, COL_ZONE_NAME, 1);
+        addInxIval (&genQueryInp.selectInp, COL_ZONE_TYPE, 1);
+
+        snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", inZoneName);
+
+        addInxVal (&genQueryInp.sqlCondInp, COL_ZONE_NAME, tmpStr);
+
+        genQueryInp.maxRows = MAX_SQL_ROWS;
+
+        status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
+
+        if (status < 0)
+            return status;
+
+        if ((zoneType = getSqlResultByInx (genQueryOut, COL_ZONE_TYPE)) == NULL) {
+            rodsLog (LOG_NOTICE,
+                     "getZoneInfo: getSqlResultByInx for COL_ZONE_TYPE failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+        rstrcpy (outZoneType, zoneType->value, MAX_NAME_LEN);
+
+        freeGenQueryOut (&genQueryOut);
+
+        return 0;
     }
-    addInxIval (&genQueryInp.selectInp, COL_ZONE_NAME, 1);
-    addInxIval (&genQueryInp.selectInp, COL_ZONE_TYPE, 1);
-
-    snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", inZoneName);
-
-    addInxVal (&genQueryInp.sqlCondInp, COL_ZONE_NAME, tmpStr);
-
-    genQueryInp.maxRows = MAX_SQL_ROWS;
-
-    status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-
-    if (status < 0)
-        return status;
-
-    if ((zoneType = getSqlResultByInx (genQueryOut, COL_ZONE_TYPE)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getZoneInfo: getSqlResultByInx for COL_ZONE_TYPE failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    rstrcpy (outZoneType, zoneType->value, MAX_NAME_LEN);
-
-    freeGenQueryOut (&genQueryOut);
-
-    return 0;
-}
 
 /* getCollSizeForProgStat - Calculate the totalNumFiles and totalFileSize and
  * put it in the operProgress struct.
@@ -1779,42 +1779,42 @@ char *outZoneType)
  * needs to be initialized since it can be a recursive operation and
  * cannot be initialized in this routine.
  */
-int
-getCollSizeForProgStat (rcComm_t *conn, char *srcColl, 
-operProgress_t *operProgress)
-{
-    int status = 0;
-    collHandle_t collHandle;
-    collEnt_t collEnt;
+    int
+        getCollSizeForProgStat (rcComm_t *conn, char *srcColl, 
+                                operProgress_t *operProgress)
+    {
+        int status = 0;
+        collHandle_t collHandle;
+        collEnt_t collEnt;
 
-    status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
-      &collHandle);
+        status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
+                                    &collHandle);
 
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "getCollSizeForProgStat: rclOpenCollection of %s error. status = %d",
-          srcColl, status);
-        return status;
-    }
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+                     "getCollSizeForProgStat: rclOpenCollection of %s error. status = %d",
+                     srcColl, status);
+            return status;
+        }
 
-    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
-        if (collEnt.objType == DATA_OBJ_T) {
-	    operProgress->totalNumFiles++;
-	    operProgress->totalFileSize += collEnt.dataSize;
-        } else if (collEnt.objType == COLL_OBJ_T) {
-            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
-                /* the child is a spec coll. need to drill down */
-                status = getCollSizeForProgStat (conn, collEnt.collName, 
-		  operProgress);
-                if (status < 0 && status != CAT_NO_ROWS_FOUND) return (status);
+        while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
+            if (collEnt.objType == DATA_OBJ_T) {
+                operProgress->totalNumFiles++;
+                operProgress->totalFileSize += collEnt.dataSize;
+            } else if (collEnt.objType == COLL_OBJ_T) {
+                if (collEnt.specColl.collClass != NO_SPEC_COLL) {
+                    /* the child is a spec coll. need to drill down */
+                    status = getCollSizeForProgStat (conn, collEnt.collName, 
+                                                     operProgress);
+                    if (status < 0 && status != CAT_NO_ROWS_FOUND) return (status);
+                }
             }
-	}
+        }
+        if (status == CAT_NO_ROWS_FOUND) 
+            return 0;
+        else
+            return status;
     }
-    if (status == CAT_NO_ROWS_FOUND) 
-        return 0;
-    else
-        return status;
-}
 
 /* getDirSizeForProgStat - Calculate the totalNumFiles and totalFileSize and
  * put it in the operProgress struct.
@@ -1822,453 +1822,453 @@ operProgress_t *operProgress)
  * needs to be initialized since it can be a recursive operation and
  * cannot be initialized in this routine.
  */
-int
-getDirSizeForProgStat (rodsArguments_t *rodsArgs, char *srcDir, 
-operProgress_t *operProgress)
-{
-    int status = 0;
+    int
+        getDirSizeForProgStat (rodsArguments_t *rodsArgs, char *srcDir, 
+                               operProgress_t *operProgress)
+    {
+        int status = 0;
 #ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
+        DIR *dirPtr;
+        struct dirent *myDirent;
 #ifndef windows_platform
-    struct stat statbuf;
+        struct stat statbuf;
 #else
-    struct irodsntstat statbuf;
+        struct irodsntstat statbuf;
 #endif
-#endif	/* USE_BOOST_FS */
-    char srcChildPath[MAX_NAME_LEN];
+#endif  /* USE_BOOST_FS */
+        char srcChildPath[MAX_NAME_LEN];
 
-    if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
+        if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
 
 #ifdef USE_BOOST_FS
-    path srcDirPath (srcDir);
-    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+        path srcDirPath (srcDir);
+        if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
 #else
-    dirPtr = opendir (srcDir);
-    if (dirPtr == NULL) {
+            dirPtr = opendir (srcDir);
+            if (dirPtr == NULL) {
 #endif
-        rodsLog (LOG_ERROR,
-        "getDirSizeForProgStat: opendir local dir error for %s, errno = %d\n",
-         srcDir, errno);
-        return (USER_INPUT_PATH_ERR);
-    }
+                rodsLog (LOG_ERROR,
+                         "getDirSizeForProgStat: opendir local dir error for %s, errno = %d\n",
+                         srcDir, errno);
+                return (USER_INPUT_PATH_ERR);
+            }
 
 #ifdef USE_BOOST_FS
-    directory_iterator end_itr; // default construction yields past-the-end
-    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
-        path p = itr->path();
-        snprintf (srcChildPath, MAX_NAME_LEN, "%s",
-          p.c_str ());
+            directory_iterator end_itr; // default construction yields past-the-end
+            for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+                path p = itr->path();
+                snprintf (srcChildPath, MAX_NAME_LEN, "%s",
+                          p.c_str ());
 #else
-    while ((myDirent = readdir (dirPtr)) != NULL) {
-        if (strcmp (myDirent->d_name, ".") == 0 ||
-          strcmp (myDirent->d_name, "..") == 0) {
-            continue;
-        }
-        snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-          srcDir, myDirent->d_name);
+                while ((myDirent = readdir (dirPtr)) != NULL) {
+                    if (strcmp (myDirent->d_name, ".") == 0 ||
+                        strcmp (myDirent->d_name, "..") == 0) {
+                        continue;
+                    }
+                    snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
+                              srcDir, myDirent->d_name);
 #endif
 
-	if (isPathSymlink (rodsArgs, srcChildPath) > 0) { 
-		#ifndef USE_BOOST_FS
-		closedir( dirPtr ); 
-		#endif
-		return 0; 
-	} // JMC cppcheck - resource
+                    if (isPathSymlink (rodsArgs, srcChildPath) > 0) { 
+#ifndef USE_BOOST_FS
+                        closedir( dirPtr ); 
+#endif
+                        return 0; 
+                    } // JMC cppcheck - resource
 
 #ifdef USE_BOOST_FS
 #if 0
-        path p (srcChildPath);
+                    path p (srcChildPath);
 #endif
-        if (!exists(p)) {
-            rodsLog (LOG_ERROR,
-              "getDirSizeForProgStat: stat error for %s, errno = %d\n",
-              srcChildPath, errno);
+                    if (!exists(p)) {
+                        rodsLog (LOG_ERROR,
+                                 "getDirSizeForProgStat: stat error for %s, errno = %d\n",
+                                 srcChildPath, errno);
 #if 0
-            closedir (dirPtr);
+                        closedir (dirPtr);
 #endif
-            return (USER_INPUT_PATH_ERR);
-        } else if (is_regular_file(p)) {
-            operProgress->totalNumFiles++;
-            operProgress->totalFileSize += file_size(p);
-        } else if (is_directory(p)) {
-            status = getDirSizeForProgStat (rodsArgs, srcChildPath,
-              operProgress);
-            if (status < 0) return (status);
+                        return (USER_INPUT_PATH_ERR);
+                    } else if (is_regular_file(p)) {
+                        operProgress->totalNumFiles++;
+                        operProgress->totalFileSize += file_size(p);
+                    } else if (is_directory(p)) {
+                        status = getDirSizeForProgStat (rodsArgs, srcChildPath,
+                                                        operProgress);
+                        if (status < 0) return (status);
 
-        }
-#else	/* USE_BOOST_FS */
+                    }
+#else   /* USE_BOOST_FS */
 #ifndef windows_platform
-        status = stat (srcChildPath, &statbuf);
+                    status = stat (srcChildPath, &statbuf);
 #else
-        status = iRODSNt_stat(srcChildPath, &statbuf);
+                    status = iRODSNt_stat(srcChildPath, &statbuf);
 #endif
 
-        if (status != 0) {
-            rodsLog (LOG_ERROR,
-              "getDirSizeForProgStat: stat error for %s, errno = %d\n",
-              srcChildPath, errno);
-            closedir (dirPtr);
-            return (USER_INPUT_PATH_ERR);
-        }
+                    if (status != 0) {
+                        rodsLog (LOG_ERROR,
+                                 "getDirSizeForProgStat: stat error for %s, errno = %d\n",
+                                 srcChildPath, errno);
+                        closedir (dirPtr);
+                        return (USER_INPUT_PATH_ERR);
+                    }
 
-        if (statbuf.st_mode & S_IFREG) {
-            operProgress->totalNumFiles++;
-            operProgress->totalFileSize += statbuf.st_size;
-        } else if (statbuf.st_mode & S_IFDIR) {
-            status = getDirSizeForProgStat (rodsArgs, srcChildPath, 
-	      operProgress);
-            if (status < 0) {
-            	closedir (dirPtr); // JMC cppcheck - resource
-            	return (status);
-			}
-	}
-#endif	/* USE_BOOST_FS */
-    }
+                    if (statbuf.st_mode & S_IFREG) {
+                        operProgress->totalNumFiles++;
+                        operProgress->totalFileSize += statbuf.st_size;
+                    } else if (statbuf.st_mode & S_IFDIR) {
+                        status = getDirSizeForProgStat (rodsArgs, srcChildPath, 
+                                                        operProgress);
+                        if (status < 0) {
+                            closedir (dirPtr); // JMC cppcheck - resource
+                            return (status);
+                        }
+                    }
+#endif  /* USE_BOOST_FS */
+                }
 #ifndef USE_BOOST_FS
-    closedir (dirPtr);
+                closedir (dirPtr);
 #endif
 
-    return status;
-}
+                return status;
+            }
 
 /* iCommandProgStat - the irodsGuiProgressCallbak for icommand
  */
-irodsGuiProgressCallbak 
-iCommandProgStat (operProgress_t *operProgress)
-{
-    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
-    int status;
-    time_t myTime;
-    struct tm *mytm;
-    char timeStr[TIME_LEN];
+            irodsGuiProgressCallbak 
+                iCommandProgStat (operProgress_t *operProgress)
+            {
+                char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+                int status;
+                time_t myTime;
+                struct tm *mytm;
+                char timeStr[TIME_LEN];
 
-    if (strchr (operProgress->curFileName, '/') == NULL) {
-	/* relative path */
-	rstrcpy (myFile, operProgress->curFileName, MAX_NAME_LEN);
-    } else if ((status = splitPathByKey (operProgress->curFileName, 
-      myDir, myFile, '/')) < 0) {
-        rodsLogError (LOG_NOTICE, status,
-          "iCommandProgStat: splitPathByKey for %s error, status = %d",
-          operProgress->curFileName, status);
-        return NULL;
-    }
+                if (strchr (operProgress->curFileName, '/') == NULL) {
+                    /* relative path */
+                    rstrcpy (myFile, operProgress->curFileName, MAX_NAME_LEN);
+                } else if ((status = splitPathByKey (operProgress->curFileName, 
+                                                     myDir, myFile, '/')) < 0) {
+                    rodsLogError (LOG_NOTICE, status,
+                                  "iCommandProgStat: splitPathByKey for %s error, status = %d",
+                                  operProgress->curFileName, status);
+                    return NULL;
+                }
 
-    myTime = time (0);
-    mytm = localtime (&myTime);
-    getLocalTimeStr (mytm, timeStr);
-    if (operProgress->flag == 0) {
-	printf (
-          "%-lld/%-lld - %5.2f%% of files done   ", 
-	  operProgress->totalNumFilesDone, operProgress->totalNumFiles, 
+                myTime = time (0);
+                mytm = localtime (&myTime);
+                getLocalTimeStr (mytm, timeStr);
+                if (operProgress->flag == 0) {
+                    printf (
+                        "%-lld/%-lld - %5.2f%% of files done   ", 
+                        operProgress->totalNumFilesDone, operProgress->totalNumFiles, 
 #if 0
-	  (float) operProgress->totalNumFilesDone/operProgress->totalNumFiles *
+                        (float) operProgress->totalNumFilesDone/operProgress->totalNumFiles *
 #else
-          VERIFY_DIV
-            (operProgress->totalNumFilesDone,operProgress->totalNumFiles) *
+                        VERIFY_DIV
+                        (operProgress->totalNumFilesDone,operProgress->totalNumFiles) *
 #endif
-	  100.0);
-	printf ("%-.3f/%-.3f MB - %5.2f%% of file sizes done\n",
-	  (float) operProgress->totalFileSizeDone / 1048600.0,
-	  (float) operProgress->totalFileSize / 1048600.0,
+                        100.0);
+                    printf ("%-.3f/%-.3f MB - %5.2f%% of file sizes done\n",
+                            (float) operProgress->totalFileSizeDone / 1048600.0,
+                            (float) operProgress->totalFileSize / 1048600.0,
 #if 0
-	  (float) operProgress->totalFileSizeDone/operProgress->totalFileSize *
+                            (float) operProgress->totalFileSizeDone/operProgress->totalFileSize *
 #else
-          VERIFY_DIV
-	    (operProgress->totalFileSizeDone,operProgress->totalFileSize) *
+                            VERIFY_DIV
+                            (operProgress->totalFileSizeDone,operProgress->totalFileSize) *
 #endif
-	  100.0);
-        printf ("Processing %s - %-.3f MB   %s\n", myFile,
-         (float) operProgress->curFileSize / 1048600.0, timeStr);
-    } else if (operProgress->flag == 1) {
-        printf ("%s - %-.3f/%-.3f MB - %5.2f%% done   %s\n", myFile,
-         (float) operProgress->curFileSizeDone / 1048600.0,
-         (float) operProgress->curFileSize / 1048600.0,
+                            100.0);
+                    printf ("Processing %s - %-.3f MB   %s\n", myFile,
+                            (float) operProgress->curFileSize / 1048600.0, timeStr);
+                } else if (operProgress->flag == 1) {
+                    printf ("%s - %-.3f/%-.3f MB - %5.2f%% done   %s\n", myFile,
+                            (float) operProgress->curFileSizeDone / 1048600.0,
+                            (float) operProgress->curFileSize / 1048600.0,
 #if 0
-         (float) operProgress->curFileSizeDone/operProgress->curFileSize *
+                            (float) operProgress->curFileSizeDone/operProgress->curFileSize *
 #else
-	 VERIFY_DIV
-	   (operProgress->curFileSizeDone,operProgress->curFileSize) *
+                            VERIFY_DIV
+                            (operProgress->curFileSizeDone,operProgress->curFileSize) *
 #endif
-         100.0, timeStr);
-	/* done. don't print again */
-	if (operProgress->curFileSizeDone == operProgress->curFileSize) {
-	    operProgress->flag = 2;
-	}
-    }
-    return NULL;
-}
-
-int
-getOpenedCollLen (collHandle_t *collHandle)
-{
-    int len;
-
-    if (collHandle->rodsObjStat->specColl != NULL &&
-#if 0
-      collHandle->rodsObjStat->specColl->collClass == LINKED_COLL) {
-	len = strlen (collHandle->linkedObjPath);
-#else
-	(len = strlen (collHandle->linkedObjPath)) > 0) {
-#endif
-    } else {
-	len = strlen (collHandle->dataObjInp.objPath);
-    }
-    return (len);
-}
-
-int
-rmSubDir (char *mydir) 
-{
-    int status = 0;
-    int savedStatus = 0;
-#ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
-#ifndef windows_platform
-    struct stat statbuf;
-#else
-    struct irodsntstat statbuf;
-#endif
-#endif	/* USE_BOOST_FS */
-    char childPath[MAX_NAME_LEN];
-
-#ifdef USE_BOOST_FS
-    path srcDirPath (mydir);
-    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
-#else
-    dirPtr = opendir (mydir);
-    if (dirPtr == NULL) {
-#endif
-	status = USER_INPUT_PATH_ERR - errno;
-        rodsLogError (LOG_ERROR, status,
-        "rmSubDir: opendir local dir error for %s", mydir);
-        return status;
-    }
-#ifdef USE_BOOST_FS
-    directory_iterator end_itr; // default construction yields past-the-end
-    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
-        path p = itr->path();
-        snprintf (childPath, MAX_NAME_LEN, "%s",
-          p.c_str ());
-#else
-    while ((myDirent = readdir (dirPtr)) != NULL) {
-        if (strcmp (myDirent->d_name, ".") == 0 ||
-          strcmp (myDirent->d_name, "..") == 0) {
-            continue;
-	}
-        snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
-#endif
-#ifdef USE_BOOST_FS
-#if 0
-        path p (childPath);
-#endif
-	if (!exists(p)) {
-#else	/* USE_BOOST_FS */
-#ifndef windows_platform
-        status = stat (childPath, &statbuf);
-#else
-        status = iRODSNt_stat(childPath, &statbuf);
-#endif
-        if (status != 0) {
-	    closedir (dirPtr);
-#endif	/* USE_BOOST_FS */
-	    savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, savedStatus,
-              "rmSubDir: stat error for %s", childPath);
-	    continue;
-        }
-#ifdef USE_BOOST_FS
-	if (is_directory(p)) {
-#else
-        if (statbuf.st_mode & S_IFDIR) {
-#endif
-	    status = rmSubDir (childPath);
-	    if (status < 0) {
-                savedStatus = USER_INPUT_PATH_ERR - errno;
-                rodsLogError (LOG_ERROR, status,
-                  "rmSubDir: rmSubDir error for %s ", childPath);
+                            100.0, timeStr);
+                    /* done. don't print again */
+                    if (operProgress->curFileSizeDone == operProgress->curFileSize) {
+                        operProgress->flag = 2;
+                    }
+                }
+                return NULL;
             }
-	    if (rmdir (childPath) != 0) {
-                savedStatus = USER_INPUT_PATH_ERR - errno;
-                rodsLogError (LOG_ERROR, status,
-                  "rmSubDir: rmdir error for %s ", childPath);
-	    }
-            continue;
-        } else {
-	    savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, status,
-              "rmSubDir: %s is not a dir", childPath);
-            continue;
-	}
-    }
-#ifndef USE_BOOST_FS
-    closedir (dirPtr);
-#endif
-    return savedStatus;
-}
 
-int
-rmFilesInDir (char *mydir)
-{
-    int status = 0;
-    int savedStatus = 0;
+            int
+                getOpenedCollLen (collHandle_t *collHandle)
+            {
+                int len;
+
+                if (collHandle->rodsObjStat->specColl != NULL &&
+#if 0
+                    collHandle->rodsObjStat->specColl->collClass == LINKED_COLL) {
+                    len = strlen (collHandle->linkedObjPath);
+#else
+                    (len = strlen (collHandle->linkedObjPath)) > 0) {
+#endif
+                } else {
+                    len = strlen (collHandle->dataObjInp.objPath);
+                }
+                return (len);
+            }
+
+            int
+                rmSubDir (char *mydir) 
+            {
+                int status = 0;
+                int savedStatus = 0;
 #ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
+                DIR *dirPtr;
+                struct dirent *myDirent;
 #ifndef windows_platform
-    struct stat statbuf;
+                struct stat statbuf;
 #else
-    struct irodsntstat statbuf;
+                struct irodsntstat statbuf;
 #endif
-#endif	/* USE_BOOST_FS */
-    char childPath[MAX_NAME_LEN];
+#endif  /* USE_BOOST_FS */
+                char childPath[MAX_NAME_LEN];
 
 #ifdef USE_BOOST_FS
-    path srcDirPath (mydir);
-    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+                path srcDirPath (mydir);
+                if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
 #else
-    dirPtr = opendir (mydir);
-    if (dirPtr == NULL) {
+                    dirPtr = opendir (mydir);
+                    if (dirPtr == NULL) {
 #endif
-        status = USER_INPUT_PATH_ERR - errno;
-        rodsLogError (LOG_ERROR, status,
-        "rmFilesInDir: opendir local dir error for %s", mydir);
-        return status;
-    }
+                        status = USER_INPUT_PATH_ERR - errno;
+                        rodsLogError (LOG_ERROR, status,
+                                      "rmSubDir: opendir local dir error for %s", mydir);
+                        return status;
+                    }
 #ifdef USE_BOOST_FS
-    directory_iterator end_itr; // default construction yields past-the-end
-    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
-        path p = itr->path();
-        snprintf (childPath, MAX_NAME_LEN, "%s",
-          p.c_str ());
+                    directory_iterator end_itr; // default construction yields past-the-end
+                    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+                        path p = itr->path();
+                        snprintf (childPath, MAX_NAME_LEN, "%s",
+                                  p.c_str ());
 #else
-    while ((myDirent = readdir (dirPtr)) != NULL) {
-        if (strcmp (myDirent->d_name, ".") == 0 ||
-          strcmp (myDirent->d_name, "..") == 0) {
-            continue;
-        }
-        snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+                        while ((myDirent = readdir (dirPtr)) != NULL) {
+                            if (strcmp (myDirent->d_name, ".") == 0 ||
+                                strcmp (myDirent->d_name, "..") == 0) {
+                                continue;
+                            }
+                            snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
 #endif
 #ifdef USE_BOOST_FS
 #if 0
-	path p (childPath);
+                            path p (childPath);
 #endif
-	if (!exists(p)) {
-            savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, savedStatus,
-              "rmFilesInDir: stat error for %s", childPath);
-            continue;
-        }
-        if (is_regular_file(p)) {
-            unlink (childPath);
-        } else {
-            continue;
-        }
-#else	/* USE_BOOST_FS */
+                            if (!exists(p)) {
+#else   /* USE_BOOST_FS */
 #ifndef windows_platform
-        status = stat (childPath, &statbuf);
+                                status = stat (childPath, &statbuf);
 #else
-        status = iRODSNt_stat(childPath, &statbuf);
+                                status = iRODSNt_stat(childPath, &statbuf);
 #endif
-        if (status != 0) {
-            savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, savedStatus,
-              "rmFilesInDir: stat error for %s", childPath);
-            continue;
-        }
-        if (statbuf.st_mode & S_IFREG) {
-	    unlink (childPath);
-	} else {
-	    continue;
-	}
-#endif	/* USE_BOOST_FS */
-    }
-#ifndef USE_BOOST_FS
-    closedir (dirPtr);
+                                if (status != 0) {
+                                    closedir (dirPtr);
+#endif  /* USE_BOOST_FS */
+                                    savedStatus = USER_INPUT_PATH_ERR - errno;
+                                    rodsLogError (LOG_ERROR, savedStatus,
+                                                  "rmSubDir: stat error for %s", childPath);
+                                    continue;
+                                }
+#ifdef USE_BOOST_FS
+                                if (is_directory(p)) {
+#else
+                                    if (statbuf.st_mode & S_IFDIR) {
 #endif
-    return savedStatus;
-}
-int
-getNumFilesInDir (char *mydir)
-{
-    int status = 0;
-    int savedStatus = 0;
+                                        status = rmSubDir (childPath);
+                                        if (status < 0) {
+                                            savedStatus = USER_INPUT_PATH_ERR - errno;
+                                            rodsLogError (LOG_ERROR, status,
+                                                          "rmSubDir: rmSubDir error for %s ", childPath);
+                                        }
+                                        if (rmdir (childPath) != 0) {
+                                            savedStatus = USER_INPUT_PATH_ERR - errno;
+                                            rodsLogError (LOG_ERROR, status,
+                                                          "rmSubDir: rmdir error for %s ", childPath);
+                                        }
+                                        continue;
+                                    } else {
+                                        savedStatus = USER_INPUT_PATH_ERR - errno;
+                                        rodsLogError (LOG_ERROR, status,
+                                                      "rmSubDir: %s is not a dir", childPath);
+                                        continue;
+                                    }
+                                }
 #ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
+                                closedir (dirPtr);
+#endif
+                                return savedStatus;
+                            }
+
+                            int
+                                rmFilesInDir (char *mydir)
+                            {
+                                int status = 0;
+                                int savedStatus = 0;
+#ifndef USE_BOOST_FS
+                                DIR *dirPtr;
+                                struct dirent *myDirent;
 #ifndef windows_platform
-    struct stat statbuf;
+                                struct stat statbuf;
 #else
-    struct irodsntstat statbuf;
+                                struct irodsntstat statbuf;
 #endif
-#endif	/* USE_BOOST_FS */
-    char childPath[MAX_NAME_LEN];
-    int count = 0;
+#endif  /* USE_BOOST_FS */
+                                char childPath[MAX_NAME_LEN];
 
 #ifdef USE_BOOST_FS
-    path srcDirPath (mydir);
-    if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+                                path srcDirPath (mydir);
+                                if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
 #else
-    dirPtr = opendir (mydir);
-    if (dirPtr == NULL) {
+                                    dirPtr = opendir (mydir);
+                                    if (dirPtr == NULL) {
 #endif
-        status = USER_INPUT_PATH_ERR - errno;
-        rodsLogError (LOG_ERROR, status,
-        "getNumFilesInDir: opendir local dir error for %s", mydir);
-        return status;
-    }
+                                        status = USER_INPUT_PATH_ERR - errno;
+                                        rodsLogError (LOG_ERROR, status,
+                                                      "rmFilesInDir: opendir local dir error for %s", mydir);
+                                        return status;
+                                    }
 #ifdef USE_BOOST_FS
-    directory_iterator end_itr; // default construction yields past-the-end
-    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
-        path p = itr->path();
-        snprintf (childPath, MAX_NAME_LEN, "%s",
-          p.c_str ());
+                                    directory_iterator end_itr; // default construction yields past-the-end
+                                    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+                                        path p = itr->path();
+                                        snprintf (childPath, MAX_NAME_LEN, "%s",
+                                                  p.c_str ());
 #else
-    while ((myDirent = readdir (dirPtr)) != NULL) {
-        if (strcmp (myDirent->d_name, ".") == 0 ||
-          strcmp (myDirent->d_name, "..") == 0) {
-            continue;
-        }
-        snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+                                        while ((myDirent = readdir (dirPtr)) != NULL) {
+                                            if (strcmp (myDirent->d_name, ".") == 0 ||
+                                                strcmp (myDirent->d_name, "..") == 0) {
+                                                continue;
+                                            }
+                                            snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
 #endif
 #ifdef USE_BOOST_FS
 #if 0
-	path p (childPath);
+                                            path p (childPath);
 #endif
-    if (!exists(p)) {
-            savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, savedStatus,
-              "getNumFilesInDir: stat error for %s", childPath);
-            continue;
-        } 
-	if (is_regular_file(p)) {
-            count++;
-        } else {
-            continue;
-        }
-#else	/* USE_BOOST_FS */
+                                            if (!exists(p)) {
+                                                savedStatus = USER_INPUT_PATH_ERR - errno;
+                                                rodsLogError (LOG_ERROR, savedStatus,
+                                                              "rmFilesInDir: stat error for %s", childPath);
+                                                continue;
+                                            }
+                                            if (is_regular_file(p)) {
+                                                unlink (childPath);
+                                            } else {
+                                                continue;
+                                            }
+#else   /* USE_BOOST_FS */
 #ifndef windows_platform
-        status = stat (childPath, &statbuf);
+                                            status = stat (childPath, &statbuf);
 #else
-        status = iRODSNt_stat(childPath, &statbuf);
+                                            status = iRODSNt_stat(childPath, &statbuf);
 #endif
-        if (status != 0) {
-            savedStatus = USER_INPUT_PATH_ERR - errno;
-            rodsLogError (LOG_ERROR, savedStatus,
-              "getNumFilesInDir: stat error for %s", childPath);
-            continue;
-        }
-        if (statbuf.st_mode & S_IFREG) {
-	    count++;
-        } else {
-            continue;
-        }
-#endif	/* USE_BOOST_FS */
-    }
+                                            if (status != 0) {
+                                                savedStatus = USER_INPUT_PATH_ERR - errno;
+                                                rodsLogError (LOG_ERROR, savedStatus,
+                                                              "rmFilesInDir: stat error for %s", childPath);
+                                                continue;
+                                            }
+                                            if (statbuf.st_mode & S_IFREG) {
+                                                unlink (childPath);
+                                            } else {
+                                                continue;
+                                            }
+#endif  /* USE_BOOST_FS */
+                                        }
 #ifndef USE_BOOST_FS
-    closedir (dirPtr);
+                                        closedir (dirPtr);
 #endif
-    return count;
-}
+                                        return savedStatus;
+                                    }
+                                    int
+                                        getNumFilesInDir (char *mydir)
+                                    {
+                                        int status = 0;
+                                        int savedStatus = 0;
+#ifndef USE_BOOST_FS
+                                        DIR *dirPtr;
+                                        struct dirent *myDirent;
+#ifndef windows_platform
+                                        struct stat statbuf;
+#else
+                                        struct irodsntstat statbuf;
+#endif
+#endif  /* USE_BOOST_FS */
+                                        char childPath[MAX_NAME_LEN];
+                                        int count = 0;
+
+#ifdef USE_BOOST_FS
+                                        path srcDirPath (mydir);
+                                        if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
+#else
+                                            dirPtr = opendir (mydir);
+                                            if (dirPtr == NULL) {
+#endif
+                                                status = USER_INPUT_PATH_ERR - errno;
+                                                rodsLogError (LOG_ERROR, status,
+                                                              "getNumFilesInDir: opendir local dir error for %s", mydir);
+                                                return status;
+                                            }
+#ifdef USE_BOOST_FS
+                                            directory_iterator end_itr; // default construction yields past-the-end
+                                            for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+                                                path p = itr->path();
+                                                snprintf (childPath, MAX_NAME_LEN, "%s",
+                                                          p.c_str ());
+#else
+                                                while ((myDirent = readdir (dirPtr)) != NULL) {
+                                                    if (strcmp (myDirent->d_name, ".") == 0 ||
+                                                        strcmp (myDirent->d_name, "..") == 0) {
+                                                        continue;
+                                                    }
+                                                    snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#endif
+#ifdef USE_BOOST_FS
+#if 0
+                                                    path p (childPath);
+#endif
+                                                    if (!exists(p)) {
+                                                        savedStatus = USER_INPUT_PATH_ERR - errno;
+                                                        rodsLogError (LOG_ERROR, savedStatus,
+                                                                      "getNumFilesInDir: stat error for %s", childPath);
+                                                        continue;
+                                                    } 
+                                                    if (is_regular_file(p)) {
+                                                        count++;
+                                                    } else {
+                                                        continue;
+                                                    }
+#else   /* USE_BOOST_FS */
+#ifndef windows_platform
+                                                    status = stat (childPath, &statbuf);
+#else
+                                                    status = iRODSNt_stat(childPath, &statbuf);
+#endif
+                                                    if (status != 0) {
+                                                        savedStatus = USER_INPUT_PATH_ERR - errno;
+                                                        rodsLogError (LOG_ERROR, savedStatus,
+                                                                      "getNumFilesInDir: stat error for %s", childPath);
+                                                        continue;
+                                                    }
+                                                    if (statbuf.st_mode & S_IFREG) {
+                                                        count++;
+                                                    } else {
+                                                        continue;
+                                                    }
+#endif  /* USE_BOOST_FS */
+                                                }
+#ifndef USE_BOOST_FS
+                                                closedir (dirPtr);
+#endif
+                                                return count;
+                                            }
 

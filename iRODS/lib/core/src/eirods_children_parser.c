@@ -3,6 +3,7 @@
 #include "eirods_children_parser.h"
 
 #include <sstream>
+#include <iostream>
 
 namespace eirods {
 
@@ -68,6 +69,7 @@ namespace eirods {
 
     error children_parser::set_string(
         const std::string& str) {
+
         error ret = SUCCESS();
         bool done = false;
         std::size_t pos = 0;
@@ -75,14 +77,14 @@ namespace eirods {
         while(!done) {
             pos = str.find("{", prev_pos);
             if(pos != std::string::npos) {
-                std::string child = str.substr(prev_pos, pos - prev_pos - 1);
+                std::string child = str.substr(prev_pos, pos - prev_pos);
                 prev_pos = pos + 1;
                 pos = str.find("}", prev_pos);
                 if(pos != std::string::npos) {
-                    std::string context = str.substr(prev_pos, pos - prev_pos - 1);
+                    std::string context = str.substr(prev_pos, pos - prev_pos);
                     children_list_[child] = context;
                     prev_pos = pos + 1;
-                    if(str.at(prev_pos) == ';') {
+                    if(prev_pos < str.size() && str.at(prev_pos) == ';') {
                         ++prev_pos;
                     } else {
                         done = true;

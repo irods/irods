@@ -86,14 +86,19 @@ extern "C" {
     //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 
+    /////////////////
     // Utility functions
+
+    /// @brief Returns the first child resource of the specified resource
     eirods::error passthruGetFirstChildResc(
         eirods::resource_child_map* _cmap,
         eirods::resource_ptr& _resc) {
         eirods::error result = SUCCESS();
         std::pair<std::string, eirods::resource_ptr> child_pair;
         if(_cmap->size() != 1) {
-            result = ERROR(-1, "passthruFileCreatePlugin - Passthru resource can have 1 and only 1 child.");
+            std::stringstream msg;
+            msg << "passthruGetFirstChildResc - Passthru resource can have 1 and only 1 child. This resource has " << _cmap->size();
+            result = ERROR(-1, msg.str());
         } else {
             child_pair = _cmap->begin()->second;
             _resc = child_pair.second;
@@ -101,6 +106,7 @@ extern "C" {
         return result;
     }
 
+    /// @brief Check the general parameters passed in to most plugin functions
     eirods::error passthruCheckParams(
         eirods::resource_property_map* _prop_map,
         eirods::resource_child_map* _cmap,
@@ -119,7 +125,28 @@ extern "C" {
         }
         return result;
     }
-    
+
+    /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
+    eirods::error
+    passthruGenerateFullPath(
+        const eirods::resource_ptr& resc,
+        const std::string& physical_path,
+        std::string& ret_string) {
+
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        std::string vault_path;
+        ret = resc->get_property<std::string>("path", vault_path);
+        if(!ret.ok()) {
+            // The resource doesn't appear to have a vault path so just return the physical path
+            ret_string = physical_path;
+        } else {
+            ret_string = vault_path;
+            ret_string += physical_path;
+        }
+        return result;
+    }
+
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error passthruFileCreatePlugin( eirods::resource_property_map* 
@@ -139,9 +166,17 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileCreatePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("create", _object);
+                // we must generate the full path by prepending the child's vault path
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileCreatePlugin - failed calling child create.", ret);
+                    result = PASS(false, -1, "passthruFileCreatePlugin - failed to generate the full path.", ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("create", _object);
+                    if(!ret.ok()) {
+                        result = PASS(false, -1, "passthruFileCreatePlugin - failed calling child create.", ret);
+                    }
                 }
             }
         }
@@ -712,7 +747,7 @@ extern "C" {
     } // passthruFileGetFsFreeSpacePlugin
 
     // =-=-=-=-=-=-=-
-    // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
+    // passthruStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
     eirods::error passthruStageToCachePlugin( eirods::resource_property_map* 
@@ -747,23 +782,23 @@ extern "C" {
             }
         }
         return result;
-    } // unixStageToCachePlugin
+    } // passthruStageToCachePlugin
 
     // =-=-=-=-=-=-=-
-    // unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
+    // passthruSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error unixSyncToArchPlugin( eirods::resource_property_map* 
-                                        _prop_map, 
-                                        eirods::resource_child_map* 
-                                        _cmap,
-                                        const char*         _file_name, 
-                                        char*               _cache_file_name, 
-                                        int                 _mode,
-                                        int                 _flags,  
-                                        rodsLong_t          _data_size, 
-                                        keyValPair_t*       _cond_input, 
-                                        int*                _status ) {
+    eirods::error passthruSyncToArchPlugin( eirods::resource_property_map* 
+                                            _prop_map, 
+                                            eirods::resource_child_map* 
+                                            _cmap,
+                                            const char*         _file_name, 
+                                            char*               _cache_file_name, 
+                                            int                 _mode,
+                                            int                 _flags,  
+                                            rodsLong_t          _data_size, 
+                                            keyValPair_t*       _cond_input, 
+                                            int*                _status ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
