@@ -207,6 +207,8 @@ class RodsSession(object):
                         'ibun',
                         'iphybun',
                         'ireg',
+                        'imcoll',
+                        'irsync',
                      ]
 
         if icommand not in valid_cmds:

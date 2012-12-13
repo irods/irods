@@ -62,3 +62,15 @@ python -m pstats stats.dat
 
 ########################################
 
+to find files in iCAT not in the demoResc
+( i was having trouble removing resources, stuff was somewhere still on disk)
+$ iquest "SELECT COLL_NAME, DATA_NAME, DATA_RESC_NAME WHERE DATA_RESC_NAME not like 'demo%'"
+
+then, to remove them, they were still tied to the bundle area...
+$ irm -rf /tempZone/bundle/home/rods
+
+then, successfully...
+$ iadmin rmresc anotherResc
+
+########################################
+

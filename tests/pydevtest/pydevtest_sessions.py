@@ -79,7 +79,7 @@ def admin_up():
     adminsession.runAdminCmd('iadmin',["atrg",resgroup,anotherresc])
     # users, passwords, and groups
     global testgroup
-    testgroup = "testgroup"
+    testgroup = "pydevtestUserGroup"
     adminsession.runAdminCmd('iadmin',["mkgroup",testgroup])
     for u in users[1:]:
         adminsession.runAdminCmd('iadmin',["mkuser",u['name'],"rodsuser"])

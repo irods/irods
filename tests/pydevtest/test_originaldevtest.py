@@ -9,6 +9,17 @@ import time
 import shutil
 import random
 
+def test_bigfiles():
+    raise SkipTest
+    for filename in ["lfile1","lfile2"]:
+        f = file(filename,'wb')
+        targetfilesize = 50000    # size in bytes
+        f.write('aaa')
+        f.seek(targetfilesize-1)  # seek to one character before targetsize (leaving a sparse file)
+        f.write('bbb')
+        f.write('\x00')           # write single null character
+        f.close()
+        
 @with_setup(s.twousers_up,s.twousers_down)
 def test_original_devtest():
     # build expected variables with similar devtest names
@@ -23,6 +34,9 @@ def test_original_devtest():
     sfile2 = dir_w+"/sfile2"
     commands.getstatusoutput( "cat "+progname+" "+progname+" > "+sfile2 )
     mysdir = "/tmp/irodssdir"
+    myldir = dir_w+"/ldir"
+    if os.path.exists( myldir ):
+        shutil.rmtree( myldir )
 
     # begin original devtest
     assertiCmd(s.adminsession,"ilsresc", "LIST", s.testresc)
@@ -166,7 +180,6 @@ def test_original_devtest():
     output = commands.getstatusoutput( "ils -L "+irodshome+"/icmdtestbz2/icmdtestx/foo1 | tail -n1 | awk '{ print $NF }'")
     print output[1]
     bunfile = output[1]
-#    bunfile = getBunpathOfSubfile ( ""+irodshome+"/icmdtestbz2/icmdtestx/foo1" )
     assertiCmd(s.adminsession,"ils --bundle "+bunfile, "LIST", "Subfiles" )
     assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestbz2")
     assertiCmd(s.adminsession,"irm -f --empty "+bunfile )
@@ -191,4 +204,331 @@ def test_original_devtest():
     assert output[0] == 0
     assert output[1] == "", "diff output was not empty..."
     shutil.rmtree( dir_w+"/testa" )
+    # test ireg with normal user
+    testuser2home = "/"+irodszone+"/home/"+s.sessions[2].getUserName()
+    os.environ['clientUserName'] = s.sessions[2].getUserName()
+    commands.getstatusoutput( "cp /tmp/sfile2 /tmp/sfile2c" )
+    # this should fail
+    assertiCmd(s.adminsession,"ireg -KR "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5", "ERROR", "SYS_NO_PATH_PERMISSION" )
+    assertiCmd(s.adminsession,"iput -R "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5" )
+    # this should fail
+    assertiCmd(s.adminsession,"irm -U "+testuser2home+"/foo5", "ERROR", "CANT_UNREG_IN_VAULT_FILE" )
+    assertiCmd(s.adminsession,"irm -f "+testuser2home+"/foo5" )
+    os.environ['clientUserName'] = username
+    os.unlink( "/tmp/sfile2c" )
+
+
+    # mcoll test
+    assertiCmd(s.adminsession,"imcoll -m link "+irodshome+"/icmdtesta "+irodshome+"/icmdtestb" )
+    assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestb", "LIST", "icmdtestb" )
+    if os.path.exists(dir_w+"/testb"):
+        shutil.rmtree( dir_w+"/testb" )
+    assertiCmd(s.adminsession,"iget -fvrK "+irodshome+"/icmdtestb "+dir_w+"/testb", "LIST", "testb" )
+    output = commands.getstatusoutput("diff -r "+mysdir+" "+dir_w+"/testb" )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestb" )
+    assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestb" )
+    shutil.rmtree( dir_w+"/testb" )
+    assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestm" )
+    assertiCmd(s.adminsession,"imcoll -m filesystem -R "+s.testresc+" "+mysdir+" "+irodshome+"/icmdtestm" )
+    assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestm/testmm" )
+    assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestm/testmm/foo1" )
+    assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestm/testmm/foo11" )
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestm/testmm/foo1 "+irodshome+"/icmdtestm/testmm/foo2" )
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestm/testmm "+irodshome+"/icmdtestm/testmm1" )
+
+    # mv to normal collection
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestm/testmm1/foo2 "+irodshome+"/icmdtest/foo100" )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo100", "LIST", "foo100" )
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestm/testmm1 "+irodshome+"/icmdtest/testmm1" )
+    assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtest/testmm1", "LIST", "foo11" )
+    assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtest/testmm1 "+irodshome+"/icmdtest/foo100" )
+    if os.path.exists(dir_w+"/testm"):
+        shutil.rmtree( dir_w+"/testm" )
+    assertiCmd(s.adminsession,"iget -fvrK "+irodshome+"/icmdtesta "+dir_w+"/testm", "LIST", "testm")
+    output = commands.getstatusoutput("diff -r "+mysdir+" "+dir_w+"/testm" )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestm" )
+    assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestm" )
+    shutil.rmtree( dir_w+"/testm" )
+    assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt" )
+    assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt" )
+    assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt", "LIST", ["foo2"] )
+    assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt", "LIST", ["foo1"] )
+    if os.path.exists(dir_w+"/testt"):
+        shutil.rmtree( dir_w+"/testt" )
+    assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtestt  "+dir_w+"/testt", "LIST", "testt" )
+    output = commands.getstatusoutput("diff -r  "+dir_w+"/testx "+dir_w+"/testt" )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt/mydirtt" )
+    assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestt/mydirtt/foo1mt" )
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestt/mydirtt/foo1mt "+irodshome+"/icmdtestt/mydirtt/foo1mtx" )
+
+    # make a directory of 2 large files and 2 small files
+    lfile = dir_w+"/lfile"
+    lfile1 = dir_w+"/lfile1"
+    commands.getstatusoutput( "echo 012345678901234567890123456789012345678901234567890123456789012 > "+lfile )
+    for i in range(5):
+        commands.getstatusoutput( "cat "+lfile+" "+lfile+" "+lfile+" "+lfile+" "+lfile+" "+lfile+" "+lfile+" "+lfile+" "+lfile+" > "+lfile1 )
+        os.rename ( lfile1, lfile )
+    os.mkdir( myldir )
+    for i in range(1,3):
+        mylfile = myldir+"/lfile"+str(i)
+        mysfile = myldir+"/sfile"+str(i)
+        if i != 2:
+            shutil.copyfile( lfile, mylfile )
+        else:
+            os.rename( lfile, mylfile )
+        shutil.copyfile( progname, mysfile )
+
+
+##    for filename in ["lfile1","lfile2"]:
+##        f = file(filename,'wb')
+##        targetfilesize = 50000    # size in bytes
+##        f.seek(targetfilesize-1)  # seek to one character before targetsize (leaving a sparse file)
+##        f.write('\x00')           # write single null character
+##        f.close()
+##    for filename in ["sfile1","sfile2"]:
+##        shutil.copyfile ( progname, filename )
+
+
+    # test adding a large file to a mounted collection
+    assertiCmd(s.adminsession,"iput "+myldir+"/lfile1 "+irodshome+"/icmdtestt/mydirtt" )
+    assertiCmd(s.adminsession,"iget "+irodshome+"/icmdtestt/mydirtt/lfile1 "+dir_w+"/testt" )
+    assertiCmd(s.adminsession,"irm -r "+irodshome+"/icmdtestt/mydirtt" )
+    assertiCmd(s.adminsession,"imcoll -s "+irodshome+"/icmdtestt" )
+    assertiCmd(s.adminsession,"imcoll -p "+irodshome+"/icmdtestt" )
+    assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
+    assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt" )
+    shutil.rmtree(dir_w+"/testt")
+    # iphybun test
+    assertiCmd(s.adminsession,"iput -rR "+s.testresc+" "+mysdir+" "+irodshome+"/icmdtestp" )
+    assertiCmd(s.adminsession,"iphybun -KR "+s.resgroup+" "+irodshome+"/icmdtestp" )
+    assertiCmd(s.adminsession,"itrim -rS "+s.testresc+" -N1 "+irodshome+"/icmdtestp", "LIST", "files trimmed" )
+    output = commands.getstatusoutput( "ils -L "+irodshome+"/icmdtestp/sfile1 | tail -n1 | awk '{ print $NF }'")
+    print output[1]
+    bunfile = output[1]
+    assertiCmd(s.adminsession,"irepl --purgec -R "+s.anotherresc+" "+bunfile )
+    # jmc - resource groups are deprecated - assertiCmd(s.adminsession,"iget -r "+irodshome+"/icmdtestp  "+dir_w+"/testp" )
+    # jmc - resource groups are deprecated - assertiCmd(s.adminsession,"diff -r $mysdir "+dir_w+"/testp", "", "NOANSWER" )
+    assertiCmd(s.adminsession,"itrim -rS "+s.testresc+" -N1 "+irodshome+"/icmdtestp", "LIST", "files trimmed" )
+    # get the name of bundle file
+    assertiCmd(s.adminsession,"irm -f --empty "+bunfile )
+    # should not be able to remove it because it is not empty
+    assertiCmd(s.adminsession,"ils "+bunfile, "LIST", bunfile )
+    assertiCmd(s.adminsession,"irm -rvf "+irodshome+"/icmdtestp", "LIST", "num files done" )
+    assertiCmd(s.adminsession,"irm -f --empty "+bunfile )
+    if os.path.exists(dir_w+"/testp"):
+        shutil.rmtree( dir_w+"/testp" )
+    shutil.rmtree( mysdir )
+
+    # resource group test
+    assertiCmd(s.adminsession,"iput -KR "+s.resgroup+"  "+progname+" "+irodshome+"/icmdtest/foo6" )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", ["foo6",s.anotherresc] )
+    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo6" )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
+    assertiCmd(s.adminsession,"itrim -S "+s.testresc+" -N1 "+irodshome+"/icmdtest/foo6" )
+    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
+    assertiCmd(s.adminsession,"iget -f "+irodshome+"/icmdtest/foo6 "+dir_w+"/foo6" )
+    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo6" ) # TGR - adding because rereplication isn't happening automatically, since this is not a compound resource and group (would normally reget a copy into the cache from the archive
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
+    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo6" )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    assertiCmd(s.adminsession,"itrim -S "+s.testresc+" -N1 "+irodshome+"/icmdtest/foo6" )
+    assertiCmd(s.adminsession,"iput -fR "+irodsdefresource+" "+progname+" "+irodshome+"/icmdtest/foo6" )
+    assertiCmd(s.adminsession,"ils -L "+irodshome+"/icmdtest/foo6", "LIST", s.anotherresc )
+    assertiCmd(s.adminsession,"irepl -UR "+s.anotherresc+" "+irodshome+"/icmdtest/foo6" )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [irodsdefresource] )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
+    assertiCmd(s.adminsession,"iget -f "+irodshome+"/icmdtest/foo6 "+dir_w+"/foo6" )
+    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo6" )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    os.unlink( dir_w+"/foo6" )
+
+
+
+##    # test --purgec option # WILL NOT WORK WITHOUT COMPOUND RESOURCES.... COMMENTING OUT
+##    assertiCmd(s.adminsession,"iput -R  "+s.resgroup+"  --purgec  "+progname+"  "+irodshome+"/icmdtest/foo7" )
+##    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.anotherresc )
+##    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo7" )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.anotherresc )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"iput -fR  "+s.resgroup+"  --purgec  "+progname+"  "+irodshome+"/icmdtest/foo7" )
+##    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo7" )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.anotherresc )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"irepl -R  "+s.anotherresc+"  --purgec "+irodshome+"/icmdtest/foo7" )
+##    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo7" )
+##    assertiCmd(s.adminsession,"itrim -S  "+s.anotherresc+"  -N1 "+irodshome+"/icmdtest/foo7" )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"irepl -R  "+s.anotherresc+"  --purgec "+irodshome+"/icmdtest/foo7" )
+##    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"iget -f --purgec "+irodshome+"/icmdtest/foo7 "+dir_w+"/foo7" )
+##    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo7" )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.anotherresc )
+##    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    assertiCmd(s.adminsession,"iget -f --purgec "+irodshome+"/icmdtest/foo7 "+dir_w+"/foo7" )
+##    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo7", "LIST", s.testresc )
+##    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo7" )
+##    print "output is ["+str(output)+"]"
+##    assert output[0] == 0
+##    assert output[1] == "", "diff output was not empty..."
+##    os.unlink( dir_w+"/foo7" )
+
+##    # test rule file # TGR SKIPPING HERE SINCE WE TEST ALL THE ACTUAL EXAMPLE CODE
+##	assertiCmd(s.adminsession,"irule -F $ruletestfile", "", "", "", "irm "+irodshome+"/icmdtest/foo3" )
+
+
+    # testing irsync
+    assertiCmd(s.adminsession,"irsync "+progname+" i:"+irodshome+"/icmdtest/foo100" )
+    assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )
+    assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 i:"+irodshome+"/icmdtest/foo200" )
+    assertiCmd(s.adminsession,"irm -f "+irodshome+"/icmdtest/foo100 "+irodshome+"/icmdtest/foo200")
+    assertiCmd(s.adminsession,"iput -R "+s.testresc+" "+progname+" "+irodshome+"/icmdtest/foo100")
+    assertiCmd(s.adminsession,"irsync "+progname+" i:"+irodshome+"/icmdtest/foo100" )
+    assertiCmd(s.adminsession,"iput -R "+s.testresc+" "+progname+" "+irodshome+"/icmdtest/foo200")
+    assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 i:"+irodshome+"/icmdtest/foo200" )
+    os.unlink( dir_w+"/foo100" )
+
+
+    # do test using xml protocol
+    os.environ['irodsProt'] = "1"
+    assertiCmd(s.adminsession,"ilsresc", "LIST", s.testresc )
+    assertiCmd(s.adminsession,"imiscsvrinfo", "LIST", "relVersion" )
+    assertiCmd(s.adminsession,"iuserinfo", "LIST", "name: "+username )
+    assertiCmd(s.adminsession,"ienv", "LIST", "Release Version" )
+    assertiCmd(s.adminsession,"icd "+irodshome )
+    assertiCmd(s.adminsession,"ipwd", "LIST", "home" )
+    assertiCmd(s.adminsession,"ihelp ils", "LIST", "ils" )
+    assertiCmd(s.adminsession,"ierror -14000", "LIST", "SYS_API_INPUT_ERR" )
+    assertiCmd(s.adminsession,"iexecmd hello", "LIST", "Hello world" )
+    assertiCmd(s.adminsession,"ips -v", "LIST", "ips" )
+    assertiCmd(s.adminsession,"iqstat", "LIST", "No delayed rules" )
+    assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtest1" )
+    # make a directory of large files
+    assertiCmd(s.adminsession,"iput -kf  "+progname+"  "+irodshome+"/icmdtest1/foo1" )
+    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest1/foo1", "LIST", ["foo1", myssize] )
+    assertiCmd(s.adminsession,"iadmin ls "+irodshome+"/icmdtest1", "LIST", "foo1" )
+    assertiCmd(s.adminsession,"ichmod read "+s.sessions[1].getUserName()+" "+irodshome+"/icmdtest1/foo1" )
+    assertiCmd(s.adminsession,"ils -A "+irodshome+"/icmdtest1/foo1", "LIST", s.sessions[1].getUserName()+"#"+irodszone+":read" )
+    assertiCmd(s.adminsession,"irepl -B -R "+s.testresc+" "+irodshome+"/icmdtest1/foo1" )
+    # overwrite a copy
+    assertiCmd(s.adminsession,"itrim -S  "+irodsdefresource+" -N1 "+irodshome+"/icmdtest1/foo1" )
+    assertiCmd(s.adminsession,"iphymv -R  "+irodsdefresource+" "+irodshome+"/icmdtest1/foo1" )
+    assertiCmd(s.adminsession,"imeta add -d "+irodshome+"/icmdtest1/foo1 testmeta1 180 cm" )
+    assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest1/foo1", "LIST", "testmeta1" )
+    assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest1/foo1", "LIST", "180" )
+    assertiCmd(s.adminsession,"imeta ls -d "+irodshome+"/icmdtest1/foo1", "LIST", "cm" )
+    assertiCmd(s.adminsession,"icp -K -R "+s.testresc+" "+irodshome+"/icmdtest1/foo1 "+irodshome+"/icmdtest1/foo2" )
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtest1/foo2 "+irodshome+"/icmdtest1/foo4" )
+    assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtest1/foo4 "+irodshome+"/icmdtest1/foo2" )
+    assertiCmd(s.adminsession,"ichksum -K "+irodshome+"/icmdtest1/foo2", "LIST", "foo2" )
+    assertiCmd(s.adminsession,"iget -f -K "+irodshome+"/icmdtest1/foo2 "+dir_w )
+    os.unlink ( dir_w+"/foo2" )
+    #assertiCmd(s.adminsession,"irm "+irodshome+"/icmdtest/foo3" ) # DIDN'T EXIST ALREADY
+    #assertiCmd(s.adminsession,"irule -F "+progname ) # USING IRULE IN SEPARATE TESTS
+    assertiCmd(s.adminsession,"irsync "+progname+" i:"+irodshome+"/icmdtest1/foo1" )
+    assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest1/foo1 /tmp/foo1" )
+    assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest1/foo1 i:"+irodshome+"/icmdtest1/foo2" )
+    os.unlink ( "/tmp/foo1" )
+    os.environ['irodsProt'] = "0"
+
+    # do the large files tests
+    # mkldir ()
+    lrsfile = dir_w+"/lrsfile"
+    rsfile = dir_w+"/rsfile"
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    assertiCmd(s.adminsession,"iput -vbPKr --retries 10 --wlock -X "+rsfile+" --lfrestart "+lrsfile+" -N 2 "+myldir+" "+irodshome+"/icmdtest/testy", "LIST", "New restartFile" )
+    assertiCmd(s.adminsession,"ichksum -rK "+irodshome+"/icmdtest/testy", "LIST", "Total checksum performed" )
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    assertiCmd(s.adminsession,"irepl -BvrPT -R "+s.testresc+" --rlock "+irodshome+"/icmdtest/testy", "LIST", "icmdtest/testy" )
+    assertiCmd(s.adminsession,"itrim -vrS "+irodsdefresource+" --dryrun --age 1 -N 1 "+irodshome+"/icmdtest/testy", "LIST", "This is a DRYRUN" )
+    assertiCmd(s.adminsession,"itrim -vrS "+irodsdefresource+" -N 1 "+irodshome+"/icmdtest/testy", "LIST", "a copy trimmed" )
+    assertiCmd(s.adminsession,"icp -vKPTr -N 2 "+irodshome+"/icmdtest/testy "+irodshome+"/icmdtest/testz", "LIST", "Processing lfile1" )
+    assertiCmd(s.adminsession,"irsync -r i:"+irodshome+"/icmdtest/testy i:"+irodshome+"/icmdtest/testz" )
+    assertiCmd(s.adminsession,"irm -vrf "+irodshome+"/icmdtest/testy" )
+    assertiCmd(s.adminsession,"iphymv -vrS "+irodsdefresource+" -R "+s.testresc+" "+irodshome+"/icmdtest/testz", "LIST", "icmdtest/testz" )
+
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    if os.path.exists(dir_w+"/testz"):
+        shutil.rmtree( dir_w+"/testz" )
+    assertiCmd(s.adminsession,"iget -vPKr --retries 10 -X "+rsfile+" --lfrestart "+lrsfile+" --rlock -N 2 "+irodshome+"/icmdtest/testz "+dir_w+"/testz", "LIST", "testz" )
+    assertiCmd(s.adminsession,"irsync -r "+dir_w+"/testz i:"+irodshome+"/icmdtest/testz" )
+    assertiCmd(s.adminsession,"irsync -r i:"+irodshome+"/icmdtest/testz "+dir_w+"/testz" )
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    output = commands.getstatusoutput( "diff -r "+dir_w+"/testz "+myldir )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    # test -N0 transfer
+    assertiCmd(s.adminsession,"iput -N0 -R "+s.testresc+" "+myldir+"/lfile1 "+irodshome+"/icmdtest/testz/lfoo100" )
+    if os.path.isfile( dir_w+"/lfoo100" ):
+        os.unlink( dir_w+"/lfoo100" )
+    assertiCmd(s.adminsession,"iget -N0 "+irodshome+"/icmdtest/testz/lfoo100 "+dir_w+"/lfoo100" )
+    output = commands.getstatusoutput( "diff "+myldir+"/lfile1 "+dir_w+"/lfoo100" )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    shutil.rmtree( dir_w+"/testz" )
+    os.unlink( dir_w+"/lfoo100" )
+    assertiCmd(s.adminsession,"irm -vrf "+irodshome+"/icmdtest/testz" )
+
+
+    # do the large files tests using RBUDP
+
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    assertiCmd(s.adminsession,"iput -vQPKr --retries 10 -X "+rsfile+" --lfrestart "+lrsfile+" "+myldir+" "+irodshome+"/icmdtest/testy", "LIST", "icmdtest/testy" )
+    assertiCmd(s.adminsession,"irepl -BQvrPT -R "+s.testresc+" "+irodshome+"/icmdtest/testy", "LIST", "icmdtest/testy" )
+    assertiCmd(s.adminsession,"itrim -vrS "+irodsdefresource+" -N 1 "+irodshome+"/icmdtest/testy", "LIST", "a copy trimmed" )
+    assertiCmd(s.adminsession,"icp -vQKPTr "+irodshome+"/icmdtest/testy "+irodshome+"/icmdtest/testz", "LIST", "Processing sfile1" )
+    assertiCmd(s.adminsession,"irm -vrf "+irodshome+"/icmdtest/testy" )
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    if os.path.exists(dir_w+"/testz"):
+        shutil.rmtree( dir_w+"/testz" )
+    assertiCmd(s.adminsession,"iget -vQPKr --retries 10 -X "+rsfile+" --lfrestart "+lrsfile+" "+irodshome+"/icmdtest/testz "+dir_w+"/testz", "LIST", "Processing sfile2" )
+    if os.path.isfile( lrsfile ):
+        os.unlink( lrsfile )
+    if os.path.isfile( rsfile ):
+        os.unlink( rsfile )
+    output = commands.getstatusoutput( "diff -r "+dir_w+"/testz "+myldir )
+    print "output is ["+str(output)+"]"
+    assert output[0] == 0
+    assert output[1] == "", "diff output was not empty..."
+    shutil.rmtree( dir_w+"/testz" )
+    assertiCmd(s.adminsession,"irm -vrf "+irodshome+"/icmdtest/testz" )
+    shutil.rmtree( myldir )
 
