@@ -540,80 +540,90 @@ echo "Compiling with:   $MAKEJCMD"
 echo "-------------------------------------${text_reset}"
 sleep 1
 
-# build our external/libtar
-echo "${text_green}${text_bold}Building libtar${text_reset}"
-cd $BUILDDIR/external/libtar*
-./configure
-$MAKEJCMD
+if [ "$BUILDEIRODS" == "1" ] ; then
 
-# build a copy of libarchive
-EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
-cd $BUILDDIR/external/
-if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
-    echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-else
-    echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
-    wget https://github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-    gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-    tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
+    # build our external/libtar
+    echo "${text_green}${text_bold}Building libtar${text_reset}"
+    cd $BUILDDIR/external/libtar*
+    if [ ! -e "lib/libtar.a" ] ; then
+        ./configure
+    fi
+    $MAKEJCMD
+
+    # build a copy of libarchive
+    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
+        wget https://github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
+    if [ ! -e ".libs/libarchive.a" ] ; then
+        awk '/^COMMON_CFLAGS/{print;print "COMMON_CFLAGS += -fPIC";next}1' Makefile.in > Makefile.in.eirods
+        cp Makefile.in.eirods Makefile.in
+        ./configure
+    fi
+    $MAKEJCMD
+
+    # build a copy of boost
+    EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
+        wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+        gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
+        tar xf $EIRODS_BUILD_BOOSTVERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    ./bootstrap.sh
+    ./bjam link-static threading=multi cxxflags=-fPIC
+
+    # build a copy of zlib
+    EIRODS_BUILD_ZLIBVERSION="zlib-1.2.7"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_ZLIBVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_ZLIBVERSION] from zlib.net${text_reset}"
+        wget http://zlib.net/$EIRODS_BUILD_ZLIBVERSION.tar.gz
+        gunzip $EIRODS_BUILD_ZLIBVERSION.tar.gz
+        tar xf $EIRODS_BUILD_ZLIBVERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION
+    if [ ! -e "libz.a" ] ; then
+        CFLAGS="-fPIC" ./configure
+    fi
+    $MAKEJCMD
+
+    # build a copy of bzip2
+    EIRODS_BUILD_BZIP2VERSION="bzip2-1.0.6"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_BZIP2VERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BZIP2VERSION] from github.com${text_reset}"
+        wget http://www.bzip.org/1.0.6/$EIRODS_BUILD_BZIP2VERSION.tar.gz
+        gunzip $EIRODS_BUILD_BZIP2VERSION.tar.gz
+        tar xf $EIRODS_BUILD_BZIP2VERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
+    if [ ! -e "libbz2.a" ] ; then
+        awk '/^CFLAGS/{print;print "CFLAGS += -fPIC";next}1' Makefile > Makefile.eirods
+        cp Makefile.eirods Makefile
+    fi
+    $MAKEJCMD
+
 fi
-echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
-awk '/^COMMON_CFLAGS/{print;print "COMMON_CFLAGS += -fPIC # JMC";next}1' Makefile.in > Makefile.in.jmc
-cp Makefile.in.jmc Makefile.in
-./configure
-$MAKEJCMD
-
-# build a copy of boost
-EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
-cd $BUILDDIR/external/
-if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
-    echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
-else
-    echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
-    wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
-    gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
-    tar xf $EIRODS_BUILD_BOOSTVERSION.tar
-fi
-echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
-cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
-./bootstrap.sh
-./bjam link-static threading=multi cxxflags=-fPIC
-
-# build a copy of zlib
-EIRODS_BUILD_ZLIBVERSION="zlib-1.2.7"
-cd $BUILDDIR/external/
-if [ -d "$EIRODS_BUILD_ZLIBVERSION" ] ; then
-    echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
-else
-    echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_ZLIBVERSION] from zlib.net${text_reset}"
-    wget http://zlib.net/$EIRODS_BUILD_ZLIBVERSION.tar.gz
-    gunzip $EIRODS_BUILD_ZLIBVERSION.tar.gz
-    tar xf $EIRODS_BUILD_ZLIBVERSION.tar
-fi
-echo "${text_green}${text_bold}Building [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
-cd $BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION
-CFLAGS="-fPIC" ./configure
-$MAKEJCMD
-
-# build a copy of gzip2
-EIRODS_BUILD_BZIP2VERSION="bzip2-1.0.6"
-cd $BUILDDIR/external/
-if [ -d "$EIRODS_BUILD_BZIP2VERSION" ] ; then
-    echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
-else
-    echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BZIP2VERSION] from github.com${text_reset}"
-    wget http://www.bzip.org/1.0.6/$EIRODS_BUILD_BZIP2VERSION.tar.gz
-    gunzip $EIRODS_BUILD_BZIP2VERSION.tar.gz
-    tar xf $EIRODS_BUILD_BZIP2VERSION.tar
-fi
-echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
-cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
-awk '/^CFLAGS/{print;print "CFLAGS += -fPIC # JMC";next}1' Makefile.in > Makefile.in.jmc
-cp Makefile.in.jmc Makefile.in
-./configure
-$MAKEJCMD
-
 
 ################################################################################
 
