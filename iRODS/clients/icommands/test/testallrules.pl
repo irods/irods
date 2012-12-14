@@ -174,7 +174,7 @@ runCmd( "iinit $input" );
 # prep and cleanup
 runCmd( "iadmin mkuser devtestuser rodsuser","","","","iadmin rmuser devtestuser" );
 runCmd( "iadmin mkresc testResc 'unix file system' cache localhost /tmp/$unixuser/testResc I_AM_A_CONTEXT_STRING", "", "", "", "iadmin rmresc testResc" );
-runCmd( "iadmin atrg testgroup testResc", "", "", "", "iadmin rfrg testgroup testResc");
+runCmd( "iadmin atrg testallrulesgroup testResc", "", "", "", "iadmin rfrg testallrulesgroup testResc");
 runCmd( "imkdir sub1", "", "", "", "irm -rf sub1" );
 runCmd( "imkdir forphymv", "", "", "", "irm -rf forphymv" );
 runCmd( "imkdir ruletest", "", "", "", "irm -rf ruletest" );
@@ -372,7 +372,7 @@ for ( $i = $#returnref; $i >= 0; $i-- ) {
 
 if ( $debug ) { print( "\nMAIN ########### Last ################\n" ); }
 
-runCmd( "iadmin lg", "negtest", "LIST", "testgroup" );
+runCmd( "iadmin lg", "negtest", "LIST", "testallrulesgroup" );
 runCmd( "iadmin lg", "negtest", "LIST", "resgroup" );
 runCmd( "iadmin lr", "negtest", "LIST", "testresource" );
 runCmd( "irmtrash" );
