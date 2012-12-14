@@ -16,23 +16,17 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <fstream>
+
+// =-=-=-=-=-=-=-
+// boost includes
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 
 // =-=-=-=-=-=-=-
 // system includes
-#ifndef TAR_EXEC_PATH
-#include "libtar.h"
-
-#ifdef HAVE_LIBZ
-# include <zlib.h>
-#endif
-
-// JMC - #include <compat.h>
-#endif	/* TAR_EXEC_PATH */
-#ifndef windows_platform
-#include <sys/wait.h>
-#else
-#include "Unix2Nt.h"
-#endif
+#include "archive.h"
+#include "archive_entry.h"
 
 // =-=-=-=-=-=-=-
 // structures and defines
@@ -57,10 +51,8 @@ typedef struct tarSubFileDesc {
 
 #define NUM_TAR_SUB_FILE_DESC 20
 
-
 // =-=-=-=-=-=-=-
 // irods includes
-#include "tarSubStructFileDriver.h"
 #include "rsGlobalExtern.h"
 #include "modColl.h"
 #include "apiHeaderAll.h"
@@ -72,8 +64,6 @@ typedef struct tarSubFileDesc {
 #include "miscServerFunct.h"
 #include "physPath.h"
 #include "fileOpen.h"
-#include "structFileDriver.h"
-#include "tarSubStructFileDriver.h"
 
 
 // =-=-=-=-=-=-=-=-
@@ -102,246 +92,6 @@ extern "C" {
         memset( PluginStructFileDesc, 0, sizeof(structFileDesc_t) * NUM_STRUCT_FILE_DESC  );
         memset( PluginTarSubFileDesc, 0, sizeof(tarSubFileDesc_t) * NUM_TAR_SUB_FILE_DESC );
     }
-
-    // =-=-=-=-=-=-=-
-    // Begin Tar Operations used by libtar
-    // this set of codes irodsTarXYZ are used by libtar to perform file level
-    // I/O in iRODS 
-    
-    // =-=-=-=-=-=-=-
-    // FIXME :: Black Magic that desperately needs fixed
-    int encode_irods_tar_fd_plugin(int upperInt, int lowerInt) {
-        /* use the upper 5 of the 6 bits for upperInt */
-
-        if (upperInt > 60) {	/* 0x7c */
-            rodsLog (LOG_NOTICE,
-              "encode_irods_tar_fd_plugin: upperInt %d larger than 60", lowerInt);
-            return (SYS_STRUCT_FILE_DESC_ERR);
-        }
-
-        if ((lowerInt & 0xfc000000) != 0) {
-            rodsLog (LOG_NOTICE,
-              "encode_irods_tar_fd_plugin: lowerInt %d too large", lowerInt);
-            return (SYS_STRUCT_FILE_DESC_ERR);
-        }
-
-        return (lowerInt | (upperInt << 26));
-        
-    } // encode_irods_tar_fd_plugin
-    
-    // =-=-=-=-=-=-=-
-    // FIXME :: Black Magic that desperately needs fixed
-    void decode_irods_tar_fd_plugin( int inpInt, int *upperInt, int *lowerInt ) {
-        *lowerInt = inpInt & 0x03ffffff;
-        *upperInt = (inpInt & 0x7c000000) >> 26;
-
-    }
-
-    int verify_struct_file_desc( int  _index, 
-                                 char* _path, 
-                                 specColl_t ** _spec_coll ) {
-        if (PluginStructFileDesc[_index].inuseFlag <= 0) {
-            rodsLog (LOG_NOTICE,
-              "verify_struct_file_desc: _index %d not in use", _index);
-            return (SYS_STRUCT_FILE_DESC_ERR);
-        }
-        if (PluginStructFileDesc[_index].specColl == NULL) {
-            rodsLog (LOG_NOTICE,
-              "verify_struct_file_desc: NULL specColl for _index %d", 
-          _index);
-            return (SYS_STRUCT_FILE_DESC_ERR);
-        }
-        if (strcmp (PluginStructFileDesc[_index].specColl->phyPath, _path)
-          != 0) {
-            rodsLog (LOG_NOTICE,
-              "verify_struct_file_desc: phyPath %s in Inx %d does not match %s",
-              PluginStructFileDesc[_index].specColl->phyPath, _index, 
-          _path);
-            return (SYS_STRUCT_FILE_DESC_ERR);
-        }
-        if ( _spec_coll  != NULL) {
-        * _spec_coll  = PluginStructFileDesc[_index].specColl;
-        }
-
-        return 0;
-    }
-
-    // =-=-=-=-=-=-=-
-    // function which libtar uses to perform an open of a file
-    int irods_tar_open_operation( char * _pathname, int _oflags, int _mode ) {
-        int struct_file_index = 0;
-        int decoded_mode      = 0;
-        specColl_t* spec_coll = NULL;
-
-        // =-=-=-=-=-=-=-
-        // the upper most 4 bits of mode is the struct_file_index */ 
-        decode_irods_tar_fd_plugin( _mode, &struct_file_index, &decoded_mode ); 
-        int status = verify_struct_file_desc( struct_file_index, _pathname, &spec_coll );
-        if( status < 0 || NULL == spec_coll ) {
-            return -1;	
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the resource in order to get the hostname to pass to the rs open call
-        eirods::resource_ptr resc;
-        eirods::error resc_err = resc_mgr.resolve( spec_coll->resource, resc );
-        if( !resc_err.ok() ) {
-            std::stringstream msg;
-            msg << "irods_tar_open_operation - failed to resolve resource [";
-            msg << spec_coll->resource;
-            msg << "]";
-            eirods::log( PASS( false, -1, msg.str(), resc_err ) );
-            return -1;
-        }
-
-        // =-=-=-=-=-=-=-
-        // request the irodshost property from the resource
-        boost::shared_ptr< rodsServerHost_t > rods_host; 
-        eirods::error get_err = resc->get_property< boost::shared_ptr< rodsServerHost_t > >( "host", rods_host );
-        if( !get_err.ok() ) {
-            std::stringstream msg;
-            msg << "irods_tar_open_operation - failed to get host property from resource";
-            eirods::log( PASS( false, -1, msg.str(), get_err ) );
-            return -1;
-        }
-        
-        // =-=-=-=-=-=-=-
-        // error trap hostname ptr
-        if( !rods_host->hostName ) {
-            std::stringstream msg;
-            msg << "irods_tar_open_operation - rods_host->hostname is null";
-            eirods::log( ERROR( -1, msg.str() ) );
-            return -1;
-        }
-        
-        std::string host_name = rods_host->hostName->name;
-
-        // =-=-=-=-=-=-=-
-        // build a file input struct
-        fileOpenInp_t fileOpenInp;
-        memset( &fileOpenInp, 0, sizeof( fileOpenInp ) );
-        strncpy( fileOpenInp.addr.hostAddr,  host_name.c_str(), NAME_LEN );
-        strncpy( fileOpenInp.fileName,       spec_coll->phyPath, MAX_NAME_LEN );
-        fileOpenInp.mode  = decoded_mode;
-        fileOpenInp.flags = _oflags;
-
-        // =-=-=-=-=-=-=-
-        // hit the open file api call
-        int l3_desc_index = rsFileOpen( PluginStructFileDesc[ struct_file_index ].rsComm, &fileOpenInp );
-        if( l3_desc_index < 0 ) {
-            std::stringstream msg;
-            msg << "irods_tar_open_operation - failed in rsFileOpen for [";
-            msg << _pathname;
-            msg << "] with status of [";
-            msg << l3_desc_index;
-            msg << "]";
-            eirods::log( ERROR( -1, msg.str() ) );
-            return -1;
-        }
-
-        // =-=-=-=-=-=-=-
-        // re-encode the file desc index
-        int ret = encode_irods_tar_fd_plugin( struct_file_index, l3_desc_index );
-        if( ret < 0 ) {
-            std::stringstream msg;
-            msg << "irods_tar_open_operation - failed in encode_irods_tar_fd_plugin";
-            eirods::log( ERROR( -1, msg.str() ) );
-            return -1;
-        }
-
-        return ret;
-
-    } // irods_tar_open_operation
-
-    // =-=-=-=-=-=-=-
-    // function which libtar uses to perform a close of a file
-    int irods_tar_close_operation( int fd ) {
-        int struct_file_index = 0;
-        int l3_desc_index     = 0;
-        decode_irods_tar_fd_plugin( fd, &struct_file_index, &l3_desc_index );
-
-        // =-=-=-=-=-=-=-
-        // build a close structure
-        fileCloseInp_t fileCloseInp;
-        memset( &fileCloseInp, 0, sizeof( fileCloseInp ) );
-        fileCloseInp.fileInx = l3_desc_index;
-        
-        // =-=-=-=-=-=-=-
-        // make the call to the irods close api
-        int status = rsFileClose( PluginStructFileDesc[ struct_file_index ].rsComm, &fileCloseInp );
-
-        return status;
-
-    } // irods_tar_close_operation
-
-    // =-=-=-=-=-=-=-
-    // function which libtar uses to perform a read of a file
-    int irods_tar_read_operation( int fd, char *buf, int len ) {
-        int struct_file_index = 0;
-        int l3_desc_index     = 0;
-        decode_irods_tar_fd_plugin( fd, &struct_file_index, &l3_desc_index );
-
-        // =-=-=-=-=-=-=-
-        // build a read structure
-        fileReadInp_t fileReadInp;
-        memset( &fileReadInp, 0, sizeof( fileReadInp ) );
-        fileReadInp.fileInx = l3_desc_index;
-        fileReadInp.len     = len;
-        
-        // =-=-=-=-=-=-=-
-        // build a buffer for reading into 
-        bytesBuf_t readOutBBuf;
-        memset( &readOutBBuf, 0, sizeof( readOutBBuf ) );
-        readOutBBuf.buf = buf;
-
-        // =-=-=-=-=-=-=-
-        // make the call to the irods read api
-        int status = rsFileRead( PluginStructFileDesc[ struct_file_index ].rsComm, &fileReadInp, &readOutBBuf );
-
-        return status;
-
-    } // irods_tar_read_operation
-
-    // =-=-=-=-=-=-=-
-    // function which libtar uses to perform a write of a file
-    int irods_tar_write_operation( int fd, char *buf, int len ) {
-        int struct_file_index = 0;
-        int l3_desc_index     = 0;
-        decode_irods_tar_fd_plugin( fd, &struct_file_index, &l3_desc_index );
-        
-        // =-=-=-=-=-=-=-
-        // build a write structure
-        fileWriteInp_t fileWriteInp;
-        memset( &fileWriteInp, 0, sizeof( fileWriteInp ) );
-        fileWriteInp.fileInx = l3_desc_index;
-        fileWriteInp.len     = len;
-
-        // =-=-=-=-=-=-=-
-        // build a buffer for writing into 
-        bytesBuf_t writeInpBBuf;
-        memset( &writeInpBBuf, 0, sizeof( writeInpBBuf ) );
-        writeInpBBuf.buf = buf;
-
-        // =-=-=-=-=-=-=-
-        // make the call to the irods write api
-        int status = rsFileWrite( PluginStructFileDesc[ struct_file_index ].rsComm, &fileWriteInp, &writeInpBBuf );
-
-        return status;
-
-    } // irods_tar_write_operation
-
-    // =-=-=-=-=-=-=-
-    // structure which holds function pointers for tar posix operations
-    tartype_t TarFcnPtrs = { (openfunc_t)  irods_tar_open_operation, 
-                             (closefunc_t) irods_tar_close_operation,
-                             (readfunc_t)  irods_tar_read_operation, 
-                             (writefunc_t) irods_tar_write_operation 
-    };
-     
-    // End Tar Operations
-    // =-=-=-=-=-=-=-
-
-
 
     // =-=-=-=-=-=-=-
     // 1. Define plugin Version Variable, used in plugin
@@ -400,68 +150,13 @@ extern "C" {
     } // param_check
 
     // =-=-=-=-=-=-=-
-    // external program call to unzip and extract
-    eirods::error extract_file_with_unzip( int _index ) {
-
-        char *av[NAME_LEN];
-        int status;
-        int inx = 0;
-
-        // =-=-=-=-=-=-=-
-        // error check special collection
-        specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
-        if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
-            std::stringstream msg;
-            msg << "extract_file_with_unzip - index: ";
-            msg << _index;
-            msg << " is not in use.";
-            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // error check special collection
-        if( spec_coll == NULL                 || 
-            strlen( spec_coll->cacheDir ) == 0 || 
-            strlen( spec_coll->phyPath  ) == 0 ) {
-            std::stringstream msg;
-            msg << "extract_file_with_unzip - bad special collection for index: ";
-            msg << _index;
-            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // mwan? - cd to the cacheDir 
-        // build executable string with parameters
-        bzero (av, sizeof (av));
-        av[inx] = (char*)UNZIP_EXEC_PATH;
-        inx++;
-        av[inx] = (char*)( "-q" );
-        inx++;
-        av[inx] = (char*)( "-d" );
-        inx++;
-        av[inx] = spec_coll->cacheDir;
-        inx++;
-        av[inx] = spec_coll->phyPath;
-        
-        // =-=-=-=-=-=-=-
-        // make the call to the external program
-        if( status = forkAndExec (av) >= 0 ) {
-            return CODE( status );
-        } else {
-            return ERROR( status, "extract_file_with_unzip - forkAndExec failed." );
-        }
-
-    } // extract_file_with_unzip
-
-    // =-=-=-=-=-=-=-
-    // extract the contents of a tar file using libtar
-    eirods::error extract_tar_file_with_lib( int _index ) {
-
+    // call archive file extraction for struct file 
+    eirods::error extract_file( int _index ) {
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
         if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
             std::stringstream msg;
-            msg << "extract_tar_file_with_lib - struct file index: ";
+            msg << "extract_file - struct file index: ";
             msg << _index;
             msg << " is not in use";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
@@ -474,82 +169,75 @@ extern "C" {
             strlen( spec_coll->cacheDir ) == 0 ||
             strlen( spec_coll->phyPath  ) == 0) {
             std::stringstream msg;
-            msg << "extract_tar_file_with_lib - bad special collection for index: ";
+            msg << "extract_file - bad special collection for index: ";
             msg << _index;
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
 
         }
 
         // =-=-=-=-=-=-=-
-        // encode file mode?  default is 0600 Black Magic...
-        int myMode = encode_irods_tar_fd_plugin( _index, getDefFileMode() );
-        if( myMode < 0 ) {
-            return ERROR( myMode, "extract_tar_file_with_lib - failed in encode_irods_tar_fd_plugin" );
-        }
+        // select which attributes we want to restore
+        int flags = ARCHIVE_EXTRACT_TIME;
+        //flags |= ARCHIVE_EXTRACT_PERM;
+        //flags |= ARCHIVE_EXTRACT_ACL;
+        //flags |= ARCHIVE_EXTRACT_FFLAGS;
 
         // =-=-=-=-=-=-=-
-        // make call to tar open
-        TAR* tar_handle = 0;
-        errno = 0; // CLEAR ERRNO
-        int status = tar_open( &tar_handle, spec_coll->phyPath, &TarFcnPtrs, O_RDONLY, myMode, TAR_GNU );
-        if( status < 0 ) {
-              std::stringstream msg;
-              msg << "extract_tar_file_with_lib - tar_open error for [";
-              msg << spec_coll->phyPath;
-              msg << "]  strerror [";
-              msg << strerror( errno );
-              msg << "], errno [";
-              msg << errno;
-              msg << "] status [";
-              msg << status;
-              msg << "]";
-            return ERROR( SYS_TAR_OPEN_ERR - errno, msg.str() );
-        }
+        // initialize archive struct and set flags for format etc
+        struct archive* arch = archive_read_new();
+        archive_read_support_compression_all( arch );
+        archive_read_support_format_all( arch );
+        archive_read_support_filter_all( arch );
 
         // =-=-=-=-=-=-=-
-        // make call to extract
-        status = tar_extract_all( tar_handle, spec_coll->cacheDir );
-        if( status != 0 ) {
+        // open the archive and and prepare to read
+        if( archive_read_open_filename( arch, spec_coll->phyPath, 16384 ) != ARCHIVE_OK ) {
             std::stringstream msg;
-            msg << "extract_tar_file_with_lib - tar_extract_all error for [";
+            msg << "extract_file - failed to open archive [";
             msg << spec_coll->phyPath;
-            msg << "], errno = ";
-            msg << errno;
-            return ERROR( SYS_TAR_EXTRACT_ALL_ERR - errno, msg.str() );
+            msg << "]";
+            return ERROR( -1, msg.str() );
+        }
+ 
+        // =-=-=-=-=-=-=-
+        // build a cache directory string
+        std::string cache_dir( spec_coll->cacheDir );
+        if( cache_dir[ cache_dir.size() - 1 ] != '/' ) {
+            cache_dir += "/";
         }
 
         // =-=-=-=-=-=-=-
-        // make call to close
-        status = tar_close( tar_handle );
-        if( status != 0 ) {
-            std::stringstream msg;
-            msg << "extract_tar_file_with_lib - tar_close error for [";
-            msg << spec_coll->phyPath; 
-            msg << ", errno = ";
-            msg << errno;
-            return ERROR( SYS_TAR_CLOSE_ERR - errno, msg.str() );
-        }
+        // iterate over entries in the archive and write them do disk
+        struct archive_entry* entry;
+        while( ARCHIVE_OK == archive_read_next_header( arch, &entry ) ) {
+             // =-=-=-=-=-=-=-
+             // redirect the path to the cache directory
+             std::string path = cache_dir + std::string( archive_entry_pathname( entry ) );
+             archive_entry_set_pathname( entry, path.c_str() );
+
+             // =-=-=-=-=-=-=-
+             // read data from entry and write it to disk
+             if( ARCHIVE_OK != archive_read_extract( arch, entry, flags ) ){
+                 std::stringstream msg;
+                 msg << "extract_file - failed to write [";
+                 msg << path;
+                 msg << "]"; 
+                 rodsLog( LOG_NOTICE, msg.str().c_str() ); 
+             } 
+
+        } // while
+
+        // =-=-=-=-=-=-=-
+        // release the archive back into the wild
+        archive_read_free( arch );
 
         return SUCCESS();
 
-    } // extract_tar_file_with_lib
-
-    // =-=-=-=-=-=-=-
-    // call tar file extraction for struct file 
-    eirods::error extract_tar_file( int _index, std::string _data_type ) {
-        if( _data_type == ZIP_DT_STR ) {
-            return extract_file_with_unzip( _index );
-        } else {
-            rodsLog( LOG_NOTICE, "extract_tar_file - call extract_tar_file_with_lib" );
-            return extract_tar_file_with_lib( _index );
-        } 
-
-    } // extract_tar_file
+    } // extract_file
     
     // =-=-=-=-=-=-=-
-    //  
+    // recursively create a cache directory for a spec coll via irods api 
     eirods::error make_tar_cache_dir( int _index, std::string _host ) {
-
         // =-=-=-=-=-=-=-
         // extract and test comm pointer
         rsComm_t* rs_comm = PluginStructFileDesc[ _index ].rsComm;
@@ -642,10 +330,10 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // expand tar file into cache dir
-            eirods::error extract_err = extract_tar_file( _index, "" );
+            eirods::error extract_err = extract_file( _index );
             if( !extract_err.ok() ) {
                 std::stringstream msg;
-                msg << "stage_tar_struct_file - extract_tar_file failed for [";
+                msg << "stage_tar_struct_file - extract_file failed for [";
                 msg << spec_coll->objPath;
                 msg << "] in cache directory [";
                 msg << spec_coll->cacheDir;
@@ -678,7 +366,6 @@ extern "C" {
             };
         } // for i
 
-        rodsLog( LOG_NOTICE, "allocStructFileDesc: out of PluginStructFileDesc" );
         return (SYS_OUT_OF_FILE_DESC);
 
     } // alloc_struct_file_desc
@@ -746,7 +433,7 @@ extern "C" {
         if( ( _struct_desc_index = alloc_struct_file_desc() ) < 0 ) {
             return ERROR( _struct_desc_index, "tar_struct_file_open - call to allocStructFileDesc failed." );
         }
-
+                 
         // =-=-=-=-=-=-=-
         // [ mwan? :: Have to do this because  _spec_coll could come from a remote host ]
         // NOTE :: i dont see any remote server to server comms here
@@ -809,7 +496,7 @@ extern "C" {
         // TODO :: need to deal with remote open here 
 
         // =-=-=-=-=-=-=-
-        // tage the tar file so we can get at its tasty innards
+        // stage the tar file so we can get at its tasty innards
         eirods::error stage_err = stage_tar_struct_file( _struct_desc_index, _resc_host );
         if( !stage_err.ok() ) {
             free_struct_file_desc( _struct_desc_index );
@@ -2148,11 +1835,10 @@ extern "C" {
 
 	
     // =-=-=-=-=-=-=-
-	// interface to determine free space on a device given a path
+	// interface to extract a tar file
 	eirods::error tarFileExtractPlugin( eirods::resource_property_map* _prop_map, 
 								        eirods::resource_child_map*    _cmap,
                                         eirods::first_class_object*    _object ) { 
-        rodsLog( LOG_NOTICE, "tarFileExtractPlugin - START" );
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
@@ -2196,11 +1882,9 @@ extern "C" {
         strncpy( PluginStructFileDesc[ struct_file_index ].dataType, 
                  struct_obj->data_type().c_str(), NAME_LEN );
 
-        rodsLog( LOG_NOTICE, "tarFileExtractPlugin - call extract_tar_file" );
 		// =-=-=-=-=-=-=-
         // extract the file
-        eirods::error ext_err = extract_tar_file( struct_file_index, struct_obj->data_type() );
-        rodsLog( LOG_NOTICE, "tarFileExtractPlugin - call extract_tar_file. done." );
+        eirods::error ext_err = extract_file( struct_file_index );
         if( !ext_err.ok() ) {
             // NOTE:: may need to remove the cacheDir too 
             std::stringstream msg;
@@ -2216,112 +1900,328 @@ extern "C" {
         return CODE( ext_err.code() );
 
 	} // tarFileExtractPlugin
-
+    
     // =-=-=-=-=-=-=-
-    // utility function to zip up the cache directory 
-    eirods::error bundle_cache_dir_with_zip( int _index ) {
-        char *av[NAME_LEN];
-        char tmpPath[MAX_NAME_LEN];
-        int status;
-        int inx = 0;
-
-        specColl_t *specColl = PluginStructFileDesc[ _index ].specColl;
-
-        if (specColl == NULL || 
-            specColl->cacheDirty <= 0 ||
-            strlen (specColl->cacheDir) == 0) {
-            return ERROR( 0, "bundle_cache_dir_with_zip - invalid spec coll" );
-        }
-
-        // cd to the cacheDir 
-        if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
-            rodsLog( LOG_ERROR, "bundle_cache_dir_with_zip: getcwd failed. errno = %d", errno );
-            return ERROR( SYS_EXEC_TAR_ERR - errno, "bundle_cache_dir_with_zip - failed on getcwd" );
-        }
-        chdir (specColl->cacheDir);
-        bzero (av, sizeof (av));
-        av[inx] = const_cast<char*>( ZIP_EXEC_PATH );
-        inx++;
-        av[inx] = const_cast<char*>( "-r" );
-        inx++;
-        av[inx] = const_cast<char*>( "-q" );
-        inx++;
-        av[inx] = specColl->phyPath;
-        inx++;
-        av[inx] = const_cast<char*>( "." );
-        status = forkAndExec (av);
-        chdir (tmpPath);
-
-        return CODE( status );
-
-    } // bundle_cache_dir_with_zip
-   
-    // =-=-=-=-=-=-=-
-    //  
-    eirods::error bundle_cache_dir_with_lib( int _index ) {
-        TAR *t = NULL;
-        int status = -1;
-        int myMode = -1;
+    // helper function to write an archive entry
+    eirods::error write_file_to_archive( const boost::filesystem::path _path,
+                                         const std::string&            _cache_dir, 
+                                         struct archive*               _archive ) {
+        namespace fs = boost::filesystem;
+        struct archive_entry* entry = archive_entry_new();
 
         // =-=-=-=-=-=-=-
-        // snag the special collection pointer from the table
-        specColl_t* spec_coll = PluginStructFileDesc[_index].specColl;
-        if( spec_coll == NULL              || 
-            spec_coll->cacheDirty <= 0     ||
-            strlen( spec_coll->cacheDir ) == 0 ) {
-             return ERROR( 0, "bundle_cache_dir_with_lib - invalid spec_coll" );
-        }
-
-        myMode = encode_irods_tar_fd_plugin( _index, getDefFileMode() );
+        // strip arch path from file name for header entry
+        std::string path_name  = _path.string();
+        std::string strip_file = path_name.substr( _cache_dir.size()+1 ); // add one for the last '/'
+        archive_entry_set_pathname( entry, strip_file.c_str() );
+        
+        // =-=-=-=-=-=-=-
+        // ask for the file size
+        archive_entry_set_size( entry, fs::file_size( _path ) );
+        archive_entry_set_filetype( entry, AE_IFREG );
 
         // =-=-=-=-=-=-=-
-        // open the tar file
-        status = tar_open( &t, spec_coll->phyPath, &TarFcnPtrs, O_WRONLY, myMode, TAR_GNU );
-        if( status < 0 || NULL == t ) {
+        // set the permissions
+        //fs::perms pp;
+        //fs::permissions( _path, pp );
+        archive_entry_set_perm( entry, 0600 );
+
+        // =-=-=-=-=-=-=-
+        // set the time for the file
+        std::time_t tt = last_write_time( _path );
+        archive_entry_set_mtime( entry, tt, 0 );
+
+        // =-=-=-=-=-=-=-
+        // write out the header to the archive
+        if( archive_write_header( _archive, entry ) != ARCHIVE_OK ) {
             std::stringstream msg;
-            msg << "bundle_cache_dir_with_lib - tar_open error for [";
-            msg << spec_coll->phyPath;
-            msg << "] errno ";
-            msg << errno;
-            return ERROR( SYS_TAR_OPEN_ERR - errno, msg.str() );
+            msg << "write_file_to_archive - failed to write entry header for [";
+            msg << path_name;
+            msg << "] with error string [";
+            msg << archive_error_string( _archive );
+            msg << "]";
+            return ERROR( -1, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
-        // add directory worth of data into the tar file
-        status = tar_append_tree( t, spec_coll->cacheDir, const_cast<char*>( "." ) );
-        if (status != 0) {
+        // JMC :: i didnt use ifstream as readsome() garbled the file
+        //     :: some reason.  revisit this for windows
+        // =-=-=-=-=-=-=-
+        // open the file in question
+        int fd = open( path_name.c_str(), O_RDONLY );
+        if( -1 == fd )  {
             std::stringstream msg;
-            msg << "bundle_cache_dir_with_lib - tar_append_tree error for [";
-            msg << spec_coll->phyPath;
-            msg << "] errno ";
-            msg << errno;
-
-            if (status < 0) {
-                return ERROR( status, msg.str() );
-            } else {
-                return ERROR( SYS_TAR_APPEND_ERR - errno, msg.str() );
-            }
+            msg << "write_file_to_archive - failed to open file for read [";
+            msg << path_name;
+            msg << "] with error [";
+            msg << strerror( errno );
+            msg << "]";
+            return ERROR( -1, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
-        // close the tar directory
-        if( ( status = tar_close(t)) != 0 ) {
-            std::stringstream msg;
-            msg << "bundle_cache_dir_with_lib - tar_close error for [";
-            msg << spec_coll->phyPath;
-            msg << "] errno ";
-            msg << errno;
-              
-            if (status < 0) {
-                return ERROR( status, msg.str() );
-            } else {
-                return ERROR( SYS_TAR_CLOSE_ERR - errno, msg.str() );
-            }
+        // read in the file and add it to the archive
+        char buff[ 16384 ];
+        int len = read( fd, buff, sizeof( buff ) );        
+        while( len > 0 ) {
+            archive_write_data( _archive, buff, len );
+            len = read( fd, buff, sizeof( buff ) );        
         }
+
+        // =-=-=-=-=-=-=-
+        // clean up
+        close( fd );
+        archive_entry_free( entry );
 
         return SUCCESS();
 
-    } // bundle_cache_dir_with_lib
+    } // write_file_to_archive
+  
+    // =-=-=-=-=-=-=-
+    // helper function for recursive directory scanning
+    eirods::error build_directory_listing( const boost::filesystem::path&          _path, 
+                                           std::vector< boost::filesystem::path >& _listing ) {
+        // =-=-=-=-=-=-=-
+        // namespace alias for brevity 
+        namespace fs = boost::filesystem;
+        eirods::error final_error = SUCCESS();
+
+        // =-=-=-=-=-=-=-
+        // begin iterating over the cache dir
+         try {
+            if( fs::is_directory( _path ) ) {
+                // =-=-=-=-=-=-=-
+                // iterate over the directory and archive it
+                fs::directory_iterator end_iter;
+                fs::directory_iterator dir_itr( _path );
+                for ( ; dir_itr != end_iter; ++dir_itr ) {
+                    // =-=-=-=-=-=-=-
+                    // recurse on this new directory
+                    eirods::error ret = build_directory_listing( dir_itr->path(), _listing );
+                    if( !ret.ok() ) {
+                        std::stringstream msg;
+                        msg << "build_directory_listing - failed on [";
+                        msg << dir_itr->path().string();
+                        msg << "]";
+                        final_error = PASS( -1, false, msg.str(), final_error );
+                    }
+
+                } // for dir_itr
+            
+            } else if( fs::is_regular_file( _path ) ) {
+                // =-=-=-=-=-=-=-
+                // add file path to the vector
+                _listing.push_back( _path );
+
+            } else {
+                std::stringstream msg;
+                msg << "build_directory_listing - unhandled entry [";
+                msg << _path.filename();
+                msg << "]"; 
+                rodsLog( LOG_NOTICE, msg.str().c_str() );
+            }
+
+        } catch ( const std::exception & ex ) {
+            std::stringstream msg;
+            msg << "build_directory_listing - caught exception [";
+            msg << ex.what();
+            msg << "] for directory entry [";
+            msg << _path.filename();
+            msg << "]";
+            return ERROR( -1, msg.str() );
+
+        }
+
+        return final_error; 
+  
+    } // build_directory_listing 
+   
+    // =-=-=-=-=-=-=-
+    // create an archive from the cache directory 
+    eirods::error bundle_cache_dir( int         _index, 
+                                    std::string _data_type ) {
+        // =-=-=-=-=-=-=-
+        // namespace alias for brevity 
+        namespace fs = boost::filesystem;
+
+        // =-=-=-=-=-=-=-
+        // check struct desc table in use flag
+        if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
+            std::stringstream msg;
+            msg << "extract_file - struct file index: ";
+            msg << _index;
+            msg << " is not in use";
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check struct desc table in use flag
+        specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
+        if( spec_coll == NULL                   || 
+            spec_coll->cacheDirty <= 0          ||
+            strlen( spec_coll->cacheDir ) == 0  ||
+            strlen( spec_coll->phyPath  ) == 0 ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir - bad special collection for index: ";
+            msg << _index;
+            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
+
+        }
+  
+        // =-=-=-=-=-=-=-
+        // create a boost filesystem path for the cache directory
+        fs::path full_path( fs::initial_path<fs::path>() );
+        full_path = fs::system_complete( fs::path( spec_coll->cacheDir ) );
+
+        // =-=-=-=-=-=-=-
+        // check if the path is really there, just in case
+        if( !fs::exists( full_path ) ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir - cache directory does not exist [";
+            msg << spec_coll->cacheDir;
+            msg << "]";
+            return ERROR( -1, msg.str() );
+        }
+
+        // =-=-=-=-=-=-=-
+        // make sure it is a directory, just in case
+        if( !fs::is_directory( full_path ) ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir - cache directory is not actually a directory [";
+            msg << spec_coll->cacheDir;
+            msg << "]";
+            return ERROR( -1, msg.str() );
+        }
+ 
+        // =-=-=-=-=-=-=-
+        // build a listing of all of the files in all of the subdirs 
+        // in the full_path
+        std::vector< fs::path > listing;
+        build_directory_listing( full_path, listing );
+         
+        // =-=-=-=-=-=-=-
+        // create the archive
+        struct archive* arch = archive_write_new();
+        if( !arch ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir - failed to create archive struct for [";
+            msg << spec_coll->cacheDir;
+            msg << "] into archive file [";
+            msg << spec_coll->phyPath;
+            msg << "]";
+            return ERROR( -1, msg.str() );
+            
+        }
+   
+        // =-=-=-=-=-=-=-
+        // set the compression flags given data_type
+        if( _data_type == ZIP_DT_STR ) {
+            if( archive_write_add_filter_lzip( arch ) != ARCHIVE_OK ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to set compression to lzip for archive [";
+                msg << spec_coll->phyPath;
+                msg << "] with error string [";
+                msg << archive_error_string( arch );
+                msg << "]";
+                return ERROR( -1, msg.str() );
+
+            }
+             
+        } else if( _data_type == GZIP_TAR_DT_STR ) {
+            if( archive_write_add_filter_gzip( arch ) != ARCHIVE_OK ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to set compression to gzip for archive [";
+                msg << spec_coll->phyPath;
+                msg << "] with error string [";
+                msg << archive_error_string( arch );
+                msg << "]";
+                return ERROR( -1, msg.str() );
+
+            }
+
+        } else if( _data_type == BZIP2_TAR_DT_STR ) {
+            if( archive_write_add_filter_bzip2( arch ) != ARCHIVE_OK ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to set compression to bzip2 for archive ["; 
+                msg << spec_coll->phyPath;
+                msg << "] with error string [";
+                msg << archive_error_string( arch );
+                msg << "]";
+                return ERROR( -1, msg.str() );
+
+            }
+        
+        } else {
+            if( archive_write_set_compression_none( arch ) != ARCHIVE_OK ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to set compression to none for archive ["; 
+                msg << spec_coll->phyPath;
+                msg << "] with error string [";
+                msg << archive_error_string( arch );
+                msg << "]";
+                return ERROR( -1, msg.str() );
+
+            }
+        
+        }
+        
+        // =-=-=-=-=-=-=-
+        // set the format of the tar archive
+        archive_write_set_format_ustar( arch );
+
+        // =-=-=-=-=-=-=-
+        // open the spec coll physical path for archival
+        if( archive_write_open_filename( arch, spec_coll->phyPath ) < ARCHIVE_OK ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir - failed to open archive file [";
+            msg << spec_coll->phyPath;
+            msg << "] with error string [";
+            msg << archive_error_string( arch );
+            msg << "]";
+            return ERROR( -1, msg.str() );
+         }
+
+        // =-=-=-=-=-=-=-
+        // iterate over the dir listing and archive the files
+        std::string cache_dir( spec_coll->cacheDir );
+        eirods::error arch_err = SUCCESS();
+        for( size_t i = 0; i < listing.size(); ++i ) {
+            // =-=-=-=-=-=-=-
+            // strip off archive path from the filename
+            eirods::error ret = write_file_to_archive( listing[ i ].string(), cache_dir, arch );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << "bundle_cache_dir - failed to archive file [";
+                msg << listing[ i ].string();
+                msg << "]";
+                arch_err = PASS( -1, false, msg.str(), arch_err );
+                eirods::log( PASS( -1, false, msg.str(), ret ) );
+            } 
+
+        } // for i
+
+        // =-=-=-=-=-=-=-
+        // close the archive and clean up
+        archive_write_close( arch );
+        archive_write_free( arch );
+        
+        // =-=-=-=-=-=-=-
+        // handle errors
+        if( !arch_err.ok() ) {
+            std::stringstream msg;
+            msg << "bundle_cache_dir - failed to archive [";
+            msg << spec_coll->cacheDir;
+            msg << "] into archive file [";
+            msg << spec_coll->phyPath;
+            msg << "]";
+            return PASS( false, -1, msg.str(), arch_err );
+
+        } else {
+            return SUCCESS();
+
+        }
+
+    } // bundle_cache_dir
 
     // =-=-=-=-=-=-=-
     // interface for tar / zip up of cache dir which also updates
@@ -2335,20 +2235,7 @@ extern "C" {
  
         // =-=-=-=-=-=-=-
         // call bundle helper functions
-        eirods::error bundle_err = SUCCESS();
-        if( strstr( PluginStructFileDesc[ _index ].dataType, ZIP_DT_STR ) != 0 ) {
-            bundle_err = bundle_cache_dir_with_zip ( _index );
-
-        } else {
-            if( ( _opr_type & ADD_TO_TAR_OPR ) != 0 ) {
-                std::string msg = "sync_cache_dir_to_tar_file - ADD_TO_TAR_OPR not supported";
-                return ERROR( SYS_ADD_TO_ARCH_OPR_NOT_SUPPORTED, msg );
-            }
-
-            bundle_err = bundle_cache_dir_with_lib( _index );
-
-        } // JMC - backport 4637
-
+        eirods::error bundle_err = bundle_cache_dir( _index, PluginStructFileDesc[ _index ].dataType );
         if( !bundle_err.ok() ) {
             return PASS( false, -1, "sync_cache_dir_to_tar_file - failed in bundle.", bundle_err );
         }
@@ -2432,6 +2319,10 @@ extern "C" {
             msg << spec_coll->objPath; 
             return PASS( false, -1, msg.str(), open_err );
         }
+
+		// =-=-=-=-=-=-=-
+        // copy the data type requested by user for compression
+        strncpy( PluginStructFileDesc[ struct_file_index ].dataType, struct_obj->data_type().c_str(), NAME_LEN );
 
 		// =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 

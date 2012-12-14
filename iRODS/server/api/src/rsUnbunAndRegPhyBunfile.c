@@ -71,9 +71,13 @@ _rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return (SYS_INVALID_FILE_PATH);
     }
 
+rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir" );
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
+rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir. done." );
     dataType = getValByKey (&dataObjInp->condInput, DATA_TYPE_KW); // JMC - backport 4664
+rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile" );
     status = unbunPhyBunFile (rsComm, dataObjInp->objPath, rescInfo, bunFilePath, phyBunDir, dataType, 0 ); // JMC - backport 4632, 4657, 4664
+rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile. done." );
      
 
     if (status < 0) {
