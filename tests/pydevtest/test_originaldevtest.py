@@ -133,7 +133,7 @@ def test_original_devtest():
     assertiCmd(s.adminsession,"ibun -x "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestx" )
     assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestx", "LIST", ["foo2"] )
     assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestx", "LIST", ["sfile10"] )
-    assertiCmd(s.adminsession,"ibun -cDtar "+irodshome+"/icmdtestx1.tar "+irodshome+"/icmdtestx", "LIST", "CREATE" )
+    assertiCmd(s.adminsession,"ibun -cDtar "+irodshome+"/icmdtestx1.tar "+irodshome+"/icmdtestx" )
     assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtestx1.tar", "LIST", "testx1.tar" )
     if os.path.exists(dir_w+"/testx1"):
         shutil.rmtree(dir_w+"/testx1")
@@ -149,7 +149,7 @@ def test_original_devtest():
     
     
     # test ibun with gzip
-    assertiCmd(s.adminsession,"ibun -cDgzip "+irodshome+"/icmdtestx1.tar.gz "+irodshome+"/icmdtestx", "LIST", "CREATE")
+    assertiCmd(s.adminsession,"ibun -cDgzip "+irodshome+"/icmdtestx1.tar.gz "+irodshome+"/icmdtestx" )
     assertiCmd(s.adminsession,"ibun -x "+irodshome+"/icmdtestx1.tar.gz "+irodshome+"/icmdtestgz")
     if os.path.isfile( "icmdtestgz" ):
         os.unlink( "icmdtestgz" )
@@ -159,10 +159,10 @@ def test_original_devtest():
     assert output[0] == 0
     assert output[1] == "", "diff output was not empty..."
     shutil.rmtree( dir_w+"/icmdtestgz")
-    assertiCmd(s.adminsession,"ibun --add "+irodshome+"/icmdtestx1.tar.gz "+irodshome+"/icmdtestgz", "LIST", "ADD TO TAR")
+    assertiCmd(s.adminsession,"ibun --add "+irodshome+"/icmdtestx1.tar.gz "+irodshome+"/icmdtestgz")
     assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestx1.tar.gz "+irodshome+"/icmdtestgz")
     # test ibun with bzip2
-    assertiCmd(s.adminsession,"ibun -cDbzip2 "+irodshome+"/icmdtestx1.tar.bz2 "+irodshome+"/icmdtestx", "LIST", "CREATE")
+    assertiCmd(s.adminsession,"ibun -cDbzip2 "+irodshome+"/icmdtestx1.tar.bz2 "+irodshome+"/icmdtestx")
     assertiCmd(s.adminsession,"ibun -xb "+irodshome+"/icmdtestx1.tar.bz2 "+irodshome+"/icmdtestbz2")
     if os.path.isfile( "icmdtestbz2" ):
         os.unlink( "icmdtestbz2" )
