@@ -463,6 +463,14 @@ foreach $arg (@ARGV)
 		doTest( );
 		next;
 	}
+	if ( $arg =~ /^-?-?devtesty$/ )	# Run iRODS tests
+# Undocumented command that does not warn user or prompts;
+# used for batch-mode testing.
+	{
+		$numberCommands++;
+		doTest( );
+		next;
+	}
 	if ( $arg =~ /^-?-?devtest$/ )	# Run iRODS developer tests
 	{
 		$numberCommands++;
