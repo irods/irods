@@ -517,11 +517,34 @@ if [ "$PYPREFLIGHT" != "" ] ; then
 fi
 ################################################################################
 
+# find number of cpus
+if [ "$DETECTEDOS" == "MacOSX" ] ; then
+    DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
+elif [ "$DETECTEDOS" == "Solaris" ] ; then
+    DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
+else
+    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
+fi
+if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
+    DETECTEDCPUCOUNT=1
+fi
+CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
+MAKEJCMD="make -j $CPUCOUNT"
+
+################################################################################
+
+# print out detected CPU information
+echo "${text_cyan}${text_bold}-------------------------------------"
+echo "Detected CPUs:    $DETECTEDCPUCOUNT"
+echo "Compiling with:   $MAKEJCMD"
+echo "-------------------------------------${text_reset}"
+sleep 1
+
 # build our external/libtar
 echo "${text_green}${text_bold}Building libtar${text_reset}"
 cd $BUILDDIR/external/libtar*
 ./configure
-make
+$MAKEJCMD
 
 # build a copy of libarchive
 EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
@@ -539,7 +562,7 @@ cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
 awk '/^COMMON_CFLAGS/{print;print "COMMON_CFLAGS += -fPIC # JMC";next}1' Makefile.in > Makefile.in.jmc
 cp Makefile.in.jmc Makefile.in
 ./configure
-make
+$MAKEJCMD
 
 # build a copy of boost
 EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
@@ -571,7 +594,7 @@ fi
 echo "${text_green}${text_bold}Building [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
 cd $BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION
 CFLAGS="-fPIC" ./configure
-make
+$MAKEJCMD
 
 # build a copy of gzip2
 EIRODS_BUILD_BZIP2VERSION="bzip2-1.0.6"
@@ -589,7 +612,7 @@ cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
 awk '/^CFLAGS/{print;print "CFLAGS += -fPIC # JMC";next}1' Makefile.in > Makefile.in.jmc
 cp Makefile.in.jmc Makefile.in
 ./configure
-make
+$MAKEJCMD
 
 
 ################################################################################
@@ -710,26 +733,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
     mv /tmp/eirods_ms_home.h ./server/re/include/
 
-
-
-    # find number of cpus
-    if [ "$DETECTEDOS" == "MacOSX" ] ; then
-        DETECTEDCPUCOUNT=`sysctl -n hw.ncpu`
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
-    else
-        DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
-    fi
-    if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
-        DETECTEDCPUCOUNT=1
-    fi
-    CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
-    MAKEJCMD="make -j $CPUCOUNT"
-    echo "${text_cyan}${text_bold}-------------------------------------"
-    echo "Detected CPUs:    $DETECTEDCPUCOUNT"
-    echo "Compiling with:   $MAKEJCMD"
-    echo "-------------------------------------${text_reset}"
-    sleep 1
 
     ###########################################
     # single 'make' time on an 8 core machine
