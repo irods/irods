@@ -313,15 +313,12 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
                   tmpCollName, tmpDataName);
         rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
-        rstrcpy (dataObjInfo->hierString, tmpHierString, MAX_NAME_LEN);
+        rstrcpy (dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN);
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
         if (status < 0) {
             rodsLog (LOG_DEBUG,
                      "getDataObjInfo: resolveResc error for %s, status = %d",
                      tmpRescName, status);
-#if 0   /* this could happen for remote zone resource */
-            return (status);
-#endif
         }
         rstrcpy (dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
         rstrcpy (dataObjInfo->dataType, tmpDataType, NAME_LEN);

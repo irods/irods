@@ -74,7 +74,7 @@ int _rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp ) {
    
     // =-=-=-=-=-=-=-
     // call unlink via resource plugin
-    eirods::file_object file_obj( rsComm, fileUnlinkInp->fileName, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileUnlinkInp->fileName, fileUnlinkInp->rescHier, 0, 0, 0 );
     eirods::error unlink_err = fileUnlink( file_obj );
      
     // =-=-=-=-=-=-=-

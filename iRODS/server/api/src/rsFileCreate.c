@@ -104,7 +104,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     // =-=-=-=-=-=-=-
     // dont capture the eirods results in the log here as there may be an issue with
     // needing to create a directory, etc.
-    eirods::file_object file_obj( rsComm, fileCreateInp->fileName, 0, fileCreateInp->mode, fileCreateInp->flags );
+    eirods::file_object file_obj( rsComm, fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, fileCreateInp->mode, fileCreateInp->flags );
     eirods::error create_err = fileCreate( file_obj );
 
     // =-=-=-=-=-=-=-
@@ -120,7 +120,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     
             // =-=-=-=-=-=-=-
             // the directory didnt exist, make it and then try the create once again.
-            mkDirForFilePath( fileCreateInp->fileType, rsComm, "/", fileCreateInp->fileName, getDefDirMode() ); 
+            mkDirForFilePath( rsComm, "/", file_obj.physical_path().c_str(), getDefDirMode() ); 
 
             create_err = fileCreate( file_obj );
                                                 

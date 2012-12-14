@@ -458,6 +458,7 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         fileCreateInp_t fileCreateInp;
         memset (&fileCreateInp, 0, sizeof (fileCreateInp));
         rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+        rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
         fileCreateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
                  NAME_LEN);

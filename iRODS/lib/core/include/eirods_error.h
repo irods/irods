@@ -54,7 +54,7 @@ namespace eirods {
 #define PASS( status_, code_, message_, prev_error_ ) ( eirods::error( status_, code_, message_, __LINE__, __FILE__, prev_error_ ) )
 #define CODE( code_ ) ( eirods::error( true, code_, "", __LINE__, __FILE__ ) )
 #define SUCCESS( ) ( eirods::error( true, 0, "", __LINE__, __FILE__ ) )
-
+#define PASSMSG( message_, prev_error_ ) (eirods::error( prev_error_.status(), prev_error_.code(), message_, __LINE__, __FILE__, prev_error_ ) )
 
 #endif // __EIRODS_ERROR_H__
 

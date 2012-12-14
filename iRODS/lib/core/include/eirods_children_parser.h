@@ -16,7 +16,7 @@ namespace eirods {
  */
     class children_parser {
     public:
-        typedef std::map<std::string, std::string> children_list_t;
+        typedef std::map<std::string, std::string> children_map_t;
         /**
          * @brief Constructor
          */
@@ -25,7 +25,7 @@ namespace eirods {
 
         
         /// @brief Returns the list of children and context strings
-        error list(children_list_t& list);
+        error list(children_map_t& list);
 
         /// @brief Returns the encoded children string
         error str(std::string& ret_string) const;
@@ -39,12 +39,12 @@ namespace eirods {
         /// @brief Sets the children string to parse
         error set_string(const std::string& str);
 
-        /// @brief undocumented
+        /// @brief Returns the name of the first child in the list
         error first_child(std::string& _child);
 
     private:
         std::string children_string_;
-        children_list_t children_list_;
+        children_map_t children_list_;
     };
 }; // namespace eirods
 

@@ -126,7 +126,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         if (getErrno (status) == ENOENT) {
 			// =-=-=-=-=-=-=-
             // the directory does not exist, lets make one
-            mkDirForFilePath( fileSyncToArchInp->fileType, rsComm,"/", fileSyncToArchInp->filename, getDefDirMode() );
+            mkDirForFilePath( rsComm,"/", fileSyncToArchInp->filename, getDefDirMode() );
         } else if (getErrno (status) == EEXIST) {
 			// =-=-=-=-=-=-=-
 			// an empty dir may be there, make the call to rmdir via the resource plugin

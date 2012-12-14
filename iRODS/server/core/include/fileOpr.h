@@ -26,6 +26,7 @@ typedef struct {
     int inuseFlag;	/* whether the fileDesc is in use, 0=no */
     rodsServerHost_t *rodsServerHost;
     char *fileName;
+    char *rescHier;		// The hierarchy of resources in which this file resides
     fileDriverType_t fileType;
     int mode;
     int chkPerm;        /* check for permission in the file vault */
@@ -50,11 +51,9 @@ freeFileDesc (int fileInx);
 int
 getServerHostByFileInx (int fileInx, rodsServerHost_t **rodsServerHost);
 int
-mkDirForFilePath (int fileType, rsComm_t *rsComm, char *startDir,
-char *filePath, int mode);
+mkDirForFilePath (rsComm_t *rsComm, const char *startDir, const char *filePath, int mode);
 int
-mkFileDirR (int fileType, rsComm_t *rsComm, char *startDir,
-char *destDir, int mode);
+mkFileDirR (rsComm_t *rsComm, const char *startDir, const char *destDir, int mode);
 int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 rodsServerHost_t *rodsServerHost, int chkType); // JMC - backport 4774

@@ -16,7 +16,8 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - cctor
-    file_object::file_object( const file_object& _rhs ) : 
+    file_object::file_object(
+        const file_object& _rhs ) : 
         first_class_object( _rhs ) {
         size_  = _rhs.size_;
 
@@ -24,11 +25,18 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
-    file_object::file_object( rsComm_t* _c, std::string _fn, int _fd, int _m, int _f ) :
+    file_object::file_object(
+        rsComm_t* _c,
+        const std::string& _fn,
+        const std::string& _resc_hier,
+        int _fd,
+        int _m,
+        int _f ) :
         first_class_object(),
         size_( -1 ) {
         comm_            = _c;
         physical_path_   = _fn;
+        resc_hier_       = _resc_hier;
         file_descriptor_ = _fd;
         mode_            = _m;
         flags_           = _f;
@@ -41,7 +49,8 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - assignment operator
-    file_object& file_object::operator=( const file_object& _rhs ) {
+    file_object& file_object::operator=(
+        const file_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
         first_class_object::operator=( _rhs );
@@ -54,9 +63,11 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
-    error file_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
-        return _mgr.resolve( *this, _ptr ); 
-
+    error file_object::resolve(
+        resource_manager& _mgr,
+        resource_ptr& _ptr ) {
+        
+        
     } // resolve
     
 }; // namespace eirods

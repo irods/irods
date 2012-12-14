@@ -15,7 +15,7 @@ namespace eirods {
     }
 
     error children_parser::list(
-        children_list_t& list) {
+        children_map_t& list) {
         list = children_list_;
         return SUCCESS();
     }
@@ -24,7 +24,7 @@ namespace eirods {
         std::string& ret_string) const {
         std::stringstream children_stream;
         bool first = true;
-        children_list_t::const_iterator itr;
+        children_map_t::const_iterator itr;
         for(itr = children_list_.begin(); itr != children_list_.end(); ++itr) {
             if(first) {
                 first = false;
@@ -41,7 +41,7 @@ namespace eirods {
         const std::string& child,
         const std::string& context) {
         error ret = SUCCESS();
-        children_list_t::const_iterator itr = children_list_.find(child);
+        children_map_t::const_iterator itr = children_list_.find(child);
         if(itr != children_list_.end()) {
             std::stringstream msg;
             msg << "eirods::eirods_children_parser::add_child child \"" << child << "\" already exists";
@@ -55,7 +55,7 @@ namespace eirods {
     error children_parser::remove_child(
         const std::string& child) {
         error ret = SUCCESS();
-        children_list_t::iterator itr = children_list_.find(child);
+        children_map_t::iterator itr = children_list_.find(child);
         if(itr == children_list_.end()) {
             std::stringstream msg;
             msg << "children_parser::remove_child: child \"" << child << "\" not found";
@@ -71,6 +71,7 @@ namespace eirods {
         const std::string& str) {
 
         error ret = SUCCESS();
+        children_list_.clear();
         bool done = false;
         std::size_t pos = 0;
         std::size_t prev_pos = 0;

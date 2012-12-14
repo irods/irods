@@ -421,7 +421,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         case FILE_CAT:
             memset (&filePutInp, 0, sizeof (filePutInp));
             rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-
+            rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
             if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
                 filePutInp.otherFlags |= FORCE_FLAG;
             }

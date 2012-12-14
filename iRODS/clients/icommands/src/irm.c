@@ -1,8 +1,10 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* 
  * irm - The irods rm utility
-*/
+ */
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -29,8 +31,8 @@ main(int argc, char **argv) {
         exit (1);
     }
     if (myRodsArgs.help==True) {
-       usage();
-       exit(0);
+        usage();
+        exit(0);
     }
 
     if (argc - optind <= 0) {
@@ -47,7 +49,7 @@ main(int argc, char **argv) {
     }
 
     status = parseCmdLinePath (argc, argv, optind, &myEnv,
-      UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp);
+                               UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status, "main: parseCmdLinePath error. ");
@@ -56,7 +58,7 @@ main(int argc, char **argv) {
     }
 
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 1, &errMsg);
+                      myEnv.rodsZone, 1, &errMsg);
 
     if (conn == NULL) {
         exit (2);
@@ -73,7 +75,7 @@ main(int argc, char **argv) {
     rcDisconnect(conn);
 
     if (status < 0) {
-	exit (3);
+        exit (3);
     } else {
         exit(0);
     }
@@ -83,43 +85,43 @@ main(int argc, char **argv) {
 void 
 usage ()
 {
-   char *msgs[]={
-   "Usage : irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
-"Remove one or more data-object or collection from iRODS space. By default, ",
-"the data-objects are moved to the trash collection (/myZone/trash) unless",
-"either the -f option or the -n option is used.",
-" ",
-"The -U option allows the unregistering of the data object or collection",
-"without deleting the physical file. Normally, a normal user cannot",
-"unregister a data object if the physical file is located in a resource",
-"vault. The acNoChkFilePathPerm rule allows this check to be bypassed.", 
-" ",
-"There is no -R option (remove replica from a named resource) at this time.",
-"Please use itrim (with the -S option) instead.",
-" ",
-"The irmtrash command should be used to delete data-objects in the trash",
-"collection.",   
-" ",
-"Options are:",
-" -f  force - Immediate removal of data-objects without putting them in trash .",
-" -n  replNum  - the replica to remove; if not specified remove all replicas.",
-"     This option is applicable only to the removal of data object and",
-"     will be ignored for collection removal.",
-" -r  recursive - remove the whole subtree; the collection, all data-objects",
-"     in the collection, and any subcollections and sub-data-objects in the",
-"     collection.",
-" -U  unregister the file or collection",
-" -v  verbose",
-" -V  Very verbose",
-" --empty  If the file to be removed is a bundle file (generated with iphybun)", // JMC - backport 4552
-"     remove it only if all the subfiles of the bundle have been removed.",
-" -h  this help",
-""};
-   int i;
-   for (i=0;;i++) {
-      if (strlen(msgs[i])==0) break;
-      printf("%s\n",msgs[i]);
-   }
-   printReleaseInfo("irm");
+    char *msgs[]={
+        "Usage : irm [-rUfvVh] [-n replNum] [--empty] dataObj|collection ... ", // JMC - backport 4552
+        "Remove one or more data-object or collection from iRODS space. By default, ",
+        "the data-objects are moved to the trash collection (/myZone/trash) unless",
+        "either the -f option or the -n option is used.",
+        " ",
+        "The -U option allows the unregistering of the data object or collection",
+        "without deleting the physical file. Normally, a normal user cannot",
+        "unregister a data object if the physical file is located in a resource",
+        "vault. The acNoChkFilePathPerm rule allows this check to be bypassed.", 
+        " ",
+        "There is no -R option (remove replica from a named resource) at this time.",
+        "Please use itrim (with the -S option) instead.",
+        " ",
+        "The irmtrash command should be used to delete data-objects in the trash",
+        "collection.",   
+        " ",
+        "Options are:",
+        " -f  force - Immediate removal of data-objects without putting them in trash .",
+        " -n  replNum  - the replica to remove; if not specified remove all replicas.",
+        "     This option is applicable only to the removal of data object and",
+        "     will be ignored for collection removal.",
+        " -r  recursive - remove the whole subtree; the collection, all data-objects",
+        "     in the collection, and any subcollections and sub-data-objects in the",
+        "     collection.",
+        " -U  unregister the file or collection",
+        " -v  verbose",
+        " -V  Very verbose",
+        " --empty  If the file to be removed is a bundle file (generated with iphybun)", // JMC - backport 4552
+        "     remove it only if all the subfiles of the bundle have been removed.",
+        " -h  this help",
+        ""};
+    int i;
+    for (i=0;;i++) {
+        if (strlen(msgs[i])==0) break;
+        printf("%s\n",msgs[i]);
+    }
+    printReleaseInfo("irm");
 }
 

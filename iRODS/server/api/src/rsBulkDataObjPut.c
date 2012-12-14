@@ -478,8 +478,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
         }
     } else {
         /* make the necessary dir */
-        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
-          getDefDirMode ());
+        mkDirForFilePath (rsComm, "/", dataObjInfo.filePath, getDefDirMode ());
     }
     /* add a link */
 #ifndef windows_platform

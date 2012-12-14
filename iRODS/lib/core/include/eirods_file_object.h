@@ -19,7 +19,12 @@ namespace eirods {
         // Constructors
         file_object();
         file_object( const file_object& );
-        file_object( rsComm_t*, std::string, int, int, int );
+        file_object( rsComm_t* _comm,
+                     const std::string& _filename,
+                     const std::string& _resc_hier,
+                     int _fd,
+                     int _mode,
+                     int _flags);
             
         // =-=-=-=-=-=-=-
         // Destructor

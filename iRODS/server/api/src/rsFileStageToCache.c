@@ -106,8 +106,7 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
     // =-=-=-=-=-=-=-
     // need to make this now. It will be difficult to do it with
     // parallel I/O
-    mkDirForFilePath( fileStageToCacheInp->cacheFileType, rsComm, "/", 
-	                  fileStageToCacheInp->cacheFilename, getDefDirMode() );
+    mkDirForFilePath( rsComm, "/", fileStageToCacheInp->cacheFilename, getDefDirMode() );
 
     // =-=-=-=-=-=-=-
     // make the call to fileStageToCache via the resource plugin

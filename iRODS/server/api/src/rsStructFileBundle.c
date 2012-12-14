@@ -244,7 +244,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                   
             } else {
                 snprintf( tmpPath, MAX_NAME_LEN, "%s/%s/%s", phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName );
-	            mkDirForFilePath( UNIX_FILE_TYPE, rsComm, phyBunDir, tmpPath, getDefDirMode() );
+	            mkDirForFilePath( rsComm, phyBunDir, tmpPath, getDefDirMode() );
 	          
             }
  

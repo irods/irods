@@ -152,7 +152,7 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // if we get a good parameter 
-            if( ret.ok() ) {
+            if( ret.ok() && !value.empty()) {
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
@@ -541,14 +541,14 @@ namespace eirods {
                     // Get the list of children and their contexts from the resource
                     children_parser parser;
                     parser.set_string(children_string);
-                    children_parser::children_list_t children_list;
+                    children_parser::children_map_t children_list;
                     error ret = parser.list(children_list);
                     if(!ret.ok()) {
                         result = PASS(false, -1, "init_child_map failed.", ret);
                     } else {
 
                         // Iterate over all of the children
-                        children_parser::children_list_t::const_iterator itr;
+                        children_parser::children_map_t::const_iterator itr;
                         for(itr = children_list.begin(); itr != children_list.end(); ++itr) {
                             std::string child = itr->first;
                             std::string context = itr->second;

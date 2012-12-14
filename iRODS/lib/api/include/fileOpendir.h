@@ -17,6 +17,9 @@
 #include "fileDriver.h"
 
 typedef struct {
+    char resc_name_[MAX_NAME_LEN];
+    char resc_hier_[MAX_NAME_LEN];
+    
     fileDriverType_t fileType;
     rodsHostAddr_t addr;
     char dirName[MAX_NAME_LEN];

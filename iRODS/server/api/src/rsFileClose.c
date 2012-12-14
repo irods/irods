@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -22,7 +24,7 @@ rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
     int retVal;
 
     remoteFlag = getServerHostByFileInx (fileCloseInp->fileInx, 
-      &rodsServerHost);
+                                         &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
         retVal = _rsFileClose (rsComm, fileCloseInp);
@@ -33,13 +35,13 @@ rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileClose: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileClose: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-   /* Manually insert call-specific code here */
+    /* Manually insert call-specific code here */
 
     freeFileDesc (fileCloseInp->fileInx);
 
@@ -48,14 +50,14 @@ rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 
 int
 remoteFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
-rodsServerHost_t *rodsServerHost)
+                 rodsServerHost_t *rodsServerHost)
 {    
     int status;
     fileCloseInp_t remFileCloseInp;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileClose: Invalid rodsServerHost");
+                 "remoteFileClose: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -69,8 +71,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileClose: rcFileClose failed for %d, status = %d",
-          remFileCloseInp.fileInx, status);
+                 "remoteFileClose: rcFileClose failed for %d, status = %d",
+                 remFileCloseInp.fileInx, status);
     }
 
     return status;
@@ -79,23 +81,24 @@ rodsServerHost_t *rodsServerHost)
 int
 _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 {
-	// =-=-=-=-=-=-=-
-	// call the resource plugin close operation 
+    // =-=-=-=-=-=-=-
+    // call the resource plugin close operation 
     int status = -1;
-	eirods::file_object file_obj( rsComm,
+    eirods::file_object file_obj( rsComm,
                                   FileDesc[fileCloseInp->fileInx].fileName, 
+                                  FileDesc[fileCloseInp->fileInx].rescHier, 
                                   FileDesc[fileCloseInp->fileInx].fd,
-								  0, 0 );
+                                  0, 0 );
 
     eirods::error close_err = fileClose( file_obj );
     // =-=-=-=-=-=-=-
-	// log an error, if any
+    // log an error, if any
     if( !close_err.ok() ) {
         std::stringstream msg;
-		msg << "_rsFileClose: fileClose failed for ";
-		msg << fileCloseInp->fileInx;
-		msg << ", status = ";
-		msg << close_err.code();
+        msg << "_rsFileClose: fileClose failed for ";
+        msg << fileCloseInp->fileInx;
+        msg << ", status = ";
+        msg << close_err.code();
         eirods::error err = PASS( false, close_err.code(), msg.str(), close_err ); 
     }
 

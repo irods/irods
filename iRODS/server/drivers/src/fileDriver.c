@@ -72,7 +72,7 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        eirods::error foo = PASS( false, _object.file_descriptor(), "fileOpen - failed to call 'open'", ret_err );
+        eirods::error foo = PASSMSG( "fileOpen - failed to call 'open'", ret_err );
         eirods::log( foo );
         return foo;
     } else {

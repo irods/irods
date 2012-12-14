@@ -1017,6 +1017,9 @@ extern "C" {
             return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
         }
 
+        std::cerr << "qqq - Renaming file from \"" << _object->physical_path() << "\"";
+        std::cerr << " to \"" << _new_file_name << "\"" << std::endl;
+
         // =-=-=-=-=-=-=-
         // make the call to rename
         int status = rename( _object->physical_path().c_str(), _new_file_name );
@@ -1031,6 +1034,8 @@ extern "C" {
             msg <<  _object->physical_path();
             msg << " to ";
             msg << _new_file_name;
+            msg << ", errno = ";
+            msg << strerror(errno);
             msg << ", status = ";
             msg << status;
 			

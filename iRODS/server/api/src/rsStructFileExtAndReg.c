@@ -433,8 +433,7 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
         }
     }
     /* make the necessary dir */
-    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
-      getDefDirMode ());
+    mkDirForFilePath (rsComm, "/", dataObjInfo.filePath, getDefDirMode ());
     /* add a link */
 
 #ifndef windows_platform   /* Windows does not support link */

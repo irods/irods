@@ -72,7 +72,7 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileStage( rsComm_t *rsComm, fileStageInp_t *fileStageInp ) {
 	// =-=-=-=-=-=-=-
     // make call to readdir via resource plugin
-    eirods::file_object file_obj( rsComm, fileStageInp->fileName, 0, 0, fileStageInp->flag );
+    eirods::file_object file_obj( rsComm, fileStageInp->fileName, fileStageInp->rescHier, 0, 0, fileStageInp->flag );
     eirods::error stage_err = fileStage( file_obj );
 
      // =-=-=-=-=-=-=-

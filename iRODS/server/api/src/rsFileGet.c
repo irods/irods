@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -19,7 +21,7 @@
 
 int
 rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, 
-bytesBuf_t *fileGetOutBBuf)
+           bytesBuf_t *fileGetOutBBuf)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -30,14 +32,14 @@ bytesBuf_t *fileGetOutBBuf)
         status = _rsFileGet (rsComm, fileGetInp, fileGetOutBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteFileGet (rsComm, fileGetInp, fileGetOutBBuf, 
-          rodsServerHost);
+                                rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileGet: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileGet: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
@@ -47,13 +49,13 @@ bytesBuf_t *fileGetOutBBuf)
 
 int
 remoteFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
-bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost)
+               bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost)
 {    
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileGet: Invalid rodsServerHost");
+                 "remoteFileGet: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -67,8 +69,8 @@ bytesBuf_t *fileGetOutBBuf, rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileGet: rcFileGet failed for %s",
-          fileGetInp->fileName);
+                 "remoteFileGet: rcFileGet failed for %s",
+                 fileGetInp->fileName);
     }
 
     return status;
@@ -81,14 +83,14 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
 
     len = fileGetInp->dataSize;
     if (len <= 0)
-	return (0);
+        return (0);
 
     fd = _rsFileOpen (rsComm, fileGetInp);
 
     if (fd < 0) {
         rodsLog (LOG_NOTICE,
-          "_rsFileGet: fileGet for %s, status = %d",
-          fileGetInp->fileName, fd);
+                 "_rsFileGet: fileGet for %s, status = %d",
+                 fileGetInp->fileName, fd);
         return (fd);
     }
 
@@ -96,36 +98,36 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
         fileGetOutBBuf->buf = malloc (len);
     }
 
-    eirods::file_object file_obj( rsComm, fileGetInp->fileName, fd, fileGetInp->mode, fileGetInp->flags  );
+    eirods::file_object file_obj( rsComm, fileGetInp->fileName, fileGetInp->resc_hier_, fd, fileGetInp->mode, fileGetInp->flags  );
     eirods::error read_err = fileRead( file_obj,
-	                                   fileGetOutBBuf->buf, 
-									   len );
-	int bytes_read = read_err.code();
+                                       fileGetOutBBuf->buf, 
+                                       len );
+    int bytes_read = read_err.code();
     if ( bytes_read != len ) {
-       if ( bytes_read >= 0) {
+        if ( bytes_read >= 0) {
         
-		fileGetOutBBuf->len = bytes_read;
+            fileGetOutBBuf->len = bytes_read;
 
         } else {
-			std::stringstream msg;
-			msg << "_rsFileGet: fileRead for ";
-			msg << fileGetInp->fileName;
-			msg << ", status = ";
-			msg << bytes_read;
-			eirods::error ret_err = PASS( false, bytes_read, msg.str(), read_err );
-			eirods::log( ret_err );
+            std::stringstream msg;
+            msg << "_rsFileGet: fileRead for ";
+            msg << fileGetInp->fileName;
+            msg << ", status = ";
+            msg << bytes_read;
+            eirods::error ret_err = PASS( false, bytes_read, msg.str(), read_err );
+            eirods::log( ret_err );
         }
     } else {
         fileGetOutBBuf->len = bytes_read;
     }
 
     // =-=-=-=-=-=-=-
-	// call resource plugin close 
+    // call resource plugin close 
     eirods::error close_err = fileClose( file_obj );
     if( !close_err.ok() ) {
-		eirods::error err = PASS( false, close_err.code(), "_rsFileGet - error on close", close_err );
-		eirods::log( err );
-	}
+        eirods::error err = PASS( false, close_err.code(), "_rsFileGet - error on close", close_err );
+        eirods::log( err );
+    }
 
     return (bytes_read);
 

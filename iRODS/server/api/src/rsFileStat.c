@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -14,7 +16,7 @@
 
 int
 rsFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp, 
-rodsStat_t **fileStatOut)
+            rodsStat_t **fileStatOut)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -28,21 +30,21 @@ rodsStat_t **fileStatOut)
         return (remoteFlag);
     } else {
         status = rsFileStatByHost (rsComm, fileStatInp, fileStatOut,
-	  rodsServerHost);
+                                   rodsServerHost);
         return (status);
     }
 }
 
 int
 rsFileStatByHost (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
-rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
+                  rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
 {
     int remoteFlag;
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-         "rsFileStatByHost: Input NULL rodsServerHost");
+                 "rsFileStatByHost: Input NULL rodsServerHost");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
@@ -52,14 +54,14 @@ rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
         status = _rsFileStat (rsComm, fileStatInp, fileStatOut);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteFileStat (rsComm, fileStatInp, fileStatOut,
-	 rodsServerHost);
+                                 rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileStat: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileStat: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
@@ -71,13 +73,13 @@ rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
 
 int
 remoteFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
-rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
+                rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
 {   
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileStat: Invalid rodsServerHost");
+                 "remoteFileStat: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -90,8 +92,8 @@ rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_DEBUG,
-         "remoteFileStat: rcFileStat failed for %s",
-          fileStatInp->fileName);
+                 "remoteFileStat: rcFileStat failed for %s",
+                 fileStatInp->fileName);
     }
 
     return status;
@@ -102,37 +104,27 @@ rodsStat_t **fileStatOut, rodsServerHost_t *rodsServerHost)
 int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut ) {
     struct stat myFileStat;
 
-	// =-=-=-=-=-=-=-
-	// make call to stat via resource plugin
-	eirods::file_object file_obj( rsComm, fileStatInp->fileName, 0, 0, 0 );
+    // =-=-=-=-=-=-=-
+    // make call to stat via resource plugin
+    eirods::file_object file_obj( rsComm, fileStatInp->fileName, fileStatInp->rescHier, 0, 0, 0 );
     eirods::error stat_err = fileStat( file_obj, &myFileStat );
 
-	// =-=-=-=-=-=-=-
-	// log error if necessary
+    // =-=-=-=-=-=-=-
+    // log error if necessary
     if( !stat_err.ok() ) {
-        #if 0
-		// NOTE :: this spams the log - need to push errors out of rs-Calls
-		std::stringstream msg;
-		msg << "_rsFileStat: fileStat for ";
-		msg << fileStatInp->fileName;
-		msg << ", status = ";
-		msg << stat_err.code();
-		eirods::error ret_err = PASS( false, stat_err.code(), msg.str(), stat_err );
-		eirods::log( ret_err );
-        #endif
-		return stat_err.code();
+        return stat_err.code();
     }
 
-	// =-=-=-=-=-=-=-
-	// convert unix stat struct to an irods stat struct
+    // =-=-=-=-=-=-=-
+    // convert unix stat struct to an irods stat struct
     *fileStatOut = (rodsStat_t*)malloc (sizeof (rodsStat_t));
     int status = statToRodsStat (*fileStatOut, &myFileStat);
-	
-	// =-=-=-=-=-=-=-
-	// manage error if necessary
+        
+    // =-=-=-=-=-=-=-
+    // manage error if necessary
     if (status < 0) {
-		free (*fileStatOut);
-		*fileStatOut = NULL;
+        free (*fileStatOut);
+        *fileStatOut = NULL;
     }
 
     return status;

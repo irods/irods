@@ -42,7 +42,7 @@ char *rmemcpy (void *dest, void *src, int strLen, int maxLen)
     }
 }
 
-char *rstrcpy (char *dest, char *src, int maxLen)
+char *rstrcpy (char *dest, const char *src, int maxLen)
 {
  /*
  The purpose of this function is to make sure there is enough space in
@@ -81,7 +81,7 @@ char *rstrcpy (char *dest, char *src, int maxLen)
     }
 }
 
-char *rstrcat (char *dest, char *src, int maxLen)
+char *rstrcat (char *dest, const char *src, int maxLen)
 {
   /*  rods strcat: like strncat but make sure the dest doesn't overflow.
       maxLen is actually max length that can be stored in dest, not
@@ -112,7 +112,7 @@ char *rstrcat (char *dest, char *src, int maxLen)
     maxLen is the max length that can be stored in dest,
     srcLen is the length to copy.
 */
-char *rstrncat (char *dest, char *src, int srcLen, int maxLen)
+char *rstrncat (char *dest, const char *src, int srcLen, int maxLen)
 {
 
   int dlen, slen;
@@ -268,10 +268,10 @@ isAllDigit (char *myStr)
 }
 
 int 
-splitPathByKey (char *srcPath, char *dir, char *file, char key)
+splitPathByKey (const char *srcPath, char *dir, char *file, char key)
 {
     int pathLen, dirLen, fileLen; 
-    char *srcPtr;
+    const char *srcPtr;
 
     pathLen = strlen (srcPath);
 

@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -14,8 +16,8 @@
 
 int
 rsFileGetFsFreeSpace (rsComm_t *rsComm, 
-fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
-fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut)
+                      fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
+                      fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -26,37 +28,37 @@ fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut)
     remoteFlag = resolveHost (&fileGetFsFreeSpaceInp->addr, &rodsServerHost);
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileGetFsFreeSpace (rsComm, fileGetFsFreeSpaceInp,
-	  fileGetFsFreeSpaceOut);
+                                        fileGetFsFreeSpaceOut);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteFileGetFsFreeSpace (rsComm, fileGetFsFreeSpaceInp,
-	  fileGetFsFreeSpaceOut, rodsServerHost);
+                                           fileGetFsFreeSpaceOut, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileGetFsFreeSpace: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileGetFsFreeSpace: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-      /* Manually insert call-specific code here */
+    /* Manually insert call-specific code here */
 
     return (status);
 }
 
 int
 remoteFileGetFsFreeSpace (rsComm_t *rsComm, 
-fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
-fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut,
-rodsServerHost_t *rodsServerHost)
+                          fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp,
+                          fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut,
+                          rodsServerHost_t *rodsServerHost)
 {
     int status;
 
-        if (rodsServerHost == NULL) {
+    if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileGetFsFreeSpace: Invalid rodsServerHost");
+                 "remoteFileGetFsFreeSpace: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -66,12 +68,12 @@ rodsServerHost_t *rodsServerHost)
 
 
     status = rcFileGetFsFreeSpace (rodsServerHost->conn, fileGetFsFreeSpaceInp,
-      fileGetFsFreeSpaceOut);
+                                   fileGetFsFreeSpaceOut);
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileGetFsFreeSpace: rcFileGetFsFreeSpace failed for %s, status = %d",
-          fileGetFsFreeSpaceInp->fileName, status);
+                 "remoteFileGetFsFreeSpace: rcFileGetFsFreeSpace failed for %s, status = %d",
+                 fileGetFsFreeSpaceInp->fileName, status);
     }
 
     return status;
@@ -82,26 +84,26 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
                            fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
     // =-=-=-=-=-=-=-
-	// make call to freespace via resource plugin
-    eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->fileName, 
-	                              0, 0, fileGetFsFreeSpaceInp->flag );
+    // make call to freespace via resource plugin
+    eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->fileName, fileGetFsFreeSpaceInp->rescHier,
+                                  0, 0, fileGetFsFreeSpaceInp->flag );
  
     eirods::error free_err = fileGetFsFreeSpace( file_obj );
     // =-=-=-=-=-=-=-
-	// handle errors if any
+    // handle errors if any
     if( !free_err.ok() ) {
-		std::stringstream msg;
-		msg << "_rsFileGetFsFreeSpace: fileGetFsFreeSpace for ";
-		msg << fileGetFsFreeSpaceInp->fileName;
-		msg << ", status = ";
-		msg << free_err.code();
-		eirods::error err = PASS( false, free_err.code(), msg.str(), free_err );
-		eirods::log ( err );
+        std::stringstream msg;
+        msg << "_rsFileGetFsFreeSpace: fileGetFsFreeSpace for ";
+        msg << fileGetFsFreeSpaceInp->fileName;
+        msg << ", status = ";
+        msg << free_err.code();
+        eirods::error err = PASS( false, free_err.code(), msg.str(), free_err );
+        eirods::log ( err );
         return ((int) free_err.code());
     }
 
     // =-=-=-=-=-=-=-
-	// otherwise its a success, set size appropriately
+    // otherwise its a success, set size appropriately
     *fileGetFsFreeSpaceOut = (fileGetFsFreeSpaceOut_t*)malloc (sizeof (fileGetFsFreeSpaceOut_t));
     (*fileGetFsFreeSpaceOut)->size = free_err.code();
 

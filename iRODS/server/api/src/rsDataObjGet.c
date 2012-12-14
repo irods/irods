@@ -301,6 +301,8 @@ bytesBuf_t *dataObjOutBBuf)
         rstrcpy (fileGetInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+        rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+        rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
         fileGetInp.mode = getFileMode (dataObjInp);
         fileGetInp.flags = O_RDONLY;
 	fileGetInp.dataSize = dataObjInfo->dataSize;

@@ -289,8 +289,7 @@ dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo)
 	}
     }
     /* make the necessary dir */
-    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", stageDataObjInfo.filePath,
-      getDefDirMode ());
+    mkDirForFilePath (rsComm, "/", stageDataObjInfo.filePath, getDefDirMode ());
     /* add a link */
     status = link (subfilePath, stageDataObjInfo.filePath);
     if (status < 0) {

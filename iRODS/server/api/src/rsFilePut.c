@@ -125,7 +125,7 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
 
     // =-=-=-=-=-=-=-
     // call write for resource plugin
-    eirods::file_object file_obj( rsComm, filePutInp->fileName, fd, 0, 0 );
+    eirods::file_object file_obj( rsComm, filePutInp->fileName, filePutInp->resc_hier_, fd, 0, 0 );
     eirods::error write_err = fileWrite( file_obj, 
                                          filePutInpBBuf->buf, 
                                          filePutInpBBuf->len );

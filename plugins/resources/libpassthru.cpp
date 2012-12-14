@@ -126,6 +126,43 @@ extern "C" {
         return result;
     }
 
+    /**
+     * @brief Removes this resources vault path from the beginning of the specified string
+     */
+    eirods::error
+    passthruRemoveVaultPath(
+        const eirods::resource_ptr _resc,
+        const std::string _path,
+        std::string& _ret_string) {
+        
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        std::string name;
+        std::string type;
+        ret = _resc->get_property<std::string>("name", name);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - failed to get the name property for the resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            ret = _resc->get_property<std::string>("type", type);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - failed to get the type property from the resource.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                std::string dummy_path = name + "::" + type;
+                if( _path.compare(0, dummy_path.size(), dummy_path) == 0) {
+                    _ret_string = _path.substr(dummy_path.size(), _path.size());
+                    std::cerr << "qqq - Clipped path: \"" << _ret_string << "\"" << std::endl;
+                } else {
+                    _ret_string = _path;
+                }
+            }
+        }
+        return result;
+    }
+
     /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
     eirods::error
     passthruGenerateFullPath(
@@ -138,11 +175,33 @@ extern "C" {
         std::string vault_path;
         ret = resc->get_property<std::string>("path", vault_path);
         if(!ret.ok()) {
-            // The resource doesn't appear to have a vault path so just return the physical path
-            ret_string = physical_path;
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - child resource has no vault path.";
+            result = ERROR(-1, msg.str());
         } else {
-            ret_string = vault_path;
-            ret_string += physical_path;
+            eirods::resource_ptr parent;
+            ret = resc->get_parent(parent);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - Failed to retrieve the resources parent.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                std::string real_path;
+                ret = passthruRemoveVaultPath(parent, physical_path, real_path);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - Failed to remove vault path from physical path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    if(real_path.compare(0, vault_path.size(), vault_path) != 0) {
+                        ret_string = vault_path;
+                        ret_string += real_path;
+                    } else {
+                        // The physical path already contains the vault path
+                        ret_string = real_path;
+                    }
+                }
+            }
         }
         return result;
     }
@@ -174,9 +233,7 @@ extern "C" {
                 } else {
                     _object->physical_path(full_path);
                     ret = resc->call<eirods::first_class_object*>("create", _object);
-                    if(!ret.ok()) {
-                        result = PASS(false, -1, "passthruFileCreatePlugin - failed calling child create.", ret);
-                    }
+                    result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
                 }
             }
         }
@@ -193,7 +250,7 @@ extern "C" {
                                           _object ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileOpenPlugin - bad params.", ret);
@@ -203,9 +260,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileOpenPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("open", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileOpenPlugin - failed calling child open.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("open", _object);
+                    result = PASSMSG("passthruFileOpenPlugin - failed calling child open.", ret);
                 }
             }
         }
@@ -224,7 +288,7 @@ extern "C" {
                                           int                 _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileReadPlugin - bad params.", ret);
@@ -234,9 +298,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileReadPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, void*, int>("read", _object, _buf, _len);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileReadPlugin - failed calling child read.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*, void*, int>("read", _object, _buf, _len);
+                    result = PASSMSG("passthruFileReadPlugin - failed calling child read.", ret);
                 }
             }
         }
@@ -255,7 +326,7 @@ extern "C" {
                                            int                 _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileWritePlugin - bad params.", ret);
@@ -265,9 +336,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileWritePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, void*, int>("write", _object, _buf, _len);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileWritePlugin - failed calling child write.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*, void*, int>("write", _object, _buf, _len);
+                    result = PASSMSG("passthruFileWritePlugin - failed calling child write.", ret);
                 }
             }
         }
@@ -284,7 +362,7 @@ extern "C" {
                                            _object ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileClosePlugin - bad params.", ret);
@@ -294,9 +372,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileClosePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("close", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileClosePlugin - failed calling child close.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("close", _object);
+                    result = PASSMSG("passthruFileClosePlugin - failed calling child close.", ret);
                 }
             }
         }
@@ -314,7 +399,7 @@ extern "C" {
                                             _object ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileUnlinkPlugin - bad params.", ret);
@@ -324,9 +409,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileUnlinkPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("unlink", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileUnlinkPlugin - failed calling child unlink.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("unlink", _object);
+                    result = PASSMSG("passthruFileUnlinkPlugin - failed calling child unlink.", ret);
                 }
             }
         }
@@ -344,7 +436,9 @@ extern "C" {
                                           struct stat*        _statbuf ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
+        std::cerr << "qqq - Calling passthruFileStatPlugin" << std::endl;
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileStatPlugin - bad params.", ret);
@@ -354,9 +448,15 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileStatPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, struct stat*>("stat", _object, _statbuf);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileStatPlugin - failed calling child stat.", ret);
+                    result = PASSMSG("passthruFileStatPlugin - failed to get the full path name.", ret);
+                } else {
+                    _object->physical_path(full_path);
+                    std::cerr << "qqq - Getting stat of file: \"" << _object->physical_path() << "\"" << std::endl;
+                    ret = resc->call<eirods::first_class_object*, struct stat*>("stat", _object, _statbuf);
+                    result = PASSMSG("passthruFileStatPlugin - failed calling child stat.", ret);
                 }
             }
         }
@@ -374,7 +474,7 @@ extern "C" {
                                            struct stat*        _statbuf ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
+        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileFstatPlugin - bad params.", ret);
@@ -384,9 +484,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileFstatPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, struct stat*>("fstat", _object, _statbuf);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileFstatPlugin - failed calling child fstat.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*, struct stat*>("fstat", _object, _statbuf);
+                    result = PASSMSG("passthruFileFstatPlugin - failed calling child fstat.", ret);
                 }
             }
         }
@@ -415,9 +522,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileLseekPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, size_t, int>("lseek", _object, _offset, _whence);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileLseekPlugin - failed calling child lseek.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*, size_t, int>("lseek", _object, _offset, _whence);
+                    result = PASSMSG("passthruFileLseekPlugin - failed calling child lseek.", ret);
                 }
             }
         }
@@ -444,9 +558,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileFsyncPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("fsync", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileFsyncPlugin - failed calling child fsync.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("fsync", _object);
+                    result = PASSMSG("passthruFileFsyncPlugin - failed calling child fsync.", ret);
                 }
             }
         }
@@ -473,9 +594,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileMkdirPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("mkdir", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileMkdirPlugin - failed calling child mkdir.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("mkdir", _object);
+                    result = PASSMSG("passthruFileMkdirPlugin - failed calling child mkdir.", ret);
                 }
             }
         }
@@ -491,7 +619,7 @@ extern "C" {
 
         eirods::error result = SUCCESS();
         eirods::error ret;
-        
+
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileChmodPlugin - bad params.", ret);
@@ -501,9 +629,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileChmodPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("chmod", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileChmodPlugin - failed calling child chmod.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("chmod", _object);
+                    result = PASSMSG("passthruFileChmodPlugin - failed calling child chmod.", ret);
                 }
             }
         }
@@ -530,9 +665,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileRmdirPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("rmdir", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileRmdirPlugin - failed calling child rmdir.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("rmdir", _object);
+                    result = PASSMSG("passthruFileRmdirPlugin - failed calling child rmdir.", ret);
                 }
             }
         }
@@ -559,9 +701,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileOpendirPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("opendir", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileOpendirPlugin - failed calling child opendir.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("opendir", _object);
+                    result = PASSMSG("passthruFileOpendirPlugin - failed calling child opendir.", ret);
                 }
             }
         }
@@ -588,9 +737,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileClosedirPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("closedir", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileClosedirPlugin - failed calling child closedir.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("closedir", _object);
+                    result = PASSMSG("passthruFileClosedirPlugin - failed calling child closedir.", ret);
                 }
             }
         }
@@ -618,9 +774,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileReaddirPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, struct rodsDirent**>("readdir", _object, _dirent_ptr);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileReaddirPlugin - failed calling child readdir.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*, struct rodsDirent**>("readdir", _object, _dirent_ptr);
+                    result = PASSMSG("passthruFileReaddirPlugin - failed calling child readdir.", ret);
                 }
             }
         }
@@ -647,9 +810,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileStagePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("stage", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileStagePlugin - failed calling child stage.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("stage", _object);
+                    result = PASSMSG("passthruFileStagePlugin - failed calling child stage.", ret);
                 }
             }
         }
@@ -677,9 +847,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileRenamePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*, const char*>("rename", _object, _new_file_name);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileRenamePlugin - failed calling child rename.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*, const char*>("rename", _object, _new_file_name);
+                    result = PASSMSG("passthruFileRenamePlugin - failed calling child rename.", ret);
                 }
             }
         }
@@ -707,9 +884,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileTruncatePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("truncate", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileTruncatePlugin - failed calling child truncate.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("truncate", _object);
+                    result = PASSMSG("passthruFileTruncatePlugin - failed calling child truncate.", ret);
                 }
             }
         }
@@ -737,9 +921,16 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruFileGetFsFreeSpacePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<eirods::first_class_object*>("freespace", _object);
+                std::string full_path;
+                ret = passthruGenerateFullPath(resc, _object->physical_path(), full_path);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruFileGetFsFreeSpacePlugin - failed calling child freespace.", ret);
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - failed to generate full path.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    _object->physical_path(full_path);
+                    ret = resc->call<eirods::first_class_object*>("freespace", _object);
+                    result = PASSMSG("passthruFileGetFsFreeSpacePlugin - failed calling child freespace.", ret);
                 }
             }
         }
@@ -776,9 +967,7 @@ extern "C" {
             } else {
                 ret = resc->call<const char*, const char*, int, int, size_t, keyValPair_t*, int*>
                     ("stagetocache", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
-                if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruStageToCachePlugin - failed calling child stagetocache.", ret);
-                }
+                result = PASSMSG("passthruStageToCachePlugin - failed calling child stagetocache.", ret);
             }
         }
         return result;
@@ -814,9 +1003,7 @@ extern "C" {
             } else {
                 ret = resc->call<const char*, const char*, int, int, size_t, keyValPair_t*, int*>
                     ("synctoarch", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
-                if(!ret.ok()) {
-                    result = PASS(false, -1, "passthruSyncToArchPlugin - failed calling child synctoarch.", ret);
-                }
+                result = PASSMSG("passthruSyncToArchPlugin - failed calling child synctoarch.", ret);
             }
         }
         return result;

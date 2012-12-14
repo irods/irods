@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -28,8 +30,8 @@ rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileChmod: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileChmod: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
@@ -41,13 +43,13 @@ rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
 
 int
 remoteFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
-rodsServerHost_t *rodsServerHost)
+                 rodsServerHost_t *rodsServerHost)
 {    
     int status;
 
-        if (rodsServerHost == NULL) {
+    if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileChmod: Invalid rodsServerHost");
+                 "remoteFileChmod: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -60,8 +62,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileOpen: rcFileChmod failed for %s",
-          fileChmodInp->fileName);
+                 "remoteFileOpen: rcFileChmod failed for %s",
+                 fileChmodInp->fileName);
     }
 
     return status;
@@ -72,29 +74,24 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp ) {
 
     // =-=-=-=-=-=-=-
-	// make the call to chmod via the resource plugin
-	// NOTE :: this should be passed in as a first_class_object as both 
-	//      :: a file and a collection could have this operation performed
-	eirods::file_object file_obj( rsComm, fileChmodInp->fileName, 0, fileChmodInp->mode, 0 ); 
-	eirods::error chmod_err = fileChmod( file_obj );
+    // make the call to chmod via the resource plugin
+    // NOTE :: this should be passed in as a first_class_object as both 
+    //      :: a file and a collection could have this operation performed
+    eirods::file_object file_obj( rsComm, fileChmodInp->fileName, fileChmodInp->rescHier, 0, fileChmodInp->mode, 0 ); 
+    eirods::error chmod_err = fileChmod( file_obj );
 
     // =-=-=-=-=-=-=-
-	// log an error, if any
+    // log an error, if any
     if( chmod_err.code() < 0 ) {
-		std::stringstream msg;
-		msg << "_rsFileChmod: fileChmod for ";
-		msg << fileChmodInp->fileName;
-		msg << ", status = ";
-		msg << chmod_err.code();
-		eirods::error err = PASS( false, chmod_err.code(), msg.str(), chmod_err );
-		eirods::log ( err );
+        std::stringstream msg;
+        msg << "_rsFileChmod: fileChmod for ";
+        msg << fileChmodInp->fileName;
+        msg << ", status = ";
+        msg << chmod_err.code();
+        eirods::error err = PASS( false, chmod_err.code(), msg.str(), chmod_err );
+        eirods::log ( err );
     }
 
     return chmod_err.code();
 
 } // _rsFileChmod
-
-
-
-
- 

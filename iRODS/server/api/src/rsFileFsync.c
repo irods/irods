@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -21,7 +23,7 @@ rsFileFsync (rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp)
     int retVal;
 
     remoteFlag = getServerHostByFileInx (fileFsyncInp->fileInx, 
-      &rodsServerHost);
+                                         &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
         retVal = _rsFileFsync (rsComm, fileFsyncInp);
@@ -32,26 +34,26 @@ rsFileFsync (rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileFsync: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileFsync: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-   /* Manually insert call-specific code here */
+    /* Manually insert call-specific code here */
 
     return (retVal);
 }
 
 int
 remoteFileFsync (rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp,
-rodsServerHost_t *rodsServerHost)
+                 rodsServerHost_t *rodsServerHost)
 {    
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileFsync: Invalid rodsServerHost");
+                 "remoteFileFsync: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -64,8 +66,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileFsync: rcFileFsync failed for %d, status = %d",
-          fileFsyncInp->fileInx, status);
+                 "remoteFileFsync: rcFileFsync failed for %d, status = %d",
+                 fileFsyncInp->fileInx, status);
     }
 
     return status;
@@ -74,23 +76,25 @@ rodsServerHost_t *rodsServerHost)
 // =-=-=-=-=-=-=-
 // local function to handle call to fsync via resource plugin
 int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
-	// =-=-=-=-=-=-=-
-	// make call to fsync via resource plugin
-    eirods::file_object file_obj(  rsComm, FileDesc[fileFsyncInp->fileInx].fileName,
+    // =-=-=-=-=-=-=-
+    // make call to fsync via resource plugin
+    eirods::file_object file_obj(  rsComm,
+                                   FileDesc[fileFsyncInp->fileInx].fileName,
+                                   FileDesc[fileFsyncInp->fileInx].rescHier,
                                    FileDesc[fileFsyncInp->fileInx].fd,
-								   0, 0 );
+                                   0, 0 );
     eirods::error fsync_err = fileFsync( file_obj );
 
-	// =-=-=-=-=-=-=-
-	// log error if necessary
+    // =-=-=-=-=-=-=-
+    // log error if necessary
     if( !fsync_err.ok() ) {
-		std::stringstream msg;
-		msg << "_rsFileFsync: fsync for ";
-		msg << FileDesc[fileFsyncInp->fileInx].fileName;
-		msg << ", status = ";
-		msg << fsync_err.code();
-		eirods::error ret_err = PASS( false, fsync_err.code(), msg.str(), fsync_err );
-		eirods::log( ret_err );
+        std::stringstream msg;
+        msg << "_rsFileFsync: fsync for ";
+        msg << FileDesc[fileFsyncInp->fileInx].fileName;
+        msg << ", status = ";
+        msg << fsync_err.code();
+        eirods::error ret_err = PASS( false, fsync_err.code(), msg.str(), fsync_err );
+        eirods::log( ret_err );
     }
 
     return (fsync_err.code());
