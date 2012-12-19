@@ -75,7 +75,7 @@ def test_local_iput_interrupt_directory():
     # assertions
     iputcmd = "iput -X "+rf+" -r "+datadir
     if os.path.exists(rf): os.unlink(rf)
-    interruptiCmd(s.adminsession,iputcmd,0.19)
+    interruptiCmd(s.adminsession,iputcmd,rf,10) # once restartfile reaches 10 bytes
     assert os.path.exists(rf), rf+" should now exist, but did not"
     output = commands.getstatusoutput( 'cat '+rf )
     print "  restartfile ["+rf+"] contents --> ["+output[1]+"]"
@@ -100,7 +100,7 @@ def test_local_iput_interrupt_largefile():
     # assertions
     iputcmd = "iput --lfrestart "+rf+" "+datafilename
     if os.path.exists(rf): os.unlink(rf)
-    interruptiCmd(s.adminsession,iputcmd,0.18)
+    interruptiCmd(s.adminsession,iputcmd,rf,10) # once restartfile reaches 10 bytes
     assert os.path.exists(rf), rf+" should now exist, but did not"
     output = commands.getstatusoutput( 'cat '+rf )
     print "  restartfile ["+rf+"] contents --> ["+output[1]+"]"

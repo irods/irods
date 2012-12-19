@@ -123,7 +123,31 @@ def assertiCmdFail(mysession,fullcmd,outputtype="",expectedresults=""):
     elapsed = time.time() - begin
     return elapsed
 
-def interruptiCmd(mysession,fullcmd,delay):
+def interruptiCmd(mysession,fullcmd,filename,filesize):
+    ''' Runs an icommand, but does not let it complete.
+
+    This function terminates the icommand once filename reaches (>=)
+    filesize in bytes.
+
+    Asserts that the icommand was successfully terminated early.
+
+    Returns 0 or -1.
+    '''
+    parameters = shlex.split(fullcmd) # preserves quoted substrings
+    print "\n"
+    print "INTERRUPTING iCMD"
+    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
+    print "  filename set to: ["+filename+"]"
+    print "  filesize set to: ["+str(filesize)+"] bytes"
+    resultcode = mysession.interruptCmd(parameters[0],parameters[1:],filename,filesize)
+    if resultcode == 0:
+        print "  resultcode: [0], interrupted successfully"
+    else:
+        print "  resultcode: [-1], icommand completed"
+    assert 0 == resultcode, "0 == resultcode"
+    return resultcode
+
+def interruptiCmdDelay(mysession,fullcmd,delay):
     ''' Runs an icommand, but does not let it complete.
 
     This function terminates the icommand after delay seconds.
@@ -137,7 +161,7 @@ def interruptiCmd(mysession,fullcmd,delay):
     print "INTERRUPTING iCMD"
     print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
     print "  timeout set to: ["+str(delay)+" seconds]"
-    resultcode = mysession.interruptCmd(parameters[0],parameters[1:],delay)
+    resultcode = mysession.interruptCmdDelay(parameters[0],parameters[1:],delay)
     if resultcode == 0:
         print "  resultcode: [0], interrupted successfully"
     else:

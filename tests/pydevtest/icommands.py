@@ -128,7 +128,49 @@ class RodsSession(object):
         envfile.close()
         return returnstring
 
-    def interruptCmd(self, icommand, argList=[], delay=0):
+    def interruptCmd(self, icommand, argList, filename, filesize):
+        '''Runs an icommand with optional argument list but
+        terminates the icommand subprocess once the filename
+        reaches filesize bytes or larger.
+
+        Returns 0  if subprocess was terminated.
+        Returns -1 if subprocess completed normally.
+
+        Not currently checking against allowed icommands.
+        '''
+
+        # should probably also add a condition to restrict
+        # possible values for icommandsDir
+        myenv = os.environ.copy()
+        myenv['irodsEnvFile'] = "%s/.irodsEnv" % (self.sessionDir)
+        myenv['irodsAuthFileName'] = "%s/.irodsA" % (self.sessionDir)
+
+        cmdStr = "%s/%s" % (self.icommandsDir, icommand)
+        argList = [cmdStr] + argList
+
+        p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
+            stderr = subprocess.PIPE, env = myenv)
+
+        # wait for filename to get big enough to terminate subprocess
+        granularity = 0.01
+        while not os.path.exists(filename):
+            time.sleep(granularity)
+        while os.stat(filename).st_size < filesize:
+            time.sleep(granularity)
+            
+        # if subprocess did not complete by filesize threshold, we kill it
+        if p.poll() is None:
+            p.terminate()
+             # expected, so return 0
+            returncode = 0
+        # else the process finished before the filesize threshold was met
+        else:
+            # unexpected, so return -1
+            returncode = -1
+
+        return returncode
+
+    def interruptCmdDelay(self, icommand, argList=[], delay=0):
         '''Runs an icommand with optional argument list but
         terminates the icommand subprocess after delay seconds.
 
