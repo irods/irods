@@ -89,17 +89,72 @@ def admin_up():
     adminsession.runCmd('ichmod',["read",users[1]['name'],"../../public/"+testfile]) # read for user1 
     adminsession.runCmd('ichmod',["write",users[2]['name'],"../../public/"+testfile]) # write for user2
 
+    # testallrules setup
+    progname = "README"
+    rules30dir = "../../iRODS/clients/icommands/test/rules3.0/"
+    dir_w = rules30dir+".."
+    adminsession.runCmd('icd') # to get into the home directory (for testallrules assumption)
+    adminsession.runAdminCmd('iadmin mkuser devtestuser rodsuser' )
+    adminsession.runAdminCmd('iadmin',["atrg",resgroup,testresc])
+    adminsession.runAdminCmd('iadmin',["mkresc","testallrulesResc","'unix file system'","cache",hostname,"/tmp/pydevtest_testallrulesResc"] )
+    adminsession.runCmd('imkdir', ["sub1"] )
+    adminsession.runCmd('imkdir', ["forphymv"] )
+    adminsession.runCmd('imkdir', ["ruletest"] )
+    adminsession.runCmd('imkdir', ["test"] )
+    adminsession.runCmd('imkdir', ["test/phypathreg"] )
+    adminsession.runCmd('imkdir', ["ruletest/subforrmcoll"] )
+    adminsession.runCmd('iput', [progname,"test/foo1"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/foo1"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/foo2"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/foo3"] )
+    adminsession.runCmd('icp', ["test/foo1","forphymv/phymvfile"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/objunlink1"] )
+    adminsession.runCmd('irm', ["sub1/objunlink1"] ) # put it in the trash
+    adminsession.runCmd('icp', ["test/foo1","sub1/objunlink2"] )
+    adminsession.runCmd('irepl', ["-R","testallrulesResc","sub1/objunlink2"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/freebuffer"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/automove"] )
+    adminsession.runCmd('icp', ["test/foo1","test/versiontest.txt"] )
+    adminsession.runCmd('icp', ["test/foo1","test/metadata-target.txt"] )
+    adminsession.runCmd('icp', ["test/foo1","test/ERAtestfile.txt"] )
+    adminsession.runCmd('ichmod', ["read devtestuser","test/ERAtestfile.txt"] )
+    adminsession.runCmd('imeta', ["add","-d","test/ERAtestfile.txt","Fun","99","Balloons"] )
+    adminsession.runCmd('imkdir', ["sub1/SaveVersions"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/devtestuser-account-ACL.txt","test"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/load-metadata.txt","test"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/load-usermods.txt","test"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/sample.email","test"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/email.tag","test"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/sample.email","test/sample2.email"] )
+    adminsession.runCmd('iput', [dir_w+"/misc/email.tag","test/email2.tag"] )
+
+    # get back into the proper directory
+    adminsession.runCmd('icd', [sessionid])
+
+
+
 def admin_down():
-    # tear down admin session
+    # globals needed
     global adminsession
     global testresc
     global anotherresc
     global resgroup
     global testgroup
+
+    # testallrules teardown
+    adminsession.runCmd('icd', ["/tempZone/home/rods/"]) # to get back to the home directory
+    adminsession.runCmd('ichmod',["-r","own","rods","."] )
+    adminsession.runCmd('irm',["-rf","test","ruletest","forphymv","sub1","sub2","bagit","rules","bagit.tar","/tempZone/bundle/home/rods"] )
+    adminsession.runCmd('imv',["test","/tempZone/trash/home/rods/deleteme-"+adminsession.sessionId] )
+    adminsession.runCmd('irmtrash',["-M"])
+    adminsession.runAdminCmd('iadmin',["rmresc","testallrulesResc"] )
+    adminsession.runAdminCmd('iadmin',["rmuser","devtestuser"] )
+
+    # tear down admin session
     adminsession.runCmd('icd')
     adminsession.runCmd('irm',['-r',adminsession.sessionId])
     # trash
-    output = adminsession.runCmd('irmtrash',['-M']) # removes all trash for all users (admin mode)
+    adminsession.runCmd('irmtrash',['-M']) # removes all trash for all users (admin mode)
     # users
     for u in users[1:]:
         adminsession.runAdminCmd('iadmin',["rfg",testgroup,u['name']])
@@ -117,7 +172,8 @@ def admin_down():
     adminsession.deleteEnvFiles()
     # local file cleanup
     global testfile
-    output = commands.getstatusoutput( 'rm '+testfile )
+    os.unlink(testfile)
+
 
 ##################
 def user_up(user):

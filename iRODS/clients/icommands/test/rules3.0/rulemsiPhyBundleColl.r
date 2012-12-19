@@ -10,5 +10,5 @@ myTestRule {
   msiPhyBundleColl(*Coll, *Resc, *status);
   writeLine("stdout","Create tar file of collection *Coll on resource *Resc");
 }
-INPUT *Coll="/tempZone/home/rods/test", *Resc="testResc"
+INPUT *Coll="/tempZone/home/rods/test", *Resc="testallrulesResc"
 OUTPUT ruleExecOut

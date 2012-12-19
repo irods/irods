@@ -209,6 +209,8 @@ class RodsSession(object):
                         'ireg',
                         'imcoll',
                         'irsync',
+                        # added for test_allrules.py
+                        'irule',
                      ]
 
         if icommand not in valid_cmds:
