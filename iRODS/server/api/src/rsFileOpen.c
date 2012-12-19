@@ -69,8 +69,8 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
         return (fd);
     }
 
-    fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->fileName,
-                                    fileOpenInp->fileType, fd, fileOpenInp->mode);
+    fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->fileName, fileOpenInp->resc_hier_, fileOpenInp->fileType, fd,
+                                    fileOpenInp->mode);
 
     return (fileInx);
 }

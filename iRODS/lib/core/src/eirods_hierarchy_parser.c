@@ -3,6 +3,8 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_string_tokenize.h"
 
+#include <iostream>
+
 namespace eirods {
 
     hierarchy_parser::hierarchy_parser(void) {
@@ -18,6 +20,7 @@ namespace eirods {
         error result = SUCCESS();
         resc_list_.clear();
         string_tokenize(_resc_hier, resc_list_, ";");
+        std::cerr << "qqq - " << __FUNCTION__ << " - Found " << resc_list_.size() << " resources in hierarchy \"" << _resc_hier << "\"" << std::endl;
         return result;
     }
     
@@ -51,7 +54,11 @@ namespace eirods {
         std::string& _ret_resc) const {
 
         error result = SUCCESS();
-        _ret_resc = resc_list_.front();
+        if(resc_list_.size()) {
+            _ret_resc = resc_list_.front();
+        } else {
+            _ret_resc.clear();  // return empty string
+        }
         return result;
     }
 
@@ -59,7 +66,11 @@ namespace eirods {
         std::string& _ret_resc) const {
 
         error result = SUCCESS();
-        _ret_resc = resc_list_.back();
+        if(resc_list_.size()) {
+            _ret_resc = resc_list_.back();
+        } else {
+            _ret_resc.clear();  // return empty string
+        }
         return result;
     }
 

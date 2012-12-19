@@ -151,10 +151,9 @@ dataObjInfo_t *dataObjInfo)
           case FILE_CAT:
             memset (&fileTruncateInp, 0, sizeof (fileTruncateInp));
             fileTruncateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, 
-	      MAX_NAME_LEN);
-            rstrcpy (fileTruncateInp.addr.hostAddr, 
-	      dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+            rstrcpy (fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN);
+            rstrcpy (fileTruncateInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
 	    fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
             status = rsFileTruncate (rsComm, &fileTruncateInp);
             break;

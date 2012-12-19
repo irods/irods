@@ -428,8 +428,8 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
             rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, 
 	      MAX_NAME_LEN);
-	    rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-	    rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+	    rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+	    rstrcpy( fileOpendirInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
             fileOpendirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileOpendirInp.addr.hostAddr,
               dataObjInfo->rescInfo->rescLoc, NAME_LEN);

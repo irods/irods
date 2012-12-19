@@ -24,6 +24,9 @@
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
+#include "icatHighLevelRoutines.h"
+
+#include "eirods_hierarchy_parser.h"
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -37,6 +40,7 @@
 int
 rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
+    
     int l1descInx;
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
@@ -159,6 +163,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 int
 _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
+    
     int status;
     rescGrpInfo_t *myRescGrpInfo = NULL;
     rescGrpInfo_t *tmpRescGrpInfo;
@@ -274,6 +279,7 @@ int
 _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                               rescInfo_t *rescInfo, char *rescGroupName)
 {
+    
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     int status;
@@ -303,6 +309,7 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         L1desc[l1descInx].replRescInfo = rescInfo;  /* repl to this resc */
         dataObjInfo->rescInfo = cacheResc;
         rstrcpy (dataObjInfo->rescName, cacheResc->rescName, NAME_LEN);
+        rstrcpy (dataObjInfo->rescHier, cacheResc->rescName, MAX_NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, myRescGroupName, NAME_LEN);
         if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) { // JMC - backport 4537
             L1desc[l1descInx].purgeCacheFlag = 1;
@@ -311,6 +318,7 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else {
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
+        rstrcpy (dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
         // =-=-=-=-=-=-=-
         // JMC - backport 4544
@@ -440,6 +448,52 @@ l3Create (rsComm_t *rsComm, int l1descInx)
     return (l3descInx);
 }
 
+/**
+ * @brief Updates the data obj and resources according to the resource hierarchy string
+ */
+static eirods::error
+_updateDbWithRescHier(
+    rsComm_t* rsComm,
+    dataObjInfo_t* dataObjInfo,
+    const std::string& _resc_hier,
+    int _object_count_delta) {
+
+    eirods::error result = SUCCESS();
+    eirods::error ret;
+    int status;
+
+    std::stringstream msg;
+    msg << "qqq - " << __FUNCTION__ << " updating data object with new resc hier \"" << _resc_hier << "\"";
+    std::cerr << msg.str() << std::endl;
+    eirods::log(LOG_NOTICE, msg.str());
+    
+    keyValPair_t regParam;
+    memset(&regParam, 0, sizeof(regParam));
+    addKeyVal(&regParam, "rescHier", _resc_hier.c_str());
+    
+    std::string leaf_resc;
+    eirods::hierarchy_parser hparse;
+    if(!(ret = hparse.set_string(_resc_hier)).ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to parse the hierarchy string \"" << _resc_hier << "\"";
+        result = PASSMSG(msg.str(), ret);
+    } else if(!(ret = hparse.last_resc(leaf_resc)).ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to retrieve the leaf resource.";
+        result = PASSMSG(msg.str(), ret);
+    } else if((status = chlUpdateRescObjCount(leaf_resc, _object_count_delta)) < 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to update the object count for the resource \"" << leaf_resc << "\"";
+        result = ERROR(status, msg.str());
+    } else if((status = chlModDataObjMeta(rsComm, dataObjInfo, &regParam)) < 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to update the data object with a new resc hier.";
+        result = ERROR(status, msg.str());
+    }
+    
+    return result;
+}
+
 int
 l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
                    dataObjInfo_t *dataObjInfo)
@@ -473,8 +527,18 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
         }
         // =-=-=-=-=-=-=-
+        std::string prev_resc_hier = fileCreateInp.resc_hier_;
         l3descInx = rsFileCreate (rsComm, &fileCreateInp);
-
+        if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
+            eirods::error ret =_updateDbWithRescHier(rsComm, dataObjInfo, fileCreateInp.resc_hier_, 1);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
+                eirods::log(LOG_ERROR, msg.str());
+                return ret.code();
+            }
+        }
+        
         /* file already exists ? */
         while( l3descInx <= 2 && retryCnt < 100 && 
                getErrno (l3descInx) == EEXIST ) {
@@ -485,6 +549,7 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             l3descInx = rsFileCreate (rsComm, &fileCreateInp);
             retryCnt ++; 
         }
+        rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
         break;
     }
     default:

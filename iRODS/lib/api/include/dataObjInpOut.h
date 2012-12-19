@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /**
  * @file  dataObjInpOut.h
  *
@@ -59,16 +61,16 @@ typedef struct {
  * \li char objPath[MAX_NAME_LEN] - full path of the data object.
  * \li int createMode - the file mode of the data object.
  * \li int openFlags - the flags for the I/O operation, 
- * 	Valid flags are O_RDONLY, O_WRONLY, O_RDWR and O_TRUNC. 
- *	Also used for specCollInx in rcQuerySpecColl. 
+ *      Valid flags are O_RDONLY, O_WRONLY, O_RDWR and O_TRUNC. 
+ *      Also used for specCollInx in rcQuerySpecColl. 
  * \li rodsLong_t offset - the offset.
  * \li rodsLong_t dataSize - the size of the data object.
  * \li int numThreads - the number of threads to use.
  * \li int oprType - the type of operation.
  * \li specColl_t *specColl - a pointer to a specColl_t if this path is 
- *	in a special collection (e.g. mounted collection). 
+ *      in a special collection (e.g. mounted collection). 
  * \li keyValPair_t condInput -  keyword/value pair input. Valid keywords
- *	depend on the API. 
+ *      depend on the API. 
  *
  * \sa none
  * \bug  no known bugs
@@ -180,15 +182,15 @@ typedef struct CollInp201 {
 
 /* definition for oprType in dataObjInp_t, portalOpr_t and l1desc_t */
 
-#define DONE_OPR    		9999
-#define PUT_OPR         	1
-#define GET_OPR         	2
+#define DONE_OPR                9999
+#define PUT_OPR                 1
+#define GET_OPR                 2
 #define SAME_HOST_COPY_OPR      3
-#define COPY_TO_LOCAL_OPR	4
-#define COPY_TO_REM_OPR		5
-#define REPLICATE_OPR		6
-#define REPLICATE_DEST	        7
-#define REPLICATE_SRC	        8
+#define COPY_TO_LOCAL_OPR       4
+#define COPY_TO_REM_OPR         5
+#define REPLICATE_OPR           6
+#define REPLICATE_DEST          7
+#define REPLICATE_SRC           8
 #define COPY_DEST               9
 #define COPY_SRC                10
 #define RENAME_DATA_OBJ         11
@@ -204,14 +206,14 @@ typedef struct CollInp201 {
 #define QUERY_COLL_OBJ_RECUR    21
 #define RENAME_UNKNOWN_TYPE     22
 #define REMOTE_ZONE_OPR         24
-#define UNREG_OPR         	26
+#define UNREG_OPR               26
 #if 0
-#define CREATE_OPR     		23
-#define OPEN_OPR         	25
+#define CREATE_OPR              23
+#define OPEN_OPR                25
 #endif
 
 /* definition for openType in l1desc_t */
-#define CREATE_TYPE         	1
+#define CREATE_TYPE             1
 #define OPEN_FOR_READ_TYPE      2
 #define OPEN_FOR_WRITE_TYPE     3
 
@@ -222,8 +224,8 @@ typedef struct PortalOpr {
 } portalOpr_t;
 
 /* definition for flags */
-#define STREAMING_FLAG		0x1
-#define NO_CHK_COPY_LEN_FLAG	0x2
+#define STREAMING_FLAG          0x1
+#define NO_CHK_COPY_LEN_FLAG    0x2
 
 typedef struct TransferHeader {
     int oprType;
@@ -232,4 +234,4 @@ typedef struct TransferHeader {
     rodsLong_t length;
 } transferHeader_t;
 
-#endif	/* DATA_OBJ_INP_OUT_H */
+#endif  /* DATA_OBJ_INP_OUT_H */

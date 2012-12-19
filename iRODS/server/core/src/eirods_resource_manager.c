@@ -11,6 +11,9 @@
 // STL Includes
 #include <iostream>
 
+// global
+eirods::resource_manager resc_mgr;
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-
@@ -33,7 +36,9 @@ namespace eirods {
     error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
 
         if( _key.empty() ) {
-            return ERROR( -1, "resource_manager::resolve - empty key" );
+            error ret;
+            ret = resolve_from_property( "type", "unix file system", _value );
+            return ret;
         }
 
         if( resources_.has_entry( _key ) ) {

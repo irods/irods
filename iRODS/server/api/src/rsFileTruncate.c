@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -28,26 +30,26 @@ rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileTruncate: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileTruncate: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-      /* Manually insert call-specific code here */
+    /* Manually insert call-specific code here */
 
     return (status);
 }
 
 int
 remoteFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
-rodsServerHost_t *rodsServerHost)
+                    rodsServerHost_t *rodsServerHost)
 {
     int status;
 
-        if (rodsServerHost == NULL) {
+    if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileTruncate: Invalid rodsServerHost");
+                 "remoteFileTruncate: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -60,8 +62,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileTruncate: rcFileTruncate failed for %s, status = %d",
-          fileTruncateInp->fileName, status);
+                 "remoteFileTruncate: rcFileTruncate failed for %s, status = %d",
+                 fileTruncateInp->fileName, status);
     }
 
     return status;
@@ -71,21 +73,21 @@ rodsServerHost_t *rodsServerHost)
 // local function which makes the call to truncate via the resource plugin
 int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
     // =-=-=-=-=-=-=-
-	// make the call to rename via the resource plugin
-    eirods::file_object file_obj( rsComm, fileTruncateInp->fileName, 0, 0, 0 );
-	file_obj.size( fileTruncateInp->dataSize );
-	eirods::error trunc_err = fileTruncate( file_obj );
+    // make the call to rename via the resource plugin
+    eirods::file_object file_obj( rsComm, fileTruncateInp->fileName, fileTruncateInp->resc_hier_, 0, 0, 0 );
+    file_obj.size( fileTruncateInp->dataSize );
+    eirods::error trunc_err = fileTruncate( file_obj );
 
     // =-=-=-=-=-=-=-
-	// report errors if any
+    // report errors if any
     if ( !trunc_err.ok() ) {
-		std::stringstream msg;
-		msg << "_rsFileTruncate: fileTruncate for ";
-		msg << fileTruncateInp->fileName;
-		msg << ", status = ";
-		msg << trunc_err.code();
-		eirods::error err = PASS( false, trunc_err.code(), msg.str(), trunc_err );
-		eirods::log ( err );
+        std::stringstream msg;
+        msg << "_rsFileTruncate: fileTruncate for ";
+        msg << fileTruncateInp->fileName;
+        msg << ", status = ";
+        msg << trunc_err.code();
+        eirods::error err = PASS( false, trunc_err.code(), msg.str(), trunc_err );
+        eirods::log ( err );
     }
 
     return trunc_err.code();

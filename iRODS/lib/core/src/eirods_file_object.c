@@ -4,6 +4,8 @@
 // eirods includes
 #include "eirods_file_object.h"
 #include "eirods_resource_manager.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_log.h"
 
 namespace eirods {
 
@@ -67,7 +69,48 @@ namespace eirods {
         resource_manager& _mgr,
         resource_ptr& _ptr ) {
         
-        
+        error result = SUCCESS();
+        error ret;
+        std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
+    
+        hierarchy_parser hparse;
+        ret = hparse.set_string(resc_hier());
+        std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
+    
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - ERROR parsing resource hierarchy \"" << resc_hier() << "\"";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            std::string resc;
+            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
+    
+            ret = hparse.first_resc(resc);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - ERROR getting first resource from hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
+    
+                if(resc.empty() && resc_hier().empty()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - there is no resource specified in the resource hierarchy.";
+                    log(LOG_NOTICE, msg.str());
+                } else if(resc.empty()) {
+                    return ERROR(-1, "ERROR: Hierarchy string is not empty but first resource is!");
+                }
+                std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
+    
+                ret = _mgr.resolve(resc, _ptr);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
+                    result = PASSMSG(msg.str(), ret);
+                } 
+            }
+        }
+        return result;
     } // resolve
     
 }; // namespace eirods

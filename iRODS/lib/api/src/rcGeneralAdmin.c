@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /**
  * @file  rcGeneralAdmin.c
  *
@@ -46,14 +48,14 @@
  * \post none
  * \sa none
  * \bug  no known bugs
-**/
+ **/
 
 int
 rcGeneralAdmin (rcComm_t *conn, generalAdminInp_t *generalAdminInp)
 {
     int status;
     status = procApiRequest (conn, GENERAL_ADMIN_AN,  generalAdminInp, NULL, 
-        (void **) NULL, NULL);
+                             (void **) NULL, NULL);
 
     return (status);
 }

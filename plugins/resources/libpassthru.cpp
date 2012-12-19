@@ -16,6 +16,7 @@
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_string_tokenize.h"
+#include "eirods_hierarchy_parser.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -65,9 +66,6 @@
 
 extern "C" {
 
-#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
-
     // =-=-=-=-=-=-=-
     // 1. Define plugin Version Variable, used in plugin
     //    creation when the factory function is called.
@@ -93,6 +91,7 @@ extern "C" {
     eirods::error passthruGetFirstChildResc(
         eirods::resource_child_map* _cmap,
         eirods::resource_ptr& _resc) {
+
         eirods::error result = SUCCESS();
         std::pair<std::string, eirods::resource_ptr> child_pair;
         if(_cmap->size() != 1) {
@@ -179,28 +178,12 @@ extern "C" {
             msg << __FUNCTION__ << " - child resource has no vault path.";
             result = ERROR(-1, msg.str());
         } else {
-            eirods::resource_ptr parent;
-            ret = resc->get_parent(parent);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__ << " - Failed to retrieve the resources parent.";
-                result = PASSMSG(msg.str(), ret);
+            if(physical_path.compare(0, vault_path.size(), vault_path) != 0) {
+                ret_string = vault_path;
+                ret_string += physical_path;
             } else {
-                std::string real_path;
-                ret = passthruRemoveVaultPath(parent, physical_path, real_path);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__ << " - Failed to remove vault path from physical path.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    if(real_path.compare(0, vault_path.size(), vault_path) != 0) {
-                        ret_string = vault_path;
-                        ret_string += real_path;
-                    } else {
-                        // The physical path already contains the vault path
-                        ret_string = real_path;
-                    }
-                }
+                // The physical path already contains the vault path
+                ret_string = physical_path;
             }
         }
         return result;
@@ -233,7 +216,25 @@ extern "C" {
                 } else {
                     _object->physical_path(full_path);
                     ret = resc->call<eirods::first_class_object*>("create", _object);
-                    result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
+                    if(!ret.ok()) {
+                        result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
+                    } else {
+                        // Update the hierarchy string
+                        std::string child_name;
+                        ret = resc->get_property<std::string>("name", child_name);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__ << " - Failed to retrieve the child resource name.";
+                            result = PASSMSG(msg.str(), ret);
+                        } else {
+                            eirods::hierarchy_parser hparse;
+                            hparse.set_string(_object->resc_hier());
+                            hparse.add_child(child_name);
+                            std::string new_resc_hier;
+                            hparse.str(new_resc_hier);
+                            _object->resc_hier(new_resc_hier);
+                        }
+                    }
                 }
             }
         }

@@ -159,15 +159,12 @@ mkdirForFilePath (char* filePath)
     char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
     int status;
 
-    std::cerr << "qqq - mkdirForFilePath - Making directory \"" << filePath << "\"" << std::endl;
-    
     if ((status = splitPathByKey (filePath, parent, child, '/')) < 0) {
         rodsLogError (LOG_ERROR, status,
                       "mkdirForFilePath:: splitPathByKey for %s error, status = %d",
                       filePath, status);
         return (status);
     }
-    std::cerr << "qqq - Making directory \"" << parent << "\"" << std::endl;
     
     status =  mkdirR ("/", parent, DEFAULT_DIR_MODE);
 

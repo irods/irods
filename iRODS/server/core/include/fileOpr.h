@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -14,25 +16,25 @@
 #include "fileDriver.h"
 #include "chkNVPathPerm.h"
 
-#define NUM_FILE_DESC	1026 	/* number of FileDesc */
+#define NUM_FILE_DESC   1026    /* number of FileDesc */
 
 /* definition for inuseFlag */
 
-#define FD_FREE		0
-#define FD_INUSE	1
+#define FD_FREE         0
+#define FD_INUSE        1
 
-#define STREAM_FILE_NAME	"stream"   /* a fake file name for stream */
+#define STREAM_FILE_NAME        "stream"   /* a fake file name for stream */
 typedef struct {
-    int inuseFlag;	/* whether the fileDesc is in use, 0=no */
+    int inuseFlag;      /* whether the fileDesc is in use, 0=no */
     rodsServerHost_t *rodsServerHost;
     char *fileName;
-    char *rescHier;		// The hierarchy of resources in which this file resides
+    char *rescHier;             // The hierarchy of resources in which this file resides
     fileDriverType_t fileType;
     int mode;
     int chkPerm;        /* check for permission in the file vault */
-    int fd;		/* the file descriptor from driver */
-    int writtenFlag;	/* indicated whether the file has been written to */
-    void *driverDep;	/* driver dependent stuff */
+    int fd;             /* the file descriptor from driver */
+    int writtenFlag;    /* indicated whether the file has been written to */
+    void *driverDep;    /* driver dependent stuff */
 } fileDesc_t;
 
 int
@@ -43,7 +45,7 @@ allocFileDesc ();
 
 int
 allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char *fileName,
-fileDriverType_t fileType, int fd, int mode);
+                      char* rescHier, fileDriverType_t fileType, int fd, int mode);
 
 int
 freeFileDesc (int fileInx);
@@ -56,19 +58,19 @@ int
 mkFileDirR (rsComm_t *rsComm, const char *startDir, const char *destDir, int mode);
 int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
-rodsServerHost_t *rodsServerHost, int chkType); // JMC - backport 4774
+                 rodsServerHost_t *rodsServerHost, int chkType); // JMC - backport 4774
 int // JMC - backport 4766
 isValidFilePath (char *path);
 int
 matchVaultPath (rsComm_t *rsComm, char *filePath,
-rodsServerHost_t *rodsServerHost, char **outVaultPath);
+                rodsServerHost_t *rodsServerHost, char **outVaultPath);
 int
 matchCliVaultPath (rsComm_t *rsComm, char *filePath,
-rodsServerHost_t *rodsServerHost);
+                   rodsServerHost_t *rodsServerHost);
 int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir);
 int
-filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo);
+filePathTypeInResc (rsComm_t *rsComm, char *fileName, char* rescHier, rescInfo_t *rescInfo);
 int
 bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd);
-#endif	/* FILE_OPR_H */
+#endif  /* FILE_OPR_H */

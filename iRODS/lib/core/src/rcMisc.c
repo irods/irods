@@ -791,7 +791,7 @@ replSpecColl (specColl_t *inSpecColl, specColl_t **outSpecColl)
 }
 
 int
-addKeyVal (keyValPair_t *condInput, char *keyWord, char *value)
+addKeyVal (keyValPair_t *condInput, const char *keyWord, const char *value)
 {
     char **newKeyWord;
     char **newValue;

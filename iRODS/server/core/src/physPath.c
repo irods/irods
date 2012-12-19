@@ -519,6 +519,7 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
     if ((status = chkOrphanFile (rsComm, filePath, rescInfo->rescName, &myDataObjInfo)) == 0) {
         rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
+        rstrcpy (fileRenameInp.rescHier, myDataObjInfo.rescHier, MAX_NAME_LEN);
         /* not an orphan file */
         if (replStatus > OLD_COPY || isTrashPath (myDataObjInfo.objPath)) {
             modDataObjMeta_t modDataObjMetaInp;
@@ -705,8 +706,8 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* Save the current objPath */
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-    rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, 
-             MAX_NAME_LEN);
+    rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN);
+    rstrcpy (fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
     if (dataObjInp == NULL) {
         dataObjInp_t myDdataObjInp;
         memset (&myDdataObjInp, 0, sizeof (myDdataObjInp));

@@ -411,12 +411,10 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         case FILE_CAT:
             memset (&fileRenameInp, 0, sizeof (fileRenameInp));
             fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath,
-                     MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.newFileName, newFileName,
-                     MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.addr.hostAddr,
-                     dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN);
+            rstrcpy (fileRenameInp.newFileName, newFileName, MAX_NAME_LEN);
+            rstrcpy (fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+            rstrcpy (fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             status = rsFileRename (rsComm, &fileRenameInp);
             break;
         default:
@@ -466,8 +464,7 @@ moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     rstrcpy (destDataObjInfo.dataType, srcDataObjInfo->dataType, NAME_LEN);
     destDataObjInfo.dataSize = srcDataObjInfo->dataSize;
     destDataObjInfo.rescInfo = srcDataObjInfo->rescInfo;
-    rstrcpy (destDataObjInfo.rescName, srcDataObjInfo->rescInfo->rescName, 
-             NAME_LEN);
+    rstrcpy (destDataObjInfo.rescName, srcDataObjInfo->rescInfo->rescName, NAME_LEN);
     status = getFilePathName (rsComm, &destDataObjInfo, destDataObjInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -491,10 +488,8 @@ moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
                                 destDataObjInfo.rescInfo->rescName, &myDataObjInfo);
         if (status == 1) {
             /* orphan */
-            rstrcpy (fileRenameInp.oldFileName, destDataObjInfo.filePath, 
-                     MAX_NAME_LEN);
-            renameFilePathToNewDir (rsComm, ORPHAN_DIR, &fileRenameInp,
-                                    destDataObjInfo.rescInfo, 1);
+            rstrcpy (fileRenameInp.oldFileName, destDataObjInfo.filePath, MAX_NAME_LEN);
+            renameFilePathToNewDir (rsComm, ORPHAN_DIR, &fileRenameInp, destDataObjInfo.rescInfo, 1);
         } else if (status == 0) {
             /* obj exist */
             return SYS_COPY_ALREADY_IN_RESC;

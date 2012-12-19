@@ -44,7 +44,7 @@ allocFileDesc ()
 
 int
 allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char *fileName,
-                      fileDriverType_t fileType, int fd, int mode)
+                      char* rescHier, fileDriverType_t fileType, int fd, int mode)
 {
     int fileInx;
 
@@ -55,6 +55,7 @@ allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char *fileName,
 
     FileDesc[fileInx].rodsServerHost = rodsServerHost;
     FileDesc[fileInx].fileName = strdup (fileName);
+    FileDesc[fileInx].rescHier = strdup (rescHier);
     FileDesc[fileInx].fileType = fileType;
     FileDesc[fileInx].mode = mode;
     FileDesc[fileInx].fd = fd;
@@ -75,6 +76,10 @@ freeFileDesc (int fileInx)
         free (FileDesc[fileInx].fileName);
     }
 
+    if(FileDesc[fileInx].rescHier != NULL) {
+        free (FileDesc[fileInx].rescHier);
+    }
+    
     /* don't free driverDep (dirPtr is not malloced */
 
     memset (&FileDesc[fileInx], 0, sizeof (fileDesc_t));
@@ -114,8 +119,6 @@ mkDirForFilePath (
 {
     int status;
 
-    std::cerr << "qqq - " << __FILE__ << ":" << __LINE__ << " Making dir: \"" << filePath << "\"" << std::endl;
-    
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
 
     if ((status = splitPathByKey (filePath, myDir, myFile, '/')) < 0) {
@@ -501,7 +504,7 @@ bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd)
 {
     int fileInx;
 
-    fileInx = allocAndFillFileDesc (rodsServerHost, STREAM_FILE_NAME, 
+    fileInx = allocAndFillFileDesc (rodsServerHost, STREAM_FILE_NAME, "",
                                     UNIX_FILE_TYPE, fd, DEFAULT_FILE_MODE);
 
     return fileInx;

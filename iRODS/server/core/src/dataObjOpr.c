@@ -933,6 +933,8 @@ chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
     addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_RESC_HIER, 1);
+    
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
@@ -951,7 +953,7 @@ chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
             return (status);
         }
     } else {
-        sqlResult_t *dataId, *replNum, *dataName, *collName;
+        sqlResult_t *dataId, *replNum, *dataName, *collName, *rescHier;
         rsComm->perfStat.nonOrphanCnt ++;
 
         if ((collName =
@@ -981,11 +983,19 @@ chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
             return (UNMATCHED_KEY_OR_INDEX);
         }
 
+        if ((rescHier = getSqlResultByInx (genQueryOut, COL_D_RESC_HIER)) ==
+            NULL) {
+            rodsLog (LOG_NOTICE,
+                     "chkOrphanFile: getSqlResultByInx for COL_D_RESC_HIER failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
         if (dataObjInfo != NULL) {
             dataObjInfo->dataId = strtoll (dataId->value, 0, 0);
             dataObjInfo->replNum = atoi (replNum->value);
             snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
                       collName->value, dataName->value);
+            rstrcpy(dataObjInfo->rescHier, rescHier->value, MAX_NAME_LEN);
         }
 
         freeGenQueryOut (&genQueryOut);

@@ -291,9 +291,8 @@ _updateRescObjCount(
     int status;
     char resc_id[MAX_NAME_LEN];
     char obj_count_string[MAX_NAME_LEN];
-    static const char* func_name = "_updateRescObjCount";
     char myTime[50];
-    eirods::sql_logger logger(func_name, logSQL);
+    eirods::sql_logger logger(__FUNCTION__, logSQL);
 
     resc_id[0] = '\0';
     logger.log();
@@ -303,7 +302,7 @@ _updateRescObjCount(
         if(status == CAT_NO_ROWS_FOUND) {
             result = CAT_INVALID_RESOURCE;
         } else {
-            _rollback(func_name);
+            _rollback(__FUNCTION__);
             result = status;
         }
     } else if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_id=?",
@@ -315,7 +314,7 @@ _updateRescObjCount(
         obj_count += _amount;
         if(obj_count < 0) {
             std::stringstream ss;
-            ss << func_name << " Invalid resource object count: " << obj_count;
+            ss << __FUNCTION__ << " Invalid resource object count: " << obj_count;
             eirods::log(LOG_ERROR, ss.str());
             result = CAT_INVALID_OBJ_COUNT;
         } else {
@@ -331,13 +330,38 @@ _updateRescObjCount(
             if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_objcount=?, modify_ts=? "
                                                "where resc_id=?", &icss)) != 0) {
                 std::stringstream ss;
-                ss << func_name << " cmlExecuteNoAnswerSql update failure " << status;
+                ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
                 eirods::log(LOG_NOTICE, ss.str());
-                _rollback(func_name);
+                _rollback(__FUNCTION__);
                 result = status;
             }
         }
     }
+    return result;
+}
+
+/**
+ * @brief Public function for updating object count on the specified resource by the specified amount
+ */
+int
+chlUpdateRescObjCount(
+    const std::string& _resc,
+    int _delta) {
+
+    int result = 0;
+    int ret;
+    if((ret = getLocalZone()) != 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to set the local zone.";
+        eirods::log(LOG_ERROR, msg.str());
+        result = ret;
+    } else if((ret = _updateRescObjCount(_resc, localZone, _delta)) != 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to update the object count for resource \"" << _resc << "\"";
+        eirods::log(LOG_ERROR, msg.str());
+        result = ret;
+    }
+    
     return result;
 }
 

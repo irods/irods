@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsGlobal.h - header file for globals in the server
@@ -6,7 +8,7 @@
 #ifndef RS_GLOBAL_H
 #define RS_GLOBAL_H
 
-#include "apiTable.h"	/* contains global RsApiTable */ 
+#include "apiTable.h"   /* contains global RsApiTable */ 
 #include "initServer.h"
 #include "fileOpr.h"
 #include "dataObjOpr.h"
@@ -18,12 +20,12 @@
 
 #include "eirods_resource_manager.h"
 
-eirods::resource_manager resc_mgr;
+extern eirods::resource_manager resc_mgr;
 
 #define CACHE_DIR_STR "cacheDir"
 
-int LogFd = -1;		/* the log file descriptor */
-char *CurLogfileName = NULL;        /* the path of the current logfile */
+int LogFd = -1;                 /* the log file descriptor */
+char *CurLogfileName = NULL;    /* the path of the current logfile */
 char ProcLogDir[MAX_NAME_LEN];
 
 rodsServerHost_t *LocalServerHost = NULL;
@@ -32,7 +34,7 @@ rodsServerHost_t *HostConfigHead = NULL;
 zoneInfo_t *ZoneInfoHead = NULL;
 rescGrpInfo_t *RescGrpInfo = NULL;
 rescGrpInfo_t *CachedRescGrpInfo = NULL;
-int RescGrpInit = 0;	/* whether initRescGrp has been called */
+int RescGrpInit = 0;    /* whether initRescGrp has been called */
 
 /* global fileDesc */
 
@@ -72,14 +74,14 @@ char localSID[MAX_PASSWORD_LEN]; /* Local Zone Servers ID string */
 char remoteSID[MAX_FED_RSIDS] [MAX_PASSWORD_LEN];  /* Remote Zone SIDs */
 
 /* quota for all resources for this user in bytes */
-rodsLong_t GlobalQuotaLimit;	/* quota for all resources for this user */
+rodsLong_t GlobalQuotaLimit;    /* quota for all resources for this user */
 rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
-int RescQuotaPolicy;		/* can be RESC_QUOTA_UNINIT, RESC_QUOTA_OFF or
-				 * RESC_QUOTA_ON */
+int RescQuotaPolicy;            /* can be RESC_QUOTA_UNINIT, RESC_QUOTA_OFF or
+                                 * RESC_QUOTA_ON */
 /* connection control config */
 struct allowedUser *AllowedUserHead = NULL;
 struct allowedUser *DisallowedUserHead = NULL;
-int MaxConnections = DEF_MAX_CONNECTION;		/* no control */
+int MaxConnections = DEF_MAX_CONNECTION;                /* no control */
 
 time_t LastRescUpdateTime;
 
@@ -91,6 +93,6 @@ uid_t ServiceUid = 0;
 /* Flag for whether the read/write rule should be executed */
 irodsStateFlag_t ReadWriteRuleState = UNINIT_STATE;
 
-#endif	/* RS_GLOBAL_H */
+#endif  /* RS_GLOBAL_H */
 
 
