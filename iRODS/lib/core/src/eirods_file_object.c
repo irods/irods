@@ -71,11 +71,9 @@ namespace eirods {
         
         error result = SUCCESS();
         error ret;
-        std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
         hierarchy_parser hparse;
         ret = hparse.set_string(resc_hier());
-        std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
         if(!ret.ok()) {
             std::stringstream msg;
@@ -83,7 +81,6 @@ namespace eirods {
             result = PASSMSG(msg.str(), ret);
         } else {
             std::string resc;
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
             ret = hparse.first_resc(resc);
             if(!ret.ok()) {
@@ -91,7 +88,6 @@ namespace eirods {
                 msg << __FUNCTION__ << " - ERROR getting first resource from hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
                 if(resc.empty() && resc_hier().empty()) {
                     std::stringstream msg;
@@ -100,7 +96,6 @@ namespace eirods {
                 } else if(resc.empty()) {
                     return ERROR(-1, "ERROR: Hierarchy string is not empty but first resource is!");
                 }
-                std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
                 ret = _mgr.resolve(resc, _ptr);
                 if(!ret.ok()) {

@@ -454,7 +454,6 @@ l3Create (rsComm_t *rsComm, int l1descInx)
 static eirods::error
 _updateDbWithRescHier(
     rsComm_t* rsComm,
-    dataObjInfo_t* dataObjInfo,
     const std::string& _resc_hier,
     int _object_count_delta) {
 
@@ -484,10 +483,6 @@ _updateDbWithRescHier(
     } else if((status = chlUpdateRescObjCount(leaf_resc, _object_count_delta)) < 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - Failed to update the object count for the resource \"" << leaf_resc << "\"";
-        result = ERROR(status, msg.str());
-    } else if((status = chlModDataObjMeta(rsComm, dataObjInfo, &regParam)) < 0) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to update the data object with a new resc hier.";
         result = ERROR(status, msg.str());
     }
     
@@ -530,7 +525,8 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         std::string prev_resc_hier = fileCreateInp.resc_hier_;
         l3descInx = rsFileCreate (rsComm, &fileCreateInp);
         if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
-            eirods::error ret =_updateDbWithRescHier(rsComm, dataObjInfo, fileCreateInp.resc_hier_, 1);
+            rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
+            eirods::error ret =_updateDbWithRescHier(rsComm, fileCreateInp.resc_hier_, 1);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
@@ -547,6 +543,16 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
             rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             l3descInx = rsFileCreate (rsComm, &fileCreateInp);
+            if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
+                rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
+                eirods::error ret =_updateDbWithRescHier(rsComm, fileCreateInp.resc_hier_, 1);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
+                    eirods::log(LOG_ERROR, msg.str());
+                    return ret.code();
+                }
+            }
             retryCnt ++; 
         }
         rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);

@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* regDataObj.h
@@ -20,7 +22,7 @@
 /* prototype for the server handler */
 int
 rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
-dataObjInfo_t **outDataObjInfo);
+              dataObjInfo_t **outDataObjInfo);
 int
 _rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 int
@@ -34,16 +36,16 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-int
-rcRegDataObj (rcComm_t *conn, dataObjInfo_t *dataObjInfo,
-dataObjInfo_t **outDataObjInfo);
+    int
+    rcRegDataObj (rcComm_t *conn, dataObjInfo_t *dataObjInfo,
+                  dataObjInfo_t **outDataObjInfo);
 
 /* rcRegDataObj - Register a iRODS dataObject.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register
  *   dataObjInfo_t **outDataObjInfo - the output DataObjInfo which has
- *	the dataId from the registration as output
+ *      the dataId from the registration as output
  *
  * OutPut -
  *   int status - status of the operation.
@@ -53,4 +55,4 @@ dataObjInfo_t **outDataObjInfo);
 }
 #endif
 
-#endif	/* REG_DATA_OBJ_H */
+#endif  /* REG_DATA_OBJ_H */

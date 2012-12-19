@@ -91,7 +91,7 @@ remoteFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 // _rsFileCreate - this the local version of rsFileCreate.
 int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                    rodsServerHost_t *rodsServerHost ) {
-    std::cerr << "qqq - calling " << __FUNCTION__ << std::endl;
+
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission when RCAT 
     // is available 
@@ -106,7 +106,6 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         }
     }
 
-    std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
     // Save the resource hierarchy so we can determine if it changes
     std::string prev_resc_hier = fileCreateInp->resc_hier_;
@@ -115,12 +114,9 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     // dont capture the eirods results in the log here as there may be an issue with
     // needing to create a directory, etc.
     eirods::file_object file_obj( rsComm, fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, fileCreateInp->mode, fileCreateInp->flags );
-    std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
     
     eirods::error create_err = fileCreate( file_obj );
 
-    std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
     // =-=-=-=-=-=-=-
     // if we get a bad file descriptor
     if( !create_err.ok() ) {
@@ -131,17 +127,10 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 
             // =-=-=-=-=-=-=-
             // the directory didnt exist, make it and then try the create once again.
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
             mkDirForFilePath( rsComm, "/", file_obj.physical_path().c_str(), getDefDirMode() ); 
 
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
             create_err = fileCreate( file_obj );
                                                 
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
-
             // =-=-=-=-=-=-=-
             // capture the eirods results in the log as our error mechanism
             // doesnt extend outside this function for now.
@@ -158,8 +147,6 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         } else if( getErrno( create_err.code() ) == EEXIST ) {
             // =-=-=-=-=-=-=-
             // remove a potentially empty directoy which is already in place
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
             eirods::collection_object coll_obj( fileCreateInp->fileName, 0, 0 );
             eirods::error rmdir_err = fileRmdir( coll_obj );
             if( !rmdir_err.ok() ) {
@@ -172,12 +159,8 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                 eirods::log ( err );
             }
                          
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
             create_err = fileCreate( file_obj );
                                                                         
-            std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
             // =-=-=-=-=-=-=-
             // capture the eirods results in the log as our error mechanism
             // doesnt extend outside this function for now.
@@ -204,13 +187,9 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 
     } // if !create_err.ok()
 
-    std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
     if(file_obj.resc_hier() != prev_resc_hier) {
         rstrcpy(fileCreateInp->resc_hier_, file_obj.resc_hier().c_str(), MAX_NAME_LEN);
     }
-    std::cerr << "qqq - Here " << __FILE__ << ":" << __LINE__ << std::endl;
-    
     return file_obj.file_descriptor();
 
 } // _rsFileCreate 

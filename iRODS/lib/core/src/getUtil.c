@@ -102,12 +102,6 @@ getUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
             status = getCollUtil (myConn, rodsPathInp->srcPath[i].outPath,
                                   targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
                                   &rodsRestart);
-#if 0
-            if (rodsRestart.fd > 0 && status < 0) {
-                close (rodsRestart.fd);
-                return (status);
-            }
-#endif
         } else {
             /* should not be here */
             rodsLog (LOG_ERROR,

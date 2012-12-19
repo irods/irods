@@ -22,7 +22,9 @@
 #include "subStructFilePut.h"
 #include "dataObjRepl.h"
 #include "getRemoteZoneResc.h"
+#include "icatHighLevelRoutines.h"
 
+#include "eirods_hierarchy_parser.h"
 
 int
 rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -382,6 +384,47 @@ _l3DataPutSingleBuf (rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
     return (bytesWritten);
 }
 
+/**
+ * @brief Updates the data obj and resources according to the resource hierarchy string
+ */
+static eirods::error
+_updateDbWithRescHier(
+    rsComm_t* rsComm,
+    const std::string& _resc_hier,
+    int _object_count_delta) {
+
+    eirods::error result = SUCCESS();
+    eirods::error ret;
+    int status;
+
+    std::stringstream msg;
+    msg << "qqq - " << __FUNCTION__ << " updating data object with new resc hier \"" << _resc_hier << "\"";
+    std::cerr << msg.str() << std::endl;
+    eirods::log(LOG_NOTICE, msg.str());
+    
+    keyValPair_t regParam;
+    memset(&regParam, 0, sizeof(regParam));
+    addKeyVal(&regParam, "rescHier", _resc_hier.c_str());
+    
+    std::string leaf_resc;
+    eirods::hierarchy_parser hparse;
+    if(!(ret = hparse.set_string(_resc_hier)).ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to parse the hierarchy string \"" << _resc_hier << "\"";
+        result = PASSMSG(msg.str(), ret);
+    } else if(!(ret = hparse.last_resc(leaf_resc)).ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to retrieve the leaf resource.";
+        result = PASSMSG(msg.str(), ret);
+    } else if((status = chlUpdateRescObjCount(leaf_resc, _object_count_delta)) < 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to update the object count for the resource \"" << leaf_resc << "\"";
+        result = ERROR(status, msg.str());
+    }
+    
+    return result;
+}
+
 int
 l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 {
@@ -416,7 +459,8 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     } else {
 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
+        std::string prev_resc_hier;
+        
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
             memset (&filePutInp, 0, sizeof (filePutInp));
@@ -444,8 +488,20 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
                 // =-=-=-=-=-=-=-
                 filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
             }
-                        
+
+            prev_resc_hier = filePutInp.resc_hier_;
             bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
+            if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
+                rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
+                eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
+                    eirods::log(LOG_ERROR, msg.str());
+                    return ret.code();
+                }
+            }
+
             /* file already exists ? */
             while( bytesWritten < 0 && retryCnt < 10 &&
                    ( filePutInp.otherFlags & FORCE_FLAG ) == 0 &&
@@ -456,6 +512,16 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
                 }
                 rstrcpy (filePutInp.fileName, dataObjInfo->filePath,MAX_NAME_LEN);
                 bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
+                if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
+                    rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
+                    eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
+                    if(!ret.ok()) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
+                        eirods::log(LOG_ERROR, msg.str());
+                        return ret.code();
+                    }
+                }
                 retryCnt ++;
             } // while
 

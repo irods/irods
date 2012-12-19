@@ -1491,19 +1491,6 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                     }
                     return (status);
                 }
-#if 0 // JMC - UNUSED
-                int
-                    requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
-                                               keyValPair_t *condInput, int writeFlag, int topFlag)
-                {
-                    char *rescName;
-
-                    if ((rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
-                        requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, topFlag);
-                    }
-                    return (0);
-                }
-#endif // JMC - UNUSED
                 int
                     getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
                                                dataObjInfo_t **dataObjInfo)

@@ -72,9 +72,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *compDataObjInfo = NULL;
     dataObjInfo_t *cacheDataObjInfo = NULL;
     rescInfo_t *compRescInfo = NULL;
-#if 0 // JMC - backport 4590
-    rescGrpInfo_t *myRescGrpInfo = NULL; // JMC - backport 4547
-#endif
     int l1descInx;
     int writeFlag;
     int phyOpenFlag = DO_PHYOPEN;
@@ -103,7 +100,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
     }
     // =-=-=-=-=-=-=-
-/* query rcat for dataObjInfo and sort it */
+    /* query rcat for dataObjInfo and sort it */
 
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
 

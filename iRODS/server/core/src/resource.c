@@ -208,50 +208,10 @@ resolveResc (char *rescName, rescInfo_t **rescInfo)
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
     /* no match */
-#if 0  /* this has problem for subsequent query. need to mkresc to work  */ // JMC - backport 4632
-    if (strcmp (rescName, BUNDLE_RESC) == 0) {
-        /* it is the virtual bundleResc. Make one */
-        rescInfo_t *myRescInfo;
-        myRescInfo = ( rescInfo_t* )malloc (sizeof (rescInfo_t));
-        memset (myRescInfo, 0, sizeof (rescInfo_t));
-        myRescInfo->rodsServerHost = ServerHostHead;
-        rstrcpy (myRescInfo->zoneName, ZoneInfoHead->zoneName, NAME_LEN);
-        rstrcpy (myRescInfo->rescName, BUNDLE_RESC, NAME_LEN);
-        rstrcpy (myRescInfo->rescLoc, "localhost", NAME_LEN);
-        rstrcpy (myRescInfo->rescType, "unix file system", NAME_LEN);
-        myRescInfo->rescTypeInx = getRescTypeInx (myRescInfo->rescType);
-        rstrcpy (myRescInfo->rescClass, "bundle", NAME_LEN);
-        myRescInfo->rescClassInx = getRescClassInx (myRescInfo->rescClass);
-        rstrcpy (myRescInfo->rescVaultPath, "/bundle", MAX_NAME_LEN);
-        myRescInfo->quotaLimit = RESC_QUOTA_UNINIT;     /* not initialized */
-        queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
-        *rescInfo = myRescInfo;
-        return 0;
-    }
-#endif
     rodsLog (LOG_DEBUG1,
              "resolveResc: resource %s not configured in RCAT", rescName);
     return (SYS_INVALID_RESC_INPUT);
 }
-
-#if 0   /* replaced by getRescCnt */
-/* getNumResc - count the number of resources in the rescGrpInfo link list.
- */
-
-int
-getNumResc (rescGrpInfo_t *rescGrpInfo)
-{
-    rescGrpInfo_t *tmpRescGrpInfo;
-    int numResc = 0;
-
-    tmpRescGrpInfo = rescGrpInfo;
-    while (tmpRescGrpInfo != NULL) {
-        numResc++;
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    return (numResc);
-}
-#endif
 
 /* sortResc - Sort the resources given in the rescGrpInfo link list
  * according to the sorting scheme given in sortScheme. sortScheme
