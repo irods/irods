@@ -142,11 +142,9 @@ def admin_down():
     global testgroup
 
     # testallrules teardown
-    adminsession.runCmd('icd', ["/tempZone/home/rods/"]) # to get back to the home directory
     adminsession.runCmd('ichmod',["-r","own","rods","."] )
+    adminsession.runCmd('imcoll',["-U","/tempZone/home/rods/test/phypathreg"] )
     adminsession.runCmd('irm',["-rf","test","ruletest","forphymv","sub1","sub2","bagit","rules","bagit.tar","/tempZone/bundle/home/rods"] )
-    adminsession.runCmd('imv',["test","/tempZone/trash/home/rods/deleteme-"+adminsession.sessionId] )
-    adminsession.runCmd('irmtrash',["-M"])
     adminsession.runAdminCmd('iadmin',["rmresc","testallrulesResc"] )
     adminsession.runAdminCmd('iadmin',["rmuser","devtestuser"] )
 
