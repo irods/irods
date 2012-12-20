@@ -147,6 +147,7 @@ def admin_down():
     adminsession.runCmd('irm',["-rf","test","ruletest","forphymv","sub1","sub2","bagit","rules","bagit.tar","/tempZone/bundle/home/rods"] )
     adminsession.runAdminCmd('iadmin',["rmresc","testallrulesResc"] )
     adminsession.runAdminCmd('iadmin',["rmuser","devtestuser"] )
+    adminsession.runCmd('iqdel',["-a"] ) # remove all/any queued rules
 
     # tear down admin session
     adminsession.runCmd('icd')
