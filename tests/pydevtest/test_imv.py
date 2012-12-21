@@ -27,5 +27,5 @@ def test_local_imv_to_existing_filename():
     copyfile = "anotherfile.txt"
     # assertions
     assertiCmd(s.adminsession,"icp "+s.testfile+" "+copyfile) # icp
-    assertiCmdFail(s.adminsession,"imv "+s.testfile+" "+copyfile) # cannot overwrite existing file
+    assertiCmd(s.adminsession,"imv "+s.testfile+" "+copyfile, "ERROR", "CAT_NAME_EXISTS_AS_DATAOBJ") # cannot overwrite existing file
     # local cleanup
