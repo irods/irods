@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #ifndef windows_platform
@@ -11,7 +13,7 @@
 
 int
 replUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp)
+          rodsPathInp_t *rodsPathInp)
 {
     int i;
     int status; 
@@ -21,7 +23,7 @@ rodsPathInp_t *rodsPathInp)
 
 
     if (rodsPathInp == NULL) {
-	return (USER__NULL_INPUT_ERR);
+        return (USER__NULL_INPUT_ERR);
     }
 
     initCondForRepl (myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart);
@@ -31,8 +33,8 @@ rodsPathInp_t *rodsPathInp)
             getRodsObjType (conn, &rodsPathInp->srcPath[i]);
             if (rodsPathInp->srcPath[i].objState == NOT_EXIST_ST) {
                 rodsLog (LOG_ERROR,
-                  "replUtil: srcPath %s does not exist",
-                  rodsPathInp->srcPath[i].outPath);
+                         "replUtil: srcPath %s does not exist",
+                         rodsPathInp->srcPath[i].outPath);
                 savedStatus = USER_INPUT_PATH_ERR;
                 continue;
             }
@@ -47,44 +49,44 @@ rodsPathInp_t *rodsPathInp)
                 conn->operProgress.totalNumFiles++;
                 if (rodsPathInp->srcPath[i].size > 0) {
                     conn->operProgress.totalFileSize +=
-                      rodsPathInp->srcPath[i].size;
+                        rodsPathInp->srcPath[i].size;
                 }
             } else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
                 getCollSizeForProgStat (conn, rodsPathInp->srcPath[i].outPath,
-                  &conn->operProgress);
+                                        &conn->operProgress);
             }
         }
     }
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
-	if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
+        if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
             rmKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW);
-	    status = replDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
-	     rodsPathInp->srcPath[i].size, myRodsEnv, myRodsArgs, &dataObjInp);
-	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+            status = replDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
+                                      rodsPathInp->srcPath[i].size, myRodsEnv, myRodsArgs, &dataObjInp);
+        } else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
             setStateForRestart (conn, &rodsRestart, &rodsPathInp->srcPath[i], 
-	      myRodsArgs);
+                                myRodsArgs);
             addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
-	    status = replCollUtil (conn, rodsPathInp->srcPath[i].outPath,
-              myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart);
+            status = replCollUtil (conn, rodsPathInp->srcPath[i].outPath,
+                                   myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart);
             if (rodsRestart.fd > 0 && status < 0) {
                 close (rodsRestart.fd);
                 return (status);
             }
-	} else {
-	    /* should not be here */
-	    rodsLog (LOG_ERROR,
-	     "replUtil: invalid repl objType %d for %s", 
-	     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath);
-	    return (USER_INPUT_PATH_ERR);
-	}
-	/* XXXX may need to return a global status */
-	if (status < 0) {
-	    rodsLogError (LOG_ERROR, status,
-             "replUtil: repl error for %s, status = %d", 
-	      rodsPathInp->srcPath[i].outPath, status);
-	    savedStatus = status;
-	} 
+        } else {
+            /* should not be here */
+            rodsLog (LOG_ERROR,
+                     "replUtil: invalid repl objType %d for %s", 
+                     rodsPathInp->srcPath[i].objType, rodsPathInp->srcPath[i].outPath);
+            return (USER_INPUT_PATH_ERR);
+        }
+        /* XXXX may need to return a global status */
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+                          "replUtil: repl error for %s, status = %d", 
+                          rodsPathInp->srcPath[i].outPath, status);
+            savedStatus = status;
+        } 
     }
     if (savedStatus < 0) {
         return (savedStatus);
@@ -97,15 +99,15 @@ rodsPathInp_t *rodsPathInp)
 
 int
 replDataObjUtil (rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
-rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjInp)
+                 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+                 dataObjInp_t *dataObjInp)
 {
     int status;
     struct timeval startTime, endTime;
  
     if (srcPath == NULL) {
-       rodsLog (LOG_ERROR,
-          "replDataObjUtil: NULL srcPath input");
+        rodsLog (LOG_ERROR,
+                 "replDataObjUtil: NULL srcPath input");
         return (USER__NULL_INPUT_ERR);
     }
 
@@ -129,8 +131,8 @@ dataObjInp_t *dataObjInp)
         if (rodsArgs->verbose == True) {
             (void) gettimeofday(&endTime, (struct timezone *)0);
             printTiming (conn, dataObjInp->objPath, 
-	      conn->transStat.bytesWritten, NULL, &startTime, &endTime);
-	}
+                         conn->transStat.bytesWritten, NULL, &startTime, &endTime);
+        }
         if (gGuiProgressCB != NULL) {
             conn->operProgress.totalNumFilesDone++;
             conn->operProgress.totalFileSizeDone += srcSize;
@@ -142,7 +144,7 @@ dataObjInp_t *dataObjInp)
 
 int
 initCondForRepl (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
+                 dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 {
     char *myResc = NULL;
 #ifdef RBUDP_TRANSFER
@@ -150,22 +152,22 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 #endif  /* RBUDP_TRANSFER */
 
     if (dataObjInp == NULL) {
-       rodsLog (LOG_ERROR,
-          "initCondForRepl: NULL dataObjInp input");
+        rodsLog (LOG_ERROR,
+                 "initCondForRepl: NULL dataObjInp input");
         return (USER__NULL_INPUT_ERR);
     }
 
     memset (dataObjInp, 0, sizeof (dataObjInp_t));
 
     if (rodsArgs == NULL) {
-	return (0);
+        return (0);
     }
 
     if (rodsArgs->replNum == True) {
         addKeyVal (&dataObjInp->condInput, REPL_NUM_KW, 
-	  rodsArgs->replNumValue);
+                   rodsArgs->replNumValue);
     }
-	
+        
     if (rodsArgs->purgeCache == True) {//  JMC - backport 4549
         addKeyVal (&dataObjInp->condInput, PURGE_CACHE_KW, "");
     }
@@ -181,33 +183,33 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 
     if (rodsArgs->srcResc == True) {
         addKeyVal (&dataObjInp->condInput, RESC_NAME_KW,
-          rodsArgs->srcRescString);
+                   rodsArgs->srcRescString);
     }
 
     if (rodsArgs->rescGroup == True) {
         addKeyVal (&dataObjInp->condInput, RESC_GROUP_NAME_KW,
-          rodsArgs->rescGroupString);
+                   rodsArgs->rescGroupString);
     }
 
     if (rodsArgs->resource == True) {
         if (rodsArgs->resourceString == NULL) {
             rodsLog (LOG_ERROR,
-              "initCondForRepl: NULL resourceString error");
+                     "initCondForRepl: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
-	    myResc = rodsArgs->resourceString;
+            myResc = rodsArgs->resourceString;
             addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
-              rodsArgs->resourceString);
+                       rodsArgs->resourceString);
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
-	myResc = myRodsEnv->rodsDefResource;
+        myResc = myRodsEnv->rodsDefResource;
         addKeyVal (&dataObjInp->condInput, DEF_RESC_NAME_KW,
-          myRodsEnv->rodsDefResource);
+                   myRodsEnv->rodsDefResource);
     }
 
     if (rodsArgs->backupMode == True) {
         addKeyVal (&dataObjInp->condInput, BACKUP_RESC_NAME_KW,
-          myResc);
+                   myResc);
     }
 
     if (rodsArgs->unmount == True) {
@@ -235,7 +237,7 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 #else   /* RBUDP_TRANSFER */
     if (rodsArgs->rbudp == True) {
         rodsLog (LOG_NOTICE,
-          "initCondForRepl: RBUDP_TRANSFER (-d) not supported");
+                 "initCondForRepl: RBUDP_TRANSFER (-d) not supported");
     }
 #endif  /* RBUDP_TRANSFER */
 
@@ -243,11 +245,11 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
     if (rodsArgs->restart == True) {
         int status;
         status = openRestartFile (rodsArgs->restartFileString, rodsRestart,
-          rodsArgs);
+                                  rodsArgs);
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "initCondForRepl: openRestartFile of %s errno",
-            rodsArgs->restartFileString);
+                          "initCondForRepl: openRestartFile of %s errno",
+                          rodsArgs->restartFileString);
             return (status);
         }
     }
@@ -256,7 +258,7 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
     }
     if (rodsArgs->wlock == True) { // JMC - backport 4612
         rodsLog (LOG_ERROR,
-          "initCondForPut: --wlock not supported, changing it to --rlock");
+                 "initCondForPut: --wlock not supported, changing it to --rlock");
         addKeyVal (&dataObjInp->condInput, LOCK_TYPE_KW, READ_LOCK_TYPE);
     }
 
@@ -265,8 +267,8 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 
 int
 replCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv, 
-rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, 
-rodsRestart_t *rodsRestart)
+              rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, 
+              rodsRestart_t *rodsRestart)
 {
     int status;
     int savedStatus = 0;
@@ -278,15 +280,15 @@ rodsRestart_t *rodsRestart)
     char srcChildPath[MAX_NAME_LEN];
 
     if (srcColl == NULL) {
-       rodsLog (LOG_ERROR,
-          "replCollUtil: NULL srcColl input");
+        rodsLog (LOG_ERROR,
+                 "replCollUtil: NULL srcColl input");
         return (USER__NULL_INPUT_ERR);
     }
 
     if (rodsArgs->recursive != True) {
         rodsLog (LOG_ERROR,
-        "replCollUtil: -r option must be used for getting %s collection",
-         srcColl);
+                 "replCollUtil: -r option must be used for getting %s collection",
+                 srcColl);
         return (USER_INPUT_OPTION_ERR);
     }
 
@@ -296,32 +298,32 @@ rodsRestart_t *rodsRestart)
 
 #if 0
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
-      &collHandle);
+                                &collHandle);
 #else
     bzero (&collHandle, sizeof (collHandle));
     replKeyVal (&dataObjInp->condInput, &collHandle.dataObjInp.condInput);
     status = rclOpenCollection (conn, srcColl, INCLUDE_CONDINPUT_IN_QUERY, 
-      &collHandle);
+                                &collHandle);
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "replCollUtil: rclOpenCollection of %s error. status = %d",
-          srcColl, status);
+                 "replCollUtil: rclOpenCollection of %s error. status = %d",
+                 srcColl, status);
         return status;
     }
 #if 0
     if (collHandle.rodsObjStat->specColl != NULL) {
-	 fprintf (stderr, 
-          "getCollUtil: Mounted collection %s cannot be replicated\n",
-          srcColl);
-	rclCloseCollection (&collHandle);
-	return (0);
+        fprintf (stderr, 
+                 "getCollUtil: Mounted collection %s cannot be replicated\n",
+                 srcColl);
+        rclCloseCollection (&collHandle);
+        return (0);
     }
     collLen = strlen (srcColl);
     collLen = getOpenedCollLen (&collHandle);
 #else
     if (collHandle.rodsObjStat->specColl != NULL &&
-      collHandle.rodsObjStat->specColl->collClass != LINKED_COLL) {
+        collHandle.rodsObjStat->specColl->collClass != LINKED_COLL) {
         /* no repl for mounted coll */
         rclCloseCollection (&collHandle);
         return 0;
@@ -330,10 +332,10 @@ rodsRestart_t *rodsRestart)
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-              collEnt.collName, collEnt.dataName);
+                      collEnt.collName, collEnt.dataName);
 
             status = chkStateForResume (conn, rodsRestart, srcChildPath,
-              rodsArgs, DATA_OBJ_T, &dataObjInp->condInput, 0);
+                                        rodsArgs, DATA_OBJ_T, &dataObjInp->condInput, 0);
 
             if (status < 0) {
                 /* restart failed */
@@ -343,20 +345,20 @@ rodsRestart_t *rodsRestart)
             }
 
             status = replDataObjUtil (conn, srcChildPath, collEnt.dataSize,
-             myRodsEnv, rodsArgs, dataObjInp);
+                                      myRodsEnv, rodsArgs, dataObjInp);
 
             if (status == SYS_COPY_ALREADY_IN_RESC) {
                 if (rodsArgs->verbose == True) {
                     printf ("copy of %s already exists. Probably OK\n",
-                     srcChildPath);
+                            srcChildPath);
                 }
                 status = 0;
             }
 
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
-                  "replCollUtil: replDataObjUtil failed for %s. status = %d",
-                  srcChildPath, status);
+                              "replCollUtil: replDataObjUtil failed for %s. status = %d",
+                              srcChildPath, status);
                 if (rodsRestart->fd > 0) {
                     break;
                 } else {
@@ -368,23 +370,23 @@ rodsRestart_t *rodsRestart)
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;
-	    if (collEnt.specColl.collClass != NO_SPEC_COLL)
+            if (collEnt.specColl.collClass != NO_SPEC_COLL)
                 childDataObjInp.specColl = &collEnt.specColl;
             else 
                 childDataObjInp.specColl = NULL;
             status = replCollUtil (conn, collEnt.collName, myRodsEnv,
-              rodsArgs, &childDataObjInp, rodsRestart);
+                                   rodsArgs, &childDataObjInp, rodsRestart);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                 savedStatus = status;
             }
-	}
+        }
     }
     rclCloseCollection (&collHandle);
 
     if (savedStatus < 0) {
-	return (savedStatus);
+        return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND) {
-	return (0);
+        return (0);
     } else {
         return (status);
     }

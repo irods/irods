@@ -30,7 +30,9 @@ namespace eirods {
 
 }; // namespace eirods
 
-
+#define DEBUGMSG(msg)                                           \
+    std::cerr << msg << " " << __FILE__ << ":" << __LINE__ << std::endl;
+    
 #endif // __EIRODS_LOG_H__
 
 

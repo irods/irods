@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /**
  * @file  rcDataObjRepl.c
  *
@@ -36,7 +38,7 @@
  * \n addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, "myRescource");
  * \n status = rcDataObjRepl (conn, &dataObjInp);
  * \n if (status < 0) {
-* \n .... handle the error
+ * \n .... handle the error
  * \n }
  *
  * \param[in] conn - A rcComm_t connection handle to the server.
@@ -58,7 +60,7 @@
  *    \n DEST_RESC_NAME_KW - The resource to store the new replica.
  *    \n BACKUP_RESC_NAME_KW - The resource to store the new replica.
  *             In backup mode. If a good copy already exists in this resource
- *	       group or resource, don't make another one.
+ *             group or resource, don't make another one.
  *    \n ALL_KW - replicate to all resources in the resource group if the
  *             input resource (via DEST_RESC_NAME_KW) is a resource group.
  *            This keyWd has no value.
@@ -81,7 +83,7 @@
  * \post none
  * \sa none
  * \bug  no known bugs
-**/
+ **/
 
 int
 rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp)
@@ -96,45 +98,45 @@ rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp)
     status = _rcDataObjRepl (conn, dataObjInp, &transferStat);
 
     if (status >= 0 && transferStat != NULL) {
-	conn->transStat = *(transferStat);
+        conn->transStat = *(transferStat);
     } else if (status == SYS_UNMATCHED_API_NUM) {
-	 /* try older version */
-	transStat_t *transStat = NULL;
+        /* try older version */
+        transStat_t *transStat = NULL;
         status = _rcDataObjRepl250 (conn, dataObjInp, &transStat);
         if (status >= 0 && transStat != NULL) {
-	    conn->transStat.numThreads = transStat->numThreads;
-	    conn->transStat.bytesWritten = transStat->bytesWritten;
-	    conn->transStat.flags = 0;
+            conn->transStat.numThreads = transStat->numThreads;
+            conn->transStat.bytesWritten = transStat->bytesWritten;
+            conn->transStat.flags = 0;
         }
         if (transStat != NULL) free (transStat);
-	return status;
+        return status;
     }
     if (transferStat != NULL) {
-	free (transferStat);
+        free (transferStat);
     }
     return (status);
 }
 
 int
 _rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp, 
-transferStat_t **transferStat)
+                transferStat_t **transferStat)
 {
     int status;
 
     status = procApiRequest (conn, DATA_OBJ_REPL_AN,  dataObjInp, NULL, 
-        (void **) transferStat, NULL);
+                             (void **) transferStat, NULL);
 
     return status;
 }
 
 int
 _rcDataObjRepl250 (rcComm_t *conn, dataObjInp_t *dataObjInp,
-transStat_t **transStat)
+                   transStat_t **transStat)
 {
     int status;
 
     status = procApiRequest (conn, DATA_OBJ_REPL250_AN,  dataObjInp, NULL,
-        (void **) transStat, NULL);
+                             (void **) transStat, NULL);
 
     return status;
 }

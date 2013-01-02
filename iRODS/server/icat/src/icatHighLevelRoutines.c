@@ -296,6 +296,9 @@ _updateRescObjCount(
 
     resc_id[0] = '\0';
     logger.log();
+    std::stringstream ss;
+    ss << "qqq - Updating object count for resource \"" << _resc_name << "\"";
+    DEBUGMSG(ss.str());
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone, 0,
                                           &icss)) != 0) {
@@ -350,6 +353,7 @@ chlUpdateRescObjCount(
 
     int result = 0;
     int ret;
+    DEBUGMSG("qqq - updating obj count");
     if((ret = getLocalZone()) != 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - Failed to set the local zone.";
@@ -594,6 +598,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         std::stringstream id_stream;
         id_stream << dataObjInfo->dataId;
         char resc_name[MAX_NAME_LEN];
+        DEBUGMSG("qqq - updating obj count");
         if((status = cmlGetStringValueFromSql("select resc_name from R_DATA_MAIN where data_id=?",
                                               resc_name, MAX_NAME_LEN, id_stream.str().c_str(), 0, 0, &icss)) != 0) {
             return status;
@@ -780,6 +785,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
         return(status);
     }
 
+    DEBUGMSG("qqq - updating obj count");
     if((status = _updateRescObjCount(dataObjInfo->rescName, rsComm->clientUser.rodsZone, 1)) != 0) {
         return status;
     }
@@ -986,6 +992,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return(status);
     }
 
+    DEBUGMSG("qqq - updating obj count");
     if((status = _updateRescObjCount(dstDataObjInfo->rescName, rsComm->clientUser.rodsZone, +1)) != 0) {
         return status;
     }
@@ -1262,6 +1269,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     // update the object count in the resource
+    DEBUGMSG("qqq - updating obj count");
     if((status = _updateRescObjCount(resc_name, rsComm->clientUser.rodsZone, -1)) != 0) {
         return status;
     }
