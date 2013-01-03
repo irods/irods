@@ -398,14 +398,12 @@ _updateDbWithRescHier(
     int status;
 
     std::stringstream msg;
-    msg << "qqq - " << __FUNCTION__ << " updating data object with new resc hier \"" << _resc_hier << "\"";
-    std::cerr << msg.str() << std::endl;
-    eirods::log(LOG_NOTICE, msg.str());
+    msg << "qqq - Hierarchy string: \"" << _resc_hier << "\"";
+    DEBUGMSG(msg.str());
     
     keyValPair_t regParam;
     memset(&regParam, 0, sizeof(regParam));
     addKeyVal(&regParam, "rescHier", _resc_hier.c_str());
-    DEBUGMSG("qqq - Calling chlUpdateRescObjCount");
 
     std::string leaf_resc;
     eirods::hierarchy_parser hparse;
@@ -494,7 +492,6 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
             bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
             if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
                 rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
-                DEBUGMSG("qqq - Calling _updateDbWithRescHier");
                 eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
                 if(!ret.ok()) {
                     std::stringstream msg;
@@ -516,7 +513,6 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
                 bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
                 if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
                     rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
-                    DEBUGMSG("qqq - Calling _updateDbWithRescHier");
                     eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
                     if(!ret.ok()) {
                         std::stringstream msg;

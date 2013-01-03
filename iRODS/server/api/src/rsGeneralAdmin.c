@@ -56,6 +56,7 @@ _addChildToResource(
 {
     int result = 0;
     rescInfo_t rescInfo;
+    memset(&rescInfo, 0, sizeof(rescInfo));
     strncpy(rescInfo.rescName, _generalAdminInp->arg2, sizeof rescInfo.rescName);
     std::string rescChild(_generalAdminInp->arg3);
     std::string rescContext(_generalAdminInp->arg4);

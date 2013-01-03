@@ -297,7 +297,6 @@ _updateRescObjCount(
     resc_id[0] = '\0';
     logger.log();
     std::stringstream ss;
-    ss << "qqq - Updating object count for resource \"" << _resc_name << "\"";
     DEBUGMSG(ss.str());
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone, 0,
@@ -353,7 +352,6 @@ chlUpdateRescObjCount(
 
     int result = 0;
     int ret;
-    DEBUGMSG("qqq - updating obj count");
     if((ret = getLocalZone()) != 0) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - Failed to set the local zone.";
@@ -598,7 +596,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         std::stringstream id_stream;
         id_stream << dataObjInfo->dataId;
         char resc_name[MAX_NAME_LEN];
-        DEBUGMSG("qqq - updating obj count");
         if((status = cmlGetStringValueFromSql("select resc_name from R_DATA_MAIN where data_id=?",
                                               resc_name, MAX_NAME_LEN, id_stream.str().c_str(), 0, 0, &icss)) != 0) {
             return status;
@@ -785,7 +782,6 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
         return(status);
     }
 
-    DEBUGMSG("qqq - updating obj count");
     if((status = _updateRescObjCount(dataObjInfo->rescName, rsComm->clientUser.rodsZone, 1)) != 0) {
         return status;
     }
@@ -992,7 +988,6 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return(status);
     }
 
-    DEBUGMSG("qqq - updating obj count");
     if((status = _updateRescObjCount(dstDataObjInfo->rescName, rsComm->clientUser.rodsZone, +1)) != 0) {
         return status;
     }
@@ -1269,7 +1264,6 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     // update the object count in the resource
-    DEBUGMSG("qqq - updating obj count");
     if((status = _updateRescObjCount(resc_name, rsComm->clientUser.rodsZone, -1)) != 0) {
         return status;
     }
@@ -1844,6 +1838,9 @@ chlAddChildResc(
 
         } else if (rescInfo->zoneName != NULL && strlen(rescInfo->zoneName) > 0 && strcmp(rescInfo->zoneName, localZone) !=0) {
             int i;
+            std::stringstream msg;
+            msg << "qqq - Invalid zone: \"" << rescInfo->zoneName << "\"";
+            DEBUGMSG(msg.str());
             i = addRErrorMsg (&rsComm->rError, 0, 
                               "Currently, resources must be in the local zone");
             result = CAT_INVALID_ZONE;
@@ -1970,10 +1967,11 @@ int chlRegResc(rsComm_t *rsComm,
         (strcmp(rescInfo->rescType, "database") !=0) &&
         (strcmp(rescInfo->rescType, "mso") !=0) ) {
         if (strlen(rescInfo->rescVaultPath)<1) {
+            eirods::log(LOG_NOTICE, "qqq - Should not have reached here.");
             return(CAT_INVALID_RESOURCE_VAULT_PATH);
         }
     }
-
+    
     status = getLocalZone();
     if (status != 0) return(status);
 

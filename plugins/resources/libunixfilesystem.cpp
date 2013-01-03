@@ -106,8 +106,6 @@ extern "C" {
         mode_t myMask = umask((mode_t) 0000);
         int    fd     = open( _object->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, _object->mode() );
 
-        std::cerr << "qqq - opened the file: \"" << _object->physical_path() << "\"" << std::endl;
-        
         // =-=-=-=-=-=-=-
         // reset the old mask 
         (void) umask((mode_t) myMask);
@@ -115,7 +113,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if we got a 0 descriptor, try again
         if( fd == 0 ) {
-            std::cerr << "qqq - zero descriptor the file: \"" << _object->physical_path() << "\"" << std::endl;
         
             close (fd);
             rodsLog( LOG_NOTICE, "unixFileCreatePlugin: 0 descriptor" );
@@ -132,8 +129,6 @@ extern "C" {
         if( fd < 0 ) {
             int status = UNIX_FILE_CREATE_ERR - errno;
 			
-            std::cerr << "qqq - error descriptor the file: \"" << _object->physical_path() << "\"" << std::endl;
-        
             // =-=-=-=-=-=-=-
             // WARNING :: Major Assumptions are made upstream and use the FD also as a
             //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
@@ -1016,9 +1011,6 @@ extern "C" {
         if( !_object ) {
             return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
         }
-
-        std::cerr << "qqq - Renaming file from \"" << _object->physical_path() << "\"";
-        std::cerr << " to \"" << _new_file_name << "\"" << std::endl;
 
         // =-=-=-=-=-=-=-
         // make the call to rename

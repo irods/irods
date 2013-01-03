@@ -20,7 +20,6 @@ namespace eirods {
         error result = SUCCESS();
         resc_list_.clear();
         string_tokenize(_resc_hier, resc_list_, ";");
-        std::cerr << "qqq - " << __FUNCTION__ << " - Found " << resc_list_.size() << " resources in hierarchy \"" << _resc_hier << "\"" << std::endl;
         return result;
     }
     

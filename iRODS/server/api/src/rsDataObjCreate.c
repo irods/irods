@@ -461,16 +461,12 @@ _updateDbWithRescHier(
     eirods::error ret;
     int status;
 
-    std::stringstream msg;
-    msg << "qqq - " << __FUNCTION__ << " updating data object with new resc hier \"" << _resc_hier << "\"";
-    std::cerr << msg.str() << std::endl;
-    eirods::log(LOG_NOTICE, msg.str());
+    DEBUGMSG("qqq - Here");
     
     keyValPair_t regParam;
     memset(&regParam, 0, sizeof(regParam));
     addKeyVal(&regParam, "rescHier", _resc_hier.c_str());
 
-    DEBUGMSG("qqq - Calling chlUpdateRescObjCount");
     std::string leaf_resc;
     eirods::hierarchy_parser hparse;
     if(!(ret = hparse.set_string(_resc_hier)).ok()) {

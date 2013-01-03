@@ -153,7 +153,6 @@ extern "C" {
                 std::string dummy_path = name + "::" + type;
                 if( _path.compare(0, dummy_path.size(), dummy_path) == 0) {
                     _ret_string = _path.substr(dummy_path.size(), _path.size());
-                    std::cerr << "qqq - Clipped path: \"" << _ret_string << "\"" << std::endl;
                 } else {
                     _ret_string = _path;
                 }
@@ -438,8 +437,6 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        std::cerr << "qqq - Calling passthruFileStatPlugin" << std::endl;
-        
         ret = passthruCheckParams(_prop_map, _cmap, _object);
         if(!ret.ok()) {
             result = PASS(false, -1, "passthruFileStatPlugin - bad params.", ret);
@@ -455,7 +452,6 @@ extern "C" {
                     result = PASSMSG("passthruFileStatPlugin - failed to get the full path name.", ret);
                 } else {
                     _object->physical_path(full_path);
-                    std::cerr << "qqq - Getting stat of file: \"" << _object->physical_path() << "\"" << std::endl;
                     ret = resc->call<eirods::first_class_object*, struct stat*>("stat", _object, _statbuf);
                     result = PASSMSG("passthruFileStatPlugin - failed calling child stat.", ret);
                 }
