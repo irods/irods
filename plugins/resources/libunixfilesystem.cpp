@@ -1302,26 +1302,37 @@ extern "C" {
     class unixfilesystem_resource : public eirods::resource {
     public:
         unixfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
-            // =-=-=-=-=-=-=-
-            // parse context string into property pairs assuming a ; as a separator
-            std::vector< std::string > props;
-            eirods::string_tokenize( _context, props, ";" );
+            if( !context_.empty() ) {
+                // =-=-=-=-=-=-=-
+                // tokenize context string into key/val pairs assuming a ; as a separator
+                std::vector< std::string > key_vals;
+                eirods::string_tokenize( _context, key_vals, ";" );
 
-            // =-=-=-=-=-=-=-
-            // parse key/property pairs using = as a separator and
-            // add them to the property list
-            std::vector< std::string >::iterator itr = props.begin();
-            for( ; itr != props.end(); ++itr ) {
                 // =-=-=-=-=-=-=-
-                // break up key and value into two strings
-                std::vector< std::string > vals;
-                eirods::string_tokenize( *itr, vals, "=" );
-				
-                // =-=-=-=-=-=-=-
-                // break up key and value into two strings
-                properties_[ vals[0] ] = vals[1];
-			
-            } // for itr 
+                // tokenize each key/val pair using = as a separator and
+                // add them to the property list
+                std::vector< std::string >::iterator itr = key_vals.begin();
+                for( ; itr != key_vals.end(); ++itr ) {
+
+                    if( !itr->empty() ) {
+                        // =-=-=-=-=-=-=-
+                        // break up key and value into two strings
+                        std::vector< std::string > vals;
+                        eirods::string_tokenize( *itr, vals, "=" );
+                        
+                        // =-=-=-=-=-=-=-
+                        // break up key and value into two strings
+                        if( vals.size() == 2 ) {
+                            properties_[ vals[0] ] = vals[1];
+                        } else {
+                            // this would be an error case  
+                        }
+
+                    } // if key_val not empty
+                
+                } // for itr 
+            
+            } // if context not empty
 
         } // ctor
 
