@@ -584,7 +584,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
     ./bootstrap.sh
-    ./bjam link-static threading=multi cxxflags=-fPIC
+    ./bjam link=static threading=multi cxxflags=-fPIC -j$CPUCOUNT
 
     # build a copy of zlib
     EIRODS_BUILD_ZLIBVERSION="zlib-1.2.7"
