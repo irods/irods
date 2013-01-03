@@ -587,7 +587,7 @@ runCmd(2, "iadmin mkresc $Resc2 badType");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system'");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system' badClass");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache");
-runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache $hostName");
+#runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache $hostName"); # Okay not to have a vault path now - hcj
 runCmd(0, "iadmin mkresc $Resc2 'unix file system' cache $hostName $Resc2Path");
 runCmd(0, "iadmin modresc $Resc2 comment 'this is a comment'");
 runCmd(0, "iadmin modresc $Resc2 freespace 123456789");
