@@ -51,6 +51,7 @@ namespace eirods {
             std::cerr << "<" << frame << ">";
             std::cerr << " " << *it;
             std::cerr << std::endl;
+            ++frame;
         }
         std::cerr << std::endl;
         return result;
