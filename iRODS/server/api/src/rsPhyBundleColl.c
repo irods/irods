@@ -388,7 +388,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag) // J
 	// =-=-=-=-=-=-=-
 	// JMC - backport 4528
     if (chksumFlag != 0) {
-        status = fileChksum (UNIX_FILE_TYPE, rsComm, subPhyPath, tmpBunReplCache->chksumStr);
+        status = fileChksum (UNIX_FILE_TYPE, rsComm, subPhyPath, L1desc[l1descInx].dataObjInfo->rescHier, tmpBunReplCache->chksumStr);
         if (status < 0) {
             savedStatus = status;
             rodsLogError (LOG_ERROR, status,"bundlleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);

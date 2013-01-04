@@ -80,7 +80,7 @@ _rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
     *chksumStr = (char*)malloc (NAME_LEN);
 
     status = fileChksum (fileChksumInp->fileType, rsComm, 
-                         fileChksumInp->fileName, *chksumStr);
+                         fileChksumInp->fileName, fileChksumInp->rescHier, *chksumStr);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE, 
@@ -95,7 +95,12 @@ _rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
 } 
 
 int
-fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
+fileChksum (
+    int fileType,
+    rsComm_t *rsComm,
+    char *fileName,
+    char* rescHier,
+    char *chksumStr)
 {
     MD5_CTX context;
     int bytes_read;
@@ -108,11 +113,11 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
   
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
-    eirods::file_object file_obj( rsComm, fileName, "", -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
+    eirods::file_object file_obj( rsComm, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
     eirods::error ret = fileOpen( file_obj );
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
-        rodsLog( LOG_NOTICE,"fileChksum; fileOpen failed for %s. status = %d", fileName, status );
+        rodsLog( LOG_NOTICE,"fileChksum; fileOpen failed for %s. status = %d %s", fileName, status, strerror(errno) );
         return (status);
     }
 
