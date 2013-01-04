@@ -5,7 +5,10 @@
 #define SHAREDMEMORY_H
 #include "debug.h"
 
+#undef USE_BOOST
+
 #ifdef USE_BOOST
+#include <assert.h>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>

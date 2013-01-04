@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "filesystem.h"
 
+#undef USE_BOOST
 
 #ifdef USE_BOOST
 static boost::interprocess::shared_memory_object *shm_obj = NULL;

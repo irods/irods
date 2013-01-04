@@ -164,7 +164,7 @@ MANDIR=man
 # check for clean
 if [ "$1" == "clean" ] ; then
     # clean up any build-created files
-    echo "Clean..."
+    echo "${text_green}${text_bold}Clean...${text_reset}"
     echo "Cleaning $SCRIPTNAME residuals..."
     rm -f changelog.gz
     rm -rf $MANDIR
@@ -172,9 +172,6 @@ if [ "$1" == "clean" ] ; then
     rm -f libe-irods.a
     rm -f plugins/resources/*.so
     set +e
-    echo "Cleaning libtar residuals..."
-    cd $DETECTEDDIR/../external/libtar*
-    make distclean > /dev/null 2>&1
     echo "Cleaning libarchive residuals..."
     cd $DETECTEDDIR/../external/
     rm -rf libarchive*
@@ -376,28 +373,6 @@ if [ "$DETECTEDOS" == "Solaris" ] ; then
 else
     GREPCMD="grep"
 fi
-BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
-if [ "$BOOST" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        PREFLIGHT="$PREFLIGHT libboost-dev"
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-devel"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
-        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
-        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT boost"
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
-    fi
-else
-    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
-    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
-    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
-fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
@@ -542,14 +517,6 @@ sleep 1
 
 if [ "$BUILDEIRODS" == "1" ] ; then
 
-    # build our external/libtar
-    echo "${text_green}${text_bold}Building libtar${text_reset}"
-    cd $BUILDDIR/external/libtar*
-    if [ ! -e "lib/libtar.a" ] ; then
-        ./configure
-    fi
-    $MAKEJCMD
-
     # build a copy of libarchive
     EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
     cd $BUILDDIR/external/
@@ -570,6 +537,25 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     $MAKEJCMD
 
+    # build a copy of bzip2
+    EIRODS_BUILD_BZIP2VERSION="bzip2-1.0.6"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_BZIP2VERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BZIP2VERSION] from bzip.org${text_reset}"
+        wget http://www.bzip.org/1.0.6/$EIRODS_BUILD_BZIP2VERSION.tar.gz
+        gunzip $EIRODS_BUILD_BZIP2VERSION.tar.gz
+        tar xf $EIRODS_BUILD_BZIP2VERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
+    if [ ! -e "libbz2.a" ] ; then
+        awk '/^CFLAGS/{print;print "CFLAGS += -fPIC";next}1' Makefile > Makefile.eirods
+        cp Makefile.eirods Makefile
+    fi
+    $MAKEJCMD
+
     # build a copy of boost
     EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
     cd $BUILDDIR/external/
@@ -584,7 +570,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
     ./bootstrap.sh
-    ./bjam link=static threading=multi cxxflags=-fPIC -j$CPUCOUNT
+    ./bjam link=static threading=multi cxxflags="-fPIC -I$BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION" -j$CPUCOUNT
 
     # build a copy of zlib
     EIRODS_BUILD_ZLIBVERSION="zlib-1.2.7"
@@ -604,31 +590,16 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     $MAKEJCMD
 
-    # build a copy of bzip2
-    EIRODS_BUILD_BZIP2VERSION="bzip2-1.0.6"
-    cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_BZIP2VERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
-    else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BZIP2VERSION] from github.com${text_reset}"
-        wget http://www.bzip.org/1.0.6/$EIRODS_BUILD_BZIP2VERSION.tar.gz
-        gunzip $EIRODS_BUILD_BZIP2VERSION.tar.gz
-        tar xf $EIRODS_BUILD_BZIP2VERSION.tar
-    fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
-    if [ ! -e "libbz2.a" ] ; then
-        awk '/^CFLAGS/{print;print "CFLAGS += -fPIC";next}1' Makefile > Makefile.eirods
-        cp Makefile.eirods Makefile
-    fi
-    $MAKEJCMD
-
 fi
 
 ################################################################################
 
 # reset to exit on an error
 set -e
+
+echo "-----------------------------"
+echo "${text_green}${text_bold}Configuring and Building iRODS${text_reset}"
+echo "-----------------------------"
 
 # set up own temporary configfile
 cd $BUILDDIR/iRODS
@@ -713,16 +684,25 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # again to reset IRODS_HOME
     cp $TMPCONFIGFILE ./config/irods.config
 
-    # change password for database to be consistent with that within the e-irods.list file 
+    # change password for database to be consistent with that within the e-irods.list file
     # for installation
     sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
     mv /tmp/irods.config ./config/irods.config
 
-    # handle issue with IRODS_HOME being overwritten by the configure script    
+    # handle issue with IRODS_HOME being overwritten by the configure script
     irodsctl_irods_home=`./scripts/find_irods_home.sh`
     sed -e "\,^IRODS_HOME,s,^.*$,IRODS_HOME=$irodsctl_irods_home," ./irodsctl > /tmp/irodsctl.tmp
     mv /tmp/irodsctl.tmp ./irodsctl
     chmod 755 ./irodsctl
+
+    # update boost_dir to our local externals version
+    LOCAL_BOOST_DIR=$BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$LOCAL_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
+    mv /tmp/eirods-config.mk ./config/config.mk
+
+#    # turn on boost, to use the local externals tweaked above
+#    sed -e "s,^# USE_BOOST=1,USE_BOOST=1," ./config/config.mk > /tmp/eirods-config.mk
+#    mv /tmp/eirods-config.mk ./config/config.mk
 
     # twiddle coverage flag in platform.mk based on whether this is a coverage (gcov) build
     if [ "$COVERAGE" == "1" ] ; then
@@ -777,9 +757,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # =-=-=-=-=-=-=-
     # build resource plugins
-	
+
 	cd $BUILDDIR/plugins/resources/
-	make 
+	make
 	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
@@ -1065,9 +1045,6 @@ echo "${text_cyan}${text_bold}"
 echo "+------------------------------------+"
 echo "| RENCI E-iRODS Build Script         |"
 echo "|                                    |"
-#echo "|   Completed in                     |"
-#echo "|                                    |"
-#printf "|   %02dd%02dh%02dm%02ds                     |\n" "$((TOTALTIME/86400))" "$((TOTALTIME/3600%24))" "$((TOTALTIME/60%60))" "$((TOTALTIME%60))"
 printf "|   Completed in %02dm%02ds              |\n" "$((TOTALTIME/60))" "$((TOTALTIME%60))"
 echo "+------------------------------------+"
 echo "${text_reset}"

@@ -70,7 +70,9 @@ endif
 #     :: currently this is only microservice plugins
 USE_EIRODS=1
 
-
+#ifdef USE_EIRODS
+BOOST_DIR=TOBEFILLEDBYBUILDSH
+#endif
 
 
 #

@@ -51,11 +51,14 @@ LDRFLAGS += -ldl -rdynamic
 
 # =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking
-ifdef USE_BOOST
-CCFLAGS+=-I$(BOOST_DIR)/include
-CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND -DUSE_BOOST_FS -DBOOST_ENABLE_ASSERT_HANDLER
-LDRFLAGS+=-L$(BOOST_DIR)/lib -lboost_thread -lboost_filesystem -lboost_regex
-endif
+#ifdef USE_BOOST
+CCFLAGS+=-I$(BOOST_DIR)
+CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND -DUSE_BOOST_FS -DBOOST_ENABLE_ASSERT_HANDLER -DBOOST_DISABLE_ASSERTS=1
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
+#endif
 # =-=-=-=-=-=-=-
 
 # =-=-=-=-=-=-=-
@@ -234,12 +237,6 @@ MY_CFLAG+= -DCOMPAT_201
 endif
 
 # server specific LDADD
-
-ifdef TAR_STRUCT_FILE
-#ifndef TAR_EXEC_PATH
-LDADD+=-L$(tarDir)/lib ../../external/libtar*/lib/libtar.a
-#endif
-endif
 
 # HPSS support
 ifdef HPSS
