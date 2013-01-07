@@ -532,9 +532,10 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
-    if [[ ! -e "libbz2.a" && "libbz2.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
+    if [[ ! -e "libbz2.a" || "libbz2.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
         awk '/^CFLAGS/{print;print "CFLAGS += -fPIC";next}1' Makefile > Makefile.eirods
         cp Makefile.eirods Makefile
+        $MAKEJCMD clean
     fi
     $MAKEJCMD
 
@@ -551,8 +552,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION
-    if [[ ! -e "libz.a" && "libz.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
+    if [[ ! -e "libz.a" || "libz.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
         CFLAGS="-fPIC" ./configure
+        $MAKEJCMD clean
     fi
     $MAKEJCMD
 
@@ -569,8 +571,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
-    if [[ ! -e ".libs/libarchive.a" && ".libs/libarchive.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
+    if [[ ! -e ".libs/libarchive.a" || ".libs/libarchive.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
         CFLAGS="-fPIC" CPPFLAGS="-I$BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION -I$BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION" ./configure
+        $MAKEJCMD clean
     fi
     $MAKEJCMD
 
