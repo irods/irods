@@ -94,10 +94,6 @@ namespace eirods {
                     std::stringstream msg;
                     msg << __FUNCTION__ << " - there is no resource specified in the resource hierarchy.";
                     log(LOG_NOTICE, msg.str());
-                    stacktrace st;
-                    if(st.trace().ok()) {
-                        st.dump();
-                    }
                 } else if(resc.empty()) {
                     return ERROR(-1, "ERROR: Hierarchy string is not empty but first resource is!");
                 }

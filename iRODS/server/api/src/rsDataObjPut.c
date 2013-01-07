@@ -397,10 +397,6 @@ _updateDbWithRescHier(
     eirods::error ret;
     int status;
 
-    std::stringstream msg;
-    msg << "qqq - Hierarchy string: \"" << _resc_hier << "\"";
-    DEBUGMSG(msg.str());
-    
     keyValPair_t regParam;
     memset(&regParam, 0, sizeof(regParam));
     addKeyVal(&regParam, "rescHier", _resc_hier.c_str());

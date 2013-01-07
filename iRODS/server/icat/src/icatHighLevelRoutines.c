@@ -297,7 +297,6 @@ _updateRescObjCount(
     resc_id[0] = '\0';
     logger.log();
     std::stringstream ss;
-    DEBUGMSG(ss.str());
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone, 0,
                                           &icss)) != 0) {
@@ -1838,9 +1837,6 @@ chlAddChildResc(
 
         } else if (rescInfo->zoneName != NULL && strlen(rescInfo->zoneName) > 0 && strcmp(rescInfo->zoneName, localZone) !=0) {
             int i;
-            std::stringstream msg;
-            msg << "qqq - Invalid zone: \"" << rescInfo->zoneName << "\"";
-            DEBUGMSG(msg.str());
             i = addRErrorMsg (&rsComm->rError, 0, 
                               "Currently, resources must be in the local zone");
             result = CAT_INVALID_ZONE;
