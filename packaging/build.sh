@@ -205,7 +205,8 @@ echo "Build Directory set to [$BUILDDIR]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
-
+DETECTEDOSVERSION=`../packaging/find_os_version.sh`
+echo "Detected OS Version [$DETECTEDOSVERSION]"
 
 if [[ $1 != "icat" && $1 != "resource" ]] ; then
     echo "${text_red}#######################################################" 1>&2
@@ -392,7 +393,11 @@ FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
 FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
 if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
+        if [ "$DETECTEDOSVERSION" \< "11" ]; then
+            PREFLIGHT="$PREFLIGHT libarchive1 libarchive-dev"
+        else
+            PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
+        fi
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT libarchive libarchive-devel"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
