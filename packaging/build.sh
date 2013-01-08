@@ -371,7 +371,7 @@ if [ "$BOOST" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
         PREFLIGHT="$PREFLIGHT libboost-all-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-devel"
+        PREFLIGHT="$PREFLIGHT boost-devel boost"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
         PREFLIGHT="$PREFLIGHT boost-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then

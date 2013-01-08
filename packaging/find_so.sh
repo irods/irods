@@ -39,6 +39,18 @@ if [ "$ret" == "" ]; then
 fi
 
 # =-=-=-=-=-=-=-
+# if there is more than one - look for 64bit only
+if [ ${#elf_links[@]} -gt 1 ]; then
+	# look for lib64 first
+	num_64bit=$( find /usr -type f -name "$search_term" -print | grep "64" | xargs file | grep "ELF" 2> /dev/null | wc -l )
+	if [ "$num_64bit" -eq 1 ]; then
+		ret=`find /usr -type f -name "$search_term" -print | grep "64" 2> /dev/null`
+		unset elf_links
+		elf_links[0]=$ret
+	fi
+fi
+
+# =-=-=-=-=-=-=-
 # if there is still more than one candidate, we cannot continue.
 # set return value accordingly
 if [ ${#elf_links[@]} -gt 1 ]; then
