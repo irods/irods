@@ -29,7 +29,7 @@ agentProc_t *SpawnReqHead = NULL;
 agentProc_t *BadReqHead = NULL;
 
 #if 0	/* defined in config.mk */
-#define USE_BOOST 
+#define USE_BOOST
 #define USE_BOOST_COND
 #endif
 
@@ -101,7 +101,7 @@ int irodsWinMain(int argc, char **argv)
 /* Open a connection to syslog */
 	openlog("rodsServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
 #endif
-    
+
     ServerBootTime = time (0);
     while ((c = getopt(argc, argv,"uvVqsh")) != EOF) {
         switch (c) {
@@ -190,7 +190,7 @@ int irodsWinMain(int argc, char **argv)
     exit (0);
 }
 
-int 
+int
 serverize (char *logDir)
 {
     char *logFile = NULL;
@@ -223,7 +223,7 @@ serverize (char *logDir)
         exit (0);
     } else {	/* child */
         if (setsid() < 0) {
-            rodsLog (LOG_NOTICE, 
+            rodsLog (LOG_NOTICE,
 	     "serverize: setsid failed, errno = %d\n", errno);
             exit(1);
 	}
@@ -251,7 +251,7 @@ serverize (char *logDir)
 #endif
 }
 
-int 
+int
 serverMain (char *logDir)
 {
     int status;
@@ -293,7 +293,7 @@ serverMain (char *logDir)
     SvrSock = svrComm.sock;
     while (1) {		/* infinite loop */
         FD_SET(svrComm.sock, &sockMask);
-        while ((numSock = select (svrComm.sock + 1, &sockMask, 
+        while ((numSock = select (svrComm.sock + 1, &sockMask,
 	  (fd_set *) NULL, (fd_set *) NULL, (struct timeval *) NULL)) < 0) {
 
             if (errno == EINTR) {
@@ -317,11 +317,11 @@ serverMain (char *logDir)
 	if (newSock < 0) {
 	    acceptErrCnt ++;
 	    if (acceptErrCnt > MAX_ACCEPT_ERR_CNT) {
-	        rodsLog (LOG_ERROR, 
+	        rodsLog (LOG_ERROR,
 		  "serverMain: Too many socket accept error. Exiting");
 		break;
 	    } else {
-	        rodsLog (LOG_NOTICE, 
+	        rodsLog (LOG_NOTICE,
 	          "serverMain: acceptConn () error, errno = %d", errno);
 	        continue;
 	    }
@@ -331,7 +331,7 @@ serverMain (char *logDir)
 
 	status = chkAgentProcCnt ();
 	if (status < 0) {
-            rodsLog (LOG_NOTICE, 
+            rodsLog (LOG_NOTICE,
 	      "serverMain: chkAgentProcCnt failed status = %d", status);
             sendVersion (newSock, status, 0, NULL, 0);
 	    status = mySockClose (newSock);
@@ -409,9 +409,9 @@ procChildren (agentProc_t **agentProcHead)
 	      childPid, status);
 	    free (tmpAgentProc);
 	} else {
-	    rodsLog (LOG_NOTICE, 
+	    rodsLog (LOG_NOTICE,
 	      "Agent process %d exited with status %d but not in queue",
-	      childPid, status); 
+	      childPid, status);
 	}
 	rmProcLog (childPid);
     }
@@ -422,11 +422,11 @@ procChildren (agentProc_t **agentProcHead)
 
 
 agentProc_t *
-getAgentProcByPid (int childPid, agentProc_t **agentProcHead) 
+getAgentProcByPid (int childPid, agentProc_t **agentProcHead)
 {
     agentProc_t *tmpAgentProc, *prevAgentProc;
     prevAgentProc = NULL;
- 
+
 #ifndef SINGLE_SVR_THR
 	#ifdef USE_BOOST
 	boost::unique_lock< boost::mutex > con_agent_lock( ConnectedAgentMutex );
@@ -481,12 +481,12 @@ spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead)
 	agentProc_t *tmpAgentProc;
 	close (SvrSock);
 #ifdef SYS_TIMING
-        printSysTiming ("irodsAent", "after fork", 0);
-        initSysTiming ("irodsAent", "after fork", 1);
+        printSysTiming ("irodsAgent", "after fork", 0);
+        initSysTiming ("irodsAgent", "after fork", 1);
 #endif
 	/* close any socket still in the queue */
 #ifndef SINGLE_SVR_THR
-	/* These queues may be inconsistent because of the multi-threading 
+	/* These queues may be inconsistent because of the multi-threading
          * of the parent. set sock to -1 if it has been closed */
 	tmpAgentProc = ConnReqHead;
 	while (tmpAgentProc != NULL) {
@@ -638,10 +638,10 @@ execAgent (int newSock, startupPack_t *startupPack)
 }
 
 int
-queConnectedAgentProc (int childPid, agentProc_t *connReq, 
+queConnectedAgentProc (int childPid, agentProc_t *connReq,
 agentProc_t **agentProcHead)
 {
-    if (connReq == NULL) 
+    if (connReq == NULL)
         return USER__NULL_INPUT_ERR;
 
     connReq->pid = childPid;
@@ -699,7 +699,7 @@ getAgentProcCnt ()
 int
 chkAgentProcCnt ()
 {
-    int count; 
+    int count;
 
     if (MaxConnections == NO_MAX_CONNECTION_LIMIT) return 0;
     count = getAgentProcCnt ();
@@ -715,7 +715,7 @@ chkAgentProcCnt ()
 	return 0;
     }
 }
-	
+
 int
 chkConnectedAgentProcQue ()
 {
@@ -737,7 +737,7 @@ chkConnectedAgentProcQue ()
 	struct stat statbuf;
 #endif
 
-        snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, 
+        snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir,
 	  tmpAgentProc->pid);
 #ifdef USE_BOOST_FS
         path p (procPath);
@@ -747,7 +747,7 @@ chkConnectedAgentProcQue ()
 #endif
 	    /* the agent proc is gone */
 	    unmatchedAgentProc = tmpAgentProc;
-	    rodsLog (LOG_DEBUG, 
+	    rodsLog (LOG_DEBUG,
 	      "Agent process %d in Connected queue but not in ProcLogDir",
               tmpAgentProc->pid);
             if (prevAgentProc == NULL) {
@@ -814,7 +814,7 @@ initServer ( rsComm_t *svrComm)
 	    rcDisconnect (rodsServerHost->conn);
 	    rodsServerHost->conn = NULL;
 	}
-    } 
+    }
     initConnectControl ();
 
 #if RODS_CAT // JMC - backport 4612
@@ -846,7 +846,7 @@ recordServerProcess(rsComm_t *svrComm) {
 		 return 0;
 	 }
     rodsEnv *myEnv = &(svrComm->myEnv);
-    
+
     /* Use /usr/tmp if it exists, /tmp otherwise */
     dirp = opendir("/usr/tmp");
     if (dirp!=NULL) {
@@ -947,7 +947,7 @@ initServerMain (rsComm_t *svrComm)
             memset (av, 0, sizeof (av));
             rodsLog(LOG_NOTICE, "Starting irodsXmsgServer");
             av[0] = "irodsXmsgServer";
-	    execv(av[0], av); 
+	    execv(av[0], av);
             exit(1);
         }
     }
@@ -1076,7 +1076,7 @@ startProcConnReqThreads ()
 	#ifdef USE_BOOST
 	ReadWorkerThread[i] = new boost::thread( readWorkerTask );
 	#else
-	status = pthread_create(&ReadWorkerThread[i], NULL, 
+	status = pthread_create(&ReadWorkerThread[i], NULL,
           (void *(*)(void *)) readWorkerTask, (void *) NULL);
 	#endif
 	if (status < 0) {
@@ -1088,7 +1088,7 @@ startProcConnReqThreads ()
 #ifdef USE_BOOST
     SpawnManagerThread = new boost::thread( spawnManagerTask );
 #else
-    status = pthread_create(&SpawnManagerThread, NULL, 
+    status = pthread_create(&SpawnManagerThread, NULL,
       (void *(*)(void *)) spawnManagerTask, (void *) NULL);
     #endif
     if (status < 0) {
@@ -1167,7 +1167,7 @@ readWorkerTask ()
 	    queAgentProc (myConnReq, &SpawnReqHead, BOTTOM_POS);
 #ifndef SINGLE_SVR_THR
 	    #ifdef USE_BOOST_COND
-	    SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all 
+	    SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all
 	    spwn_req_lock.unlock();
 	    #else
 	    pthread_cond_signal (&SpawnReqCond);
@@ -1211,7 +1211,7 @@ spawnManagerTask ()
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
                  "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
-                  mySpawnReq->startupPack.proxyUser, 
+                  mySpawnReq->startupPack.proxyUser,
 		  mySpawnReq->startupPack.clientUser,
                   inet_ntoa (mySpawnReq->remoteAddr.sin_addr), status);
                 free  (mySpawnReq);
@@ -1329,7 +1329,7 @@ procBadReq ()
 
     return 0;
 }
-   
+
 // =-=-=-=-=-=-=-
 // JMC - backport 4612
 void

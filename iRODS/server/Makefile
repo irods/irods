@@ -352,11 +352,7 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # MODULE_LDFLAGS string.
 LDFLAGS +=	$(LDADD) $(LIBRARY)
 
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
-
+LDFLAGS+=-lboost_thread -lboost_filesystem -lboost_regex -lboost_system
 
 
 ifdef GSI_AUTH

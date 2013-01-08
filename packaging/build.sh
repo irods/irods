@@ -173,19 +173,8 @@ if [ "$1" == "clean" ] ; then
     rm -f manual.pdf
     rm -f libe-irods.a
     rm -f plugins/resources/*.so
+    rm -f plugins/resources/Makefile
     set +e
-    echo "Cleaning libarchive residuals..."
-    cd $DETECTEDDIR/../external/
-    rm -rf libarchive*
-    echo "Cleaning boost residuals..."
-    cd $DETECTEDDIR/../external/
-    rm -rf boost*
-    echo "Cleaning bzip2 residuals..."
-    cd $DETECTEDDIR/../external/
-    rm -rf bzip2*
-    echo "Cleaning zlib residuals..."
-    cd $DETECTEDDIR/../external/
-    rm -rf zlib*
     echo "Cleaning EPM residuals..."
     cd $DETECTEDDIR/../
     rm -rf linux-2.*
@@ -376,6 +365,48 @@ else
     GREPCMD="grep"
 fi
 
+BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
+if [ "$BOOST" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT libboost-all-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT boost-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT boost-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
+        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
+        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT boost"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
+    fi
+else
+    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
+    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
+    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
+fi
+
+FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
+FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
+if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT libarchive libarchive-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT libarchive2 libarchive-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT libarchive2 libarchive_dev"
+    # MacOSX is distributed with libarchive - in /usr/lib
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://libarchive.github.com/"
+    fi
+else
+    echo "Detected libarchive library [$FINDLIBARCHIVE]"
+fi
+
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
@@ -492,6 +523,10 @@ if [ "$PYPREFLIGHT" != "" ] ; then
     echo "#######################################################${text_reset}" 1>&2
     exit 1
 fi
+
+# reset to exit on an error
+set -e
+
 ################################################################################
 
 # find number of cpus
@@ -508,8 +543,6 @@ fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
 MAKEJCMD="make -j $CPUCOUNT"
 
-################################################################################
-
 # print out detected CPU information
 echo "${text_cyan}${text_bold}-------------------------------------"
 echo "Detected CPUs:    $DETECTEDCPUCOUNT"
@@ -517,88 +550,7 @@ echo "Compiling with:   $MAKEJCMD"
 echo "-------------------------------------${text_reset}"
 sleep 1
 
-if [ "$BUILDEIRODS" == "1" ] ; then
-
-    # build a copy of bzip2
-    EIRODS_BUILD_BZIP2VERSION="bzip2-1.0.6"
-    cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_BZIP2VERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
-    else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BZIP2VERSION] from bzip.org${text_reset}"
-        wget http://www.bzip.org/1.0.6/$EIRODS_BUILD_BZIP2VERSION.tar.gz
-        gunzip $EIRODS_BUILD_BZIP2VERSION.tar.gz
-        tar xf $EIRODS_BUILD_BZIP2VERSION.tar
-    fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BZIP2VERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION
-    if [[ ! -e "libbz2.a" || "libbz2.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
-        awk '/^CFLAGS/{print;print "CFLAGS += -fPIC";next}1' Makefile > Makefile.eirods
-        cp Makefile.eirods Makefile
-        $MAKEJCMD clean
-    fi
-    $MAKEJCMD
-
-    # build a copy of zlib
-    EIRODS_BUILD_ZLIBVERSION="zlib-1.2.7"
-    cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_ZLIBVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
-    else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_ZLIBVERSION] from zlib.net${text_reset}"
-        wget http://zlib.net/$EIRODS_BUILD_ZLIBVERSION.tar.gz
-        gunzip $EIRODS_BUILD_ZLIBVERSION.tar.gz
-        tar xf $EIRODS_BUILD_ZLIBVERSION.tar
-    fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_ZLIBVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION
-    if [[ ! -e "libz.a" || "libz.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
-        CFLAGS="-fPIC" ./configure
-        $MAKEJCMD clean
-    fi
-    $MAKEJCMD
-
-    # build a copy of libarchive
-    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
-    cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-    else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
-        wget https://github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-        gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-        tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
-    fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
-    if [[ ! -e ".libs/libarchive.a" || ".libs/libarchive.a" -ot "$FULLPATHSCRIPTNAME" ]] ; then
-        CFLAGS="-fPIC" CPPFLAGS="-I$BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION -I$BUILDDIR/external/$EIRODS_BUILD_ZLIBVERSION" ./configure
-        $MAKEJCMD clean
-    fi
-    $MAKEJCMD
-
-    # build a copy of boost
-    EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
-    cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
-    else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
-        wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
-        gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
-        tar xf $EIRODS_BUILD_BOOSTVERSION.tar
-    fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
-    ./bootstrap.sh
-    ./bjam link=static threading=multi cxxflags="-fPIC -I$BUILDDIR/external/$EIRODS_BUILD_BZIP2VERSION" -j$CPUCOUNT
-
-fi
-
 ################################################################################
-
-# reset to exit on an error
-set -e
 
 echo "-----------------------------"
 echo "${text_green}${text_bold}Configuring and Building iRODS${text_reset}"
@@ -698,12 +650,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     mv /tmp/irodsctl.tmp ./irodsctl
     chmod 755 ./irodsctl
 
-    # update boost_dir to our local externals version
-    LOCAL_BOOST_DIR=$BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
-    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$LOCAL_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
+    # update boost_dir to the detected system path
+    SYSTEM_BOOST_DIR=`dirname $BOOSTFILE`
+    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$SYSTEM_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
     mv /tmp/eirods-config.mk ./config/config.mk
 
-#    # turn on boost, to use the local externals tweaked above
+#    # turn on irods boost flag
 #    sed -e "s,^# USE_BOOST=1,USE_BOOST=1," ./config/config.mk > /tmp/eirods-config.mk
 #    mv /tmp/eirods-config.mk ./config/config.mk
 
@@ -718,6 +670,21 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         sed -e "s,EIRODS_BUILD_DEBUG=1,EIRODS_BUILD_DEBUG=0," ./config/platform.mk > /tmp/eirods-platform.mk
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
+
+    # update resources Makefile to find system libarchive shared library
+    found_so=`../packaging/find_so.sh libarchive.so`
+    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+
+    # update resources Makefile to find system boost shared libraries
+    # filesystem
+    found_so=`../packaging/find_so.sh libboost_filesystem.so`
+    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+    # system
+    found_so=`../packaging/find_so.sh libboost_system.so`
+    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
 
     # =-=-=-=-=-=-=-
     # modify the eirods_ms_home.h file with the proper path to the binary directory

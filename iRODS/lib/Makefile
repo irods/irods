@@ -172,7 +172,7 @@ endif
 
 
 #
-# Princpal Targets
+# Principal Targets
 #
 .PHONY:	all lib libs clean print_cflags
 vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
