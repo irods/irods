@@ -13,7 +13,8 @@
 #include <iterator>
 #include <vector>
 #include <algorithm>
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
 using namespace std;
 using namespace boost::filesystem;
 #endif
