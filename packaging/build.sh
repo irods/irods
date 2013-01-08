@@ -936,7 +936,7 @@ else
 fi
 if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
-    epmvar="REDHATRPM$SERVER_TYPE" 
+    epmvar="REDHATRPM$SERVER_TYPE"
     ostype=`awk '{print $1}' /etc/redhat-release`
     osversion=`awk '{print $3}' /etc/redhat-release`
     if [ "$ostype" == "CentOS" -a "$osversion" \> "6" ]; then
@@ -951,7 +951,7 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
-    epmvar="SUSERPM$SERVER_TYPE" 
+    epmvar="SUSERPM$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
@@ -959,7 +959,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
-    epmvar="DEB$SERVER_TYPE" 
+    epmvar="DEB$SERVER_TYPE"
     ./epm/epm $EPMOPTS -a $arch -f deb e-irods $epmvar=true ./packaging/e-irods.list
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -a $arch -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
