@@ -71,6 +71,7 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
     char *defaultRescList;
     char *optionStr;
     rescGrpInfo_t *myRescGrpInfo = new rescGrpInfo_t;
+    myRescGrpInfo->rescInfo = new rescInfo_t;
 
     defaultRescList = (char *) xdefaultRescList->inOutStruct;
 
@@ -431,11 +432,11 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
 
         rei->status = 0;
     if (sortScheme != NULL) {
-        if (strcmp (sortScheme, "random") == 0) {
+	    if (strcmp (sortScheme, "random") == 0) {
             sortDataObjInfoRandom (&rei->doi);
-        } else if (strcmp (sortScheme, "byRescClass") == 0) {
-            rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
-        }
+    // JMC - legacy resource -     } else if (strcmp (sortScheme, "byRescClass") == 0) {
+	//    rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
+	    }
     }
     return (rei->status);
 }
@@ -479,8 +480,8 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
 
     RE_TEST_MACRO ("    Calling msiSysChksumDataObj")
 
-
-        rei->status = 0;
+rodsLog( LOG_NOTICE, "*** XXXX *** msiSysChksumDataObj" );
+    rei->status = 0;
 
     /* don't cache replicate or copy operation */
 

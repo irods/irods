@@ -82,9 +82,9 @@ ifdef HAAW_STRUCT_FILE
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/haawStructFileDriver.o
 endif
 
-ifdef TAR_STRUCT_FILE
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tarStructFileDriver.o
-endif
+#ifdef TAR_STRUCT_FILE
+#SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tarStructFileDriver.o
+#endif
 
 ifdef AMAZON_S3
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o

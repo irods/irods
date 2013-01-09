@@ -364,20 +364,22 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     int l3descInx;
     fileOpenInp_t fileOpenInp;
 
+       #if 0 // JMC legacy resource 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
+      case FILE_CAT:
+       #endif // JMC legacy resource 
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
         rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
         rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-        fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileOpenInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        fileOpenInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileOpenInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
         rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         fileOpenInp.mode = mode;
         fileOpenInp.flags = flags;
         l3descInx = rsFileOpen (rsComm, &fileOpenInp);
+       #if 0 // JMC legacy resource 
         break;
     default:
         rodsLog (LOG_NOTICE,
@@ -386,6 +388,7 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
         l3descInx = SYS_INVALID_RESC_TYPE;
         break;
     }
+       #endif // JMC legacy resource 
     return (l3descInx);
 }
 
@@ -399,10 +402,12 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
     fileOpenInp_t fileOpenInp;
     int newL3descInx;
 
+       #if 0 // JMC legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
+      case FILE_CAT:
+       #endif // JMC legacy resource 
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-        fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        fileOpenInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
         rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
         rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, 
                  MAX_NAME_LEN);
@@ -410,6 +415,7 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
         fileOpenInp.flags = flags;
         newL3descInx = rsFileOpenByHost (rsComm, &fileOpenInp, 
                                          FileDesc[l3descInx].rodsServerHost);
+       #if 0 // JMC legacy resource 
         break;
     default:
         rodsLog (LOG_NOTICE,
@@ -418,6 +424,7 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
         l3descInx = SYS_INVALID_RESC_TYPE;
         break;
     }
+       #endif // JMC legacy resource 
     return (newL3descInx);
 }
 
@@ -475,7 +482,11 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *myDataObjInfo = *(*dataObjInfoHead);
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
+<<<<<<< HEAD
         rescInfo = tmpRescGrpInfo->rescInfo;
+=======
+	    rescInfo = tmpRescGrpInfo->rescInfo;
+>>>>>>> da89599... [#1084] only 20 issues left in dev test, fixing the structured file plugin in another branch
         myDataObjInfo->rescInfo = rescInfo;
         rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (myDataObjInfo->rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
@@ -525,12 +536,18 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo, 
                          dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
 {
+    rodsLog( LOG_NOTICE, "XXXX - procDataObjOpenForWrite" );
     int status = 0;
     rescGrpInfo_t *myRescGrpInfo = NULL;
 
     /* put the copy with destResc on top */
+<<<<<<< HEAD
     status = requeDataObjInfoByDestResc (dataObjInfoHead,
                                          &dataObjInp->condInput, 1, 1);
+=======
+    status = requeDataObjInfoByDestResc ( dataObjInfoHead, &dataObjInp->condInput, 1, 1 );
+      
+>>>>>>> da89599... [#1084] only 20 issues left in dev test, fixing the structured file plugin in another branch
     /* status < 0 means there is no copy in the DEST_RESC */
     if (status < 0 &&
         getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
@@ -558,6 +575,7 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #endif // JMC - legacy resource
         {     /* dest resource is not a compound resource */
            /* we don't have a copy, so create an empty dataObjInfo */
+    rodsLog( LOG_NOTICE, "XXXX - procDataObjOpenForWrite :: create an empty repl" );
             status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
@@ -607,6 +625,7 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
 #endif /*   refactored by procDataObjOpenForExistObj */
     }
+    rodsLog( LOG_NOTICE, "XXXX - procDataObjOpenForWrite :: exit." );
     if (*compDataObjInfo != NULL) {
         dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
     }

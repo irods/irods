@@ -70,38 +70,40 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     rei2.doi = dataObjInfo;
     i =  applyRule("acPreProcForModifyDataObjMeta",NULL, &rei2, NO_SAVE_REI);
     if (i < 0) {
-      if (rei2.status < 0) {
-        i = rei2.status;
-      }
-      rodsLog (LOG_ERROR,
-               "_rsModDataObjMeta:acPreProcForModifyDataObjMeta error stat=%d", i);
-      return i;
+        if (rei2.status < 0) {
+            i = rei2.status;
+          }
+        rodsLog (LOG_ERROR,"_rsModDataObjMeta:acPreProcForModifyDataObjMeta error stat=%d", i);
+               
+        return i;
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     if (getValByKey (regParam, ALL_KW) != NULL) {
-	/* all copies */
-	dataObjInfo_t *dataObjInfoHead = NULL;
-	dataObjInfo_t *tmpDataObjInfo;
-	dataObjInp_t dataObjInp;
+        /* all copies */
+        dataObjInfo_t *dataObjInfoHead = NULL;
+        dataObjInfo_t *tmpDataObjInfo;
+        dataObjInp_t dataObjInp;
 
-	bzero (&dataObjInp, sizeof (dataObjInp));
-	rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-        status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,
-          &dataObjInfoHead);
-	if (status < 0) return status;
-	tmpDataObjInfo = dataObjInfoHead;
+        bzero (&dataObjInp, sizeof (dataObjInp));
+        rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+        status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,&dataObjInfoHead);
+              
+        if (status < 0) 
+            return status;
+        tmpDataObjInfo = dataObjInfoHead;
         while (tmpDataObjInfo != NULL) {
-	    if (tmpDataObjInfo->specColl != NULL) break;
+            if (tmpDataObjInfo->specColl != NULL)
+                break;
             status = chlModDataObjMeta (rsComm, tmpDataObjInfo, regParam);
-	    if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
-	          tmpDataObjInfo->objPath, status);
-	    }
-	    tmpDataObjInfo = tmpDataObjInfo->next;
-	}
-	freeAllDataObjInfo (dataObjInfoHead);
+            if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                      "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
+                  tmpDataObjInfo->objPath, status);
+            }
+            tmpDataObjInfo = tmpDataObjInfo->next;
+        }
+        freeAllDataObjInfo (dataObjInfoHead);
     } else {
         status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
     }

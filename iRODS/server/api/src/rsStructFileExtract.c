@@ -106,6 +106,13 @@ int _rsStructFileExtract( rsComm_t*           _comm,
     struct_obj.opr_type( _struct_inp->oprType );
 
     // =-=-=-=-=-=-=-
+    // extract the data type
+    char* data_type = getValByKey( &_struct_inp->condInput, DATA_TYPE_KW );
+    if( data_type ) {
+        struct_obj.data_type( data_type );
+    } 
+
+    // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
 	eirods::resource_ptr resc;
     eirods::error ret_err = struct_obj.resolve( resc_mgr, resc ); 

@@ -908,30 +908,31 @@ putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
 #endif
 
                 if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL ||
-                    getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
-                    char chksumStr[NAME_LEN];
+                  getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+            rodsLog( LOG_NOTICE, "**** XXXX **** - bulkPutFileUtil" );
+                char chksumStr[NAME_LEN];
                     status = chksumLocFile (srcPath, chksumStr);
                     if (status < 0) {
                         rodsLog (LOG_ERROR,
-                                 "bulkPutFileUtil: chksumLocFile error for %s ", srcPath);
+                         "bulkPutFileUtil: chksumLocFile error for %s ", srcPath);
                         return (status);
                     }
-                    status = fillAttriArrayOfBulkOprInp (targPath, createMode, chksumStr,
-                                                         bulkOprInfo->size, bulkOprInp);
+                status = fillAttriArrayOfBulkOprInp (targPath, createMode, chksumStr,
+                  bulkOprInfo->size, bulkOprInp);
                 } else {
                     status = fillAttriArrayOfBulkOprInp (targPath, createMode, NULL,
-                                                         bulkOprInfo->size, bulkOprInp);
+                  bulkOprInfo->size, bulkOprInp);
                 }
                 if (status < 0) {
                     rodsLogError (LOG_ERROR, status,
-                                  "bulkPutFileUtil: fillAttriArrayOfBulkOprInp error for %s", 
-                                  srcPath);
+                      "bulkPutFileUtil: fillAttriArrayOfBulkOprInp error for %s", 
+                  srcPath);
                     return status;
                 }
                 if (bulkOprInfo->count >= MAX_NUM_BULK_OPR_FILES ||
-                    bulkOprInfo->size >= BULK_OPR_BUF_SIZE - 
+                  bulkOprInfo->size >= BULK_OPR_BUF_SIZE - 
                     MAX_BULK_OPR_FILE_SIZE) {
-                    /* tar send it */
+                /* tar send it */
 #ifdef BULK_OPR_WITH_TAR
                     status = tarAndBulkPut (conn, bulkOprInp, bulkOprInfo, rodsArgs);
 #else

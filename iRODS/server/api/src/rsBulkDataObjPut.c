@@ -61,7 +61,8 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     rescInfo_t *rescInfo;
     char *inpRescGrpName;
     char phyBunDir[MAX_NAME_LEN];
-    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *myRescGrpInfo = new rescGrpInfo_t;
+    myRescGrpInfo->rescInfo = new rescInfo_t;
     int flags = 0;
     dataObjInp_t dataObjInp;
     fileDriverType_t fileType;
@@ -86,12 +87,13 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
             return (status);
 	    }*/
         eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( myRodsObjStat->specColl->resource, resc );
-        if( err.ok() ) {
-            eirods::resource_to_resc_info( *rescInfo, resc );
-        } else {
+        eirods::error err = eirods::get_resc_grp_info( myRodsObjStat->specColl->resource, *myRescGrpInfo );
+        if( !err.ok() ) {
+            delete myRescGrpInfo->rescInfo;
+            delete myRescGrpInfo;
+
             std::stringstream msg;
-            msg << "_rsBulkDataObjPut - failed to resolve resource ";
+            msg << "_rsBulkDataObjPut - failed to get resource info";
             msg << myRodsObjStat->specColl->resource;
             eirods::log( PASS( false, -1, msg.str(), err ) );
 	        freeRodsObjStat (myRodsObjStat);
@@ -119,7 +121,8 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 
     std::string type;
     eirods::get_resource_property< std::string >( rescInfo->rescName, "type", type );
-    if( type != "unix" && type != "windows" ) {
+    rodsLog( LOG_NOTICE, "_rsBulkDataObjPut resource [%s] with type [%s]", rescInfo->rescName, type.c_str() );
+    if( type != "unix file system" && type != "windows" ) {
 	    freeRodsObjStat (myRodsObjStat);
 	    return SYS_INVALID_RESC_FOR_BULK_OPR;
         
@@ -786,14 +789,12 @@ genQueryOut_t *bulkDataObjRegOut)
                  rescName->value, status);
         return (status);
     }*/
-    
-    eirods::resource_ptr resc;
-    eirods::error err = resc_mgr.resolve( rescName->value, resc );
-    if( err.ok() ) {
-        eirods::resource_to_resc_info( *dataObjInfo.rescInfo, resc );
-    } else {
+   
+    dataObjInfo.rescInfo = new rescInfo_t; 
+    eirods::error err = eirods::get_resc_info( rescName->value, *dataObjInfo.rescInfo );
+    if( !err.ok() ) {
         std::stringstream msg;
-        msg << "getDefaultLocalRescInfo - failed to resolve resource ";
+        msg << "getDefaultLocalRescInfo - failed to get resource info";
         msg << rescName->value;
         eirods::log( PASS( false, -1, msg.str(), err ) );
         return err.code();

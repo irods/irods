@@ -366,17 +366,18 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileUnlink (rsComm, &subFile);
     } else {
+#if 0 // JMC - legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
+#endif // JMC - legacy resource 
             memset (&fileUnlinkInp, 0, sizeof (fileUnlinkInp));
             fileUnlinkInp.fileType = static_cast< fileDriverType_t >( -1 );//= (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
+#if 0 // JMC - legacy resource 
             break;
 
         default:
@@ -385,7 +386,8 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
                      RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
-        }
+	}
+#endif // JMC - legacy resource 
     }
     return (status);
 }

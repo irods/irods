@@ -38,6 +38,11 @@
 #include <arpa/inet.h>
 #endif
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 {
@@ -707,13 +712,21 @@ l3Close (rsComm_t *rsComm, int l1descInx)
                  NAME_LEN);
         status = rsSubStructFileClose (rsComm, &subStructFileCloseInp);
     } else {
-        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
 
+        int category = 0; 
+        eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "category", category );
+        if( !err.ok() ) {
+            eirods::log( PASS( false, -1, "l3Read - failed.", err ) );
+        }
+#if 0 // JMC - legacy resource 
+        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
         switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
+          case FILE_CAT:
+#endif // JMC - legacy resource 
             memset (&fileCloseInp, 0, sizeof (fileCloseInp));
             fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
             status = rsFileClose (rsComm, &fileCloseInp);
+#if 0 // JMC - legacy resource 
             break;
 
         default:
@@ -722,7 +735,8 @@ l3Close (rsComm_t *rsComm, int l1descInx)
                      RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
-        }
+	}
+#endif // JMC - legacy resource 
     }
     return (status);
 }
@@ -733,11 +747,14 @@ _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx)
     fileCloseInp_t fileCloseInp;
     int status;
 
+#if 0 // JMC - legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
+      case FILE_CAT:
+#endif // JMC - legacy resource 
         memset (&fileCloseInp, 0, sizeof (fileCloseInp));
         fileCloseInp.fileInx = l3descInx;
         status = rsFileClose (rsComm, &fileCloseInp);
+#if 0 // JMC - legacy resource 
         break;
 
     default:
@@ -747,6 +764,7 @@ _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx)
         status = SYS_INVALID_RESC_TYPE;
         break;
     }
+#endif // JMC - legacy resource 
     return (status);
 }
 
@@ -767,18 +785,21 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileStat (rsComm, &subFile, myStat);
     } else {
+#if 0 // JMC - legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
+          case FILE_CAT:
+#endif // JMC - legacy resource 
             memset (&fileStatInp, 0, sizeof (fileStatInp));
-            fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+            fileStatInp.fileType = static_cast<fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileStatInp.fileName, dataObjInfo->filePath, 
                      MAX_NAME_LEN);
             rstrcpy (fileStatInp.addr.hostAddr,  
                      dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             rstrcpy(fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             status = rsFileStat (rsComm, &fileStatInp, myStat);
+#if 0 // JMC - legacy resource 
             break;
 
         default:
@@ -787,7 +808,8 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
                      RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
-        }
+	}
+#endif // JMC - legacy resource 
     }
     return (status);
 }
@@ -804,6 +826,8 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
     int srcL1descInx;
     dataObjInfo_t *srcDataObjInfo;
 
+rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose l1descInx: %d, dataObjInfo %d rescInfo %d rescName %s", l1descInx, dataObjInfo, dataObjInfo->rescInfo, dataObjInfo->rescInfo->rescName );
+
     *chksumStr = NULL;
     if (oprType == REPLICATE_DEST || oprType == PHYMV_DEST) {
         srcL1descInx = L1desc[l1descInx].srcL1descInx;
@@ -817,7 +841,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
         if (strlen (srcDataObjInfo->chksum) > 0 &&
             srcDataObjInfo->replStatus > 0) {
             /* the source has chksum. Must verify chksum */
-
+rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 1" );
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
@@ -847,6 +871,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
     if (L1desc[l1descInx].chksumFlag == 0) {
         return 0;
     } else if (L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM) {
+rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 2" );
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
         if (status < 0)  return (status);
 
@@ -908,11 +933,9 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             }
             /* just register it */
             return 0;
-        } else {
-            /* just register it */
-            return 0;
-        }
-    } else {    /* REG_CHKSUM */
+	}
+    } else {	/* REG_CHKSUM */
+rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 3" );
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
         if (status < 0)  return (status);
 

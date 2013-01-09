@@ -326,13 +326,11 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             #endif
         }*/
 
-        eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( dataObjInfo->rescName, resc );
-        if( err.ok() ) {
-            eirods::resource_to_resc_info( *dataObjInfo->rescInfo, resc );
-        } else {
+        dataObjInfo->rescInfo = new rescInfo_t;
+        eirods::error err = eirods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
+        if( !err.ok() ) {
             std::stringstream msg;
-            msg << "getDefaultLocalRescInfo - failed to resolve resource ";
+            msg << "getDefaultLocalRescInfo - failed to get resource info";
             msg << dataObjInfo->rescName;
             eirods::log( PASS( false, -1, msg.str(), err ) );
         }
@@ -357,6 +355,8 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
         rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
         dataObjInfo->writeFlag = writeFlag;
+        
+        dataObjInfo->next = 0;
 
         queDataObjInfo (dataObjInfoHead, dataObjInfo, 1, 0);
 
@@ -373,6 +373,7 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
              dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo, 
              dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo)
 {
+
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
     int rescClassInx;
     int topFlag;
@@ -385,6 +386,8 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
     *downCurrentInfo = *downOldInfo = NULL;
 
     tmpDataObjInfo = *dataObjInfoHead;
+      
+    rodsLog( LOG_NOTICE, "sortObjInfo - tmpDataObjInfo %d, next %d", tmpDataObjInfo, tmpDataObjInfo->next );
 
     while (tmpDataObjInfo != NULL) {
 
@@ -392,32 +395,48 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
         tmpDataObjInfo->next = NULL;
 
             
-        if (tmpDataObjInfo->rescInfo == NULL || 
+        if (tmpDataObjInfo->rescInfo                 == NULL || 
             tmpDataObjInfo->rescInfo->rodsServerHost == NULL) {
             topFlag = 0;
-        } else if (tmpDataObjInfo->rescInfo->rescStatus == 
-                   INT_RESC_STATUS_DOWN) {
+    rodsLog( LOG_NOTICE, "sortObjInfo - A" );
+
+        } else if (tmpDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) {
+    rodsLog( LOG_NOTICE, "sortObjInfo - B" );
             /* the resource is down */
             if (tmpDataObjInfo->replStatus > 0) {
+    rodsLog( LOG_NOTICE, "sortObjInfo - C" );
                 queDataObjInfo (downCurrentInfo, tmpDataObjInfo, 1, 1);
             } else {
+    rodsLog( LOG_NOTICE, "sortObjInfo - D" );
                 queDataObjInfo (downOldInfo, tmpDataObjInfo, 1, 1);
             }
+
+    rodsLog( LOG_NOTICE, "sortObjInfo - E" );
             tmpDataObjInfo = nextDataObjInfo;
+
+    rodsLog( LOG_NOTICE, "sortObjInfo - F" );
             continue;
         } else {
-            rodsServerHost_t *rodsServerHost =
-                (rodsServerHost_t *) tmpDataObjInfo->rescInfo->rodsServerHost;
+    rodsLog( LOG_NOTICE, "sortObjInfo - G" );
+            rodsServerHost_t *rodsServerHost = (rodsServerHost_t *) tmpDataObjInfo->rescInfo->rodsServerHost;
+    rodsLog( LOG_NOTICE, "sortObjInfo - F rodsServerHost %d, resc name %s", rodsServerHost, tmpDataObjInfo->rescInfo->rescName );
             
-            if (rodsServerHost->localFlag != LOCAL_HOST) {
+            if ( rodsServerHost && rodsServerHost->localFlag != LOCAL_HOST) {
+    rodsLog( LOG_NOTICE, "sortObjInfo - H" );
                 topFlag = 0;
             } else {
+    rodsLog( LOG_NOTICE, "sortObjInfo - I" );
                 /* queue local host at the head */
                 topFlag = 1;
             }
         }
-        rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
+        rodsLog( LOG_NOTICE, "sortObjInfo - getting class for [%s]", tmpDataObjInfo->rescInfo->rescName );
+        std::string class_type;
+        eirods::error prop_err = eirods::get_resource_property<std::string>( tmpDataObjInfo->rescInfo->rescName, "class", class_type );
+        rodsLog( LOG_NOTICE, "sortObjInfo - getting class. done." );
+        //rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
         if (tmpDataObjInfo->replStatus > 0) {
+#if 0 // JMC - legacy resource
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
                 queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
@@ -427,7 +446,20 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
             } else {
                 queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
+#else
+            if( "archive" == class_type ) {
+                queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
+                //rodsLog( LOG_ERROR, "sortObj :: class_type == archive" );
+            } else if( "compound" == class_type ) {
+                rodsLog( LOG_ERROR, "sortObj :: class_type == compound" );
+            } else if( "bundle" == class_type ) {
+                queDataObjInfo (&currentBundleInfo, tmpDataObjInfo, 1, topFlag);
+            } else {
+                queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+            }
+#endif // JMC - legacy resource
         } else {
+#if 0 // JMC - legacy resource
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
                 queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
@@ -437,15 +469,28 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
             } else {
                 queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
+#else
+            if( "archive" == class_type ) {
+                queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
+                //rodsLog( LOG_ERROR, "sortObj :: class_type == archive" );
+            } else if( "compound" == class_type ) {
+                rodsLog( LOG_ERROR, "sortObj :: class_type == compound" );
+            } else if( "bundle" == class_type ) {
+                queDataObjInfo (&oldBundleInfo, tmpDataObjInfo, 1, topFlag);
+            } else {
+                queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
+            }
+#endif // JMC - legacy resource
+
         }
         tmpDataObjInfo = nextDataObjInfo;
-    }
-    /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */
-    queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
-    queDataObjInfo (oldArchInfo, oldBundleInfo, 0, 0);
-    queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
-    queDataObjInfo (currentArchInfo, currentBundleInfo, 0, 0);
+    } // while
 
+    /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */
+    //queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
+    //queDataObjInfo (oldArchInfo, oldBundleInfo, 0, 0);
+    //queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
+    //queDataObjInfo (currentArchInfo, currentBundleInfo, 0, 0);
     return (0);
 }
 
@@ -459,15 +504,18 @@ int
 sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
                     keyValPair_t *condInput, int writeFlag)
 {
+
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
         *oldCacheInfo, *downCurrentInfo, *downOldInfo;
     int status = 0;
-
+rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head %d", *dataObjInfoHead );
     sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
+rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: currentCacheInfo %d", currentCacheInfo );
 
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
+rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head 2 %d", *dataObjInfoHead );
     if (writeFlag == 0) {
         /* For read only */
         if (*dataObjInfoHead != NULL) {
@@ -517,17 +565,18 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
 	    } else {
             freeAllDataObjInfo (downCurrentInfo);
             freeAllDataObjInfo (downOldInfo);
-            if ((rescName = 
-                 getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL ||
-                (rescName = 
-                 getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL ||
-                (rescName = 
-                 getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL) {
+            if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL ||
+                (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL ||
+                (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL) {
+                 
                 requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag,1);
             }
         }
     }
+rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head 3 %d status %d", *dataObjInfoHead, status );
     return (status);
+
+    return 0;
 }
 
 int
@@ -861,10 +910,17 @@ int
 sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
                     dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 {
+
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
-        *oldCacheInfo, *downCurrentInfo, *downOldInfo;
-    sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
+                  *oldCacheInfo,    *downCurrentInfo,  *downOldInfo;
+
+    rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForRepl data head %d, old head %d delete %d", *dataObjInfoHead, *oldDataObjInfoHead, deleteOldFlag );
+
+    rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForRepl :: sortObjInfo." );
+    sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
+    
+    rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForRepl :: sortObjInfo. done." );
 
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
@@ -887,6 +943,7 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
     if (*dataObjInfoHead == NULL) 
         return SYS_RESC_IS_DOWN;
     else
+
         return (0);
 }
 
@@ -1173,129 +1230,140 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
  * condInput but none in dataObjInfoHead or oldDataObjInfoHead match
  * the condition. i.e., no source for the replication
  */ 
-                int 
-                    resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead, 
-                                            dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
-                                            dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
-                {
-                    int status;
-                    dataObjInfo_t *matchedDataObjInfo = NULL;
-                    dataObjInfo_t *matchedOldDataObjInfo = NULL;
+int 
+resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead, 
+                        dataObjInfo_t **oldDataObjInfoHead, 
+                        rescGrpInfo_t **destRescGrpInfo,
+                        dataObjInfo_t **destDataObjInfo, 
+                        keyValPair_t *condInput ) {
+    int status;
+    dataObjInfo_t *matchedDataObjInfo = NULL;
+    dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
-                    /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
-                    status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
-                                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: head %d, old head %d, dst grp %d dst obj info %d, cond input %d",
+         *dataObjInfoHead, *oldDataObjInfoHead, *destRescGrpInfo, *destDataObjInfo, condInput );
+    /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: matchDataObjInfoByCondInput" );
+    status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
+                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
-                    if (status < 0) {
-                        return status;
-                    }
+    if (status < 0) {
+        return status;
+    }
 
-                    if (matchedDataObjInfo != NULL) {
-                        /* que the matched one on top */
-                        queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
-                        queDataObjInfo (oldDataObjInfoHead, matchedOldDataObjInfo, 0, 1);
-                    } else if (matchedOldDataObjInfo != NULL) {
-                        /* The source of replication is an old copy. Queue dataObjInfoHead 
-                         * to oldDataObjInfoHead */ 
-                        queDataObjInfo (oldDataObjInfoHead, *dataObjInfoHead, 0, 1);
-                        *dataObjInfoHead = matchedOldDataObjInfo;
-                    }
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: A" );
+    if (matchedDataObjInfo != NULL) {
+        /* que the matched one on top */
+        queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
+        queDataObjInfo (oldDataObjInfoHead, matchedOldDataObjInfo, 0, 1);
+    } else if (matchedOldDataObjInfo != NULL) {
+        /* The source of replication is an old copy. Queue dataObjInfoHead 
+         * to oldDataObjInfoHead */ 
+        queDataObjInfo (oldDataObjInfoHead, *dataObjInfoHead, 0, 1);
+        *dataObjInfoHead = matchedOldDataObjInfo;
+    }
 
-                    if ((*destRescGrpInfo)->next == NULL ||
-                        strlen ((*destRescGrpInfo)->rescGroupName) == 0) {
-                        /* single target resource */
-                        if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
-                                                               *destRescGrpInfo)) != NULL) {
-                            /* have a good copy already */
-                            *destDataObjInfo = NULL; // JMC - backport 4594
-                            return (HAVE_GOOD_COPY);
-                        }
-                    } else {
-                        /* target resource is a resource group with multi resources */
-                        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
-                                             TRIM_MATCHED_RESC_INFO, NULL);
-                        if (*destRescGrpInfo == NULL) {
-                            /* have a good copy in all resc in resc group */
-                            return (HAVE_GOOD_COPY);
-                        }
-                    }
-                    /* handle the old dataObj */
-                    if (getValByKey (condInput, ALL_KW) != NULL) {
-                        dataObjInfo_t *trimmedDataObjInfo = NULL;
-                        /* replicate to all resc. trim the resc that has a match and
-                         * the DataObjInfo that does not have a match */ 
-                        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
-                                             TRIM_MATCHED_RESC_INFO|TRIM_UNMATCHED_OBJ_INFO, &trimmedDataObjInfo);
-                        *destDataObjInfo = *oldDataObjInfoHead;
-                        *oldDataObjInfoHead = trimmedDataObjInfo;
-                    } else {
-                        *destDataObjInfo = chkCopyInResc (*oldDataObjInfoHead, 
-                                                          *destRescGrpInfo);
-                        if (*destDataObjInfo != NULL) {
-                            /* see if there is any resc that is not used */
-                            matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
-                                                 TRIM_MATCHED_RESC_INFO, NULL);
-                            if (*destRescGrpInfo != NULL) {
-                                /* just creat a new one in myRescGrpInfo */
-                                *destDataObjInfo = NULL;
-                            } else { // // JMC - backport 4594
-                                dequeDataObjInfo (oldDataObjInfoHead, *destDataObjInfo);
-                            }
-                        }
-                    }
-                    return (NO_GOOD_COPY);
-                }
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B" );
+    if ((*destRescGrpInfo)->next == NULL ||
+        strlen ((*destRescGrpInfo)->rescGroupName) == 0) {
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B 1 :: chkCopyInResc" );
+        /* single target resource */
+        if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
+                                               *destRescGrpInfo)) != NULL) {
+            /* have a good copy already */
+            *destDataObjInfo = NULL; // JMC - backport 4594
+            return (HAVE_GOOD_COPY);
+        }
+    } else {
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B 2 :: matchAndTrimRescGrp" );
+        /* target resource is a resource group with multi resources */
+        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
+                             TRIM_MATCHED_RESC_INFO, NULL);
+        if (*destRescGrpInfo == NULL) {
+            /* have a good copy in all resc in resc group */
+            return (HAVE_GOOD_COPY);
+        }
+    }
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: C" );
+    /* handle the old dataObj */
+    if (getValByKey (condInput, ALL_KW) != NULL) {
+        dataObjInfo_t *trimmedDataObjInfo = NULL;
+        /* replicate to all resc. trim the resc that has a match and
+         * the DataObjInfo that does not have a match */ 
+        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
+                             TRIM_MATCHED_RESC_INFO|TRIM_UNMATCHED_OBJ_INFO, &trimmedDataObjInfo);
+        *destDataObjInfo = *oldDataObjInfoHead;
+        *oldDataObjInfoHead = trimmedDataObjInfo;
+    } else {
+        *destDataObjInfo = chkCopyInResc (*oldDataObjInfoHead, 
+                                          *destRescGrpInfo);
+        if (*destDataObjInfo != NULL) {
+            /* see if there is any resc that is not used */
+            matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
+                                 TRIM_MATCHED_RESC_INFO, NULL);
+            if (*destRescGrpInfo != NULL) {
+                /* just creat a new one in myRescGrpInfo */
+                *destDataObjInfo = NULL;
+            } else { // // JMC - backport 4594
+                dequeDataObjInfo (oldDataObjInfoHead, *destDataObjInfo);
+            }
+        }
+    }
+rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: D" );
+    return (NO_GOOD_COPY);
+}
 
-                int
-                    resolveInfoForPhymv (dataObjInfo_t **dataObjInfoHead,
-                                         dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
-                                         keyValPair_t *condInput, int multiCopyFlag)
-                {
-                    int status;
-                    dataObjInfo_t *matchedDataObjInfo = NULL;
-                    dataObjInfo_t *matchedOldDataObjInfo = NULL;
+int
+resolveInfoForPhymv (dataObjInfo_t **dataObjInfoHead,
+                     dataObjInfo_t **oldDataObjInfoHead, 
+                     rescGrpInfo_t **destRescGrpInfo,
+                     keyValPair_t *condInput, 
+                     int multiCopyFlag ) {
+    int status;
+    dataObjInfo_t *matchedDataObjInfo = NULL;
+    dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
 
-                    status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
-                                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
+    status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
+                                          condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
-                    if (status < 0) {
-                        return status;
-                    }
+    if (status < 0) {
+        return status;
+    }
 
-                    if (matchedDataObjInfo != NULL) {
-                        /* put the matched in oldDataObjInfoHead. should not be anything in
-                         * oldDataObjInfoHead */
-                        *oldDataObjInfoHead = *dataObjInfoHead;
-                        *dataObjInfoHead = matchedDataObjInfo;
-                    }
+    if (matchedDataObjInfo != NULL) {
+        /* put the matched in oldDataObjInfoHead. should not be anything in
+         * oldDataObjInfoHead */
+        *oldDataObjInfoHead = *dataObjInfoHead;
+        *dataObjInfoHead = matchedDataObjInfo;
+    }
 
-                    if (multiCopyFlag) {
-                        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo,
-                                             REQUE_MATCHED_RESC_INFO, NULL);
-                        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo,
-                                             REQUE_MATCHED_RESC_INFO, NULL);
-                    } else {
-                        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
-                                             TRIM_MATCHED_RESC_INFO|TRIM_MATCHED_OBJ_INFO, NULL);
-                        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
-                                             TRIM_MATCHED_RESC_INFO, NULL);
-                    }
+    if (multiCopyFlag) {
+        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo,
+                             REQUE_MATCHED_RESC_INFO, NULL);
+        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo,
+                             REQUE_MATCHED_RESC_INFO, NULL);
+    } else {
+        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
+                             TRIM_MATCHED_RESC_INFO|TRIM_MATCHED_OBJ_INFO, NULL);
+        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
+                             TRIM_MATCHED_RESC_INFO, NULL);
+    }
 
-                    if (*destRescGrpInfo == NULL) {
-                        if (*dataObjInfoHead == NULL) {
-                            return (CAT_NO_ROWS_FOUND);
-                        } else {
-                            /* have a good copy in all resc in resc group */
-                            rodsLog (LOG_ERROR,
-                                     "resolveInfoForPhymv: %s already have copy in the resc",
-                                     (*dataObjInfoHead)->objPath);
-                            return (SYS_COPY_ALREADY_IN_RESC);
-                        }
-                    } else {
-                        return (0);
-                    }
-                }
+    if (*destRescGrpInfo == NULL) {
+        if (*dataObjInfoHead == NULL) {
+            return (CAT_NO_ROWS_FOUND);
+        } else {
+            /* have a good copy in all resc in resc group */
+            rodsLog (LOG_ERROR,
+                     "resolveInfoForPhymv: %s already have copy in the resc",
+                     (*dataObjInfoHead)->objPath);
+            return (SYS_COPY_ALREADY_IN_RESC);
+        }
+    } else {
+        return (0);
+    }
+}
 
 /* matchDataObjInfoByCondInput - given dataObjInfoHead and oldDataObjInfoHead
  * put all DataObjInfo that match condInput into matchedDataObjInfo and
@@ -1304,8 +1372,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
  * A CAT_NO_ROWS_FOUND means there is condition in CondInput, but none 
  * in dataObjInfoHead or oldDataObjInfoHead matches the condition 
  */ 
-int
-    matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
+int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
                                  dataObjInfo_t **oldDataObjInfoHead, keyValPair_t *condInput,
                                  dataObjInfo_t **matchedDataObjInfo, dataObjInfo_t **matchedOldDataObjInfo)
 

@@ -170,8 +170,8 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     
     int status;
-    rescGrpInfo_t* myRescGrpInfo;
-    rescGrpInfo_t *tmpRescGrpInfo;
+    rescGrpInfo_t* myRescGrpInfo  = 0;
+    rescGrpInfo_t *tmpRescGrpInfo = 0;
     rescInfo_t *tmpRescInfo;
     int l1descInx;
     int copiesNeeded;
@@ -180,11 +180,14 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling getRescGrpForCreate" );
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling getRescGrpForCreate. Done." );
     if (status < 0) return status;
 #if 1 // JMC - remove resource.c
-    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, 
-                                  tmpRescInfo, myRescGrpInfo->rescGroupName );
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling _rsDataObjCreateWithRescInfo with rescInfo [%d], ", myRescGrpInfo->rescInfo ); 
+    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling _rsDataObjCreateWithRescInfo. Done." );
 #else // JMC - remove resource.c
     rescCnt = getRescCnt (myRescGrpInfo);
 
@@ -226,8 +229,11 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
 
     //freeAllRescGrpInfo (myRescGrpInfo);
+    //delete myRescGrpInfo->rescInfo;
+    //delete myRescGrpInfo;
 
-    if (status < 0) {
+    // JMC - legacy resource - if (status < 0) {
+    if( status >= 0 ) {
 	    return (status);
     } else {
         rodsLog (LOG_NOTICE,
@@ -298,6 +304,7 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - dataObjInfo %d, rescName %s", dataObjInfo, rescInfo->rescName );
 #if 0 // JMC - remove legacy resources 
 	if (getRescClass (rescInfo) == COMPOUND_CL) {
 	    rescInfo_t *cacheResc = NULL;
@@ -350,9 +357,16 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
 
+rodsLog( LOG_NOTICE, "XXXX **** _rsDataObjCreateWithRescInfo - dataObjInfo %d l1desc dataObjInfo %d", dataObjInfo, L1desc[l1descInx].dataObjInfo );
+
+rodsLog( LOG_NOTICE, "XXXX **** _rsDataObjCreateWithRescInfo - dataObjInfo rescName %s l1desc dataObjInfo rescName %s", dataObjInfo->rescInfo->rescName, L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
+
+
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling getPathName" );
     status = getFilePathName (rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp);
 
     if (status < 0) {
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling getPathName FAILED." );
         freeL1desc (l1descInx);
         return (status);
     }
@@ -362,18 +376,23 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
         
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - DONT OPEN ANYTHING." );
         /* don't actually physically open the file */
         status = 0;
     } else {
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling dataObjCreateAndReg." );
         
-        status = dataObjCreateAndReg (rsComm, l1descInx);
+        status = dataObjCreateAndReg( rsComm, l1descInx );
     }
 
     if (status < 0) {
-        freeL1desc (l1descInx);
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - returning status %d", status );
+	    freeL1desc (l1descInx);
         return (status);
     } else {
-        return (l1descInx);
+rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - returning l1descInx %d.", l1descInx );
+rodsLog( LOG_NOTICE, "XXXX **** _rsDataObjCreateWithRescInfo - dataObjInfo rescName %s l1desc dataObjInfo rescName %s", dataObjInfo->rescInfo->rescName, L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
+	    return (l1descInx);
     }
 }
 
@@ -504,75 +523,60 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int rescTypeInx;
     int l3descInx;
 
+       #if 0 // JMC legacy resource 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
-    {
-        int retryCnt = 0;
-        int chkType = 0; // JMC - backport 4774
+      case FILE_CAT:
+      {
+       #endif // JMC legacy resource 
+	int retryCnt = 0;
+    int chkType = 0; // JMC - backport 4774
 
-        fileCreateInp_t fileCreateInp;
-        memset (&fileCreateInp, 0, sizeof (fileCreateInp));
-        rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-        rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-        fileCreateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
-        rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-        fileCreateInp.mode = getFileMode (dataObjInp);
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4774
-        chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
-        if (chkType == DISALLOW_PATH_REG) {
-            return PATH_REG_NOT_ALLOWED;
-        } else if (chkType == NO_CHK_PATH_PERM) {
-            fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
-        }
-        // =-=-=-=-=-=-=-
-        std::string prev_resc_hier = fileCreateInp.resc_hier_;
-        l3descInx = rsFileCreate (rsComm, &fileCreateInp);
-        if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
-            rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-            eirods::error ret =_updateDbWithRescHier(rsComm, fileCreateInp.resc_hier_, 1);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                eirods::log(LOG_ERROR, msg.str());
-                return ret.code();
-            }
-        }
-        
-        /* file already exists ? */
-        while( l3descInx <= 2 && retryCnt < 100 && 
-               getErrno (l3descInx) == EEXIST ) {
-            if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
-                break;
-            }
-            rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-            l3descInx = rsFileCreate (rsComm, &fileCreateInp);
-            if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
-                rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-                eirods::error ret =_updateDbWithRescHier(rsComm, fileCreateInp.resc_hier_, 1);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                    eirods::log(LOG_ERROR, msg.str());
-                    return ret.code();
-                }
-            }
-            retryCnt ++; 
-        }
-        rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-        break;
-    }
-    default:
+	fileCreateInp_t fileCreateInp;
+
+
+    rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+
+
+	memset (&fileCreateInp, 0, sizeof (fileCreateInp));
+	fileCreateInp.fileType = static_cast< fileDriverType_t >( -1 );// RescTypeDef[rescTypeInx].driverType;
+	rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
+	  NAME_LEN);
+	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+	fileCreateInp.mode = getFileMode (dataObjInp);
+	// =-=-=-=-=-=-=-
+	// JMC - backport 4774
+	chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
+	if (chkType == DISALLOW_PATH_REG) {
+		return PATH_REG_NOT_ALLOWED;
+	} else if (chkType == NO_CHK_PATH_PERM) {
+	    fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
+	}
+	// =-=-=-=-=-=-=-
+	l3descInx = rsFileCreate (rsComm, &fileCreateInp);
+
+    /* file already exists ? */
+	while( l3descInx <= 2 && retryCnt < 100 && 
+	       getErrno (l3descInx) == EEXIST ) {
+	    if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
+		    break;
+	    }
+	    rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+	    l3descInx = rsFileCreate (rsComm, &fileCreateInp);
+	    retryCnt ++; 
+	}
+    #if 0 // JMC legacy resource 
+	break;
+      }
+      default:
         rodsLog (LOG_NOTICE,
                  "l3Create: rescCat type %d is not recognized",
                  RescTypeDef[rescTypeInx].rescCat);
         l3descInx = SYS_INVALID_RESC_TYPE;
         break;
     }
+    #endif // JMC legacy resource 
     return (l3descInx);
 }
 
@@ -587,6 +591,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
     int            status;
     ruleExecInfo_t rei;
 
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate" );
     /* query rcat for resource info and sort it */
 
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
@@ -615,22 +620,27 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
     if( rei.rgi == NULL ) {
         /* def resc group has not been initialized yet */
         // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
-        if( !(*myRescGrpInfo) ) {
-            rodsLog( LOG_NOTICE, "getRescGrpForCreate - allocating a new rescGrpInfo_t" );
+        //if( !(*myRescGrpInfo) ) {
             (*myRescGrpInfo) = new rescGrpInfo_t;
-        }
+            (*myRescGrpInfo)->cacheNext = 0;
+            (*myRescGrpInfo)->next = 0;
+            (*myRescGrpInfo)->rescInfo = new rescInfo_t;
+            rodsLog( LOG_NOTICE, "getRescGrpForCreate - allocating a new rescGrpInfo_t %d, rescInfo_t %d", *myRescGrpInfo, (*myRescGrpInfo)->rescInfo );
+        //}
 
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: calling set_default_resource" );
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
-        if( set_err.code() < 0 ) {
+        if( !set_err.ok() ) {
+            eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
             status = SYS_INVALID_RESC_INPUT;
-
         }
 
     } else {
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: using resource from rei.rgi" );
         *myRescGrpInfo = rei.rgi;
-    
     }
 
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: calling setRescQuota" );
     status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
       
     if( status == SYS_RESC_QUOTA_EXCEEDED ) {
@@ -647,6 +657,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 	    return 1;
     }
 #else
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: exiting" );
     return 0; // JMC - should this be 1 per above block?
 #endif
 }

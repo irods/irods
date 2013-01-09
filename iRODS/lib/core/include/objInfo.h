@@ -340,11 +340,11 @@ typedef struct RescTypeDef {
 #define COMPOUND_CL     3
 #define DATABASE_CL     4
 
-#define PRIMARY_FLAG    0x8000          /* primary class when this bit is set */
-    typedef struct RescClass {
-        char *className;
-        int classType;
-    } rescClass_t;
+#define PRIMARY_FLAG	0x8000		/* primary class when this bit is set */
+// JMC - legacy resource - typedef struct RescClass {
+//    char *className;
+//    int classType;
+//} rescClass_t;
 
 /* transStat_t is being replaced by transferStat_t because of the 64 bits
  * padding */

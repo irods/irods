@@ -86,13 +86,16 @@ rodsLong_t offset, int whence)
     fileLseekOut_t *fileLseekOut = NULL;
     int status;
 
+#if 0 // JMC - legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
+#endif // JMC - legacy resource 
         memset (&fileLseekInp, 0, sizeof (fileLseekInp));
         fileLseekInp.fileInx = l3descInx;
         fileLseekInp.offset = offset;
         fileLseekInp.whence = whence;
         status = rsFileLseek (rsComm, &fileLseekInp, &fileLseekOut);
+#if 0 // JMC - legacy resource 
         break;
 
       default:
@@ -102,6 +105,7 @@ rodsLong_t offset, int whence)
         status = SYS_INVALID_RESC_TYPE;
         break;
     }
+#endif // JMC - legacy resource 
     if (status < 0) {
         return (status);
     } else {

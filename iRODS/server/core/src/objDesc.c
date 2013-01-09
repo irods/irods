@@ -294,23 +294,16 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
 
     if (destRescName != NULL) {
 	    rescGrpInfo = new rescGrpInfo_t;
+        rescGrpInfo->rescInfo = new rescInfo_t;
         //status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
+        
         // =-=-=-=-=-=-=-
-        // resolve the resource
-        eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( destRescName, resc );
-        if( !err.ok() ) {
-            delete rescGrpInfo;
-            eirods::log( PASS( false, -1, "getNumThreads - failed.", err ) );
-        }
-
-        // =-=-=-=-=-=-=-
-        // convert the resource into the rescGrpInfo_t
-        err = resource_to_resc_grp_info( *rescGrpInfo, resc );
+        // get rescGrpInfo_t from resource name
+        eirods::error err = eirods::get_resc_grp_info( destRescName, *rescGrpInfo );
         if ( err.ok() ) {
 	        rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-            delete rescGrpInfo;
+//            delete rescGrpInfo;
 	    
             if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -321,36 +314,30 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                 if (numDestThr == 0) {
                     return 0;
                 } else if (numDestThr == 1 && srcRescName == NULL && 
-                           isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
-                    /* one thread and resouce on local host */
-                    return 0;
+                      isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
+                //            delete rescGrpInfo;
+                        /* one thread and resouce on local host */
+                        return 0;
                 }
-            }
+	        }
         }
     }
 
     if (srcRescName != NULL) {
 	    if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
 	        return numDestThr;
-        // =-=-=-=-=-=-=-
-        // resolve the resource
-        eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( destRescName, resc );
-        if( !err.ok() ) {
-            delete rescGrpInfo;
-            eirods::log( PASS( false, -1, "getNumThreads - failed.", err ) );
-        }
 
 	    rescGrpInfo = new rescGrpInfo_t;
+        rescGrpInfo->rescInfo = new rescInfo_t;
         // =-=-=-=-=-=-=-
         // convert the resource into the rescGrpInfo_t
-        err = resource_to_resc_grp_info( *rescGrpInfo, resc );
+        eirods::error err = eirods::get_resc_grp_info( destRescName, *rescGrpInfo );
 
         //status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
         if ( err.ok() ) {
             rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-	        delete rescGrpInfo;
+//	        delete rescGrpInfo;
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -491,9 +478,17 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
     if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
         if (dataObjInfo->rescInfo != NULL) {
             /* only do unix fs */
-            int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-            if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
-                addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
+            // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+            // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
+            std::string type;
+            eirods::error err = eirods::get_resource_property< std::string >( dataObjInfo->rescInfo->rescName, "type", type );
+            if( !err.ok() ) {
+                eirods::log( PASS( false, -1, "initDataOprInp - failed.", err ) );
+            } else {
+                if( "unix file system" == type ) {
+                    addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
+                }
+            }
         }
     }
 

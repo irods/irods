@@ -92,14 +92,21 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return (SYS_INVALID_RESC_INPUT);
     }
 
-    if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == 
-        NO_CREATE_PATH) {
-        *dataObjInfo->filePath = '\0';
-        return 0;
+    // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
+    int chk_path = 0;
+    eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "check_path_perm", chk_path );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "getFilePathName - failed.", err ) );
     }
+
+    if( NO_CREATE_PATH == chk_path ) {
+	    *dataObjInfo->filePath = '\0';
+	    return 0;
+    }
+
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {
-        return (status);
+	    return (status);
     }
 
     if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
@@ -294,19 +301,26 @@ getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         if (rescInfo == NULL) {
             chkPathPerm = NO_CHK_PATH_PERM;
         } else {
-            initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-            rei.doi = dataObjInfo;
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4774
-            rei.status = DISALLOW_PATH_REG;             /* default */
-            applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-            if( rei.status == NO_CHK_PATH_PERM || 
-                RescTypeDef[rescInfo->rescTypeInx].chkPathPerm == NO_CHK_PATH_PERM ) {
-                chkPathPerm = NO_CHK_PATH_PERM;
-            } else {
-                chkPathPerm = rei.status;
-                // =-=-=-=-=-=-=-
+    	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
+			rei.doi = dataObjInfo;
+			// =-=-=-=-=-=-=-
+			// JMC - backport 4774
+		    rei.status = DISALLOW_PATH_REG;             /* default */
+		    applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+
+            int chk_path = 0;
+            eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "check_path_perm", chk_path );
+            if( !err.ok() ) {
+                eirods::log( PASS( false, -1, "getchkPathPerm - failed.", err ) );
             }
+
+		    if( err.ok() && ( rei.status == NO_CHK_PATH_PERM || NO_CHK_PATH_PERM == chk_path ) ) {
+// JMC - legacy resource RescTypeDef[rescInfo->rescTypeInx].chkPathPerm == NO_CHK_PATH_PERM ) ) {
+			   chkPathPerm = NO_CHK_PATH_PERM;
+			} else {
+			    chkPathPerm = rei.status;
+			// =-=-=-=-=-=-=-
+			}
         }
     } else {
         chkPathPerm = NO_CHK_PATH_PERM;
@@ -427,28 +441,27 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     } else {
         dataObjInfo = inpDataObjInfo;
     }
+
     // =-=-=-=-=-=-=-
     rescTypeInx = rescInfo->rescTypeInx;
+    int category = 0;
+    eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "_dataObjChksum - failed.", err ) );
+    }
 
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
+    // JMC - legacy resource - switch ( RescTypeDef[rescTypeInx].rescCat) {
+    switch( category ) {
+      case FILE_CAT:
         memset (&fileChksumInp, 0, sizeof (fileChksumInp));
-        fileChksumInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,
-                 NAME_LEN);
+        fileChksumInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-<<<<<<< HEAD
-        status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
-=======
-        rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-
 	    status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
->>>>>>> [#1084] post merge with development branch
         break;
     default:
         rodsLog (LOG_NOTICE,
-                 "_dataObjChksum: rescCat type %d is not recognized",
-                 RescTypeDef[rescTypeInx].rescCat);
+          "_dataObjChksum: rescCat type %d is not recognized", category );
         status = SYS_INVALID_RESC_TYPE;
         break;
     }
@@ -518,7 +531,14 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
     dataObjInfo_t myDataObjInfo;
     int rescTypeInx = rescInfo->rescTypeInx;
 
-    if (RescTypeDef[rescTypeInx].rescCat != FILE_CAT) {
+    int category = 0;
+    eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "chkAndHandleOrphanFile - failed.", err ) );
+    }
+
+    // JMC - legacy resource  - if (RescTypeDef[rescTypeInx].rescCat != FILE_CAT) {
+    if( FILE_CAT != category ) {
         /* can't do anything with non file type */
         return (-1);
     }
@@ -615,7 +635,7 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
     int rescTypeInx = rescInfo->rescTypeInx;
     char *filePath = fileRenameInp->oldFileName;
 
-    fileRenameInp->fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+    // JMC - legacy resource - fileRenameInp->fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 
     rstrcpy (fileRenameInp->addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
 
@@ -666,12 +686,16 @@ syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int savedStatus = 0;
 
     tmpDataObjInfo = dataObjInfoHead;
+rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPath :: tmpDataObjInfo %d", tmpDataObjInfo );
     while (tmpDataObjInfo != NULL) {
-        status = syncDataObjPhyPathS (rsComm, dataObjInp, tmpDataObjInfo,
-                                      acLCollection);
+rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPath :: call syncDataObjPhyPaths" );
+	    status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
+rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPath :: call syncDataObjPhyPaths done. status %s", status );
+	 
         if (status < 0) {
             savedStatus = status;
         }
+        
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
@@ -684,7 +708,7 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 {
     int status, status1;
     fileRenameInp_t fileRenameInp;
-    rescInfo_t *rescInfo;
+    rescInfo_t *rescInfo = 0;
     int rescTypeInx;
     modDataObjMeta_t modDataObjMetaInp;
     keyValPair_t regParam;
@@ -693,10 +717,17 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
         return 0;
 
-    if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == 
-        NO_CREATE_PATH) {
-        /* no need to sync for path created by resource */
-        return 0;
+rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPathS :: call get_resource_property for [%s]", dataObjInfo->rescInfo->rescName );
+    int create_path = 0;
+    eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "create_path", create_path );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "syncDataObjPhyPathS - failed.", err ) );
+    }
+
+    // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
+    if( NO_CREATE_PATH == create_path ) {  
+	    /* no need to sync for path created by resource */
+	    return 0;
     }
 
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
@@ -753,7 +784,7 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* rename it */
     rescTypeInx = rescInfo->rescTypeInx;
-    fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+    // JMC - legacy resource - fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileRenameInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
     rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,
              MAX_NAME_LEN);
@@ -882,14 +913,12 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
                          tmpRescName, status);
                 return (status);
             }*/
-            
-            eirods::resource_ptr resc;
-            eirods::error err = resc_mgr.resolve( tmpRescName, resc );
-            if( err.ok() ) {
-                eirods::resource_to_resc_info( *dataObjInfo.rescInfo, resc );
-            } else {
+           
+            dataObjInfo.rescInfo = new rescInfo_t; 
+            eirods::error err = eirods::get_resc_info( tmpRescName, *dataObjInfo.rescInfo );
+            if( !err.ok() ) {
                 std::stringstream msg;
-                msg << "getDefaultLocalRescInfo - failed to resolve resource ";
+                msg << "getDefaultLocalRescInfo - failed to get resource info";
                 msg << tmpRescName;
                 eirods::log( PASS( false, -1, msg.str(), err ) );
             }

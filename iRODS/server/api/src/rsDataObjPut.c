@@ -24,6 +24,9 @@
 #include "getRemoteZoneResc.h"
 #include "icatHighLevelRoutines.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
 #include "eirods_hierarchy_parser.h"
 
 int
@@ -107,8 +110,10 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
-        /* single buffer put */
+	/* single buffer put */
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling l3DataPutSingleBuf" );
         status = l3DataPutSingleBuf (rsComm, dataObjInp, dataObjInpBBuf);
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling l3DataPutSingleBuf. done." );
         if (status >= 0 && allFlag == 1) {
             /* update the rest of copies */
             addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
@@ -136,7 +141,9 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* so that mmap will work */
     dataObjInp->openFlags |= O_RDWR;
 
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling rsDataObjCreate" );
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling rsDataObjCreate. done." );
  
     if (l1descInx < 0) 
         return l1descInx;
@@ -249,7 +256,12 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* don't actually physically open the file */
     addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
+    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: calling rsDataObjCreate" );
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
+    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: calling rsDataObjCreate. done." );
+    
+    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInfo Name 1. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
+
     if (l1descInx <= 2) {
         if (l1descInx >= 0) {
             rodsLog (LOG_ERROR,
@@ -262,8 +274,9 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     
-    bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp,
-                                        dataObjInpBBuf);
+    bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp, dataObjInpBBuf );
+      
+    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInfo Name 2. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
 
     if (bytesWritten < 0) {
         myDataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -281,6 +294,9 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rescInfo = NULL;
         }
     }
+    
+    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInf Name 3. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
+
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
     L1desc[l1descInx].oprStatus = bytesWritten;
@@ -296,6 +312,8 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else if (strlen (rescGroupName) == 0) {
         return bytesWritten;
     }
+
+    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInf Name 4. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
 
     /* get here when Put failed. and rescGroupName is a valid resc group. 
      * Try other resc in the resc group */
@@ -453,13 +471,12 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 
     } // struct file type >= 0
 
-       std::string prev_resc_hier;
-   #if 0 // JMC legacy resource 
+    std::string prev_resc_hier;
+    #if 0 // JMC legacy resource 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    
     switch (RescTypeDef[rescTypeInx].rescCat) {
     case FILE_CAT:
-   #endif // JMC - legacy resource
+    #endif // JMC - legacy resource
     memset (&filePutInp, 0, sizeof (filePutInp));
     rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
@@ -525,16 +542,14 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     break;
 
 default:
-#endif // JMC - legacy resource
     rodsLog( LOG_NOTICE,"l3Open: rescCat type %d is not recognized",
              RescTypeDef[rescTypeInx].rescCat );
     bytesWritten = SYS_INVALID_RESC_TYPE;
     break;
 
-// JMC - legacy resource } // switch
+} // switch
 
-// JMC - ????? }
-    
+#endif // JMC - legacy resource
     return (bytesWritten);
 
 } // l3FilePutSingleBuf

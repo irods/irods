@@ -23,7 +23,7 @@ namespace eirods {
         virtual ~resource_manager();
         
         // =-=-=-=-=-=-=-
-        // @brief  resolve a resource from a first_class_object
+        /// @brief  resolve a resource from a first_class_object
         error resolve( const first_class_object&, // FCO to resolve against
                        resource_ptr& );           // resource out variable
 
@@ -47,6 +47,7 @@ namespace eirods {
                               std::string,     // resource name ( key )
                               std::string,     // resource context 
                               resource_ptr& ); // resource out variable
+        
         // =-=-=-=-=-=-=-
 		/// @brief print the list of local resources out to stderr
         void print_local_resources(); 

@@ -414,13 +414,11 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
             return (status);
         }*/
 
-        eirods::resource_ptr resc;
-        eirods::error err = resc_mgr.resolve( specColl->resource, resc );
-        if( err.ok() ) {
-            eirods::resource_to_resc_info( *myDataObjInfo->rescInfo, resc );
-        } else {
+        myDataObjInfo->rescInfo = new rescInfo_t;
+        eirods::error err = eirods::get_resc_info( specColl->resource, *myDataObjInfo->rescInfo );
+        if( !err.ok() ) {
             std::stringstream msg;
-            msg << "specCollSubStat - failed to resolve resource ";
+            msg << "specCollSubStat - failed to get resource info";
             msg << specColl->resource;
             eirods::log( PASS( false, -1, msg.str(), err ) );
             freeDataObjInfo (myDataObjInfo);

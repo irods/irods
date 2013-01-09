@@ -623,7 +623,14 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char* dataType ) // JMC - 
     int rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
 
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
-    if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
+
+    std::string type;
+    eirods::error err = eirods::get_resource_property< std::string >( rescGrpInfo->rescInfo->rescName, "type", type );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "createPhyBundleDataObj failed.", err ) );    
+    }
+    // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
+    if( "unix file type" != type ) { // JMC :: need a constant for this?
         rodsLog (LOG_ERROR,
           "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
           rescGrpInfo->rescInfo->rescName);

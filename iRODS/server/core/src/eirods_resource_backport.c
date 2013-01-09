@@ -12,19 +12,19 @@ namespace eirods {
     // helper function to convert properties from a resource plugin
     // the a standard irods rescInfo_t 
     error resource_to_resc_info( rescInfo_t& _info, resource_ptr& _resc ) {
-
         error err;
         std::string prop_name;
 
         // =-=-=-=-=-=-=-
         // get the resource property - host
         prop_name = "host";
-        boost::shared_ptr< rodsServerHost_t > host;
-        err = _resc->get_property< boost::shared_ptr< rodsServerHost_t > >( prop_name, host );
+        rodsServerHost_t* host;
+        err = _resc->get_property< rodsServerHost_t* >( prop_name, host );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -35,8 +35,9 @@ namespace eirods {
         err = _resc->get_property< long >( prop_name, id );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -47,8 +48,9 @@ namespace eirods {
         err = _resc->get_property< long >( prop_name, freespace );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -59,8 +61,9 @@ namespace eirods {
         err = _resc->get_property< long >( prop_name, quota );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -71,8 +74,9 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, zone );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -83,8 +87,9 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, name );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -95,8 +100,9 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, location );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -107,8 +113,9 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, type );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -121,6 +128,7 @@ namespace eirods {
             std::stringstream msg;
             msg << "resource_to_resc_info - failed to get property";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -133,6 +141,7 @@ namespace eirods {
             std::stringstream msg;
             msg << "resource_to_resc_info - failed to get property";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -145,6 +154,7 @@ namespace eirods {
             std::stringstream msg;
             msg << "resource_to_resc_info - failed to get property";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -157,6 +167,7 @@ namespace eirods {
             std::stringstream msg;
             msg << "resource_to_resc_info - failed to get property";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -167,8 +178,9 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, create );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
@@ -179,26 +191,31 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, modify );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // get the resource property - status
         prop_name = "status";
-        int status;
+        int status = 0;
         err = _resc->get_property< int >( prop_name, status );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "resource_to_resc_info - failed to get property [";
             msg << prop_name;
+            msg << "]";
             return ERROR( -1, msg.str() );
         }
 
-        _info.rescId     = id;
-        _info.freeSpace  = freespace;
-        _info.rescStatus = status;
+        _info.rodsServerHost = host;
+        _info.rescId         = id;
+        _info.freeSpace      = freespace;
+        _info.quotaLimit     = quota;
+        _info.rescStatus     = status;
+        strncpy( _info.zoneName,      zone.c_str(),     NAME_LEN );
         strncpy( _info.rescName,      name.c_str(),     NAME_LEN );
         strncpy( _info.rescLoc,       location.c_str(), NAME_LEN );
         strncpy( _info.rescType,      type.c_str(),     NAME_LEN );
@@ -206,9 +223,9 @@ namespace eirods {
         strncpy( _info.rescVaultPath, path.c_str(),     NAME_LEN );
         strncpy( _info.rescInfo,      info.c_str(),     NAME_LEN );
         strncpy( _info.rescComments,  comments.c_str(), NAME_LEN );
-        
-        rodsLog( LOG_NOTICE, "**** calling resource_to_resc_info for [%s]", name.c_str() );
-   
+        strncpy( _info.rescCreate,    create.c_str(),   TIME_LEN );
+        strncpy( _info.rescModify,    modify.c_str(),   TIME_LEN );
+
         return SUCCESS();
          
     } // resource_to_resc_info
@@ -217,6 +234,7 @@ namespace eirods {
     // helper function to extract useful bits from a resource plugin and fill in a 
     // resource group info structure.
     error resource_to_resc_grp_info( rescGrpInfo_t& _grp_info, resource_ptr& _resc ) {
+
         // =-=-=-=-=-=-=-
         // allocate the rescinfo struct if necessary
         if( !_grp_info.rescInfo ) {
@@ -290,27 +308,22 @@ namespace eirods {
         // NOTE :: the legacy code picks a random one first then scans
         //      :: for a valid one if the random resource is down.  i just
         //      :: scan for one.  i dont think this would break anything...
-        resource_ptr default_resc_ptr;
+        std::string default_resc_name;
         
         std::vector< std::string >::iterator itr = resources.begin();
         for( ; itr != resources.end(); ++itr ) {
             // =-=-=-=-=-=-=-
-            // resolve the resource from the list
-            error res_err = resc_mgr.resolve( *itr, default_resc_ptr );
-            if( res_err.ok() ) {
-                // =-=-=-=-=-=-=-
-                // convert the resource plugin into a legacy group info
-                error grp_err = resource_to_resc_grp_info( _resc_grp, default_resc_ptr ); 
-                if( grp_err.ok() ) {
-                    if( _resc_grp.rescInfo->rescStatus > 0 ) {
-                        // =-=-=-=-=-=-=-
-                        // we found a live one
-                        break;
-                    }
+            // convert the resource into a legacy group info
+            error grp_err = get_resc_grp_info( *itr, _resc_grp ); 
+            if( grp_err.ok() ) {
+                if( _resc_grp.rescInfo->rescStatus != INT_RESC_STATUS_DOWN ) {
+                    default_resc_name = *itr;
+                    // =-=-=-=-=-=-=-
+                    // we found a live one
+                    break;
+                }
 
-               } // if grp_err
-
-            } // if res_err
+           } // if grp_err
 
         } // for itr
 
@@ -318,23 +331,16 @@ namespace eirods {
         // determine that we might need a 'preferred' resource
         if( "preferred" == _option && !cond_input_resc.empty() ) {
             // =-=-=-=-=-=-=-
-            // resolve the resource from the list
-            resource_ptr resc_ptr;
-            error res_err = resc_mgr.resolve( cond_input_resc, resc_ptr );
-            if( res_err.ok() ) {
-                // =-=-=-=-=-=-=-
-                // determine if the resource is live
-                error grp_err = resource_to_resc_grp_info( _resc_grp, resc_ptr ); 
-                if( grp_err.ok() ) {
-                    if( _resc_grp.rescInfo->rescStatus > 0 ) {
-                        // =-=-=-=-=-=-=-
-                        // we found a live one, were good to go
-                        return SUCCESS();
-                    }
+            // determine if the resource is live
+            error grp_err = get_resc_grp_info( cond_input_resc, _resc_grp ); 
+            if( grp_err.ok() ) {
+                if( _resc_grp.rescInfo->rescStatus != INT_RESC_STATUS_DOWN ) {
+                    // =-=-=-=-=-=-=-
+                    // we found a live one, were good to go
+                    return SUCCESS();
+                }
 
-                } // if grp_err 
-
-            } // if res_err
+            } // if grp_err 
 
         } else if( "forced" == _option && _comm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {
             // stick with the default found above, its forced.
@@ -343,25 +349,20 @@ namespace eirods {
         } else {
             // =-=-=-=-=-=-=-
             // try the conditional input string, if not go back to the default resource
-            resource_ptr resc_ptr;
-            error res_err = resc_mgr.resolve( cond_input_resc, resc_ptr );
-            if( res_err.ok() ) {
-                // =-=-=-=-=-=-=-
-                // convert the resource plugin into a legacy group info
-                error grp_err = resource_to_resc_grp_info( _resc_grp, resc_ptr ); 
-                if( grp_err.ok() ) {
-                    if( _resc_grp.rescInfo->rescStatus > 0 ) {
-                        // =-=-=-=-=-=-=-
-                        // we found a live one, go!
-                        return SUCCESS();
-                    }
+            error grp_err = get_resc_grp_info( cond_input_resc, _resc_grp ); 
+            if( grp_err.ok() ) {
+                if( _resc_grp.rescInfo->rescStatus != INT_RESC_STATUS_DOWN ) {
+                    // =-=-=-=-=-=-=-
+                    // we found a live one, go!
+                    return SUCCESS();
+                } else {
 
-               } // if grp_err
+                }
 
             } else {
                 // =-=-=-=-=-=-=-
                 // otherwise go back to the old, default we had before
-                error grp_err = resource_to_resc_grp_info( _resc_grp, default_resc_ptr ); 
+                error grp_err = get_resc_grp_info( default_resc_name, _resc_grp ); 
                 if( grp_err.ok() ) {
                     return SUCCESS();
 
@@ -378,6 +379,7 @@ namespace eirods {
             } // else
 
         } // else
+        
 
         // =-=-=-=-=-=-=-
         // should not reach here
@@ -397,22 +399,21 @@ namespace eirods {
     error resolve_resource_name( std::string _resc_name, keyValPair_t* _cond_input, std::string& _out ) {
         if ( _resc_name.empty() ) {
             char* name = 0;
-
             name = getValByKey( _cond_input, BACKUP_RESC_NAME_KW );
             if( name ) {
-                _resc_name = std::string( name );
+                _out = std::string( name );
                 return SUCCESS();
             }
               
             name = getValByKey( _cond_input, DEST_RESC_NAME_KW );
             if( name ) {
-                _resc_name = std::string( name );
+                _out = std::string( name );
                 return SUCCESS();
             }
 
             name = getValByKey( _cond_input, DEF_RESC_NAME_KW  );
             if( name ) {
-                _resc_name = std::string( name );
+                _out = std::string( name );
                 return SUCCESS();
             }   
                 
@@ -459,6 +460,7 @@ namespace eirods {
     // helper function to save on typing - get legacy data struct
     // for resource given a resource name
     error get_resc_info( std::string _name, rescInfo_t& _info ) {
+        
         resource_ptr resc;
         error res_err = resc_mgr.resolve( _name, resc );
         if( res_err.ok() ) {

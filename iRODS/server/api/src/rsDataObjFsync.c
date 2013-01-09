@@ -7,6 +7,11 @@
 #include "fileFstat.h"
 #include "modDataObjMeta.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsDataObjFsync (rsComm_t *rsComm, openedDataObjInp_t *dataObjFsyncInp)
 {
@@ -124,12 +129,15 @@ l3Fsync (rsComm_t *rsComm, int l1descInx)
     /** @todo anything to do with special collections? */
     rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
 
+       #if 0 // JMC legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat)
     {
         case FILE_CAT:
+       #endif // JMC legacy resource 
             memset (&fileFsyncInp, 0, sizeof (fileFsyncInp));
             fileFsyncInp.fileInx = L1desc[l1descInx].l3descInx;
             rv = rsFileFsync (rsComm, &fileFsyncInp);
+       #if 0 // JMC legacy resource 
             break;
         default:
             rodsLog (LOG_NOTICE,
@@ -138,6 +146,7 @@ l3Fsync (rsComm_t *rsComm, int l1descInx)
             rv = SYS_INVALID_RESC_TYPE;
             break;
     }
+       #endif // JMC legacy resource 
 
     return (rv);
 }

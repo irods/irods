@@ -480,8 +480,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the name of the host of the resource from the resource plugin
-        boost::shared_ptr< rodsServerHost_t > rods_host; 
-        eirods::error get_err = resc->get_property< boost::shared_ptr< rodsServerHost_t > >( "host", rods_host );
+        rodsServerHost_t* rods_host; 
+        eirods::error get_err = resc->get_property< rodsServerHost_t* >( "host", rods_host );
         if( !get_err.ok() ) {
             return PASS( false, -1, "failed to call get_property", get_err );
         }

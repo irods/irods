@@ -197,6 +197,7 @@ rodsObjStat_t **rodsObjStatOut)
 
     snprintf (condStr, MAX_NAME_LEN, "='%s'", dataObjInp->objPath);
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+rodsLog( LOG_NOTICE, "XXXX - collStat :: condStr [%s]", condStr );
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
     /* XXXX COL_COLL_NAME added for queueSpecColl */

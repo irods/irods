@@ -19,6 +19,10 @@
 #include "subStructFileGet.h"
 #include "getRemoteZoneResc.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
               portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
@@ -103,7 +107,7 @@ _rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             /* a chksum already exists */
             chksumStr = strdup (dataObjInfo->chksum);
         } else {
-
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjGet :: calling dataObjChksumAndReg" );
             status = dataObjChksumAndReg (rsComm, dataObjInfo, &chksumStr);
             if (status < 0) {
                 return status;
@@ -293,13 +297,15 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
         return (bytesRead);
     }
 
+#if 0 // JMC - legacy resource 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
+      case FILE_CAT:
+#endif // JMC - legacy resource 
         memset (&fileGetInp, 0, sizeof (fileGetInp));
         dataObjInp = L1desc[l1descInx].dataObjInp;
-        fileGetInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        fileGetInp.fileType = static_cast< fileDriverType_t >( -1 );//(fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileGetInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
                  NAME_LEN);
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
@@ -310,6 +316,7 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
         fileGetInp.dataSize = dataObjInfo->dataSize;
         /* XXXXX need to be able to handle structured file */
         bytesRead = rsFileGet (rsComm, &fileGetInp, dataObjOutBBuf);
+#if 0 // JMC - legacy resource 
         break;
     default:
         rodsLog (LOG_NOTICE,
@@ -318,6 +325,7 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
         bytesRead = SYS_INVALID_RESC_TYPE;
         break;
     }
+#endif // JMC - legacy resource 
     return (bytesRead);
 }
 
