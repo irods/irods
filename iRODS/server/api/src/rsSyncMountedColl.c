@@ -22,6 +22,8 @@
 int
 rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
 {
+    rodsLog( LOG_NOTICE, "rsSyncMountedColl - start" );
+
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
     dataObjInp_t myDataObjInp;
@@ -56,6 +58,8 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
     }
 
     freeRodsObjStat (rodsObjStatOut);
+    
+    rodsLog( LOG_NOTICE, "rsSyncMountedColl - done" );
 
     return (status);
 }
@@ -93,7 +97,9 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
         rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;
+    rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync" );
         status = rsStructFileSync (rsComm, &structFileOprInp);
+    rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync. done." );
 
     } else {			/* not a struct file */
         status = SYS_COLL_NOT_MOUNTED_ERR;

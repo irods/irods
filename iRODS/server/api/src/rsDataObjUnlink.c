@@ -243,9 +243,9 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     int status;
     unregDataObj_t unregDataObjInp;
 
-    if (dataObjInfo->specColl == NULL) {
-        if (dataObjUnlinkInp->oprType == UNREG_OPR && 
-            rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
+    if( dataObjInfo->specColl == NULL ) {
+        if( dataObjUnlinkInp->oprType            == UNREG_OPR && 
+            rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
             ruleExecInfo_t rei;
 
         initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
@@ -264,33 +264,13 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             if (status != 0) {
             /* in the vault */
                     rodsLog (LOG_DEBUG,
-                      "dataObjUnlinkS: unregistering in vault file %s",
-                      dataObjInfo->filePath);
-                        return CANT_UNREG_IN_VAULT_FILE;
-            }
-	    }
-#if 0	/* don't need this since we are doing orphan */
-	} else if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].driverType 
-	  == WOS_FILE_TYPE && dataObjUnlinkInp->oprType != UNREG_OPR) {
-	    /* WOS_FILE_TYPE, unlink first before unreg because orphan files
-	     * cannot be reclaimed */
-            status = l3Unlink (rsComm, dataObjInfo);
-            if (status < 0) {
-                rodsLog (LOG_NOTICE,
-                  "dataObjUnlinkS: l3Unlink error for WOS file %s. status = %d",
-                  dataObjUnlinkInp->objPath, status);
-		return status;
-	    }
-            unregDataObjInp.dataObjInfo = dataObjInfo;
-            unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
-            status = rsUnregDataObj (rsComm, &unregDataObjInp);
-            if (status < 0) {
-                rodsLog (LOG_NOTICE,
-                  "dataObjUnlinkS: rsUnregDataObj error for %s. status = %d",
-                  dataObjUnlinkInp->objPath, status);
+                             "dataObjUnlinkS: unregistering in vault file %s",
+                             dataObjInfo->filePath);
+                    return CANT_UNREG_IN_VAULT_FILE;
+                }
             }
         }
-#endif // JMC - i THINNK this is right
+        
         unregDataObjInp.dataObjInfo = dataObjInfo;
         unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
         status = rsUnregDataObj (rsComm, &unregDataObjInp);
@@ -392,11 +372,10 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
             memset (&fileUnlinkInp, 0, sizeof (fileUnlinkInp));
-            fileUnlinkInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+            fileUnlinkInp.fileType = static_cast< fileDriverType_t >( -1 );//= (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileUnlinkInp.addr.hostAddr, 
-                     dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileUnlinkInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
             break;
 

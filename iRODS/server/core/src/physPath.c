@@ -437,7 +437,13 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,
                  NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+<<<<<<< HEAD
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
+=======
+        rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+
+	    status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
+>>>>>>> [#1084] post merge with development branch
         break;
     default:
         rodsLog (LOG_NOTICE,

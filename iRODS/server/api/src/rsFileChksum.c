@@ -112,7 +112,12 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     eirods::error ret = fileOpen( file_obj );
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
-        rodsLog( LOG_NOTICE,"fileChksum; fileOpen failed for %s. status = %d", fileName, status );
+        std::stringstream msg;
+        msg << "fileChksum: fileOpen failed for [";
+        msg << fileName;
+        msg << "] with status of ";
+        msg << status;
+        eirods::log( PASSMSG( msg.str(), ret ) );
         return (status);
     }
 

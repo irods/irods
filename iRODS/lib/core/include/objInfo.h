@@ -318,18 +318,19 @@ typedef struct RescCacheInfo
 #define DO_TRASH_CAN    0
 #define NO_TRASH_CAN    1
 
-    typedef enum {
-        NO_CREATE_PATH,
-        CREATE_PATH
-    } createPath_t;
-
-    typedef struct RescTypeDef {
-        char *typeName;
-        rescCat_t rescCat;
-        int driverType;
-        int chkPathPerm;    /* whether to check path permission */
-        createPath_t createPathFlag;  /* create a path in getFilePathName ? */    
-    } rescTypeDef_t;
+typedef enum {
+    NO_CREATE_PATH,
+    CREATE_PATH
+} createPath_t;
+#if 0 // JMC - legacy resource
+typedef struct RescTypeDef {
+    char *typeName;
+    rescCat_t rescCat;
+    int driverType;
+    int chkPathPerm;	/* whether to check path permission */
+    createPath_t createPathFlag;  /* create a path in getFilePathName ? */    
+} rescTypeDef_t;
+#endif // JMC - legacy resource
 
 /* definition for classType */
 

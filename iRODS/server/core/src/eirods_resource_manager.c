@@ -157,7 +157,7 @@ namespace eirods {
         // have a proper vault path.  this issue will be fixed when we push fcos up through
         // the server api calls as we can treat them as a new class of fco
         if( !ret.ok() ) {
-            ret = resolve_from_property( "type", "unix file system", _resc );
+            ret = resolve_from_property< std::string >( "type", "unix file system", _resc );
 
         }
 
@@ -536,7 +536,6 @@ namespace eirods {
         } // for itr
 
     } // print_local_resources
-
 
 }; // namespace eirods
 

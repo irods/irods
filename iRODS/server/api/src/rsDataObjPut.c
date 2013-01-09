@@ -451,85 +451,89 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         bytesWritten = rsSubStructFilePut (rsComm, &subFile, dataObjInpBBuf);
         return (bytesWritten);
 
-    } else {
+    } // struct file type >= 0
 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        std::string prev_resc_hier;
-        
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
-            memset (&filePutInp, 0, sizeof (filePutInp));
-            rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-            rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-            if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
-                filePutInp.otherFlags |= FORCE_FLAG;
-            }
-                        
-            filePutInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-                        
-            rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
-            rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-                        
-            filePutInp.mode = getFileMode (dataObjInp);
-            filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
-                        
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4774
-            chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,L1desc[l1descInx].dataObjInfo);
-
-            if(chkType == DISALLOW_PATH_REG) {
-                return PATH_REG_NOT_ALLOWED;
-            } else if (chkType == NO_CHK_PATH_PERM) {
-                // =-=-=-=-=-=-=-
-                filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
-            }
-
-            prev_resc_hier = filePutInp.resc_hier_;
-            bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
-            if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
-                rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
-                eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                    eirods::log(LOG_ERROR, msg.str());
-                    return ret.code();
-                }
-            }
-
-            /* file already exists ? */
-            while( bytesWritten < 0 && retryCnt < 10 &&
-                   ( filePutInp.otherFlags & FORCE_FLAG ) == 0 &&
-                   getErrno (bytesWritten) == EEXIST) {
-
-                if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
-                    break;
-                }
-                rstrcpy (filePutInp.fileName, dataObjInfo->filePath,MAX_NAME_LEN);
-                bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
-                if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
-                    rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
-                    eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                        eirods::log(LOG_ERROR, msg.str());
-                        return ret.code();
-                    }
-                }
-                retryCnt ++;
-            } // while
-
-            break;
-
-        default:
-            rodsLog( LOG_NOTICE,"l3Open: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat );
-            bytesWritten = SYS_INVALID_RESC_TYPE;
-            break;
-
-        } // switch
+       std::string prev_resc_hier;
+   #if 0 // JMC legacy resource 
+    rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+    
+    switch (RescTypeDef[rescTypeInx].rescCat) {
+    case FILE_CAT:
+   #endif // JMC - legacy resource
+    memset (&filePutInp, 0, sizeof (filePutInp));
+    rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+    rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+    if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
+        filePutInp.otherFlags |= FORCE_FLAG;
     }
+                
+    filePutInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+                
+    rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
+    rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+                
+    filePutInp.mode = getFileMode (dataObjInp);
+    filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
+                
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4774
+    chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,L1desc[l1descInx].dataObjInfo);
+
+    if(chkType == DISALLOW_PATH_REG) {
+        return PATH_REG_NOT_ALLOWED;
+    } else if (chkType == NO_CHK_PATH_PERM) {
+        // =-=-=-=-=-=-=-
+        filePutInp.otherFlags |= NO_CHK_PERM_FLAG; // JMC - backport 4758
+    }
+
+    prev_resc_hier = filePutInp.resc_hier_;
+    bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
+    if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
+        rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
+        eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
+            eirods::log(LOG_ERROR, msg.str());
+            return ret.code();
+        }
+    }
+
+    /* file already exists ? */
+    while( bytesWritten < 0 && retryCnt < 10 &&
+           ( filePutInp.otherFlags & FORCE_FLAG ) == 0 &&
+           getErrno (bytesWritten) == EEXIST) {
+
+        if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
+            break;
+        }
+        rstrcpy (filePutInp.fileName, dataObjInfo->filePath,MAX_NAME_LEN);
+        bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
+        if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
+            rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
+            eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
+                eirods::log(LOG_ERROR, msg.str());
+                return ret.code();
+            }
+        }
+        retryCnt ++;
+    } // while
+#if 0 // JMC - legacy resource
+    break;
+
+default:
+#endif // JMC - legacy resource
+    rodsLog( LOG_NOTICE,"l3Open: rescCat type %d is not recognized",
+             RescTypeDef[rescTypeInx].rescCat );
+    bytesWritten = SYS_INVALID_RESC_TYPE;
+    break;
+
+// JMC - legacy resource } // switch
+
+// JMC - ????? }
     
     return (bytesWritten);
 

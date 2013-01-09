@@ -303,24 +303,25 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                     status = stat (stageDataObjInfo.filePath, &statbuf);
                     if (status == 0 || errno != ENOENT) {
 #endif
-                        status = resolveDupFilePath (rsComm, &stageDataObjInfo, &dataObjInp);
-                        if (status < 0) {
-                            rodsLog (LOG_ERROR,
-                                     "regPhySubFile: resolveDupFilePath err for %s. status = %d",
-                                     stageDataObjInfo.filePath, status);
-                            return (status);
-                        }
-                    }
-                    /* make the necessary dir */
-                    mkDirForFilePath (rsComm, "/", stageDataObjInfo.filePath, getDefDirMode ());
-                    /* add a link */
-                    status = link (subfilePath, stageDataObjInfo.filePath);
-                    if (status < 0) {
-                        rodsLog (LOG_ERROR,
-                                 "regPhySubFile: link error %s to %s. errno = %d",
-                                 subfilePath, stageDataObjInfo.filePath, errno);
-                        return (UNIX_FILE_LINK_ERR - errno);
-                    }
+	status = resolveDupFilePath (rsComm, &stageDataObjInfo, &dataObjInp);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "regPhySubFile: resolveDupFilePath err for %s. status = %d",
+              stageDataObjInfo.filePath, status);
+            return (status);
+	}
+    }
+    /* make the necessary dir */
+    mkDirForFilePath( rsComm, "/", stageDataObjInfo.filePath, getDefDirMode() );
+      
+    /* add a link */
+    status = link (subfilePath, stageDataObjInfo.filePath);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regPhySubFile: link error %s to %s. errno = %d",
+          subfilePath, stageDataObjInfo.filePath, errno);
+        return (UNIX_FILE_LINK_ERR - errno);
+    }
 
                     bzero (&regReplicaInp, sizeof (regReplicaInp));
                     regReplicaInp.srcDataObjInfo = bunDataObjInfo;

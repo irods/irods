@@ -410,11 +410,11 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
             memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-            fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.newFileName, newFileName, MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            fileRenameInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
+            rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,          MAX_NAME_LEN );
+            rstrcpy( fileRenameInp.newFileName,   newFileName,                    MAX_NAME_LEN );
+            rstrcpy (fileRenameInp.rescHier,      dataObjInfo->rescHier,          MAX_NAME_LEN);
+            rstrcpy( fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
             status = rsFileRename (rsComm, &fileRenameInp);
             break;
         default:

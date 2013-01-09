@@ -544,7 +544,7 @@ getZoneNameFromHint (char *rcatZoneHint, char *zoneName, int len)
 }
 
 int
-freeDataObjInfo (dataObjInfo_t *dataObjInfo)
+freeDataObjInfo(dataObjInfo_t *dataObjInfo)
 {
     if (dataObjInfo == NULL)
         return (0);
@@ -558,7 +558,7 @@ freeDataObjInfo (dataObjInfo_t *dataObjInfo)
 }
 
 int
-freeAllDataObjInfo (dataObjInfo_t *dataObjInfoHead)
+freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead)
 {
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
 

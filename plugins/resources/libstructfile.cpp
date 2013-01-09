@@ -2044,6 +2044,7 @@ extern "C" {
         // namespace alias for brevity 
         namespace fs = boost::filesystem;
 
+rodsLog( LOG_NOTICE, "bundle_cache_dir - Start." );
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
         if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
@@ -2070,9 +2071,9 @@ extern "C" {
   
         // =-=-=-=-=-=-=-
         // create a boost filesystem path for the cache directory
-        fs::path full_path( fs::initial_path<fs::path>() );
+        fs::path full_path;//( fs::initial_path<fs::path>() );
         full_path = fs::system_complete( fs::path( spec_coll->cacheDir ) );
-
+rodsLog( LOG_NOTICE, "bundle_cache_dir - full_path [%s]", full_path.string().c_str() );
         // =-=-=-=-=-=-=-
         // check if the path is really there, just in case
         if( !fs::exists( full_path ) ) {
@@ -2093,12 +2094,15 @@ extern "C" {
             return ERROR( -1, msg.str() );
         }
  
+rodsLog( LOG_NOTICE, "bundle_cache_dir - calling build_directory_listing" );
         // =-=-=-=-=-=-=-
         // build a listing of all of the files in all of the subdirs 
         // in the full_path
         std::vector< fs::path > listing;
         build_directory_listing( full_path, listing );
+rodsLog( LOG_NOTICE, "bundle_cache_dir - calling build_directory_listing. done." );
          
+rodsLog( LOG_NOTICE, "bundle_cache_dir - calling archive_write_new" );
         // =-=-=-=-=-=-=-
         // create the archive
         struct archive* arch = archive_write_new();
@@ -2112,6 +2116,7 @@ extern "C" {
             return ERROR( -1, msg.str() );
             
         }
+rodsLog( LOG_NOTICE, "bundle_cache_dir - calling archive_write_new. done." );
    
         // =-=-=-=-=-=-=-
         // set the compression flags given data_type
@@ -2169,6 +2174,7 @@ extern "C" {
         // set the format of the tar archive
         archive_write_set_format_ustar( arch );
 
+rodsLog( LOG_NOTICE, "bundle_cache_dir - calling archive_write_open_filename." );
         // =-=-=-=-=-=-=-
         // open the spec coll physical path for archival
         if( archive_write_open_filename( arch, spec_coll->phyPath ) < ARCHIVE_OK ) {
@@ -2180,15 +2186,20 @@ extern "C" {
             msg << "]";
             return ERROR( -1, msg.str() );
          }
+rodsLog( LOG_NOTICE, "bundle_cache_dir - calling archive_write_open_filename. done." );
 
+rodsLog( LOG_NOTICE, "bundle_cache_dir - iterate over listing" );
         // =-=-=-=-=-=-=-
         // iterate over the dir listing and archive the files
         std::string cache_dir( spec_coll->cacheDir );
         eirods::error arch_err = SUCCESS();
         for( size_t i = 0; i < listing.size(); ++i ) {
+rodsLog( LOG_NOTICE, "\twriting file [%s]", listing[ i ].string().c_str() );
             // =-=-=-=-=-=-=-
             // strip off archive path from the filename
             eirods::error ret = write_file_to_archive( listing[ i ].string(), cache_dir, arch );
+
+rodsLog( LOG_NOTICE, "\t\tDone." );
             if( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "bundle_cache_dir - failed to archive file [";
@@ -2199,12 +2210,14 @@ extern "C" {
             } 
 
         } // for i
+rodsLog( LOG_NOTICE, "bundle_cache_dir - iterate over listing. done." );
 
         // =-=-=-=-=-=-=-
         // close the archive and clean up
         archive_write_close( arch );
         archive_write_free( arch );
         
+rodsLog( LOG_NOTICE, "bundle_cache_dir - DONE." );
         // =-=-=-=-=-=-=-
         // handle errors
         if( !arch_err.ok() ) {
@@ -2232,7 +2245,7 @@ extern "C" {
       
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
         rsComm_t*   comm      = PluginStructFileDesc[ _index ].rsComm;
- 
+rodsLog( LOG_NOTICE, "sync_cache_dir_to_tar_file - calling bundle_cache_dir" ); 
         // =-=-=-=-=-=-=-
         // call bundle helper functions
         eirods::error bundle_err = bundle_cache_dir( _index, PluginStructFileDesc[ _index ].dataType );
@@ -2240,6 +2253,7 @@ extern "C" {
             return PASS( false, -1, "sync_cache_dir_to_tar_file - failed in bundle.", bundle_err );
         }
 
+rodsLog( LOG_NOTICE, "sync_cache_dir_to_tar_file - calling bundle_cache_dir. done." ); 
         // =-=-=-=-=-=-=-
         // create a file stat structure for the rs call
         fileStatInp_t file_stat_inp;
@@ -2347,12 +2361,13 @@ extern "C" {
         // if not then any other operation isn't possible
         if( strlen( spec_coll->cacheDir ) > 0 ) {
             if( spec_coll->cacheDirty > 0) {
-
+rodsLog( LOG_NOTICE, "tarFileSyncPlugin - calling sync_cache_dir_to_tar_file" );
 		        // =-=-=-=-=-=-=-
                 // write the tar file and register no dirty 
                 eirods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index, 
                                                                      struct_obj->opr_type(), 
                                                                      resc_host );
+rodsLog( LOG_NOTICE, "tarFileSyncPlugin - calling sync_cache_dir_to_tar_file. done." );
                 if( !sync_err.ok() ) {
                     std::stringstream msg;
                     msg << "tarFileSyncPlugin - failed in sync_cache_dir_to_tar_file for [";
