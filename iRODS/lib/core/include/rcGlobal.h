@@ -120,7 +120,7 @@ COLL_ACCESS_KW,
 COLL_ACCESS_INX_KW,
 COLL_ID_KW,
 "ENDOFLIST"};
-
+#if 0 // JMC - legacy resource
 rescTypeDef_t RescTypeDef[] = {
   {"unix",	FILE_CAT, UNIX_FILE_TYPE,  DO_CHK_PATH_PERM, CREATE_PATH},
   {"passthru",	FILE_CAT, PASSTHRU_TYPE,   0, CREATE_PATH},
@@ -150,8 +150,8 @@ rescClass_t RescClass[] = {
 	{"mysql",	DATABASE_CL},
 	{"oracle",	DATABASE_CL},
 };
-
 int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);
+#endif // JMC - legacy resource
 
 /* Note; all structFile name must contain the word structFile */ 
 

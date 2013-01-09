@@ -25,7 +25,7 @@ extern char *compareOperator[];
 extern char *rescCond[];
 extern char *userCond[];
 extern char *collCond[];
-extern rescTypeDef_t RescTypeDef[];
+//extern rescTypeDef_t RescTypeDef[];
 extern int NumRescTypeDef;
 extern rescClass_t RescClass[];
 extern int NumRescClass;
