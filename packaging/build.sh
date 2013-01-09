@@ -182,6 +182,9 @@ if [ "$1" == "clean" ] ; then
     rm -rf macosx-10.*
     rm -rf epm
     rm -rf epm*
+    echo "Cleaning external residuals..."
+    cd $DETECTEDDIR/../external
+    rm -rf boost*
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1
@@ -366,28 +369,62 @@ else
     GREPCMD="grep"
 fi
 
-BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
-if [ "$BOOST" == "" ] ; then
+#BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
+#if [ "$BOOST" == "" ] ; then
+#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+#        PREFLIGHT="$PREFLIGHT libboost-all-dev"
+#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+#        PREFLIGHT="$PREFLIGHT boost-devel"
+#    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+#        PREFLIGHT="$PREFLIGHT boost-devel"
+#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+#        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
+#        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
+#        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
+#    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+#        PREFLIGHT="$PREFLIGHT boost"
+#    else
+#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
+#    fi
+#else
+#    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
+#    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
+#    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
+#fi
+
+BZIP2DEV=`find /usr -name bzlib.h 2> /dev/null`
+if [ "$BZIP2DEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        PREFLIGHT="$PREFLIGHT libboost-all-dev"
+        PREFLIGHT="$PREFLIGHT libbz2-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-devel boost"
+        PREFLIGHT="$PREFLIGHT bzip2-devel"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT boost-devel"
+        PREFLIGHT="$PREFLIGHT libbz2-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
-        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
-        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-        PREFLIGHT="$PREFLIGHT boost"
+        PREFLIGHT="$PREFLIGHT libbz2_dev"
     else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.bzip.org/downloads.html"
     fi
 else
-    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
-    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
-    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
+    echo "Detected bzip2 library [$BZIP2DEV]"
 fi
+
+ZLIBDEV=`find /usr/include -name zlib.h 2> /dev/null`
+if [ "$ZLIBDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT zlib1g-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT zlib-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT zlib-devel"
+    # Solaris comes with SUNWzlib which provides /usr/include/zlib.h
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://zlib.net/"
+    fi
+else
+    echo "Detected zlib library [$ZLIBDEV]"
+fi
+
 
 FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
 FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
@@ -557,6 +594,33 @@ sleep 1
 
 ################################################################################
 
+# LOCAL COMPILATIONS - in ./external
+if [ "$BUILDEIRODS" == "1" ] ; then
+
+    # make sure ./external exists
+    mkdir -p $BUILDDIR/external
+
+    # build a copy of boost
+    EIRODS_BUILD_BOOSTVERSION="boost_1_46_0"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
+        wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.46.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+        gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
+        tar xf $EIRODS_BUILD_BOOSTVERSION.tar
+        echo "Finished exploding tarfile"
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    ./bootstrap.sh
+    ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
+
+fi
+
+################################################################################
+
 echo "-----------------------------"
 echo "${text_green}${text_bold}Configuring and Building iRODS${text_reset}"
 echo "-----------------------------"
@@ -655,9 +719,9 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     mv /tmp/irodsctl.tmp ./irodsctl
     chmod 755 ./irodsctl
 
-    # update boost_dir to the detected system path
-    SYSTEM_BOOST_DIR=`dirname $BOOSTFILE`
-    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$SYSTEM_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
+    # update boost_dir to our external path
+    EIRODS_BOOST_DIR=$BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
+    sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$EIRODS_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
     mv /tmp/eirods-config.mk ./config/config.mk
 
 #    # turn on irods boost flag
@@ -681,15 +745,15 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
     mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
 
-    # update resources Makefile to find system boost shared libraries
-    # filesystem
-    found_so=`../packaging/find_so.sh libboost_filesystem.so`
-    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
-    # system
-    found_so=`../packaging/find_so.sh libboost_system.so`
-    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    # update resources Makefile to find system boost shared libraries
+#    # filesystem
+#    found_so=`../packaging/find_so.sh libboost_filesystem.so`
+#    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+#    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    # system
+#    found_so=`../packaging/find_so.sh libboost_system.so`
+#    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+#    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
 
     # =-=-=-=-=-=-=-
     # modify the eirods_ms_home.h file with the proper path to the binary directory

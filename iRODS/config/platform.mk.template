@@ -47,14 +47,17 @@ CCFLAGS += -Wno-deprecated
 #     :: currently this is only the microservice plugins
 #     :: also enable C++ 0x capabilities
 CCFLAGS += -DUSE_EIRODS -fPIC
-LDRFLAGS += -ldl -rdynamic -lboost_thread
+LDRFLAGS += -ldl -rdynamic
 
 # =-=-=-=-=-=-=-
 # JMC :: BOOST Include & Linking
 #ifdef USE_BOOST
 CCFLAGS+=-I$(BOOST_DIR)
-CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND -DUSE_BOOST_FS
-LDRFLAGS+=-lboost_thread -lboost_filesystem -lboost_regex -lboost_system
+CCFLAGS+=-DUSE_BOOST -DUSE_BOOST_COND -DUSE_BOOST_FS -DBOOST_ENABLE_ASSERT_HANDLER -DBOOST_DISABLE_ASSERTS=1
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
+LDRFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
 #endif
 # =-=-=-=-=-=-=-
 
