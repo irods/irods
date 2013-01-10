@@ -20,7 +20,7 @@ static void NtAgentSetEnvsFromArgs(int ac, char **av);
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_dynamic_cast.h"
-
+#include "eirods_signal.h"
 
 /* #define SERVER_DEBUG 1   */
 int
@@ -53,6 +53,9 @@ main(int argc, char *argv[])
     signal(SIGCHLD, SIG_DFL);
     signal(SIGUSR1, signalExit);
     signal(SIGPIPE, rsPipSigalHandler);
+
+    // register e-irods signal handlers
+    register_handlers();
 #endif
 
 #ifndef windows_platform
