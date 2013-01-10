@@ -14,4 +14,4 @@ all:
 	$(LIBARCHIVE_DIR)/.libs/libarchive.a \
 	$(BOOST_DIR)/stage/lib/libboost_filesystem.a \
 	$(BOOST_DIR)/stage/lib/libboost_system.a \
-	/usr/lib/libz.so /usr/lib/libbz2.so
+	/usr/lib/x86_64-linux-gnu/libz.so /usr/lib/x86_64-linux-gnu/libbz2.so

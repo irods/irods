@@ -287,7 +287,7 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;
 
-    dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
+    dataObjInfo = (dataObjInfo_t*)malloc(sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
     
     if (getRescClass (rescInfo) == COMPOUND_CL) {
