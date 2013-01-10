@@ -764,18 +764,24 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
 
-#    # update resources Makefile to find system libarchive shared library
+    # update resources Makefile to find system shared libraries
+    # libz
+    found_so=`../packaging/find_so.sh libz.so`
+    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+    # bzip2
+    found_so=`../packaging/find_so.sh libbz2.so`
+    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    # libarchive
 #    found_so=`../packaging/find_so.sh libarchive.so`
-#    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
+#    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
 #    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
-    cp ../plugins/resources/Makefile.in ../plugins/resources/Makefile
-
-#    # update resources Makefile to find system boost shared libraries
-#    # filesystem
+#    # boost filesystem
 #    found_so=`../packaging/find_so.sh libboost_filesystem.so`
 #    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
 #    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
-#    # system
+#    # boost system
 #    found_so=`../packaging/find_so.sh libboost_system.so`
 #    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
 #    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
