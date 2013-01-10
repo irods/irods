@@ -235,15 +235,6 @@ endif
 
 # server specific LDADD
 
-<<<<<<< HEAD
-=======
-#ifdef TAR_STRUCT_FILE
-#ifndef TAR_EXEC_PATH
-#LDADD+=-L$(tarDir)/lib ../../external/libtar*/lib/libtar.a
-#endif
-#endif
-
->>>>>>> [#1084] post merge with development branch
 # HPSS support
 ifdef HPSS
 MY_CFLAG+= -DHPSS

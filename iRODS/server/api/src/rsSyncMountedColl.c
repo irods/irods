@@ -71,7 +71,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
 
     if (getStructFileType (specColl) >= 0) { 	/* a struct file */
         structFileOprInp_t structFileOprInp;
-        rescInfo_t *rescInfo;
+        rescInfo_t         rescInfo;
 
         if (strlen (specColl->resource) == 0) {
             /* nothing to sync */
@@ -86,7 +86,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
             return (status);
         }*/
 
-        eirods::error err = eirods::get_resc_info( specColl->resource, *rescInfo );
+        eirods::error err = eirods::get_resc_info( specColl->resource, rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "_rsSyncMountedColl - failed to resolve resource ";
@@ -94,7 +94,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
             eirods::log( PASS( false, -1, msg.str(), err ) );
         }
 
-        rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+        rstrcpy (structFileOprInp.addr.hostAddr, rescInfo.rescLoc, NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;
     rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync" );

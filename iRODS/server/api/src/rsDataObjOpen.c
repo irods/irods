@@ -482,11 +482,7 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *myDataObjInfo = *(*dataObjInfoHead);
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
-<<<<<<< HEAD
-        rescInfo = tmpRescGrpInfo->rescInfo;
-=======
 	    rescInfo = tmpRescGrpInfo->rescInfo;
->>>>>>> da89599... [#1084] only 20 issues left in dev test, fixing the structured file plugin in another branch
         myDataObjInfo->rescInfo = rescInfo;
         rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (myDataObjInfo->rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
@@ -541,13 +537,8 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rescGrpInfo_t *myRescGrpInfo = NULL;
 
     /* put the copy with destResc on top */
-<<<<<<< HEAD
-    status = requeDataObjInfoByDestResc (dataObjInfoHead,
-                                         &dataObjInp->condInput, 1, 1);
-=======
     status = requeDataObjInfoByDestResc ( dataObjInfoHead, &dataObjInp->condInput, 1, 1 );
       
->>>>>>> da89599... [#1084] only 20 issues left in dev test, fixing the structured file plugin in another branch
     /* status < 0 means there is no copy in the DEST_RESC */
     if (status < 0 &&
         getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {

@@ -3,21 +3,16 @@ include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
 
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
-INC=-I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include -I../../iRODS/server/core/include/ -I../../iRODS/server/icat/include/ -I../../iRODS/server/re/include/ -I../../iRODS/server/drivers/include/ -I../../external/libarchive-3.0.4/libarchive/
+INC=-I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include \
+        -I../../iRODS/server/core/include/ -I../../iRODS/server/icat/include/ -I../../iRODS/server/re/include/ \
+        -I../../iRODS/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR)
 all:
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so  libpassthru.cpp 
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so        libpassthru.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libnonblocking.so     libnonblocking.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so libstructfile.cpp \
-    ../../external/boost*/stage/lib/libboost_system.so \
-    ../../external/boost*/stage/lib/libboost_filesystem.so \
-    /usr/lib/x86_64-linux-gnu/libarchive.so.12.0.4
-     
-
-
-
-
-
-#        ../../external/libarchive*/./.libs/libarchive.a ../../external/bzip2*/libbz2.a ../../external/zlib*/libz.a  \
-#        ../../external/boost*/stage/lib/libboost_filesystem.a ../../external/boost*/stage/lib/libboost_system.a
-
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp \
+	$(LIBARCHIVE_DIR)/.libs/libarchive.a \
+	$(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+	$(BOOST_DIR)/stage/lib/libboost_system.a \
+	/usr/lib/x86_64-linux-gnu/libz.so \
+	/usr/lib/x86_64-linux-gnu/libbz2.so

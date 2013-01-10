@@ -185,6 +185,7 @@ if [ "$1" == "clean" ] ; then
     echo "Cleaning external residuals..."
     cd $DETECTEDDIR/../external
     rm -rf boost*
+    rm -rf libarchive*
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1
@@ -426,28 +427,28 @@ else
 fi
 
 
-FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
-FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
-if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-        if [ "$DETECTEDOSVERSION" \< "11" ]; then
-            PREFLIGHT="$PREFLIGHT libarchive1 libarchive-dev"
-        else
-            PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
-        fi
-    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-        PREFLIGHT="$PREFLIGHT libarchive libarchive-devel"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT libarchive2 libarchive-devel"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-        PREFLIGHT="$PREFLIGHT libarchive2 libarchive_dev"
-    # MacOSX is distributed with libarchive - in /usr/lib
-    else
-        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://libarchive.github.com/"
-    fi
-else
-    echo "Detected libarchive library [$FINDLIBARCHIVE]"
-fi
+#FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
+#FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
+#if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
+#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+#        if [ "$DETECTEDOSVERSION" \< "11" ]; then
+#            PREFLIGHT="$PREFLIGHT libarchive1 libarchive-dev"
+#        else
+#            PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
+#        fi
+#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+#        PREFLIGHT="$PREFLIGHT libarchive libarchive-devel"
+#    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+#        PREFLIGHT="$PREFLIGHT libarchive2 libarchive-devel"
+#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+#        PREFLIGHT="$PREFLIGHT libarchive2 libarchive_dev"
+#    # MacOSX is distributed with libarchive - in /usr/lib
+#    else
+#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://libarchive.github.com/"
+#    fi
+#else
+#    echo "Detected libarchive library [$FINDLIBARCHIVE]"
+#fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
@@ -600,14 +601,32 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # make sure ./external exists
     mkdir -p $BUILDDIR/external
 
+    # build a copy of libarchive
+    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
+        wget https://github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
+    if [ ! -e ".libs/libarchive.a" ] ; then
+        CFLAGS="-fPIC" ./configure
+    fi
+    $MAKEJCMD
+
     # build a copy of boost
-    EIRODS_BUILD_BOOSTVERSION="boost_1_46_0"
+    EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
     cd $BUILDDIR/external/
     if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     else
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
-        wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.46.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+        wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
         gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $EIRODS_BUILD_BOOSTVERSION.tar
         echo "Finished exploding tarfile"
@@ -719,6 +738,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     mv /tmp/irodsctl.tmp ./irodsctl
     chmod 755 ./irodsctl
 
+    # update libarchive_dir to our external path
+    EIRODS_LIBARCHIVE_DIR=$BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
+    sed -e "\,^LIBARCHIVE_DIR=,s,^.*$,LIBARCHIVE_DIR=$EIRODS_LIBARCHIVE_DIR," ./config/config.mk > /tmp/eirods-config.mk
+    mv /tmp/eirods-config.mk ./config/config.mk
+
     # update boost_dir to our external path
     EIRODS_BOOST_DIR=$BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
     sed -e "\,^BOOST_DIR=,s,^.*$,BOOST_DIR=$EIRODS_BOOST_DIR," ./config/config.mk > /tmp/eirods-config.mk
@@ -740,17 +764,24 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
 
-    # update resources Makefile to find system libarchive shared library
-    found_so=`../packaging/find_so.sh libarchive.so`
-    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
+    # update resources Makefile to find system shared libraries
+    # libz
+    found_so=`../packaging/find_so.sh libz.so`
+    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
     mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
-
-#    # update resources Makefile to find system boost shared libraries
-#    # filesystem
+    # bzip2
+    found_so=`../packaging/find_so.sh libbz2.so`
+    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    # libarchive
+#    found_so=`../packaging/find_so.sh libarchive.so`
+#    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
+#    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+#    # boost filesystem
 #    found_so=`../packaging/find_so.sh libboost_filesystem.so`
 #    sed -e s,SYSTEM_LIBBOOST_FILESYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
 #    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
-#    # system
+#    # boost system
 #    found_so=`../packaging/find_so.sh libboost_system.so`
 #    sed -e s,SYSTEM_LIBBOOST_SYSTEM_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
 #    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
