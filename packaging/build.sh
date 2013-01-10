@@ -608,7 +608,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     else
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
-        wget https://github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        wget http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
     fi
