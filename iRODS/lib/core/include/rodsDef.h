@@ -54,6 +54,9 @@
 #include <netinet/tcp.h>
 #endif
 
+#include "eirods_log.h"
+
+
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
 #define NAME_LEN        64
@@ -310,12 +313,14 @@ struct rodsHostAddr_t {
     int dummyInt;	/* make it to 64 bit boundary */
 
     rodsHostAddr_t& operator=( const rodsHostAddr_t& _rhs ) {
+        rodsLog( LOG_ERROR, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  *** calling rodsHostAddr_t operator= *** XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
         strncpy( hostAddr, _rhs.hostAddr, LONG_NAME_LEN );
         strncpy( zoneName, _rhs.zoneName, NAME_LEN );
         portNum  = _rhs.portNum;
         dummyInt = _rhs.dummyInt;
         return *this;
     }
+
 };
 
 /* definition for restartState */

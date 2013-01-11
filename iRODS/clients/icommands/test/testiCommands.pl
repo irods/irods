@@ -238,6 +238,7 @@ runCmd( "iadmin rfg testgroup testuser2" );
 runCmd( "iadmin lg testgroup", "negtest", "LIST", "testuser1,testuser2" );
 runCmd( "iadmin rfg testgroup testuser1" );
 runCmd( "iadmin mkresc testresource \"unix file system\" cache $irodshost \"/tmp/foo\"", "", "", "", "iadmin rmresc testresource" );
+runCmd( "iadmin mkresc testresource2 \"unix file system\" cache $irodshost \"/tmp/testresc2\"", "", "", "", "iadmin rmresc testresource2" );
 # runCmd( "iadmin mkresc compresource \"test stage file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
 # runCmd( "iadmin mkresc compresource \"unix file system\" compound $irodshost \"/tmp/comp\"", "", "", "", "iadmin rmresc compresource" );
 runCmd( "iadmin lr testresource", "", "resc_name:", "testresource", "irmtrash" );
@@ -365,8 +366,8 @@ if ( $doIbunZipTest =~ "yes" ) {
     runCmd( "diff -r $dir_w/testx $dir_w/icmdtestbz2/icmdtestx", "", "NOANSWER" );
     system ("rm -r $dir_w/icmdtestbz2");
     system ("irm -rf $irodshome/icmdtestx1.tar.bz2");
-#    runCmd( "iphybun -Rresgroup -Dbzip2 $irodshome/icmdtestbz2" );
-    runCmd( "itrim -N1 -Stestresource -r $irodshome/icmdtestbz2" );
+    runCmd( "iphybun -R testresource2 -Dbzip2 $irodshome/icmdtestbz2" );
+    runCmd( "itrim -N1 -Stestresource2 -r $irodshome/icmdtestbz2" );
     runCmd( "itrim -N1 -S $irodsdefresource -r $irodshome/icmdtestbz2" );
     # get the name of bundle file
     my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestbz2/icmdtestx/foo1" );
@@ -442,25 +443,26 @@ runCmd( "imcoll -p $irodshome/icmdtestt" );
 runCmd( "imcoll -U $irodshome/icmdtestt" );
 runCmd( "irm -rf $irodshome/icmdtestt" );
 system ( "rm -r $dir_w/testt" );
+
 # iphybun test
-runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
+#runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
 # jmc - resource groups are deprecated - runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
-runCmd( "iphybun -KR demoResc $irodshome/icmdtestp" );
-runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
-my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
+#runCmd( "iphybun -KR demoResc $irodshome/icmdtestp" );
+#runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
+#my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
 #runCmd( "irepl --purgec -Rcompresource $bunfile" );
 # jmc - resource groups are deprecated - runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
 # jmc - resource groups are deprecated - runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
-runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
+#runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 # get the name of bundle file
-if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
-runCmd( "irm -f --empty $bunfile" );
+#if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
+#runCmd( "irm -f --empty $bunfile" );
 # should not be able to remove it because it is not empty
-runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
-runCmd( "irm -rvf $irodshome/icmdtestp" );
-runCmd( "irm -f --empty $bunfile" );
-system ( "rm -r $dir_w/testp" );
-system ( "rm -r $mysdir" );
+#runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
+#runCmd( "irm -rvf $irodshome/icmdtestp" );
+#runCmd( "irm -f --empty $bunfile" );
+#system ( "rm -r $dir_w/testp" );
+#system ( "rm -r $mysdir" );
 
 
 # resource group test

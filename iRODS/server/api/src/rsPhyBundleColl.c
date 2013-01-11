@@ -30,31 +30,31 @@
 static rodsLong_t OneGig = (1024*1024*1024);
 
 int
-rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
-{
-    char *destRescName;
-    int status; 
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
-    rodsHostAddr_t rescAddr;
-    rescGrpInfo_t *rescGrpInfo = NULL;
+rsPhyBundleColl( rsComm_t*                 rsComm, 
+                 structFileExtAndRegInp_t* phyBundleCollInp ) {
+    int status = -1; 
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: Start rsComm %d, phyBundleCollInp %d", rsComm, phyBundleCollInp );
 
-    specCollCache_t *specCollCache = NULL;
 
-    resolveLinkedPath (rsComm, phyBundleCollInp->objPath, &specCollCache,
-      &phyBundleCollInp->condInput);
-
-    resolveLinkedPath (rsComm, phyBundleCollInp->collection,
-      &specCollCache, NULL);
-
-    if ((destRescName = getValByKey (&phyBundleCollInp->condInput, 
-      DEST_RESC_NAME_KW)) == NULL) {
-	return USER_NO_RESC_INPUT_ERR;
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call resolveLinkedPath" );
+    specCollCache_t*  specCollCache  = 0;
+    resolveLinkedPath( rsComm, phyBundleCollInp->objPath, &specCollCache, &phyBundleCollInp->condInput );
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call resolveLinkedPath. Done." );
+      
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call resolveLinkedPath2" );
+    resolveLinkedPath ( rsComm, phyBundleCollInp->collection, &specCollCache, NULL );
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call resolveLinkedPath2 Done." );
+ 
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call getValByKey DEST_RESC_NAME_KW" );
+    char*             destRescName   = 0;
+    if( ( destRescName = getValByKey( &phyBundleCollInp->condInput, DEST_RESC_NAME_KW ) ) == NULL ) {
+	    return USER_NO_RESC_INPUT_ERR;
     }
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call getValByKey DEST_RESC_NAME_KW. Done. [%s]", destRescName );
 
-    if (isLocalZone (phyBundleCollInp->collection) == 0) { 
-	/* can only do local zone */
-	return SYS_INVALID_ZONE_NAME;
+    if( isLocalZone( phyBundleCollInp->collection ) == 0 ) { 
+        /* can only do local zone */
+        return SYS_INVALID_ZONE_NAME;
     }
 
 #if 0 // JMC - legacy resource
@@ -67,59 +67,66 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
     }
 #endif // JMC - legacy resource
 
-    eirods::error err = eirods::get_resc_grp_info( destRescName, *rescGrpInfo );
+
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call eirods::get_resc_grp_info" );
+    rescGrpInfo_t rescGrpInfo;
+    rescGrpInfo.rescInfo = 0;
+    eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
     if( !err.ok() ) {
         eirods::log( PASS( false, -1, "rsPhyBundleColl - failed.", err ) );
+        return -1;
     }
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call eirods::get_resc_grp_info. done." );
 
-
+    rodsHostAddr_t rescAddr;
     bzero (&rescAddr, sizeof (rescAddr));
-    rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
-    remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
+
+    rstrcpy (rescAddr.hostAddr, rescGrpInfo.rescInfo->rescLoc, NAME_LEN);
+    rodsServerHost_t* rodsServerHost = 0;
+    int remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
+
+
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsPhyBundleColl (rsComm, phyBundleCollInp, rescGrpInfo);
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call _rsPhyBundleColl" );
+        status = _rsPhyBundleColl( rsComm, phyBundleCollInp, &rescGrpInfo );
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: call _rsPhyBundleColl. done." );
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remotePhyBundleColl (rsComm, phyBundleCollInp, rodsServerHost);
+        status = remotePhyBundleColl( rsComm, phyBundleCollInp, rodsServerHost );
     } else if (remoteFlag < 0) {
 	    status = remoteFlag;
     }
 
+    rodsLog( LOG_NOTICE, "XXXX - rsPhyBundleColl :: Done" );
+    
     return status;
 }
 
 int
-_rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
-rescGrpInfo_t *rescGrpInfo)
-{
-    rescInfo_t *myRescInfo;
-    char *myRescName;
+_rsPhyBundleColl( rsComm_t*                 rsComm, 
+                  structFileExtAndRegInp_t* phyBundleCollInp,
+                  rescGrpInfo_t*            rescGrpInfo ) {
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: Start" );
+
+
+
+    rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
+    char*       myRescName = myRescInfo->rescName;
+    
     collInp_t collInp;
-    collEnt_t *collEnt;
-    char phyBunDir[MAX_NAME_LEN];
-    curSubFileCond_t curSubFileCond;
-    int handleInx;
-    int status, l1descInx;
-    dataObjInp_t dataObjInp;
-    bunReplCacheHeader_t bunReplCacheHeader;
-    int savedStatus = 0;
-    int chksumFlag, maxSubFileCnt; // JMC - backport 4528, 4771
-    char *dataType = NULL; // JMC - backport 4658
-
-
-    myRescInfo = rescGrpInfo->rescInfo;
-    myRescName = myRescInfo->rescName;
-    bzero (&collInp, sizeof (collInp));
-    rstrcpy (collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN);
-    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | 
-      NO_TRIM_REPL_FG;
-    handleInx = rsOpenCollection (rsComm, &collInp);
+    bzero( &collInp, sizeof( collInp ) );
+    rstrcpy( collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN );
+    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
+      
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: rsOpenCollection" );
+    int handleInx = rsOpenCollection( rsComm, &collInp );
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
           "_rsPhyBundleColl: rsOpenCollection of %s error. status = %d",
           collInp.collName, handleInx);
         return (handleInx);
     }
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: rsOpenCollection. done." );
 
     if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
         rodsLog (LOG_ERROR,
@@ -129,14 +136,20 @@ rescGrpInfo_t *rescGrpInfo)
         return (0);
     }
 
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: createPhyBundleDataObj" );
     /* create the bundle file */ 
-	dataType = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
-    l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-      rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
+	char* dataType = getValByKey( &phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
+    
+    dataObjInp_t dataObjInp;
+    int l1descInx = createPhyBundleDataObj( rsComm, phyBundleCollInp->collection, 
+                                            rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: createPhyBundleDataObj. done." );
+      
 
     if (l1descInx < 0) return l1descInx;
 	// =-=-=-=-=-=-=-
     // JMC - backport 4528
+    int chksumFlag    = -1;
     if (getValByKey (&phyBundleCollInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
        L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
        chksumFlag = 1;
@@ -145,109 +158,125 @@ rescGrpInfo_t *rescGrpInfo)
     }
 	// =-=-=-=-=-=-=-
     // JMC - backport 4771
+    int maxSubFileCnt = -1; // JMC - backport 4528, 4771
     if (getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW) != NULL) {
             maxSubFileCnt = atoi(getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW));
     } else {
             maxSubFileCnt = MAX_SUB_FILE_CNT;
     }
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: createPhyBundleDir" );
 	// =-=-=-=-=-=-=-
-    createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
-      phyBunDir);
+    char phyBunDir[MAX_NAME_LEN];
+    createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: createPhyBundleDir. done." );
+      
 
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: iterate!" );
+    curSubFileCond_t     curSubFileCond;
+    bunReplCacheHeader_t bunReplCacheHeader;
     bzero (&bunReplCacheHeader, sizeof (bunReplCacheHeader));
     bzero (&curSubFileCond, sizeof (curSubFileCond));
+    
+    int        status      = -1;
+    int        savedStatus =  0;
+    collEnt_t* collEnt     = 0;
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
-	if (collEnt->objType == DATA_OBJ_T) {
-	    if (curSubFileCond.collName[0] == '\0') {
-		/* a new dataObj.  */
-		rstrcpy (curSubFileCond.collName, collEnt->collName, 
-		  MAX_NAME_LEN);
-		rstrcpy (curSubFileCond.dataName, collEnt->dataName, 
-		  MAX_NAME_LEN);
-		curSubFileCond.dataId = strtoll (collEnt->dataId, 0, 0);
-	    } else if (strcmp (curSubFileCond.collName, collEnt->collName) != 0
-              || strcmp (curSubFileCond.dataName, collEnt->dataName) != 0) {
-		/* a new file, need to handle the old one */
-		if (bunReplCacheHeader.numSubFiles >= maxSubFileCnt || // JMC - backport 4771
-		  bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
-		  MAX_BUNDLE_SIZE * OneGig) {
-		    /* bundle is full */
-		    status = bundlleAndRegSubFiles (rsComm, l1descInx,
-		      phyBunDir, phyBundleCollInp->collection,
-		      &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
-                    if (status < 0) {
-                        rodsLog (LOG_ERROR,
-                        "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
-                          phyBundleCollInp->collection, status);
-			savedStatus = status;
-                    } else {
-                        /* create a new bundle file */
-                        l1descInx = createPhyBundleDataObj (rsComm,
-                          phyBundleCollInp->collection, rescGrpInfo,
-                          &dataObjInp, dataType); // JMC - backport 4658
-
-                        if (l1descInx < 0) {
+        if (collEnt->objType == DATA_OBJ_T) {
+            if (curSubFileCond.collName[0] == '\0') {
+            /* a new dataObj.  */
+            rstrcpy (curSubFileCond.collName, collEnt->collName, 
+              MAX_NAME_LEN);
+            rstrcpy (curSubFileCond.dataName, collEnt->dataName, 
+              MAX_NAME_LEN);
+            curSubFileCond.dataId = strtoll (collEnt->dataId, 0, 0);
+            } else if (strcmp (curSubFileCond.collName, collEnt->collName) != 0
+                  || strcmp (curSubFileCond.dataName, collEnt->dataName) != 0) {
+            /* a new file, need to handle the old one */
+            if (bunReplCacheHeader.numSubFiles >= maxSubFileCnt || // JMC - backport 4771
+              bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
+              MAX_BUNDLE_SIZE * OneGig) {
+                /* bundle is full */
+                status = bundlleAndRegSubFiles (rsComm, l1descInx,
+                  phyBunDir, phyBundleCollInp->collection,
+                  &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
+                        if (status < 0) {
                             rodsLog (LOG_ERROR,
-                              "_rsPhyBundleColl:createPhyBundleDataObj err for %s,stat=%d",
-                              phyBundleCollInp->collection, l1descInx);
-			    return (l1descInx);
-			}
+                            "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
+                              phyBundleCollInp->collection, status);
+                savedStatus = status;
+                        } else {
+                            /* create a new bundle file */
+                            l1descInx = createPhyBundleDataObj (rsComm,
+                              phyBundleCollInp->collection, rescGrpInfo,
+                              &dataObjInp, dataType); // JMC - backport 4658
 
-                        createPhyBundleDir (rsComm,
-                          L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
-		        /* need to reset subPhyPath since phyBunDir has 
-		         * changed */
-			/* At this point subPhyPath[0] == 0 if it has gone
-			 * through replAndAddSubFileToDir below. != 0 if it has
-			 * not and already a good cache copy */
-			if (curSubFileCond.subPhyPath[0] != '\0')
-	                    setSubPhyPath (phyBunDir, curSubFileCond.dataId,
-                              curSubFileCond.subPhyPath);
-
-                    }
-		}	/* end of new bundle file */
-		status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
-		  myRescName, phyBunDir, &bunReplCacheHeader);
-                if (status < 0) {
-		    savedStatus = status;
-                    rodsLog (LOG_ERROR,
-                    "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
-                      curSubFileCond.subPhyPath, status);
+                            if (l1descInx < 0) {
+                                rodsLog (LOG_ERROR,
+                                  "_rsPhyBundleColl:createPhyBundleDataObj err for %s,stat=%d",
+                                  phyBundleCollInp->collection, l1descInx);
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: early return.  Done." );
+                    return (l1descInx);
                 }
-		curSubFileCond.bundled = 0;
-		curSubFileCond.subPhyPath[0] = 
-		  curSubFileCond.cachePhyPath[0] = '\0';
-                rstrcpy (curSubFileCond.collName, collEnt->collName, 
-		  MAX_NAME_LEN);
-                rstrcpy (curSubFileCond.dataName, collEnt->dataName, 
-		  MAX_NAME_LEN);
-		curSubFileCond.dataId = strtoll (collEnt->dataId, 0, 0);
-	    }	/* end of  name compare */
- 
-	    if (curSubFileCond.bundled > 0) {
-		/* already bundled. skip */
-	    } else if (isDataObjBundled (rsComm, collEnt)) {
-		/* already bundled, skip */
-		    curSubFileCond.bundled = 1;
-    		curSubFileCond.subPhyPath[0] = '\0';
-    		curSubFileCond.cachePhyPath[0] = '\0';
-           /* XXXX there was a bug that if dataSize == 0, replStatus is 0. 
-             * This bug has been fixed since 3.1 */
-        } else if( ( collEnt->replStatus > 0 || curSubFileCond.subPhyPath[0] == '\0') &&  // JMC - backport 4755
-	               strcmp (collEnt->resource, myRescName) == 0) {
-		    /* have a good copy in cache resource */
-            setSubPhyPath (phyBunDir, curSubFileCond.dataId, curSubFileCond.subPhyPath);
-            rstrcpy (curSubFileCond.cachePhyPath, collEnt->phyPath, MAX_NAME_LEN);
-            curSubFileCond.cacheReplNum = collEnt->replNum;
-			curSubFileCond.subFileSize = collEnt->dataSize;
-	    }
-	}
-	free (collEnt);     /* just free collEnt but not content */
-    }
+
+                            createPhyBundleDir (rsComm,
+                              L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
+                    /* need to reset subPhyPath since phyBunDir has 
+                     * changed */
+                /* At this point subPhyPath[0] == 0 if it has gone
+                 * through replAndAddSubFileToDir below. != 0 if it has
+                 * not and already a good cache copy */
+                if (curSubFileCond.subPhyPath[0] != '\0')
+                            setSubPhyPath (phyBunDir, curSubFileCond.dataId,
+                                  curSubFileCond.subPhyPath);
+
+                        }
+            }	/* end of new bundle file */
+            status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
+              myRescName, phyBunDir, &bunReplCacheHeader);
+                    if (status < 0) {
+                savedStatus = status;
+                        rodsLog (LOG_ERROR,
+                        "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
+                          curSubFileCond.subPhyPath, status);
+                    }
+            curSubFileCond.bundled = 0;
+            curSubFileCond.subPhyPath[0] = 
+              curSubFileCond.cachePhyPath[0] = '\0';
+                    rstrcpy (curSubFileCond.collName, collEnt->collName, 
+              MAX_NAME_LEN);
+                    rstrcpy (curSubFileCond.dataName, collEnt->dataName, 
+              MAX_NAME_LEN);
+            curSubFileCond.dataId = strtoll (collEnt->dataId, 0, 0);
+            }	/* end of  name compare */
+     
+            if (curSubFileCond.bundled > 0) {
+            /* already bundled. skip */
+            } else if (isDataObjBundled (rsComm, collEnt)) {
+            /* already bundled, skip */
+                curSubFileCond.bundled = 1;
+                curSubFileCond.subPhyPath[0] = '\0';
+                curSubFileCond.cachePhyPath[0] = '\0';
+               /* XXXX there was a bug that if dataSize == 0, replStatus is 0. 
+                 * This bug has been fixed since 3.1 */
+            } else if( ( collEnt->replStatus > 0 || curSubFileCond.subPhyPath[0] == '\0') &&  // JMC - backport 4755
+                       strcmp (collEnt->resource, myRescName) == 0) {
+                /* have a good copy in cache resource */
+                setSubPhyPath (phyBunDir, curSubFileCond.dataId, curSubFileCond.subPhyPath);
+                rstrcpy (curSubFileCond.cachePhyPath, collEnt->phyPath, MAX_NAME_LEN);
+                curSubFileCond.cacheReplNum = collEnt->replNum;
+                curSubFileCond.subFileSize = collEnt->dataSize;
+            }
+        }
+        free (collEnt);     /* just free collEnt but not content */
+    
+    } // while
+
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: iterate! done." );
     /* handle any remaining */
 
-    status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
-      myRescName, phyBunDir, &bunReplCacheHeader);
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: replAndAddSubFileToDir" );
+    status = replAndAddSubFileToDir (rsComm, &curSubFileCond,myRescName, phyBunDir, &bunReplCacheHeader);
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: replAndAddSubFileToDir. done." );
     if (status < 0) {
 	savedStatus = status;
         rodsLog (LOG_ERROR,
@@ -255,13 +284,16 @@ rescGrpInfo_t *rescGrpInfo)
           curSubFileCond.subPhyPath, status);
     }
 
-    status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
-      phyBundleCollInp->collection, &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: bundlleAndRegSubFiles" );
+    status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, phyBundleCollInp->collection, &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: bundlleAndRegSubFiles. done." );
+      
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stat=%d",
           phyBundleCollInp->collection, status);
     }
+rodsLog( LOG_NOTICE, "XXXX - _rsPhyBundleColl :: Done" );
     if (status >= 0 && savedStatus < 0) {
         return savedStatus;
     } else {
@@ -630,7 +662,7 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char* dataType ) // JMC - 
         eirods::log( PASS( false, -1, "createPhyBundleDataObj failed.", err ) );    
     }
     // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
-    if( "unix file type" != type ) { // JMC :: need a constant for this?
+    if( "unix file system" != type ) { // JMC :: need a constant for this?
         rodsLog (LOG_ERROR,
           "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
           rescGrpInfo->rescInfo->rescName);

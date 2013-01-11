@@ -37,9 +37,8 @@ rodsPathInp_t *rodsPathInp)
 	    return USER_INPUT_PATH_ERR;
 	}
 
-	rstrcpy (phyBundleCollInp.collection, collPath->outPath,
-	  MAX_NAME_LEN);
-
+	rstrcpy (phyBundleCollInp.collection, collPath->outPath,MAX_NAME_LEN);
+	  
 	status = rcPhyBundleColl (conn, &phyBundleCollInp);
 
 	if (status < 0) {

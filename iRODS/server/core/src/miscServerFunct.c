@@ -1657,6 +1657,7 @@ longNoSupport()
 int
 svrPortalPutGetRbudp (rsComm_t *rsComm)
 {
+    rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: Start" );
     portalOpr_t *myPortalOpr;
     portList_t *thisPortList;
     int lsock;
@@ -1724,31 +1725,32 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
 
     checkbuf (udpSockfd, UDPSOCKBUF, verbose);
     if (myPortalOpr->oprType == PUT_OPR) {
-	rbudpReceiver_t rbudpReceiver;
+        rbudpReceiver_t rbudpReceiver;
         bzero (&rbudpReceiver, sizeof (rbudpReceiver));
         int destL3descInx = myPortalOpr->dataOprInp.destL3descInx;
 
-	rbudpReceiver.rbudpBase.verbose = verbose;
-	rbudpReceiver.rbudpBase.udpSockBufSize = UDPSOCKBUF;
-	rbudpReceiver.rbudpBase.tcpPort = getTcpPortFromPortList (thisPortList);
+        rbudpReceiver.rbudpBase.verbose = verbose;
+        rbudpReceiver.rbudpBase.udpSockBufSize = UDPSOCKBUF;
+        rbudpReceiver.rbudpBase.tcpPort = getTcpPortFromPortList (thisPortList);
         rbudpReceiver.rbudpBase.tcpSockfd = tcpSock;
         rbudpReceiver.rbudpBase.udpSockfd = udpSockfd;
         rbudpReceiver.rbudpBase.hasTcpSock = 0;
         rbudpReceiver.rbudpBase.udpRemotePort = ntohl (udpPortBuf);
-	/* use the addr of tcp sock */
+    /* use the addr of tcp sock */
         if (getpeername (tcpSock, 
-	  (struct sockaddr *) &rbudpReceiver.rbudpBase.udpServerAddr,
-          &laddrlen) < 0) {
-            rodsLog (LOG_NOTICE,
-              "svrPortalPutGetRbudp() - getpeername() failed: errno=%d", 
-	      errno);
-            recvClose (&rbudpReceiver);
-            return (USER_RODS_HOSTNAME_ERR);
-	}
-	rbudpReceiver.rbudpBase.udpServerAddr.sin_port = 
-	  htons (rbudpReceiver.rbudpBase.udpRemotePort);
-	status = getfileByFd (&rbudpReceiver, FileDesc[destL3descInx].fd,
-	  packetSize);
+          (struct sockaddr *) &rbudpReceiver.rbudpBase.udpServerAddr,
+              &laddrlen) < 0) {
+                rodsLog (LOG_NOTICE,
+                  "svrPortalPutGetRbudp() - getpeername() failed: errno=%d", 
+              errno);
+                recvClose (&rbudpReceiver);
+                return (USER_RODS_HOSTNAME_ERR);
+        }
+
+        rbudpReceiver.rbudpBase.udpServerAddr.sin_port = htons (rbudpReceiver.rbudpBase.udpRemotePort);
+          
+        status = getfileByFd (&rbudpReceiver, FileDesc[destL3descInx].fd,  packetSize);
+        
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "svrPortalPutGetRbudp: getfileByFd error for %s",
@@ -1757,8 +1759,10 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
         }
         recvClose (&rbudpReceiver);
     } else if (myPortalOpr->oprType == GET_OPR) {
-	int sendRate;
-	rbudpSender_t rbudpSender;
+    rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: GET_OPR" );
+
+        int sendRate;
+        rbudpSender_t rbudpSender;
         int srcL3descInx = myPortalOpr->dataOprInp.srcL3descInx;
 
         bzero (&rbudpSender, sizeof (rbudpSender));
@@ -1788,8 +1792,12 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
             sendRate = DEF_UDP_SEND_RATE;
         }
 
-        status = sendfileByFd (&rbudpSender, sendRate, packetSize,
-          FileDesc[srcL3descInx].fd);
+        rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: calling sendfileByFd for file [%s], fd [%d]", 
+                 FileDesc[srcL3descInx].fileName, FileDesc[srcL3descInx].fd );
+
+        status = sendfileByFd( &rbudpSender, sendRate, packetSize, FileDesc[srcL3descInx].fd );
+          
+        rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: calling sendfileByFd. Done." );
 
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -1800,6 +1808,7 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
         sendClose (&rbudpSender);
     }
 
+    rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: Done" );
     return (status);
 }
 #endif  /* RBUDP_TRANSFER */

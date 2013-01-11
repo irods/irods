@@ -81,6 +81,7 @@ _rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int retval;
     openedDataObjInp_t dataObjCloseInp;
 
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjGet :: Start [%s]", dataObjInp->objPath );
 
     /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
     addKeyVal (&dataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
@@ -162,8 +163,10 @@ rodsLog( LOG_NOTICE, "XXXX - rsDataObjGet :: calling dataObjChksumAndReg" );
 
     /* return portalOprOut to the client and wait for the rcOprComplete
      * call. That is when the parallel I/O is done */
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjGet :: calling sendAndRecvBranchMsg." );
     retval = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, status,
                                    (void *) *portalOprOut, dataObjOutBBuf);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjGet :: calling sendAndRecvBranchMsg. Done." );
 
     if (retval < 0) {
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -178,6 +181,8 @@ rodsLog( LOG_NOTICE, "XXXX - rsDataObjGet :: calling dataObjChksumAndReg" );
         /* already send the client the status */
         return (SYS_NO_HANDLER_REPLY_MSG);
     }
+
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjGet :: Done." );
 }
 
 /* preProcParaGet - preprocessing for parallel get. Basically it calls

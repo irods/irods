@@ -57,18 +57,10 @@ int
 getStrInBuf (char **inbuf, char *outbuf, int *inbufLen, int outbufLen);
 int
 getZoneNameFromHint (char *rcatZoneHint, char *zoneName, int len);
-
-int freeDataObjInfoImpl (dataObjInfo_t *dataObjInfo);
-#define freeDataObjInfo( x ) \
-    rodsLog( LOG_NOTICE, "XXXX freeDataObjInfo called at %s:%d", __FILE__, __LINE__ ); \
-    freeDataObjInfoImpl( x );
+int 
+freeDataObjInfo(dataObjInfo_t *dataObjInfo);
 int
-freeAllDataObjInfoImpl (dataObjInfo_t *dataObjInfoHead);
-
-#define freeAllDataObjInfo( x ) \
-    rodsLog( LOG_NOTICE, "XXXX freeAllDataObjInfo called at %s:%d", __FILE__, __LINE__ ); \
-    freeAllDataObjInfoImpl( x );
-
+freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead);
 char *
 getValByKey (keyValPair_t *condInput, char *keyWord);
 int

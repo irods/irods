@@ -25,6 +25,7 @@
 int
 rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
+    rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim Start" );
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *tmpDataObjInfo;
@@ -66,8 +67,9 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
           "rsDataObjTrim: getDataObjInfo for %s", dataObjInp->objPath);
         return (status);
     }
-
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: calling resolveInfoForTrim" );
     status = resolveInfoForTrim (&dataObjInfoHead, &dataObjInp->condInput);
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: calling resolveInfoForTrim. Done. status: %d", status );
 
     if (status < 0) {
 	return (status);
@@ -79,11 +81,17 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (myAge > 0) myTime = time (0) - myAge * 60;
     }
 
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: iterate!" );
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: iterate :: tmpDataObjInfo != NULL" );
+    tmpDataObjInfo = dataObjInfoHead;
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: iterate :: tmpDataObjInfo :: name %s  resc name %s resc hier %s", tmpDataObjInfo->objPath, tmpDataObjInfo->rescName, tmpDataObjInfo->rescHier );
         if (myTime == 0 || atoi (tmpDataObjInfo->dataModify) <= myTime) {
 	    if (getValByKey (&dataObjInp->condInput, DRYRUN_KW) == NULL) {
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: iterate :: call dataObjUnlinkS!" );
                 status = dataObjUnlinkS (rsComm, dataObjInp, tmpDataObjInfo);
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: iterate :: call dataObjUnlinkS Done. status: %d", status );
                 if (status < 0) {
                     if (retVal == 0) {
                         retVal = status;
@@ -97,9 +105,11 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	}
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim :: iterate Done!" );
 
     freeAllDataObjInfo (dataObjInfoHead);
 
+    rodsLog( LOG_NOTICE, "XXXX - rsDataObjTrim Start. Done." );
     return (retVal);
 }
 
