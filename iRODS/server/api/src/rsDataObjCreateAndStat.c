@@ -15,7 +15,6 @@ rsDataObjCreateAndStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 openStat_t **openStat)
 {
     int status;
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCreateAndStat" );
 
     status = rsDataObjCreate (rsComm, dataObjInp);
 

@@ -89,8 +89,6 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     std::string resc_name;
     eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
 
-    rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg - resolved resource name [%s]", resc_name.c_str() );
-
     rescGrpInfo->rescInfo = new rescInfo_t;
     eirods::error err = eirods::get_resc_grp_info( resc_name, *rescGrpInfo );
     if( !err.ok() ) {
@@ -98,8 +96,6 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
          return -1;
     }
     
-    rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg - resolved resource group info" );
-
 #if 0 // JMC - legacy resource
     rescCnt = getRescCnt (rescGrpInfo);
     if (rescCnt != 1) {
@@ -126,9 +122,7 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-    rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg - calling _rsPhyPathReg" );
         status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
-    rodsLog( LOG_NOTICE, "XXXX - irsPhyPathReg - calling _rsPhyPathReg. done." );
 	
     } else if (remoteFlag == REMOTE_HOST) {
         status = remotePhyPathReg (rsComm, phyPathRegInp, rodsServerHost);
@@ -232,16 +226,13 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 	    status = dirPathReg (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo); 
     } else if ((tmpStr = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, MOUNT_POINT_STR) == 0) {
                 
-        rodsLog( LOG_NOTICE, "XXXX - calling mountFileDir" );
         status = mountFileDir (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo);
           
     } else {
         if (getValByKey (&phyPathRegInp->condInput, REG_REPL_KW) != NULL) {
-            rodsLog( LOG_NOTICE, "XXXX - calling filePathRegRepl" );
 	        status = filePathRegRepl (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo); 
         
         } else {
-            rodsLog( LOG_NOTICE, "XXXX - calling filePathReg" );
             status = filePathReg (rsComm, phyPathRegInp, filePath,rescGrpInfo->rescInfo); 
         }
     }

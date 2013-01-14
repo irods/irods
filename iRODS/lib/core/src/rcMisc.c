@@ -1314,7 +1314,6 @@ getUnixUid (char *userName)
 #ifndef _WIN32
     struct passwd *pw;
     int myuid;
-    rodsLog( LOG_NOTICE, "QQQQ - getUnixUid - %s", userName );
     if (!(pw = getpwnam(userName))) {
         myuid = -1;
     } else {

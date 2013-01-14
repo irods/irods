@@ -369,7 +369,6 @@ unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
     /* pass on the dataType */
 
-rodsLog( LOG_NOTICE, "XXXX - unbunPhyBunFile - dataType [%s]", dataType );
 
     if( dataType != NULL &&  // JMC - backport 4632
         ( strstr (dataType, GZIP_TAR_DT_STR)  != NULL || // JMC - backport 4658

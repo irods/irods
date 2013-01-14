@@ -295,7 +295,7 @@ _updateRescObjCount(
     eirods::sql_logger logger(__FUNCTION__, logSQL);
 
     resc_id[0] = '\0';
-    logger.log();
+//    logger.log();
     std::stringstream ss;
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone, 0,
@@ -1963,7 +1963,6 @@ int chlRegResc(rsComm_t *rsComm,
         (strcmp(rescInfo->rescType, "database") !=0) &&
         (strcmp(rescInfo->rescType, "mso") !=0) ) {
         if (strlen(rescInfo->rescVaultPath)<1) {
-            eirods::log(LOG_NOTICE, "qqq - Should not have reached here.");
             return(CAT_INVALID_RESOURCE_VAULT_PATH);
         }
     }

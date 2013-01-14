@@ -166,14 +166,12 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* query rcat for dataObjInfo and sort it */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: START" );
     if (multiCopyFlag) {
         status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
                                  accessPerm, 0);
     } else {
 	/* No multiCopy allowed. ignoreCondInput - need to find all copies
 	 * to make sure no multiCopy in the same resource */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: getDataObjInfo" );
         status = getDataObjInfo( rsComm, dataObjInp, &dataObjInfoHead, accessPerm, 1 );
     }
 
@@ -188,7 +186,6 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: getDataObjInfo" );
         if (status < 0) 
             return status;
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: _rsDataObjReplUpdate dataObjInfoHead %d", dataObjInfoHead );
         /* update old repl to new repl */
         status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat, NULL);
           
@@ -203,10 +200,8 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: _rsDataObjReplUpdate dataObjInfoH
 	    return status;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: sortObjInfoForRepl" );
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: sortObjInfoForRepl done." );
       
     if (status < 0) 
         return status;
@@ -235,7 +230,6 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: sortObjInfoForRepl done." );
 
     /* query rcat for resource info and sort it */
 	dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: getRescGrpForCreate" );
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
     if (status < 0) return status;
 
@@ -247,13 +241,11 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: getRescGrpForCreate" );
          ( target resources remained are left in &myRescGrpInfo.
          * Also, the copies need to be overwritten is returned
          * in destDataObjInfo. */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: resolveSingleReplCopy" );
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
                                         &myRescGrpInfo,   &destDataObjInfo, 
                                         &dataObjInp->condInput );
           
         if (status == HAVE_GOOD_COPY) {
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: HAVE_GOOD_COPY" );
            // =-=-=-=-=-=-=-
 		   // JMC - backport 4450
            dataObjInfo_t *cacheDataObjInfo = NULL;
@@ -325,7 +317,6 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: HAVE_GOOD_COPY" );
         /* NO_GOOD_COPY drop through here */
     }
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: applyPreprocRuleForOpen" );
     status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
     if (status < 0) return status;
 
@@ -333,10 +324,8 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: applyPreprocRuleForOpen" );
      * replicate to myRescGrpInfo */ 
 
     if (destDataObjInfo != NULL) {
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: _rsDataObjReplUpdate %d", destDataObjInfo );
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
                                        destDataObjInfo, transStat, oldDataObjInfoHead);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: _rsDataObjReplUpdate. done. destDataObjInfo %d", destDataObjInfo );
         if (status >= 0) {
             if (outDataObjInfo != NULL) {
                 *outDataObjInfo = *destDataObjInfo;
@@ -361,19 +350,16 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: _rsDataObjReplUpdate. done. destD
 
     if (myRescGrpInfo != NULL) {
 	    /* new kreplication to the resource group */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: _rsDataObjReplNewCopy" );
 	    status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
 	                                    myRescGrpInfo, transStat, oldDataObjInfoHead, 
 										outDataObjInfo);
 	    if (status < 0) savedStatus = status;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: free stuff" );
     freeAllDataObjInfo (dataObjInfoHead);
     freeAllDataObjInfo (oldDataObjInfoHead);
     freeAllRescGrpInfo (myRescGrpInfo);
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: done." );
     return (savedStatus);
 } 
 
@@ -400,7 +386,6 @@ _rsDataObjReplUpdate( rsComm_t*       rsComm,             dataObjInp_t*  dataObj
     int savedStatus = 0;
     int replCnt = 0;
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate :: destDataObjInfoHead %d", destDataObjInfoHead );
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
     } else {
@@ -409,10 +394,8 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate :: destDataObjInfoHead %d", de
 
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
     destDataObjInfo = destDataObjInfoHead;
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate destDataObjInfo %d", destDataObjInfo );
     while (destDataObjInfo != NULL) {
         if (destDataObjInfo->dataId == 0) {
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate destDataObjInfo dataId == 0, next!" );
             destDataObjInfo = destDataObjInfo->next;
             continue;
         }
@@ -432,10 +415,8 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate destDataObjInfo dataId == 0, n
 #endif // JMC - legacy resource
         {
             srcDataObjInfo = srcDataObjInfoHead;
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate :: srcDataObjInfo = srcDataObjInfoHead %d", srcDataObjInfo );
             while (srcDataObjInfo != NULL) {
                 /* overwrite a specific destDataObjInfo */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplUpdate :: _rsDataObjReplS" );
                 status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
                   
                 if (status >= 0) {
@@ -488,7 +469,6 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
     int savedStatus = 0;
     rescInfo_t *compRescInfo = NULL; // JMC - backport 4593
     rescInfo_t *cacheRescInfo = NULL; // JMC - backport 4593
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplNewCopy" );
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
     } else {
@@ -595,7 +575,6 @@ _rsDataObjReplS (rsComm_t *rsComm,
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *myDestDataObjInfo;
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjReplS :: dataObjOpenForRepl" );
     l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo, destRescInfo, 
                                     rescGroupName, destDataObjInfo, updateFlag );
     if (l1descInx < 0) {
@@ -711,11 +690,9 @@ dataObjOpenForRepl (rsComm_t *rsComm,
 
 #endif // JMC - legacy resource
     if (cacheDataObjInfo == NULL) {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: cacheDataObjInfo == NULL" );
         srcDataObjInfo  = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
         *srcDataObjInfo = *inpSrcDataObjInfo;
     } else {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: cacheDataObjInfo != NULL" );
         srcDataObjInfo = cacheDataObjInfo;
     }
 
@@ -733,7 +710,6 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: cacheDataObjInfo != NULL" );
 
     myDestDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
     if (updateFlag > 0) {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: update flag > 0" );
         /* update an existing copy */
         if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
             rodsLog( LOG_ERROR, "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
@@ -752,7 +728,6 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: update flag > 0" );
 	    replStatus = srcDataObjInfo->replStatus;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: here 1 ?" );
     fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
       
     l1DataObjInp = L1desc[destL1descInx].dataObjInp;
@@ -773,20 +748,17 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: here 1 ?" );
     }
 #endif // JMC - legacy resource
 
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: here 2 ?" );
     if (destRescInfo != NULL)
 	    destRescName = destRescInfo->rescName;
     else
 	    destRescName = NULL;
 
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: destRescName [%s]", destRescName );
 
     if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL)
         srcRescName = srcDataObjInfo->rescInfo->rescName;
     else
 	    srcRescName = NULL;
 
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: srcRescName [%s]", srcRescName );
     l1DataObjInp->numThreads = dataObjInp->numThreads =
         getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
                        &dataObjInp->condInput, destRescName, srcRescName);
@@ -794,17 +766,14 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: srcRescName [%s]", srcRescNam
     if( l1DataObjInp->numThreads > 0 && 
         L1desc[destL1descInx].stageFlag == NO_STAGING) {
         if (updateFlag > 0) {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: updateFlag > 0 -> dataOpen for dst" );
                 status = dataOpen (rsComm, destL1descInx);
         } else {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: updateFlag > 0 -> dataCreate for dst" );
             status = getFilePathName (rsComm, myDestDataObjInfo,L1desc[destL1descInx].dataObjInp);
             if (status >= 0) 
                 status = dataCreate (rsComm, destL1descInx);
         }
 
         if (status < 0) {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: fail!" );
 	        freeL1desc (destL1descInx);
 	        return (status);
         }
@@ -825,7 +794,6 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: fail!" );
     }
 
     /* open the src */
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: open the src" );
 
     srcL1descInx = allocL1desc ();
     if (srcL1descInx < 0) return srcL1descInx;

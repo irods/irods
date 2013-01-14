@@ -52,7 +52,7 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
     int allFlag;
     int verifyFlag; 
     int forceFlag;
-rodsLog( LOG_NOTICE, "_rsDataObjChksum :: Start" );
+
     if (getValByKey (&dataObjInp->condInput, CHKSUM_ALL_KW) != NULL) {
 	allFlag = 1;
     } else {
@@ -74,13 +74,11 @@ rodsLog( LOG_NOTICE, "_rsDataObjChksum :: Start" );
     *dataObjInfoHead = NULL;
     *outChksumStr = NULL;
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, dataObjInfoHead);
-rodsLog( LOG_NOTICE, "_rsDataObjChksum :: done in getDataObjInfoIncSpecColl" );
 
     if (status < 0) {
         return status;
     } else if (allFlag == 0) {
         /* screen out any stale copies */
-rodsLog( LOG_NOTICE, "_rsDataObjChksum :: sort for open data" );
         status = sortObjInfoForOpen (rsComm, dataObjInfoHead, &dataObjInp->condInput, 0);
 	  
 	    if (status < 0) 
@@ -114,14 +112,11 @@ rodsLog( LOG_NOTICE, "_rsDataObjChksum :: sort for open data" );
             tmpDataObjInfo = *dataObjInfoHead;
         }
         if (verifyFlag > 0 && strlen (tmpDataObjInfo->chksum) > 0) {
-    rodsLog( LOG_NOTICE, "_rsDataObjChksum :: verify checksum" );
             status = verifyDatObjChksum (rsComm, tmpDataObjInfo, 
               outChksumStr);
         } else {
-    rodsLog( LOG_NOTICE, "_rsDataObjChksum :: checksum and reg" );
             status = dataObjChksumAndRegInfo (rsComm, tmpDataObjInfo,outChksumStr);
                   
-    rodsLog( LOG_NOTICE, "_rsDataObjChksum :: checksum and reg - status %d", status );
         }
 
 	    return (status);

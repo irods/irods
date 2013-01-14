@@ -91,14 +91,13 @@ namespace eirods {
             } else {
     
                 if(resc.empty() && resc_hier().empty()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__ << " - there is no resource specified in the resource hierarchy.";
-                    log(LOG_NOTICE, msg.str());
+                    //std::stringstream msg;
+                    //msg << __FUNCTION__ << " - there is no resource specified in the resource hierarchy.";
+                    //log(LOG_NOTICE, msg.str());
                 } else if(resc.empty()) {
                     return ERROR(-1, "ERROR: Hierarchy string is not empty but first resource is!");
                 } else {
                     std::stringstream msg;
-                    msg << "qqq - Resolving using resource: \"" << resc << "\"";
                     log(LOG_NOTICE, msg.str());
                 }
     

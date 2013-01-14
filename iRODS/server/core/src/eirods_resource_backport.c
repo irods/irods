@@ -5,7 +5,6 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_string_tokenize.h"
-
 namespace eirods {
 
     // =-=-=-=-=-=-=-
@@ -14,7 +13,6 @@ namespace eirods {
     error resource_to_resc_info( rescInfo_t& _info, resource_ptr& _resc ) {
         error err;
         std::string prop_name;
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_info calling get property for host" );
         // =-=-=-=-=-=-=-
         // get the resource property - host
         prop_name = "host";
@@ -27,7 +25,6 @@ namespace eirods {
             msg << "]";
             return ERROR( -1, msg.str() );
         }
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_info calling get property for id" );
 
         // =-=-=-=-=-=-=-
         // get the resource property - id
@@ -42,7 +39,6 @@ namespace eirods {
             return ERROR( -1, msg.str() );
         }
 
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_info calling get property for freespace" );
         // =-=-=-=-=-=-=-
         // get the resource property - freespace
         prop_name = "freespace";
@@ -212,7 +208,6 @@ namespace eirods {
             return ERROR( -1, msg.str() );
         }
 
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_info setting values" );
         _info.rodsServerHost = host;
         _info.rescId         = id;
         _info.freeSpace      = freespace;
@@ -229,7 +224,6 @@ namespace eirods {
         strncpy( _info.rescCreate,    create.c_str(),   TIME_LEN );
         strncpy( _info.rescModify,    modify.c_str(),   TIME_LEN );
 
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_info setting values. done." );
         return SUCCESS();
          
     } // resource_to_resc_info
@@ -239,35 +233,26 @@ namespace eirods {
     // resource group info structure.
     error resource_to_resc_grp_info( rescGrpInfo_t& _grp_info, resource_ptr& _resc ) {
 
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: checking rescInfo" );
         // =-=-=-=-=-=-=-
         // allocate the rescinfo struct if necessary
         if( !_grp_info.rescInfo ) {
             _grp_info.rescInfo = new rescInfo_t;
         } else {
-////rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: rescInfo IS NOT NULL!!!!" );
 
         }
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: checking rescInfo. done: %d", _grp_info.rescInfo );
          
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: calling resource_to_resc_info" );
         // =-=-=-=-=-=-=-
         // call earlier helper function to fill in the rescInfo_t structure 
         error err = resource_to_resc_info( *_grp_info.rescInfo, _resc ); 
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: calling resource_to_resc_info. done." );
         if( !err.ok() ) {
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: calling resource_to_resc_info. ERROR" );
             return PASS( false, -1, "resource_to_resc_info - failed.", err );            
             
         }
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: calling resource_to_resc_info. Done." );
        
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: calling rstrcpy" );
         // =-=-=-=-=-=-=-
         // copy the name for the resc group.  since we dont have groups anymore this
         // may cause an issue with legacy code. 
         rstrcpy( _grp_info.rescGroupName, _grp_info.rescInfo->rescName, NAME_LEN );
-//rodsLog( LOG_NOTICE, "XXXX - resource_to_resc_grp_info :: calling rstrcpy. done." );
 
         return SUCCESS();
 
@@ -479,6 +464,14 @@ namespace eirods {
         resource_ptr resc;
         error res_err = resc_mgr.resolve( _name, resc );
         if( res_err.ok() ) {
+            // =-=-=-=-=-=-=-
+            // check to see if the resource is active, if not fail
+            int status = 0;
+            get_resource_property< int >( _name, "status", status );
+            if( status == INT_RESC_STATUS_DOWN ) {
+                return ERROR( SYS_RESC_IS_DOWN, "The Resource is Down" );
+            }
+
             error info_err = resource_to_resc_info( _info, resc );
             if( info_err.ok() ) {
                 return SUCCESS();
@@ -499,14 +492,18 @@ namespace eirods {
     // helper function to save on typing - get legacy data struct
     // for resource group given a resource name
     error get_resc_grp_info( std::string _name, rescGrpInfo_t& _info ) {
-       resource_ptr resc;
-//rodsLog( LOG_NOTICE, "XXXX - get_resc_grp_info :: calling resc_mgr.resolve with _name [%s]", _name.c_str() );
+        resource_ptr resc;
         error res_err = resc_mgr.resolve( _name, resc );
-//rodsLog( LOG_NOTICE, "XXXX - get_resc_grp_info :: calling resc_mgr.resolve with _name [%s]. Done.", _name.c_str() );
         if( res_err.ok() ) {
-//rodsLog( LOG_NOTICE, "XXXX - get_resc_grp_info :: calling resource_to_resc_grp_info" );
+            // =-=-=-=-=-=-=-
+            // check to see if the resource is active, if not fail
+            int status = 0;
+            get_resource_property< int >( _name, "status", status );
+            if( status == INT_RESC_STATUS_DOWN ) {
+                return ERROR( SYS_RESC_IS_DOWN, "The Resource is Down" );
+            }
+
             error info_err = resource_to_resc_grp_info( _info, resc );
-//rodsLog( LOG_NOTICE, "XXXX - get_resc_grp_info :: calling resource_to_resc_grp_info. Done." );
             if( info_err.ok() ) {
                 return SUCCESS();
 

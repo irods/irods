@@ -68,6 +68,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 int
 _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
+
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *otherDataObjInfo = NULL;
@@ -213,7 +214,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             tmpDataObjInfo = nextDataObjInfo;
 	        continue;
 	    }
-	    
+	   
 		status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
@@ -532,7 +533,6 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo, 
                          dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
 {
-    rodsLog( LOG_NOTICE, "XXXX - procDataObjOpenForWrite" );
     int status = 0;
     rescGrpInfo_t *myRescGrpInfo = NULL;
 
@@ -566,7 +566,6 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #endif // JMC - legacy resource
         {     /* dest resource is not a compound resource */
            /* we don't have a copy, so create an empty dataObjInfo */
-    rodsLog( LOG_NOTICE, "XXXX - procDataObjOpenForWrite :: create an empty repl" );
             status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
@@ -578,45 +577,9 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     } else {   /*  The target data object exists */
         // JMC - legacy resource - status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead, cacheDataObjInfo, compDataObjInfo, compRescInfo);
-#if 0  /* refactored by procDataObjOpenForExistObj */
-        if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
-            /* It is a COMPOUND_CL. Save the comp object because it can be 
-             * requeued by stageAndRequeDataToCache */
-            *compDataObjInfo = *dataObjInfoHead;
-            status = stageAndRequeDataToCache (rsComm, dataObjInfoHead);
-            if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
-                rodsLogError (LOG_ERROR, status,
-                              "procDataObjForOpenWrite:stageAndRequeDataToCache %s failed",
-                              (*dataObjInfoHead)->objPath);
-                return status;
-            }
-            *cacheDataObjInfo = *dataObjInfoHead;
-        } else if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL
-                   && getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo) >= 0 &&
-                   strlen (myRescGrpInfo->rescGroupName) > 0) {
-            /* Do purge cache and destResc is a resource group. See if we
-             * a COMPOUND_CL resource in the group */ 
-            if (getRescInGrpByClass (rsComm, myRescGrpInfo->rescGroupName,
-                                     COMPOUND_CL, compRescInfo, NULL) >= 0) {
-                /* get cacheDataObjInfo */
-                status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
-                                                     *dataObjInfoHead, NULL, myRescGrpInfo, NULL, cacheDataObjInfo);
-                if (status < 0) {
-                    rodsLogError (LOG_NOTICE, status,
-                                  "procDataObjForOpenWrite: getCacheDataInfo of %s failed",
-                                  (*dataObjInfoHead)->objPath);
-                } else {
-                    if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
-                                           compDataObjInfo) >= 0) {
-                        /* we have a compDataObjInfo */
-                        *compRescInfo = NULL;
-                    }
-                }
-            }
-        }
-#endif /*   refactored by procDataObjOpenForExistObj */
+        status = 0;
     }
-    rodsLog( LOG_NOTICE, "XXXX - procDataObjOpenForWrite :: exit." );
+
     if (*compDataObjInfo != NULL) {
         dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
     }

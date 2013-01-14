@@ -45,7 +45,6 @@
 int
 rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
-    
     int l1descInx;
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
@@ -180,14 +179,10 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling getRescGrpForCreate" );
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling getRescGrpForCreate. Done." );
     if (status < 0) return status;
 #if 1 // JMC - remove resource.c
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling _rsDataObjCreateWithRescInfo with rescInfo [%d], ", myRescGrpInfo->rescInfo ); 
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCreate :: calling _rsDataObjCreateWithRescInfo. Done." );
 #else // JMC - remove resource.c
     rescCnt = getRescCnt (myRescGrpInfo);
 
@@ -304,7 +299,6 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     dataObjInfo = (dataObjInfo_t*)malloc (sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - dataObjInfo %d, rescName %s", dataObjInfo, rescInfo->rescName );
 #if 0 // JMC - remove legacy resources 
 	if (getRescClass (rescInfo) == COMPOUND_CL) {
 	    rescInfo_t *cacheResc = NULL;
@@ -357,16 +351,9 @@ rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - dataObjInfo %d, rescNa
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
 
-rodsLog( LOG_NOTICE, "XXXX **** _rsDataObjCreateWithRescInfo - dataObjInfo %d l1desc dataObjInfo %d", dataObjInfo, L1desc[l1descInx].dataObjInfo );
-
-rodsLog( LOG_NOTICE, "XXXX **** _rsDataObjCreateWithRescInfo - dataObjInfo rescName %s l1desc dataObjInfo rescName %s", dataObjInfo->rescInfo->rescName, L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
-
-
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling getPathName" );
     status = getFilePathName (rsComm, dataObjInfo, L1desc[l1descInx].dataObjInp);
 
     if (status < 0) {
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling getPathName FAILED." );
         freeL1desc (l1descInx);
         return (status);
     }
@@ -376,22 +363,17 @@ rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling getPathName FA
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
         
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - DONT OPEN ANYTHING." );
         /* don't actually physically open the file */
         status = 0;
     } else {
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - calling dataObjCreateAndReg." );
         
         status = dataObjCreateAndReg( rsComm, l1descInx );
     }
 
     if (status < 0) {
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - returning status %d", status );
 	    freeL1desc (l1descInx);
         return (status);
     } else {
-rodsLog( LOG_NOTICE, "XXXX _rsDataObjCreateWithRescInfo - returning l1descInx %d.", l1descInx );
-rodsLog( LOG_NOTICE, "XXXX **** _rsDataObjCreateWithRescInfo - dataObjInfo rescName %s l1desc dataObjInfo rescName %s", dataObjInfo->rescInfo->rescName, L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
 	    return (l1descInx);
     }
 }
@@ -592,7 +574,6 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
     int            status;
     ruleExecInfo_t rei;
 
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate" );
     /* query rcat for resource info and sort it */
 
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
@@ -626,10 +607,8 @@ rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate" );
             (*myRescGrpInfo)->cacheNext = 0;
             (*myRescGrpInfo)->next = 0;
             (*myRescGrpInfo)->rescInfo = new rescInfo_t;
-            rodsLog( LOG_NOTICE, "getRescGrpForCreate - allocating a new rescGrpInfo_t %d, rescInfo_t %d", *myRescGrpInfo, (*myRescGrpInfo)->rescInfo );
         //}
 
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: calling set_default_resource" );
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
         if( !set_err.ok() ) {
             eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
@@ -637,11 +616,9 @@ rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: calling set_default_resource
         }
 
     } else {
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: using resource from rei.rgi" );
         *myRescGrpInfo = rei.rgi;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: calling setRescQuota" );
     status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
       
     if( status == SYS_RESC_QUOTA_EXCEEDED ) {
@@ -658,7 +635,6 @@ rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: calling setRescQuota" );
 	    return 1;
     }
 #else
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: exiting" );
     return 0; // JMC - should this be 1 per above block?
 #endif
 }

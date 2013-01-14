@@ -686,11 +686,8 @@ syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int savedStatus = 0;
 
     tmpDataObjInfo = dataObjInfoHead;
-rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPath :: tmpDataObjInfo %d", tmpDataObjInfo );
     while (tmpDataObjInfo != NULL) {
-rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPath :: call syncDataObjPhyPaths" );
 	    status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
-rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPath :: call syncDataObjPhyPaths done. status %s", status );
 	 
         if (status < 0) {
             savedStatus = status;
@@ -717,7 +714,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
         return 0;
 
-rodsLog( LOG_NOTICE, "XXXX - syncDataObjPhyPathS :: call get_resource_property for [%s]", dataObjInfo->rescInfo->rescName );
     int create_path = 0;
     eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "create_path", create_path );
     if( !err.ok() ) {

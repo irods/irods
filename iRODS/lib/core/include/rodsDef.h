@@ -313,7 +313,6 @@ struct rodsHostAddr_t {
     int dummyInt;	/* make it to 64 bit boundary */
 
     rodsHostAddr_t& operator=( const rodsHostAddr_t& _rhs ) {
-        rodsLog( LOG_ERROR, "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  *** calling rodsHostAddr_t operator= *** XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
         strncpy( hostAddr, _rhs.hostAddr, LONG_NAME_LEN );
         strncpy( zoneName, _rhs.zoneName, NAME_LEN );
         portNum  = _rhs.portNum;

@@ -1657,7 +1657,6 @@ longNoSupport()
 int
 svrPortalPutGetRbudp (rsComm_t *rsComm)
 {
-    rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: Start" );
     portalOpr_t *myPortalOpr;
     portList_t *thisPortList;
     int lsock;
@@ -1759,7 +1758,6 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
         }
         recvClose (&rbudpReceiver);
     } else if (myPortalOpr->oprType == GET_OPR) {
-    rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: GET_OPR" );
 
         int sendRate;
         rbudpSender_t rbudpSender;
@@ -1792,12 +1790,8 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
             sendRate = DEF_UDP_SEND_RATE;
         }
 
-        rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: calling sendfileByFd for file [%s], fd [%d]", 
-                 FileDesc[srcL3descInx].fileName, FileDesc[srcL3descInx].fd );
-
         status = sendfileByFd( &rbudpSender, sendRate, packetSize, FileDesc[srcL3descInx].fd );
           
-        rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: calling sendfileByFd. Done." );
 
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -1808,7 +1802,6 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
         sendClose (&rbudpSender);
     }
 
-    rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGetRbudp :: Done" );
     return (status);
 }
 #endif  /* RBUDP_TRANSFER */

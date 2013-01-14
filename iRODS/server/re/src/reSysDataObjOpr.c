@@ -480,7 +480,6 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
 
     RE_TEST_MACRO ("    Calling msiSysChksumDataObj")
 
-rodsLog( LOG_NOTICE, "*** XXXX *** msiSysChksumDataObj" );
     rei->status = 0;
 
     /* don't cache replicate or copy operation */

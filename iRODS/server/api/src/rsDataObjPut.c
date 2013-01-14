@@ -111,9 +111,7 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
 	/* single buffer put */
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling l3DataPutSingleBuf" );
         status = l3DataPutSingleBuf (rsComm, dataObjInp, dataObjInpBBuf);
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling l3DataPutSingleBuf. done." );
         if (status >= 0 && allFlag == 1) {
             /* update the rest of copies */
             addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
@@ -141,9 +139,7 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* so that mmap will work */
     dataObjInp->openFlags |= O_RDWR;
 
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling rsDataObjCreate" );
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjPut :: calling rsDataObjCreate. done." );
  
     if (l1descInx < 0) 
         return l1descInx;
@@ -256,12 +252,8 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* don't actually physically open the file */
     addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
-    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: calling rsDataObjCreate" );
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: calling rsDataObjCreate. done." );
     
-    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInfo Name 1. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
-
     if (l1descInx <= 2) {
         if (l1descInx >= 0) {
             rodsLog (LOG_ERROR,
@@ -272,12 +264,9 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             return l1descInx;
         }
     }
-
     
     bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp, dataObjInpBBuf );
       
-    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInfo Name 2. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
-
     if (bytesWritten < 0) {
         myDataObjInfo = L1desc[l1descInx].dataObjInfo;
         if (getStructFileType (myDataObjInfo->specColl) < 0 &&
@@ -295,8 +284,6 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
     
-    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInf Name 3. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
-
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
     L1desc[l1descInx].oprStatus = bytesWritten;
@@ -312,8 +299,6 @@ l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else if (strlen (rescGroupName) == 0) {
         return bytesWritten;
     }
-
-    rodsLog( LOG_NOTICE, "XXXX - l3DataPutSingleBuf :: rescInf Name 4. %s", L1desc[l1descInx].dataObjInfo->rescInfo->rescName );
 
     /* get here when Put failed. and rescGroupName is a valid resc group. 
      * Try other resc in the resc group */

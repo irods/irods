@@ -909,7 +909,6 @@ putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
 
                 if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL ||
                   getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
-            rodsLog( LOG_NOTICE, "**** XXXX **** - bulkPutFileUtil" );
                 char chksumStr[NAME_LEN];
                     status = chksumLocFile (srcPath, chksumStr);
                     if (status < 0) {

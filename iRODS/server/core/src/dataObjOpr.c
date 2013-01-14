@@ -326,6 +326,8 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             #endif
         }*/
 
+        // =-=-=-=-=-=-=-
+        // get the resource info struct given a resource name
         dataObjInfo->rescInfo = new rescInfo_t;
         eirods::error err = eirods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
         if( !err.ok() ) {
@@ -333,6 +335,7 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             msg << "getDefaultLocalRescInfo - failed to get resource info";
             msg << dataObjInfo->rescName;
             eirods::log( PASS( false, -1, msg.str(), err ) );
+            return err.code();
         }
 
         rstrcpy (dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
@@ -386,8 +389,6 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
     *downCurrentInfo = *downOldInfo = NULL;
 
     tmpDataObjInfo = *dataObjInfoHead;
-      
-    rodsLog( LOG_NOTICE, "sortObjInfo - tmpDataObjInfo %d, next %d", tmpDataObjInfo, tmpDataObjInfo->next );
 
     while (tmpDataObjInfo != NULL) {
 
@@ -398,43 +399,32 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
         if (tmpDataObjInfo->rescInfo                 == NULL || 
             tmpDataObjInfo->rescInfo->rodsServerHost == NULL) {
             topFlag = 0;
-    //rodsLog( LOG_NOTICE, "sortObjInfo - A" );
 
         } else if (tmpDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) {
-    //rodsLog( LOG_NOTICE, "sortObjInfo - B" );
             /* the resource is down */
             if (tmpDataObjInfo->replStatus > 0) {
-    //rodsLog( LOG_NOTICE, "sortObjInfo - C" );
                 queDataObjInfo (downCurrentInfo, tmpDataObjInfo, 1, 1);
             } else {
-    //rodsLog( LOG_NOTICE, "sortObjInfo - D" );
                 queDataObjInfo (downOldInfo, tmpDataObjInfo, 1, 1);
             }
 
-    //rodsLog( LOG_NOTICE, "sortObjInfo - E" );
             tmpDataObjInfo = nextDataObjInfo;
 
-    //rodsLog( LOG_NOTICE, "sortObjInfo - F" );
             continue;
         } else {
-    //rodsLog( LOG_NOTICE, "sortObjInfo - G" );
             rodsServerHost_t *rodsServerHost = (rodsServerHost_t *) tmpDataObjInfo->rescInfo->rodsServerHost;
-    //rodsLog( LOG_NOTICE, "sortObjInfo - F rodsServerHost %d, resc name %s", rodsServerHost, tmpDataObjInfo->rescInfo->rescName );
             
             if ( rodsServerHost && rodsServerHost->localFlag != LOCAL_HOST) {
-    //rodsLog( LOG_NOTICE, "sortObjInfo - H" );
                 topFlag = 0;
             } else {
-    //rodsLog( LOG_NOTICE, "sortObjInfo - I" );
                 /* queue local host at the head */
                 topFlag = 1;
             }
         }
-        //rodsLog( LOG_NOTICE, "sortObjInfo - getting class for [%s]", tmpDataObjInfo->rescInfo->rescName );
+
         std::string class_type;
         eirods::error prop_err = eirods::get_resource_property<std::string>( tmpDataObjInfo->rescInfo->rescName, "class", class_type );
-        //rodsLog( LOG_NOTICE, "sortObjInfo - getting class. done." );
-        //rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
+        rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
         if (tmpDataObjInfo->replStatus > 0) {
 #if 0 // JMC - legacy resource
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
@@ -506,14 +496,11 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
         *oldCacheInfo, *downCurrentInfo, *downOldInfo;
     int status = 0;
-rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head %d", *dataObjInfoHead );
     sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
-rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: currentCacheInfo %d", currentCacheInfo );
 
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
-rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head 2 %d", *dataObjInfoHead );
     if (writeFlag == 0) {
         /* For read only */
         if (*dataObjInfoHead != NULL) {
@@ -571,7 +558,6 @@ rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head 2 %d", *dataObjInfoHead 
             }
         }
     }
-rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForOpen :: head 3 %d status %d", *dataObjInfoHead, status );
     return (status);
 
     return 0;
@@ -654,6 +640,7 @@ int
 requeDataObjInfoByResc (dataObjInfo_t **dataObjInfoHead, 
                         char *preferredResc, int writeFlag, int topFlag)
 {
+
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int status = -1;
 
@@ -912,13 +899,10 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
                   *oldCacheInfo,    *downCurrentInfo,  *downOldInfo;
 
-    rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForRepl data head %d, old head %d delete %d", *dataObjInfoHead, *oldDataObjInfoHead, deleteOldFlag );
 
-    rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForRepl :: sortObjInfo." );
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
     
-    rodsLog( LOG_NOTICE, "XXXX - sortObjInfoForRepl :: sortObjInfo. done." );
 
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
@@ -1238,10 +1222,7 @@ resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead,
     dataObjInfo_t *matchedDataObjInfo = NULL;
     dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: head %d, old head %d, dst grp %d dst obj info %d, cond input %d",
-         *dataObjInfoHead, *oldDataObjInfoHead, *destRescGrpInfo, *destDataObjInfo, condInput );
     /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: matchDataObjInfoByCondInput" );
     status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
@@ -1249,7 +1230,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: matchDataObjInfoByCondInpu
         return status;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: A" );
     if (matchedDataObjInfo != NULL) {
         /* que the matched one on top */
         queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
@@ -1261,10 +1241,8 @@ rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: A" );
         *dataObjInfoHead = matchedOldDataObjInfo;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B" );
     if ((*destRescGrpInfo)->next == NULL ||
         strlen ((*destRescGrpInfo)->rescGroupName) == 0) {
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B 1 :: chkCopyInResc" );
         /* single target resource */
         if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
                                                *destRescGrpInfo)) != NULL) {
@@ -1273,7 +1251,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B 1 :: chkCopyInResc" );
             return (HAVE_GOOD_COPY);
         }
     } else {
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B 2 :: matchAndTrimRescGrp" );
         /* target resource is a resource group with multi resources */
         matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
                              TRIM_MATCHED_RESC_INFO, NULL);
@@ -1282,7 +1259,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: B 2 :: matchAndTrimRescGrp
             return (HAVE_GOOD_COPY);
         }
     }
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: C" );
     /* handle the old dataObj */
     if (getValByKey (condInput, ALL_KW) != NULL) {
         dataObjInfo_t *trimmedDataObjInfo = NULL;
@@ -1307,7 +1283,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: C" );
             }
         }
     }
-rodsLog( LOG_NOTICE, "XXXX - resolveSingleReplCopy :: D" );
     return (NO_GOOD_COPY);
 }
 
@@ -1376,7 +1351,6 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
 
 {
 
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: Start" );
     int replNumCond;
     int replNum;
     int rescCond;
@@ -1394,13 +1368,11 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     if ((tmpStr = getValByKey (condInput, REPL_NUM_KW)) != NULL) {
         replNum = atoi (tmpStr);
         replNumCond = 1;
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: replNum = %d", replNum );
     } else {
         replNumCond = 0;
     }
 
     if ((rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: rescName [%s]", rescName );
         rescCond = 1;
     } else {
         rescCond = 0;
@@ -1413,49 +1385,37 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     *matchedDataObjInfo = NULL;
     *matchedOldDataObjInfo = NULL;
 
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: iterate on dataObjInfoHead 1" );
     tmpDataObjInfo = *dataObjInfoHead;
     prevDataObjInfo = NULL;
     while (tmpDataObjInfo != NULL) {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: tmpDataObjInfo %d", tmpDataObjInfo );
         nextDataObjInfo = tmpDataObjInfo->next;
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: nextDataObjInfo obj path %s, resc hier %s, resc name %s", tmpDataObjInfo->objPath, tmpDataObjInfo->rescHier, tmpDataObjInfo->rescName );
         if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
                 *dataObjInfoHead = (*dataObjInfoHead)->next;
             }
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: queueDataObjInfo 1 :: obj path %s, resc hier %s, resc name %s", tmpDataObjInfo->objPath, tmpDataObjInfo->rescHier, tmpDataObjInfo->rescName );
             queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         } else if (rescCond == 1 && 
                    (strcmp (rescName, tmpDataObjInfo->rescGroupName) == 0 ||
                     strcmp (rescName, tmpDataObjInfo->rescName) == 0)) {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: match resc name" );
             if (prevDataObjInfo != NULL) {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: match resc name prevDataObjInfo != NULL" );
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: match resc name prevDataObjInfo == NULL" );
                 *dataObjInfoHead = (*dataObjInfoHead)->next;
             }
             /* que single to the bottom */
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: queueDataObjInfo 2 :: obj path %s, resc hier %s, resc name %s", tmpDataObjInfo->objPath, tmpDataObjInfo->rescHier, tmpDataObjInfo->rescName );
             queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         } else {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: ELSE" );
             prevDataObjInfo = tmpDataObjInfo;
         }
         tmpDataObjInfo = nextDataObjInfo;
     }
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: iterate on dataObjInfoHead 1 Done." );
 
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: iterate on dataObjInfoHead 2" );
     tmpDataObjInfo = *oldDataObjInfoHead;
     prevDataObjInfo = NULL;
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: nextDataObjInfo obj path %s, resc hier %s, resc name %s", tmpDataObjInfo->objPath, tmpDataObjInfo->rescHier, tmpDataObjInfo->rescName );
         if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
@@ -1466,22 +1426,17 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
         } else if (rescCond == 1 &&
                    (strcmp (rescName, tmpDataObjInfo->rescGroupName) == 0 ||
                     strcmp (rescName, tmpDataObjInfo->rescName)) == 0) {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: match resc name" );
             if (prevDataObjInfo != NULL) {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: match resc name prevDataObjInfo != NULL" );
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: match resc name prevDataObjInfo == NULL" );
                 *oldDataObjInfoHead = (*oldDataObjInfoHead)->next;
             }
             queDataObjInfo (matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
         } else {
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: ELSE" );
             prevDataObjInfo = tmpDataObjInfo;
         }
         tmpDataObjInfo = nextDataObjInfo;
     }
-    rodsLog( LOG_NOTICE, "XXXX - matchDataObjInfoByCondInput :: iterate on dataObjInfoHead 2 Done." );
 
     if (*matchedDataObjInfo == NULL && *matchedOldDataObjInfo == NULL) {
         return (CAT_NO_ROWS_FOUND);
@@ -1505,17 +1460,12 @@ int
     char *tmpStr;
     int condFlag;
     int toTrim;
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: Start" );
-char* resc_name = getValByKey( condInput, RESC_NAME_KW );
+    char* resc_name = getValByKey( condInput, RESC_NAME_KW );
 
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: resc_name [%s]", resc_name );
 
     sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0);
-
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: call matchDataObjInfoByCondInput" );
     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: call matchDataObjInfoByCondInput. done status: %d", status );
 
     if (status < 0) {
         freeAllDataObjInfo (*dataObjInfoHead);
@@ -1553,7 +1503,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: call matchDataObjInfoByCondIn
     unmatchedInfoCnt = getDataObjInfoCnt (*dataObjInfoHead);
     unmatchedOldInfoCnt = getDataObjInfoCnt (oldDataObjInfoHead);
 
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: matchedInfoCnt %d, unmatchedInfoCnt %d, unmatchedOldInfoCnt, %d", matchedInfoCnt, unmatchedInfoCnt, unmatchedOldInfoCnt );
     /* free the unmatched one first */
 
     freeAllDataObjInfo (*dataObjInfoHead);
@@ -1562,7 +1511,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: matchedInfoCnt %d, unmatchedI
 
     if ((tmpStr = getValByKey (condInput, COPIES_KW)) != NULL) {
         minCnt = atoi (tmpStr);
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: minCnt %d", minCnt );
         if (minCnt <= 0) {
             minCnt = DEF_MIN_COPY_CNT;
         }
@@ -1571,14 +1519,12 @@ rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: minCnt %d", minCnt );
     }
 
     toTrim = unmatchedInfoCnt + matchedInfoCnt - minCnt;
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: toTrim %d", toTrim );
 
     if (toTrim > matchedInfoCnt) {      /* cannot trim more than match */
         toTrim = matchedInfoCnt;
     }
 
     if (toTrim >= 0) {
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: toTrim > 0" );
         /* trim all old */
         *dataObjInfoHead = matchedOldDataObjInfo;
 
@@ -1590,11 +1536,9 @@ rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: toTrim > 0" );
             while (tmpDataObjInfo != NULL) {
                 if (tmpDataObjInfo->next == NULL) {
                     if (prevDataObjInfo == NULL) {
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: matchedDataObjInfo = NULL" );
 
                         matchedDataObjInfo = NULL;
                     } else {
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: prevDataObjInfo->next = NULL" );
                         prevDataObjInfo->next = NULL;
                     }
                     freeDataObjInfo (tmpDataObjInfo);
@@ -1604,7 +1548,6 @@ rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: prevDataObjInfo->next = NULL"
                 tmpDataObjInfo = tmpDataObjInfo->next;
             }
         }
-rodsLog( LOG_NOTICE, "XXXX - resolveInfoForTrim :: queue matchedDataObjInfo" );
         queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
     } else {
         /* negative toTrim. see if we can trim some matchedOldDataObjInfo */
@@ -1648,7 +1591,6 @@ int
 {
     char *rescName;
     int status = -1; 
-
     if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
         (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
         (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 

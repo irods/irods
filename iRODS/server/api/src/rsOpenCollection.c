@@ -13,7 +13,6 @@
 int
 rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 {
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: Start rsComm %d, openCollInp %d", rsComm, openCollInp );
     int status;
     int handleInx;
     collHandle_t *collHandle;
@@ -25,9 +24,7 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 
     collHandle = &CollHandle[handleInx];
 
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: rsInitQueryHandle" );
     status = rsInitQueryHandle (&collHandle->queryHandle, rsComm);
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: rsInitQueryHandle. done." );
    
     if (status < 0) return status;
 
@@ -37,28 +34,22 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 	    replKeyVal (&openCollInp->condInput, &collHandle->dataObjInp.condInput);
     }
 
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: rsObjStat" );
     status = rsObjStat (rsComm, &collHandle->dataObjInp, &rodsObjStatOut);
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: rsObjStat. done." );
     if (status < 0) {
 	    rsCloseCollection (rsComm, &handleInx);
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: early exit 1" );
 	    return status;
     }
 
     if (rodsObjStatOut->objType != COLL_OBJ_T) {
         freeRodsObjStat (rodsObjStatOut);
         rsCloseCollection (rsComm, &handleInx);
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: early exit 2" );
         return CAT_NAME_EXISTS_AS_DATAOBJ;
     }
 
 #if 0
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
 #else
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: replSpecColl" );
     replSpecColl (rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl);
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: replSpecColl. done." );
 #endif
     if( rodsObjStatOut->specColl != NULL && 
         rodsObjStatOut->specColl->collClass == LINKED_COLL) {
@@ -70,7 +61,6 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 
     collHandle->state = COLL_OPENED;
     collHandle->flags = openCollInp->flags;
-    rodsLog( LOG_NOTICE, "XXXX - rsOpenCollection :: Done." );
     /* the collection exist. now query the data in it */
     return (handleInx);
 }

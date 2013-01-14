@@ -826,8 +826,6 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
     int srcL1descInx;
     dataObjInfo_t *srcDataObjInfo;
 
-rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose l1descInx: %d, dataObjInfo %d rescInfo %d rescName %s", l1descInx, dataObjInfo, dataObjInfo->rescInfo, dataObjInfo->rescInfo->rescName );
-
     *chksumStr = NULL;
     if (oprType == REPLICATE_DEST || oprType == PHYMV_DEST) {
         srcL1descInx = L1desc[l1descInx].srcL1descInx;
@@ -841,7 +839,6 @@ rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose l1descInx: %d, dataObj
         if (strlen (srcDataObjInfo->chksum) > 0 &&
             srcDataObjInfo->replStatus > 0) {
             /* the source has chksum. Must verify chksum */
-rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 1" );
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
@@ -871,7 +868,6 @@ rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 1" );
     if (L1desc[l1descInx].chksumFlag == 0) {
         return 0;
     } else if (L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM) {
-rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 2" );
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
         if (status < 0)  return (status);
 
@@ -935,7 +931,6 @@ rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 2" );
             return 0;
 	}
     } else {	/* REG_CHKSUM */
-rodsLog( LOG_NOTICE, "**** XXXX **** - procChksumForClose 3" );
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
         if (status < 0)  return (status);
 
