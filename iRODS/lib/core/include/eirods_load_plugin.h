@@ -109,7 +109,7 @@ namespace eirods {
 		
         // =-=-=-=-=-=-=-
         // try to open the shared object
-        std::string so_name = _dir  + std::string("/lib") + clean_plugin_name + std::string(".so");
+        std::string so_name = _dir  + std::string("lib") + clean_plugin_name + std::string(".so");
         void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
         if( !handle ) {
             std::stringstream msg;

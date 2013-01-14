@@ -457,7 +457,10 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         fileChksumInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-	    status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
+
+        rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+        status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
+
         break;
     default:
         rodsLog (LOG_NOTICE,

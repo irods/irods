@@ -26,5 +26,6 @@ extern "C" {
         struct sigaction* action = (struct sigaction*)calloc(sizeof(struct sigaction), 0);
         action->sa_handler = segv_handler;
         sigaction(11, action, 0);
+        sigaction(6, action, 0);
     }
 };
