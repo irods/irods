@@ -95,31 +95,18 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
 }
 
 int
-_rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
-                  rescGrpInfo_t *rescGrpInfo)
-{
-    rescInfo_t *myRescInfo;
-    char *myRescName;
+_rsPhyBundleColl( rsComm_t*                 rsComm, 
+                  structFileExtAndRegInp_t* phyBundleCollInp,
+                  rescGrpInfo_t*            rescGrpInfo ) {
+    rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
+    char*       myRescName = myRescInfo->rescName;
+    
     collInp_t collInp;
-    collEnt_t *collEnt;
-    char phyBunDir[MAX_NAME_LEN];
-    curSubFileCond_t curSubFileCond;
-    int handleInx;
-    int status, l1descInx;
-    dataObjInp_t dataObjInp;
-    bunReplCacheHeader_t bunReplCacheHeader;
-    int savedStatus = 0;
-    int chksumFlag, maxSubFileCnt; // JMC - backport 4528, 4771
-    char *dataType = NULL; // JMC - backport 4658
-
-
-    myRescInfo = rescGrpInfo->rescInfo;
-    myRescName = myRescInfo->rescName;
     bzero (&collInp, sizeof (collInp));
     rstrcpy (collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN);
-    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | 
-        NO_TRIM_REPL_FG;
-    handleInx = rsOpenCollection (rsComm, &collInp);
+    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
+        
+    int handleInx = rsOpenCollection (rsComm, &collInp);
 
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
@@ -137,11 +124,16 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
     }
 
     /* create the bundle file */ 
-    dataType = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
-    l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
+    char* dataType  = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
+    
+    dataObjInp_t dataObjInp;
+    int   l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
                                         rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
 
-    if (l1descInx < 0) return l1descInx;
+    if (l1descInx < 0) {
+        return l1descInx;
+    }
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4528
     int chksumFlag    = -1;
@@ -151,6 +143,7 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
     } else {
         chksumFlag = 0;
     }
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4771
     int maxSubFileCnt = -1; // JMC - backport 4528, 4771
@@ -161,6 +154,7 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
     }
 
     // =-=-=-=-=-=-=-
+    char phyBunDir[MAX_NAME_LEN];
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
                         phyBunDir);
 
@@ -172,7 +166,7 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
     
     int        status      = -1;
     int        savedStatus =  0;
-    collEnt_t* collEnt     = 0;
+    collEnt_t* collEnt     =  0;
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
             if (curSubFileCond.collName[0] == '\0') {
@@ -223,33 +217,23 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
 
                             createPhyBundleDir (rsComm,
                               L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
-                    /* need to reset subPhyPath since phyBunDir has 
-                     * changed */
-                /* At this point subPhyPath[0] == 0 if it has gone
-                 * through replAndAddSubFileToDir below. != 0 if it has
-                 * not and already a good cache copy */
-                if (curSubFileCond.subPhyPath[0] != '\0')
-                            setSubPhyPath (phyBunDir, curSubFileCond.dataId,
+                        /* need to reset subPhyPath since phyBunDir has changed */
+                        /* At this point subPhyPath[0] == 0 if it has gone
+                         * through replAndAddSubFileToDir below. != 0 if it has
+                         * not and already a good cache copy */
+                        if (curSubFileCond.subPhyPath[0] != '\0')
+                                    setSubPhyPath (phyBunDir, curSubFileCond.dataId,
                                   curSubFileCond.subPhyPath);
 
-                        }
-            }	/* end of new bundle file */
-            status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
-              myRescName, phyBunDir, &bunReplCacheHeader);
-                    if (status < 0) {
-                savedStatus = status;
-                        rodsLog (LOG_ERROR,
-                        "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
-                          curSubFileCond.subPhyPath, status);
                     }
-                }       /* end of new bundle file */
-                status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
-                                                 myRescName, phyBunDir, &bunReplCacheHeader);
+                }	/* end of new bundle file */
+              
+                status = replAndAddSubFileToDir (rsComm, &curSubFileCond,myRescName, phyBunDir, &bunReplCacheHeader);
                 if (status < 0) {
                     savedStatus = status;
                     rodsLog (LOG_ERROR,
-                             "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
-                             curSubFileCond.subPhyPath, status);
+                        "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
+                          curSubFileCond.subPhyPath, status);
                 }
                 curSubFileCond.bundled = 0;
                 curSubFileCond.subPhyPath[0] = 
@@ -278,9 +262,12 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
                 curSubFileCond.cacheReplNum = collEnt->replNum;
                 curSubFileCond.subFileSize = collEnt->dataSize;
             }
-        }
+        
+        } // if data obj
+
         free (collEnt);     /* just free collEnt but not content */
-    }
+
+    } // while 
     /* handle any remaining */
 
     status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
