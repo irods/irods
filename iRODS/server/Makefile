@@ -205,46 +205,6 @@ INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
 # re
-ifdef RULE_ENGINE
-ifndef RULE_ENGINE_N
-CFLAGS +=       -DRULE_ENGINE
-
-SVR_RE_OBJS =	\
-		$(svrReObjDir)/extractAvuMS.o \
-		$(svrReObjDir)/genQueryMS.o \
-		$(svrReObjDir)/icatAdminMS.o \
-		$(svrReObjDir)/icatGeneralMS.o \
-		$(svrReObjDir)/keyValPairMS.o \
-		$(svrReObjDir)/mailMS.o \
-		$(svrReObjDir)/miscMS.o \
-		$(svrReObjDir)/printMS.o \
-		$(svrReObjDir)/reDataObjOpr.o \
-		$(svrReObjDir)/msiHelper.o \
-		$(svrReObjDir)/reHelpers1.o \
-		$(svrReObjDir)/reHelpers2.o \
-		$(svrReObjDir)/reIn2p3SysRule.o \
-		$(svrReObjDir)/reLib1.o	\
-		$(svrReObjDir)/reLib2.o \
-		$(svrReObjDir)/reNaraMetaData.o \
-		$(svrReObjDir)/reStruct.o \
-		$(svrReObjDir)/reSysDataObjOpr.o \
-		$(svrReObjDir)/reVariableMap.o \
-		$(svrReObjDir)/regExpMatch.o \
-		$(svrReObjDir)/ruleAdminMS.o \
-		$(svrReObjDir)/systemMS.o \
-		$(svrReObjDir)/xmsgMS.o \
-		$(svrReObjDir)/reRDA.o \
-		$(svrReObjDir)/reDBO.o \
-		$(svrReObjDir)/testMS.o \
-		$(svrReObjDir)/reAutoReplicateService.o \
-		$(svrReObjDir)/sysBackupMS.o 
-INCLUDES +=	-I$(svrReIncDir)
-SERVER_BINS +=	$(serverBinDir)/irodsReServer
-SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
-endif
-endif
-
-ifdef RULE_ENGINE_N
 CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
@@ -304,7 +264,6 @@ SVR_RE_OBJS =	\
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
-endif
 
 # icat Tests
 ifdef RODS_CAT

@@ -120,11 +120,7 @@ main(int argc, char **argv)
 
     daemonize (runMode, logFd);
 
-#ifdef RULE_ENGINE_N
     status = initAgent (RULE_ENGINE_INIT_CACHE, &rsComm);
-#else
-    status = initAgent (&rsComm);
-#endif
     if (status < 0) {
         cleanupAndExit (status);
     }
@@ -273,13 +269,8 @@ chkAndResetRule (rsComm_t *rsComm)
     uint mtime;
 
     configDir = getConfigDir ();
-#ifdef RULE_ENGINE_N
     snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.re",
       configDir);
-#else
-    snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.irb", 
-      configDir); 
-#endif
 #ifdef USE_BOOST_FS
         path p (rulesFileName);
         if (!exists (p)) {
@@ -315,13 +306,8 @@ chkAndResetRule (rsComm_t *rsComm)
 	CoreIrbTimeStamp = mtime;
 	rei.rsComm = rsComm;
 	clearCoreRule();
-#ifdef RULE_ENGINE_N
 	/* The shared memory cache may have already been updated, do not force reload */
 	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, NULL, reRuleStr, reFuncMapStr, reVariableMapStr);
-#else
-	msiAdmClearAppRuleStruct (&rei);
-	status = initRuleEngine(NULL, reRuleStr, reFuncMapStr, reVariableMapStr);
-#endif
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "chkAndResetRule: initRuleEngine error, status = %d", status);

@@ -16,7 +16,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the resource property - host
         prop_name = "host";
-        rodsServerHost_t* host;
+        rodsServerHost_t* host = 0;
         err = _resc->get_property< rodsServerHost_t* >( prop_name, host );
         if( !err.ok() ) {
             std::stringstream msg;
@@ -29,7 +29,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the resource property - id
         prop_name = "id";
-        long id;
+        long id = 0;
         err = _resc->get_property< long >( prop_name, id );
         if( !err.ok() ) {
             std::stringstream msg;
@@ -42,7 +42,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the resource property - freespace
         prop_name = "freespace";
-        long freespace;
+        long freespace = 0;
         err = _resc->get_property< long >( prop_name, freespace );
         if( !err.ok() ) {
             std::stringstream msg;
@@ -55,7 +55,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the resource property - quota
         prop_name = "quota";
-        long quota;
+        long quota = 0;
         err = _resc->get_property< long >( prop_name, quota );
         if( !err.ok() ) {
             std::stringstream msg;
@@ -446,7 +446,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the status property of the resource
-        int status;
+        int status = -1;
         err = resc->get_property< int >( "status", status );
         if( !err.ok() ) {
             return ERROR( -1, "get_host_status_by_host_info - failed to get resource property" );

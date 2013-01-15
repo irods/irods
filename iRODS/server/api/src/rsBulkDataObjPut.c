@@ -71,7 +71,11 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath, &myRodsObjStat);
-    if (status < 0 || myRodsObjStat == NULL ) return status; // JMC cppcheck
+    if (status < 0 || myRodsObjStat == NULL ) {
+        delete myRescGrpInfo->rescInfo;
+        delete myRescGrpInfo;
+        return status; // JMC cppcheck
+    }
 
     /* query rcat for resource info and sort it */
 

@@ -37,11 +37,18 @@ remoteDatabaseRescOpen(rsComm_t *rsComm,
 int
 rsDatabaseRescOpen (rsComm_t *rsComm, databaseRescOpenInp_t *databaseRescOpenInp)
 {
-    rodsServerHost_t *rodsServerHost;
-    int status;
-    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int status = -1;
+    int remoteFlag = -1;
     rodsHostAddr_t rescAddr;
     rescGrpInfo_t *rescGrpInfo = NULL;
+
+    if( NULL == databaseRescOpenInp ) {
+        rodsLog( LOG_ERROR, "rsDatabaseRescOpen: null databaseObjControlInp parameter" );
+        return -1;
+    }
+
+
 
 #if 0 // JMC - legacy resource    
     status = _getRescInfo (rsComm, databaseRescOpenInp->dbrName, &rescGrpInfo);

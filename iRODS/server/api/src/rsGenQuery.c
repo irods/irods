@@ -103,7 +103,7 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 	  rei.uoic = &rsComm->clientUser;
 	  rei.uoip = &rsComm->proxyUser;
        }
-#ifdef RULE_ENGINE_N
+
        if (getRuleEngineStatus() == UNINITIALIZED) { 
           /* Skip the call to run acAclPolicy if the Rule Engine
              hasn't been initialized yet, which happens for a couple
@@ -113,7 +113,6 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
           status = -1;
        }
        else 
-#endif
        {
           status = applyRule ("acAclPolicy", NULL, &rei, NO_SAVE_REI);
           ruleResult = rei.status;

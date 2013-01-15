@@ -41,13 +41,17 @@ _rsGetRescQuota (rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
 rescQuota_t **rescQuota)
 {
     int status = 0;
-    rescGrpInfo_t *tmpRescGrpInfo;
+    rescGrpInfo_t *tmpRescGrpInfo = NULL;
     rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
 
     genQueryOut_t *genQueryOut = NULL;
 
-    if (rescQuota == NULL) return USER__NULL_INPUT_ERR;
+    if (rescQuota == NULL) {
+        delete rescGrpInfo->rescInfo;
+        delete rescGrpInfo;
+        return USER__NULL_INPUT_ERR;
+    }
 
     *rescQuota = NULL;
 

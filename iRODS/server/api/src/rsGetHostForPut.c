@@ -45,6 +45,7 @@ char **outHost)
       getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
 	/* going to ALL copies or overwriting files. not sure which is the 
          * best */ 
+         delete myRescInfo;
         *outHost = strdup (THIS_ADDRESS);
         return 0;
     }

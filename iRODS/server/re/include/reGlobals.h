@@ -22,11 +22,7 @@ int GlobalAllRuleExecFlag = 0;
 int GlobalREDebugFlag = 0;
 int GlobalREAuditFlag = 0;
 char *reDebugStackFull[REDEBUG_STACK_SIZE_FULL];
-#ifdef RULE_ENGINE_N
 char *reDebugStackCurr[REDEBUG_STACK_SIZE_CURR][3];
-#else
-char *reDebugStackCurr[REDEBUG_STACK_SIZE_CURR];
-#endif
 int reDebugStackFullPtr = 0;
 int reDebugStackCurrPtr = 0;
 

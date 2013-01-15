@@ -45,6 +45,7 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rescInfo_t* rescInfo = new rescInfo_t;
     eirods::error err = eirods::get_resc_info( rescName, *rescInfo );
     if( !err.ok() ) {
+        delete rescInfo;
         std::stringstream msg;
         msg << "rsUnbunAndRegPhyBunfile - failed for [";
         msg << rescName;

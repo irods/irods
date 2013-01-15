@@ -42,29 +42,33 @@ int
 rsDatabaseObjControl (rsComm_t *rsComm, databaseObjControlInp_t *databaseObjControlInp,
 		      databaseObjControlOut_t **databaseObjControlOut)
 {
-    rodsServerHost_t *rodsServerHost;
-    int status;
-    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int status = -1;
+    int remoteFlag = -1;;
     rodsHostAddr_t rescAddr;
     rescGrpInfo_t *rescGrpInfo = NULL;
 
+    if( NULL == databaseObjControlInp ) {
+        rodsLog( LOG_ERROR, "rsDatabaseObjControl: null databaseObjControlInp parameter" );
+        return -1;
+    }
 //    status = _getRescInfo (rsComm, databaseObjControlInp->dbrName, &rescGrpInfo);
 //    if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
-eirods::error err = eirods::get_resc_grp_info( databaseObjControlInp->dbrName, *rescGrpInfo );
-if( !err.ok() ) {
-	 rodsLog (LOG_ERROR,
-		  "rsDatabaseObjControl: _getRescInfo of %s error, stat = %d",
-		  databaseObjControlInp->dbrName, status);
-	char *outBuf;
-	databaseObjControlOut_t *myObjControlOut;
-	outBuf = (char*)malloc(200);
-	*outBuf='\0';
-	strncpy(outBuf, "DBR not found",200);
-	myObjControlOut = (databaseObjControlOut_t*)malloc(sizeof(databaseObjControlOut_t));
-	memset (myObjControlOut, 0, sizeof (databaseObjControlOut_t));
-	myObjControlOut->outBuf = outBuf;
-	*databaseObjControlOut = myObjControlOut;
-	return status;
+    eirods::error err = eirods::get_resc_grp_info( databaseObjControlInp->dbrName, *rescGrpInfo );
+    if( !err.ok() ) {
+        rodsLog (LOG_ERROR,
+              "rsDatabaseObjControl: _getRescInfo of %s error, stat = %d",
+              databaseObjControlInp->dbrName, status);
+        char *outBuf;
+        databaseObjControlOut_t *myObjControlOut;
+        outBuf = (char*)malloc(200);
+        *outBuf='\0';
+        strncpy(outBuf, "DBR not found",200);
+        myObjControlOut = (databaseObjControlOut_t*)malloc(sizeof(databaseObjControlOut_t));
+        memset (myObjControlOut, 0, sizeof (databaseObjControlOut_t));
+        myObjControlOut->outBuf = outBuf;
+        *databaseObjControlOut = myObjControlOut;
+        return status;
     }
 
     bzero (&rescAddr, sizeof (rescAddr));

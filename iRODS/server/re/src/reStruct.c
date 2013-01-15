@@ -438,7 +438,7 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
 {
     int savedStatus = 0;
     int status;
-    rescInfo_t *rescInfo;
+    rescInfo_t *rescInfo = new rescInfo_t;
 
     if (myRei == NULL || rsComm == NULL) {
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
@@ -471,6 +471,7 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
         eirods::resource_ptr resc;
         eirods::error err = eirods::get_resc_info( (char*)myRei->doi->rescInfo, *rescInfo );
         if( !err.ok() ) {
+            delete rescInfo;
             savedStatus = err.code();
             myRei->doi->rescInfo = NULL;
             std::stringstream msg;

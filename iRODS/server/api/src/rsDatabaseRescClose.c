@@ -36,12 +36,16 @@ remoteDatabaseRescClose(rsComm_t *rsComm,
 int
 rsDatabaseRescClose (rsComm_t *rsComm, databaseRescCloseInp_t *databaseRescCloseInp)
 {
-    rodsServerHost_t *rodsServerHost;
-    int status;
-    int remoteFlag;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int status = -1;
+    int remoteFlag = -1;
     rodsHostAddr_t rescAddr;
     rescGrpInfo_t *rescGrpInfo = NULL;
 
+    if( NULL == databaseRescCloseInp ) {
+        rodsLog( LOG_ERROR, "rsDatabaseRescClose: null databaseObjControlInp parameter" );
+        return -1;
+    }
 #if 0 // JMC - legacy resource    
     status = _getRescInfo (rsComm, databaseRescCloseInp->dbrName, &rescGrpInfo);
     if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr

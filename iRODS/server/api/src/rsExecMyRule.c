@@ -47,14 +47,8 @@ msParamArray_t **outParamArray)
 
     rstrcpy (rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN);
 
-#if defined(RULE_ENGINE_N)
-    status = execMyRule (execMyRuleInp->myRule, execMyRuleInp->inpParamArray, execMyRuleInp->outParamDesc,
-      &rei);
-#else
-    status = execMyRule (execMyRuleInp->myRule, execMyRuleInp->inpParamArray,
-      &rei);
-#endif
-
+    status = execMyRule( execMyRuleInp->myRule, execMyRuleInp->inpParamArray, 
+                         execMyRuleInp->outParamDesc, &rei);
     
     if (iFlag != NULL) {
       reTestFlag = oldReTestFlag;

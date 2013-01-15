@@ -50,12 +50,12 @@ int
 _rsProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut)
 {
-    int status;
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
+    int status = -1;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int remoteFlag = -1;
     rodsHostAddr_t addr;
     procStatInp_t myProcStatInp;
-    char *tmpStr;
+    char *tmpStr = NULL;
 
     if (getValByKey (&procStatInp->condInput, ALL_KW) != NULL) {
 	status = _rsProcStatAll (rsComm, procStatInp, procStatOut); 
@@ -71,10 +71,8 @@ genQueryOut_t **procStatOut)
     if (*procStatInp->addr != '\0') {	/* given input addr */
         rstrcpy (addr.hostAddr, procStatInp->addr, LONG_NAME_LEN);
         remoteFlag = resolveHost (&addr, &rodsServerHost);
-    } else if ((tmpStr = getValByKey (&procStatInp->condInput, RESC_NAME_KW)) 
-      != NULL) {
-	rescGrpInfo_t *rescGrpInfo = NULL;
-        
+    } else if ((tmpStr = getValByKey (&procStatInp->condInput, RESC_NAME_KW)) != NULL) {
+        rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
         
         //status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
         eirods::error err = eirods::get_resc_grp_info( tmpStr, *rescGrpInfo );
@@ -82,15 +80,18 @@ genQueryOut_t **procStatOut)
             rodsLog (LOG_ERROR,
               "_rsProcStat: _getRescInfo of %s error. stat = %d",
               tmpStr, status);
+            delete rescGrpInfo;
             return status;
         }
         rstrcpy (procStatInp->addr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
-	rodsServerHost = (rodsServerHost_t*)rescGrpInfo->rescInfo->rodsServerHost;
-	if (rodsServerHost == NULL) {
-	    remoteFlag = SYS_INVALID_SERVER_HOST;
-	} else {
-	    remoteFlag = rodsServerHost->localFlag;
-	}
+        rodsServerHost = (rodsServerHost_t*)rescGrpInfo->rescInfo->rodsServerHost;
+        if (rodsServerHost == NULL) {
+            remoteFlag = SYS_INVALID_SERVER_HOST;
+        } else {
+            remoteFlag = rodsServerHost->localFlag;
+        }
+
+        delete rescGrpInfo;
     } else {
 	/* do the IES server */
         remoteFlag = getRcatHost (MASTER_RCAT, NULL, &rodsServerHost);
