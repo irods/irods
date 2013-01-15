@@ -82,7 +82,6 @@ OBJS =		\
 		$(objDir)/idbug.o \
 		$(objDir)/ips.o  \
 		$(objDir)/ifsck.o \
-		$(objDir)/idbo.o \
 		$(objDir)/genOSAuth.o \
 		$(objDir)/igroupadmin.o
 
@@ -132,7 +131,6 @@ BINS =		\
 		$(binDir)/idbug  \
 		$(binDir)/ips   \
 		$(binDir)/ifsck \
-		$(binDir)/idbo \
 		$(binDir)/genOSAuth \
 		$(binDir)/igroupadmin 
 

@@ -6,10 +6,12 @@
 /* fileDriver.c - The general driver for all file types. */
 
 #include "fileDriver.h"
-#include "fileDriverTable.h"
 #include "eirods_log.h"
 #include "eirods_resource_plugin.h"
 #include "eirods_first_class_object.h"
+
+#include "eirods_resource_manager.h"
+extern eirods::resource_manager resc_mgr;
 
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create

@@ -50,7 +50,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/fileDriverNoOpFunctions.o \
 		$(svrCoreObjDir)/eirods_resource_manager.o \
 		$(svrCoreObjDir)/eirods_resource_backport.o
 
@@ -183,7 +182,7 @@ endif
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 endif
 
-SVR_DBR_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
+#SVR_DBR_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif  # end DBR
 
 ifdef DBMS_LIB
@@ -253,7 +252,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
-		$(svrReObjDir)/reDBO.o \
 		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \

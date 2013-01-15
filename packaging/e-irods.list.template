@@ -448,7 +448,6 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatGeneralU
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/rodsEnvInitLib.c ./iRODS/server/icat/src/rodsEnvInitLib.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/m2icatd.c ./iRODS/server/icat/src/m2icatd.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatSysInserts.sql ./iRODS/server/icat/src/icatSysInserts.sql
-f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/dboHighLevelRoutines.c ./iRODS/server/icat/src/dboHighLevelRoutines.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/icatMidLevelRoutines.c ./iRODS/server/icat/src/icatMidLevelRoutines.c
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/makeSql.pl ./iRODS/server/icat/src/makeSql.pl
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/icat/src/rdaHighLevelRoutines.c ./iRODS/server/icat/src/rdaHighLevelRoutines.c
