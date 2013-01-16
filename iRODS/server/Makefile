@@ -71,19 +71,9 @@ INCLUDES +=	-I$(svrApiIncDir)
 
 # Drivers
 SVR_DRIVERS_OBJS = \
-		$(svrDriversObjDir)/structFileDriver.o \
 		$(svrDriversObjDir)/fileDriver.o \
 		$(svrDriversObjDir)/msoFileDriver.o \
-		$(svrDriversObjDir)/univMSSDriver.o \
-        $(svrDriversObjDir)/unixFileDriver.o 
-
-ifdef HAAW_STRUCT_FILE
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/haawStructFileDriver.o
-endif
-
-#ifdef TAR_STRUCT_FILE
-#SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tarStructFileDriver.o
-#endif
+		$(svrDriversObjDir)/univMSSDriver.o 
 
 ifdef AMAZON_S3
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o

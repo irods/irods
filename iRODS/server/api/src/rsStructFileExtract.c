@@ -1,6 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "structFileDriver.h"
 #include "structFileExtract.h" 
 #include "miscServerFunct.h"
 #include "syncMountedColl.h"

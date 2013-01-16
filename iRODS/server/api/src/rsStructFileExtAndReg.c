@@ -5,7 +5,6 @@
 /* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of 
  * this API call.*/
 
-#include "structFileExtAndReg.h"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
 #include "collection.h"

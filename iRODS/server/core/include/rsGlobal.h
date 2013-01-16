@@ -12,10 +12,6 @@
 #include "initServer.h"
 #include "fileOpr.h"
 #include "dataObjOpr.h"
-#include "structFileDriver.h"
-#ifdef TAR_STRUCT_FILE
-#include "tarSubStructFileDriver.h"
-#endif
 #include "miscUtil.h"
 
 #include "eirods_resource_manager.h"

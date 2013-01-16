@@ -13,7 +13,6 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "structFileDriver.h"
 
 #if defined(RODS_SERVER)
 #define RS_SUB_STRUCT_FILE_CREATE rsSubStructFileCreate

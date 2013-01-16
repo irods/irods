@@ -3,7 +3,6 @@
 /* rsStructFileBundle.c. See structFileBundle.h for a description of 
  * this API call.*/
 
-#include "structFileBundle.h"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"

@@ -13,7 +13,6 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "structFileDriver.h"
 #include "subStructFileRead.h"
 
 #if defined(RODS_SERVER)
