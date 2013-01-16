@@ -628,7 +628,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
         wget -nc -O /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
         gunzip /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz
-        tar xf $EIRODS_BUILD_BOOSTVERSION.tar
+        tar xf /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
         rm /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
