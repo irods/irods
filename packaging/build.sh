@@ -605,7 +605,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     else
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
-        wget -nc -O /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        if [ -e "/tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
+            echo "Using existing copy"
+        else
+            wget -O /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        fi
         gunzip /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
         rm /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -626,7 +630,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     else
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
-        wget -nc -O /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+        if [ -e "/tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
+            echo "Using existing copy"
+        else
+            wget -O /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+        fi
         gunzip /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
         rm /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
