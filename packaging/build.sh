@@ -605,7 +605,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     else
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
-        wget -O /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+        wget -nc -O /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         gunzip /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
         rm /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -619,24 +619,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "Nothing to build - all files up to date."
     fi
 
-    # build a copy of libarchive
-    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
-    cd $BUILDDIR/external/
-    if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
-        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-    else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
-        wget https://github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-        gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-        tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
-    fi
-    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
-    cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
-    if [ ! -e ".libs/libarchive.a" ] ; then
-        CFLAGS="-fPIC" ./configure
-    fi
-    $MAKEJCMD
-
     # build a copy of boost
     EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
     cd $BUILDDIR/external/
@@ -644,10 +626,10 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     else
         echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
-        wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
-        gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
+        wget -nc -O /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+        gunzip /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $EIRODS_BUILD_BOOSTVERSION.tar
-        echo "Finished exploding tarfile"
+        rm /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
