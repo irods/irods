@@ -284,6 +284,17 @@ if [ $1 == "icat" ] ; then
     fi
 fi
 
+# needed for boost, of all things...
+PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
+if [[ "$PYTHONDEV" == "" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        PREFLIGHT="$PREFLIGHT python-dev"
+    fi
+else
+    echo "Detected Python.h [$PYTHONDEV]"
+fi
+
+# needed for rpmbuild
 if [[ "$DETECTEDOS" == "RedHatCompatible" || "$DETECTEDOS" == "SuSE" ]] ; then
     PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
     if [[ "$PYTHONDEV" == "" ]] ; then
