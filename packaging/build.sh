@@ -610,6 +610,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         else
             wget -O /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         fi
+        rm -rf /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
         gunzip /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
         rm /tmp/$EIRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -635,6 +636,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         else
             wget -O /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
         fi
+        rm -rf /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
         gunzip /tmp/$EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
         rm /tmp/$EIRODS_BUILD_BOOSTVERSION.tar
