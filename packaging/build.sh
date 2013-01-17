@@ -654,7 +654,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
-    ./bootstrap.sh
+    ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
 
 fi
