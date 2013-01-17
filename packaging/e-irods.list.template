@@ -493,7 +493,6 @@ f 755 root root /usr/bin/icd                  ./iRODS/clients/icommands/bin/icd
 f 755 root root /usr/bin/ichksum              ./iRODS/clients/icommands/bin/ichksum
 f 755 root root /usr/bin/ichmod               ./iRODS/clients/icommands/bin/ichmod
 f 755 root root /usr/bin/icp                  ./iRODS/clients/icommands/bin/icp
-f 755 root root /usr/bin/idbo                 ./iRODS/clients/icommands/bin/idbo
 f 755 root root /usr/bin/idbug                ./iRODS/clients/icommands/bin/idbug
 f 755 root root /usr/bin/ienv                 ./iRODS/clients/icommands/bin/ienv
 f 755 root root /usr/bin/ierror               ./iRODS/clients/icommands/bin/ierror
