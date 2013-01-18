@@ -21,6 +21,7 @@ if [ $num_res -gt 1 ]; then
 		fi
 	done
 else
+	# either 0 or 1 found
 	elf_links[0]=`find /usr -name "$search_term" -print 2> /dev/null`
 fi
 
@@ -31,6 +32,14 @@ ret=${elf_links[0]}
 
 
 # =-=-=-=-=-=-=-
+# if there were candidates, but no binary file...
+# pick first symlink, just because
+if [[ ( $num_res -gt 0 ) && ( "$ctr" == "0" ) ]] ; then
+	# return first one
+	ret=`find /usr -name "$search_term" -print 2> /dev/null | head -n1`
+fi
+
+# =-=-=-=-=-=-=-
 # if there are no candidates, the file is not on this machine.
 # set return value accordingly
 if [ "$ret" == "" ]; then
@@ -39,7 +48,7 @@ if [ "$ret" == "" ]; then
 fi
 
 # =-=-=-=-=-=-=-
-# if there is more than one - look for 64bit only
+# if there is more than one binary file - look for 64bit only
 if [ ${#elf_links[@]} -gt 1 ]; then
 	# look for lib64 first
 	num_64bit=$( find /usr -type f -name "$search_term" -print | grep "64" | xargs file | grep "ELF" 2> /dev/null | wc -l )
