@@ -7,6 +7,17 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_log.h"
 #include "eirods_stacktrace.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_backport.h"
+
+// =-=-=-=-=-=-=-
+// irods includes
+#include "miscServerFunct.h"
+#include "dataObjOpr.h"
+
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/asio/ip/host_name.hpp>
 
 namespace eirods {
 
@@ -14,7 +25,8 @@ namespace eirods {
     // public - ctor
     file_object::file_object() :
         first_class_object(),
-        size_(0) {
+        size_(0),
+        repl_requested_( -1 ) {
     } // file_object
 
     // =-=-=-=-=-=-=-
@@ -22,8 +34,9 @@ namespace eirods {
     file_object::file_object(
         const file_object& _rhs ) : 
         first_class_object( _rhs ) {
-        size_  = _rhs.size_;
-
+        size_           = _rhs.size_;
+        repl_requested_ = _rhs.repl_requested_;
+        replicas_       = _rhs.replicas_;
     } // cctor 
 
     // =-=-=-=-=-=-=-
@@ -43,6 +56,8 @@ namespace eirods {
         file_descriptor_ = _fd;
         mode_            = _m;
         flags_           = _f;
+        repl_requested_  = -1;
+        replicas_.empty();
     } // file_object
 
     // =-=-=-=-=-=-=-
@@ -58,7 +73,9 @@ namespace eirods {
         // call base class assignment first
         first_class_object::operator=( _rhs );
 
-        size_  = _rhs.size_;
+        size_           = _rhs.size_;
+        repl_requested_ = _rhs.repl_requested_;
+        replicas_       = _rhs.replicas_;
 
         return *this;
 
@@ -111,7 +128,72 @@ namespace eirods {
         }
         return result;
     } // resolve
-    
+
+    // =-=-=-=-=-=-=-
+    // static factory to create file_object from dataobjinfo linked list
+    error file_object_factory( rsComm_t*     _comm,
+                               dataObjInp_t* _data_obj_inp,
+                               file_object&  _file_obj ) {
+        // =-=-=-=-=-=-=-
+        // make a call to build the linked list 
+        dataObjInfo_t* head_ptr = 0;
+        int status = getDataObjInfoIncSpecColl ( _comm, _data_obj_inp, &head_ptr );
+        if( 0 == head_ptr || status < 0 ) {
+            std::stringstream msg;
+            msg << "file_object_factory :: failed in call to getDataObjInfoIncSpecColl";
+            msg << " for [";
+            msg << _data_obj_inp->objPath;
+            msg << "]";
+            return ERROR( status, msg.str() );    
+        }
+
+        // =-=-=-=-=-=-=-
+        // start populating file_object
+        _file_obj.comm( _comm );
+        _file_obj.physical_path( _data_obj_inp->objPath );
+
+        // =-=-=-=-=-=-=-
+        // iterate over the linked list and populate 
+        // the physical_object vector in the file_object
+        dataObjInfo_t* info_ptr = head_ptr;
+        std::vector< physical_object > objects;
+        while( info_ptr ) {
+            physical_object obj;
+
+            obj.repl_num( info_ptr->replNum );
+            obj.map_id( info_ptr->dataMapId );
+            obj.size( info_ptr->dataSize );
+            obj.id( info_ptr->dataId );
+            obj.coll_id( info_ptr->collId );
+            obj.name( info_ptr->objPath );
+            obj.version( info_ptr->version );
+            obj.type_name( info_ptr->dataType );
+            obj.resc_group_name( info_ptr->rescGroupName );
+            obj.resc_name( info_ptr->rescName );
+            obj.path( info_ptr->filePath );
+            obj.owner_name( info_ptr->dataOwnerName );
+            obj.owner_zone( info_ptr->dataOwnerZone );
+            obj.status( info_ptr->statusString );
+            obj.checksum( info_ptr->chksum );
+            obj.expiry_ts( info_ptr->dataExpiry );
+            obj.mode( info_ptr->dataMode );
+            obj.r_comment( info_ptr->dataComments );
+            obj.create_ts( info_ptr->dataCreate );
+            obj.modify_ts( info_ptr->dataModify );
+            obj.resc_hier( info_ptr->rescHier );
+     
+            objects.push_back( obj );
+
+            info_ptr = info_ptr->next;
+
+        } // while
+
+        _file_obj.replicas( objects );
+
+        return SUCCESS();
+
+    } // file_object_factory
+
 }; // namespace eirods
 
 

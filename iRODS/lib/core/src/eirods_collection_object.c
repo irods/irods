@@ -47,6 +47,8 @@ namespace eirods {
 
 		directory_pointer_  = _rhs.directory_pointer_;
 
+        return *this;
+
 	}  // operator=
 
     // =-=-=-=-=-=-=-

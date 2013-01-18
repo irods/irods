@@ -9,8 +9,11 @@
 // eirods includes
 #include "eirods_resource_plugin.h"
 #include "eirods_file_object.h"
+#include "eirods_physical_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_string_tokenize.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -1296,6 +1299,132 @@ extern "C" {
     } // unixSyncToArchPlugin
 
     // =-=-=-=-=-=-=-
+    // redirect_get - code to determine redirection for get operation
+    eirods::error redirect_get( eirods::file_object& _file_obj,
+                                const std::string&   _resc_name, 
+                                std::string&         _out_hier,
+                                float&               _out_vote ) {
+        // =-=-=-=-=-=-=-
+        // make some flags to clairify decision making
+        bool need_repl = ( _file_obj.repl_requested() > -1 );
+
+        // =-=-=-=-=-=-=-
+        // set up variables for iteration
+        bool          found     = false;
+        eirods::error final_ret = SUCCESS();
+        std::vector< eirods::physical_object > objs = _file_obj.replicas();
+        std::vector< eirods::physical_object >::iterator itr = objs.begin();
+        
+        // =-=-=-=-=-=-=-
+        // initially set vote to 0.0
+        _out_vote = 0.0;
+
+        // =-=-=-=-=-=-=-
+        // check to see if the replica is in this resource, if one is requested
+        for( ; itr != objs.end(); ++itr ) {
+            // =-=-=-=-=-=-=-
+            // run the heir string through the parser and get the last
+            // entry.
+            eirods::hierarchy_parser parser;
+            parser.set_string( itr->resc_hier() );
+
+            std::string last_resc;
+            parser.last_resc( last_resc ); 
+          
+            // =-=-=-=-=-=-=-
+            // more flags to simplify decision making
+            bool repl_us = ( _file_obj.repl_requested() == itr->repl_num() ); 
+            bool resc_us = ( _resc_name == last_resc );
+
+            // =-=-=-=-=-=-=-
+            // success - correct resource and dont need a specific
+            //           replication, or the repl nums match
+            if( resc_us ) {
+                if( !need_repl || ( need_repl && repl_us ) ) {
+                    found = true;
+                    _out_vote = 1.0;
+                    _out_hier = itr->resc_hier();
+                    break; 
+                }
+
+            } // if resc_us
+
+        } // for itr
+                             
+        return SUCCESS();
+
+    } // redirect_get
+
+    // =-=-=-=-=-=-=-
+    // unixRedirectPlugin - used to allow the resource to determine which host
+    //                      should provide the requested operation
+    eirods::error unixRedirectPlugin( eirods::resource_property_map* _prop_map, 
+                                      eirods::resource_child_map*    _cmap,
+                                      const std::string*             _opr,
+                                      const std::string*             _curr_host,
+                                      eirods::first_class_object*    _object,
+                                      std::string*                   _out_hier,
+                                      float*                         _out_vote ) {
+        // =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( -1, "unixRedirectPlugin - null resource_property_map" );
+        }
+        if( !_cmap ) {
+            return ERROR( -1, "unixRedirectPlugin - null resource_child_map" );
+        }
+        if( !_opr ) {
+            return ERROR( -1, "unixRedirectPlugin - null operation" );
+        }
+        if( !_curr_host ) {
+            return ERROR( -1, "unixRedirectPlugin - null operation" );
+        }
+        if( !_object ) {
+            return ERROR( -1, "unixRedirectPlugin - null first_class_object" );
+        }
+        if( !_out_hier ) {
+            return ERROR( -1, "unixRedirectPlugin - null outgoing heir string" );
+        }
+        if( !_out_vote ) {
+            return ERROR( -1, "unixRedirectPlugin - null outgoing vote" );
+        }
+	
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
+        if( !file_obj ) {
+            return ERROR( -1, "failed to cast first_class_object to file_object" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // test the operation to determine which choices to make
+        if( eirods::EIRODS_GET_OPERATION == (*_opr) ) {
+            // =-=-=-=-=-=-=-
+            // get the name of this resource
+            std::string resc_name;
+            eirods::error ret = _prop_map->get< std::string >( "name", resc_name );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << "unixRedirectPlugin - failed in get property for name";
+                return ERROR( -1, msg.str() );
+            }
+
+            // =-=-=-=-=-=-=-
+            // call redirect determination for 'get' operation
+            return redirect_get( (*file_obj), resc_name, (*_out_hier), (*_out_vote)  );
+
+        } 
+      
+        // =-=-=-=-=-=-=-
+        // must have been passed a bad operation 
+        std::stringstream msg;
+        msg << "unixRedirectPlugin - operation not supported [";
+        msg << (*_opr) << "]";
+        return ERROR( -1, msg.str() );
+
+    } // unixRedirectPlugin
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
@@ -1378,6 +1507,8 @@ extern "C" {
         resc->add_operation( "truncate",     "unixFileTruncatePlugin" );
         resc->add_operation( "stagetocache", "unixStageToCachePlugin" );
         resc->add_operation( "synctoarch",   "unixSyncToArchPlugin" );
+
+        resc->add_operation( "redirect",     "unixRedirectPlugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

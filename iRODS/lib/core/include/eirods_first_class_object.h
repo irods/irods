@@ -53,11 +53,11 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // Mutators
-        inline void file_descriptor( int _fd ) { file_descriptor_ = _fd; }
-        inline void comm ( rsComm_t* _c )      { comm_            = _c;  } 
-        inline void flags( int _f )            { flags_           = _f;  }
-        inline void physical_path(const std::string& _path) { physical_path_ = _path; }
-        inline void resc_hier(const std::string& _hier) { resc_hier_ = _hier; }
+        inline void file_descriptor( int _fd )              { file_descriptor_ = _fd;   }
+        inline void comm ( rsComm_t* _c )                   { comm_            = _c;    } 
+        inline void flags( int _f )                         { flags_           = _f;    }
+        inline void physical_path(const std::string& _path) { physical_path_   = _path; }
+        inline void resc_hier(const std::string& _hier)     { resc_hier_       = _hier; }
         
     protected:
         // =-=-=-=-=-=-=-
@@ -74,7 +74,7 @@ namespace eirods {
         int         l1_desc_idx_;     // index into irods L1 file decriptor table
         int         mode_;            // mode when opened or modified
         int         flags_;           // flags for object operations
-
+    
     }; // class first_class_object
 
 }; // namespace eirods

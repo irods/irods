@@ -79,7 +79,9 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_children_parser.o \
 		$(libCoreObjDir)/eirods_hierarchy_parser.o \
 		$(libCoreObjDir)/eirods_stacktrace.o \
-		$(libCoreObjDir)/eirods_signal.o
+		$(libCoreObjDir)/eirods_signal.o \
+		$(libCoreObjDir)/eirods_physical_object.o \
+		$(libCoreObjDir)/eirods_resource_redirect.o
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

@@ -483,7 +483,7 @@ $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 
-
+LIBRARY += /usr/lib/libboost_system.a
 
 #
 # Servers

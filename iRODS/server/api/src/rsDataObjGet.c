@@ -21,7 +21,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -40,8 +40,29 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
-        status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
-                                dataObjOutBBuf, BRANCH_MSG);
+
+        // =-=-=-=-=-=-=-
+        // determine if we need to redirect for this operation
+        std::string       hier;
+        int               local = -1;
+        rodsServerHost_t* host  =  0;
+        eirods::error ret = eirods::resource_redirect( "get", rsComm, dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+
+        if( LOCAL_HOST == local ) {
+            status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
+                                    dataObjOutBBuf, BRANCH_MSG);
+        } else {
+            rodsLog( LOG_NOTICE, "XXXX - rsDataObjGet :: eirods::resource_redirect selected REMOTE_HOST" );
+            return -1;
+        } // else remote host
+
     } else {
         int l1descInx;
         status = _rcDataObjGet (rodsServerHost->conn, dataObjInp, portalOprOut,

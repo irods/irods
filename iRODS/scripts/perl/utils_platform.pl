@@ -381,7 +381,6 @@ sub _getCurrentHostAttributes()
 	# it may return "myhost.local".
 	my $simpleName = hostname( );
 
-
 	# We want the fully-qualified host name, if possible.
 	# There might not be such a thing!  A laptop or home
 	# user may not have DNS entries for their hosts, so
