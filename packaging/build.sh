@@ -952,7 +952,6 @@ else
     ichksum       
     ichmod        
     icp           
-    idbo          
     idbug         
     ienv          
     ierror        
