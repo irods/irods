@@ -143,9 +143,6 @@ msiobjget_slink(msParam_t*  inRequestPath, msParam_t* inFileMode,
     printf (
 	    "msigetobj_slink: open error for cacheFilename %s, status = %d",
 	    cacheFilename, status);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
     return status;
   }
 
@@ -277,9 +274,6 @@ msiobjput_slink(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
     printf ("msiputobj_slink: open error for %s, status = %d\n",
 	    cacheFilename, status);
     free(str);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
     return status;
   }
 

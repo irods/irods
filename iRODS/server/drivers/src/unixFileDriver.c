@@ -70,10 +70,6 @@ unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode)
         fd = UNIX_FILE_OPEN_ERR - errno;
         rodsLog (LOG_NOTICE, "unixFileOpen: open error for %s, status = %d",
                  fileName, fd);
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
-
     }
 
     return (fd);
@@ -508,10 +504,6 @@ unixFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName)
                  "unixFileRename: rename error, status = %d\n",
                  status);
 
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
-                                    
     }
 
     return (status);
@@ -644,9 +636,6 @@ unixFileCopy (int mode, char *srcFileName, char *destFileName)
                  "unixFileCopy: open error for srcFileName %s, status = %d",
                  srcFileName, status);
         close( inFd ); // JMC cppcheck - resource
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
         return status;
     }
 
@@ -657,9 +646,6 @@ unixFileCopy (int mode, char *srcFileName, char *destFileName)
                  "unixFileCopy: open error for destFileName %s, status = %d",
                  destFileName, status);
         close (inFd);
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
         return status;
     }
 

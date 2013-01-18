@@ -2583,9 +2583,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                         status = UNIX_FILE_OPEN_ERR - errno;
                         rodsLogError (LOG_ERROR, status,
                                       "openRestartFile: open error for %s", restartFile);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
                         return status;
                     }
                     rodsRestart->restartState = 0;
@@ -2600,9 +2597,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     status = UNIX_FILE_OPEN_ERR;
                     rodsLogError (LOG_ERROR, status, 
                                   "openRestartFile: %s is not a file", restartFile);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
                     return UNIX_FILE_OPEN_ERR;
                 } else {
 #ifndef windows_platform
@@ -2614,9 +2608,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                         status = UNIX_FILE_OPEN_ERR - errno;
                         rodsLogError (LOG_ERROR, status, 
                                       "openRestartFile: open error for %s", restartFile);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
                         return status;
                     }
                     status = read (rodsRestart->fd, (void *) buf, MAX_NAME_LEN * 3);
@@ -4191,9 +4182,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                         status = UNIX_FILE_OPEN_ERR - errno;
                         rodsLogError (LOG_ERROR, status,
                                       "unbunBulkBuf: open error for %s", phyBunPath);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
                         return status;
                     }
 

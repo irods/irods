@@ -233,9 +233,6 @@ msiobjput_http(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
     status = UNIX_FILE_OPEN_ERR - errno;
     printf ("msiputobj_http: open error for %s, status = %d\n",
 	    cacheFilename, status);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
     return status;
   }
   myBuf = (char *) malloc (dataSize);

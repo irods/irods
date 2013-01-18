@@ -121,9 +121,6 @@ char *cacheFilename,  rodsLong_t dataSize)
         printf (
          "wosSyncToArch: open error for %s, status = %d\n",
          cacheFilename, status);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
         return status;
     }
     status = connectWos ();
@@ -232,9 +229,6 @@ char *cacheFilename, rodsLong_t dataSize)
 	printf (
          "wosStageToCachePP: open error for cacheFilename %s, status = %d",
          cacheFilename, status);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
         return status;
     }
 

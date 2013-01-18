@@ -215,10 +215,6 @@ extern "C" {
             msg << ", flags = ";
             msg << flags;
 
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-            
             return ERROR( fd, msg.str() );
         }
                 
@@ -1097,10 +1093,6 @@ extern "C" {
             msg << ", status = ";
             msg << status;
 
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-            
             return ERROR( status, msg.str() );
 
         }
@@ -1276,9 +1268,6 @@ extern "C" {
                      srcFileName, status );
             close( inFd ); // JMC cppcheck - resource
 
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             return status;
         }
 
@@ -1289,9 +1278,6 @@ extern "C" {
                      "unixFileCopyPlugin: open error for destFileName %s, status = %d",
                      destFileName, status);
             close (inFd);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             return status;
         }
 

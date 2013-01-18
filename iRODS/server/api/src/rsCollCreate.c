@@ -30,12 +30,6 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     dataObjInfo_t *dataObjInfo = NULL;
 #endif
     
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Creating collection: \"" << collCreateInp->collName << "\"";
-        DEBUGMSG(msg.str());
-    }
-    
     resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
                        &collCreateInp->condInput);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,

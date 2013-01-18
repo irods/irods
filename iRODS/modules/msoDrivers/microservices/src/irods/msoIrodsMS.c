@@ -231,9 +231,6 @@ msiobjget_irods(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	    "msigetobj_irods: open error for cacheFilename %s, status = %d",
 	    cacheFilename, status);
     rcDisconnect(rcComm);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
     return status;
   }
 
@@ -384,9 +381,6 @@ msiobjput_irods(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
 	    cacheFilename, status);
     free(str);
     rcDisconnect(rcComm);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
     return status;
   }
 

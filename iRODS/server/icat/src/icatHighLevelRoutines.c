@@ -321,9 +321,6 @@ _updateRescObjCount(
             ss << __FUNCTION__ << " Invalid resource object count: " << obj_count << " for resource: \"" << _resc_name << "\"";
             eirods::log(LOG_ERROR, ss.str());
             result = CAT_INVALID_OBJ_COUNT;
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
         } else {
             std::stringstream ss;
             ss << obj_count;
@@ -535,9 +532,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                      logicalDirName);
             i = addRErrorMsg (&rsComm->rError, 0, errMsg);
             _rollback("chlModDataObjMeta");
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             return(CAT_UNKNOWN_COLLECTION);
         }
         snprintf(objIdString, MAX_NAME_LEN, "%lld", iVal);
@@ -3850,9 +3844,6 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
                  collInfo->collName);
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
         _rollback("chlDelCollByAdmin");
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
         return(CAT_UNKNOWN_COLLECTION);
     }
 
@@ -7319,9 +7310,6 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
             "select coll_id from R_COLL_MAIN where coll_name=?",
             &iVal, pathName, 0, 0, 0, 0, &icss);
         if (status1==CAT_NO_ROWS_FOUND) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             status1=CAT_UNKNOWN_COLLECTION;
         }
         if (status1==0) status1=iVal;
@@ -8050,9 +8038,6 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
             return (CAT_NO_ACCESS_PERMISSION);  /* does exist, must be
                                                    permission error */
         }
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
         return(CAT_UNKNOWN_COLLECTION);        /* isn't a coll */
     }
 

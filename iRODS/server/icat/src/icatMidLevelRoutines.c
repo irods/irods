@@ -740,9 +740,6 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
             "select coll_id from R_COLL_MAIN where coll_name=?",
             &iVal, dirName, 0, 0, 0, 0, icss);
         if (status) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             return(CAT_UNKNOWN_COLLECTION);
         }
         return (CAT_NO_ACCESS_PERMISSION);
@@ -799,15 +796,6 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
             "select coll_id from R_COLL_MAIN where coll_name=?",
             &iVal, dirName, 0, 0, 0, 0, icss);
         if (status) {
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Missing collection: \"" << dirName << "\"";
-                DEBUGMSG(msg.str());
-            }
-        
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             return(CAT_UNKNOWN_COLLECTION);
         }
         return (CAT_NO_ACCESS_PERMISSION);
@@ -844,9 +832,6 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
             "select coll_id from R_COLL_MAIN where coll_id=?",
             &iVal, dirId, 0, 0, 0, 0, icss);
         if (status) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
             return(CAT_UNKNOWN_COLLECTION);
         }
         return (CAT_NO_ACCESS_PERMISSION);

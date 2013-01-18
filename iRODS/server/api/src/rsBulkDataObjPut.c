@@ -109,12 +109,6 @@ unbunBulkBuf (
         std::size_t last_slash = collString.find_last_of('/');
         collString.erase(last_slash);
 
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - Making collection: \"" << collString << "\" from path \"" << tmpObjPath << "\"";
-            DEBUGMSG(msg.str());
-        }
-        
         status = rsMkCollR(rsComm, "/", collString.c_str());
         if(status < 0) {
             std::stringstream msg;
@@ -154,12 +148,6 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     fileDriverType_t fileType;
     rodsObjStat_t *myRodsObjStat = NULL;
 
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Starting bulk data put";
-        DEBUGMSG(msg.str());
-    }
-    
     inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath, &myRodsObjStat);
@@ -218,12 +206,6 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         return status;
     }
     
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Physical path: \"" << phyBunDir << "\" Collection path: \"" << bulkOprInp->objPath << "\"";
-        DEBUGMSG(msg.str());
-    }
-
     status = rsMkCollR(rsComm, "/", bulkOprInp->objPath);
     if(status < 0) {
         std::stringstream msg;
@@ -251,11 +233,6 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     }
 
     freeAllRescGrpInfo (myRescGrpInfo);
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Starting bulk data put";
-        DEBUGMSG(msg.str());
-    }
     
     return status;
 }
@@ -693,10 +670,6 @@ _bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo,
                                              &renamedPhyFiles->newFilePath[i][0],
                                              &renamedPhyFiles->origFilePath[i][0], savedStatus);
 
-                                    eirods::stacktrace st;
-                                    st.trace();
-                                    st.dump();
-                                    
                                 }
                             }
                             bzero (renamedPhyFiles, sizeof (renamedPhyFiles_t));

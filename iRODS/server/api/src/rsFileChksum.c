@@ -119,9 +119,6 @@ fileChksum (
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog( LOG_NOTICE,"fileChksum; fileOpen failed for %s. status = %d %s", fileName, status, strerror(errno) );
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
         return (status);
     }
 

@@ -58,9 +58,6 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
   if((fp=fopen(metafile, "r")) == NULL) {
     rodsLog (LOG_ERROR,
      "msiExtractNaraMetadata: Cannot open the metadata file %s.", metafile);
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
     return (UNIX_FILE_OPEN_ERR);
   }
   

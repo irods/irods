@@ -46,9 +46,6 @@ chksumLocFile (char *fileName, char *chksumStr)
 	status = UNIX_FILE_OPEN_ERR - errno;
 	rodsLogError (LOG_NOTICE, status,
         "chksumFile; fopen failed for %s. status = %d", fileName, status);
-	eirods::stacktrace st;
-	st.trace();
-	st.dump();
 	return (status);
     }
 
