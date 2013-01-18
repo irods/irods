@@ -110,7 +110,7 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
-	/* single buffer put */
+        /* single buffer put */
         status = l3DataPutSingleBuf (rsComm, dataObjInp, dataObjInpBBuf);
         if (status >= 0 && allFlag == 1) {
             /* update the rest of copies */
@@ -387,42 +387,6 @@ _l3DataPutSingleBuf (rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
     return (bytesWritten);
 }
 
-/**
- * @brief Updates the data obj and resources according to the resource hierarchy string
- */
-static eirods::error
-_updateDbWithRescHier(
-    rsComm_t* rsComm,
-    const std::string& _resc_hier,
-    int _object_count_delta) {
-
-    eirods::error result = SUCCESS();
-    eirods::error ret;
-    int status;
-
-    keyValPair_t regParam;
-    memset(&regParam, 0, sizeof(regParam));
-    addKeyVal(&regParam, "rescHier", _resc_hier.c_str());
-
-    std::string leaf_resc;
-    eirods::hierarchy_parser hparse;
-    if(!(ret = hparse.set_string(_resc_hier)).ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to parse the hierarchy string \"" << _resc_hier << "\"";
-        result = PASSMSG(msg.str(), ret);
-    } else if(!(ret = hparse.last_resc(leaf_resc)).ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to retrieve the leaf resource.";
-        result = PASSMSG(msg.str(), ret);
-    } else if((status = chlUpdateRescObjCount(leaf_resc, _object_count_delta)) < 0) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to update the object count for the resource \"" << leaf_resc << "\"";
-        result = ERROR(status, msg.str());
-    }
-    
-    return result;
-}
-
 int
 l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 {
@@ -454,15 +418,16 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         bytesWritten = rsSubStructFilePut (rsComm, &subFile, dataObjInpBBuf);
         return (bytesWritten);
 
+
     } // struct file type >= 0
 
     std::string prev_resc_hier;
-    #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    switch (RescTypeDef[rescTypeInx].rescCat) {
+    switch (RescTypeDef[rescTypeInx].rescCat)
     case FILE_CAT:
-    #endif // JMC - legacy resource
-    memset (&filePutInp, 0, sizeof (filePutInp));
+#endif // JMC - legacy resource
+        memset (&filePutInp, 0, sizeof (filePutInp));
     rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
@@ -490,16 +455,9 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 
     prev_resc_hier = filePutInp.resc_hier_;
     bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
-    if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
-        rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
-        eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-            eirods::log(LOG_ERROR, msg.str());
-            return ret.code();
-        }
-    }
+    // update the dataObjInfo with the potential changes made by the resource - hcj
+    rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
+    rstrcpy(dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN);
 
     /* file already exists ? */
     while( bytesWritten < 0 && retryCnt < 10 &&
@@ -511,16 +469,9 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         }
         rstrcpy (filePutInp.fileName, dataObjInfo->filePath,MAX_NAME_LEN);
         bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
-        if(prev_resc_hier != std::string(filePutInp.resc_hier_)) {
-            rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
-            eirods::error ret =_updateDbWithRescHier(rsComm, filePutInp.resc_hier_, 1);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                eirods::log(LOG_ERROR, msg.str());
-                return ret.code();
-            }
-        }
+        // update the dataObjInfo with the potential changes made by the resource - hcj
+        rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
+        rstrcpy(dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN);
         retryCnt ++;
     } // while
 #if 0 // JMC - legacy resource
@@ -532,7 +483,7 @@ default:
     bytesWritten = SYS_INVALID_RESC_TYPE;
     break;
 
-} // switch
+    // switch
 
 #endif // JMC - legacy resource
     return (bytesWritten);

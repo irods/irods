@@ -7,6 +7,8 @@
 
 namespace eirods {
 
+    static const std::string DELIM = ";";
+    
     hierarchy_parser::hierarchy_parser(void) {
     }
 
@@ -19,7 +21,7 @@ namespace eirods {
         
         error result = SUCCESS();
         resc_list_.clear();
-        string_tokenize(_resc_hier, resc_list_, ";");
+        string_tokenize(_resc_hier, resc_list_, DELIM);
         return result;
     }
     
@@ -34,7 +36,7 @@ namespace eirods {
             if(first) {
                 first = false;
             } else {
-                _ret_string += ";";
+                _ret_string += DELIM;
             }
             _ret_string += *itr;
         }
@@ -101,6 +103,21 @@ namespace eirods {
             result = ERROR(-1, msg.str());
         }
         return result;
+    }
+
+    error hierarchy_parser::num_levels(
+        int& levels) const {
+        error result = SUCCESS();
+        levels = resc_list_.size();
+        return result;
+    }
+
+    hierarchy_parser::const_iterator hierarchy_parser::begin(void) const {
+        return resc_list_.begin();
+    }
+
+    hierarchy_parser::const_iterator hierarchy_parser::end(void) const {
+        return resc_list_.end();
     }
 
 }; // namespace eirods

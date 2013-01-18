@@ -106,10 +106,6 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         }
     }
 
-    
-    // Save the resource hierarchy so we can determine if it changes
-    std::string prev_resc_hier = fileCreateInp->resc_hier_;
-    
     // =-=-=-=-=-=-=-
     // dont capture the eirods results in the log here as there may be an issue with
     // needing to create a directory, etc.
@@ -187,9 +183,8 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
 
     } // if !create_err.ok()
 
-    if(file_obj.resc_hier() != prev_resc_hier) {
-        rstrcpy(fileCreateInp->resc_hier_, file_obj.resc_hier().c_str(), MAX_NAME_LEN);
-    }
+    rstrcpy(fileCreateInp->resc_hier_, file_obj.resc_hier().c_str(), MAX_NAME_LEN);
+    rstrcpy(fileCreateInp->fileName, file_obj.physical_path().c_str(), MAX_NAME_LEN);
     return file_obj.file_descriptor();
 
 } // _rsFileCreate 

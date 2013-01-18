@@ -414,6 +414,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         }
         addKeyVal (&regParam, FILE_PATH_KW, destDataObjInfo->filePath);
         addKeyVal (&regParam, RESC_NAME_KW, destDataObjInfo->rescName);
+        addKeyVal (&regParam, RESC_HIER_KW, destDataObjInfo->rescHier);
         addKeyVal (&regParam, RESC_GROUP_NAME_KW, 
                    destDataObjInfo->rescGroupName);
         if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput, 

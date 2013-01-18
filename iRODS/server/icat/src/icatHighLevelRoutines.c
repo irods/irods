@@ -25,6 +25,8 @@
 #include "eirods_log.h"
 #include "eirods_tmp_string.h"
 #include "eirods_children_parser.h"
+#include "eirods_stacktrace.h"
+#include "eirods_hierarchy_parser.h"
 
 #include "icatMidLevelRoutines.h"
 #include "icatMidLevelHelpers.h"
@@ -284,7 +286,7 @@ chlGetLocalZone() {
 static int
 _updateRescObjCount(
     const std::string& _resc_name,
-    const char* _zone,
+    const std::string& _zone,
     int _amount) {
 
     int result = 0;
@@ -293,12 +295,13 @@ _updateRescObjCount(
     char obj_count_string[MAX_NAME_LEN];
     char myTime[50];
     eirods::sql_logger logger(__FUNCTION__, logSQL);
-
+    eirods::hierarchy_parser hparse;
+    
     resc_id[0] = '\0';
 //    logger.log();
     std::stringstream ss;
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-                                          resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone, 0,
+                                          resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone.c_str(), 0,
                                           &icss)) != 0) {
         if(status == CAT_NO_ROWS_FOUND) {
             result = CAT_INVALID_RESOURCE;
@@ -315,7 +318,7 @@ _updateRescObjCount(
         obj_count += _amount;
         if(obj_count < 0) {
             std::stringstream ss;
-            ss << __FUNCTION__ << " Invalid resource object count: " << obj_count;
+            ss << __FUNCTION__ << " Invalid resource object count: " << obj_count << " for resource: \"" << _resc_name << "\"";
             eirods::log(LOG_ERROR, ss.str());
             result = CAT_INVALID_OBJ_COUNT;
         } else {
@@ -337,6 +340,25 @@ _updateRescObjCount(
                 result = status;
             }
         }
+    }
+    return result;
+}
+
+/**
+ * @brief Traverses the specified resource hierarchy updating the object counts of each resource
+ */
+static int
+_updateObjCountOfResources(
+    const std::string _resc_hier,
+    const std::string _zone,
+    int _amount) {
+    int result = 0;
+    eirods::hierarchy_parser hparse;
+
+    hparse.set_string(_resc_hier);
+    for(eirods::hierarchy_parser::const_iterator it = hparse.begin();
+        result == 0 && it != hparse.end(); ++it) {
+        result = _updateRescObjCount(*it, _zone, _amount);
     }
     return result;
 }
@@ -413,7 +435,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         "rescName","filePath", "dataOwner", "dataOwnerZone", 
         "replStatus", "chksum", "dataExpiry",
         "dataComments", "dataCreate", "dataModify",  "rescGroupName",
-        "dataMode", "END"
+        "dataMode", "rescHier", "END"
     };
 
     /* If you update colNames, be sure to update DATA_EXPIRE_TS_IX if
@@ -423,7 +445,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         "resc_name", "data_path", "data_owner_name", "data_owner_zone",
         "data_is_dirty", "data_checksum", "data_expiry_ts",
         "r_comment", "create_ts", "modify_ts", "resc_group_name",
-        "data_mode"
+        "data_mode", "resc_hier"
     };
     int DATA_EXPIRY_TS_IX=9; /* must match index in above colNames table */
 
@@ -591,17 +613,18 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     // If we are moving the data object from one resource to another resource, update the object counts for those resources
     // appropriately - hcj
-    if(getValByKey(regParam, "rescName") != NULL) {
+    if(getValByKey(regParam, "rescHier") != NULL) {
         std::stringstream id_stream;
         id_stream << dataObjInfo->dataId;
-        char resc_name[MAX_NAME_LEN];
-        if((status = cmlGetStringValueFromSql("select resc_name from R_DATA_MAIN where data_id=?",
-                                              resc_name, MAX_NAME_LEN, id_stream.str().c_str(), 0, 0, &icss)) != 0) {
+        char resc_hier[MAX_NAME_LEN];
+        if((status = cmlGetStringValueFromSql("select resc_hier from R_DATA_MAIN where data_id=?",
+                                              resc_hier, MAX_NAME_LEN, id_stream.str().c_str(), 0, 0, &icss)) != 0) {
             return status;
         }
-        else if((status = _updateRescObjCount(resc_name, rsComm->clientUser.rodsZone, -1)) != 0) {
+        // TODO - Address this in terms of resource hierarchies
+        else if((status = _updateObjCountOfResources(resc_hier, rsComm->clientUser.rodsZone, -1)) != 0) {
             return status;
-        } else if((status = _updateRescObjCount(getValByKey(regParam, "rescName"), rsComm->clientUser.rodsZone, +1)) != 0) {
+        } else if((status = _updateObjCountOfResources(getValByKey(regParam, "rescHier"), rsComm->clientUser.rodsZone, +1)) != 0) {
             return status;
         }
     }
@@ -760,19 +783,19 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
     cllBindVars[6]=dataSizeNum;
     cllBindVars[7]=dataObjInfo->rescGroupName;
     cllBindVars[8]=dataObjInfo->rescName;
-    cllBindVars[9]=dataObjInfo->filePath;
-    cllBindVars[10]=rsComm->clientUser.userName;
-    cllBindVars[11]=rsComm->clientUser.rodsZone;
-    cllBindVars[12]=dataStatusNum;
-    cllBindVars[13]=dataObjInfo->chksum;
-    cllBindVars[14]=dataObjInfo->dataMode;
-    cllBindVars[15]=myTime;
+    cllBindVars[9]=dataObjInfo->rescHier;
+    cllBindVars[10]=dataObjInfo->filePath;
+    cllBindVars[11]=rsComm->clientUser.userName;
+    cllBindVars[12]=rsComm->clientUser.rodsZone;
+    cllBindVars[13]=dataStatusNum;
+    cllBindVars[14]=dataObjInfo->chksum;
+    cllBindVars[15]=dataObjInfo->dataMode;
     cllBindVars[16]=myTime;
-    cllBindVars[17]=dataObjInfo->rescHier;
+    cllBindVars[17]=myTime;
     cllBindVarCount=18;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegDataObj SQL 6");
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts, resc_hier) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+        "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
         &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,
@@ -781,7 +804,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
         return(status);
     }
 
-    if((status = _updateRescObjCount(dataObjInfo->rescName, rsComm->clientUser.rodsZone, 1)) != 0) {
+    if((status = _updateObjCountOfResources(dataObjInfo->rescHier, rsComm->clientUser.rodsZone, 1)) != 0) {
         return status;
     }
     
@@ -872,17 +895,18 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     int statementNumber;
     int nextReplNum;
     char nextRepl[30];
-    char theColls[]="data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, r_comment, create_ts, modify_ts";
+    char theColls[]="data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, r_comment, create_ts, modify_ts";
     int IX_DATA_REPL_NUM=3;  /* index of data_repl_num in theColls */
     int IX_RESC_NAME=8;      /* index into theColls */
+    int IX_RESC_HIER=9;
     int IX_RESC_GROUP_NAME=7;/* index into theColls */
-    int IX_DATA_PATH=9;      /* index into theColls */
-    int IX_CREATE_TS=18;
-    int IX_MODIFY_TS=19;
-    int IX_RESC_NAME2=20; // JMC - backport 4669
-    int IX_DATA_PATH2=21; // JMC - backport 4669
-    int IX_DATA_ID2=22; // JMC - backport 4669
-    int nColumns=23; // JMC - backport 4669
+    int IX_DATA_PATH=10;      /* index into theColls */
+    int IX_CREATE_TS=19;
+    int IX_MODIFY_TS=20;
+    int IX_RESC_NAME2=21; // JMC - backport 4669
+    int IX_DATA_PATH2=22; // JMC - backport 4669
+    int IX_DATA_ID2=23; // JMC - backport 4669
+    int nColumns=24; // JMC - backport 4669
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -954,6 +978,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 
     cVal[IX_DATA_REPL_NUM]=nextRepl;
     cVal[IX_RESC_NAME]=dstDataObjInfo->rescName;
+    cVal[IX_RESC_HIER]=dstDataObjInfo->rescHier;
     cVal[IX_RESC_GROUP_NAME]=dstDataObjInfo->rescGroupName;
     cVal[IX_DATA_PATH]=dstDataObjInfo->filePath;
 
@@ -975,7 +1000,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4692
 #else  
     /* Postgres */
-    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4669
+    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4669
 #endif            
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
     status = cmlExecuteNoAnswerSql(tSQL,  &icss);
@@ -987,7 +1012,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return(status);
     }
 
-    if((status = _updateRescObjCount(dstDataObjInfo->rescName, rsComm->clientUser.rodsZone, +1)) != 0) {
+    if((status = _updateObjCountOfResources(dstDataObjInfo->rescHier, rsComm->clientUser.rodsZone, +1)) != 0) {
         return status;
     }
     
@@ -1213,23 +1238,23 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     // Get the resource name so we can update its data object count later
-    std::string resc_name;
-    if(!dataObjInfo->rescName || strlen(dataObjInfo->rescName) == 0) {
+    std::string resc_hier;
+    if(!dataObjInfo->rescHier || strlen(dataObjInfo->rescHier) == 0) {
         if(dataObjInfo->replNum >= 0) {
             snprintf(replNumber, sizeof replNumber, "%d", dataObjInfo->replNum);
-            if((status = cmlGetStringValueFromSql("select resc_name from R_DATA_MAIN where data_id=? and data_repl_num=?",
+            if((status = cmlGetStringValueFromSql("select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
                                                   cVal, sizeof cVal, dataObjNumber, replNumber, 0, &icss)) != 0) {
                 return status;
             }
         } else {
-            if((status = cmlGetStringValueFromSql("select resc_name from R_DATA_MAIN where data_id=?",
+            if((status = cmlGetStringValueFromSql("select resc_hier from R_DATA_MAIN where data_id=?",
                                                   cVal, sizeof cVal, dataObjNumber, 0, 0, &icss)) != 0) {
                 return status;
             }
         }
-        resc_name = std::string(cVal);
+        resc_hier = std::string(cVal);
     } else {
-        resc_name = std::string(dataObjInfo->rescName);
+        resc_hier = std::string(dataObjInfo->rescHier);
     }
 
     cllBindVars[0]=logicalDirName;
@@ -1263,7 +1288,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     // update the object count in the resource
-    if((status = _updateRescObjCount(resc_name, rsComm->clientUser.rodsZone, -1)) != 0) {
+    if((status = _updateObjCountOfResources(resc_hier, rsComm->clientUser.rodsZone, -1)) != 0) {
         return status;
     }
     
@@ -7284,7 +7309,9 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
         status1 = cmlGetIntegerValueFromSql(
             "select coll_id from R_COLL_MAIN where coll_name=?",
             &iVal, pathName, 0, 0, 0, 0, &icss);
-        if (status1==CAT_NO_ROWS_FOUND) status1=CAT_UNKNOWN_COLLECTION;
+        if (status1==CAT_NO_ROWS_FOUND) {
+            status1=CAT_UNKNOWN_COLLECTION;
+        }
         if (status1==0) status1=iVal;
     }
     else {

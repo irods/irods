@@ -457,7 +457,6 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         fileChksumInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-
         rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
 
@@ -762,9 +761,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = getFilePathName (rsComm, dataObjInfo, dataObjInp);
     }
 
-    if (status < 0) {
-        return status;
-    }
     if (strcmp (fileRenameInp.oldFileName, dataObjInfo->filePath) == 0) {
         return (0);
     }
@@ -906,6 +902,7 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
                       tmpSubColl, tmpDataName);
             dataObjInfo.replNum = atoi (tmpReplNum);
             rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
+            rstrcpy (dataObjInfo.rescHier, tmpRescName, MAX_NAME_LEN);
             /*status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
             if (status < 0) {
                 rodsLog( LOG_ERROR,"syncCollPhyPath: resolveResc error for %s, status = %d",

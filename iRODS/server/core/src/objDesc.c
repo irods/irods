@@ -231,8 +231,6 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
         DEBUGMSG(msg.str());
         rstrcpy (dataObjInfo->rescName, rescName, LONG_NAME_LEN);
         rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN);
-    } else {
-        DEBUGMSG("qqq - No rescName Specified");
     }
     
     snprintf (dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode);

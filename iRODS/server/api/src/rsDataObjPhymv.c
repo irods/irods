@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See dataObjPhymv.h for a description of this API call.*/
@@ -16,7 +18,7 @@
 
 int
 rsDataObjPhymv250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-transStat_t **transStat)
+                   transStat_t **transStat)
 {
     int status;
     transferStat_t *transferStat = NULL;
@@ -42,7 +44,7 @@ transStat_t **transStat)
 
 int
 rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-transferStat_t **transStat)
+                transferStat_t **transStat)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
@@ -56,15 +58,15 @@ transferStat_t **transStat)
     specCollCache_t *specCollCache = NULL;
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
-      &dataObjInp->condInput);
+                       &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
-      REMOTE_OPEN);
+                                       REMOTE_OPEN);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
         status = _rcDataObjPhymv (rodsServerHost->conn, dataObjInp,
-          transStat);
+                                  transStat);
         return status;
     }
 
@@ -72,12 +74,12 @@ transferStat_t **transStat)
     memset (*transStat, 0, sizeof (transferStat_t));
 
     if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
-	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-	    return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-	}
-	accessPerm = NULL;
+        if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+            return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+        }
+        accessPerm = NULL;
     } else {
-	accessPerm = ACCESS_DELETE_OBJECT;
+        accessPerm = ACCESS_DELETE_OBJECT;
     }
 
     /* query rcat for resource info and sort it */
@@ -94,11 +96,11 @@ transferStat_t **transStat)
 
     /* query rcat for dataObjInfo and sort it */
     status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
-      accessPerm, 1);
+                             accessPerm, 1);
 
     if (status < 0) {
-      rodsLog (LOG_NOTICE,
-          "rsDataObjPhymv: getDataObjInfo for %s", dataObjInp->objPath);
+        rodsLog (LOG_NOTICE,
+                 "rsDataObjPhymv: getDataObjInfo for %s", dataObjInp->objPath);
         return (status);
     }
 
@@ -109,14 +111,14 @@ transferStat_t **transStat)
         freeAllDataObjInfo (oldDataObjInfoHead);
         freeAllRescGrpInfo (myRescGrpInfo);
         if (status == CAT_NO_ROWS_FOUND) {
-	    return (0);
-	} else {
+            return (0);
+        } else {
             return (status);
-	}
+        }
     }
 
     status = _rsDataObjPhymv (rsComm, dataObjInp, dataObjInfoHead, 
-      myRescGrpInfo, *transStat, multiCopyFlag);
+                              myRescGrpInfo, *transStat, multiCopyFlag);
 
     freeAllDataObjInfo (dataObjInfoHead);
     freeAllDataObjInfo (oldDataObjInfoHead);
@@ -127,8 +129,8 @@ transferStat_t **transStat)
 
 int
 _rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transferStat_t *transStat, int multiCopyFlag)
+                 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
+                 transferStat_t *transStat, int multiCopyFlag)
 {
     dataObjInfo_t *srcDataObjInfo;
     rescGrpInfo_t *tmpRescGrpInfo;
@@ -141,42 +143,42 @@ transferStat_t *transStat, int multiCopyFlag)
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
         while (srcDataObjInfo != NULL) {
-	    /* use _rsDataObjReplS for the phymv */ 
-	    dataObjInp->oprType = PHYMV_OPR;	/* should be set already */
+            /* use _rsDataObjReplS for the phymv */ 
+            dataObjInp->oprType = PHYMV_OPR;    /* should be set already */
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-              tmpRescInfo, tmpRescGrpInfo->rescGroupName, NULL, 0);
+                                      tmpRescInfo, tmpRescGrpInfo->rescGroupName, NULL, 0);
 
-	    if (multiCopyFlag == 0) {
-		if (status >= 0) {
-		    srcDataObjInfo = srcDataObjInfo->next;
-		} else {
-		    savedStatus = status;
-		}
-		/* use another resc */
-		break;
-	    } else {
-		if (status < 0) {
-		    savedStatus = status;
-		    /* use another resc */
-		    break;
-		}
-	    }
+            if (multiCopyFlag == 0) {
+                if (status >= 0) {
+                    srcDataObjInfo = srcDataObjInfo->next;
+                } else {
+                    savedStatus = status;
+                }
+                /* use another resc */
+                break;
+            } else {
+                if (status < 0) {
+                    savedStatus = status;
+                    /* use another resc */
+                    break;
+                }
+            }
             srcDataObjInfo = srcDataObjInfo->next;
         }
-	if (status >= 0)
+        if (status >= 0)
             transStat->numThreads = dataObjInp->numThreads;
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
 
     if (srcDataObjInfo != NULL) {
-	/* not everything got moved */
-	if (savedStatus == 0) {
-	    status = SYS_COPY_ALREADY_IN_RESC;
-	}
+        /* not everything got moved */
+        if (savedStatus == 0) {
+            status = SYS_COPY_ALREADY_IN_RESC;
+        }
     } else {
-	savedStatus = 0;
+        savedStatus = 0;
     }
-	    
+            
     return (savedStatus);
 }
 

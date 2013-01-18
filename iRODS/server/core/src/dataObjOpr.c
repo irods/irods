@@ -62,7 +62,6 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* need to do RESC_NAME_KW here because not all query need this */
-
     if (ignoreCondInput == 0 && (tmpStr =
                                  getValByKey (&dataObjInp->condInput, RESC_NAME_KW)) != NULL) {
         snprintf (condStr, NAME_LEN, "='%s'", tmpStr);

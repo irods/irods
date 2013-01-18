@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "eirods_stacktrace.h"
 
 static pthread_mutex_t my_mutex;
 #endif

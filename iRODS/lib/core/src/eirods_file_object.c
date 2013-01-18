@@ -96,9 +96,6 @@ namespace eirods {
                     //log(LOG_NOTICE, msg.str());
                 } else if(resc.empty()) {
                     return ERROR(-1, "ERROR: Hierarchy string is not empty but first resource is!");
-                } else {
-                    std::stringstream msg;
-                    log(LOG_NOTICE, msg.str());
                 }
     
                 ret = _mgr.resolve(resc, _ptr);

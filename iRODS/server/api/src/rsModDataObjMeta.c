@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* unregDataObj.c
@@ -20,9 +22,9 @@ rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
-      &rodsServerHost);
+                                 &rodsServerHost);
     if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
-       return(status);
+        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {
 #ifdef RODS_CAT
@@ -50,8 +52,8 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
     if (rsComm != NULL) {
-      rei2.uoic = &rsComm->clientUser;
-      rei2.uoip = &rsComm->proxyUser;
+        rei2.uoic = &rsComm->clientUser;
+        rei2.uoip = &rsComm->proxyUser;
     }
     rei2.doi = modDataObjMetaInp->dataObjInfo;
     rei2.condInputData = modDataObjMetaInp->regParam;
@@ -72,7 +74,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     if (i < 0) {
         if (rei2.status < 0) {
             i = rei2.status;
-          }
+        }
         rodsLog (LOG_ERROR,"_rsModDataObjMeta:acPreProcForModifyDataObjMeta error stat=%d", i);
                
         return i;
@@ -97,9 +99,9 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                 break;
             status = chlModDataObjMeta (rsComm, tmpDataObjInfo, regParam);
             if (status < 0) {
-                    rodsLog (LOG_ERROR,
-                      "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
-                  tmpDataObjInfo->objPath, status);
+                rodsLog (LOG_ERROR,
+                         "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
+                         tmpDataObjInfo->objPath, status);
             }
             tmpDataObjInfo = tmpDataObjInfo->next;
         }
@@ -110,15 +112,15 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if (status >= 0) {
-      i =  applyRule("acPostProcForModifyDataObjMeta",NULL, &rei2, NO_SAVE_REI);
-      if (i < 0) {
-        if (rei2.status < 0) {
-          i = rei2.status;
+        i =  applyRule("acPostProcForModifyDataObjMeta",NULL, &rei2, NO_SAVE_REI);
+        if (i < 0) {
+            if (rei2.status < 0) {
+                i = rei2.status;
+            }
+            rodsLog (LOG_ERROR,
+                     "_rsModDataObjMeta:acPostProcForModifyDataObjMeta error stat=%d",i);
+            return i;
         }
-        rodsLog (LOG_ERROR,
-           "_rsModDataObjMeta:acPostProcForModifyDataObjMeta error stat=%d",i);
-        return i;
-      }
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
