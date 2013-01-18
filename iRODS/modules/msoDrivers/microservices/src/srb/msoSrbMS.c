@@ -242,6 +242,9 @@ msiobjget_srb(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	    "msigetobj_srb: open error for cacheFilename %s, status = %d",
 	    cacheFilename, status);
     clFinish(rcComm);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
 
@@ -381,6 +384,9 @@ msiobjput_srb(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
     printf ("msiputobj_srb: open error for %s, status = %d\n",
 	    cacheFilename, status);
     free(str);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
 

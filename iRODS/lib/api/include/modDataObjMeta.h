@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* modDataObjMeta.h
@@ -38,8 +40,8 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-int
-rcModDataObjMeta (rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp);
+    int
+    rcModDataObjMeta (rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp);
 
 /* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
  * Input -
@@ -50,10 +52,10 @@ rcModDataObjMeta (rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp);
  *   int status - status of the operation.
  */
 
-int
-clearModDataObjMetaInp (modDataObjMeta_t *modDataObjMetaInp);
+    int
+    clearModDataObjMetaInp (modDataObjMeta_t *modDataObjMetaInp);
 #ifdef  __cplusplus
 }
 #endif
 
-#endif	/* MOD_DATA_OBJ_META_H */
+#endif  /* MOD_DATA_OBJ_META_H */

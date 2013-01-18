@@ -448,42 +448,6 @@ l3Create (rsComm_t *rsComm, int l1descInx)
     return (l3descInx);
 }
 
-/**
- * @brief Updates the data obj and resources according to the resource hierarchy string
- */
-static eirods::error
-_updateDbWithRescHier(
-    rsComm_t* rsComm,
-    const std::string& _resc_hier,
-    int _object_count_delta) {
-
-    eirods::error result = SUCCESS();
-    eirods::error ret;
-    int status;
-
-    keyValPair_t regParam;
-    memset(&regParam, 0, sizeof(regParam));
-    addKeyVal(&regParam, "rescHier", _resc_hier.c_str());
-
-    std::string leaf_resc;
-    eirods::hierarchy_parser hparse;
-    if(!(ret = hparse.set_string(_resc_hier)).ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to parse the hierarchy string \"" << _resc_hier << "\"";
-        result = PASSMSG(msg.str(), ret);
-    } else if(!(ret = hparse.last_resc(leaf_resc)).ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to retrieve the leaf resource.";
-        result = PASSMSG(msg.str(), ret);
-    } else if((status = chlUpdateRescObjCount(leaf_resc, _object_count_delta)) < 0) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed to update the object count for the resource \"" << leaf_resc << "\"";
-        result = ERROR(status, msg.str());
-    }
-    
-    return result;
-}
-
 int
 l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
                    dataObjInfo_t *dataObjInfo)
@@ -519,16 +483,9 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // =-=-=-=-=-=-=-
         std::string prev_resc_hier = fileCreateInp.resc_hier_;
         l3descInx = rsFileCreate (rsComm, &fileCreateInp);
-        if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
-            rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-            eirods::error ret =_updateDbWithRescHier(rsComm, fileCreateInp.resc_hier_, 1);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                eirods::log(LOG_ERROR, msg.str());
-                return ret.code();
-            }
-        }
+        // update the dataObjInfo with the potential changes made by the resource - hcj
+        rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
+        rstrcpy(dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN);
         
         /* file already exists ? */
         while( l3descInx <= 2 && retryCnt < 100 && 
@@ -538,16 +495,9 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
             rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             l3descInx = rsFileCreate (rsComm, &fileCreateInp);
-            if(prev_resc_hier != std::string(fileCreateInp.resc_hier_)) {
-                rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-                eirods::error ret =_updateDbWithRescHier(rsComm, fileCreateInp.resc_hier_, 1);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__ << " - Unable to update database with resc hier info.";
-                    eirods::log(LOG_ERROR, msg.str());
-                    return ret.code();
-                }
-            }
+            // update the dataObjInfo with the potential changes made by the resource - hcj
+            rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
+            rstrcpy(dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN);
             retryCnt ++; 
         }
         rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);

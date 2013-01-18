@@ -58,7 +58,6 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* need to do RESC_NAME_KW here because not all query need this */
-
     if (ignoreCondInput == 0 && (tmpStr =
                                  getValByKey (&dataObjInp->condInput, RESC_NAME_KW)) != NULL) {
         snprintf (condStr, NAME_LEN, "='%s'", tmpStr);
@@ -314,6 +313,7 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                   tmpCollName, tmpDataName);
         rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescHier, tmpHierString, MAX_NAME_LEN);
+
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
         if (status < 0) {
             rodsLog (LOG_DEBUG,

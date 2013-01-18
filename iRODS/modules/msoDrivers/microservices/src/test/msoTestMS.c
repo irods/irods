@@ -110,6 +110,9 @@ msiobjget_test(msParam_t*  inRequestPath, msParam_t* inFileMode,
     printf (
 	    "msigetobj_test: open error for cacheFilename %s, status = %d",
 	    cacheFilename, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
   bytesWritten = write (destFd, str, objLen);
@@ -216,6 +219,9 @@ msiobjput_test(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
     status = UNIX_FILE_OPEN_ERR - errno;
     printf ("msiputobj_test: open error for %s, status = %d\n",
 	    cacheFilename, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
   myBuf = (char *) malloc (dataSize);

@@ -313,6 +313,9 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
         rodsLog (LOG_ERROR,
          "putFileIntoS3: open error for fileName %s, status = %d",
          fileName, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return status;
     }
 
@@ -571,6 +574,9 @@ getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
         rodsLog (LOG_ERROR,
          "getFileFromS3: open error for fileName %s, status = %d",
          fileName, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return status;
     }
  

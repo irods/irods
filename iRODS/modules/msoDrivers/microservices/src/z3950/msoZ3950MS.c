@@ -212,6 +212,9 @@ msiobjget_z3950(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	    "msigetobj_z3950: open error for cacheFilename %s, status = %d",
 	    cacheFilename, status);
     clearMsParamArray(&msParamArray,0);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
   bytesWritten = write (destFd, str, objLen);
@@ -316,6 +319,9 @@ msiobjput_z3950(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
     status = UNIX_FILE_OPEN_ERR - errno;
     printf ("msiputobj_z3950: open error for %s, status = %d\n",
 	    cacheFilename, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
   myBuf = (char *) malloc (dataSize);

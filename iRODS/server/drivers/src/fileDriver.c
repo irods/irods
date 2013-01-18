@@ -10,6 +10,7 @@
 #include "eirods_log.h"
 #include "eirods_resource_plugin.h"
 #include "eirods_first_class_object.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create
@@ -74,6 +75,9 @@ eirods::error fileOpen( eirods::first_class_object& _object ) {
     if( !ret_err.ok() ) {
         eirods::error foo = PASSMSG( "fileOpen - failed to call 'open'", ret_err );
         eirods::log( foo );
+        eirods::stacktrace st;
+        st.trace();
+        st.dump();
         return foo;
     } else {
         return CODE( _object.file_descriptor() );

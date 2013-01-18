@@ -23,6 +23,7 @@
 #include "getRemoteZoneResc.h"
 #include "getRescQuota.h"
 #include "physPath.h"
+#include "eirods_stacktrace.h"
 #ifdef HPSS
 #include "hpssFileDriver.h"
 #endif
@@ -2468,6 +2469,9 @@ logAgentProc (rsComm_t *rsComm)
         rodsLog (LOG_ERROR,
           "logAgentProc: Cannot open input file %s. ernro = %d",
           procPath, errno);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return (UNIX_FILE_OPEN_ERR - errno);
     }
 
@@ -2508,6 +2512,9 @@ readProcLog (int pid, procLog_t *procLog)
         rodsLog (LOG_ERROR,
           "readProcLog: Cannot open input file %s. ernro = %d",
           procPath, errno);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return (UNIX_FILE_OPEN_ERR - errno);
     }
 

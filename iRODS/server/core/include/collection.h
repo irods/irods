@@ -36,5 +36,5 @@ int
 collStatAllKinds (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut);
 int
-rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl);
+rsMkCollR (rsComm_t *rsComm, const char *startColl, const char *destColl);
 #endif	/* COLLECTION_H */

@@ -11,6 +11,7 @@
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_string_tokenize.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -216,6 +217,9 @@ extern "C" {
             msg << ", flags = ";
             msg << flags;
  
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
             return ERROR( fd, msg.str() );
         }
 		
@@ -991,6 +995,51 @@ extern "C" {
     #endif
 	} // unixFileStagePlugin
 
+    /**
+     * @brief Recursively make all of the dirs in the path
+     */
+    eirods::error
+    unixFileMkDirR(
+        const std::string& path,
+        mode_t mode) {
+        eirods::error result = SUCCESS();
+        std::string subdir;
+        std::size_t pos = 0;
+        bool done = false;
+        while(!done && result.ok()) {
+            pos = path.find_first_of('/', pos + 1);
+            if(pos > 0) {
+                subdir = path.substr(0, pos);
+                int status = mkdir(subdir.c_str(), mode);
+                
+                // =-=-=-=-=-=-=-
+                // handle error cases
+                if( status < 0 && errno != EEXIST) {
+                    status = UNIX_FILE_RENAME_ERR - errno;
+				
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << ": mkdir error for ";
+                    msg << subdir;
+                    msg << ", errno = ";
+                    msg << strerror(errno);
+                    msg << ", status = ";
+                    msg << status;
+			
+                    eirods::stacktrace st;
+                    st.trace();
+                    st.dump();
+            
+                    result = ERROR( status, msg.str() );
+                }
+            }
+            if(pos == std::string::npos) {
+                done = true;
+            }
+        }
+        return result;
+    }
+
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error unixFileRenamePlugin( eirods::resource_property_map* 
@@ -1012,6 +1061,21 @@ extern "C" {
             return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
         }
 
+        // make the directories in the path to the new file
+        std::string new_path = _new_file_name;
+        std::size_t last_slash = new_path.find_last_of('/');
+        new_path.erase(last_slash);
+        eirods::error ret = unixFileMkDirR( new_path.c_str(), 0750 );
+        if(!ret.ok()) {
+
+            std::stringstream msg;
+            msg << "unixFileRenamePlugin: mkdir error for ";
+            msg << new_path;
+            
+            return PASSMSG( msg.str(), ret);
+
+        }
+
         // =-=-=-=-=-=-=-
         // make the call to rename
         int status = rename( _object->physical_path().c_str(), _new_file_name );
@@ -1031,6 +1095,10 @@ extern "C" {
             msg << ", status = ";
             msg << status;
 			
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+            
             return ERROR( status, msg.str() );
 
         }
@@ -1205,6 +1273,9 @@ extern "C" {
                      "unixFileCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
             close( inFd ); // JMC cppcheck - resource
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
             return status;
         }
 
@@ -1215,6 +1286,9 @@ extern "C" {
                      "unixFileCopyPlugin: open error for destFileName %s, status = %d",
                      destFileName, status);
             close (inFd);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
             return status;
         }
 

@@ -23,6 +23,7 @@
 #include "rodsClient.h"
 #include "rsIcatOpr.h"
 #include "resource.h"
+#include "eirods_stacktrace.h"
 
 int 
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)
@@ -252,6 +253,9 @@ reExec_t *reExec, int jobType)
             rodsLog (LOG_ERROR,
              "getNextQueuedRuleExec: open error for rei file %s, status = %d",
              queuedRuleExec->reiFilePath, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
             return (status);
         }
  
@@ -952,6 +956,9 @@ char *estimateExeTime, char *notificationAddr)
         rodsLog (LOG_ERROR,
          "fillExecSubmitInp: open error for rei file %s, status = %d",
          ruleExecSubmitInp->reiFilePath, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return (status);
     }
 

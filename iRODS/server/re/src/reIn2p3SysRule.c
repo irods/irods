@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "eirods_stacktrace.h"
 
 static pthread_mutex_t my_mutex;
 #endif
@@ -342,6 +343,9 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
     if (fp == NULL) {
         rodsLog (LOG_NOTICE,
                  "hostAuthCheck: can't open HostControlAccess file %s", hostControlAccessFile);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return (UNIX_FILE_OPEN_ERR - errno);
     }
     /* parse the list of groups for the user from the groupsname char */

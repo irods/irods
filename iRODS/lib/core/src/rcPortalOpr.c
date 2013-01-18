@@ -9,6 +9,7 @@
 #include "dataObjOpr.h"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
+#include "eirods_stacktrace.h"
 
 #ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
@@ -1212,6 +1213,9 @@ writeLfRestartFile (char *infoFile, fileRestartInfo_t *info)
         rodsLog (LOG_ERROR,
           "writeLfRestartFile: open failed for %s, status = %d",
           infoFile, status);
+	eirods::stacktrace st;
+	st.trace();
+	st.dump();
         return (status);
     }
 
@@ -1278,6 +1282,9 @@ readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
         rodsLog (LOG_ERROR,
           "readLfRestartFile open failed for %s, status = %d",
           infoFile, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return (status);
     }
 

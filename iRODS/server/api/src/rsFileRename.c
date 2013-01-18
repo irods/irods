@@ -79,7 +79,7 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
     // FIXME: need to check resource permission and vault permission
     // when RCAT is available 
   
-    mkDirForFilePath( rsComm, "/", fileRenameInp->newFileName, getDefDirMode () );
+    // mkDirForFilePath( rsComm, "/", fileRenameInp->newFileName, getDefDirMode () ); - The actual file path depends on the resource
 
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin

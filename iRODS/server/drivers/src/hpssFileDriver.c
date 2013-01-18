@@ -300,6 +300,9 @@ rodsLong_t mySize)
         rodsLog (LOG_ERROR,
          "seqHpssPut: open error for srcUnixFile %s, status = %d",
          srcUnixFile, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return status;
     }
 
@@ -372,6 +375,9 @@ rodsLong_t dataSize)
          "hpssFileCopy: open error for destUnixFile %s, status = %d",
          destUnixFile, status);
         hpss_Close (srcFd);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return status;
     }
 
@@ -1041,6 +1047,9 @@ getMover (hpssThrInfo_t *thrInfo)
         rodsLog (LOG_ERROR,
          "getMover: open error for destUnixFile %s, status = %d",
          mySession->unixFilePath, mySession->status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return;
     }
 
@@ -1171,6 +1180,9 @@ putMover (hpssThrInfo_t *thrInfo)
         rodsLog (LOG_ERROR,
          "paraHpssPut: open error for unixFilePath %s, status = %d",
          mySession->unixFilePath, mySession->status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
         return;
     }
 

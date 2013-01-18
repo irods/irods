@@ -851,9 +851,17 @@ extern "C" {
                     msg << __FUNCTION__ << " - failed to generate full path.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, const char*>("rename", _object, _new_file_name);
-                    result = PASSMSG("passthruFileRenamePlugin - failed calling child rename.", ret);
+                    std::string new_full_path;
+                    ret = passthruGenerateFullPath(resc, _new_file_name, new_full_path);
+                    if(!ret.ok()) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__ << " - failed to generate full path of new file name.";
+                        result = PASSMSG(msg.str(), ret);
+                    } else {
+                        _object->physical_path(full_path);
+                        ret = resc->call<eirods::first_class_object*, const char*>("rename", _object, new_full_path.c_str());
+                        result = PASSMSG("passthruFileRenamePlugin - failed calling child rename.", ret);
+                    }
                 }
             }
         }

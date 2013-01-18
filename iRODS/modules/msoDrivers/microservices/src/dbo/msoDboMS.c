@@ -140,6 +140,9 @@ msiobjget_dbo(msParam_t*  inRequestPath, msParam_t* inFileMode,
 	    cacheFilename, status);
     free(outBuf);
     free(str);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
   bytesWritten = write (destFd, outBuf, objLen);
@@ -249,6 +252,9 @@ msiobjput_dbo(msParam_t*  inMSOPath, msParam_t*  inCacheFilename,
     status = UNIX_FILE_OPEN_ERR - errno;
     printf ("msiputobj_dbo: open error for %s, status = %d\n",
 	    cacheFilename, status);
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
     return status;
   }
   myBuf = (char *) malloc (dataSize);
