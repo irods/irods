@@ -131,12 +131,6 @@ $GSI_AUTH = '0';
 $GLOBUS_LOCATION = '';
 $GSI_INSTALL_TYPE = '';
 
-###############################################################################
-# Experimental support for multiple zones in a single iCAT server instance.
-# $DB_NAME_PREFIX and $ZONE_NAMES will supersede $DB_NAME and $ZONE_NAME.
-$DB_NAME_PREFIX = 'EICAT_';
-$ZONE_NAMES = 'tempZone';
-###############################################################################
 
 # NCCS Audit Extensions
 # $AUDIT_EXT is 1 if these Audit Extensions are selected.
