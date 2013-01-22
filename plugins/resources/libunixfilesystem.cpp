@@ -1487,6 +1487,25 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class unixfilesystem_resource : public eirods::resource {
+        // =-=-=-=-=-=-=-
+        // 3a. create a class to provide maintenance operations, this is only for example
+        //     and will not be called.
+        class maintenance_operation : public eirods::pdmo_base {
+        public:
+            maintenance_operation( unixfilesystem_resource* _r ) : resc_(_r){}
+
+            eirods::error operator()() {
+                std::string name;
+                resc_->get_property< std::string >( "name", name );
+                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name.c_str() );
+                return SUCCESS();
+            }
+
+        private:
+            boost::shared_ptr< unixfilesystem_resource > resc_;
+
+        }; // class maintenance_operation
+
     public:
         unixfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
             if( !context_.empty() ) {
@@ -1522,6 +1541,18 @@ extern "C" {
             } // if context not empty
 
         } // ctor
+
+        // =-=-=-=-=-=-=-
+        // 3b. pass along a functor for maintenance work after
+        //     the client disconnects, uncomment the first two lines for effect.
+        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_base*& _op  ) {
+#if 0
+            _op = new maintenance_operation( this ); 
+            return SUCCESS();
+#else
+            return ERROR( -1, "no op supported" );
+#endif
+        }
 
     }; // class unixfilesystem_resource
   

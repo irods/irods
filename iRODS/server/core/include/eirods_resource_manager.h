@@ -51,7 +51,11 @@ namespace eirods {
         // =-=-=-=-=-=-=-
 		/// @brief print the list of local resources out to stderr
         void print_local_resources(); 
- 
+  
+        // =-=-=-=-=-=-=-
+		/// @brief exec the pdmos ( post disconnect maintenance operations ) in order
+        void call_maintenance_operations(); 
+
         // =-=-=-=-=-=-=-
 		/// @brief resolve a resource from a match with a given property 
         template< typename value_type >
@@ -126,10 +130,24 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief Initialize the child map from the resources lookup table
         error init_child_map(void);
+ 
+        // =-=-=-=-=-=-=-
+        /// @brief top level function to gather the post disconnect maintenance 
+        //         operations from the resources, in breadth first order
+        error gather_operations(void);
+        
+        // =-=-=-=-=-=-=-
+        /// @brief lower level recursive call to gather the post disconnect 
+        //         maintenance operations from the resources, in breadth first order
+        error gather_operations_recursive( const std::string&,           // child string of parent resc
+                                           std::vector< std::string >&,  // vector of 'done' resc names
+                                           std::vector< pdmo_base* >& ); // vector of ops for this composition
+
 
         // =-=-=-=-=-=-=-
         // Attributes
         lookup_table< boost::shared_ptr< resource > > resources_;
+        std::vector< std::vector< pdmo_base* > >      maintenance_operations_;
 
     }; // class resource_manager
 
