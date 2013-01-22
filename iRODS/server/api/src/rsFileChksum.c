@@ -110,11 +110,6 @@ fileChksum (
 #ifdef MD5_DEBUG
     rodsLong_t total_bytes_read = 0;    /* XXXX debug */
 #endif
-
-    std::stringstream msg;
-    msg << "qqq - Starting fileChksum and creating file object: rescHier = " << (void*)rescHier;
-    DEBUGMSG(msg.str());
-    
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
     eirods::file_object file_obj( rsComm, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
@@ -130,17 +125,11 @@ fileChksum (
         return (status);
     }
 
-    DEBUGMSG("qqq - Initializing md5");
-    
     MD5Init (&context);
 
-    DEBUGMSG("qqq - Doing a fileRead");
-    
     eirods::error read_err = fileRead( file_obj, buffer, SVR_MD5_BUF_SZ );      
     bytes_read = read_err.code();
 
-    DEBUGMSG("qqq - Update md5");
-    
     while( read_err.ok() && bytes_read > 0 ) {
 #ifdef MD5_DEBUG
         total_bytes_read += bytes_read;     /* XXXX debug */
@@ -152,19 +141,14 @@ fileChksum (
 
     } // while
 
-    DEBUGMSG("qqq - Finalizing md5");
-    
     MD5Final (digest, &context);
 
-    DEBUGMSG("qqq - fileClose");
-    
     ret = fileClose( file_obj );
     if( !ret.ok() ) {
         eirods::error err = PASS( false, ret.code(), "fileChksum - error on close", ret );
         eirods::log( err );
     }
 
-    DEBUGMSG("qqq - Done");
     md5ToStr (digest, chksumStr);
 
 #ifdef MD5_DEBUG
