@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -29,11 +31,11 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 #endif
     
     resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
-      &collCreateInp->condInput);
+                       &collCreateInp->condInput);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
-                                &rodsServerHost);
+                                 &rodsServerHost);
     if (status < 0 || rodsServerHost == NULL ) { // JMC cppcheck
-       return(status);
+        return(status);
     }
 
     if (rodsServerHost->localFlag == LOCAL_HOST) {
@@ -46,15 +48,15 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
                 status = rei.status;
             }
             rodsLog (LOG_ERROR,
-             "rsCollCreate:acPreprocForCollCreate error for %s,stat=%d",
-              collCreateInp->collName, status);
+                     "rsCollCreate:acPreprocForCollCreate error for %s,stat=%d",
+                     collCreateInp->collName, status);
             return status;
         }
 
         if (getValByKey (&collCreateInp->condInput, RECURSIVE_OPR__KW) != 
-	  NULL) {
-	    status = rsMkCollR (rsComm, "/", collCreateInp->collName);
-	    return (status);
+            NULL) {
+            status = rsMkCollR (rsComm, "/", collCreateInp->collName);
+            return (status);
         }
 #ifdef RODS_CAT
 
@@ -62,40 +64,40 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
          * COLLECTION_TYPE_KW must be set */
 
         status = resolvePathInSpecColl (rsComm, collCreateInp->collName, 
-	  WRITE_COLL_PERM, 0, &dataObjInfo);
-	if (status >= 0) {
-	    freeDataObjInfo (dataObjInfo);
-	    if (status == COLL_OBJ_T) {
-		return (0);
-	    } else if (status == DATA_OBJ_T) {
-		return (USER_INPUT_PATH_ERR);
-	    }
-	} else if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST) { 
+                                        WRITE_COLL_PERM, 0, &dataObjInfo);
+        if (status >= 0) {
+            freeDataObjInfo (dataObjInfo);
+            if (status == COLL_OBJ_T) {
+                return (0);
+            } else if (status == DATA_OBJ_T) {
+                return (USER_INPUT_PATH_ERR);
+            }
+        } else if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST) { 
             /* for STRUCT_FILE_COLL to make a directory in the structFile, the
              * COLLECTION_TYPE_KW must be set */
-	    if (dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
-	      dataObjInfo->specColl->collClass == LINKED_COLL) {
-		/*  should not be here because if has been translated */
-		return SYS_COLL_LINK_PATH_ERR;
-	    } else {
-	        status = l3Mkdir (rsComm, dataObjInfo);
-	    }
-	    freeDataObjInfo (dataObjInfo);
-	    return (status);
-	} else {
+            if (dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
+                dataObjInfo->specColl->collClass == LINKED_COLL) {
+                /*  should not be here because if has been translated */
+                return SYS_COLL_LINK_PATH_ERR;
+            } else {
+                status = l3Mkdir (rsComm, dataObjInfo);
+            }
+            freeDataObjInfo (dataObjInfo);
+            return (status);
+        } else {
             if (isColl (rsComm, collCreateInp->collName, NULL) >= 0)
                 return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             status = _rsRegColl (rsComm, collCreateInp);
-	}
+        }
         rei.status = status;
         if (status >= 0) {
             rei.status = applyRule ("acPostProcForCollCreate", NULL, &rei, 
-	      NO_SAVE_REI);
+                                    NO_SAVE_REI);
 
             if (rei.status < 0) {
                 rodsLog (LOG_ERROR,
-                 "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
-                  collCreateInp->collName, status);
+                         "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
+                         collCreateInp->collName, status);
             }
         }
 
@@ -120,10 +122,10 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-          MAX_NAME_LEN);
+                 MAX_NAME_LEN);
         subFile.mode = getDefDirMode ();
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
+                 NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileMkdir (rsComm, &subFile);
     } else {
@@ -136,18 +138,18 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
             fileMkdirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileMkdirInp.dirName, dataObjInfo->filePath,
-              MAX_NAME_LEN);
+                     MAX_NAME_LEN);
             rstrcpy (fileMkdirInp.addr.hostAddr,
-              dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+                     dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             fileMkdirInp.mode = getDefDirMode ();
             status = rsFileMkdir (rsComm, &fileMkdirInp);
        #if 0 // JMC legacy resource 
             break;
 
-          default:
+        default:
             rodsLog (LOG_NOTICE,
-              "l3Mkdir: rescCat type %d is not recognized",
-              RescTypeDef[rescTypeInx].rescCat);
+                     "l3Mkdir: rescCat type %d is not recognized",
+                     RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
         }

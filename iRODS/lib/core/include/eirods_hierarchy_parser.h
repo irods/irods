@@ -16,6 +16,7 @@ namespace eirods {
     class hierarchy_parser {
     public:
         typedef std::vector<std::string> resc_list_t;
+        typedef resc_list_t::const_iterator const_iterator;
 
         /// @brief ctor doesn't do much, until it has a string
         hierarchy_parser(void);
@@ -38,6 +39,15 @@ namespace eirods {
 
         /// @brief Returns the next resource in the hierarchy after the specified resource
         error next(const std::string& _current, std::string& _ret_resc) const;
+
+        /// @brief Returns the number of levels in the resource hierarchy
+        error num_levels(int& levels) const;
+
+        /// @brief Returns an iterator to the beginning of the list
+        const_iterator begin(void) const;
+
+        /// @brief Returns an iterator to the end of the list
+        const_iterator end(void) const;
 
     private:
         resc_list_t resc_list_;

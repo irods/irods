@@ -128,7 +128,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     
     dataObjInp_t dataObjInp;
     int   l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-                                        rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
+                                              rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
 
     if (l1descInx < 0) {
         return l1descInx;
@@ -143,7 +143,6 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
     } else {
         chksumFlag = 0;
     }
-
     // =-=-=-=-=-=-=-
     // JMC - backport 4771
     int maxSubFileCnt = -1; // JMC - backport 4528, 4771
@@ -215,25 +214,14 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                             setSubPhyPath (phyBunDir, curSubFileCond.dataId,
                                            curSubFileCond.subPhyPath);
 
-                            createPhyBundleDir (rsComm,
-                              L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
-                        /* need to reset subPhyPath since phyBunDir has changed */
-                        /* At this point subPhyPath[0] == 0 if it has gone
-                         * through replAndAddSubFileToDir below. != 0 if it has
-                         * not and already a good cache copy */
-                        if (curSubFileCond.subPhyPath[0] != '\0')
-                                    setSubPhyPath (phyBunDir, curSubFileCond.dataId,
-                                  curSubFileCond.subPhyPath);
-
                     }
-                }	/* end of new bundle file */
-              
-                status = replAndAddSubFileToDir (rsComm, &curSubFileCond,myRescName, phyBunDir, &bunReplCacheHeader);
+                }       /* end of new bundle file */
+                status = replAndAddSubFileToDir (rsComm, &curSubFileCond, myRescName, phyBunDir, &bunReplCacheHeader);
                 if (status < 0) {
                     savedStatus = status;
                     rodsLog (LOG_ERROR,
-                        "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
-                          curSubFileCond.subPhyPath, status);
+                             "_rsPhyBundleColl:replAndAddSubFileToDir err for %s,sta=%d",
+                             curSubFileCond.subPhyPath, status);
                 }
                 curSubFileCond.bundled = 0;
                 curSubFileCond.subPhyPath[0] = 
@@ -662,11 +650,11 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     } 
 #if 0 // JMC legacy resources
     else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
-	return SYS_NO_CACHE_RESC_IN_GRP;
+        return SYS_NO_CACHE_RESC_IN_GRP;
     }
 
 #endif // JMC legacy resources
-	
+        
     do {
         int loopCnt = 0;
         bzero (dataObjInp, sizeof (dataObjInp_t));

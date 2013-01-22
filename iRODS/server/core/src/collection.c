@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* collection.c - collection operation */
@@ -57,8 +59,8 @@ checkCollAccessPerm (rsComm_t *rsComm, char *collection, char *accessPerm)
 
 int
 rsQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
-genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
-int singleFlag)
+                           genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
+                           int singleFlag)
 {
     char collQCond[MAX_NAME_LEN*2];
     int status;
@@ -110,7 +112,7 @@ int singleFlag)
 
 int
 rsQueryCollInColl (rsComm_t *rsComm, char *collection,
-genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut)
+                   genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut)
 {
     char collQCond[MAX_NAME_LEN];
     int status;
@@ -144,7 +146,7 @@ isCollEmpty (rsComm_t *rsComm, char *collection)
 
     if (rsComm == NULL || collection == NULL) {
         rodsLog (LOG_ERROR,
-          "isCollEmpty: Input rsComm or collection is NULL");
+                 "isCollEmpty: Input rsComm or collection is NULL");
         return True;
     }
 
@@ -155,8 +157,8 @@ isCollEmpty (rsComm_t *rsComm, char *collection)
     handleInx = rsOpenCollection (rsComm, &openCollInp);
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
-          "isCollEmpty: rsOpenCollection of %s error. status = %d",
-          openCollInp.collName, handleInx);
+                 "isCollEmpty: rsOpenCollection of %s error. status = %d",
+                 openCollInp.collName, handleInx);
         return (True);
     }
 
@@ -177,7 +179,7 @@ isCollEmpty (rsComm_t *rsComm, char *collection)
  
 int
 collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsObjStat_t **rodsObjStatOut)
+          rodsObjStat_t **rodsObjStatOut)
 {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
@@ -220,69 +222,69 @@ rodsObjStat_t **rodsObjStatOut)
         (*rodsObjStatOut)->objType = COLL_OBJ_T;
         status = (int)COLL_OBJ_T;
         if ((dataId = getSqlResultByInx (genQueryOut,
-          COL_COLL_ID)) == NULL) {
+                                         COL_COLL_ID)) == NULL) {
             rodsLog (LOG_ERROR,
-              "_rsObjStat: getSqlResultByInx for COL_COLL_ID failed");
+                     "_rsObjStat: getSqlResultByInx for COL_COLL_ID failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((ownerName = getSqlResultByInx (genQueryOut,
-          COL_COLL_OWNER_NAME)) == NULL) {
+                                                   COL_COLL_OWNER_NAME)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_NAME failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_NAME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((ownerZone = getSqlResultByInx (genQueryOut,
-          COL_COLL_OWNER_ZONE)) == NULL) {
+                                                   COL_COLL_OWNER_ZONE)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_ZONE failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_OWNER_ZONE failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((createTime = getSqlResultByInx (genQueryOut,
-          COL_COLL_CREATE_TIME)) == NULL) {
+                                                    COL_COLL_CREATE_TIME)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_CREATE_TIME failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_CREATE_TIME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((modifyTime = getSqlResultByInx (genQueryOut,
-          COL_COLL_MODIFY_TIME)) == NULL) {
+                                                    COL_COLL_MODIFY_TIME)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_MODIFY_TIME failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_MODIFY_TIME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((collType = getSqlResultByInx (genQueryOut,
-          COL_COLL_TYPE)) == NULL) {
+                                                  COL_COLL_TYPE)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_TYPE failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_TYPE failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((collInfo1 = getSqlResultByInx (genQueryOut,
-          COL_COLL_INFO1)) == NULL) {
+                                                   COL_COLL_INFO1)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_INFO1 failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_INFO1 failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((collInfo2 = getSqlResultByInx (genQueryOut,
-          COL_COLL_INFO2)) == NULL) {
+                                                   COL_COLL_INFO2)) == NULL) {
             rodsLog (LOG_ERROR,
-             "_rsObjStat:getSqlResultByInx for COL_COLL_INFO2 failed");
+                     "_rsObjStat:getSqlResultByInx for COL_COLL_INFO2 failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
             rstrcpy ((*rodsObjStatOut)->dataId, dataId->value, NAME_LEN);
             rstrcpy ((*rodsObjStatOut)->ownerName, ownerName->value,
-              NAME_LEN);
+                     NAME_LEN);
             rstrcpy ((*rodsObjStatOut)->ownerZone, ownerZone->value,
-              NAME_LEN);
+                     NAME_LEN);
             rstrcpy ((*rodsObjStatOut)->createTime, createTime->value,
-              NAME_LEN);
+                     NAME_LEN);
             rstrcpy ((*rodsObjStatOut)->modifyTime, modifyTime->value,
-              NAME_LEN);
+                     NAME_LEN);
 
             if (strlen (collType->value) > 0) {
                 specCollCache_t *specCollCache;
 
                 if ((specCollCache =
-                  matchSpecCollCache (dataObjInp->objPath)) != NULL) {
+                     matchSpecCollCache (dataObjInp->objPath)) != NULL) {
                     replSpecColl (&specCollCache->specColl,
-                      &(*rodsObjStatOut)->specColl);
+                                  &(*rodsObjStatOut)->specColl);
                 } else {
                     status = queueSpecCollCache (rsComm, genQueryOut, // JMC - backport 4680?
-                      dataObjInp->objPath);
+                                                 dataObjInp->objPath);
                     if (status < 0) return (status);
                     replSpecColl (&SpecCollCacheHead->specColl,
-                      &(*rodsObjStatOut)->specColl);
+                                  &(*rodsObjStatOut)->specColl);
                 }
             }
         }
@@ -299,7 +301,7 @@ rodsObjStat_t **rodsObjStatOut)
 
 int
 collStatAllKinds (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsObjStat_t **rodsObjStatOut)
+                  rodsObjStat_t **rodsObjStatOut)
 {
     int status;
 
@@ -322,7 +324,7 @@ rodsObjStat_t **rodsObjStatOut)
 /* mk the collection resursively */
 
 int
-rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
+rsMkCollR (rsComm_t *rsComm, const char *startColl, const char *destColl)
 {
     int status;
     int startLen;
@@ -364,11 +366,11 @@ rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
             memset (&dataObjRenameInp, 0, sizeof (dataObjRenameInp));
 
             dataObjRenameInp.srcDataObjInp.oprType =
-            dataObjRenameInp.destDataObjInp.oprType = RENAME_DATA_OBJ;
+                dataObjRenameInp.destDataObjInp.oprType = RENAME_DATA_OBJ;
             rstrcpy (dataObjRenameInp.srcDataObjInp.objPath, tmpPath,
-              MAX_NAME_LEN);
+                     MAX_NAME_LEN);
             rstrcpy (dataObjRenameInp.destDataObjInp.objPath, tmpPath,
-              MAX_NAME_LEN);
+                     MAX_NAME_LEN);
             appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
 
             status = rsDataObjRename (rsComm, &dataObjRenameInp);
@@ -379,19 +381,19 @@ rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
         /* something may be added by rsCollCreate */
         clearKeyVal (&collCreateInp.condInput);
         if (status < 0) {
-           // =-=-=-=-=-=-=-
-		   // JMC - backport 4819
-           if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+            // =-=-=-=-=-=-=-
+            // JMC - backport 4819
+            if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
                 rodsLog (LOG_DEBUG,
-                 "rsMkCollR: rsCollCreate - coll %s already exist.stat = %d",
-                 tmpPath, status);
-               status = 0;
-           } else {
+                         "rsMkCollR: rsCollCreate - coll %s already exist.stat = %d",
+                         tmpPath, status);
+                status = 0;
+            } else {
                 rodsLog (LOG_ERROR,
-                 "rsMkCollR: rsCollCreate failed for %s, status =%d",
-                  tmpPath, status);
-           }
-           // =-=-=-=-=-=-=-
+                         "rsMkCollR: rsCollCreate failed for %s, status =%d",
+                         tmpPath, status);
+            }
+            // =-=-=-=-=-=-=-
             return status;
         }
         while (tmpLen && tmpPath[tmpLen] != '\0')

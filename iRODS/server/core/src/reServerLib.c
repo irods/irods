@@ -23,6 +23,7 @@
 #include "rodsClient.h"
 #include "rsIcatOpr.h"
 #include "resource.h"
+#include "eirods_stacktrace.h"
 
 int 
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)

@@ -269,7 +269,7 @@ int
 fillAttriArrayOfBulkOprInp (char *objPath, int dataMode, char *inpChksum,
                             int offset, bulkOprInp_t *bulkOprInp);
 int
-getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
+getPhyBunPath (const char *collection, const char *objPath, const char *phyBunDir,
                char *outPhyBunPath);
 int
 unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf);

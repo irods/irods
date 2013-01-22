@@ -231,7 +231,7 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
         rstrcpy (dataObjInfo->rescName, rescName, LONG_NAME_LEN);
         rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN);
     }  
-       
+
     snprintf (dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode);
 
     dataType = getValByKey (condInput, DATA_TYPE_KW);

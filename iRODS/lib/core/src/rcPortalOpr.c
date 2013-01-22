@@ -9,6 +9,7 @@
 #include "dataObjOpr.h"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
+#include "eirods_stacktrace.h"
 
 #ifdef USE_BOOST
 #include <boost/thread/thread.hpp>

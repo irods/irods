@@ -5,6 +5,7 @@
 
 #include "reNaraMetaData.h"
 #include "apiHeaderAll.h"
+#include "eirods_stacktrace.h"
 
 /**
  * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)

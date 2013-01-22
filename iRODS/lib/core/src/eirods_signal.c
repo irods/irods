@@ -15,9 +15,6 @@ extern "C" {
     static void segv_handler(
         int signal)
     {
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
         exit(signal);
     }
     

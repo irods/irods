@@ -17,6 +17,10 @@
 #include "rcGlobalExtern.h"
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"
+#include "eirods_stacktrace.h"
+#include "rsApiHandler.h"
+#include "dataObjPut.h"
+
 #ifdef EXTENDED_ICAT
 #define EXTENDED_ICAT_TABLES_1 1 /* have extendedICAT.h 
                                     set up the set 1 tables */
@@ -4113,8 +4117,9 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
             }
 #endif  /* BULK_OPR_WITH_TAR */
 
+#if 0
             int
-                unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
+                unbunBulkBuf (char *phyBunDir, bu0lkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
             {
                 sqlResult_t *objPath, *offset;
                 char *tmpObjPath;
@@ -4192,7 +4197,8 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 }
                 return 0;
             }
-
+#endif
+            
 #ifdef BULK_OPR_WITH_TAR
             int
                 tarToBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
@@ -4384,13 +4390,12 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
             }
 
             int
-                getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
+                getPhyBunPath (const char *collection, const char *objPath, const char *phyBunDir,
                                char *outPhyBunPath)
             {
-                char *subPath;
                 int collLen = strlen (collection);
+                const char *subPath = objPath + collLen;
 
-                subPath = objPath + collLen;
                 if (*subPath != '/') {
                     rodsLogError (LOG_ERROR, USER_INPUT_PATH_ERR,
                                   "getPhyBunPath: inconsistent collection %s and objPath %s",

@@ -12,6 +12,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 #define SVR_MD5_BUF_SZ (1024*1024)
 

@@ -15,6 +15,8 @@
 #include "miscServerFunct.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
+#include "rsApiHandler.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes
@@ -49,6 +51,90 @@ rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                                    bulkOprInpBBuf);
     }
     return status;
+}
+
+int
+unbunBulkBuf (
+    rsComm_t* rsComm,
+    dataObjInp_t* dataObjInp,
+    rescInfo_t* rescInfo,
+    bulkOprInp_t *bulkOprInp,
+    bytesBuf_t *bulkBBuf,
+    const std::string& baseDir)
+{
+    sqlResult_t *objPath, *offset;
+    char *tmpObjPath;
+    char *bufPtr;
+    int status, i;
+    genQueryOut_t *attriArray = &bulkOprInp->attriArray;
+    int intOffset[MAX_NUM_BULK_OPR_FILES];
+    char phyBunPath[MAX_NAME_LEN];
+
+    if (bulkOprInp == NULL) return USER__NULL_INPUT_ERR;
+
+    if ((objPath = getSqlResultByInx (attriArray, COL_DATA_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+                 "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((offset = getSqlResultByInx (attriArray, OFFSET_INX)) == NULL) {
+        rodsLog (LOG_NOTICE,
+                 "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if (attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES) {
+        rodsLog (LOG_NOTICE,
+                 "unbunBulkBuf: rowCnt %d too large", 
+                 attriArray->rowCnt);
+        return (SYS_REQUESTED_BUF_TOO_LARGE);
+    }
+
+    for (i = 0; i < attriArray->rowCnt; i++) {
+        intOffset[i] = atoi (&offset->value[offset->len * i]);
+    }
+
+    addKeyVal(&dataObjInp->condInput, DATA_INCLUDED_KW, "");
+    for (i = 0; i < attriArray->rowCnt; i++) {
+        int size;
+        int out_fd;
+        bytesBuf_t buffer;
+        tmpObjPath = &objPath->value[objPath->len * i];
+        if (i == 0) {
+            bufPtr = (char *)bulkBBuf->buf;
+            size = intOffset[0];
+        } else {
+            bufPtr = (char *)bulkBBuf->buf + intOffset[i - 1];
+            size = intOffset[i] - intOffset[i - 1];
+        }
+        buffer.buf = bufPtr;
+        buffer.len = size;
+
+        std::string collString = tmpObjPath;
+        std::size_t last_slash = collString.find_last_of('/');
+        collString.erase(last_slash);
+
+        status = rsMkCollR(rsComm, "/", collString.c_str());
+        if(status < 0) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << ": Unable to make collection \"" << collString << "\"";
+            eirods::log(LOG_ERROR, msg.str());
+            return status;
+        }
+        
+        // status = getPhyBunPath (bulkOprInp->objPath, tmpObjPath, baseDir.c_str(), phyBunPath);
+        // if (status < 0) return status;
+
+        rstrcpy(dataObjInp->objPath, tmpObjPath, MAX_NAME_LEN);
+        status = _rsDataObjPut(rsComm, dataObjInp, &buffer, NULL, BRANCH_MSG);
+        if(status < 0) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << ": Failed to put data into file \"" << phyBunPath << "\"";
+            eirods::log(LOG_NOTICE, msg.str());
+            return status;
+        }
+    }
+    return 0;
 }
 
 int
@@ -115,23 +201,6 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         rescInfo = myRescGrpInfo->rescInfo;
     }
 
-#if 0 // JMC - legacy resource
-    fileType = (fileDriverType_t)getRescType (rescInfo);
-    if (fileType != UNIX_FILE_TYPE && fileType != NT_FILE_TYPE) {
-        freeRodsObjStat (myRodsObjStat);
-        return SYS_INVALID_RESC_FOR_BULK_OPR;
-    }
-#endif // JMC - legacy resource
-
-    std::string type;
-    eirods::get_resource_property< std::string >( rescInfo->rescName, "type", type );
-    rodsLog( LOG_NOTICE, "_rsBulkDataObjPut resource [%s] with type [%s]", rescInfo->rescName, type.c_str() );
-    if( type != "unix file system" && type != "windows" ) {
-	    freeRodsObjStat (myRodsObjStat);
-	    return SYS_INVALID_RESC_FOR_BULK_OPR;
-        
-    }
-
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
     if (remoteFlag == REMOTE_HOST) {
@@ -152,31 +221,33 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         return status;
     }
 
-    status = createBunDirForBulkPut (rsComm, &dataObjInp, rescInfo, 
-                                     myRodsObjStat->specColl, phyBunDir);
-
-    if (status < 0) {
-        freeRodsObjStat (myRodsObjStat);
+    status = createBunDirForBulkPut(rsComm, &dataObjInp, rescInfo, myRodsObjStat->specColl, phyBunDir);
+    if(status < 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << ": Unable to create BunDir";
+        eirods::log(LOG_ERROR, msg.str());
         return status;
     }
-
-#ifdef BULK_OPR_WITH_TAR
-    status = untarBuf (phyBunDir, bulkOprInpBBuf);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-                 "_rsBulkDataObjPut: untarBuf for dir %s. stat = %d",
-                 phyBunDir, status);
+    
+    status = rsMkCollR(rsComm, "/", bulkOprInp->objPath);
+    if(status < 0) {
+        std::stringstream msg;
+        msg << __FUNCTION__ << ": Unable to make collection \"" << bulkOprInp->objPath << "\"";
+        eirods::log(LOG_ERROR, msg.str());
         return status;
     }
-#else
-    status = unbunBulkBuf (phyBunDir, bulkOprInp, bulkOprInpBBuf);
+    
+    // addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, getValByKey (&bulkOprInp->condInput, FORCE_FLAG_KW));
+    // addKeyVal(&dataObjInp.condInput, VERIFY_CHKSUM_KW, getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW));
+
+    status = unbunBulkBuf (rsComm, &dataObjInp, rescInfo, bulkOprInp, bulkOprInpBBuf, phyBunDir);
     if (status < 0) {
         rodsLog (LOG_ERROR,
                  "_rsBulkDataObjPut: unbunBulkBuf for dir %s. stat = %d",
                  phyBunDir, status);
         return status;
     }
-#endif
+
     if (myRodsObjStat->specColl != NULL) {
         freeRodsObjStat (myRodsObjStat);
         return status;
@@ -184,28 +255,8 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         freeRodsObjStat (myRodsObjStat);
     }
 
-    if (strlen (myRescGrpInfo->rescGroupName) > 0) 
-        inpRescGrpName = myRescGrpInfo->rescGroupName;
-
-    if (getValByKey (&bulkOprInp->condInput, FORCE_FLAG_KW) != NULL) {
-        flags = flags | FORCE_FLAG_FLAG;
-    }
-
-    if (getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
-        flags = flags | VERIFY_CHKSUM_FLAG;
-    }
-    status = bulkRegUnbunSubfiles (rsComm, rescInfo, inpRescGrpName,
-                                   bulkOprInp->objPath, phyBunDir, flags, &bulkOprInp->attriArray);
-
-    if (status == CAT_NO_ROWS_FOUND) {
-        /* some subfiles have been deleted. harmless */
-        status = 0;
-    } else if (status < 0) {
-        rodsLog (LOG_ERROR,
-                 "_rsBulkDataObjPut: regUnbunSubfiles for dir %s. stat = %d",
-                 phyBunDir, status);
-    }
     freeAllRescGrpInfo (myRescGrpInfo);
+    
     return status;
 }
 
