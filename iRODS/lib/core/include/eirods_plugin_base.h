@@ -9,22 +9,18 @@
 #include <string>
 
 // =-=-=-=-=-=-=-
+// boost includes
+#include <boost/function.hpp>
+
+// =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_error.h"
 
 namespace eirods {
-    /**
-	  * \class pdmo_base - ABC for maintenance operations
-	  * \author Jason M. Coposky 
-	  * \date   January 2013
-	  * \brief  This class provides the operator interface for defining maintenance operations which will be called after the agent disconnects from the client.  these will be call depth first based on the organization of the resource composition tree
-	  **/
-    class pdmo_base {
-        public:
-        virtual error operator()() = 0;
-
-    }; // class pdmo_base
-
+    // =-=-=-=-=-=-=-
+    /// @brief abstraction for post disconnect functor
+    typedef boost::function< void(void) > pdmo_type;
+    
     /**
 	  * \class plugin_base - ABC for E-iRODS Plugins
 	  * \author Jason M. Coposky 
@@ -36,7 +32,7 @@ namespace eirods {
 		plugin_base( std::string ); // context
 		virtual ~plugin_base();
 		virtual error delay_load( void* ) = 0;
-		virtual error post_disconnect_maintenance_operation( pdmo_base*& );
+		virtual error post_disconnect_maintenance_operation( pdmo_type& );
 
         protected:
         std::string context_;

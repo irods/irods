@@ -24,6 +24,10 @@
 #include <string>
 
 // =-=-=-=-=-=-=-
+// boost includes
+#include <boost/function.hpp>
+
+// =-=-=-=-=-=-=-
 // system includes
 #ifndef _WIN32
 #include <sys/file.h>
@@ -1490,9 +1494,21 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3a. create a class to provide maintenance operations, this is only for example
         //     and will not be called.
-        class maintenance_operation : public eirods::pdmo_base {
+        class maintenance_operation {
         public:
-            maintenance_operation( unixfilesystem_resource* _r ) : resc_(_r){}
+            maintenance_operation( unixfilesystem_resource* _r ) : resc_(_r) {
+                std::string name;
+                resc_->get_property< std::string >( "name", name );
+            }
+
+            maintenance_operation( const maintenance_operation& _rhs ) {
+                resc_ = _rhs.resc_;    
+            }
+
+            maintenance_operation& operator=( const maintenance_operation& _rhs ) {
+                resc_ = _rhs.resc_;    
+                return *this;
+            }
 
             eirods::error operator()() {
                 std::string name;
@@ -1503,6 +1519,7 @@ extern "C" {
 
         private:
             boost::shared_ptr< unixfilesystem_resource > resc_;
+            //unixfilesystem_resource* resc_;
 
         }; // class maintenance_operation
 
@@ -1545,9 +1562,9 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_base*& _op  ) {
-#if 0
-            _op = new maintenance_operation( this ); 
+        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
+#if 1
+            _op = maintenance_operation( this );
             return SUCCESS();
 #else
             return ERROR( -1, "no op supported" );
