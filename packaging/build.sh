@@ -857,7 +857,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # update EPM list template with values from irods.config
     cd $BUILDDIR
     #   database name
-    NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME/ {print $2}' iRODS/config/irods.config`
+    NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/e-irods.list.template > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/e-irods.list
 #    #   database admin role
