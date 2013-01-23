@@ -19,8 +19,8 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - default implementation
-    error plugin_base::post_disconnect_maintenance_operation( pdmo_base*& _op ) {
-       _op = 0;
+    //error plugin_base::post_disconnect_maintenance_operation( pdmo_base*& _op ) {
+    error plugin_base::post_disconnect_maintenance_operation( pdmo_type& _op ) {
        return ERROR( -1, "no defined operation" );
         
     } // post_disconnect_maintenance_operation

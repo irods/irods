@@ -139,15 +139,13 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief lower level recursive call to gather the post disconnect 
         //         maintenance operations from the resources, in breadth first order
-        error gather_operations_recursive( const std::string&,           // child string of parent resc
-                                           std::vector< std::string >&,  // vector of 'done' resc names
-                                           std::vector< pdmo_base* >& ); // vector of ops for this composition
-
-
+        error gather_operations_recursive( const std::string&,          // child string of parent resc
+                                           std::vector< std::string >&, // vector of 'done' resc names
+                                           std::vector<pdmo_type>& );   // vector of ops for this composition
         // =-=-=-=-=-=-=-
         // Attributes
         lookup_table< boost::shared_ptr< resource > > resources_;
-        std::vector< std::vector< pdmo_base* > >      maintenance_operations_;
+        std::vector< std::vector< pdmo_type > >       maintenance_operations_;
 
     }; // class resource_manager
 

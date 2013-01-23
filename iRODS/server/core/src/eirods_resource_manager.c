@@ -562,6 +562,7 @@ namespace eirods {
             // skip if already processed
             std::string name;
             error get_err = resc->get_property< std::string >( "name", name );
+
             if( get_err.ok() ) {
                 std::vector< std::string >::iterator itr;
                 itr = std::find< std::vector< std::string >::iterator, std::string >( proc_vec.begin(), proc_vec.end(), name );
@@ -577,11 +578,11 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // vector which will hold this 'top level resource' ops
-            vector< pdmo_base* > resc_ops;
+            vector< pdmo_type > resc_ops;
 
             // =-=-=-=-=-=-=-
             // cache the parent operator
-            pdmo_base* pdmo_op = 0;
+            pdmo_type pdmo_op;
             error pdmo_err = resc->post_disconnect_maintenance_operation( pdmo_op );
             if( pdmo_err.ok() ) {
                 resc_ops.push_back( pdmo_op );
@@ -616,7 +617,7 @@ namespace eirods {
     //            maintenance operations from the resources, in breadth first order
     error resource_manager::gather_operations_recursive( const std::string&          _children, 
                                                          std::vector< std::string >& _proc_vec,
-                                                         std::vector< pdmo_base* >&  _resc_ops ) {
+                                                         std::vector< pdmo_type  >&  _resc_ops ) {
         // =-=-=-=-=-=-=-
         // create a child parser to traverse the list
         children_parser parser;
@@ -640,7 +641,7 @@ namespace eirods {
             if( get_err.ok() ) {
                 // =-=-=-=-=-=-=-
                 // cache operation if there is one
-                pdmo_base* pdmo_op = 0;
+                pdmo_type pdmo_op;
                 error pdmo_ret = resc->post_disconnect_maintenance_operation( pdmo_op ); 
                 if( pdmo_ret.ok() ) {
                     _resc_ops.push_back( pdmo_op );
@@ -695,19 +696,19 @@ namespace eirods {
     void resource_manager::call_maintenance_operations(  ) {
         // =-=-=-=-=-=-=-
         // iterate through op vectors
-        std::vector< std::vector< pdmo_base* > >::iterator vec_itr;
+        std::vector< std::vector< pdmo_type > >::iterator vec_itr;
         for( vec_itr  = maintenance_operations_.begin(); 
              vec_itr != maintenance_operations_.end();
              ++vec_itr ) {
             // =-=-=-=-=-=-=-
             // iterate through ops
-            std::vector< pdmo_base* >::iterator op_itr;
+            std::vector< pdmo_type >::iterator op_itr;
             for( op_itr  = vec_itr->begin(); 
                  op_itr != vec_itr->end(); 
                  ++op_itr ) {
                 // =-=-=-=-=-=-=-
                 // call the op
-                (*(*op_itr))();
+                ((*op_itr))();
 
             } // for op_itr
 
