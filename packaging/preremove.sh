@@ -76,33 +76,33 @@ cd /tmp
 
 # =-=-=-=-=-=-=-
 # 
-if [ "$SERVER_TYPE" == "icat" ] ; then
-
-	if [ "$DB_TYPE" == "postgres" ] ; then
-        # =-=-=-=-=-=-=-
-        # determine if the database exists & remove
-	    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
-	    PSQL="$PSQL/psql"
-
-	    DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
-	    if [ -n "$DB" ]; then
-	        echo "Removing Database $DB_NAME"
-	        su --shell=/bin/bash -c "dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
-	    fi
-
-        # =-=-=-=-=-=-=-
-        # determine if the database role exists & remove
-	    ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
-	    if [ $ROLE ]; then
-	        echo "Removing Database Role $DB_USER"
-	        su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
-	    fi
-	else
-        # expand this for each type of database
-	    echo "TODO: remove non-postgres database"
-	    echo "TODO: remove non-postgres user"
-	fi
-fi 
+#if [ "$SERVER_TYPE" == "icat" ] ; then
+#
+#	if [ "$DB_TYPE" == "postgres" ] ; then
+#        # =-=-=-=-=-=-=-
+#        # determine if the database exists & remove
+#	    PSQL=`$EIRODS_HOME_DIR/packaging/find_postgres_bin.sh`
+#	    PSQL="$PSQL/psql"
+#
+#	    DB=$( su --shell=/bin/bash -c "$PSQL --list | grep $DB_NAME" $DB_ADMIN_ROLE )
+#	    if [ -n "$DB" ]; then
+#	        echo "Removing Database $DB_NAME"
+#	        su --shell=/bin/bash -c "dropdb $DB_NAME" $DB_ADMIN_ROLE &> /dev/null
+#	    fi
+#
+#        # =-=-=-=-=-=-=-
+#        # determine if the database role exists & remove
+#	    ROLE=$( su - $OS_EIRODS_ACCT --shell=/bin/bash -c "$PSQL $DB_ADMIN_ROLE -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" )
+#	    if [ $ROLE ]; then
+#	        echo "Removing Database Role $DB_USER"
+#	        su --shell=/bin/bash -c "dropuser $DB_USER" $DB_ADMIN_ROLE &> /dev/null
+#	    fi
+#	else
+#        # expand this for each type of database
+#	    echo "TODO: remove non-postgres database"
+#	    echo "TODO: remove non-postgres user"
+#	fi
+#fi 
 
 # =-=-=-=-=-=-=-
 # detect operating system
