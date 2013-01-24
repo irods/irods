@@ -708,7 +708,10 @@ namespace eirods {
                  ++op_itr ) {
                 // =-=-=-=-=-=-=-
                 // call the op
-                ((*op_itr))();
+                error ret = ((*op_itr))();
+                if( !ret.ok() ) {
+                    log( PASSMSG( "resource_manager::call_maintenance_operations - op failed", ret ) );
+                }
 
             } // for op_itr
 

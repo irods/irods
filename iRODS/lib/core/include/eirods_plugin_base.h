@@ -18,14 +18,17 @@
 
 namespace eirods {
     // =-=-=-=-=-=-=-
-    /// @brief abstraction for post disconnect functor
-    typedef boost::function< void(void) > pdmo_type;
+    /// @brief abstraction for post disconnect functor - plugins can bind
+    //         functors, free functions or member functions as necessary
+    typedef boost::function< eirods::error (void) > pdmo_type;
     
     /**
 	  * \class plugin_base - ABC for E-iRODS Plugins
 	  * \author Jason M. Coposky 
 	  * \date   October 2011
-	  * \brief  This class enforces the delay_load interface necessary for the load_plugin call to load any other non-member symbols from the shared object.  Reference server/core/include/eirods_load_plugin.h
+	  * \brief  This class enforces the delay_load interface necessary for the load_plugin 
+                call to load any other non-member symbols from the shared object.  
+                Reference iRODS/lib/core/include/eirods_load_plugin.h
 	  **/
     class plugin_base {
         public:

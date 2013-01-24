@@ -1496,30 +1496,26 @@ extern "C" {
         //     and will not be called.
         class maintenance_operation {
         public:
-            maintenance_operation( unixfilesystem_resource* _r ) : resc_(_r) {
-                std::string name;
-                resc_->get_property< std::string >( "name", name );
+            maintenance_operation( const std::string _n ) : name_(_n) {
             }
 
             maintenance_operation( const maintenance_operation& _rhs ) {
-                resc_ = _rhs.resc_;    
+                name_ = _rhs.name_;    
             }
 
             maintenance_operation& operator=( const maintenance_operation& _rhs ) {
-                resc_ = _rhs.resc_;    
+                name_ = _rhs.name_;    
                 return *this;
             }
 
             eirods::error operator()() {
-                std::string name;
-                resc_->get_property< std::string >( "name", name );
-                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name.c_str() );
+                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", 
+                         name_.c_str() );
                 return SUCCESS();
             }
 
         private:
-            boost::shared_ptr< unixfilesystem_resource > resc_;
-            //unixfilesystem_resource* resc_;
+            std::string name_;
 
         }; // class maintenance_operation
 
@@ -1563,12 +1559,17 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-#if 1
-            _op = maintenance_operation( this );
+            #if 1
+            std::string name;
+            eirods::error ret = get_property< std::string >( "name", name );
+            if( !ret.ok() ) {
+                return PASSMSG( "unixfilesystem_resource::post_disconnect_maintenance_operation - failed.", ret );
+            }
+            _op = maintenance_operation( name );
             return SUCCESS();
-#else
+            #else
             return ERROR( -1, "no op supported" );
-#endif
+            #endif
         }
 
     }; // class unixfilesystem_resource
