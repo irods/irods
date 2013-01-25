@@ -13,10 +13,6 @@
 #include "fileOpr.h"
 #include "objDesc.h"
 #include "querySpecColl.h"
-#include "structFileDriver.h"
-#ifdef TAR_STRUCT_FILE
-#include "tarSubStructFileDriver.h"
-#endif
 #include "miscUtil.h"
 
 #include "eirods_resource_manager.h"
@@ -62,11 +58,7 @@ extern specCollCache_t *SpecCollCacheHead;
 //extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 
-#ifdef RULE_ENGINE_N
 int initRuleEngine(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet);
-#else
-int initRuleEngine(rsComm_t *svrComm, char *ruleSet, char *dvmSet, char* fnmSet);
-#endif
 int clearCoreRule ();
 int finalzeRuleEngine(rsComm_t *rsComm);
 

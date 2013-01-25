@@ -1,6 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-#include "structFileDriver.h"
 #include "subStructFileFstat.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
@@ -71,6 +70,15 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
                            subStructFileFdOprInp_t* _fstat_inp,
                            rodsStat_t**             _stat_out ) {
     // =-=-=-=-=-=-=-
+    // check incoming parameters
+    if( NULL == _comm      || 
+        NULL == _fstat_inp ||
+        NULL == _stat_out ) {
+        rodsLog( LOG_ERROR, "_rsSubStructFileFstat :: one or more parameters is null" );
+        return -1;
+    }
+
+    // =-=-=-=-=-=-=-
     // create first class structured object 
     eirods::structured_object struct_obj;
     struct_obj.comm( _comm );
@@ -91,7 +99,7 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
     } else {
         // =-=-=-=-=-=-=-
         // convert unix stat struct to an irods stat struct
-        if( !_stat_out ) {
+        if( !*_stat_out ) {
             *_stat_out = new rodsStat_t;
         }
         

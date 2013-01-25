@@ -20,6 +20,10 @@
 #include "closeCollection.h"
 #include "dataObjOpr.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 int
 rsGetHostForGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 char **outHost)
@@ -71,40 +75,50 @@ char **outHost)
 #endif     // JMC - backport 4746
 	}
 
+    eirods::resource_ptr resc;
     status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
     if (status >= 0 && NULL != specCollCache ) { // JMC cppcheck - nullptr
-	if (specCollCache->specColl.collClass == MOUNTED_COLL) {
-            status = resolveResc (specCollCache->specColl.resource, 
-	      &myRescInfo);
-            if (status < 0) {
+	    if (specCollCache->specColl.collClass == MOUNTED_COLL) {
+            //status = resolveResc (specCollCache->specColl.resource, &myRescInfo);
+            /*if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "rsGetHostForGet: resolveResc error for %s, status = %d",
                  specCollCache->specColl.resource, status);
-		return status;
+                return status;
+            }*/
+            eirods::error err = eirods::get_resc_info( specCollCache->specColl.resource, *myRescInfo );
+            if( !err.ok() ) {
+                std::stringstream msg;
+                msg << "rsGetHostForGet - failed to get resc info for [";
+                msg << specCollCache->specColl.resource;
+                msg << "]";
+                eirods::log( PASS( false, -1, msg.str(), err ) );
             }
-	    /* mounted coll will fall through with myRescInfo */
+
+            /* mounted coll will fall through with myRescInfo */
         } else {
             *outHost = strdup (THIS_ADDRESS);
             return 0;
-	}
-    } else if ((myResc = getValByKey (&dataObjInp->condInput, RESC_NAME_KW)) 
-      != NULL && resolveResc (myResc, &myRescInfo) >= 0) {
-	/* user specified a resource. myRescInfo set and fall through */
+        }
+    } else if( ( myResc = getValByKey( &dataObjInp->condInput, RESC_NAME_KW ) )  != NULL && 
+                eirods::get_resc_info( myResc, *myRescInfo ).ok() ) {
+	    /* user specified a resource. myRescInfo set and fall through */
     } else {
-	/* normal type */
+	    /* normal type */
         status = getBestRescForGet (rsComm, dataObjInp, &myRescInfo);
-	if (myRescInfo == NULL) {
-	    *outHost = strdup (THIS_ADDRESS);
-            return status;
-	}
+        if (myRescInfo == NULL) {
+            *outHost = strdup (THIS_ADDRESS);
+                return status;
+        }
     }
 
     /* get down here when we got a valid myRescInfo */
-
+#if 0 // JMC - legacy resource
     if (getRescClass (myRescInfo) == COMPOUND_CL) {
         *outHost = strdup (THIS_ADDRESS);
         return 0;
     }
+#endif // JMC - legacy resource
 
     bzero (&addr, sizeof (addr));
     rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);

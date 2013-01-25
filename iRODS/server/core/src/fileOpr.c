@@ -482,7 +482,7 @@ filePathTypeInResc (
     rstrcpy (fileStatInp.rescHier, rescHier, MAX_NAME_LEN);
 
     rescTypeInx = rescInfo->rescTypeInx;
-    fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+    fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 

@@ -220,7 +220,7 @@ initServerInfo (rsComm_t *rsComm)
         return (status);
     }
 
-    status = initResc (rsComm);
+    /*status = initResc (rsComm);
     if (status < 0) {
 	if (status == CAT_NO_ROWS_FOUND) {
 	    rodsLog (LOG_NOTICE, 
@@ -232,15 +232,14 @@ initServerInfo (rsComm_t *rsComm)
               status);
             return (status);
 	}
-    }
+    }*/
 
-#if 1
     eirods::error ret = resc_mgr.init_from_catalog( rsComm );
     if( !ret.ok() ) {
 		eirods::error log_err = PASS( false, -1, "initServerInfo - init_from_catalog failed", ret );
 		eirods::log( log_err );
 	}
-#endif
+
     return (status);
 }
 
@@ -1294,13 +1293,8 @@ setExecArg (char *commandArgv, char *av[])
 
     return (0);
 }
-#ifdef RULE_ENGINE_N
 int
 initAgent (int processType, rsComm_t *rsComm)
-#else
-int
-initAgent (rsComm_t *rsComm)
-#endif
 {
     int status;
     rsComm_t myComm;
@@ -1331,11 +1325,7 @@ initAgent (rsComm_t *rsComm)
 //    initTarSubFileDesc ();
 #endif
 
-#ifdef RULE_ENGINE_N
     status = initRuleEngine(processType, rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
-#else
-    status = initRuleEngine(rsComm, reRuleStr, reFuncMapStr, reVariableMapStr);
-#endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "initAgent: initRuleEngine error, status = %d", status);

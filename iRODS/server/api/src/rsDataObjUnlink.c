@@ -28,6 +28,10 @@
 #include "regDataObj.h"
 #include "physPath.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 {
@@ -239,27 +243,26 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     int status;
     unregDataObj_t unregDataObjInp;
 
-    if (dataObjInfo->specColl == NULL) {
-        if (dataObjUnlinkInp->oprType == UNREG_OPR && 
-            rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
+    if( dataObjInfo->specColl == NULL ) {
+        if( dataObjUnlinkInp->oprType            == UNREG_OPR && 
+            rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
             ruleExecInfo_t rei;
 
-            initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
-            rei.doi = dataObjInfo;
-            rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
-            
-            applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-            if (rei.status != NO_CHK_PATH_PERM) {
-                char *outVaultPath;
-                rodsServerHost_t *rodsServerHost;
-                status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
-                                                &rodsServerHost);
-                if (status < 0) return status;
-                /* unregistering but not an admin user */
-                status = matchVaultPath (rsComm, dataObjInfo->filePath, 
-                                         rodsServerHost, &outVaultPath);
-                if (status != 0) {
-                    /* in the vault */
+        initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
+        rei.doi = dataObjInfo;
+        rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
+        
+        applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+        if (rei.status != NO_CHK_PATH_PERM) {
+            char *outVaultPath;
+            rodsServerHost_t *rodsServerHost;
+            status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
+              &rodsServerHost);
+            if (status < 0) return status;
+            /* unregistering but not an admin user */
+            status = matchVaultPath (rsComm, dataObjInfo->filePath, rodsServerHost, &outVaultPath);
+            if (status != 0) {
+            /* in the vault */
                     rodsLog (LOG_DEBUG,
                              "dataObjUnlinkS: unregistering in vault file %s",
                              dataObjInfo->filePath);
@@ -267,6 +270,7 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 }
             }
         }
+        
         unregDataObjInp.dataObjInfo = dataObjInfo;
         unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
         status = rsUnregDataObj (rsComm, &unregDataObjInp);
@@ -330,7 +334,24 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileUnlinkInp_t fileUnlinkInp;
     int status;
 
-    if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
+    // =-=-=-=-=-=-=-
+    // JMC - legacy resource  if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
+    std::string resc_class;
+    eirods::error prop_err = eirods::get_resource_property<std::string>( dataObjInfo->rescInfo->rescName, "class", resc_class );
+    if( prop_err.ok() ) {
+        if( resc_class == "bundle" ) {//BUNDLE_CL ) {
+            return 0;
+        }
+    } else {
+        std::stringstream msg;
+        msg << "l3Unlink - failed to get proprty [class] for resource [";
+        msg << dataObjInfo->rescInfo->rescName;
+        msg << "]";
+        eirods::log( ERROR( -1, msg.str() ) );
+        return -1;
+    }
+    // =-=-=-=-=-=-=-
+
 
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) 
         return SYS_RESC_IS_DOWN;
@@ -345,18 +366,18 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileUnlink (rsComm, &subFile);
     } else {
+#if 0 // JMC - legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
+#endif // JMC - legacy resource 
             memset (&fileUnlinkInp, 0, sizeof (fileUnlinkInp));
-            fileUnlinkInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+            fileUnlinkInp.fileType = static_cast< fileDriverType_t >( -1 );//= (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileUnlinkInp.addr.hostAddr, 
-                     dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileUnlinkInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
+#if 0 // JMC - legacy resource 
             break;
 
         default:
@@ -365,7 +386,8 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
                      RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
-        }
+	}
+#endif // JMC - legacy resource 
     }
     return (status);
 }

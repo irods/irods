@@ -183,13 +183,8 @@ getAndDisconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
 rodsServerHost_t **rodsServerHost);
 int
 setExecArg (char *commandArgv, char *av[]);
-#ifdef RULE_ENGINE_N
 int
 initAgent (int processType, rsComm_t *rsComm);
-#else
-int
-initAgent (rsComm_t *rsComm);
-#endif
 void cleanupAndExit (int status);
 #ifdef  __cplusplus
 void signalExit ( int );

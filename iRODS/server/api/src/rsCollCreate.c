@@ -129,18 +129,21 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileMkdir (rsComm, &subFile);
     } else {
+       #if 0 // JMC legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
+          case FILE_CAT:
+       #endif // JMC legacy resource 
             memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
-            fileMkdirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+            fileMkdirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileMkdirInp.dirName, dataObjInfo->filePath,
                      MAX_NAME_LEN);
             rstrcpy (fileMkdirInp.addr.hostAddr,
                      dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             fileMkdirInp.mode = getDefDirMode ();
             status = rsFileMkdir (rsComm, &fileMkdirInp);
+       #if 0 // JMC legacy resource 
             break;
 
         default:
@@ -150,6 +153,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             status = SYS_INVALID_RESC_TYPE;
             break;
         }
+       #endif // JMC legacy resource 
     }
     return (status);
 }

@@ -22,35 +22,6 @@
 // eirods includes
 #include "eirods_error.h"
 #include "eirods_first_class_object.h"
-
-
-typedef struct {
-    fileDriverType_t	driverType; 
-    int         	(*fileCreate)( rsComm_t*, char*, int, rodsLong_t ); /* JMC */
-    int         	(*fileOpen)( rsComm_t*, char*, int, int ); /* JMC */
-    int         	(*fileRead)( rsComm_t*, int, void*, int ); /* JMC */
-    int         	(*fileWrite)( rsComm_t*, int, void*, int ); /* JMC */
-    int         	(*fileClose)( rsComm_t*, int ); /* JMC */
-    int         	(*fileUnlink)( rsComm_t*, char* ); /* JMC */
-    int         	(*fileStat)( rsComm_t*, char*, struct stat* ); /* JMC */
-    int         	(*fileFstat)( rsComm_t*, int, struct stat* ); /* JMC */
-    rodsLong_t  	(*fileLseek)( rsComm_t*, int, rodsLong_t, int ); /* JMC */
-    int         	(*fileFsync)( rsComm_t*, int ); /* JMC */
-    int         	(*fileMkdir)( rsComm_t*, char *, int ); /* JMC */
-    int         	(*fileChmod)( rsComm_t*, char*, int ); /* JMC */
-    int         	(*fileRmdir)( rsComm_t*, char* ); /* JMC */
-    int         	(*fileOpendir)( rsComm_t*, char*, void** ); /* JMC */
-    int         	(*fileClosedir)( rsComm_t*, void* ); /* JMC */
-    int         	(*fileReaddir)( rsComm_t*, void*, struct dirent* ); /* JMC */
-    int         	(*fileStage)( rsComm_t*, char*, int ); /* JMC */
-    int         	(*fileRename)( rsComm_t*, char*, char* ); /* JMC */
-    rodsLong_t  	(*fileGetFsFreeSpace)( rsComm_t*, char*, int ); /* JMC */
-    int         	(*fileTruncate)( rsComm_t*, char*, rodsLong_t ); /* JMC */
-    int			(*fileStageToCache)( rsComm_t*, fileDriverType_t, int, int, char*, char*, rodsLong_t, keyValPair_t* ); /* JMC */
-    int			(*fileSyncToArch)( rsComm_t*, fileDriverType_t, int, int, char*, char*, rodsLong_t, keyValPair_t*); /* JMC */
-} fileDriver_t;
-
-
 eirods::error fileCreate  ( eirods::first_class_object& );
 eirods::error fileOpen    ( eirods::first_class_object& );
 eirods::error fileRead    ( eirods::first_class_object&, void*, int );

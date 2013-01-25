@@ -145,17 +145,20 @@ dataObjInfo_t *dataObjInfo)
 	subFile.offset = dataObjTruncateInp->dataSize;
         status = rsSubStructFileTruncate (rsComm, &subFile);
     } else {
+       #if 0 // JMC legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
+       #endif // JMC legacy resource 
             memset (&fileTruncateInp, 0, sizeof (fileTruncateInp));
-            fileTruncateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+            fileTruncateInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-	    fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
+	        fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
             status = rsFileTruncate (rsComm, &fileTruncateInp);
+       #if 0 // JMC legacy resource 
             break;
 
           default:
@@ -165,6 +168,7 @@ dataObjInfo_t *dataObjInfo)
             status = SYS_INVALID_RESC_TYPE;
             break;
 	}
+       #endif // JMC legacy resource 
     }
     return (status);
 }

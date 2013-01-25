@@ -50,12 +50,10 @@ transferStat_t **transStat)
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
 
-    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache,
-      &srcDataObjInp->condInput);
-    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache,
-      &destDataObjInp->condInput);
-    remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, 
-      &rodsServerHost);
+    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput);
+    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
+      
+    remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, &rodsServerHost);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
@@ -78,18 +76,23 @@ transferStat_t **transStat)
     }
 	
     addKeyVal (&srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
+
+
     srcL1descInx = rsDataObjOpen (rsComm, srcDataObjInp);
 
-    if (srcL1descInx < 0)
+    if (srcL1descInx < 0) {
         return srcL1descInx;
+    }
 
     /* have to set L1desc[srcL1descInx].dataSize because open set this to -1 */
     destDataObjInp->dataSize = L1desc[srcL1descInx].dataSize =
      L1desc[srcL1descInx].dataObjInfo->dataSize;
 
     createMode = atoi (L1desc[srcL1descInx].dataObjInfo->dataMode);
+    
     if (createMode >= 0100)
-	destDataObjInp->createMode = createMode; 
+	    destDataObjInp->createMode = createMode; 
+
     L1desc[srcL1descInx].oprType = COPY_SRC;
 
     if (L1desc[srcL1descInx].l3descInx <= 2) {
@@ -103,17 +106,17 @@ transferStat_t **transStat)
         char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
         splitPathByKey (destDataObjInp->objPath, parColl, child, '/');
         rsMkCollR (rsComm, "/", parColl);
-	destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
+	    destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
     }
 
     if (destL1descInx < 0) {
-	return (destL1descInx);
+	    return (destL1descInx);
     }
 
     if (L1desc[destL1descInx].replStatus == NEWLY_CREATED_COPY) {
-	existFlag = 0;
+	    existFlag = 0;
     } else {
-	existFlag = 1;
+	    existFlag = 1;
     }
 	
     L1desc[destL1descInx].oprType = COPY_DEST;
@@ -131,7 +134,6 @@ transferStat_t **transStat)
 #if 0
     (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
 #endif
-
     status = _rsDataObjCopy (rsComm, destL1descInx, existFlag, transStat);
 
 #if 0
@@ -154,11 +156,11 @@ transferStat_t **transStat)
     int status, status2;
     char *destRescName, *srcRescName;
 
-    destDataObjInp = L1desc[destL1descInx].dataObjInp;
+    destDataObjInp  = L1desc[destL1descInx].dataObjInp;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
-    srcL1descInx = L1desc[destL1descInx].srcL1descInx;
+    srcL1descInx    = L1desc[destL1descInx].srcL1descInx;
 
-    srcDataObjInp = L1desc[srcL1descInx].dataObjInp;
+    srcDataObjInp  = L1desc[srcL1descInx].dataObjInp;
     srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
     if( destDataObjInp == NULL ) { // JMC cppcheck - null ptr ref
@@ -181,27 +183,28 @@ transferStat_t **transStat)
     if (L1desc[srcL1descInx].l3descInx <= 2) {
         /* no physical file was opened */
         status = l3DataCopySingleBuf (rsComm, destL1descInx);
-	/* has not been registered yet because of NO_OPEN_FLAG_KW */
-	if (status >= 0 && existFlag == 0 && 
-	  destDataObjInfo->specColl == NULL &&
-	  L1desc[destL1descInx].remoteZoneHost == NULL) {
-	    /* If the dest is in remote zone, register in _rsDataObjClose
-	     * there */
-            status = svrRegDataObj (rsComm, destDataObjInfo);
-	    if (status == CAT_UNKNOWN_COLLECTION) {
-		/* collection does not exist. make one */
-		char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
-		splitPathByKey (destDataObjInfo->objPath, parColl, child, '/');
-		rsMkCollR (rsComm, "/", parColl);
-		status = svrRegDataObj (rsComm, destDataObjInfo);
-	    }
-	    if (status < 0) {    
-                rodsLog (LOG_NOTICE,
-                  "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
-                  destDataObjInfo->objPath, status);
-                return (status);
-	    }
-	}
+	
+        /* has not been registered yet because of NO_OPEN_FLAG_KW */
+        if( status    >= 0                    && 
+            existFlag == 0                    && 
+            destDataObjInfo->specColl == NULL &&
+            L1desc[destL1descInx].remoteZoneHost == NULL) {
+                /* If the dest is in remote zone, register in _rsDataObjClose there */
+                status = svrRegDataObj (rsComm, destDataObjInfo);
+                if (status == CAT_UNKNOWN_COLLECTION) {
+                /* collection does not exist. make one */
+                char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
+                splitPathByKey (destDataObjInfo->objPath, parColl, child, '/');
+                rsMkCollR (rsComm, "/", parColl);
+                status = svrRegDataObj (rsComm, destDataObjInfo);
+            }
+            if (status < 0) {    
+                    rodsLog (LOG_NOTICE,
+                      "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
+                      destDataObjInfo->objPath, status);
+                    return (status);
+            }
+        }
     } else {
         if (destDataObjInfo != NULL && destDataObjInfo->rescInfo != NULL)
             destRescName = destDataObjInfo->rescInfo->rescName;
@@ -213,9 +216,11 @@ transferStat_t **transStat)
         else
             srcRescName = NULL;
 
-		if( srcDataObjInfo != NULL )
-        destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,destRescName, srcRescName);
-	
+		if( srcDataObjInfo != NULL ) {
+            destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,destRescName, srcRescName);
+
+        }
+        	
 	    srcDataObjInp->numThreads = destDataObjInp->numThreads;
 #if 0
         /* XXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
@@ -224,11 +229,11 @@ transferStat_t **transStat)
 	    destDataObjInp->numThreads = 1;
         }
 #endif
+
         status = dataObjCopy (rsComm, destL1descInx);
     }
 
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-
     dataObjCloseInp.l1descInx = destL1descInx;
     if (status >= 0) {
         *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));

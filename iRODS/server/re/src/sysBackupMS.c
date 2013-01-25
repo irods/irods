@@ -20,6 +20,9 @@
 #include "objMetaOpr.h"
 #include "apiHeaderAll.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
 
 
 /*
@@ -260,7 +263,18 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
     /* Resolve resource if resource name was found */
     if (rescName != NULL)
     {
-    	status = resolveResc (rescName, rescInfo);
+    	// JMC - status = resolveResc (rescName, rescInfo);
+        if( !(*rescInfo ) ) {
+            *rescInfo = new rescInfo_t;
+        }
+        eirods::resource_ptr resc;
+        eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg << "getDefaultLocalRescInfo - failed to resolve resource ";
+            msg << rescName;
+            eirods::log( PASS( false, -1, msg.str(), err ) );
+        }
     }
     else
     {

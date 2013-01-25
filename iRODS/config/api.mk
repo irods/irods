@@ -377,15 +377,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcProcStat.o
 SVR_API_OBJS += $(svrApiObjDir)/rsStreamRead.o
 LIB_API_OBJS += $(libApiObjDir)/rcStreamRead.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseRescOpen.o
-LIB_API_OBJS += $(libApiObjDir)/rcDatabaseRescOpen.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseRescClose.o
-LIB_API_OBJS += $(libApiObjDir)/rcDatabaseRescClose.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjControl.o
-LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjControl.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsSpecificQuery.o
 LIB_API_OBJS += $(libApiObjDir)/rcSpecificQuery.o
 

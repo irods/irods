@@ -66,7 +66,6 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
           "rsDataObjTrim: getDataObjInfo for %s", dataObjInp->objPath);
         return (status);
     }
-
     status = resolveInfoForTrim (&dataObjInfoHead, &dataObjInp->condInput);
 
     if (status < 0) {
@@ -81,6 +80,7 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
+    tmpDataObjInfo = dataObjInfoHead;
         if (myTime == 0 || atoi (tmpDataObjInfo->dataModify) <= myTime) {
 	    if (getValByKey (&dataObjInp->condInput, DRYRUN_KW) == NULL) {
                 status = dataObjUnlinkS (rsComm, dataObjInp, tmpDataObjInfo);

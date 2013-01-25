@@ -25,19 +25,19 @@
 #include "fileChksum.h"
 #include "eirods_stacktrace.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 static rodsLong_t OneGig = (1024*1024*1024);
 
 int
-rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
-{
-    char *destRescName;
-    int status; 
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
-    rodsHostAddr_t rescAddr;
-    rescGrpInfo_t *rescGrpInfo = NULL;
-
-    specCollCache_t *specCollCache = NULL;
+rsPhyBundleColl( rsComm_t*                 rsComm, 
+                 structFileExtAndRegInp_t* phyBundleCollInp ) {
+    int               status         = -1; 
+    specCollCache_t*  specCollCache  = 0;
+    char*             destRescName   = 0;
 
     resolveLinkedPath (rsComm, phyBundleCollInp->objPath, &specCollCache,
                        &phyBundleCollInp->condInput);
@@ -54,6 +54,8 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
         /* can only do local zone */
         return SYS_INVALID_ZONE_NAME;
     }
+
+#if 0 // JMC - legacy resource
     status = _getRescInfo (rsComm, destRescName, &rescGrpInfo);
     if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
         rodsLog (LOG_ERROR,
@@ -61,48 +63,52 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
                  destRescName, phyBundleCollInp->collection, status);
         return status;
     }
+#endif // JMC - legacy resource
 
+
+    rescGrpInfo_t rescGrpInfo;
+    rescGrpInfo.rescInfo = 0;
+    eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "rsPhyBundleColl - failed.", err ) );
+        return -1;
+    }
+
+    rodsHostAddr_t rescAddr;
     bzero (&rescAddr, sizeof (rescAddr));
-    rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
-    remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
+
+    rstrcpy (rescAddr.hostAddr, rescGrpInfo.rescInfo->rescLoc, NAME_LEN);
+    rodsServerHost_t* rodsServerHost = 0;
+    int remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
+
+
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsPhyBundleColl (rsComm, phyBundleCollInp, rescGrpInfo);
+        status = _rsPhyBundleColl( rsComm, phyBundleCollInp, &rescGrpInfo );
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remotePhyBundleColl (rsComm, phyBundleCollInp, rodsServerHost);
+        status = remotePhyBundleColl( rsComm, phyBundleCollInp, rodsServerHost );
     } else if (remoteFlag < 0) {
         status = remoteFlag;
     }
 
+    
     return status;
 }
 
 int
-_rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
-                  rescGrpInfo_t *rescGrpInfo)
-{
-    rescInfo_t *myRescInfo;
-    char *myRescName;
+_rsPhyBundleColl( rsComm_t*                 rsComm, 
+                  structFileExtAndRegInp_t* phyBundleCollInp,
+                  rescGrpInfo_t*            rescGrpInfo ) {
+    rescInfo_t* myRescInfo = rescGrpInfo->rescInfo;
+    char*       myRescName = myRescInfo->rescName;
+    
     collInp_t collInp;
-    collEnt_t *collEnt;
-    char phyBunDir[MAX_NAME_LEN];
-    curSubFileCond_t curSubFileCond;
-    int handleInx;
-    int status, l1descInx;
-    dataObjInp_t dataObjInp;
-    bunReplCacheHeader_t bunReplCacheHeader;
-    int savedStatus = 0;
-    int chksumFlag, maxSubFileCnt; // JMC - backport 4528, 4771
-    char *dataType = NULL; // JMC - backport 4658
-
-
-    myRescInfo = rescGrpInfo->rescInfo;
-    myRescName = myRescInfo->rescName;
     bzero (&collInp, sizeof (collInp));
     rstrcpy (collInp.collName, phyBundleCollInp->collection, MAX_NAME_LEN);
-    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | 
-        NO_TRIM_REPL_FG;
-    handleInx = rsOpenCollection (rsComm, &collInp);
+    collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
+        
+    int handleInx = rsOpenCollection (rsComm, &collInp);
+
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
                  "_rsPhyBundleColl: rsOpenCollection of %s error. status = %d",
@@ -119,13 +125,19 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
     }
 
     /* create the bundle file */ 
-    dataType = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
-    l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-                                        rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
+    char* dataType  = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
+    
+    dataObjInp_t dataObjInp;
+    int   l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
+                                              rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
 
-    if (l1descInx < 0) return l1descInx;
+    if (l1descInx < 0) {
+        return l1descInx;
+    }
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4528
+    int chksumFlag    = -1;
     if (getValByKey (&phyBundleCollInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
         L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
         chksumFlag = 1;
@@ -134,17 +146,27 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
     }
     // =-=-=-=-=-=-=-
     // JMC - backport 4771
+    int maxSubFileCnt = -1; // JMC - backport 4528, 4771
     if (getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW) != NULL) {
         maxSubFileCnt = atoi(getValByKey (&phyBundleCollInp->condInput, MAX_SUB_FILE_KW));
     } else {
         maxSubFileCnt = MAX_SUB_FILE_CNT;
     }
+
     // =-=-=-=-=-=-=-
+    char phyBunDir[MAX_NAME_LEN];
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
                         phyBunDir);
 
+
+    curSubFileCond_t     curSubFileCond;
+    bunReplCacheHeader_t bunReplCacheHeader;
     bzero (&bunReplCacheHeader, sizeof (bunReplCacheHeader));
     bzero (&curSubFileCond, sizeof (curSubFileCond));
+    
+    int        status      = -1;
+    int        savedStatus =  0;
+    collEnt_t* collEnt     =  0;
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
             if (curSubFileCond.collName[0] == '\0') {
@@ -195,8 +217,7 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
 
                     }
                 }       /* end of new bundle file */
-                status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
-                                                 myRescName, phyBunDir, &bunReplCacheHeader);
+                status = replAndAddSubFileToDir (rsComm, &curSubFileCond, myRescName, phyBunDir, &bunReplCacheHeader);
                 if (status < 0) {
                     savedStatus = status;
                     rodsLog (LOG_ERROR,
@@ -230,9 +251,12 @@ _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
                 curSubFileCond.cacheReplNum = collEnt->replNum;
                 curSubFileCond.subFileSize = collEnt->dataSize;
             }
-        }
+        
+        } // if data obj
+
         free (collEnt);     /* just free collEnt but not content */
-    }
+
+    } // while 
     /* handle any remaining */
 
     status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
@@ -615,15 +639,25 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     int rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
 
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
-    if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
+
+    std::string type;
+    eirods::error err = eirods::get_resource_property< std::string >( rescGrpInfo->rescInfo->rescName, "type", type );
+    if( !err.ok() ) {
+        eirods::log( PASS( false, -1, "createPhyBundleDataObj failed.", err ) );    
+    }
+    // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
+    if( "unix file system" != type ) { // JMC :: need a constant for this?
         rodsLog (LOG_ERROR,
                  "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
                  rescGrpInfo->rescInfo->rescName);
         return SYS_INVALID_RESC_TYPE;
-    } else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
+    } 
+#if 0 // JMC legacy resources
+    else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
         return SYS_NO_CACHE_RESC_IN_GRP;
     }
 
+#endif // JMC legacy resources
         
     do {
         int loopCnt = 0;

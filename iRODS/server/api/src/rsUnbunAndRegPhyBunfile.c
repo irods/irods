@@ -17,18 +17,22 @@
 
 #include "eirods_stacktrace.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
 int
 rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int status;
     char *rescName;
-    rescGrpInfo_t *rescGrpInfo = NULL;
 
     if ((rescName = getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW)) 
         == NULL) {
         return USER_NO_RESC_INPUT_ERR;
     }
-
+#if 0 // JMC - legacy resource
+    rescGrpInfo_t *rescGrpInfo = NULL;
     status = resolveAndQueResc (rescName, NULL, &rescGrpInfo);
     if (status < 0|| NULL == rescGrpInfo) { // JMC cppcheck - nullptr
         rodsLog (LOG_NOTICE,
@@ -36,9 +40,21 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                  rescName, status);
         return (status);
     }
+#endif // JMC - legacy resource
 
-    status = _rsUnbunAndRegPhyBunfile (rsComm, dataObjInp, 
-                                       rescGrpInfo->rescInfo);
+    rescInfo_t* rescInfo = new rescInfo_t;
+    eirods::error err = eirods::get_resc_info( rescName, *rescInfo );
+    if( !err.ok() ) {
+        delete rescInfo;
+        std::stringstream msg;
+        msg << "rsUnbunAndRegPhyBunfile - failed for [";
+        msg << rescName;
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), err ) );
+        return -1;
+    }
+    status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
+    //rescGrpInfo->rescInfo);
 
     return (status);
 }
@@ -73,13 +89,13 @@ _rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return (SYS_INVALID_FILE_PATH);
     }
 
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir" );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir" );
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir. done." );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir. done." );
     dataType = getValByKey (&dataObjInp->condInput, DATA_TYPE_KW); // JMC - backport 4664
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile" );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile" );
     status = unbunPhyBunFile (rsComm, dataObjInp->objPath, rescInfo, bunFilePath, phyBunDir, dataType, 0 ); // JMC - backport 4632, 4657, 4664
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile. done." );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile. done." );
      
 
     if (status < 0) {
@@ -355,6 +371,8 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                     /* set the cacheDir */
                     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
                     /* pass on the dataType */
+
+
                     if( dataType != NULL &&  // JMC - backport 4632
                         ( strstr (dataType, GZIP_TAR_DT_STR)  != NULL || // JMC - backport 4658
                           strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||

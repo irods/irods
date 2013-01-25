@@ -20,6 +20,9 @@
 #include "resource.h"
 #include "physPath.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
 
 /**
  * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
@@ -63,12 +66,12 @@
  * \sa none
  **/
 int
-msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, 
-                   ruleExecInfo_t *rei)
+msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei )
 {
     char *defaultRescList;
     char *optionStr;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *myRescGrpInfo = new rescGrpInfo_t;
+    myRescGrpInfo->rescInfo = new rescInfo_t;
 
     defaultRescList = (char *) xdefaultRescList->inOutStruct;
 
@@ -76,12 +79,15 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr,
 
     RE_TEST_MACRO ("    Calling msiSetDefaultResc")
 
-        rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr,  
-                                      &rei->doinp->condInput, &myRescGrpInfo);
+    // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, &myRescGrpInfo );
+    eirods::error err = eirods::set_default_resource( rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, *myRescGrpInfo ); 
+    rei->status = err.code();
 
     if (rei->status >= 0) {
         rei->rgi = myRescGrpInfo;
     } else {
+        eirods::log( PASS( false, -1, "msiSetDefaultResc - failed", err ) );
+        delete myRescGrpInfo;
         rei->rgi = NULL;
     }
     return (rei->status);
@@ -121,8 +127,8 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr,
  * \sa none
  **/
 int
-msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
-{
+msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei ) {
+#if 0 // JMC - legacy resource
     rescGrpInfo_t *myRescGrpInfo;
     char *sortScheme;
 
@@ -137,12 +143,15 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
         strncat (rei->statusStr, "%", MAX_NAME_LEN);
     }
     if (rei->rgi == NULL) {
-        /* def resc group has not been initialized yet */
-        rei->status = setDefaultResc (rei->rsComm, NULL, NULL, 
-                                      &rei->doinp->condInput, &myRescGrpInfo);
+	/* def resc group has not been initialized yet */
+        // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, NULL, NULL, &rei->doinp->condInput, &myRescGrpInfo);
+        eirods::error err = eirods::set_default_resource( rei->rsComm, "", "", &rei->doinp->condInput, *myRescGrpInfo ); 
+        rei->status = err.code();
+          
         if (rei->status >= 0) {
             rei->rgi = myRescGrpInfo;
         } else {
+            eirods::log( PASS( false, -1, "msiSetRescSortScheme - failed", err );
             return (rei->status);
         }
     } else {
@@ -151,6 +160,9 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
     sortResc (rei->rsComm, &myRescGrpInfo, sortScheme);
     rei->rgi = myRescGrpInfo;
     return(0);
+#else
+    return -1;
+#endif // JMC - legacy resource
 }
 
 
@@ -420,11 +432,11 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
 
         rei->status = 0;
     if (sortScheme != NULL) {
-        if (strcmp (sortScheme, "random") == 0) {
+	    if (strcmp (sortScheme, "random") == 0) {
             sortDataObjInfoRandom (&rei->doi);
-        } else if (strcmp (sortScheme, "byRescClass") == 0) {
-            rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
-        }
+    // JMC - legacy resource -     } else if (strcmp (sortScheme, "byRescClass") == 0) {
+	//    rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
+	    }
     }
     return (rei->status);
 }
@@ -468,8 +480,7 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
 
     RE_TEST_MACRO ("    Calling msiSysChksumDataObj")
 
-
-        rei->status = 0;
+    rei->status = 0;
 
     /* don't cache replicate or copy operation */
 

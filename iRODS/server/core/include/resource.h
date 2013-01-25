@@ -9,6 +9,7 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+
 #include "rods.h"
 #include "initServer.h"
 #include "objInfo.h"
@@ -32,6 +33,7 @@ extern "C" {
 #endif
 
 
+#if 0 // JMC
 int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput,
 rescGrpInfo_t **rescGrpInfo);
@@ -119,16 +121,20 @@ int
 getRescType (rescInfo_t *rescInfo);
 int
 getRescClassInx (char *rescClass);
+#endif // JMC
 int
 getMultiCopyPerResc ( rsComm_t* ); // JMC - backport 4556
+#if 0 // JMC
 int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo);
 int
 updateResc (rsComm_t *rsComm);
 rescInfo_t *
 matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType);
+#endif // JMC
 #ifdef  __cplusplus
 }
 #endif
+
 
 #endif	/* RESOURCE_H */

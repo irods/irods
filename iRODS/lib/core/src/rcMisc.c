@@ -548,10 +548,11 @@ getZoneNameFromHint (char *rcatZoneHint, char *zoneName, int len)
 }
 
 int
-freeDataObjInfo (dataObjInfo_t *dataObjInfo)
+freeDataObjInfo(dataObjInfo_t *dataObjInfo)
 {
-    if (dataObjInfo == NULL)
-        return (0);
+    if (dataObjInfo == NULL ) {
+	    return (0);
+    }
 
     /* separate specColl */
     if (dataObjInfo->specColl != NULL) free (dataObjInfo->specColl);
@@ -562,7 +563,7 @@ freeDataObjInfo (dataObjInfo_t *dataObjInfo)
 }
 
 int
-freeAllDataObjInfo (dataObjInfo_t *dataObjInfoHead)
+freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead)
 {
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
 
@@ -1317,7 +1318,6 @@ getUnixUid (char *userName)
 #ifndef _WIN32
     struct passwd *pw;
     int myuid;
-    rodsLog( LOG_NOTICE, "QQQQ - getUnixUid - %s", userName );
     if (!(pw = getpwnam(userName))) {
         myuid = -1;
     } else {

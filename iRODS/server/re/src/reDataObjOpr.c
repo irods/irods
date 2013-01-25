@@ -1044,10 +1044,9 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     rsComm = rei->rsComm;
-
     /* parse inpParam1 */
-    rei->status = parseMspForDataObjCopyInp (inpParam1, &dataObjCopyInp, 
-      &myDataObjCopyInp);
+    rei->status = parseMspForDataObjCopyInp( inpParam1, &dataObjCopyInp, &myDataObjCopyInp );
+      
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -1056,8 +1055,8 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
     }
 
     /* parse inpParam2 */
-    rei->status = parseMspForDataObjInp (inpParam2, 
-      &myDataObjCopyInp->destDataObjInp, &myDataObjInp, 1);
+    rei->status = parseMspForDataObjInp (inpParam2, &myDataObjCopyInp->destDataObjInp, &myDataObjInp, 1);
+      
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -1069,12 +1068,12 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
     rei->status = parseMspForCondInp (inpParam3, 
       &myDataObjCopyInp->destDataObjInp.condInput, DEST_RESC_NAME_KW);
 #else
-    validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
-      DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
-      FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
-    rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
-      &myDataObjCopyInp->destDataObjInp, DEST_RESC_NAME_KW, validKwFlags, 
-      &outBadKeyWd);
+    validKwFlags = OBJ_PATH_FLAG   | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
+                   DATA_TYPE_FLAG  | VERIFY_CHKSUM_FLAG  |
+                   FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
+    rei->status = parseMsKeyValStrForDataObjInp( msKeyValStr, &myDataObjCopyInp->destDataObjInp, 
+                                                 DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
+      
 #endif
 
     if (rei->status < 0) {

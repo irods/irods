@@ -4,10 +4,12 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* resource.c - resorce metadata operation */
 
+
 #include "resource.h"
 #include "genQuery.h"
 #include "rodsClient.h"
 
+#if 0 // JMC
 /* getRescInfo - Given the rescName or rescgrpName in condInput keyvalue
  * pair or defaultResc, return the rescGrpInfo containing the info on
  * this resource or resource group.
@@ -1569,7 +1571,7 @@ getRescClassInx (char *rescClass)
 
     return (UNMATCHED_KEY_OR_INDEX);
 }
-
+#endif
 /* getMultiCopyPerResc - call the acSetMultiReplPerResc rule to see if 
  * multiple copies can exist in a resource. If the rule allows multi copy,
  * return 1, otherwise retun 0.
@@ -1589,7 +1591,7 @@ getMultiCopyPerResc ( rsComm_t *rsComm ) // JMC - backport 4556
         return 0;
     }
 }
-
+#if 0
 /* getRescCnt - count the number of resources in the rescGrpInfo link list.
  */
 
@@ -1665,4 +1667,4 @@ matchSameHostRescByType (rescInfo_t *myRescInfo, int driverType)
 #endif // JMC - UNUSED
 
 
-
+#endif // JMC

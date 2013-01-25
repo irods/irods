@@ -298,7 +298,7 @@ _updateRescObjCount(
     eirods::hierarchy_parser hparse;
     
     resc_id[0] = '\0';
-    logger.log();
+//    logger.log();
     std::stringstream ss;
     if((status = cmlGetStringValueFromSql("select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
                                           resc_id, MAX_NAME_LEN, _resc_name.c_str(), _zone.c_str(), 0,

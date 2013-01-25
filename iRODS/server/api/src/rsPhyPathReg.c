@@ -20,6 +20,12 @@
 #include "miscServerFunct.h"
 #include "apiHeaderAll.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with 
@@ -54,14 +60,15 @@ int
 irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 {
     int status;
-    rescGrpInfo_t *rescGrpInfo = NULL;
+    rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
+    rescGrpInfo->rescInfo = new rescInfo_t;
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag;
-    int rescCnt;
+    //int rescCnt;
     rodsHostAddr_t addr;
     char *tmpStr = NULL;
-    char *rescGroupName = NULL;
-    rescInfo_t *tmpRescInfo = NULL;
+    //char *rescGroupName = NULL;
+    //rescInfo_t *tmpRescInfo = NULL;
 
     if ((tmpStr = getValByKey (&phyPathRegInp->condInput,
                                COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, UNMOUNT_STR) == 0) {
@@ -76,18 +83,21 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         return (status);
     }
 
-    status = getRescInfo (rsComm, NULL, &phyPathRegInp->condInput,
-                          &rescGrpInfo);
+    // =-=-=-=-=-=-=-
+    // 
+    // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
+    std::string resc_name;
+    eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
 
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-                 "rsPhyPathReg: getRescInfo error for %s, status = %d",
-                 phyPathRegInp->objPath, status);
-        return (status);
+    rescGrpInfo->rescInfo = new rescInfo_t;
+    eirods::error err = eirods::get_resc_grp_info( resc_name, *rescGrpInfo );
+    if( !err.ok() ) {
+         eirods::log( PASS( false, -1, "irsPhyPathReg - failed", err ) );
+         return -1;
     }
-
+    
+#if 0 // JMC - legacy resource
     rescCnt = getRescCnt (rescGrpInfo);
-
     if (rescCnt != 1) {
         rodsLog (LOG_ERROR,
                  "rsPhyPathReg: The input resource is not unique for %s",
@@ -95,31 +105,31 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         return (SYS_INVALID_RESC_TYPE);
     }
 
-    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,
-                                      RESC_GROUP_NAME_KW)) != NULL) {
-        status = getRescInGrp (rsComm, rescGrpInfo->rescInfo->rescName, 
-                               rescGroupName, &tmpRescInfo);
+    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,RESC_GROUP_NAME_KW)) != NULL) {
+        status = getRescInGrp (rsComm, rescGrpInfo->rescInfo->rescName, rescGroupName, &tmpRescInfo);
         if (status < 0) {
-            rodsLog (LOG_ERROR,
-                     "rsPhyPathReg: resc %s not in rescGrp %s for %s",
-                     rescGrpInfo->rescInfo->rescName, rescGroupName,
-                     phyPathRegInp->objPath);
-            return SYS_UNMATCHED_RESC_IN_RESC_GRP;
+                rodsLog (LOG_ERROR,
+                  "rsPhyPathReg: resc %s not in rescGrp %s for %s",
+                  rescGrpInfo->rescInfo->rescName, rescGroupName,
+              phyPathRegInp->objPath);
+                return SYS_UNMATCHED_RESC_IN_RESC_GRP;
         }
     }
-
+#endif
     memset (&addr, 0, sizeof (addr));
     
     rstrcpy (addr.hostAddr, rescGrpInfo->rescInfo->rescLoc, LONG_NAME_LEN);
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, 
-                                rodsServerHost);
+        status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
+	
     } else if (remoteFlag == REMOTE_HOST) {
         status = remotePhyPathReg (rsComm, phyPathRegInp, rodsServerHost);
+
     } else {
         if (remoteFlag < 0) {
+//            delete rescGrpInfo;
             return (remoteFlag);
         } else {
             rodsLog (LOG_ERROR,
@@ -129,6 +139,7 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         }
     }
 
+//    delete rescGrpInfo;
     return (status);
 }
 
@@ -172,26 +183,21 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     char *tmpStr = NULL;
     int chkType = 0; // JMC - backport 4774
 
-    if ((tmpFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
-        == NULL) {
-        rodsLog (LOG_ERROR,
-                 "_rsPhyPathReg: No filePath input for %s",
-                 phyPathRegInp->objPath);
-        return (SYS_INVALID_FILE_PATH);
+    if ((tmpFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))== NULL) {
+        rodsLog( LOG_ERROR,"_rsPhyPathReg: No filePath input for %s",
+	             phyPathRegInp->objPath );
+	    return (SYS_INVALID_FILE_PATH);
     } else {
-        /* have to do this since it will be over written later */
-        rstrcpy (filePath, tmpFilePath, MAX_NAME_LEN);
+	    /* have to do this since it will be over written later */
+	    rstrcpy (filePath, tmpFilePath, MAX_NAME_LEN);
     }
 
     /* check if we need to chk permission */
-
     memset (&dataObjInfo, 0, sizeof (dataObjInfo));
     rstrcpy (dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
     rstrcpy (dataObjInfo.filePath, filePath, MAX_NAME_LEN);
     dataObjInfo.rescInfo = rescGrpInfo->rescInfo;
-    rstrcpy (dataObjInfo.rescName, rescGrpInfo->rescInfo->rescName, 
-             LONG_NAME_LEN);
-
+    rstrcpy (dataObjInfo.rescName, rescGrpInfo->rescInfo->rescName, LONG_NAME_LEN);
  
     if( getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
         (chkType = getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) != NO_CHK_PATH_PERM) { // JMC - backport 4774
@@ -200,7 +206,7 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
         rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
         rstrcpy (chkNVPathPermInp.fileName, filePath, MAX_NAME_LEN);
-        chkNVPathPermInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        chkNVPathPermInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
         rstrcpy (chkNVPathPermInp.addr.hostAddr,  
                  rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
 
@@ -217,19 +223,17 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     }
 
     if (getValByKey (&phyPathRegInp->condInput, COLLECTION_KW) != NULL) {
-        status = dirPathReg (rsComm, phyPathRegInp, filePath, 
-                             rescGrpInfo->rescInfo); 
-    } else if ((tmpStr = getValByKey (&phyPathRegInp->condInput, 
-                                      COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, MOUNT_POINT_STR) == 0) {
-        status = mountFileDir (rsComm, phyPathRegInp, filePath,
-                               rescGrpInfo->rescInfo);
+	    status = dirPathReg (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo); 
+    } else if ((tmpStr = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, MOUNT_POINT_STR) == 0) {
+                
+        status = mountFileDir (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo);
+          
     } else {
         if (getValByKey (&phyPathRegInp->condInput, REG_REPL_KW) != NULL) {
-            status = filePathRegRepl (rsComm, phyPathRegInp, filePath,
-                                      rescGrpInfo->rescInfo); 
+	        status = filePathRegRepl (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo); 
+        
         } else {
-            status = filePathReg (rsComm, phyPathRegInp, filePath,
-                                  rescGrpInfo->rescInfo); 
+            status = filePathReg (rsComm, phyPathRegInp, filePath,rescGrpInfo->rescInfo); 
         }
     }
 
@@ -383,7 +387,7 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     rescTypeInx = rescInfo->rescTypeInx;
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
-    fileOpendirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+    fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpendirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 
     dirFd = rsFileOpendir (rsComm, &fileOpendirInp);
@@ -471,10 +475,10 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     return (status);
 }
 
-int
-mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-              rescInfo_t *rescInfo)
-{
+int mountFileDir( rsComm_t*     rsComm, 
+                  dataObjInp_t* phyPathRegInp, 
+                  char*         filePath, 
+                  rescInfo_t*   rescInfo ) {
     collInp_t collCreateInp;
     int rescTypeInx;
     int status;
@@ -482,12 +486,16 @@ mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rodsStat_t *myStat = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
-    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) // JMC - backport 4832
-        return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
- 
+    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {// JMC - backport 4832
+       rodsLog( LOG_NOTICE, "mountFileDir - insufficient privilege" );
+       return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+    } 
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-    if (status < 0 || NULL == rodsObjStatOut ) return status; // JMC cppcheck - nullptr
+    if (status < 0 || NULL == rodsObjStatOut ) {
+        rodsLog( LOG_NOTICE, "mountFileDir collstat failed." );
+        return status; // JMC cppcheck - nullptr
+    }
 
     if (rodsObjStatOut->specColl != NULL) {
         freeRodsObjStat (rodsObjStatOut);
@@ -508,7 +516,7 @@ mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
 
     rescTypeInx = rescInfo->rescTypeInx;
-    fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+    fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
@@ -520,7 +528,7 @@ mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
                  fileStatInp.fileName, status);
         memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
         rstrcpy (fileMkdirInp.dirName, filePath, MAX_NAME_LEN);
-        fileMkdirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+        fileMkdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
         fileMkdirInp.mode = getDefDirMode ();
         rstrcpy (fileMkdirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
         status = rsFileMkdir (rsComm, &fileMkdirInp);
@@ -549,11 +557,14 @@ mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     /* try to mod the coll first */
     status = rsModColl (rsComm, &collCreateInp);
 
-    if (status < 0) {   /* try to create it */
-        status = rsRegColl (rsComm, &collCreateInp);
+    if (status < 0) {	/* try to create it */
+    rodsLog( LOG_NOTICE, "mountFileDir rsModColl < 0." );
+       status = rsRegColl (rsComm, &collCreateInp);
     }
 
     if (status >= 0) {
+    rodsLog( LOG_NOTICE, "mountFileDir rsModColl > 0." );
+
         char outLogPath[MAX_NAME_LEN];
         int status1;
         /* see if the phyPath is mapped into a real collection */
@@ -579,6 +590,8 @@ mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             }
         }
     }
+    
+    rodsLog( LOG_NOTICE, "mountFileDir return status." );
     return (status);
 }
 

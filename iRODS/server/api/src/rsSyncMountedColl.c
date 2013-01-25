@@ -15,9 +15,15 @@
 #include "miscServerFunct.h"
 #include "apiHeaderAll.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
 int
 rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
 {
+    rodsLog( LOG_NOTICE, "rsSyncMountedColl - start" );
+
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
     dataObjInp_t myDataObjInp;
@@ -52,6 +58,8 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
     }
 
     freeRodsObjStat (rodsObjStatOut);
+    
+    rodsLog( LOG_NOTICE, "rsSyncMountedColl - done" );
 
     return (status);
 }
@@ -63,7 +71,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
 
     if (getStructFileType (specColl) >= 0) { 	/* a struct file */
         structFileOprInp_t structFileOprInp;
-        rescInfo_t *rescInfo;
+        rescInfo_t         rescInfo;
 
         if (strlen (specColl->resource) == 0) {
             /* nothing to sync */
@@ -71,18 +79,27 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
         }
 
         memset (&structFileOprInp, 0, sizeof (structFileOprInp));
-        status = resolveResc (specColl->resource, &rescInfo);
-
+        /*status = resolveResc (specColl->resource, &rescInfo);
         if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "_rsSyncMountedColl: resolveResc error for %s, status = %d",
-              specColl->resource, status);
+            rodsLog( LOG_NOTICE,"_rsSyncMountedColl: resolveResc error for %s, status = %d",
+                     specColl->resource, status);
             return (status);
+        }*/
+
+        eirods::error err = eirods::get_resc_info( specColl->resource, rescInfo );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg << "_rsSyncMountedColl - failed to resolve resource ";
+            msg << specColl->resource;
+            eirods::log( PASS( false, -1, msg.str(), err ) );
         }
-        rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+
+        rstrcpy (structFileOprInp.addr.hostAddr, rescInfo.rescLoc, NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;
+    rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync" );
         status = rsStructFileSync (rsComm, &structFileOprInp);
+    rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync. done." );
 
     } else {			/* not a struct file */
         status = SYS_COLL_NOT_MOUNTED_ERR;

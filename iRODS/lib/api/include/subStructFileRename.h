@@ -13,7 +13,6 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "structFileDriver.h"
 
 typedef struct SubStructFileRenameInp {
     subFile_t subFile;

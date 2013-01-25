@@ -75,8 +75,8 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         if (rei2.status < 0) {
             i = rei2.status;
         }
-        rodsLog (LOG_ERROR,
-                 "_rsModDataObjMeta:acPreProcForModifyDataObjMeta error stat=%d", i);
+        rodsLog (LOG_ERROR,"_rsModDataObjMeta:acPreProcForModifyDataObjMeta error stat=%d", i);
+               
         return i;
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
@@ -89,12 +89,14 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 
         bzero (&dataObjInp, sizeof (dataObjInp));
         rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-        status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,
-                                            &dataObjInfoHead);
-        if (status < 0) return status;
+        status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,&dataObjInfoHead);
+              
+        if (status < 0) 
+            return status;
         tmpDataObjInfo = dataObjInfoHead;
         while (tmpDataObjInfo != NULL) {
-            if (tmpDataObjInfo->specColl != NULL) break;
+            if (tmpDataObjInfo->specColl != NULL)
+                break;
             status = chlModDataObjMeta (rsComm, tmpDataObjInfo, regParam);
             if (status < 0) {
                 rodsLog (LOG_ERROR,

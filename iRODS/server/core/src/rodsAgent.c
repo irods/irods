@@ -118,11 +118,8 @@ main(int argc, char *argv[])
     }
 #endif
 
-#ifdef RULE_ENGINE_N
     status = initAgent (RULE_ENGINE_TRY_CACHE, &rsComm);
-#else
-    status = initAgent (&rsComm);
-#endif
+
 #ifdef SYS_TIMING
     printSysTiming ("irodsAgent", "initAgent", 0);
 #endif

@@ -38,6 +38,11 @@
 #include <arpa/inet.h>
 #endif
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 {
@@ -460,13 +465,16 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
             snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
             addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
-            if (chksumStr != NULL) {
-                addKeyVal (&regParam, CHKSUM_KW, chksumStr);
-            } else if (getRescClass (destDataObjInfo->rescInfo) == 
-                       COMPOUND_CL) {
-                /* can't chksum for compound resc */
+	    if (chksumStr != NULL) {
+		addKeyVal (&regParam, CHKSUM_KW, chksumStr);
+	    } 
+       #if 0 // JMC legacy resource 
+        else if (getRescClass (destDataObjInfo->rescInfo) == 
+	      COMPOUND_CL) {
+		/* can't chksum for compound resc */
                 addKeyVal (&regParam, CHKSUM_KW, "");
-            }
+	    }
+       #endif // JMC legacy resource 
 
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
                              IRODS_ADMIN_KW) != NULL) {
@@ -584,6 +592,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         chksumStr = NULL;
     }
 
+#if 0 // JMC legacy resource 
     if (L1desc[l1descInx].replRescInfo != NULL && 
         getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
         /* repl a new copy */
@@ -620,6 +629,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             return status;
         }
     }
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4537
     /* purge the cache copy */
@@ -633,7 +643,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         }
     }
     // =-=-=-=-=-=-=-
-
+#endif // JMC legacy resource 
 
     /* XXXXXX need to replicate to moreRescGrpInfo */
 
@@ -703,13 +713,21 @@ l3Close (rsComm_t *rsComm, int l1descInx)
                  NAME_LEN);
         status = rsSubStructFileClose (rsComm, &subStructFileCloseInp);
     } else {
-        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
 
+        int category = 0; 
+        eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "category", category );
+        if( !err.ok() ) {
+            eirods::log( PASS( false, -1, "l3Read - failed.", err ) );
+        }
+#if 0 // JMC - legacy resource 
+        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
         switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
+          case FILE_CAT:
+#endif // JMC - legacy resource 
             memset (&fileCloseInp, 0, sizeof (fileCloseInp));
             fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
             status = rsFileClose (rsComm, &fileCloseInp);
+#if 0 // JMC - legacy resource 
             break;
 
         default:
@@ -718,7 +736,8 @@ l3Close (rsComm_t *rsComm, int l1descInx)
                      RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
-        }
+	}
+#endif // JMC - legacy resource 
     }
     return (status);
 }
@@ -729,11 +748,14 @@ _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx)
     fileCloseInp_t fileCloseInp;
     int status;
 
+#if 0 // JMC - legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
+      case FILE_CAT:
+#endif // JMC - legacy resource 
         memset (&fileCloseInp, 0, sizeof (fileCloseInp));
         fileCloseInp.fileInx = l3descInx;
         status = rsFileClose (rsComm, &fileCloseInp);
+#if 0 // JMC - legacy resource 
         break;
 
     default:
@@ -743,6 +765,7 @@ _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx)
         status = SYS_INVALID_RESC_TYPE;
         break;
     }
+#endif // JMC - legacy resource 
     return (status);
 }
 
@@ -763,18 +786,21 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileStat (rsComm, &subFile, myStat);
     } else {
+#if 0 // JMC - legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
-        case FILE_CAT:
+          case FILE_CAT:
+#endif // JMC - legacy resource 
             memset (&fileStatInp, 0, sizeof (fileStatInp));
-            fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+            fileStatInp.fileType = static_cast<fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileStatInp.fileName, dataObjInfo->filePath, 
                      MAX_NAME_LEN);
             rstrcpy (fileStatInp.addr.hostAddr,  
                      dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             rstrcpy(fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             status = rsFileStat (rsComm, &fileStatInp, myStat);
+#if 0 // JMC - legacy resource 
             break;
 
         default:
@@ -783,7 +809,8 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
                      RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
-        }
+	}
+#endif // JMC - legacy resource 
     }
     return (status);
 }
@@ -813,7 +840,6 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
         if (strlen (srcDataObjInfo->chksum) > 0 &&
             srcDataObjInfo->replStatus > 0) {
             /* the source has chksum. Must verify chksum */
-
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
@@ -904,11 +930,8 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             }
             /* just register it */
             return 0;
-        } else {
-            /* just register it */
-            return 0;
-        }
-    } else {    /* REG_CHKSUM */
+	}
+    } else {	/* REG_CHKSUM */
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
         if (status < 0)  return (status);
 

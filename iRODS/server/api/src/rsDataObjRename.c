@@ -21,6 +21,10 @@
 #include "fileClosedir.h"
 #include "rmCollOld.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 {
@@ -34,12 +38,13 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
     destDataObjInp = &dataObjRenameInp->destDataObjInp;
-
+    
     /* don't translate the link pt. treat it as a normal collection */
     addKeyVal (&srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW, "");
     resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache,
                        &srcDataObjInp->condInput);
     rmKeyVal (&srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW);
+
     resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache,
                        &destDataObjInp->condInput);
 
@@ -64,12 +69,13 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     destType = resolvePathInSpecColl (rsComm, destDataObjInp->objPath,
                                       WRITE_COLL_PERM, 0, &destDataObjInfo);
 
-    if (srcDataObjInfo != NULL && srcDataObjInfo->specColl != NULL &&
-        strcmp (srcDataObjInfo->specColl->collection, srcDataObjInp->objPath) 
-        == 0) {
-        /* this must be the link pt or mount pt. treat it as normal coll */
+    if( srcDataObjInfo           != NULL && 
+        srcDataObjInfo->specColl != NULL &&
+        strcmp( srcDataObjInfo->specColl->collection, 
+                srcDataObjInp->objPath ) == 0) {
+	/* this must be the link pt or mount pt. treat it as normal coll */
         freeDataObjInfo (srcDataObjInfo);
-        srcDataObjInfo = NULL;
+	    srcDataObjInfo = NULL;
         srcType = SYS_SPEC_COLL_NOT_IN_CACHE;
     }
 
@@ -191,11 +197,12 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
     multiCopyFlag = getMultiCopyPerResc ( rsComm ); // JMC - backport 4556
 
-    if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
-        status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
-                                 ACCESS_DELETE_OBJECT, 0);
-        if (status >= 0 || NULL != dataObjInfoHead ) {
-            srcId = dataObjInfoHead->dataId;
+     if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
+	    
+        status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,ACCESS_DELETE_OBJECT, 0);
+          
+	    if (status >= 0 || NULL != dataObjInfoHead ) {
+	        srcId = dataObjInfoHead->dataId;
         } else {
             rodsLog (LOG_ERROR,
                      "_rsDataObjRename: src data %s does not exist, status = %d",
@@ -255,19 +262,19 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         renameFlag = 1;
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+        argc    = 2;
         args[0] = srcDataObjInp->objPath; 
         args[1] = destDataObjInp->objPath;
-        argc = 2;
         acPreProcFromRenameFlag = 1;
         i =  applyRuleArg("acPreProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
         if (i < 0) {
-            if (rei2.status < 0) {
-                i = rei2.status;
-            }
-            rodsLog (LOG_ERROR,
-                     "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
-                     args[0], args[1], i);
-            return i;
+          if (rei2.status < 0) {
+            i = rei2.status;
+          }
+          rodsLog (LOG_ERROR,
+               "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
+               args[0], args[1], i);
+          return i;
         }
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
@@ -275,43 +282,43 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     }
     
     if (status < 0) {
-        return (status);
+	    return (status);
     }
 
     if (strcmp (srcColl, destColl) != 0) {
         /* move. The destColl is the target  */
         status = isColl (rsComm, destColl, &destId);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-                     "_rsDataObjRename: dest coll %s does not exist, status = %d",
-                     destColl, status);
-            return (status);
-        }
-
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-        if (acPreProcFromRenameFlag == 0) {
-            args[0] = srcDataObjInp->objPath;
-            args[1] = destDataObjInp->objPath;
-            argc = 2;
-            i =  applyRuleArg("acPreProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
-            if (i < 0) {
-                if (rei2.status < 0) {
-                    i = rei2.status;
-                }
+            if (status < 0) {
                 rodsLog (LOG_ERROR,
-                         "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
-                         args[0], args[1], i);
-                return i;
+                  "_rsDataObjRename: dest coll %s does not exist, status = %d",
+                  destColl, status);
+                return (status);
             }
+
+            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+        if (acPreProcFromRenameFlag == 0) {
+          args[0] = srcDataObjInp->objPath;
+          args[1] = destDataObjInp->objPath;
+          argc = 2;
+          i =  applyRuleArg("acPreProcForObjRename",args,argc, &rei2, NO_SAVE_REI);
+          if (i < 0) {
+            if (rei2.status < 0) {
+              i = rei2.status;
+            }
+            rodsLog (LOG_ERROR,
+                 "rsDataObjRename: acPreProcForObjRename error for source %s and destination %s,stat=%d",
+                 args[0], args[1], i);
+            return i;
+          }
         }
-        /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+            /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
         status = chlMoveObject (rsComm, srcId, destId);
     }
     if (status >= 0) {
         if (multiCopyFlag > 0) {
-            status = chlCommit(rsComm);
-            return (status);
+    	    status = chlCommit(rsComm);
+	        return (status);
         } else {
             /* enforce physPath consistency */
             if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
@@ -320,23 +327,23 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
                 /* update src dataObjInfoHead with dest objPath */
                 tmpDataObjInfo = dataObjInfoHead;
                 while (tmpDataObjInfo != NULL) {
-                    rstrcpy (tmpDataObjInfo->objPath, destDataObjInp->objPath,
-                             MAX_NAME_LEN);
+                    rstrcpy( tmpDataObjInfo->objPath, destDataObjInp->objPath, MAX_NAME_LEN );
+                  
                     tmpDataObjInfo = tmpDataObjInfo->next;
                 }
-                status = syncDataObjPhyPath (rsComm, destDataObjInp,
-                                             dataObjInfoHead, NULL);
+                status = syncDataObjPhyPath( rsComm, destDataObjInp, dataObjInfoHead, NULL );
                 freeAllDataObjInfo (dataObjInfoHead);
             } else {
-                status = syncCollPhyPath (rsComm, destDataObjInp->objPath);
+                    status = syncCollPhyPath (rsComm, destDataObjInp->objPath);
             }
+
             if (status >= 0) {
                 status = chlCommit(rsComm);
             } else {
                 chlRollback (rsComm);
             }
         }
-        if (status >= 0) {
+	if (status >= 0) {
             args[0] = srcDataObjInp->objPath;
             args[1] = destDataObjInp->objPath;
             argc = 2;
@@ -405,17 +412,20 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         subStructFileRenameInp.subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRename (rsComm, &subStructFileRenameInp);
     } else {
+       #if 0 // JMC legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
+       #endif // JMC legacy resource 
             memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-            fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.newFileName, newFileName, MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            fileRenameInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
+            rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,          MAX_NAME_LEN );
+            rstrcpy( fileRenameInp.newFileName,   newFileName,                    MAX_NAME_LEN );
+            rstrcpy (fileRenameInp.rescHier,      dataObjInfo->rescHier,          MAX_NAME_LEN);
+            rstrcpy( fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
             status = rsFileRename (rsComm, &fileRenameInp);
+       #if 0 // JMC legacy resource 
             break;
         default:
             rodsLog (LOG_NOTICE,
@@ -424,6 +434,7 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
             status = SYS_INVALID_RESC_TYPE;
             break;
         }
+       #endif // JMC legacy resource 
     }
     return (status);
 }

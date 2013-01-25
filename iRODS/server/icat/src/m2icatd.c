@@ -348,6 +348,7 @@ char **argv;
        if (nInLines==1) {
 	  if (strstr(buf, "GET_CHANGED_DATA_CORE_INFO")==0) {
 	     printf("This program only handles Spull.log.data type files.\n");
+         fclose( FO );
 	     return(-4);
 	  }
        }

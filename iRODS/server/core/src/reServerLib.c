@@ -898,7 +898,9 @@ chkAndUpdateResc (rsComm_t *rsComm)
     }
 
     if (curTime >= LastRescUpdateTime + RESC_UPDATE_TIME) {
-	status = updateResc (rsComm);
+	//status = updateResc (rsComm);
+    resc_mgr.init_from_catalog( rsComm );
+
 	LastRescUpdateTime = curTime;
 	return status;
     } else {

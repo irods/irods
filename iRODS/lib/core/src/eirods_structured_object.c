@@ -118,8 +118,7 @@ namespace eirods {
             return ERROR( -1, msg );
         }
         
-        _ptr->set_property< boost::shared_ptr< rodsServerHost_t > >( 
-            "host", boost::shared_ptr< rodsServerHost_t >( tmpRodsServerHost ) );
+        _ptr->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
 
         _ptr->set_property<long>( "id", -1 );
         _ptr->set_property<long>( "freespace", -1 );

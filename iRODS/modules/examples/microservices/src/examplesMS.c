@@ -15,6 +15,9 @@
 #include "resource.h"
 #include "examplesMS.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_manager.h"
 
 /**
  * Hello world example.
@@ -76,15 +79,35 @@ msiGetRescAddr( msParam_t *rescName, msParam_t *outAddress,
 	    return USER__NULL_INPUT_ERR;
     }
 
-    status = _getRescInfo (rei->rsComm, tmpPtr, &rescGrpInfo);
+    /*status = _getRescInfo (rei->rsComm, tmpPtr, &rescGrpInfo);
     if ( rescGrpInfo == NULL || status < 0) {
          rodsLog (LOG_ERROR,
           "msiGetRescAddr: _getRescInfo of %s error. stat = %d",
           rescName, status);
         return status;
+    }*/
+
+    eirods::resource_ptr resc;
+    eirods::error err = resc_mgr.resolve( tmpPtr, resc );
+    if( !err.ok() ) {
+        std::stringstream msg;
+        msg << "msgiGetRescAddr - failed to resolve resource [";
+        msg << tmpPtr;
+        msg << "]";
+        eirods::log( PASS( false, -1, msg.str(), err ) );
+        return err.code();
+    } 
+
+    std::string location;
+    err = resc->get_property< std::string >( "location", location );
+    if( !err.ok() ) {
+        std::stringstream msg;
+        msg << "msgiGetRescAddr - failed to get property [location]";
+        eirods::log( PASS( false, -1, msg.str(), err ) );
+        return err.code();
     }
 
-    fillStrInMsParam (outAddress, rescGrpInfo->rescInfo->rescLoc);
+    fillStrInMsParam (outAddress, const_cast<char*>( location.c_str() ) );//rescGrpInfo->rescInfo->rescLoc);
 
     rei->status = 0;
     return 0;

@@ -50,8 +50,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/fileDriverNoOpFunctions.o \
-		$(svrCoreObjDir)/eirods_resource_manager.o
+		$(svrCoreObjDir)/eirods_resource_manager.o \
+		$(svrCoreObjDir)/eirods_resource_backport.o
 
 INCLUDES +=	-I$(svrCoreIncDir)
 
@@ -71,19 +71,9 @@ INCLUDES +=	-I$(svrApiIncDir)
 
 # Drivers
 SVR_DRIVERS_OBJS = \
-		$(svrDriversObjDir)/structFileDriver.o \
 		$(svrDriversObjDir)/fileDriver.o \
 		$(svrDriversObjDir)/msoFileDriver.o \
-		$(svrDriversObjDir)/univMSSDriver.o \
-        $(svrDriversObjDir)/unixFileDriver.o 
-
-ifdef HAAW_STRUCT_FILE
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/haawStructFileDriver.o
-endif
-
-ifdef TAR_STRUCT_FILE
-SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tarStructFileDriver.o
-endif
+		$(svrDriversObjDir)/univMSSDriver.o 
 
 ifdef AMAZON_S3
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o
@@ -182,7 +172,7 @@ endif
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 endif
 
-SVR_DBR_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
+#SVR_DBR_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif  # end DBR
 
 ifdef DBMS_LIB
@@ -204,46 +194,6 @@ INCLUDES +=	-I$(svrExtIcatIncDir)
 endif
 
 # re
-ifdef RULE_ENGINE
-ifndef RULE_ENGINE_N
-CFLAGS +=       -DRULE_ENGINE
-
-SVR_RE_OBJS =	\
-		$(svrReObjDir)/extractAvuMS.o \
-		$(svrReObjDir)/genQueryMS.o \
-		$(svrReObjDir)/icatAdminMS.o \
-		$(svrReObjDir)/icatGeneralMS.o \
-		$(svrReObjDir)/keyValPairMS.o \
-		$(svrReObjDir)/mailMS.o \
-		$(svrReObjDir)/miscMS.o \
-		$(svrReObjDir)/printMS.o \
-		$(svrReObjDir)/reDataObjOpr.o \
-		$(svrReObjDir)/msiHelper.o \
-		$(svrReObjDir)/reHelpers1.o \
-		$(svrReObjDir)/reHelpers2.o \
-		$(svrReObjDir)/reIn2p3SysRule.o \
-		$(svrReObjDir)/reLib1.o	\
-		$(svrReObjDir)/reLib2.o \
-		$(svrReObjDir)/reNaraMetaData.o \
-		$(svrReObjDir)/reStruct.o \
-		$(svrReObjDir)/reSysDataObjOpr.o \
-		$(svrReObjDir)/reVariableMap.o \
-		$(svrReObjDir)/regExpMatch.o \
-		$(svrReObjDir)/ruleAdminMS.o \
-		$(svrReObjDir)/systemMS.o \
-		$(svrReObjDir)/xmsgMS.o \
-		$(svrReObjDir)/reRDA.o \
-		$(svrReObjDir)/reDBO.o \
-		$(svrReObjDir)/testMS.o \
-		$(svrReObjDir)/reAutoReplicateService.o \
-		$(svrReObjDir)/sysBackupMS.o 
-INCLUDES +=	-I$(svrReIncDir)
-SERVER_BINS +=	$(serverBinDir)/irodsReServer
-SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
-endif
-endif
-
-ifdef RULE_ENGINE_N
 CFLAGS +=       -DRULE_ENGINE -DRULE_ENGINE_N -DCACHE_ENABLE
 
 ifeq ($(OS_platform), osx_platform)
@@ -292,7 +242,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
-		$(svrReObjDir)/reDBO.o \
 		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o \
 		$(svrReObjDir)/configuration.o \
@@ -303,7 +252,6 @@ SVR_RE_OBJS =	\
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
-endif
 
 # icat Tests
 ifdef RODS_CAT
@@ -352,10 +300,10 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # MODULE_LDFLAGS string.
 LDFLAGS +=	$(LDADD) $(LIBRARY)
 
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
-LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
+#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
+#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
+#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
+#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
 
 
 ifdef GSI_AUTH

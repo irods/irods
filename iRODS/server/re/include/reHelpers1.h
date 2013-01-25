@@ -18,12 +18,7 @@ int reiSaveFlag );
 int
 checkRuleConditionNew(char *action, char *incond,  
 msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag );
-#ifdef RULE_ENGINE_N
 int computeExpression( char *expr, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, char *res);
-#else
-int
-computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag , char *res);
-#endif
 int
 replaceVariables(char *action, char *inStr, 
 char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc, ruleExecInfo_t *rei );

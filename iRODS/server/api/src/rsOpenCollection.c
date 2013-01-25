@@ -30,14 +30,13 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
    
     if (status < 0) return status;
 
-    rstrcpy (collHandle->dataObjInp.objPath, openCollInp->collName, 
-             MAX_NAME_LEN);
+    rstrcpy (collHandle->dataObjInp.objPath, openCollInp->collName, MAX_NAME_LEN);
+      
     if ((openCollInp->flags & INCLUDE_CONDINPUT_IN_QUERY) != 0) {
         replKeyVal (&openCollInp->condInput, &collHandle->dataObjInp.condInput);
     }
+
     status = rsObjStat (rsComm, &collHandle->dataObjInp, &rodsObjStatOut);
-
-
     if (status < 0) {
         rsCloseCollection (rsComm, &handleInx);
         return status;
@@ -54,11 +53,10 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 #else
     replSpecColl (rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl);
 #endif
-    if (rodsObjStatOut->specColl != NULL &&
+    if( rodsObjStatOut->specColl != NULL && 
         rodsObjStatOut->specColl->collClass == LINKED_COLL) {
         /* save the linked path */
-        rstrcpy (collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath,
-                 MAX_NAME_LEN);
+        rstrcpy( collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath, MAX_NAME_LEN );
     };
 
     collHandle->rodsObjStat = rodsObjStatOut;

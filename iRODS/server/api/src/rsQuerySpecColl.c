@@ -19,6 +19,11 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsQuerySpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 genQueryOut_t **genQueryOut)
@@ -421,24 +426,25 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subStructFileOpendirInp.specColl = dataObjInfo->specColl;
         status = rsSubStructFileOpendir (rsComm, &subStructFileOpendirInp);
     } else {
+       #if 0 // JMC legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
+       #endif // JMC legacy resource 
             memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
-            rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, 
-	      MAX_NAME_LEN);
-	    rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-	    rstrcpy( fileOpendirInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-            fileOpendirInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileOpendirInp.addr.hostAddr,
-              dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
+            rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+            rstrcpy( fileOpendirInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+            fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
+            rstrcpy (fileOpendirInp.addr.hostAddr,dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             status = rsFileOpendir (rsComm, &fileOpendirInp);
             if (status < 0) {
                rodsLog (LOG_ERROR,
                   "specCollOpendir: rsFileOpendir for %s error, status = %d",
                   dataObjInfo->filePath, status);
             }
+       #if 0 // JMC legacy resource 
             break;
           default:
             rodsLog (LOG_NOTICE,
@@ -447,6 +453,7 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             status = SYS_INVALID_RESC_TYPE;
             break;
         }
+       #endif // JMC legacy resource 
     }
     return (status);
 }

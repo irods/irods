@@ -119,10 +119,12 @@ bytesBuf_t *dataObjWriteInpBBuf)
         bytesWritten = rsSubStructFileWrite (rsComm, &subStructFileWriteInp, 
 	  dataObjWriteInpBBuf);
     } else {
+       #if 0 // JMC legacy resource 
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
           case FILE_CAT:
+       #endif // JMC legacy resource 
 	    memset (&fileWriteInp, 0, sizeof (fileWriteInp));
 	    fileWriteInp.fileInx = L1desc[l1descInx].l3descInx;
 	    fileWriteInp.len = len;
@@ -131,6 +133,7 @@ bytesBuf_t *dataObjWriteInpBBuf)
 	    if (bytesWritten > 0) {
 	        L1desc[l1descInx].bytesWritten+=bytesWritten;
 	    }
+       #if 0 // JMC legacy resource 
 	    break;
 
           default:
@@ -140,6 +143,7 @@ bytesBuf_t *dataObjWriteInpBBuf)
             bytesWritten = SYS_INVALID_RESC_TYPE;
             break;
 	}
+       #endif // JMC legacy resource 
     }
     return (bytesWritten);
 }
@@ -155,13 +159,16 @@ void *buf, int len)
     dataObjWriteInpBBuf.len = len;
     dataObjWriteInpBBuf.buf = buf;
 
+       #if 0 // JMC legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
+       #endif // JMC legacy resource 
 	memset (&fileWriteInp, 0, sizeof (fileWriteInp));
 	fileWriteInp.fileInx = l3descInx;
 	fileWriteInp.len = len;
 	bytesWritten = rsFileWrite (rsComm, &fileWriteInp, 
 	  &dataObjWriteInpBBuf);
+       #if 0 // JMC legacy resource 
 	break;
       default:
         rodsLog (LOG_NOTICE,
@@ -170,6 +177,7 @@ void *buf, int len)
         bytesWritten = SYS_INVALID_RESC_TYPE;
         break;
     }
+       #endif // JMC legacy resource 
     return (bytesWritten);
 }
 

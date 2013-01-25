@@ -9,6 +9,11 @@
 #include "modDataObjMeta.h"
 #include "getRemoteZoneResc.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
 char **outChksum)
@@ -19,10 +24,9 @@ char **outChksum)
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
 
-    resolveLinkedPath (rsComm, dataObjChksumInp->objPath, &specCollCache,
-      &dataObjChksumInp->condInput);
-    remoteFlag = getAndConnRemoteZone (rsComm, dataObjChksumInp, 
-      &rodsServerHost, REMOTE_OPEN);
+    resolveLinkedPath (rsComm, dataObjChksumInp->objPath, &specCollCache,&dataObjChksumInp->condInput);
+      
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjChksumInp, &rodsServerHost, REMOTE_OPEN);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
@@ -34,8 +38,8 @@ char **outChksum)
         status = _rsDataObjChksum (rsComm, dataObjChksumInp, outChksum,
           &dataObjInfoHead);
     }
-
     freeAllDataObjInfo (dataObjInfoHead);
+rodsLog( LOG_NOTICE, "rsDataObjChksum - returning status %d", status );
     return (status);
 }
 
@@ -75,53 +79,63 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
         return status;
     } else if (allFlag == 0) {
         /* screen out any stale copies */
-        status = sortObjInfoForOpen (rsComm, dataObjInfoHead, 
-	  &dataObjInp->condInput, 0);
-	if (status < 0) return status;
+        status = sortObjInfoForOpen (rsComm, dataObjInfoHead, &dataObjInp->condInput, 0);
+	  
+	    if (status < 0) 
+            return status;
 
         tmpDataObjInfo = *dataObjInfoHead;
         if (tmpDataObjInfo->next == NULL) {
             /* the only copy */
             if (strlen (tmpDataObjInfo->chksum) > 0) {
-		if (verifyFlag == 0 && forceFlag == 0) { 
-                    *outChksumStr = strdup (tmpDataObjInfo->chksum);
-                    return (0);
-		}
+                if (verifyFlag == 0 && forceFlag == 0) { 
+                            *outChksumStr = strdup (tmpDataObjInfo->chksum);
+                            return (0);
+                }
             }
         } else {
             while (tmpDataObjInfo != NULL) {
-                if (tmpDataObjInfo->replStatus > 0 &&
-                  strlen (tmpDataObjInfo->chksum) > 0) {
-		    if (verifyFlag == 0 && forceFlag == 0) {
+                if (tmpDataObjInfo->replStatus > 0 &&strlen (tmpDataObjInfo->chksum) > 0) {
+		            if (verifyFlag == 0 && forceFlag == 0) {
                         *outChksumStr = strdup (tmpDataObjInfo->chksum);
                         return (0);
-		    } else {
-			break;
-		    }
+		            } else {
+			            break;
+		            }
                 }
+
                 tmpDataObjInfo = tmpDataObjInfo->next;
             }
         }
-	/* need to compute the chksum */
-	if (tmpDataObjInfo == NULL) {
-	    tmpDataObjInfo = *dataObjInfoHead;
-	}
-	if (verifyFlag > 0 && strlen (tmpDataObjInfo->chksum) > 0) {
-	    status = verifyDatObjChksum (rsComm, tmpDataObjInfo, 
-	      outChksumStr);
-	} else {
-	    status = dataObjChksumAndRegInfo (rsComm, tmpDataObjInfo,
+        /* need to compute the chksum */
+        if (tmpDataObjInfo == NULL) {
+            tmpDataObjInfo = *dataObjInfoHead;
+        }
+        if (verifyFlag > 0 && strlen (tmpDataObjInfo->chksum) > 0) {
+            status = verifyDatObjChksum (rsComm, tmpDataObjInfo, 
               outChksumStr);
-	}
-	return (status);
+        } else {
+            status = dataObjChksumAndRegInfo (rsComm, tmpDataObjInfo,outChksumStr);
+                  
+        }
+
+	    return (status);
+    
     }
 
     /* allFlag == 1 */
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-	char *tmpChksumStr;
-	dataObjInfo_t *outDataObjInfo = NULL;
-	int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+        char *tmpChksumStr;
+        dataObjInfo_t *outDataObjInfo = NULL;
+        //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+        std::string resc_class;
+        eirods::error err = eirods::get_resource_property< std::string >( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
+        if( !err.ok() ) {
+            eirods::log( ERROR( -1, "_rsDataObjChksum - failed in get_resource_property [class]" ) );
+    }
+
+    #if 0 // JMC - legacy resource 
 	if (rescClass  == COMPOUND_CL) {
 	    /* do we have a good cache copy ? */
             if ((status = getCacheDataInfoForRepl (rsComm, *dataObjInfoHead,
@@ -130,7 +144,9 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 		status = 0;
 		continue;
 	    }
-	} else if (rescClass == BUNDLE_CL) {
+   } else 
+   #endif // JMC - legacy resource 
+   if ( resc_class == "bundle" ) { // (rescClass == BUNDLE_CL) {
 	    /* don't do BUNDLE_CL. should be done on the bundle file */
             tmpDataObjInfo = tmpDataObjInfo->next;
             status = 0;
@@ -176,27 +192,28 @@ int
 dataObjChksumAndRegInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 char **outChksumStr)
 {
+    int              status;
+    keyValPair_t     regParam;
     modDataObjMeta_t modDataObjMetaInp;
-     keyValPair_t regParam;
-    int status;
 
     status = _dataObjChksum (rsComm, dataObjInfo, outChksumStr);
 
     if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "dataObjChksumAndRegInfo: _dataObjChksum error for %s, status = %d",
-          dataObjInfo->objPath, status);
-	return status;
+        rodsLog( LOG_ERROR,"dataObjChksumAndRegInfo: _dataObjChksum error for %s, status = %d",
+                 dataObjInfo->objPath, status );
+	    return status;
     }
 
     if (dataObjInfo->specColl != NULL) {
-	return (status);
+	    return (status);
     }
+
     memset (&regParam, 0, sizeof (regParam));
     addKeyVal (&regParam, CHKSUM_KW, *outChksumStr);
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+rodsLog( LOG_NOTICE, "dataObjChksumAndRegInfo - rsModDataObjMeta status %d", status );
     clearKeyVal (&regParam);
 
     return (status);

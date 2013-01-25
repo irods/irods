@@ -13,6 +13,11 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods resource includes
+#include "eirods_resource_backport.h"
+
+
 int
 rsProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut)
@@ -45,12 +50,12 @@ int
 _rsProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut)
 {
-    int status;
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
+    int status = -1;
+    rodsServerHost_t *rodsServerHost = NULL;
+    int remoteFlag = -1;
     rodsHostAddr_t addr;
     procStatInp_t myProcStatInp;
-    char *tmpStr;
+    char *tmpStr = NULL;
 
     if (getValByKey (&procStatInp->condInput, ALL_KW) != NULL) {
 	status = _rsProcStatAll (rsComm, procStatInp, procStatOut); 
@@ -66,23 +71,27 @@ genQueryOut_t **procStatOut)
     if (*procStatInp->addr != '\0') {	/* given input addr */
         rstrcpy (addr.hostAddr, procStatInp->addr, LONG_NAME_LEN);
         remoteFlag = resolveHost (&addr, &rodsServerHost);
-    } else if ((tmpStr = getValByKey (&procStatInp->condInput, RESC_NAME_KW)) 
-      != NULL) {
-	rescGrpInfo_t *rescGrpInfo = NULL;
-        status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
-        if (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
+    } else if ((tmpStr = getValByKey (&procStatInp->condInput, RESC_NAME_KW)) != NULL) {
+        rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
+        
+        //status = _getRescInfo (rsComm, tmpStr, &rescGrpInfo);
+        eirods::error err = eirods::get_resc_grp_info( tmpStr, *rescGrpInfo );
+        if( !err.ok() ) { // (status < 0 || NULL == rescGrpInfo ) { // JMC cppcheck - nullptr
             rodsLog (LOG_ERROR,
               "_rsProcStat: _getRescInfo of %s error. stat = %d",
               tmpStr, status);
+            delete rescGrpInfo;
             return status;
         }
         rstrcpy (procStatInp->addr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
-	rodsServerHost = (rodsServerHost_t*)rescGrpInfo->rescInfo->rodsServerHost;
-	if (rodsServerHost == NULL) {
-	    remoteFlag = SYS_INVALID_SERVER_HOST;
-	} else {
-	    remoteFlag = rodsServerHost->localFlag;
-	}
+        rodsServerHost = (rodsServerHost_t*)rescGrpInfo->rescInfo->rodsServerHost;
+        if (rodsServerHost == NULL) {
+            remoteFlag = SYS_INVALID_SERVER_HOST;
+        } else {
+            remoteFlag = rodsServerHost->localFlag;
+        }
+
+        delete rescGrpInfo;
     } else {
 	/* do the IES server */
         remoteFlag = getRcatHost (MASTER_RCAT, NULL, &rodsServerHost);
@@ -115,36 +124,37 @@ genQueryOut_t **procStatOut)
     bzero (&myProcStatInp, sizeof (myProcStatInp));
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
-	if (getHostStatusByRescInfo (tmpRodsServerHost) == 
-	  INT_RESC_STATUS_UP) {		/* don't do down resc */
-	    if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
-		setLocalSrvAddr (myProcStatInp.addr);
-	        status = localProcStat (rsComm, &myProcStatInp, 
-		  &singleProcStatOut);
-	    } else {
-		rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name,
-                  NAME_LEN);
+        // JMC - legacy code - if (getHostStatusByRescInfo (tmpRodsServerHost) == INT_RESC_STATUS_UP) {		/* don't do down resc */
+        eirods::error err = eirods::get_host_status_by_host_info( tmpRodsServerHost );
+        if( err.ok() && err.code() == INT_RESC_STATUS_UP ) {
+	        if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+		        setLocalSrvAddr (myProcStatInp.addr);
+	            status = localProcStat (rsComm, &myProcStatInp, &singleProcStatOut);
+	        } else {
+		        rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name, NAME_LEN);
                 addKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW, "");
-                status = remoteProcStat (rsComm, &myProcStatInp, 
-		  &singleProcStatOut, tmpRodsServerHost);
+                status = remoteProcStat (rsComm, &myProcStatInp, &singleProcStatOut, tmpRodsServerHost);
                 rmKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW);
-	    }
-	    if (status < 0) {
-	        savedStatus = status;
-	    }
-	    if (singleProcStatOut != NULL) {
-		if (*procStatOut == NULL) {
-		    *procStatOut = singleProcStatOut;
-		} else {
-		    catGenQueryOut (*procStatOut, singleProcStatOut,
-		      MAX_PROC_STAT_CNT);
-		    freeGenQueryOut (&singleProcStatOut);
-		}
-		singleProcStatOut = NULL;
-	    }
-	}
-	tmpRodsServerHost = tmpRodsServerHost->next;
-    }
+	        }
+           
+            if (status < 0) {
+                savedStatus = status;
+            }
+
+            if (singleProcStatOut != NULL) {
+                if (*procStatOut == NULL) {
+                    *procStatOut = singleProcStatOut;
+                } else {
+                    catGenQueryOut (*procStatOut, singleProcStatOut, MAX_PROC_STAT_CNT);
+                    freeGenQueryOut (&singleProcStatOut);
+                }
+                singleProcStatOut = NULL;
+            }
+        
+        } // if up
+
+        tmpRodsServerHost = tmpRodsServerHost->next;
+    } // while
     return savedStatus;
 }
 

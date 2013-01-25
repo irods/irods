@@ -6,6 +6,11 @@
 #include "objMetaOpr.h"
 #include "resource.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
 void *mallocAndZero(int s)
 {
   void *t;
@@ -433,7 +438,7 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
 {
     int savedStatus = 0;
     int status;
-    rescInfo_t *rescInfo;
+    rescInfo_t *rescInfo = new rescInfo_t;
 
     if (myRei == NULL || rsComm == NULL) {
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
@@ -455,14 +460,27 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
         rescInfo = NULL;
 
         /* we only have rescName */
-        status = resolveResc ((char *) myRei->doi->rescInfo, &rescInfo);
+        /*status = resolveResc ((char *) myRei->doi->rescInfo, &rescInfo);
         free (myRei->doi->rescInfo);
         if (status >= 0) {
             myRei->doi->rescInfo = rescInfo;
         } else {
             savedStatus = status;
             myRei->doi->rescInfo = NULL;
+        }*/
+        eirods::resource_ptr resc;
+        eirods::error err = eirods::get_resc_info( (char*)myRei->doi->rescInfo, *rescInfo );
+        if( !err.ok() ) {
+            delete rescInfo;
+            savedStatus = err.code();
+            myRei->doi->rescInfo = NULL;
+            std::stringstream msg;
+            msg << "touchupPackedRei - failed to resolve resource ";
+            msg << (char*)myRei->doi->rescInfo;
+            eirods::log( PASS( false, -1, msg.str(), err ) );
         }
+        free (myRei->doi->rescInfo);
+
     }
 
     if (myRei->rgi != NULL) {
@@ -470,18 +488,28 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
 	while (rescGrpInfo != NULL) {
 
 	    rescInfo = NULL;
-            /* we only have rescName */
-            status = resolveResc ((char *) rescGrpInfo->rescInfo, 
-	      &rescInfo);
-            free (rescGrpInfo->rescInfo);
-            if (status >= 0) {
-                rescGrpInfo->rescInfo = rescInfo;
-            } else {
-                savedStatus = status;
-                rescGrpInfo->rescInfo = NULL;
-	    }
+        /* we only have rescName */
+        /*status = resolveResc ((char *) rescGrpInfo->rescInfo, &rescInfo);
+        free (rescGrpInfo->rescInfo);
+        if (status >= 0) {
+            rescGrpInfo->rescInfo = rescInfo;
+        } else {
+            savedStatus = status;
+            rescGrpInfo->rescInfo = NULL;
+	    }*/
+        eirods::resource_ptr resc;
+        eirods::error err = eirods::get_resc_info( (char*)rescGrpInfo->rescInfo, *rescInfo );
+        if( !err.ok() ) {
+            rescGrpInfo->rescInfo = NULL;
+            std::stringstream msg;
+            msg << "touchupPackedRei - failed to resolve resource ";
+            msg << (char*)rescGrpInfo->rescInfo;
+            eirods::log( PASS( false, -1, msg.str(), err ) );
+        }
+        free (myRei->doi->rescInfo);
+
 	    rescGrpInfo = rescGrpInfo->next; 
-        }   
+    }   
 
 	if (myRei->next != NULL) {
 	    free (myRei->next);

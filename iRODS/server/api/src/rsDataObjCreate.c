@@ -28,6 +28,11 @@
 
 #include "eirods_hierarchy_parser.h"
 
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
 /* rsDataObjCreate - handle dataObj create request.
  *
  * The NO_OPEN_FLAG_KW in condInput specifies that no physical create
@@ -40,7 +45,6 @@
 int
 rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
-    
     int l1descInx;
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
@@ -165,8 +169,8 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     
     int status;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
-    rescGrpInfo_t *tmpRescGrpInfo;
+    rescGrpInfo_t* myRescGrpInfo  = 0;
+    rescGrpInfo_t *tmpRescGrpInfo = 0;
     rescInfo_t *tmpRescInfo;
     int l1descInx;
     int copiesNeeded;
@@ -175,9 +179,11 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
-    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
     if (status < 0) return status;
-
+#if 1 // JMC - remove resource.c
+    status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
+#else // JMC - remove resource.c
     rescCnt = getRescCnt (myRescGrpInfo);
 
     copiesNeeded = getCopiesFromCond (&dataObjInp->condInput);
@@ -213,12 +219,16 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
-
     /* should not be here */
+#endif // JMC - remove resource.c
 
-    freeAllRescGrpInfo (myRescGrpInfo);
 
-    if (status < 0) {
+    //freeAllRescGrpInfo (myRescGrpInfo);
+    //delete myRescGrpInfo->rescInfo;
+    //delete myRescGrpInfo;
+
+    // JMC - legacy resource - if (status < 0) {
+    if( status >= 0 ) {
         return (status);
     } else {
         rodsLog (LOG_NOTICE,
@@ -289,7 +299,7 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     dataObjInfo = (dataObjInfo_t*)malloc(sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
-    
+#if 0 // JMC - remove legacy resources 
     if (getRescClass (rescInfo) == COMPOUND_CL) {
         rescInfo_t *cacheResc = NULL;
         char myRescGroupName[NAME_LEN];
@@ -316,10 +326,13 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     
     } else {
+#endif
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+
+#if 0 // JMC - remove legacy resources
         // =-=-=-=-=-=-=-
         // JMC - backport 4544
         if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
@@ -331,8 +344,9 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 L1desc[l1descInx].purgeCacheFlag = 1;
             }
         }
-        // =-=-=-=-=-=-=-
     }
+#endif // JMC - remove legacy resources
+    // =-=-=-=-=-=-=-
     dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );
@@ -353,7 +367,7 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = 0;
     } else {
         
-        status = dataObjCreateAndReg (rsComm, l1descInx);
+        status = dataObjCreateAndReg( rsComm, l1descInx );
     }
 
     if (status < 0) {
@@ -455,61 +469,64 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int rescTypeInx;
     int l3descInx;
 
-    rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+#if 0 // JMC legacy resource 
+    // rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
-    {
-        int retryCnt = 0;
-        int chkType = 0; // JMC - backport 4774
+    // switch (RescTypeDef[rescTypeInx].rescCat) 
+    // case FILE_CAT:
+      
+#endif // JMC legacy resource 
+    int retryCnt = 0;
+    int chkType = 0; // JMC - backport 4774
 
-        fileCreateInp_t fileCreateInp;
-        memset (&fileCreateInp, 0, sizeof (fileCreateInp));
-        rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-        rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-        fileCreateInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
-        rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-        fileCreateInp.mode = getFileMode (dataObjInp);
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4774
-        chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
-        if (chkType == DISALLOW_PATH_REG) {
-            return PATH_REG_NOT_ALLOWED;
-        } else if (chkType == NO_CHK_PATH_PERM) {
-            fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
+    fileCreateInp_t fileCreateInp;
+    memset (&fileCreateInp, 0, sizeof (fileCreateInp));
+    rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+    rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier,           MAX_NAME_LEN );
+    fileCreateInp.fileType = static_cast< fileDriverType_t >( -1 );// RescTypeDef[rescTypeInx].driverType;
+    rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
+             NAME_LEN);
+    rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+    fileCreateInp.mode = getFileMode (dataObjInp);
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4774
+    chkType = getchkPathPerm (rsComm, dataObjInp, dataObjInfo);
+    if (chkType == DISALLOW_PATH_REG) {
+        return PATH_REG_NOT_ALLOWED;
+    } else if (chkType == NO_CHK_PATH_PERM) {
+        fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
+    }
+    // =-=-=-=-=-=-=-
+    std::string prev_resc_hier = fileCreateInp.resc_hier_;
+    l3descInx = rsFileCreate (rsComm, &fileCreateInp);
+    // update the dataObjInfo with the potential changes made by the resource - hcj
+    rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
+    rstrcpy(dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN);
+
+    /* file already exists ? */
+    while( l3descInx <= 2 && retryCnt < 100 && 
+           getErrno (l3descInx) == EEXIST ) {
+        if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
+            break;
         }
-        // =-=-=-=-=-=-=-
-        std::string prev_resc_hier = fileCreateInp.resc_hier_;
+        rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         l3descInx = rsFileCreate (rsComm, &fileCreateInp);
         // update the dataObjInfo with the potential changes made by the resource - hcj
         rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
         rstrcpy(dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN);
-        
-        /* file already exists ? */
-        while( l3descInx <= 2 && retryCnt < 100 && 
-               getErrno (l3descInx) == EEXIST ) {
-            if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
-                break;
-            }
-            rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-            l3descInx = rsFileCreate (rsComm, &fileCreateInp);
-            // update the dataObjInfo with the potential changes made by the resource - hcj
-            rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-            rstrcpy(dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN);
-            retryCnt ++; 
-        }
-        rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
-        break;
+        retryCnt ++; 
     }
-    default:
-        rodsLog (LOG_NOTICE,
-                 "l3Create: rescCat type %d is not recognized",
-                 RescTypeDef[rescTypeInx].rescCat);
-        l3descInx = SYS_INVALID_RESC_TYPE;
-        break;
-    }
+#if 0 // JMC legacy resource 
+    break;
+      
+default:
+    rodsLog (LOG_NOTICE,
+             "l3Create: rescCat type %d is not recognized",
+             RescTypeDef[rescTypeInx].rescCat);
+    l3descInx = SYS_INVALID_RESC_TYPE;
+    break;
+    
+#endif // JMC legacy resource 
     return (l3descInx);
 }
 
@@ -520,53 +537,72 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * or an error code.
  */
 
-int
-getRescGrpForCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                     rescGrpInfo_t **myRescGrpInfo)
-{ 
-    int status;
+int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo_t** myRescGrpInfo ) { 
+    int            status;
     ruleExecInfo_t rei;
 
     /* query rcat for resource info and sort it */
 
-    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
+    initReiWithDataObjInp( &rei, rsComm, dataObjInp );
+
+#if 0 // JMC - dont need to call rules for scheme
     if (dataObjInp->oprType == REPLICATE_OPR) { // JMC - backport 4660
-        status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, 
-                            NO_SAVE_REI);
+        status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI);
+         
     } else {
-        status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, 
-                            NO_SAVE_REI);
+        status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
+         
     }
 
-
-    if (status < 0) {
-        if (rei.status < 0)
+    if( status < 0 ) {
+        if (rei.status < 0) {
             status = rei.status;
-        rodsLog (LOG_NOTICE,
-                 "getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
+        }
+
+        rodsLog( LOG_NOTICE,"getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
                  dataObjInp->objPath, status);
+
         return (status);
     }
-    if (rei.rgi == NULL) {
+#endif // JMC
+
+    if( rei.rgi == NULL ) {
         /* def resc group has not been initialized yet */
-        status = setDefaultResc (rsComm, NULL, NULL,
-                                 &dataObjInp->condInput, myRescGrpInfo);
-        if (status < 0) status = SYS_INVALID_RESC_INPUT;
+        // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
+        //if( !(*myRescGrpInfo) ) {
+        (*myRescGrpInfo) = new rescGrpInfo_t;
+        (*myRescGrpInfo)->cacheNext = 0;
+        (*myRescGrpInfo)->next = 0;
+        (*myRescGrpInfo)->rescInfo = new rescInfo_t;
+        //}
+
+        eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
+        if( !set_err.ok() ) {
+            eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
+            status = SYS_INVALID_RESC_INPUT;
+        }
+
     } else {
         *myRescGrpInfo = rei.rgi;
     }
 
-    status = setRescQuota (rsComm, dataObjInp->objPath, myRescGrpInfo,
-                           dataObjInp->dataSize);
-    if (status == SYS_RESC_QUOTA_EXCEEDED) return SYS_RESC_QUOTA_EXCEEDED;
+    status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
+      
+    if( status == SYS_RESC_QUOTA_EXCEEDED ) {
+        return SYS_RESC_QUOTA_EXCEEDED;
+    } 
 
-    if (strstr (rei.statusStr, "random") == NULL) {
+#if 0 // JMC - legacy resource
+    if( strstr( rei.statusStr, "random" ) == NULL ) {
         /* not a random scheme */
         sortRescByLocation (myRescGrpInfo);
         return 0;
+
     } else {
         return 1;
     }
-
+#else
+    return 0; // JMC - should this be 1 per above block?
+#endif
 }
 

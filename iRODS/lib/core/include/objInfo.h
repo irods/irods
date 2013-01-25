@@ -78,23 +78,22 @@ extern "C" {
 
 /* link of resource in resource group */
 
-    typedef struct RescGrpInfo
-    {
-        char rescGroupName[NAME_LEN];
-        rescInfo_t *rescInfo;
-        int status;         /* SYS_RESC_IS_DOWN - one of the resource is down 
-                             * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
-        int dummy;
-        struct RescGrpInfo *cacheNext;      /* this is for cached resource grp */
-        struct RescGrpInfo *next; 
-    } rescGrpInfo_t;
+struct rescGrpInfo_t {
+    char rescGroupName[NAME_LEN];
+    rescInfo_t *rescInfo;
+    int status;		/* SYS_RESC_IS_DOWN - one of the resource is down 
+			 * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
+    int dummy;
+    struct rescGrpInfo_t *cacheNext; 	/* this is for cached resource grp */
+    struct rescGrpInfo_t *next; 
+};
 
-    typedef struct RescCacheInfo
-    {
-        char inpRescName[NAME_LEN];
-        rescGrpInfo_t *rescGrpInfo;
-        struct RescCacheInfo *next;
-    } rescCacheInfo_t;
+typedef struct RescCacheInfo
+{
+    char inpRescName[NAME_LEN];
+    rescGrpInfo_t *rescGrpInfo;
+    struct RescCacheInfo *next;
+} rescCacheInfo_t;
 
 /* special collection */
 
@@ -319,18 +318,19 @@ extern "C" {
 #define DO_TRASH_CAN    0
 #define NO_TRASH_CAN    1
 
-    typedef enum {
-        NO_CREATE_PATH,
-        CREATE_PATH
-    } createPath_t;
-
-    typedef struct RescTypeDef {
-        char *typeName;
-        rescCat_t rescCat;
-        int driverType;
-        int chkPathPerm;    /* whether to check path permission */
-        createPath_t createPathFlag;  /* create a path in getFilePathName ? */    
-    } rescTypeDef_t;
+typedef enum {
+    NO_CREATE_PATH,
+    CREATE_PATH
+} createPath_t;
+#if 0 // JMC - legacy resource
+typedef struct RescTypeDef {
+    char *typeName;
+    rescCat_t rescCat;
+    int driverType;
+    int chkPathPerm;	/* whether to check path permission */
+    createPath_t createPathFlag;  /* create a path in getFilePathName ? */    
+} rescTypeDef_t;
+#endif // JMC - legacy resource
 
 /* definition for classType */
 
@@ -340,11 +340,11 @@ extern "C" {
 #define COMPOUND_CL     3
 #define DATABASE_CL     4
 
-#define PRIMARY_FLAG    0x8000          /* primary class when this bit is set */
-    typedef struct RescClass {
-        char *className;
-        int classType;
-    } rescClass_t;
+#define PRIMARY_FLAG	0x8000		/* primary class when this bit is set */
+// JMC - legacy resource - typedef struct RescClass {
+//    char *className;
+//    int classType;
+//} rescClass_t;
 
 /* transStat_t is being replaced by transferStat_t because of the 64 bits
  * padding */

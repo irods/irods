@@ -54,6 +54,9 @@
 #include <netinet/tcp.h>
 #endif
 
+#include "eirods_log.h"
+
+
 #define HEADER_TYPE_LEN 128 /* changed by Raja to 128 from 16 */
 #define TIME_LEN        32
 #define NAME_LEN        64
@@ -316,6 +319,7 @@ struct rodsHostAddr_t {
         dummyInt = _rhs.dummyInt;
         return *this;
     }
+
 };
 
 /* definition for restartState */

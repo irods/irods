@@ -480,8 +480,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the name of the host of the resource from the resource plugin
-        boost::shared_ptr< rodsServerHost_t > rods_host; 
-        eirods::error get_err = resc->get_property< boost::shared_ptr< rodsServerHost_t > >( "host", rods_host );
+        rodsServerHost_t* rods_host; 
+        eirods::error get_err = resc->get_property< rodsServerHost_t* >( "host", rods_host );
         if( !get_err.ok() ) {
             return PASS( false, -1, "failed to call get_property", get_err );
         }
@@ -2070,7 +2070,7 @@ extern "C" {
   
         // =-=-=-=-=-=-=-
         // create a boost filesystem path for the cache directory
-        fs::path full_path( fs::initial_path<fs::path>() );
+        fs::path full_path;//( fs::initial_path<fs::path>() );
         full_path = fs::system_complete( fs::path( spec_coll->cacheDir ) );
 
         // =-=-=-=-=-=-=-
@@ -2189,6 +2189,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // strip off archive path from the filename
             eirods::error ret = write_file_to_archive( listing[ i ].string(), cache_dir, arch );
+
             if( !ret.ok() ) {
                 std::stringstream msg;
                 msg << "bundle_cache_dir - failed to archive file [";
@@ -2229,10 +2230,9 @@ extern "C" {
     eirods::error sync_cache_dir_to_tar_file( int         _index, 
                                               int         _opr_type,
                                               std::string _host ) {
-      
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
         rsComm_t*   comm      = PluginStructFileDesc[ _index ].rsComm;
- 
+
         // =-=-=-=-=-=-=-
         // call bundle helper functions
         eirods::error bundle_err = bundle_cache_dir( _index, PluginStructFileDesc[ _index ].dataType );
@@ -2347,7 +2347,6 @@ extern "C" {
         // if not then any other operation isn't possible
         if( strlen( spec_coll->cacheDir ) > 0 ) {
             if( spec_coll->cacheDirty > 0) {
-
 		        // =-=-=-=-=-=-=-
                 // write the tar file and register no dirty 
                 eirods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index, 

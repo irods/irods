@@ -10,19 +10,11 @@
 #define FREE_MS_PARAM	0x1
 #define FREE_DOINP	0x2
 
-#ifdef RULE_ENGINE_N
 #include "restructs.h"
 int initRuleStruct(int processType, rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(int processType, char *ruleBaseName, ruleStruct_t *inRuleStrct);
 int computeExpression( char *expr, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, char *res);
-
-#else
-int initRuleStruct(rsComm_t *svrComm, char *ruleSet, char *dvmSet, char *fnmSet);
-int readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
-int computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, char *res);
-
-#endif
 
 int clearRuleStruct(ruleStruct_t *inRuleStrct);
 
@@ -196,17 +188,10 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
 ***/
 int print_uoi(userInfo_t *uoi);
 int print_doi(dataObjInfo_t *doi);
-#if defined(RULE_ENGINE_N)
 int execMyRule(char * ruleDef,  msParamArray_t *inMsParamArray, char *outParamsDesc,
 	  ruleExecInfo_t *rei);
 int execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *outParamsDesc,
 			   ruleExecInfo_t *rei,int reiSaveFlag);
-#else
-int execMyRule(char * ruleDef,  msParamArray_t *inMsParamArray,
-	  ruleExecInfo_t *rei);
-int execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
-			   ruleExecInfo_t *rei,int reiSaveFlag);
-#endif
 int executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery, 
 		msParamArray_t *inMsParamArray,
 		ruleExecInfo_t *rei, int reiSaveFlag );
@@ -224,9 +209,7 @@ int applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag);
 int applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray,
          ruleExecInfo_t *rei, int reiSaveFlag); // JMC - backport 4538
-#ifdef RULE_ENGINE_N
 int applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag); // JMC - backport 4539
-#endif
 int applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath);
 int applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteOutBBuf, char *objPath);
 
@@ -329,13 +312,9 @@ int writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 
 int _writeXMsg(int streamId, char *hdr, char *msg);
 int _readXMsg(int streamId, char *contRead, int *msgNum, int *seqNum, char **hdr, char **msg,char **user, char **addr);
-#ifdef RULE_ENGINE_N
 int reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei);
 void disableReDebugger(int state[2]);
 void enableReDebugger(int state[2]);
-#else
-int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
-#endif
 int initializeReDebug(rsComm_t *svrComm, int flag);
 
 
