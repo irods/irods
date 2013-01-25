@@ -146,9 +146,15 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     su --shell=/bin/bash -c "$PSQL -c \"$ALTERPASSCMD\"" $DB_ADMIN_ROLE &> /dev/null
 
     # =-=-=-=-=-=-=-
-    # create the database
+    # create the iCAT primary database
 	echo "Creating Database: $DB_NAME as $DB_USER"
 	su --shell=/bin/bash -c "createdb $DB_NAME" $DB_USER &> /dev/null
+    # =-=-=-=-=-=-=-
+    # create the default iCAT local zone database
+        LOCAL_ZONE_DB_NAME=${DB_NAME}_9000
+        echo "Creating Database: $LOCAL_ZONE_DB_NAME as $DB_USER"
+        su --shell=/bin/bash -c "createdb $LOCAL_ZONE_DB_NAME" $DB_USER \
+            &> /dev/null
 
   else 
     # =-=-=-=-=-=-=-
