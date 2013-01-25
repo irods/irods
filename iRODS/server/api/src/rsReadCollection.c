@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsReadCollection.c
@@ -11,7 +13,7 @@
 
 int
 rsReadCollection (rsComm_t *rsComm, int *handleInxInp,
-collEnt_t **collEnt)
+                  collEnt_t **collEnt)
 {
     int status;
     collHandle_t *collHandle;
@@ -19,10 +21,10 @@ collEnt_t **collEnt)
     int handleInx = *handleInxInp;
 
     if (handleInx < 0 || handleInx >= NUM_COLL_HANDLE ||
-      CollHandle[handleInx].inuseFlag != FD_INUSE) {
+        CollHandle[handleInx].inuseFlag != FD_INUSE) {
         rodsLog (LOG_NOTICE,
-          "rsReadCollection: handleInx %d out of range",
-          handleInx);
+                 "rsReadCollection: handleInx %d out of range",
+                 handleInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
@@ -32,8 +34,8 @@ collEnt_t **collEnt)
     status = readCollection (collHandle, *collEnt);
 
     if (status < 0) {
-	free (*collEnt);
-	*collEnt = NULL;
+        free (*collEnt);
+        *collEnt = NULL;
     }
 
     return status;

@@ -23,6 +23,7 @@
 #include "regReplica.h"
 #include "unbunAndRegPhyBunfile.h"
 #include "fileChksum.h"
+#include "eirods_stacktrace.h"
 
 static rodsLong_t OneGig = (1024*1024*1024);
 
@@ -529,6 +530,9 @@ addSubFileToDir (curSubFileCond_t *curSubFileCond,
         rodsLog (LOG_ERROR,
                  "addSubFileToDir: link error %s to %s. errno = %d",
                  curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath, errno);
+        eirods::stacktrace st;
+        st.trace();
+        st.dump();
         return (UNIX_FILE_LINK_ERR - errno);
     }
     bunReplCache = (bunReplCache_t*)malloc (sizeof (bunReplCache_t));

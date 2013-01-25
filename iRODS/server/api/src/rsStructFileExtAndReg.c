@@ -19,6 +19,8 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 
+#include "eirods_stacktrace.h"
+
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,
                        structFileExtAndRegInp_t *structFileExtAndRegInp)
@@ -112,6 +114,12 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
 
     createPhyBundleDir (rsComm, dataObjInfo->filePath, phyBunDir);
 
+    if(true) {
+        std::stringstream msg;
+        msg << "qqq - filePath: \"" << dataObjInfo->filePath << "\"";
+        DEBUGMSG(msg.str());
+    }
+    
     status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo, // JMC - backport 4657 
                               dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0);  
 
@@ -362,7 +370,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                         }
 
                         int
-                            regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+                            regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char* rescHier, char *rescGroupName,
                                         char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
                         {
                             dataObjInfo_t dataObjInfo;
@@ -383,7 +391,8 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                             rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
                             dataObjInfo.dataSize = dataSize;
 
-                            status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
+                            // status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
+                            status = getLeafRescPathName(rescHier, &dataObjInfo);
                             if (status < 0) {
                                 rodsLog (LOG_ERROR,
                                          "regSubFile: getFilePathName err for %s. status = %d",
@@ -444,6 +453,9 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                                         rodsLog (LOG_ERROR,
                                                  "regSubFile: link error %s to %s. errno = %d",
                                                  subfilePath, dataObjInfo.filePath, errno);
+                                        eirods::stacktrace st;
+                                        st.trace();
+                                        st.dump();
                                         return (UNIX_FILE_LINK_ERR - errno);
                                     }
 #endif
