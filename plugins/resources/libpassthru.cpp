@@ -216,7 +216,7 @@ extern "C" {
                     result = PASS(false, -1, "passthruFileCreatePlugin - failed to generate the full path.", ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "create", _object);
+                    ret = resc->call( _comm, "create", _object);
                     if(!ret.ok()) {
                         result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
                     } else {
@@ -272,7 +272,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "open", _object);
+                    ret = resc->call( _comm, "open", _object);
                     result = PASSMSG("passthruFileOpenPlugin - failed calling child open.", ret);
                 }
             }
@@ -312,7 +312,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, void*, int>( _comm, "read", _object, _buf, _len);
+                    ret = resc->call<void*, int>( _comm, "read", _object, _buf, _len);
                     result = PASSMSG("passthruFileReadPlugin - failed calling child read.", ret);
                 }
             }
@@ -352,7 +352,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, void*, int>( _comm, "write", _object, _buf, _len);
+                    ret = resc->call<void*, int>( _comm, "write", _object, _buf, _len);
                     result = PASSMSG("passthruFileWritePlugin - failed calling child write.", ret);
                 }
             }
@@ -390,7 +390,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "close", _object);
+                    ret = resc->call( _comm, "close", _object);
                     result = PASSMSG("passthruFileClosePlugin - failed calling child close.", ret);
                 }
             }
@@ -429,7 +429,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "unlink", _object);
+                    ret = resc->call( _comm, "unlink", _object);
                     result = PASSMSG("passthruFileUnlinkPlugin - failed calling child unlink.", ret);
                 }
             }
@@ -466,7 +466,7 @@ extern "C" {
                     result = PASSMSG("passthruFileStatPlugin - failed to get the full path name.", ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, struct stat*>( _comm, "stat", _object, _statbuf);
+                    ret = resc->call<struct stat*>( _comm, "stat", _object, _statbuf);
                     result = PASSMSG("passthruFileStatPlugin - failed calling child stat.", ret);
                 }
             }
@@ -505,7 +505,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, struct stat*>( _comm, "fstat", _object, _statbuf);
+                    ret = resc->call<struct stat*>( _comm, "fstat", _object, _statbuf);
                     result = PASSMSG("passthruFileFstatPlugin - failed calling child fstat.", ret);
                 }
             }
@@ -545,7 +545,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, size_t, int>( _comm, "lseek", _object, _offset, _whence);
+                    ret = resc->call<size_t, int>( _comm, "lseek", _object, _offset, _whence);
                     result = PASSMSG("passthruFileLseekPlugin - failed calling child lseek.", ret);
                 }
             }
@@ -583,7 +583,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "fsync", _object);
+                    ret = resc->call( _comm, "fsync", _object);
                     result = PASSMSG("passthruFileFsyncPlugin - failed calling child fsync.", ret);
                 }
             }
@@ -621,7 +621,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "mkdir", _object);
+                    ret = resc->call( _comm, "mkdir", _object);
                     result = PASSMSG("passthruFileMkdirPlugin - failed calling child mkdir.", ret);
                 }
             }
@@ -657,7 +657,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "chmod", _object);
+                    ret = resc->call( _comm, "chmod", _object);
                     result = PASSMSG("passthruFileChmodPlugin - failed calling child chmod.", ret);
                 }
             }
@@ -695,7 +695,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "rmdir", _object);
+                    ret = resc->call( _comm, "rmdir", _object);
                     result = PASSMSG("passthruFileRmdirPlugin - failed calling child rmdir.", ret);
                 }
             }
@@ -733,7 +733,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "opendir", _object);
+                    ret = resc->call( _comm, "opendir", _object);
                     result = PASSMSG("passthruFileOpendirPlugin - failed calling child opendir.", ret);
                 }
             }
@@ -771,7 +771,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "closedir", _object);
+                    ret = resc->call( _comm, "closedir", _object);
                     result = PASSMSG("passthruFileClosedirPlugin - failed calling child closedir.", ret);
                 }
             }
@@ -810,7 +810,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, struct rodsDirent**>( _comm, "readdir", _object, _dirent_ptr);
+                    ret = resc->call<struct rodsDirent**>( _comm, "readdir", _object, _dirent_ptr);
                     result = PASSMSG("passthruFileReaddirPlugin - failed calling child readdir.", ret);
                 }
             }
@@ -848,7 +848,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "stage", _object);
+                    ret = resc->call( _comm, "stage", _object);
                     result = PASSMSG("passthruFileStagePlugin - failed calling child stage.", ret);
                 }
             }
@@ -894,7 +894,7 @@ extern "C" {
                         result = PASSMSG(msg.str(), ret);
                     } else {
                         _object->physical_path(full_path);
-                        ret = resc->call<eirods::first_class_object*, const char*>( _comm, "rename", _object, new_full_path.c_str());
+                        ret = resc->call<const char*>( _comm, "rename", _object, new_full_path.c_str());
                         result = PASSMSG("passthruFileRenamePlugin - failed calling child rename.", ret);
                     }
                 }
@@ -934,7 +934,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "truncate", _object);
+                    ret = resc->call( _comm, "truncate", _object);
                     result = PASSMSG("passthruFileTruncatePlugin - failed calling child truncate.", ret);
                 }
             }
@@ -973,7 +973,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>( _comm, "freespace", _object);
+                    ret = resc->call( _comm, "freespace", _object);
                     result = PASSMSG("passthruFileGetFsFreeSpacePlugin - failed calling child freespace.", ret);
                 }
             }
@@ -985,19 +985,12 @@ extern "C" {
     // passthruStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error passthruStageToCachePlugin(  rsComm_t* _comm,
-                                           const std::string& _results,
-                                           eirods::resource_property_map* 
-                                          _prop_map, 
-                                          eirods::resource_child_map* 
-                                          _cmap,
-                                          const char*         _file_name, 
-                                          const char*         _cache_file_name, 
-                                          int                 _mode, 
-                                          int                 _flags,  
-                                          size_t              _data_size, 
-                                          keyValPair_t*       _cond_input, 
-                                          int*                _status ) {
+    eirods::error passthruStageToCachePlugin( rsComm_t*                      _comm,
+                                              const std::string&             _results,
+                                              eirods::resource_property_map* _prop_map, 
+                                              eirods::resource_child_map*    _cmap,
+                                              eirods::first_class_object*    _object,
+                                              const char*                    _cache_file_name ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
 
@@ -1011,8 +1004,7 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruStageToCachePlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<const char*, const char*, int, int, size_t, keyValPair_t*, int*>
-                    ( _comm, "stagetocache", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
+                ret = resc->call<const char*>( _comm, "stagetocache", _object, _cache_file_name );
                 result = PASSMSG("passthruStageToCachePlugin - failed calling child stagetocache.", ret);
             }
         }
@@ -1023,19 +1015,12 @@ extern "C" {
     // passthruSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error passthruSyncToArchPlugin(  rsComm_t* _comm,
-                                           const std::string& _results,
-                                           eirods::resource_property_map* 
-                                            _prop_map, 
-                                            eirods::resource_child_map* 
-                                            _cmap,
-                                            const char*         _file_name, 
-                                            char*               _cache_file_name, 
-                                            int                 _mode,
-                                            int                 _flags,  
-                                            rodsLong_t          _data_size, 
-                                            keyValPair_t*       _cond_input, 
-                                            int*                _status ) {
+    eirods::error passthruSyncToArchPlugin( rsComm_t*                      _comm,
+                                            const std::string&             _results,
+                                            eirods::resource_property_map* _prop_map, 
+                                            eirods::resource_child_map*    _cmap,
+                                            eirods::first_class_object*    _object, 
+                                            const char*                    _cache_file_name ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -1049,8 +1034,8 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASS(false, -1, "passthruSyncToArchPlugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<const char*, const char*, int, int, size_t, keyValPair_t*, int*>
-                    ( _comm, "synctoarch", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
+                ret = resc->call<const char*>( _comm, "synctoarch", _object, _cache_file_name );
+                    
                 result = PASSMSG("passthruSyncToArchPlugin - failed calling child synctoarch.", ret);
             }
         }

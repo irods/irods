@@ -65,8 +65,49 @@ namespace eirods {
 		
 		// =-=-=-=-=-=-=-
 		// public - single parameter template, there will be more...
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+                    first_class_object*    _obj ) {
+            if( operation_ ) {
+               std::vector< std::string > arg_vec;
+               
+               // =-=-=-=-=-=-=-
+               // instantiate a rule executor
+               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+
+               // =-=-=-=-=-=-=-
+               // call the pre-rule for this op
+               std::string pre_results;
+               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               arg_vec.push_back( pre_results );
+
+               // =-=-=-=-=-=-=-
+               // call the actual operation
+		       error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj ); 
+               
+               // =-=-=-=-=-=-=-
+               // call the poste-rule for this op
+               std::string post_results;
+               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+
+              return op_err;
+
+		   } else {
+			  return ERROR( -1, "operation_wrapper - null resource operation." );
+		   }
+		   
+		} // operator() - T1
+
+	
+		// =-=-=-=-=-=-=-
+		// public - single parameter template, there will be more...
 		template< typename T1 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, T1 _t1 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+                    first_class_object*    _obj, 
+                    T1 _t1 ) {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -88,7 +129,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-		       error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1 ); 
+		       error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1 ); 
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -106,7 +147,12 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - two parameter template, there will be more...
 		template< typename T1, typename T2 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, T1 _t1, T2 _t2 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+                    first_class_object*    _obj, 
+                    T1                     _t1, 
+                    T2                     _t2 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -132,7 +178,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1, _t2 ); 
+			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -150,8 +196,13 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - three parameter template, there will be more...
 		template< typename T1, typename T2, typename T3 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, 
-		                               T1 _t1, T2 _t2, T3 _t3 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+		            first_class_object*    _obj, 
+                    T1                     _t1, 
+                    T2                     _t2, 
+                    T3                     _t3 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -181,7 +232,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-			   error op_err =  (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1, _t2, _t3 ); 
+			   error op_err =  (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -199,8 +250,14 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - four parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, 
-		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+                    first_class_object*    _obj, 
+                    T1                     _t1, 
+                    T2                     _t2, 
+                    T3                     _t3, 
+                    T4                     _t4 ) {
 		   if( operation_ ) {
 	           // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -235,7 +292,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-               error op_err =  operation_( _comm, pre_results, _prop_map, _cmap, _t1, _t2, _t3, _t4 ); 
+               error op_err =  operation_( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -254,8 +311,15 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - five parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, 
-		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+		            first_class_object*    _obj, 
+                    T1                     _t1, 
+                    T2                     _t2, 
+                    T3                     _t3, 
+                    T4                     _t4, 
+                    T5                     _t5 ) {
 		   if( operation_ ) {
 	           // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -293,7 +357,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err =  (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5 ); 
+			   error op_err =  (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -311,8 +375,16 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - six parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, 
-		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+		            first_class_object*    _obj, 
+                    T1                     _t1, 
+                    T2                     _t2, 
+                    T3                     _t3, 
+                    T4                     _t4, 
+                    T5                     _t5, 
+                    T6                     _t6 ) {
 		   if( operation_ ) {
 	           // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -354,7 +426,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6 );  
+			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5, _t6 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -372,8 +444,17 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - seven parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, 
-		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
+		error call( rsComm_t*              _comm, 
+                    resource_property_map* _prop_map, 
+                    resource_child_map*    _cmap, 
+		            first_class_object*    _obj, 
+                    T1                     _t1, 
+                    T2                     _t2, 
+                    T3                     _t3, 
+                    T4                     _t4, 
+                    T5                     _t5, 
+                    T6                     _t6, 
+                    T7                     _t7 ) {
 		   if( operation_ ) {
 	           // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -419,7 +500,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
+			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -437,8 +518,18 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - eight parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-		error call( rsComm_t* _comm, resource_property_map* _prop_map, resource_child_map* _cmap, 
-		                               T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
+        error call( rsComm_t*              _comm, 
+                        resource_property_map* _prop_map, 
+                        resource_child_map*    _cmap, 
+                        first_class_object*    _obj, 
+                        T1                     _t1, 
+                        T2                     _t2, 
+                        T3                     _t3, 
+                        T4                     _t4, 
+                        T5                     _t5, 
+                        T6                     _t6, 
+                        T7                     _t7,
+                        T8                     _t8 ) {
 		   if( operation_ ) {
 	           // =-=-=-=-=-=-=-
                // ingest incoming params as string to pass to the rule exec
@@ -488,7 +579,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
+			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op

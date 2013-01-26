@@ -668,3 +668,9 @@ acGetIcatResults(*Action,*Condition,*GenQOut) {ON(*Action == "list") {msiMakeQue
 acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == "")) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time'",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } } }
 acPurgeFiles(*Condition) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time' AND *Condition",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } }
 acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*K, $sysUidClient); assign(*R,*K); assign($sysUidClient,*A); }
+
+demoResc_open_pre()  { acWriteLine('serverLog','RULECALL :: demoResc_open_pre');  }
+demoResc_open_post() { acWriteLine('serverLog','RULECALL :: demoResc_open_post'); }
+
+
+

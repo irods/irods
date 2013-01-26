@@ -14,6 +14,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 
 
@@ -106,7 +107,6 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission
     // when RCAT is available 
-    int status = -1;
     char myFileName[MAX_NAME_LEN];
     
     // =-=-=-=-=-=-=-
@@ -116,18 +116,19 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 
     // =-=-=-=-=-=-=-
 	// make call to synctoarch via resource plugin
-    eirods::error sync_err = fileSyncToArch( rsComm, myFileName, fileSyncToArchInp->cacheFilename, 
-                                             fileSyncToArchInp->mode, fileSyncToArchInp->flags,
-                                             fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput, 
-											 status );
+    eirods::file_object file_obj( rsComm, 
+                                  fileSyncToArchInp->filename, "", 0, 
+                                  fileSyncToArchInp->mode, 
+                                  fileSyncToArchInp->flags );
+    eirods::error sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
 
     if( !sync_err.ok() ) {
 
-        if (getErrno (status) == ENOENT) {
+        if (getErrno (sync_err.code()) == ENOENT) {
 			// =-=-=-=-=-=-=-
             // the directory does not exist, lets make one
             mkDirForFilePath( rsComm,"/", fileSyncToArchInp->filename, getDefDirMode() );
-        } else if (getErrno (status) == EEXIST) {
+        } else if (getErrno (sync_err.code()) == EEXIST) {
 			// =-=-=-=-=-=-=-
 			// an empty dir may be there, make the call to rmdir via the resource plugin
 			eirods::collection_object coll_obj( fileSyncToArchInp->filename, 0, 0 );
@@ -146,25 +147,22 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 			msg << "_rsFileSyncToArch: fileSyncToArch for ";
 			msg << myFileName;
 			msg << ", status = ";
-			msg << status;
-			eirods::error err = PASS( false, status, msg.str(), sync_err );
+			msg << sync_err.code();
+			eirods::error err = PASS( false, sync_err.code(), msg.str(), sync_err );
 			eirods::log ( err );
-			return status;
+			return sync_err.code();
 		}
 	
 		// =-=-=-=-=-=-=-
 		// make call to synctoarch via resource plugin
-		sync_err = fileSyncToArch( rsComm, myFileName, fileSyncToArchInp->cacheFilename, 
-								   fileSyncToArchInp->mode, fileSyncToArchInp->flags,
-								   fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput, 
-								   status );
+		sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
         if( !sync_err.ok() ) {
 			std::stringstream msg;
 			msg << "_rsFileSyncToArch: fileSyncToArch for ";
 			msg << myFileName;
 			msg << ", status = ";
-			msg << status;
-			eirods::error err = PASS( false, status, msg.str(), sync_err );
+			msg << sync_err.code();
+			eirods::error err = PASS( false, sync_err.code(), msg.str(), sync_err );
 			eirods::log ( err );
 		}
 
@@ -176,7 +174,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 		*outFileName = strdup (myFileName);
     }
 
-    return (status);
+    return (sync_err.code());
 
 } // _rsFileSyncToArch
  

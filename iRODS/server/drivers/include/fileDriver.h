@@ -38,15 +38,11 @@ eirods::error fileRmdir   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileOpendir ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileClosedir( rsComm_t*, eirods::first_class_object& );
 eirods::error fileReaddir ( rsComm_t*, eirods::first_class_object&, struct rodsDirent** );
-eirods::error fileRename  ( rsComm_t*, eirods::first_class_object&, std::string );
+eirods::error fileRename  ( rsComm_t*, eirods::first_class_object&, const std::string& );
 eirods::error fileGetFsFreeSpace( rsComm_t*, eirods::first_class_object& );
 eirods::error fileTruncate( rsComm_t*, eirods::first_class_object& );
 eirods::error fileStage   ( rsComm_t*, eirods::first_class_object& );
-
-
-eirods::error fileStageToCache( rsComm_t*, std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
-                                size_t _data_size, keyValPair_t* _cond_input, int& _status );
-eirods::error fileSyncToArch( rsComm_t*, std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
-					          size_t _data_size, keyValPair_t* _cond_input, int& _status );
+eirods::error fileStageToCache( rsComm_t*, eirods::first_class_object&, const std::string& );
+eirods::error fileSyncToArch  ( rsComm_t*, eirods::first_class_object&, const std::string& );
 
 #endif	/* FILE_DRIVER_H */

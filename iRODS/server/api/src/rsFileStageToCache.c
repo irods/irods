@@ -14,6 +14,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_log.h"
+#include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 
 int
@@ -101,7 +102,6 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 
     // XXXX need to check resource permission and vault permission
     // when RCAT is available 
-    int status;
 
     // =-=-=-=-=-=-=-
     // need to make this now. It will be difficult to do it with
@@ -110,17 +110,20 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 
     // =-=-=-=-=-=-=-
     // make the call to fileStageToCache via the resource plugin
+    eirods::file_object file_obj( rsComm, 
+                                  fileStageToCacheInp->filename, "", 0, 
+                                  fileStageToCacheInp->mode, 
+                                  fileStageToCacheInp->flags );
+
     eirods::error stage_err = fileStageToCache( rsComm,
-                                                fileStageToCacheInp->filename,  fileStageToCacheInp->cacheFilename, 
-                                                fileStageToCacheInp->mode,      fileStageToCacheInp->flags,
-                                                fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput,
-											    status );
+                                                file_obj,  
+                                                fileStageToCacheInp->cacheFilename );
 	// =-=-=-=-=-=-=-
 	// handle errors if any
     if( !stage_err.ok() ) {
 		// =-=-=-=-=-=-=-
         // an empty dir may be there 
-        if (getErrno (status) == EEXIST) {
+        if (getErrno ( stage_err.code() ) == EEXIST) {
 
 			// =-=-=-=-=-=-=-
 			// make the call to rmdir via the resource plugin
@@ -140,18 +143,16 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 			msg << "_rsFileStageToCache: fileStageTocache for ";
 			msg << fileStageToCacheInp->filename;
 			msg << ", status = ";
-			msg << status;
-			eirods::error err = PASS( false, status, msg.str(), stage_err );
+			msg << stage_err.code();
+			eirods::error err = PASS( false, stage_err.code(), msg.str(), stage_err );
 			eirods::log ( err );
 	    }
 
 		// =-=-=-=-=-=-=-
 		// try it again?  ( make the call to fileStageToCache via the resource plugin )
         stage_err = fileStageToCache( rsComm,
-                                      fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename,
-                                      fileStageToCacheInp->mode,     fileStageToCacheInp->flags,
-                                      fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput,
-		                              status );
+                                      file_obj, 
+                                      fileStageToCacheInp->cacheFilename );
 		// =-=-=-=-=-=-=-
 		// handle errors if any
 		if( !stage_err.ok() ) {
@@ -159,14 +160,14 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 			msg << "_rsFileStageToCache: fileStageTocache for ";
 			msg << fileStageToCacheInp->filename;
 			msg << ", status = ";
-			msg << status;
-			eirods::error err = PASS( false, status, msg.str(), stage_err );
+			msg << stage_err.code();
+			eirods::error err = PASS( false, stage_err.code(), msg.str(), stage_err );
 			eirods::log ( err );
 	    }
 
     } // if ! stage_err.ok
     
-	return (status);
+	return (stage_err.code());
 
 } // _rsFileStageToCache 
 

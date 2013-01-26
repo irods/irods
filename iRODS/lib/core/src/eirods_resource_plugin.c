@@ -176,7 +176,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - add a child resource to this resource.  this is virtual in case a developer wants to
     //          do something fancier.
-    error resource::add_child( std::string _name, std::string _data, resource_ptr _resc ) {
+    error resource::add_child( const std::string& _name, const std::string& _data, resource_ptr _resc ) {
         // =-=-=-=-=-=-=-
         // check params 
         if( _name.empty() ) {
@@ -198,7 +198,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - remove a child resource to this resource.  this is virtual in case a developer wants to
     //          do something fancier.
-    error resource::remove_child( std::string _name ) {
+    error resource::remove_child( const std::string& _name ) {
         // =-=-=-=-=-=-=-
         // check params 
 #ifdef DEBUG
@@ -242,26 +242,34 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - set a name for the developer provided start op
-    void resource::set_start_operation( std::string _op ) {
+    void resource::set_start_operation( const std::string& _op ) {
         start_opr_name_ = _op;
     } // resource::set_start_operation
 
     // =-=-=-=-=-=-=-
     // public - set a name for the developer provided stop op
-    void resource::set_stop_operation( std::string _op ) {
+    void resource::set_stop_operation( const std::string& _op ) {
         stop_opr_name_ = _op;
     } // resource::set_stop_operation
  
     // =-=-=-=-=-=-=-
     // private - helper function to check params for the operator() calls to reduce code duplication
-    error resource::check_operation_params( std::string _op ) {
+    error resource::check_operation_params( const std::string&  _op,
+                                            rsComm_t*           _comm,
+                                            first_class_object* _obj ) {
         // =-=-=-=-=-=-=-
         // check params
-#ifdef DEBUG
-        if( _op.empty() ) {
-            return ERROR( false, -1, "check_operation_params - empty operation key" );
+        if( !_comm ) {
+            std::stringstream msg;
+            msg << "check_operation_params - operation [" << _op << "] null comm pointer";
+            return ERROR( -1, msg.str() );
         }
-#endif
+
+        if( !_obj ) {
+            std::stringstream msg;
+            msg << "check_operation_params - operation [" << _op << "] null fco pointer";
+            return ERROR( -1, msg.str() );
+        }
 
         // =-=-=-=-=-=-=-
         // check if the operation exists

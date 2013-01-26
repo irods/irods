@@ -1227,8 +1227,9 @@ extern "C" {
     } // unixFileGetFsFreeSpacePlugin
 
     int
-    unixFileCopyPlugin( int mode, const char *srcFileName, 
-                        const char *destFileName )
+    unixFileCopyPlugin( int         mode, 
+                        const char* srcFileName, 
+                        const char* destFileName )
     {
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
@@ -1301,20 +1302,15 @@ extern "C" {
     // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error unixStageToCachePlugin( rsComm_t*                     _comm,
-                                          const std::string&            _results,
-                                         eirods::resource_property_map* _prop_map, 
-                                          eirods::resource_child_map*   _cmap,
-                                          const char*                   _file_name, 
-                                          const char*                   _cache_file_name, 
-                                          int                           _mode, 
-                                          int                           _flags,  
-                                          size_t                        _data_size, 
-                                          keyValPair_t*                 _cond_input, 
-                                          int*                          _status ) {
-        (*_status) = unixFileCopyPlugin( _mode, _file_name, _cache_file_name );
-        if( (*_status) < 0 ) {
-            return ERROR( *_status, "unixStageToCachePlugin failed." );
+    eirods::error unixStageToCachePlugin( rsComm_t*                      _comm,
+                                          const std::string&             _results,
+                                          eirods::resource_property_map* _prop_map, 
+                                          eirods::resource_child_map*    _cmap,
+                                          eirods::first_class_object*    _object,
+                                          const char*                    _cache_file_name ) { 
+        int status = unixFileCopyPlugin( _object->mode(), _object->physical_path().c_str(), _cache_file_name );
+        if( status < 0 ) {
+            return ERROR( status, "unixStageToCachePlugin failed." );
         } else {
             return SUCCESS();
         }
@@ -1328,17 +1324,12 @@ extern "C" {
                                         const std::string&             _results,
                                         eirods::resource_property_map* _prop_map, 
                                         eirods::resource_child_map*    _cmap,
-                                        const char*                    _file_name, 
-                                        char*                          _cache_file_name, 
-                                        int                            _mode,
-                                        int                            _flags,  
-                                        rodsLong_t                     _data_size, 
-                                        keyValPair_t*                  _cond_input, 
-                                        int*                           _status ) {
+                                        eirods::first_class_object*    _object,
+                                        char*                          _cache_file_name ) {
 
-        (*_status) = unixFileCopyPlugin( _mode, _cache_file_name, _file_name );
-        if( (*_status) < 0 ) {
-            return ERROR( (*_status), "unixSyncToArchPlugin failed." );
+        int status = unixFileCopyPlugin( _object->mode(), _cache_file_name, _object->physical_path().c_str() );
+        if( status < 0 ) {
+            return ERROR( status, "unixSyncToArchPlugin failed." );
         } else {
             return SUCCESS();
         }

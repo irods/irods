@@ -36,7 +36,7 @@ eirods::error fileCreate( rsComm_t* _comm, eirods::first_class_object& _object )
            
     // =-=-=-=-=-=-=-
     // make the call to the "create" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "create", &_object );
+    ret_err = resc->call( _comm, "create", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -70,7 +70,7 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
    
     // =-=-=-=-=-=-=-
     // make the call to the "open" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "open", &_object );
+    ret_err = resc->call( _comm, "open", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -105,7 +105,7 @@ eirods::error fileRead( rsComm_t* _comm, eirods::first_class_object& _object, vo
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = resc->call< eirods::first_class_object*, void*, int >( _comm, "read", &_object, _buf, _len );
+    ret_err = resc->call< void*, int >( _comm, "read", &_object, _buf, _len );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -131,7 +131,7 @@ eirods::error fileWrite( rsComm_t* _comm, eirods::first_class_object& _object, v
     
     // =-=-=-=-=-=-=-
     // make the call to the "write" interface
-    ret_err = resc->call< eirods::first_class_object*, void*, int >( _comm, "write", &_object, _buf, _len );
+    ret_err = resc->call< void*, int >( _comm, "write", &_object, _buf, _len );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -164,7 +164,7 @@ eirods::error fileClose( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
     // =-=-=-=-=-=-=-
     // make the call to the "close" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "close", &_object );
+    ret_err = resc->call( _comm, "close", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -197,7 +197,7 @@ eirods::error fileUnlink( rsComm_t* _comm, eirods::first_class_object& _object )
 
     // =-=-=-=-=-=-=-
     // make the call to the "unlink" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "unlink", &_object );
+    ret_err = resc->call( _comm, "unlink", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -230,7 +230,7 @@ eirods::error fileStat( rsComm_t* _comm, eirods::first_class_object& _object, st
 
     // =-=-=-=-=-=-=-
     // make the call to the "stat" interface
-    ret_err = resc->call< eirods::first_class_object*, struct stat* >( _comm, "stat", &_object, _statbuf );
+    ret_err = resc->call< struct stat* >( _comm, "stat", &_object, _statbuf );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -263,7 +263,7 @@ eirods::error fileFstat( rsComm_t* _comm, eirods::first_class_object& _object, s
 
     // =-=-=-=-=-=-=-
     // make the call to the "fstat" interface
-    ret_err = resc->call< eirods::first_class_object*, struct stat* >( _comm, "fstat", &_object, _statbuf );
+    ret_err = resc->call< struct stat* >( _comm, "fstat", &_object, _statbuf );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -296,7 +296,7 @@ eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, s
 
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
-    ret_err = resc->call< eirods::first_class_object*, size_t, int >( _comm, "lseek", &_object, _offset, _whence );
+    ret_err = resc->call< size_t, int >( _comm, "lseek", &_object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -329,7 +329,7 @@ eirods::error fileFsync( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
     // =-=-=-=-=-=-=-
     // make the call to the "fsync" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "fsync", &_object );
+    ret_err = resc->call( _comm, "fsync", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -362,7 +362,7 @@ eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
     // =-=-=-=-=-=-=-
     // make the call to the "mkdir" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "mkdir", &_object );
+    ret_err = resc->call( _comm, "mkdir", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -395,7 +395,7 @@ eirods::error fileChmod( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
     // =-=-=-=-=-=-=-
     // make the call to the "chmod" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "chmod", &_object );
+    ret_err = resc->call( _comm, "chmod", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -428,7 +428,7 @@ eirods::error fileRmdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
     // =-=-=-=-=-=-=-
     // make the call to the "rmdir" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "rmdir", &_object );
+    ret_err = resc->call( _comm, "rmdir", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -461,7 +461,7 @@ eirods::error fileOpendir( rsComm_t* _comm, eirods::first_class_object& _object 
 
     // =-=-=-=-=-=-=-
     // make the call to the "opendir" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "opendir", &_object );
+    ret_err = resc->call( _comm, "opendir", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -494,7 +494,7 @@ eirods::error fileClosedir( rsComm_t* _comm, eirods::first_class_object& _object
 
     // =-=-=-=-=-=-=-
     // make the call to the "closedir" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "closedir", &_object );
+    ret_err = resc->call( _comm, "closedir", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -519,7 +519,7 @@ eirods::error fileReaddir( rsComm_t* _comm, eirods::first_class_object& _object,
 
     // =-=-=-=-=-=-=-
     // make the call to the "readdir" interface
-    ret_err = resc->call< eirods::first_class_object*, struct rodsDirent** >( _comm, "readdir", &_object, _dirent_ptr );
+    ret_err = resc->call< struct rodsDirent** >( _comm, "readdir", &_object, _dirent_ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -552,7 +552,7 @@ eirods::error fileStage( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
     // =-=-=-=-=-=-=-
     // make the call to the "stage" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "stage", &_object );
+    ret_err = resc->call( _comm, "stage", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -566,7 +566,9 @@ eirods::error fileStage( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rename
-eirods::error fileRename( rsComm_t* _comm, eirods::first_class_object& _object, std::string _new_file_name ) {
+eirods::error fileRename( rsComm_t*                   _comm, 
+                          eirods::first_class_object& _object, 
+                          const std::string&          _new_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() || _new_file_name.empty() ) {
@@ -585,7 +587,7 @@ eirods::error fileRename( rsComm_t* _comm, eirods::first_class_object& _object, 
 
     // =-=-=-=-=-=-=-
     // make the call to the "rename" interface
-    ret_err = resc->call< eirods::first_class_object*, const char* >( _comm, "rename",  &_object, _new_file_name.c_str() ); 
+    ret_err = resc->call< const char* >( _comm, "rename",  &_object, _new_file_name.c_str() ); 
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -618,7 +620,7 @@ eirods::error fileGetFsFreeSpace( rsComm_t* _comm, eirods::first_class_object& _
 
     // =-=-=-=-=-=-=-
     // make the call to the "freespace" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "freespace", &_object );
+    ret_err = resc->call( _comm, "freespace", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -651,7 +653,7 @@ eirods::error fileTruncate( rsComm_t* _comm, eirods::first_class_object& _object
 
     // =-=-=-=-=-=-=-
     // make the call to the "truncate" interface
-    ret_err = resc->call< eirods::first_class_object* >( _comm, "truncate", &_object );
+    ret_err = resc->call( _comm, "truncate", &_object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -665,11 +667,12 @@ eirods::error fileTruncate( rsComm_t* _comm, eirods::first_class_object& _object
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin StageToCache
-eirods::error fileStageToCache( rsComm_t* _comm, std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
-                                size_t _data_size, keyValPair_t* _cond_input, int& _status ) {
+eirods::error fileStageToCache( rsComm_t*                   _comm, 
+                                eirods::first_class_object& _object, 
+                                const std::string&          _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
-    if( _file_name.empty() ) {
+    if( _cache_file_name.empty() ) {
         eirods::error ret_err = ERROR( -1, "fileStageToCache - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
@@ -678,21 +681,19 @@ eirods::error fileStageToCache( rsComm_t* _comm, std::string _file_name, std::st
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve_from_physical_path( _file_name, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc );
     if( !ret_err.ok() ) {
         return PASS( false, -1, "fileStageToCache - failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "stagetocache" interface
-    ret_err = resc->call< const char*, const char*, int, int, size_t, keyValPair_t*, int*  >( 
-        _comm, "stagetocache",  _file_name.c_str(), _cache_file_name.c_str(),
-        _mode, _flags, _data_size, _cond_input, &_status );
+    ret_err = resc->call< const char* >( _comm, "stagetocache", &_object, _cache_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, _status, "fileStageToCache - failed to call 'stagetocache'", ret_err );
+        return PASS( false, ret_err.code(), "fileStageToCache - failed to call 'stagetocache'", ret_err );
     } else {
         return SUCCESS();
     }
@@ -701,11 +702,12 @@ eirods::error fileStageToCache( rsComm_t* _comm, std::string _file_name, std::st
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin SyncToArch
-eirods::error fileSyncToArch( rsComm_t* _comm, std::string _file_name, std::string _cache_file_name, int _mode, int _flags, 
-                              size_t _data_size, keyValPair_t* _cond_input, int& _status ) {
+eirods::error fileSyncToArch( rsComm_t*                   _comm, 
+                              eirods::first_class_object& _object, 
+                              const std::string&          _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
-    if( _file_name.empty() ) {
+    if( _cache_file_name.empty() ) {
         eirods::error ret_err = ERROR( -1, "fileSyncToArch - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
@@ -714,21 +716,19 @@ eirods::error fileSyncToArch( rsComm_t* _comm, std::string _file_name, std::stri
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = resc_mgr.resolve_from_physical_path( _file_name, resc ); 
+    eirods::error ret_err = _object.resolve( resc_mgr, resc );
     if( !ret_err.ok() ) {
         return PASS( false, -1, "fileSyncToArch - failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "synctoarch" interface
-    ret_err = resc->call< const char*, const char*, int, int, size_t, keyValPair_t*, int*  >( 
-        _comm, "synctoarch",  _file_name.c_str(), _cache_file_name.c_str(),
-        _mode, _flags, _data_size, _cond_input, &_status );
+    ret_err = resc->call< const char* >( _comm, "synctoarch", &_object, _cache_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, _status, "fileSyncToArch - failed to call 'synctoarch'", ret_err );
+        return PASS( false, ret_err.code(), "fileSyncToArch - failed to call 'synctoarch'", ret_err );
     } else {
         return SUCCESS();
     }
