@@ -80,7 +80,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -125,7 +124,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -174,7 +172,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -228,7 +225,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -288,7 +284,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -353,7 +348,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -422,7 +416,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -496,7 +489,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -575,7 +567,6 @@ namespace eirods {
                // call the pre-rule for this op
                std::string pre_results;
                rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
-               arg_vec.push_back( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation	

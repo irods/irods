@@ -67,7 +67,7 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
     if( !ret_err.ok() ) {
         return PASS( false, -1, "fileOpen - failed to resolve resource", ret_err );
     }
-   
+    
     // =-=-=-=-=-=-=-
     // make the call to the "open" interface
     ret_err = resc->call( _comm, "open", &_object );

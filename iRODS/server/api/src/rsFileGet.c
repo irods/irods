@@ -84,7 +84,6 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
     len = fileGetInp->dataSize;
     if (len <= 0)
         return (0);
-
     fd = _rsFileOpen (rsComm, fileGetInp);
 
     if (fd < 0) {

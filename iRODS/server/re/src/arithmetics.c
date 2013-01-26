@@ -813,34 +813,31 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 	strcpy(action, actionName);
 	mapExternalFuncToInternalProc2(action);
 
-#ifdef USE_EIRODS
-//rodsLog( LOG_NOTICE, "calling pluggable MSVC from arithmetics.c:execAction3" );
-	// =-=-=-=-=-=-=-
-	// switch to using pluggable usvc
-	eirods::ms_table_entry ms_entry;
-    int actionInx = actionTableLookUp( ms_entry, action );
-#else
-	int actionInx = actionTableLookUp(action);
-#endif
-	if (actionInx < 0) { /* rule */
-		/* no action (microservice) found, try to lookup a rule */
-		Res *actionRet = execRule(actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
-		if (getNodeType(actionRet) == N_ERROR && (
-                        RES_ERR_CODE(actionRet) == NO_RULE_FOUND_ERR)) {
-			snprintf(buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules());
+
+    /* no action (microservice) found, try to lookup a rule */
+    Res *actionRet = execRule(actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
+    if( getNodeType(actionRet) == N_ERROR && (
+        RES_ERR_CODE(actionRet) == NO_RULE_FOUND_ERR ) ) {
+        
+        // =-=-=-=-=-=-=-
+        // didnt find a rule, try a msvc 
+        eirods::ms_table_entry ms_entry;
+        int actionInx = actionTableLookUp( ms_entry, action );
+        if ( actionInx > 0 ) { /* rule */
+            snprintf( buf, ERR_MSG_LEN, "error: cannot find rule for action \"%s\" available: %d.", action, availableRules());
                         generateErrMsg(buf, NODE_EXPR_POS(node), node->base, buf2);
                         addRErrorMsg(errmsg, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR, buf2);
-                        /*dumpHashtableKeys(coreRules); */
-			return newErrorRes(r, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR);
-		}
-		else {
-			return actionRet;
-		}
-	} else { /* microservice */
-		return execMicroService3(action, args, nargs, node, env, rei, errmsg, r);
-	}
+ 
+            return execMicroService3(action, args, nargs, node, env, rei, errmsg, r);
+        } else {
+            return newErrorRes( r, NO_RULE_OR_MSI_FUNCTION_FOUND_ERR );
+        }
+    }
+    else {
+        return actionRet;
+    }
+ 
 }
-
 /**
  * execute micro service msiName
  */

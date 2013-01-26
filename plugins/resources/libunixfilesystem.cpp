@@ -1400,9 +1400,9 @@ extern "C" {
                                       const std::string&             _results,
                                       eirods::resource_property_map* _prop_map, 
                                       eirods::resource_child_map*    _cmap,
+                                      eirods::first_class_object*    _object,
                                       const std::string*             _opr,
                                       const std::string*             _curr_host,
-                                      eirods::first_class_object*    _object,
                                       std::string*                   _out_hier,
                                       float*                         _out_vote ) {
         // =-=-=-=-=-=-=-
