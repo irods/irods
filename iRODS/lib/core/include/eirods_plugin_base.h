@@ -18,7 +18,8 @@
 
 namespace eirods {
     // =-=-=-=-=-=-=-
-    /// @brief abstraction for post disconnect functor
+    /// @brief abstraction for post disconnect functor - plugins can bind
+    //         functors, free functions or member functions as necessary
     typedef boost::function< eirods::error (void) > pdmo_type;
     
     /**
