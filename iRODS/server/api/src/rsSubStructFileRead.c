@@ -86,7 +86,7 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
-    eirods::error read_err = fileRead( struct_obj, _out_buf->buf, _read_inp->len );
+    eirods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _read_inp->len );
     if( !read_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileRead - failed on call to fileRead for [";

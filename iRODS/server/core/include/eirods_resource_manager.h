@@ -45,6 +45,7 @@ namespace eirods {
         /// @brief  load a resource plugin given a resource type
         error init_from_type( std::string,     // resource type
                               std::string,     // resource name ( key )
+                              std::string,     // instance name
                               std::string,     // resource context 
                               resource_ptr& ); // resource out variable
         

@@ -20,9 +20,11 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
-    resource::resource( std::string _ctx  ) : plugin_base( _ctx ), 
-                                              start_operation_( eirods::resource::default_start_operation ), 
-                                              stop_operation_( default_stop_operation ) {
+    resource::resource( const std::string& _inst,
+                        const std::string& _ctx  ) : 
+                        plugin_base( _inst, _ctx ), 
+                        start_operation_( eirods::resource::default_start_operation ), 
+                        stop_operation_( default_stop_operation ) {
     } // ctor
     
     // =-=-=-=-=-=-=-
@@ -34,7 +36,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - cctor
     resource::resource( const resource& _rhs ) : 
-        plugin_base( _rhs.context_ ) {
+        plugin_base( _rhs ) {
         children_           = _rhs.children_;
         operations_         = _rhs.operations_;
         ops_for_delay_load_ = _rhs.ops_for_delay_load_;
@@ -155,7 +157,7 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // add the operation via a wrapper to the operation map
-            operations_[ key ] = operation_wrapper( res_op_ptr );
+            operations_[ key ] = operation_wrapper( instance_name_, key, res_op_ptr );
 
         } // for itr
 
@@ -238,34 +240,6 @@ namespace eirods {
 
     } // get_parent
 
-
-    // =-=-=-=-=-=-=-
-    // public - add an operation to the map given a key.  provide the function name such that it
-    //          may be loaded from the shared object later via delay_load
-    error resource::add_operation( std::string _op, std::string _fcn_name ) {
-        // =-=-=-=-=-=-=-
-        // check params 
-        if( _op.empty() ) {
-            std::stringstream msg;
-            msg << "add_operation - empty operation [" << _op << "]";
-            return ERROR( -1, msg.str() );
-        }
-                
-        if( _fcn_name.empty() ) {
-            std::stringstream msg;
-            msg << ":add_operation - empty function name [" 
-                << _fcn_name << "]";
-            return ERROR( -1, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // add operation string to the vector
-        ops_for_delay_load_.push_back( std::pair< std::string, std::string >( _op, _fcn_name ) );
-                
-        return SUCCESS();
-
-    } //  add_operation
-
     // =-=-=-=-=-=-=-
     // public - set a name for the developer provided start op
     void resource::set_start_operation( std::string _op ) {
@@ -306,17 +280,22 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // function to load and return an initialized resource plugin
-    error load_resource_plugin( resource_ptr& _plugin, const std::string _name, const std::string _context ) {
+    error load_resource_plugin( resource_ptr&     _plugin, 
+                                const std::string _plugin_name,
+                                const std::string _inst_name, 
+                                const std::string _context ) {
                 
         resource* resc = 0;
-        error ret = load_plugin< resource >( _name, EIRODS_MS_HOME, resc, _context );
-
+        error ret = load_plugin< resource >( resc, _plugin_name, EIRODS_MS_HOME, _inst_name, _context );
         if( ret.ok() && resc ) {
             _plugin.reset( resc );
             return SUCCESS();       
+        
         } else {
             return PASS( false, -1, "load_resource_plugin failed.", ret );
+        
         }
+
     } // load_resource_plugin
 
 

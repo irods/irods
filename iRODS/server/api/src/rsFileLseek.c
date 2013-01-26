@@ -88,7 +88,8 @@ int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t
                                   FileDesc[fileLseekInp->fileInx].fd,
                                   0, 0 );
 
-    eirods::error lseek_err = fileLseek( file_obj,
+    eirods::error lseek_err = fileLseek( rsComm, 
+                                         file_obj,
                                          fileLseekInp->offset, 
                                          fileLseekInp->whence );
     // =-=-=-=-=-=-=-

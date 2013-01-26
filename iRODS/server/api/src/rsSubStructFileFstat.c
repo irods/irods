@@ -87,7 +87,7 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
     struct stat fs;
-    eirods::error fstat_err = fileFstat( struct_obj, &fs );
+    eirods::error fstat_err = fileFstat( _comm, struct_obj, &fs );
     if( !fstat_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileFstat - failed on call to fileFstat for [";

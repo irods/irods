@@ -96,7 +96,8 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
                                   FileDesc[fileWriteInp->fileInx].fd,
                                   0, 0 ); 
  
-    eirods::error write_err = fileWrite( file_obj,										 
+    eirods::error write_err = fileWrite( rsComm,
+                                         file_obj,										 
                                          fileWriteInpBBuf->buf,
                                          fileWriteInp->len );
     // =-=-=-=-=-=-=-

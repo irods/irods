@@ -873,8 +873,8 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 	}
 
 #ifdef USE_EIRODS
-	myFunc       = ms_entry.callAction_;
-	numOfStrArgs = ms_entry.numberOfStringArgs_;
+	myFunc       = ms_entry.call_action_;
+	numOfStrArgs = ms_entry.num_args_;
 #else
 	myFunc =  MicrosTable[actionInx].callAction;
 	numOfStrArgs = MicrosTable[actionInx].numberOfStringArgs;

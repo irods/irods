@@ -98,7 +98,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         
     // =-=-=-=-=-=-=-
     // check path permissions before creating the file
-    if( fileCreateInp->otherFlags & NO_CHK_PERM_FLAG == 0 ) { // JMC - backport 4758
+    if( ( fileCreateInp->otherFlags & NO_CHK_PERM_FLAG ) == 0 ) { // JMC - backport 4758
         int status = chkFilePathPerm( rsComm, fileCreateInp, rodsServerHost, DO_CHK_PATH_PERM ); // JMC - backport 4774
         if( status < 0 ) {
             rodsLog( LOG_ERROR, "_rsFileCreate - chkFilePathPerm returned %d", status );
@@ -111,7 +111,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     // needing to create a directory, etc.
     eirods::file_object file_obj( rsComm, fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, fileCreateInp->mode, fileCreateInp->flags );
     
-    eirods::error create_err = fileCreate( file_obj );
+    eirods::error create_err = fileCreate( rsComm, file_obj );
 
     // =-=-=-=-=-=-=-
     // if we get a bad file descriptor
@@ -125,7 +125,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
             // the directory didnt exist, make it and then try the create once again.
             mkDirForFilePath( rsComm, "/", file_obj.physical_path().c_str(), getDefDirMode() ); 
 
-            create_err = fileCreate( file_obj );
+            create_err = fileCreate( rsComm, file_obj );
                                                 
             // =-=-=-=-=-=-=-
             // capture the eirods results in the log as our error mechanism
@@ -144,7 +144,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
             // =-=-=-=-=-=-=-
             // remove a potentially empty directoy which is already in place
             eirods::collection_object coll_obj( fileCreateInp->fileName, 0, 0 );
-            eirods::error rmdir_err = fileRmdir( coll_obj );
+            eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
                 msg << "_rsFileCreate: EEXIST 1 fileRmdir for ";
@@ -155,7 +155,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                 eirods::log ( err );
             }
                          
-            create_err = fileCreate( file_obj );
+            create_err = fileCreate( rsComm, file_obj );
                                                                         
             // =-=-=-=-=-=-=-
             // capture the eirods results in the log as our error mechanism

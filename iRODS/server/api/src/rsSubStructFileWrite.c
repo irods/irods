@@ -78,7 +78,7 @@ int _rsSubStructFileWrite( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to write
-    eirods::error write_err = fileWrite( struct_obj, _out_buf->buf, _out_buf->len );
+    eirods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );
     if( !write_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileWrite - failed on call to fileWrite for [";

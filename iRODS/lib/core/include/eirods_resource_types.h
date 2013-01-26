@@ -12,6 +12,10 @@
 #include "eirods_plugin_base.h"
 #include "eirods_lookup_table.h"
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rcConnect.h"
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-
@@ -21,7 +25,7 @@ namespace eirods {
     typedef lookup_table<boost::any>                               resource_property_map;
     typedef lookup_table< std::pair< std::string, resource_ptr > > resource_child_map;
 
-    typedef error ((*resource_operation)( resource_property_map*, resource_child_map*, ... ));
+    typedef error (*resource_operation)( rsComm_t*, const std::string&, resource_property_map*, resource_child_map*, ... );
     typedef error (*resource_maintenance_operation)();
 
 }; // namespace

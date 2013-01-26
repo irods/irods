@@ -26,7 +26,9 @@ extern "C" {
     //     the plugin loader in the iRODS server to create the entry in the
     //     table when the plugin is requested.
     eirods::ms_table_entry*  plugin_factory( ) {
-        return new eirods::ms_table_entry( "eirods_msvc_test", 3 );
+        eirods::ms_table_entry* ms_plugin = new eirods::ms_table_entry( 3 );
+        ms_plugin->add_operation( "eirods_msvc_test" );
+        return ms_plugin;
     }
 
 }; // extern "C"

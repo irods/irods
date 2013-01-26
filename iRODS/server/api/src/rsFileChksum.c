@@ -114,7 +114,7 @@ fileChksum (
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
     eirods::file_object file_obj( rsComm, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
-    eirods::error ret = fileOpen( file_obj );
+    eirods::error ret = fileOpen( rsComm, file_obj );
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         std::stringstream msg;
@@ -128,7 +128,7 @@ fileChksum (
 
     MD5Init (&context);
 
-    eirods::error read_err = fileRead( file_obj, buffer, SVR_MD5_BUF_SZ );      
+    eirods::error read_err = fileRead( rsComm, file_obj, buffer, SVR_MD5_BUF_SZ );      
     bytes_read = read_err.code();
 
     while( read_err.ok() && bytes_read > 0 ) {
@@ -137,14 +137,14 @@ fileChksum (
 #endif
         MD5Update (&context, buffer, bytes_read);
     
-        read_err = fileRead( file_obj, buffer, SVR_MD5_BUF_SZ );
+        read_err = fileRead( rsComm, file_obj, buffer, SVR_MD5_BUF_SZ );
         bytes_read = read_err.code();
 
     } // while
 
     MD5Final (digest, &context);
 
-    ret = fileClose( file_obj );
+    ret = fileClose( rsComm, file_obj );
     if( !ret.ok() ) {
         eirods::error err = PASS( false, ret.code(), "fileChksum - error on close", ret );
         eirods::log( err );

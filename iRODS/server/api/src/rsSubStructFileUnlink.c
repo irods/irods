@@ -72,7 +72,7 @@ int _rsSubStructFileUnlink( rsComm_t*  _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to unlink
-    eirods::error unlink_err = fileUnlink( struct_obj );
+    eirods::error unlink_err = fileUnlink( _comm, struct_obj );
     if( !unlink_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileUnlink - failed on call to fileUnlink for [";

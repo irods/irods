@@ -125,7 +125,7 @@ int _rsFileOpen( rsComm_t*      _comm,
     // =-=-=-=-=-=-=-
     // call file open on the resource plugin 
     eirods::file_object file_obj( _comm, _open_inp->fileName, _open_inp->resc_hier_, 0, _open_inp->mode, _open_inp->flags );
-    eirods::error ret_err = fileOpen( file_obj );
+    eirods::error ret_err = fileOpen( _comm, file_obj );
     
     // =-=-=-=-=-=-=-
     // log errors, if any    

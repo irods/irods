@@ -88,7 +88,9 @@ int _rsFileReaddir( rsComm_t*         _comm,
 
 	// =-=-=-=-=-=-=-
     // make call to readdir via resource plugin and handle errors, if necessary
-    eirods::error readdir_err = fileReaddir( coll_obj, _rods_dirent );
+    eirods::error readdir_err = fileReaddir( _comm,
+                                             coll_obj, 
+                                             _rods_dirent );
     if( !readdir_err.ok() ) {
 		std::stringstream msg;
 		msg << "_rsFileReaddir: fileReaddir for ";

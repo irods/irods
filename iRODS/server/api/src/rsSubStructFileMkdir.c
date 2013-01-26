@@ -73,7 +73,7 @@ int _rsSubStructFileMkdir( rsComm_t*  _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to mkdir
-    eirods::error mkdir_err = fileMkdir( struct_obj );
+    eirods::error mkdir_err = fileMkdir( _comm, struct_obj );
     if( !mkdir_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileMkdir - failed on call to fileMkdir for [";

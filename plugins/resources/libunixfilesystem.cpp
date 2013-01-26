@@ -91,12 +91,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error unixFileCreatePlugin( eirods::resource_property_map* 
-                                        _prop_map,
-                                        eirods::resource_child_map* 
-                                        _cmap, 
-                                        eirods::first_class_object* 
-                                        _object ) {
+    eirods::error unixFileCreatePlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* _prop_map,
+                                        eirods::resource_child_map*    _cmap, 
+                                        eirods::first_class_object*    _object ) {
+                                        
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -161,12 +161,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error unixFileOpenPlugin( eirods::resource_property_map* 
-                                      _prop_map, 
-                                      eirods::resource_child_map* 
-                                      _cmap, 
-                                      eirods::first_class_object* 
-                                      _object ) {
+    eirods::error unixFileOpenPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* _prop_map, 
+                                      eirods::resource_child_map*    _cmap, 
+                                      eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -235,14 +234,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error unixFileReadPlugin( eirods::resource_property_map* 
-                                      _prop_map, 
-                                      eirods::resource_child_map* 
-                                      _cmap,
-                                      eirods::first_class_object* 
-                                      _object,
-                                      void*               _buf, 
-                                      int                 _len ) {
+    eirods::error unixFileReadPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* _prop_map, 
+                                      eirods::resource_child_map*    _cmap,
+                                      eirods::first_class_object*    _object,
+                                      void*                          _buf, 
+                                      int                            _len ) {
 									  
         // =-=-=-=-=-=-=-
         // check incoming parameters
@@ -281,14 +279,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error unixFileWritePlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map*
-                                       _cmap,
-                                       eirods::first_class_object* 
-                                       _object,
-                                       void*               _buf, 
-                                       int                 _len ) {
+    eirods::error unixFileWritePlugin( rsComm_t*                      _comm,
+                                      const std::string&              _results,
+                                      eirods::resource_property_map*  _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object,
+                                       void*                          _buf, 
+                                       int                            _len ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -328,12 +325,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error unixFileClosePlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object* 
-                                       _object ) {
+    eirods::error unixFileClosePlugin( rsComm_t*                      _comm,
+                                      const std::string&              _results,
+                                      eirods::resource_property_map*  _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object ) {
+                                       
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -370,12 +367,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error unixFileUnlinkPlugin( eirods::resource_property_map* 
-                                        _prop_map, 
-                                        eirods::resource_child_map* 
-                                        _cmap,
-                                        eirods::first_class_object* 
-                                        _object ) {
+    eirods::error unixFileUnlinkPlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* _prop_map, 
+                                        eirods::resource_child_map*    _cmap,
+                                        eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -413,13 +409,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error unixFileStatPlugin( eirods::resource_property_map* 
-                                      _prop_map, 
-                                      eirods::resource_child_map* 
-                                      _cmap,
-                                      eirods::first_class_object* 
-                                      _object,
-                                      struct stat*        _statbuf ) { 
+    eirods::error unixFileStatPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* _prop_map, 
+                                      eirods::resource_child_map*    _cmap,
+                                      eirods::first_class_object*    _object,
+                                      struct stat*                   _statbuf ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -469,13 +464,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
-    eirods::error unixFileFstatPlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map*
-                                       _cmap,
-                                       eirods::first_class_object* 
-                                       _object,
-                                       struct stat*        _statbuf ) {
+    eirods::error unixFileFstatPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object,
+                                       struct stat*                   _statbuf ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -527,14 +521,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error unixFileLseekPlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object* 
-                                       _object,
-                                       size_t              _offset, 
-                                       int                 _whence ) {
+    eirods::error unixFileLseekPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object,
+                                       size_t                         _offset, 
+                                       int                            _whence ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -573,12 +566,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
-    eirods::error unixFileFsyncPlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object*
-                                       _object ) {
+    eirods::error unixFileFsyncPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -617,12 +609,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error unixFileMkdirPlugin( eirods::resource_property_map*
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object*
-                                       _object ) {
+    eirods::error unixFileMkdirPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -677,11 +668,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error unixFileChmodPlugin(
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object) {
-
+    eirods::error unixFileChmodPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -720,12 +711,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error unixFileRmdirPlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object*
-                                       _object ) {
+    eirods::error unixFileRmdirPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -764,12 +754,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error unixFileOpendirPlugin( eirods::resource_property_map* 
-                                         _prop_map, 
-                                         eirods::resource_child_map* 
-                                         _cmap,
-                                         eirods::first_class_object*
-                                         _object ) {
+    eirods::error unixFileOpendirPlugin( rsComm_t*                      _comm,
+                                         const std::string&             _results,
+                                         eirods::resource_property_map* _prop_map, 
+                                         eirods::resource_child_map*    _cmap,
+                                         eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -833,12 +822,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error unixFileClosedirPlugin( eirods::resource_property_map* 
-                                          _prop_map, 
-                                          eirods::resource_child_map* 
-                                          _cmap,
-                                          eirods::first_class_object*
-                                          _object ) {
+    eirods::error unixFileClosedirPlugin( rsComm_t*                      _comm,
+                                          const std::string&             _results,
+                                          eirods::resource_property_map* _prop_map, 
+                                          eirods::resource_child_map*    _cmap,
+                                          eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -884,13 +872,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error unixFileReaddirPlugin( eirods::resource_property_map* 
-                                         _prop_map, 
-                                         eirods::resource_child_map* 
-                                         _cmap,
-                                         eirods::first_class_object*
-									                         _object,
-										 struct rodsDirent** _dirent_ptr ) {
+    eirods::error unixFileReaddirPlugin( rsComm_t*                      _comm,
+                                         const std::string&             _results,
+                                         eirods::resource_property_map* _prop_map, 
+                                         eirods::resource_child_map*    _cmap,
+                                         eirods::first_class_object*    _object,
+										 struct rodsDirent**            _dirent_ptr ) {
 		// =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -966,12 +953,11 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error unixFileStagePlugin( eirods::resource_property_map* 
-                                       _prop_map, 
-                                       eirods::resource_child_map* 
-                                       _cmap,
-                                       eirods::first_class_object*
-                                       _object ) {
+    eirods::error unixFileStagePlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* _prop_map, 
+                                       eirods::resource_child_map*    _cmap,
+                                       eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -1003,7 +989,9 @@ extern "C" {
      * @brief Recursively make all of the dirs in the path
      */
     eirods::error
-    unixFileMkDirR(
+    unixFileMkDirR(rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                       
         const std::string& path,
         mode_t mode) {
         eirods::error result = SUCCESS();
@@ -1042,13 +1030,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error unixFileRenamePlugin( eirods::resource_property_map* 
-                                        _prop_map, 
-                                        eirods::resource_child_map* 
-                                        _cmap,
-                                        eirods::first_class_object*
-                                        _object, 
-                                        const char*         _new_file_name ) {
+    eirods::error unixFileRenamePlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* _prop_map, 
+                                        eirods::resource_child_map*    _cmap,
+                                        eirods::first_class_object*    _object, 
+                                        const char*                    _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -1065,7 +1052,7 @@ extern "C" {
         std::string new_path = _new_file_name;
         std::size_t last_slash = new_path.find_last_of('/');
         new_path.erase(last_slash);
-        eirods::error ret = unixFileMkDirR( new_path.c_str(), 0750 );
+        eirods::error ret = unixFileMkDirR( _comm, "", new_path.c_str(), 0750 );
         if(!ret.ok()) {
 
             std::stringstream msg;
@@ -1105,12 +1092,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error unixFileTruncatePlugin( eirods::resource_property_map* 
-                                          _prop_map, 
-                                          eirods::resource_child_map* 
-                                          _cmap,
-                                          eirods::first_class_object*
-                                          _object ) { 
+    eirods::error unixFileTruncatePlugin( rsComm_t*                      _comm,
+                                          const std::string&             _results,
+                                          eirods::resource_property_map* _prop_map, 
+                                          eirods::resource_child_map*    _cmap,
+                                          eirods::first_class_object*    _object ) { 
+                                         
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -1160,12 +1147,11 @@ extern "C" {
 	
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error unixFileGetFsFreeSpacePlugin( eirods::resource_property_map* 
-                                                _prop_map, 
-                                                eirods::resource_child_map* 
-                                                _cmap,
-                                                eirods::first_class_object*
-                                                _object ) { 
+    eirods::error unixFileGetFsFreeSpacePlugin( rsComm_t*                      _comm,
+                                                const std::string&             _results,
+                                                eirods::resource_property_map* _prop_map, 
+                                                eirods::resource_child_map*    _cmap,
+                                                eirods::first_class_object*    _object ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
@@ -1315,17 +1301,17 @@ extern "C" {
     // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error unixStageToCachePlugin( eirods::resource_property_map* 
-                                          _prop_map, 
-                                          eirods::resource_child_map* 
-                                          _cmap,
-                                          const char*         _file_name, 
-                                          const char*         _cache_file_name, 
-                                          int                 _mode, 
-                                          int                 _flags,  
-                                          size_t              _data_size, 
-                                          keyValPair_t*       _cond_input, 
-                                          int*                _status ) {
+    eirods::error unixStageToCachePlugin( rsComm_t*                     _comm,
+                                          const std::string&            _results,
+                                         eirods::resource_property_map* _prop_map, 
+                                          eirods::resource_child_map*   _cmap,
+                                          const char*                   _file_name, 
+                                          const char*                   _cache_file_name, 
+                                          int                           _mode, 
+                                          int                           _flags,  
+                                          size_t                        _data_size, 
+                                          keyValPair_t*                 _cond_input, 
+                                          int*                          _status ) {
         (*_status) = unixFileCopyPlugin( _mode, _file_name, _cache_file_name );
         if( (*_status) < 0 ) {
             return ERROR( *_status, "unixStageToCachePlugin failed." );
@@ -1338,17 +1324,17 @@ extern "C" {
     // unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error unixSyncToArchPlugin( eirods::resource_property_map* 
-                                        _prop_map, 
-                                        eirods::resource_child_map* 
-                                        _cmap,
-                                        const char*         _file_name, 
-                                        char*               _cache_file_name, 
-                                        int                 _mode,
-                                        int                 _flags,  
-                                        rodsLong_t          _data_size, 
-                                        keyValPair_t*       _cond_input, 
-                                        int*                _status ) {
+    eirods::error unixSyncToArchPlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* _prop_map, 
+                                        eirods::resource_child_map*    _cmap,
+                                        const char*                    _file_name, 
+                                        char*                          _cache_file_name, 
+                                        int                            _mode,
+                                        int                            _flags,  
+                                        rodsLong_t                     _data_size, 
+                                        keyValPair_t*                  _cond_input, 
+                                        int*                           _status ) {
 
         (*_status) = unixFileCopyPlugin( _mode, _cache_file_name, _file_name );
         if( (*_status) < 0 ) {
@@ -1419,7 +1405,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // unixRedirectPlugin - used to allow the resource to determine which host
     //                      should provide the requested operation
-    eirods::error unixRedirectPlugin( eirods::resource_property_map* _prop_map, 
+    eirods::error unixRedirectPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* _prop_map, 
                                       eirods::resource_child_map*    _cmap,
                                       const std::string*             _opr,
                                       const std::string*             _curr_host,
@@ -1496,35 +1484,31 @@ extern "C" {
         //     and will not be called.
         class maintenance_operation {
         public:
-            maintenance_operation( unixfilesystem_resource* _r ) : resc_(_r) {
-                std::string name;
-                resc_->get_property< std::string >( "name", name );
+            maintenance_operation( const std::string& _n ) : name_(_n) {
             }
 
             maintenance_operation( const maintenance_operation& _rhs ) {
-                resc_ = _rhs.resc_;    
+                name_ = _rhs.name_;    
             }
 
             maintenance_operation& operator=( const maintenance_operation& _rhs ) {
-                resc_ = _rhs.resc_;    
+                name_ = _rhs.name_;    
                 return *this;
             }
 
             eirods::error operator()() {
-                std::string name;
-                resc_->get_property< std::string >( "name", name );
-                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name.c_str() );
+                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
                 return SUCCESS();
             }
 
         private:
-            boost::shared_ptr< unixfilesystem_resource > resc_;
-            //unixfilesystem_resource* resc_;
+            std::string name_;
 
         }; // class maintenance_operation
 
     public:
-        unixfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
+        unixfilesystem_resource( const std::string& _inst_name, const std::string& _context ) : 
+            eirods::resource( _inst_name, _context ) {
             if( !context_.empty() ) {
                 // =-=-=-=-=-=-=-
                 // tokenize context string into key/val pairs assuming a ; as a separator
@@ -1563,12 +1547,18 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-#if 1
-            _op = maintenance_operation( this );
+            #if 0
+            std::string name;
+            eirods::error err = get_property< std::string >( "name", name );
+            if( !err.ok() ) {
+                return PASSMSG( "unixfilesystem_resource::post_disconnect_maintenance_operation failed.", err );
+            }
+
+            _op = maintenance_operation( name );
             return SUCCESS();
-#else
-            return ERROR( -1, "no op supported" );
-#endif
+            #else
+            return ERROR( -1, "nop" );
+            #endif
         }
 
     }; // class unixfilesystem_resource
@@ -1580,11 +1570,11 @@ extern "C" {
     //    defined above.  for resource plugins these call names are standardized
     //    as used by the e-irods facing interface defined in 
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( std::string _context  ) {
+    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create unixfilesystem_resource
-        unixfilesystem_resource* resc = new unixfilesystem_resource( _context );
+        unixfilesystem_resource* resc = new unixfilesystem_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load

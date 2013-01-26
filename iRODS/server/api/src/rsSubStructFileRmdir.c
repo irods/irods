@@ -73,7 +73,7 @@ int _rsSubStructFileRmdir( rsComm_t*  _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to rmdir
-    eirods::error rmdir_err = fileRmdir( struct_obj );
+    eirods::error rmdir_err = fileRmdir( _comm, struct_obj );
     if( !rmdir_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileRmdir - failed on call to fileRmdir for [";

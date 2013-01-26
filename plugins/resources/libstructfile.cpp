@@ -572,7 +572,9 @@ extern "C" {
 
 	// =-=-=-=-=-=-=-
 	// interface for POSIX create
-    eirods::error tarFileCreatePlugin( eirods::resource_property_map* 
+    eirods::error tarFileCreatePlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* 
                                        _prop_map,
                                        eirods::resource_child_map* 
                                        _cmap, 
@@ -673,7 +675,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error tarFileOpenPlugin( eirods::resource_property_map* 
+    eirods::error tarFileOpenPlugin( rsComm_t*                      _comm,
+                                     const std::string&             _results,
+                                     eirods::resource_property_map* 
                                      _prop_map, 
                                      eirods::resource_child_map* 
                                      _cmap, 
@@ -777,7 +781,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error tarFileReadPlugin( eirods::resource_property_map* 
+    eirods::error tarFileReadPlugin( rsComm_t*                      _comm,
+                                     const std::string&             _results,
+                                     eirods::resource_property_map* 
                                      _prop_map, 
                                      eirods::resource_child_map* 
                                      _cmap,
@@ -823,7 +829,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error tarFileWritePlugin( eirods::resource_property_map* 
+    eirods::error tarFileWritePlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map*
                                       _cmap,
@@ -882,7 +890,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error tarFileClosePlugin( eirods::resource_property_map* 
+    eirods::error tarFileClosePlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -933,7 +943,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error tarFileUnlinkPlugin( eirods::resource_property_map* 
+    eirods::error tarFileUnlinkPlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* 
                                        _prop_map, 
                                        eirods::resource_child_map* 
                                        _cmap,
@@ -1020,7 +1032,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error tarFileStatPlugin( eirods::resource_property_map* 
+    eirods::error tarFileStatPlugin( rsComm_t*                      _comm,
+                                     const std::string&             _results,
+                                     eirods::resource_property_map* 
                                      _prop_map, 
                                      eirods::resource_child_map* 
                                      _cmap,
@@ -1104,7 +1118,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
-    eirods::error tarFileFstatPlugin( eirods::resource_property_map* 
+    eirods::error tarFileFstatPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map*
                                       _cmap,
@@ -1157,7 +1173,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error tarFileLseekPlugin( eirods::resource_property_map* 
+    eirods::error tarFileLseekPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -1214,7 +1232,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
-    eirods::error tarFileFsyncPlugin( eirods::resource_property_map* 
+    eirods::error tarFileFsyncPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -1228,7 +1248,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error tarFileMkdirPlugin( eirods::resource_property_map*
+    eirods::error tarFileMkdirPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map*
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -1317,7 +1339,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error tarFileChmodPlugin( eirods::resource_property_map* 
+    eirods::error tarFileChmodPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -1332,7 +1356,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error tarFileRmdirPlugin( eirods::resource_property_map* 
+    eirods::error tarFileRmdirPlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -1420,7 +1446,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error tarFileOpendirPlugin( eirods::resource_property_map* 
+    eirods::error tarFileOpendirPlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* 
                                         _prop_map, 
                                         eirods::resource_child_map* 
                                         _cmap,
@@ -1521,7 +1549,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error tarFileClosedirPlugin( eirods::resource_property_map* 
+    eirods::error tarFileClosedirPlugin( rsComm_t*                      _comm,
+                                         const std::string&             _results,
+                                         eirods::resource_property_map* 
                                          _prop_map, 
                                          eirods::resource_child_map* 
                                          _cmap,
@@ -1576,7 +1606,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error tarFileReaddirPlugin( eirods::resource_property_map* 
+    eirods::error tarFileReaddirPlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* 
                                         _prop_map, 
                                         eirods::resource_child_map* 
                                         _cmap,
@@ -1627,7 +1659,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error tarFileStagePlugin( eirods::resource_property_map* 
+    eirods::error tarFileStagePlugin( rsComm_t*                      _comm,
+                                      const std::string&             _results,
+                                      eirods::resource_property_map* 
                                       _prop_map, 
                                       eirods::resource_child_map* 
                                       _cmap,
@@ -1641,7 +1675,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX rename
-    eirods::error tarFileRenamePlugin( eirods::resource_property_map* 
+    eirods::error tarFileRenamePlugin( rsComm_t*                      _comm,
+                                       const std::string&             _results,
+                                       eirods::resource_property_map* 
                                        _prop_map, 
                                        eirods::resource_child_map* 
                                        _cmap,
@@ -1737,7 +1773,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error tarFileTruncatePlugin( eirods::resource_property_map* 
+    eirods::error tarFileTruncatePlugin( rsComm_t*                      _comm,
+                                         const std::string&             _results,
+                                         eirods::resource_property_map* 
                                          _prop_map, 
                                          eirods::resource_child_map* 
                                          _cmap,
@@ -1836,7 +1874,9 @@ extern "C" {
 	
     // =-=-=-=-=-=-=-
 	// interface to extract a tar file
-	eirods::error tarFileExtractPlugin( eirods::resource_property_map* _prop_map, 
+	eirods::error tarFileExtractPlugin( rsComm_t*                      _comm,
+                                        const std::string&             _results,
+                                        eirods::resource_property_map* _prop_map, 
 								        eirods::resource_child_map*    _cmap,
                                         eirods::first_class_object*    _object ) { 
 		// =-=-=-=-=-=-=-
@@ -2277,7 +2317,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
 	// tarFileCopyPlugin
-	eirods::error tarFileSyncPlugin( eirods::resource_property_map* _prop_map, 
+	eirods::error tarFileSyncPlugin( rsComm_t*                      _comm,
+                                     const std::string&             _results,
+                                     eirods::resource_property_map* _prop_map, 
                                      eirods::resource_child_map*    _cmap,
                                      eirods::first_class_object*    _object ) {
         // =-=-=-=-=-=-=-
@@ -2414,7 +2456,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
 	// tarFileCopyPlugin
-	eirods::error tarFileGetFsFreeSpacePlugin( eirods::resource_property_map* _prop_map, 
+	eirods::error tarFileGetFsFreeSpacePlugin( rsComm_t*                      _comm,
+                                               const std::string&             _results,
+                                               eirods::resource_property_map* _prop_map, 
                                                eirods::resource_child_map*    _cmap,
                                                eirods::first_class_object*    _object ) {
         return ERROR( -1, "tarFileGetFsFreeSpacePlugin is not implemented" );
@@ -2428,7 +2472,8 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class tarfilesystem_resource : public eirods::resource {
     public:
-        tarfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
+        tarfilesystem_resource( const std::string& _inst_name, const std::string& _context ) :
+        eirods::resource( _inst_name, _context ) {
         } // ctor
 
     }; // class tarfilesystem_resource
@@ -2440,11 +2485,11 @@ extern "C" {
     //    defined above.  for resource plugins these call names are standardized
     //    as used by the e-irods facing interface defined in 
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( std::string _context  ) {
+    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create tarfilesystem_resource
-        tarfilesystem_resource* resc = new tarfilesystem_resource( _context );
+        tarfilesystem_resource* resc = new tarfilesystem_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
 		// 4b1. set start and stop operations for alloc / free of tables

@@ -99,7 +99,8 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
                                   FileDesc[fileReadInp->fileInx].fd,  
                                   0, 0 );
                                      
-    eirods::error ret = fileRead( file_obj,  
+    eirods::error ret = fileRead( rsComm, 
+                                  file_obj,  
                                   fileReadOutBBuf->buf, 
                                   fileReadInp->len );
     // =-=-=-=-=-=-=

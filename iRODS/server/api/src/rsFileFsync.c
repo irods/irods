@@ -83,7 +83,7 @@ int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
                                    FileDesc[fileFsyncInp->fileInx].rescHier,
                                    FileDesc[fileFsyncInp->fileInx].fd,
                                    0, 0 );
-    eirods::error fsync_err = fileFsync( file_obj );
+    eirods::error fsync_err = fileFsync( rsComm, file_obj );
 
     // =-=-=-=-=-=-=-
     // log error if necessary

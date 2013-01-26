@@ -88,7 +88,7 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
     eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->fileName, fileGetFsFreeSpaceInp->rescHier,
                                   0, 0, fileGetFsFreeSpaceInp->flag );
  
-    eirods::error free_err = fileGetFsFreeSpace( file_obj );
+    eirods::error free_err = fileGetFsFreeSpace( rsComm, file_obj );
     // =-=-=-=-=-=-=-
     // handle errors if any
     if( !free_err.ok() ) {

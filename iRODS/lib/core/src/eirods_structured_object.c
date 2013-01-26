@@ -101,7 +101,7 @@ namespace eirods {
         } else {
             // =-=-=-=-=-=-=-
             // otherwise create a resource and add properties from this object
-            error init_err = _mgr.init_from_type( "structfile", "struct file", "empty context", _ptr );
+            error init_err = _mgr.init_from_type( "structfile", "struct file", "struct_file_inst", "empty context", _ptr );
             if( !init_err.ok() ) {
                 return PASS( false, -1, "structured_object::resolve - failed to load resource plugin", init_err );
             

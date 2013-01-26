@@ -62,7 +62,7 @@ namespace eirods {
         float       vote = 0.0;
         std::string hier;
         ret = resc->call< const std::string*, const std::string*, file_object*, std::string*, float* >( 
-                          "redirect", &_oper, &host_name, &file_obj, &hier, &vote );
+                          _comm, "redirect", &_oper, &host_name, &file_obj, &hier, &vote );
         if( !ret.ok() || 0.0 == vote ) {
             std::stringstream msg;
             msg << "resource_redirect :: failed in resc.call( redirect ) ";

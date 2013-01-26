@@ -190,7 +190,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error passthruFileCreatePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileCreatePlugin( rsComm_t*          _comm,
+                                            const std::string& _results,
+                                            eirods::resource_property_map* 
                                             _prop_map,
                                             eirods::resource_child_map* 
                                             _cmap, 
@@ -214,7 +216,7 @@ extern "C" {
                     result = PASS(false, -1, "passthruFileCreatePlugin - failed to generate the full path.", ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("create", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "create", _object);
                     if(!ret.ok()) {
                         result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
                     } else {
@@ -242,7 +244,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error passthruFileOpenPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileOpenPlugin( rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                           _prop_map, 
                                           eirods::resource_child_map* 
                                           _cmap, 
@@ -268,7 +272,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("open", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "open", _object);
                     result = PASSMSG("passthruFileOpenPlugin - failed calling child open.", ret);
                 }
             }
@@ -278,7 +282,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error passthruFileReadPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileReadPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                           _prop_map, 
                                           eirods::resource_child_map* 
                                           _cmap,
@@ -306,7 +312,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, void*, int>("read", _object, _buf, _len);
+                    ret = resc->call<eirods::first_class_object*, void*, int>( _comm, "read", _object, _buf, _len);
                     result = PASSMSG("passthruFileReadPlugin - failed calling child read.", ret);
                 }
             }
@@ -316,7 +322,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error passthruFileWritePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileWritePlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map*
                                            _cmap,
@@ -344,7 +352,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, void*, int>("write", _object, _buf, _len);
+                    ret = resc->call<eirods::first_class_object*, void*, int>( _comm, "write", _object, _buf, _len);
                     result = PASSMSG("passthruFileWritePlugin - failed calling child write.", ret);
                 }
             }
@@ -354,7 +362,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error passthruFileClosePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileClosePlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map* 
                                            _cmap,
@@ -380,7 +390,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("close", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "close", _object);
                     result = PASSMSG("passthruFileClosePlugin - failed calling child close.", ret);
                 }
             }
@@ -391,7 +401,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error passthruFileUnlinkPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileUnlinkPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                             _prop_map, 
                                             eirods::resource_child_map* 
                                             _cmap,
@@ -417,7 +429,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("unlink", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "unlink", _object);
                     result = PASSMSG("passthruFileUnlinkPlugin - failed calling child unlink.", ret);
                 }
             }
@@ -427,7 +439,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error passthruFileStatPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileStatPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                           _prop_map, 
                                           eirods::resource_child_map* 
                                           _cmap,
@@ -452,7 +466,7 @@ extern "C" {
                     result = PASSMSG("passthruFileStatPlugin - failed to get the full path name.", ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, struct stat*>("stat", _object, _statbuf);
+                    ret = resc->call<eirods::first_class_object*, struct stat*>( _comm, "stat", _object, _statbuf);
                     result = PASSMSG("passthruFileStatPlugin - failed calling child stat.", ret);
                 }
             }
@@ -462,7 +476,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
-    eirods::error passthruFileFstatPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileFstatPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map*
                                            _cmap,
@@ -489,7 +505,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, struct stat*>("fstat", _object, _statbuf);
+                    ret = resc->call<eirods::first_class_object*, struct stat*>( _comm, "fstat", _object, _statbuf);
                     result = PASSMSG("passthruFileFstatPlugin - failed calling child fstat.", ret);
                 }
             }
@@ -499,7 +515,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error passthruFileLseekPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileLseekPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map* 
                                            _cmap,
@@ -527,7 +545,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, size_t, int>("lseek", _object, _offset, _whence);
+                    ret = resc->call<eirods::first_class_object*, size_t, int>( _comm, "lseek", _object, _offset, _whence);
                     result = PASSMSG("passthruFileLseekPlugin - failed calling child lseek.", ret);
                 }
             }
@@ -537,7 +555,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
-    eirods::error passthruFileFsyncPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileFsyncPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map* 
                                            _cmap,
@@ -563,7 +583,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("fsync", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "fsync", _object);
                     result = PASSMSG("passthruFileFsyncPlugin - failed calling child fsync.", ret);
                 }
             }
@@ -573,7 +593,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileMkdirPlugin( eirods::resource_property_map*
+    eirods::error passthruFileMkdirPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
+                                         eirods::resource_property_map*
                                            _prop_map, 
                                            eirods::resource_child_map* 
                                            _cmap,
@@ -599,7 +621,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("mkdir", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "mkdir", _object);
                     result = PASSMSG("passthruFileMkdirPlugin - failed calling child mkdir.", ret);
                 }
             }
@@ -609,7 +631,8 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileChmodPlugin(
+    eirods::error passthruFileChmodPlugin(  rsComm_t* _comm,
+                                          const std::string& _results,
         eirods::resource_property_map* _prop_map, 
         eirods::resource_child_map* _cmap,
         eirods::first_class_object* _object) {
@@ -634,7 +657,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("chmod", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "chmod", _object);
                     result = PASSMSG("passthruFileChmodPlugin - failed calling child chmod.", ret);
                 }
             }
@@ -644,7 +667,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileRmdirPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileRmdirPlugin( rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map* 
                                            _cmap,
@@ -670,7 +695,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("rmdir", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "rmdir", _object);
                     result = PASSMSG("passthruFileRmdirPlugin - failed calling child rmdir.", ret);
                 }
             }
@@ -680,7 +705,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error passthruFileOpendirPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileOpendirPlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                              _prop_map, 
                                              eirods::resource_child_map* 
                                              _cmap,
@@ -706,7 +733,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("opendir", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "opendir", _object);
                     result = PASSMSG("passthruFileOpendirPlugin - failed calling child opendir.", ret);
                 }
             }
@@ -716,7 +743,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error passthruFileClosedirPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileClosedirPlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                               _prop_map, 
                                               eirods::resource_child_map* 
                                               _cmap,
@@ -742,7 +771,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("closedir", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "closedir", _object);
                     result = PASSMSG("passthruFileClosedirPlugin - failed calling child closedir.", ret);
                 }
             }
@@ -752,7 +781,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileReaddirPlugin( eirods::resource_property_map* 
+    eirods::error passthruFileReaddirPlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                              _prop_map, 
                                              eirods::resource_child_map* 
                                              _cmap,
@@ -779,7 +810,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*, struct rodsDirent**>("readdir", _object, _dirent_ptr);
+                    ret = resc->call<eirods::first_class_object*, struct rodsDirent**>( _comm, "readdir", _object, _dirent_ptr);
                     result = PASSMSG("passthruFileReaddirPlugin - failed calling child readdir.", ret);
                 }
             }
@@ -789,7 +820,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileStagePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileStagePlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                            _prop_map, 
                                            eirods::resource_child_map* 
                                            _cmap,
@@ -815,7 +848,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("stage", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "stage", _object);
                     result = PASSMSG("passthruFileStagePlugin - failed calling child stage.", ret);
                 }
             }
@@ -825,7 +858,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileRenamePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileRenamePlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                             _prop_map, 
                                             eirods::resource_child_map* 
                                             _cmap,
@@ -859,7 +894,7 @@ extern "C" {
                         result = PASSMSG(msg.str(), ret);
                     } else {
                         _object->physical_path(full_path);
-                        ret = resc->call<eirods::first_class_object*, const char*>("rename", _object, new_full_path.c_str());
+                        ret = resc->call<eirods::first_class_object*, const char*>( _comm, "rename", _object, new_full_path.c_str());
                         result = PASSMSG("passthruFileRenamePlugin - failed calling child rename.", ret);
                     }
                 }
@@ -870,7 +905,9 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error passthruFileTruncatePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileTruncatePlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                               _prop_map, 
                                               eirods::resource_child_map* 
                                               _cmap,
@@ -897,7 +934,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("truncate", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "truncate", _object);
                     result = PASSMSG("passthruFileTruncatePlugin - failed calling child truncate.", ret);
                 }
             }
@@ -908,7 +945,9 @@ extern "C" {
         
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error passthruFileGetFsFreeSpacePlugin( eirods::resource_property_map* 
+    eirods::error passthruFileGetFsFreeSpacePlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                                     _prop_map, 
                                                     eirods::resource_child_map* 
                                                     _cmap,
@@ -934,7 +973,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     _object->physical_path(full_path);
-                    ret = resc->call<eirods::first_class_object*>("freespace", _object);
+                    ret = resc->call<eirods::first_class_object*>( _comm, "freespace", _object);
                     result = PASSMSG("passthruFileGetFsFreeSpacePlugin - failed calling child freespace.", ret);
                 }
             }
@@ -946,7 +985,9 @@ extern "C" {
     // passthruStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error passthruStageToCachePlugin( eirods::resource_property_map* 
+    eirods::error passthruStageToCachePlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                           _prop_map, 
                                           eirods::resource_child_map* 
                                           _cmap,
@@ -971,7 +1012,7 @@ extern "C" {
                 result = PASS(false, -1, "passthruStageToCachePlugin - failed getting the first child resource pointer.", ret);
             } else {
                 ret = resc->call<const char*, const char*, int, int, size_t, keyValPair_t*, int*>
-                    ("stagetocache", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
+                    ( _comm, "stagetocache", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
                 result = PASSMSG("passthruStageToCachePlugin - failed calling child stagetocache.", ret);
             }
         }
@@ -982,7 +1023,9 @@ extern "C" {
     // passthruSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error passthruSyncToArchPlugin( eirods::resource_property_map* 
+    eirods::error passthruSyncToArchPlugin(  rsComm_t* _comm,
+                                           const std::string& _results,
+                                           eirods::resource_property_map* 
                                             _prop_map, 
                                             eirods::resource_child_map* 
                                             _cmap,
@@ -1007,7 +1050,7 @@ extern "C" {
                 result = PASS(false, -1, "passthruSyncToArchPlugin - failed getting the first child resource pointer.", ret);
             } else {
                 ret = resc->call<const char*, const char*, int, int, size_t, keyValPair_t*, int*>
-                    ("synctoarch", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
+                    ( _comm, "synctoarch", _file_name, _cache_file_name, _mode, _flags, _data_size, _cond_input, _status);
                 result = PASSMSG("passthruSyncToArchPlugin - failed calling child synctoarch.", ret);
             }
         }
@@ -1021,7 +1064,8 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class passthru_resource : public eirods::resource {
     public:
-        passthru_resource( std::string _context ) : eirods::resource( _context ) {
+        passthru_resource( const std::string _inst_name, const std::string& _context ) : 
+            eirods::resource( _inst_name, _context ) {
             // =-=-=-=-=-=-=-
             // parse context string into property pairs assuming a ; as a separator
             std::vector< std::string > props;
@@ -1054,11 +1098,11 @@ extern "C" {
     //    defined above.  for resource plugins these call names are standardized
     //    as used by the e-irods facing interface defined in 
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( std::string _context  ) {
+    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create passthru_resource
-        passthru_resource* resc = new passthru_resource( _context );
+        passthru_resource* resc = new passthru_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load

@@ -79,7 +79,7 @@ int _rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp ) {
 	// call closedir via resource plugin, handle errors
     eirods::collection_object coll_obj( FileDesc[fileClosedirInp->fileInx].fileName, 0, 0 );
 	coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[fileClosedirInp->fileInx].driverDep ) );
-	eirods::error closedir_err = fileClosedir( coll_obj );
+	eirods::error closedir_err = fileClosedir( rsComm, coll_obj );
 
 	if( !closedir_err.ok() ) {
 		std::stringstream msg;

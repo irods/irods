@@ -74,7 +74,7 @@ _rsSubStructFileClose( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
-    eirods::error close_err = fileClose( struct_obj );
+    eirods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileClose - failed on call to fileClose for fd [ ";

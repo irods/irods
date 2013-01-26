@@ -1365,7 +1365,8 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class nbfilesystem_resource : public eirods::resource {
     public:
-        nbfilesystem_resource( std::string _context ) : eirods::resource( _context ) {
+        nbfilesystem_resource( const std::string& _inst_name, const std::string& _context ) : 
+            eirods::resource( _inst_name, _context ) {
             // =-=-=-=-=-=-=-
             // parse context string into property pairs assuming a ; as a separator
             std::vector< std::string > props;
@@ -1398,11 +1399,11 @@ extern "C" {
     //    defined above.  for resource plugins these call names are standardized
     //    as used by the e-irods facing interface defined in 
     //    server/drivers/src/fileDriver.c
-    eirods::resource* plugin_factory( std::string _context  ) {
+    eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
         // 4a. create nbfilesystem_resource
-        nbfilesystem_resource* resc = new nbfilesystem_resource( _context );
+        nbfilesystem_resource* resc = new nbfilesystem_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load

@@ -110,7 +110,8 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 
     // =-=-=-=-=-=-=-
     // make the call to fileStageToCache via the resource plugin
-    eirods::error stage_err = fileStageToCache( fileStageToCacheInp->filename,  fileStageToCacheInp->cacheFilename, 
+    eirods::error stage_err = fileStageToCache( rsComm,
+                                                fileStageToCacheInp->filename,  fileStageToCacheInp->cacheFilename, 
                                                 fileStageToCacheInp->mode,      fileStageToCacheInp->flags,
                                                 fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput,
 											    status );
@@ -124,7 +125,7 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 			// =-=-=-=-=-=-=-
 			// make the call to rmdir via the resource plugin
 			eirods::collection_object coll_obj( fileStageToCacheInp->cacheFilename, 0, 0 );
-			eirods::error rmdir_err = fileRmdir( coll_obj );
+			eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
 			if( !rmdir_err.ok() ) {
 				std::stringstream msg;
 				msg << "_rsFileStageToCache: fileRmdir for ";
@@ -146,7 +147,8 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 
 		// =-=-=-=-=-=-=-
 		// try it again?  ( make the call to fileStageToCache via the resource plugin )
-        stage_err = fileStageToCache( fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename,
+        stage_err = fileStageToCache( rsComm,
+                                      fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename,
                                       fileStageToCacheInp->mode,     fileStageToCacheInp->flags,
                                       fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput,
 		                              status );

@@ -81,7 +81,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     // =-=-=-=-=-=-=-
     // force the opening of a file?
     if (_sub_file->flags & FORCE_FLAG) {
-        eirods::error err = fileOpen( struct_obj );
+        eirods::error err = fileOpen( _comm, struct_obj );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "_rsSubStructFilePut - failed on call to fileCreate for [";
@@ -94,7 +94,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         }
 
     } else {
-        eirods::error err = fileCreate( struct_obj );
+        eirods::error err = fileCreate( _comm, struct_obj );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "_rsSubStructFilePut - failed on call to fileCreate for [";
@@ -127,7 +127,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     //  fd, _out_buf->buf, _out_buf->len);
     // =-=-=-=-=-=-=-
     // write the buffer to our structured file
-    eirods::error write_err = fileWrite( struct_obj, _out_buf->buf, _out_buf->len );
+    eirods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );
     if( !write_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFilePut - failed on call to fileWrite for [";
@@ -157,7 +157,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // close up our file after writing
-    eirods::error close_err = fileClose( struct_obj );
+    eirods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFilePut - failed on call to fileWrite for [";

@@ -16,31 +16,35 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // ms_table_entry definition
     ms_table_entry::ms_table_entry( ) : 
-        plugin_base( "" ),
-        action_(""), 
-        numberOfStringArgs_( 0 ), 
-        callAction_( 0 ) { 
+        plugin_base( "msvc", "ctx" ),
+        num_args_( 0 ), 
+        call_action_( 0 ) { 
     } // def ctor
 
-    ms_table_entry::ms_table_entry( std::string _s, int _n, ms_func_ptr _fp ) :
-        plugin_base(""),
-        action_(_s), 
-        numberOfStringArgs_( _n ), 
-        callAction_( _fp ) {
+    ms_table_entry::ms_table_entry( int _n ) :
+        plugin_base( "msvc", "ctx"),
+        num_args_( _n ), 
+        call_action_( 0 ) {
+    } // ctor
+
+    ms_table_entry::ms_table_entry( std::string _name,
+                                    int         _num_args,
+                                    ms_func_ptr _fcn_ptr ) :
+        plugin_base( "msvc", "ctx" ),
+        num_args_( _num_args ), 
+        call_action_( _fcn_ptr ) {
     } // ctor
 
     ms_table_entry::ms_table_entry( const ms_table_entry& _rhs ) :
-        plugin_base( _rhs.context_ ),
-        action_( _rhs.action_ ), 
-        numberOfStringArgs_( _rhs.numberOfStringArgs_ ), 
-        callAction_( _rhs.callAction_ ) {
+        plugin_base( _rhs ),
+        num_args_( _rhs.num_args_ ), 
+        call_action_( _rhs.call_action_ ) {
     } // cctor
 
     ms_table_entry& ms_table_entry::operator=( const ms_table_entry& _rhs ) { 
         plugin_base::operator=( _rhs );
-        action_             = _rhs.action_;
-        numberOfStringArgs_ = _rhs.numberOfStringArgs_;
-        callAction_         = _rhs.callAction_;
+        num_args_    = _rhs.num_args_;
+        call_action_ = _rhs.call_action_;
         return *this;
     } // operator=
 
@@ -48,23 +52,36 @@ namespace eirods {
     } // dtor
 
     error ms_table_entry::delay_load( void* _h ) {
+        // =-=-=-=-=-=-=-
+        // check handle to open shared object
         if( !_h ) {
             return ERROR( -1, "delay_load - null handle parameter" );
         }
-
-        callAction_ = reinterpret_cast< ms_func_ptr >( dlsym( _h, action_.c_str() ) );
-		
-        if( !callAction_ ) {
-            std::stringstream msg;
-            msg << "delay_load :: failed to load msvc function [" << action_ << "]";
-            return ERROR( -1, msg.str() );
-        } else { 
-#ifdef DEBUG
-            std::cout << "[+]\teirods::ms_table_entry::delay_load :: [" << action_ << "]" << std::endl;
-#endif
+    
+        // =-=-=-=-=-=-=-
+        // check to see if we actually have any ops
+        if( 0 == ops_for_delay_load_.size() ) {
+            return ERROR( -1, "ms_table_entry::delay_load - no ops to load" );
         }
 
+        // =-=-=-=-=-=-=-
+        // load our operation, assuming we have only one
+        std::string action = ops_for_delay_load_[0].first;
+        call_action_ = reinterpret_cast< ms_func_ptr >( dlsym( _h, action.c_str() ) ); 
+                                         
+		
+        // =-=-=-=-=-=-=-
+        // check our fcn ptr
+        if( !call_action_ ) {
+            std::stringstream msg;
+            msg << "delay_load :: failed to load msvc function [";
+            msg << action;
+            msg << "]";
+            return ERROR( -1, msg.str() );
+        } 
+
         return SUCCESS();
+
     } // delay_load
 
     // =-=-=-=-=-=-=-
@@ -73,7 +90,7 @@ namespace eirods {
     error load_microservice_plugin( ms_table& _table, const std::string _ms ) {
 
         ms_table_entry* entry = 0;
-	error load_err = load_plugin< ms_table_entry >( _ms, EIRODS_MS_HOME, entry, "" );
+	    error load_err = load_plugin< ms_table_entry >( entry, _ms, EIRODS_MS_HOME, "msvc", "ctx" );
         if( load_err.ok() && entry ) {
             _table[ _ms ] = entry;
             return SUCCESS();

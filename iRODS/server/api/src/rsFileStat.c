@@ -107,7 +107,7 @@ int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **file
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
     eirods::file_object file_obj( rsComm, fileStatInp->fileName, fileStatInp->rescHier, 0, 0, 0 );
-    eirods::error stat_err = fileStat( file_obj, &myFileStat );
+    eirods::error stat_err = fileStat( rsComm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-
     // log error if necessary

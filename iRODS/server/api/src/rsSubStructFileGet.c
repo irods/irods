@@ -81,7 +81,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // open the structured object
-    eirods::error open_err = fileOpen( struct_obj );
+    eirods::error open_err = fileOpen( _comm, struct_obj );
     if( !open_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileGet: subStructFileOpen error for [";
@@ -100,7 +100,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // read structured file
-    eirods::error read_err = fileRead( struct_obj, _out_buf->buf, _sub_file->offset ); 
+    eirods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _sub_file->offset ); 
     int status = read_err.code();
 
     if( !read_err.ok() ) {
@@ -132,7 +132,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // ok, done with that.  close the file.
-    eirods::error close_err = fileClose( struct_obj );
+    eirods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileGet - failed in fileClose for [";

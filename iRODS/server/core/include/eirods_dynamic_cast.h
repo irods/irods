@@ -28,8 +28,17 @@ namespace eirods {
         first_class_object* struct_fco = &struct_obj;
 
         file_object*       file_ptr   = dynamic_cast< file_object* >( file_fco );
+        if( !file_ptr ) {
+            rodsLog( LOG_NOTICE, "dynamic_cast_hack - failed to cast file_object" );
+        }
         collection_object* coll_ptr   = dynamic_cast< collection_object* >( coll_fco );
+        if( !coll_ptr ) {
+            rodsLog( LOG_NOTICE, "dynamic_cast_hack - failed to cast collection_object" );
+        }
         structured_object* struct_ptr = dynamic_cast< structured_object* >( struct_fco );
+        if( !struct_ptr ) {
+            rodsLog( LOG_NOTICE, "dynamic_cast_hack - failed to cast structured_object" );
+        }
 
     } // dynamic_cast_hack
 

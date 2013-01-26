@@ -126,7 +126,8 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
     // =-=-=-=-=-=-=-
     // call write for resource plugin
     eirods::file_object file_obj( rsComm, filePutInp->fileName, filePutInp->resc_hier_, fd, 0, 0 );
-    eirods::error write_err = fileWrite( file_obj, 
+    eirods::error write_err = fileWrite( rsComm,
+                                         file_obj, 
                                          filePutInpBBuf->buf, 
                                          filePutInpBBuf->len );
     int write_code = write_err.code();
@@ -158,7 +159,8 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
    
     // =-=-=-=-=-=-=-
     // close up after ourselves 
-    eirods::error close_err = fileClose( file_obj );
+    eirods::error close_err = fileClose( rsComm,
+                                         file_obj );
     if( !close_err.ok() ) {
         eirods::error err = PASS( false, close_err.code(), "_rsFilePut - error on close", close_err );
         eirods::log( err );

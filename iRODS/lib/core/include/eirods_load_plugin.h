@@ -86,8 +86,11 @@ namespace eirods {
      * \retval non-null on success
      **/
     template< typename PluginType >
-    error load_plugin(  const std::string _plugin_name, const std::string _dir, 
-                        PluginType*& _plugin, std::string _context  ) { 
+    error load_plugin(  PluginType*&       _plugin, 
+                        const std::string& _plugin_name, 
+                        const std::string& _dir, 
+                        const std::string& _instance_name,
+                        const std::string& _context  ) { 
 	
         // =-=-=-=-=-=-=-
         // strip out all non alphanumeric characters like spaces or such
@@ -150,7 +153,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // attempt to load the plugin factory function from the shared object
-        typedef PluginType* (*factory_type)( std::string );
+        typedef PluginType* (*factory_type)( const std::string& , const std::string&  );
         factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
         if( ( err = dlerror() ) != 0 ) {
             std::stringstream msg;
@@ -167,7 +170,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // using the factory pointer create the plugin
-        _plugin = factory( _context );
+        _plugin = factory( _instance_name, _context );
         if( _plugin ) {
             // =-=-=-=-=-=-=-
             // notify world of success

@@ -66,7 +66,7 @@ fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int _rsSubStructFileLseek( rsComm_t* _comm, 
+int _rsSubStructFileLseek( rsComm_t*                _comm, 
                            subStructFileLseekInp_t* _lseek_inp,
                            fileLseekOut_t**         _lseek_out ) {
    // =-=-=-=-=-=-=-
@@ -81,7 +81,10 @@ int _rsSubStructFileLseek( rsComm_t* _comm,
    
     // =-=-=-=-=-=-=-
     // call lseek interface
-    eirods::error lseek_err = fileLseek( struct_obj, _lseek_inp->offset, _lseek_inp->whence ); 
+    eirods::error lseek_err = fileLseek( _comm,
+                                         struct_obj, 
+                                         _lseek_inp->offset, 
+                                         _lseek_inp->whence ); 
     if( !lseek_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileLseek - fileLseek failed for fd [";

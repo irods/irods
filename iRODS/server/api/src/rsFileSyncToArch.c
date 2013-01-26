@@ -116,7 +116,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 
     // =-=-=-=-=-=-=-
 	// make call to synctoarch via resource plugin
-    eirods::error sync_err = fileSyncToArch( myFileName, fileSyncToArchInp->cacheFilename, 
+    eirods::error sync_err = fileSyncToArch( rsComm, myFileName, fileSyncToArchInp->cacheFilename, 
                                              fileSyncToArchInp->mode, fileSyncToArchInp->flags,
                                              fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput, 
 											 status );
@@ -131,7 +131,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 			// =-=-=-=-=-=-=-
 			// an empty dir may be there, make the call to rmdir via the resource plugin
 			eirods::collection_object coll_obj( fileSyncToArchInp->filename, 0, 0 );
-			eirods::error rmdir_err = fileRmdir( coll_obj );
+			eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
 			if( !rmdir_err.ok() ) {
 				std::stringstream msg;
 				msg << "_rsFileSyncToArch: fileRmdir for ";
@@ -154,7 +154,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 	
 		// =-=-=-=-=-=-=-
 		// make call to synctoarch via resource plugin
-		sync_err = fileSyncToArch( myFileName, fileSyncToArchInp->cacheFilename, 
+		sync_err = fileSyncToArch( rsComm, myFileName, fileSyncToArchInp->cacheFilename, 
 								   fileSyncToArchInp->mode, fileSyncToArchInp->flags,
 								   fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput, 
 								   status );

@@ -99,7 +99,8 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
     }
 
     eirods::file_object file_obj( rsComm, fileGetInp->fileName, fileGetInp->resc_hier_, fd, fileGetInp->mode, fileGetInp->flags  );
-    eirods::error read_err = fileRead( file_obj,
+    eirods::error read_err = fileRead( rsComm,
+                                       file_obj,
                                        fileGetOutBBuf->buf, 
                                        len );
     int bytes_read = read_err.code();
@@ -123,7 +124,8 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
 
     // =-=-=-=-=-=-=-
     // call resource plugin close 
-    eirods::error close_err = fileClose( file_obj );
+    eirods::error close_err = fileClose( rsComm,
+                                         file_obj );
     if( !close_err.ok() ) {
         eirods::error err = PASS( false, close_err.code(), "_rsFileGet - error on close", close_err );
         eirods::log( err );

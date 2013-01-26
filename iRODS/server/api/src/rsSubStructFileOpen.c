@@ -76,7 +76,7 @@ _rsSubStructFileOpen( rsComm_t*  _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
-    eirods::error open_err = fileOpen( struct_obj );
+    eirods::error open_err = fileOpen( _comm, struct_obj );
     if( !open_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileOpen - failed on call to fileOpen for [";

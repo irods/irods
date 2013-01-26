@@ -82,7 +82,7 @@ int _rsSubStructFileReaddir( rsComm_t*                 _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
-    eirods::error readdir_err = fileReaddir( struct_obj, _dirent );
+    eirods::error readdir_err = fileReaddir( _comm, struct_obj, _dirent );
     if( !readdir_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileReaddir - failed on call to fileReaddir for [";

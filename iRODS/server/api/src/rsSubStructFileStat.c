@@ -76,7 +76,7 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
     // =-=-=-=-=-=-=-
     // call abstrcated interface to stat
     struct stat my_stat;
-    eirods::error stat_err = fileStat( struct_obj, &my_stat );
+    eirods::error stat_err = fileStat( _comm, struct_obj, &my_stat );
 
     if( !stat_err.ok() ) {
         std::stringstream msg;

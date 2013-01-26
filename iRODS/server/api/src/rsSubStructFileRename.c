@@ -73,7 +73,7 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to rename
-    eirods::error rename_err = fileRename( struct_obj, _rename_inp->newSubFilePath );
+    eirods::error rename_err = fileRename( _comm, struct_obj, _rename_inp->newSubFilePath );
     if( !rename_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileRename - failed on call to fileRename for [";

@@ -156,7 +156,7 @@ int mkFileDirR(
 
     while (tmpLen > startLen) {
         eirods::collection_object tmp_coll_obj( tmpPath, 0, 0 );
-        eirods::error stat_err = fileStat( tmp_coll_obj, &statbuf );
+        eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &statbuf );
         if ( stat_err.code() >= 0) {
             if (statbuf.st_mode & S_IFDIR) {
                 break;
@@ -183,7 +183,7 @@ int mkFileDirR(
         tmpPath[tmpLen] = '/';
      
         eirods::collection_object tmp_coll_obj( tmpPath, mode, 0 ); 
-        eirods::error mkdir_err = fileMkdir( tmp_coll_obj );
+        eirods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
         if ( !mkdir_err.ok() && (getErrno ( mkdir_err.code()) != EEXIST)) { // JMC - backport 4834
             std::stringstream msg;
             msg << "mkFileDirR: fileMkdir for ";
@@ -213,7 +213,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
     // =-=-=-=-=-=-=-
     // call opendir via resource plugin
     eirods::collection_object cacheDir_obj( cacheDir, 0, 0 );
-    eirods::error opendir_err = fileOpendir( cacheDir_obj );
+    eirods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
 
     // =-=-=-=-=-=-=-
     // dont log an error as this is part
@@ -224,13 +224,13 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
 
     // =-=-=-=-=-=-=-
     // make call to readdir via resource plugin
-    eirods::error readdir_err = fileReaddir( cacheDir_obj, &myFileDirent );
+    eirods::error readdir_err = fileReaddir( rsComm, cacheDir_obj, &myFileDirent );
     while( readdir_err.ok() && 0 == readdir_err.code() ) {
         // =-=-=-=-=-=-=-
         // handle relative paths
         if( strcmp( myFileDirent->d_name, "." ) == 0 ||
             strcmp( myFileDirent->d_name, "..") == 0) {
-            readdir_err = fileReaddir( cacheDir_obj, &myFileDirent );
+            readdir_err = fileReaddir( rsComm, cacheDir_obj, &myFileDirent );
             continue;
         }
 
@@ -238,7 +238,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
         // get status of path
         snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
         eirods::collection_object tmp_coll_obj( childPath, 0, 0 );
-        eirods::error stat_err = fileStat( tmp_coll_obj, &myFileStat );
+        eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &myFileStat );
 
         // =-=-=-=-=-=-=-
         // handle hard error
@@ -269,13 +269,13 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
                 
         // =-=-=-=-=-=-=-
         // continue with child path
-        readdir_err = fileReaddir( cacheDir_obj, &myFileDirent );
+        readdir_err = fileReaddir( rsComm, cacheDir_obj, &myFileDirent );
 
     } // while
 
     // =-=-=-=-=-=-=-
     // make call to closedir via resource plugin, log error if necessary
-    eirods::error closedir_err = fileClosedir( cacheDir_obj );
+    eirods::error closedir_err = fileClosedir( rsComm, cacheDir_obj );
     if( !closedir_err.ok() ) {
         std::stringstream msg;
         msg << "chkEmptyDir: fileClosedir for ";
@@ -288,7 +288,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
 
     if( status != SYS_DIR_IN_VAULT_NOT_EMPTY ) {
         eirods::collection_object coll_obj( cacheDir, 0, 0 );
-        eirods::error rmdir_err = fileRmdir( coll_obj );
+        eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
         if( !rmdir_err.ok() ) {
             std::stringstream msg;
             msg << "chkEmptyDir: fileRmdir for ";

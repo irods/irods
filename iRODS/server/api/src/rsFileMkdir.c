@@ -73,7 +73,7 @@ int _rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
     // =-=-=-=-=-=-=-
 	// make call to mkdir via resource plugin
 	eirods::collection_object coll_obj( fileMkdirInp->dirName, fileMkdirInp->mode, 0 );
-	eirods::error mkdir_err = fileMkdir( coll_obj );
+	eirods::error mkdir_err = fileMkdir( rsComm, coll_obj );
 
     // =-=-=-=-=-=-=-
 	// log error if necessary

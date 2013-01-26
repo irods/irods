@@ -402,7 +402,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // create the resource and add properties for column values
             resource_ptr resc;
-            error ret = load_resource_plugin( resc, tmpRescType, tmpRescContext );
+            error ret = load_resource_plugin( resc, tmpRescType, tmpRescName, tmpRescContext );
             if( !ret.ok() ) {
                 return PASS( false, -1, "Failed to load Resource Plugin", ret );        
             }
@@ -449,11 +449,12 @@ namespace eirods {
     // public - given a type, load up a resource plugin
     error resource_manager::init_from_type( std::string   _type, 
                                             std::string   _key, 
+                                            std::string   _inst, 
                                             std::string   _ctx, 
                                             resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
         // create the resource and add properties for column values
-        error ret = load_resource_plugin( _resc, _type, _ctx );
+        error ret = load_resource_plugin( _resc, _type, _inst, _ctx );
         if( !ret.ok() ) {
             return PASS( false, -1, "Failed to load Resource Plugin", ret );    
         }

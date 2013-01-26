@@ -72,7 +72,7 @@ int _rsSubStructFileTruncate( rsComm_t*   _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to truncate
-    eirods::error trunc_err = fileTruncate( struct_obj );
+    eirods::error trunc_err = fileTruncate( _comm, struct_obj );
     if( !trunc_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileTruncate - failed on call to fileTruncate for [";

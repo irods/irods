@@ -89,7 +89,7 @@ int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **f
                                   FileDesc[fileFstatInp->fileInx].rescHier, 
                                   FileDesc[fileFstatInp->fileInx].fd,
                                   0, 0 );
-    eirods::error stat_err = fileFstat( file_obj, &myFileStat );
+    eirods::error stat_err = fileFstat( rsComm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-
     // log error if necessary

@@ -73,7 +73,7 @@ int _rsSubStructFileClosedir( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to close a file
-    eirods::error closedir_err = fileClosedir( struct_obj );
+    eirods::error closedir_err = fileClosedir( _comm, struct_obj );
     if( !closedir_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileClosedir - failed on call to fileClosedir for [";

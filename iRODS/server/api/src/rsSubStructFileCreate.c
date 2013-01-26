@@ -73,7 +73,7 @@ int _rsSubStructFileCreate( rsComm_t*  _comm,
     eirods::structured_object struct_obj( *_sub_file );
     struct_obj.comm( _comm );
 
-    eirods::error err = fileCreate( struct_obj );
+    eirods::error err = fileCreate( _comm, struct_obj );
  
     if( !err.ok() ) {
         std::stringstream msg;

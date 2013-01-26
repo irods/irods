@@ -72,7 +72,7 @@ int _rsSubStructFileOpendir( rsComm_t*  _comm,
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
-    eirods::error opendir_err = fileOpendir( struct_obj );
+    eirods::error opendir_err = fileOpendir( _comm, struct_obj );
     if( !opendir_err.ok() ) {
         std::stringstream msg;
         msg << "_rsSubStructFileOpendir - failed on call to fileOpendir for [";

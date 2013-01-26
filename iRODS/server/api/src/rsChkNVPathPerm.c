@@ -131,7 +131,7 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     while (1) {
        
         eirods::file_object file_obj( rsComm, tmpPath, chkNVPathPermInp->resc_hier_, 0, 0, 0 ); 
-        stat_err = fileStat( file_obj, &myFileStat ); 
+        stat_err = fileStat( rsComm, file_obj, &myFileStat ); 
         if ( stat_err.code() >= 0) {
             break;
         } else if ( errno == EEXIST || getErrno ( stat_err.code() ) == EEXIST) {

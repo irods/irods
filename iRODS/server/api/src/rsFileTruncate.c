@@ -76,7 +76,7 @@ int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
     // make the call to rename via the resource plugin
     eirods::file_object file_obj( rsComm, fileTruncateInp->fileName, fileTruncateInp->resc_hier_, 0, 0, 0 );
     file_obj.size( fileTruncateInp->dataSize );
-    eirods::error trunc_err = fileTruncate( file_obj );
+    eirods::error trunc_err = fileTruncate( rsComm, file_obj );
 
     // =-=-=-=-=-=-=-
     // report errors if any

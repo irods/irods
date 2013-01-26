@@ -4,7 +4,8 @@
 #define ___EIRODS_RESC_PLUGIN_H__
 
 // =-=-=-=-=-=-=-
-// My Includes
+// eirods includes
+#include "eirods_plugin_base.h"
 #include "eirods_operation_wrapper.h"
 
 namespace eirods {
@@ -28,7 +29,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief Constructors
-        resource( std::string );
+        resource( const std::string&,   // instance name
+                  const std::string& ); // context
 
         // =-=-=-=-=-=-=-
         /// @brief Destructor
@@ -74,10 +76,6 @@ namespace eirods {
         virtual error get_parent( resource_ptr& );
                 
         // =-=-=-=-=-=-=-
-        /// @brief interface to add operations - key, function name
-        error add_operation( std::string, std::string );
-                
-        // =-=-=-=-=-=-=-
         /// @brief interface to set start / stop functions
         void set_start_operation( std::string );
         void set_stop_operation ( std::string );
@@ -88,10 +86,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
         template< typename T1 >
-        error call( std::string _op, T1 _t1 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {        
-                return operations_[ _op ].call< T1 >( &properties_, &children_, _t1 );
+                return operations_[ _op ].call< T1 >( _comm, &properties_, &children_, _t1 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
             }
@@ -100,10 +98,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 2 params
         template< typename T1, typename T2 >
-        error call( std::string _op, T1 _t1, T2 _t2 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2 >( &properties_, &children_, _t1, _t2 );
+                return operations_[ _op ].call< T1, T2 >( _comm, &properties_, &children_, _t1, _t2 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
             }
@@ -112,10 +110,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 3 params
         template< typename T1, typename T2, typename T3 >
-        error call( std::string _op, T1 _t1, T2 _t2, T3 _t3 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2, T3 _t3 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3 >( &properties_, &children_, _t1, _t2, _t3 );
+                return operations_[ _op ].call< T1, T2, T3 >( _comm, &properties_, &children_, _t1, _t2, _t3 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
             }
@@ -124,10 +122,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 4 params
         template< typename T1, typename T2, typename T3, typename T4 >
-        error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return  operations_[ _op ].call< T1, T2, T3, T4 >( &properties_, &children_, _t1, _t2, _t3, _t4 );
+                return  operations_[ _op ].call< T1, T2, T3, T4 >( _comm, &properties_, &children_, _t1, _t2, _t3, _t4 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
             }
@@ -136,10 +134,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 5 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5 >
-        error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5 >( &properties_, &children_, _t1, _t2, _t3, _t4, _t5 );
+                return operations_[ _op ].call< T1, T2, T3, T4, T5 >( _comm, &properties_, &children_, _t1, _t2, _t3, _t4, _t5 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
             }
@@ -148,10 +146,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 6 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-        error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( &properties_, &children_, _t1, _t2, _t3, _t4, 
+                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( _comm, &properties_, &children_, _t1, _t2, _t3, _t4, 
                                                                           _t5, _t6 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
@@ -161,10 +159,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 7 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
-        error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( &properties_, &children_, _t1, _t2, _t3, 
+                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( _comm, &properties_, &children_, _t1, _t2, _t3, 
                                                                               _t4, _t5, _t6, _t7 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
@@ -174,10 +172,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 8 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-        error call( std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
+        error call( rsComm_t* _comm, std::string _op, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
             error ret = check_operation_params( _op );
             if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( &properties_, &children_, _t1, _t2, 
+                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( _comm, &properties_, &children_, _t1, _t2, 
                                                                                   _t3, _t4, _t5, _t6, _t7, _t8 );
             } else {
                 return PASS( false, -1, "check_operation_params failed.", ret );
@@ -187,8 +185,8 @@ namespace eirods {
     protected:
 
         // =-=-=-=-=-=-=-
-        // Start / Stop functions - can be overwritten by plugin devs
-        // called when a plugin is loaded or unloaded for init / cleanup
+        /// @brief Start / Stop functions - can be overwritten by plugin devs
+        //         called when a plugin is loaded or unloaded for init / cleanup
         std::string start_opr_name_;
         resource_maintenance_operation start_operation_;
 
@@ -196,18 +194,17 @@ namespace eirods {
         resource_maintenance_operation stop_operation_;
 
         // =-=-=-=-=-=-=-
-        // Pointers to Child and Parent Resources
+        /// @brief Pointers to Child and Parent Resources
         resource_child_map  children_;
         resource_ptr        parent_;
-                
+                               
         // =-=-=-=-=-=-=-
-        // Map holding resource operations
-        lookup_table< operation_wrapper >                    operations_;
-        std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
-                
-        // =-=-=-=-=-=-=-
-        // Map holding resource properties
+        /// @brief Map holding resource properties
         resource_property_map properties_;
+        
+        // =-=-=-=-=-=-=- 
+        /// @brief operations to be loaded from the plugin
+        lookup_table< operation_wrapper > operations_;    
 
     private:
 
@@ -220,9 +217,11 @@ namespace eirods {
     }; // class resource
 
     // =-=-=-=-=-=-=-
-    // given the name of a microservice, try to load the shared object
-    // and then register that ms with the table
-    error load_resource_plugin( resource_ptr&, const std::string, const std::string );
+    // given the name of a resource, try to load the shared object
+    error load_resource_plugin( resource_ptr&,       // plugin
+                                const std::string,   // plugin name
+                                const std::string,   // instance name
+                                const std::string ); // context string
 
 
 }; // namespace eirods
