@@ -669,8 +669,11 @@ acPurgeFiles(*Condition) {ON((*Condition == "null") %% (*Condition == "")) {msiG
 acPurgeFiles(*Condition) {msiGetIcatTime(*Time,"unix"); acGetIcatResults("remove","DATA_EXPIRY < '*Time' AND *Condition",*List); foreach(*List) {msiDataObjUnlink(*List,*Status); msiGetValByKey(*List,"DATA_NAME",*D); msiGetValByKey(*List,"COLL_NAME",*E); writeLine("stdout","Purged File *E/*D at *Time"); } }
 acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*K, $sysUidClient); assign(*R,*K); assign($sysUidClient,*A); }
 
-demoResc_open_pre()       { writeLine('serverLog','RULECALL :: demoResc_open_pre');  }
-demoResc_open_post(*arg1) { writeLine('serverLog','RULECALL :: demoResc_open_post'); }
-
+# =-=-=-=-=-=-=-
+# examples of dynamically called rules via the operation_wrapper
+#demoResc_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: demoResc_open_pre [*OUT]'); *OUT="CHANGED_VALUE"; }
+#demoResc_open_post(*OUT) { writeLine('serverLog','RULECALL :: demoResc_open_post [*OUT]'); *OUT="CHANGED_VALUE"; }
+#demoResc_read_pre(*ARG0,*ARG1,*OUT)  { writeLine('serverLog','RULECALL :: demoResc_read_pre  ARG0 [*ARG0], ARG1 [*ARG1], [*OUT]'); *OUT="CHANGED_VALUE"; }
+#demoResc_read_post(*ARG0,*ARG1,*OUT) { writeLine('serverLog','RULECALL :: demoResc_read_post ARG0 [*ARG0], ARG1 [*ARG1], [*OUT]'); *OUT="CHANGED_VALUE"; }
 
 

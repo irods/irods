@@ -161,7 +161,7 @@ namespace eirods {
                arg_vec.push_back( p1.str() );
                
                std::stringstream p2;  
-               p1 << _t2;
+               p2 << _t2;
                arg_vec.push_back( p2.str() );
 
                // =-=-=-=-=-=-=-

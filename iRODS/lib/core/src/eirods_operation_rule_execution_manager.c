@@ -82,24 +82,6 @@ namespace eirods {
             }
 
             // =-=-=-=-=-=-=-
-            // build an argument list for applyRule from the gathered op params
-            char** char_args = new char*[ _args.size() ];
-            for( size_t i = 0; i < _args.size(); ++i ) {
-                if( _args[ i ].size() > MAX_NAME_LEN ) {
-                    std::stringstream msg;
-                    msg << _name;
-                    msg << " arg [" << _args[ i ] << "]";
-                    msg << " is longer than " << MAX_NAME_LEN;
-                    msg << "characters.";
-                    log( ERROR( -1, msg.str() ) );
-                }
-
-                char_args[ i ] = new char[ MAX_NAME_LEN ];
-                rstrcpy( char_args[ i ], _args[ i ].c_str(), MAX_NAME_LEN );
-
-            } // for i
-
-            // =-=-=-=-=-=-=-
             // manufacture an rei for the applyRule
             ruleExecInfo_t rei;
             memset ((char*)&rei, 0, sizeof (ruleExecInfo_t));
@@ -108,20 +90,50 @@ namespace eirods {
             rei.uoip   = &_comm->proxyUser;
 
             // =-=-=-=-=-=-=-
-            // it does, so execute
-            applyRuleArg( const_cast<char*>( _name.c_str() ), char_args, _args.size(), &rei, NO_SAVE_REI );
-                          
-            // =-=-=-=-=-=-=-
-            // clean up arg array
+            // build an argument list for applyRule from the gathered op params
+            msParamArray_t params;
+            memset( &params, 0, sizeof( params ) );
+
+            int            label_index = 0;
+            std::string    label_base( "*ARG" );
+            std::string    arg_string( "(" );
             for( size_t i = 0; i < _args.size(); ++i ) {
-                delete [] char_args[ i ];
+                std::stringstream idx; 
+                idx << label_index++; 
+                std::string label = label_base + idx.str();
+                
+                addMsParamToArray( &params, const_cast<char*>( label.c_str() ), STR_MS_T, const_cast<char*>( _args[ i ].c_str() ), NULL, 0 );
+               
+                arg_string += label + ",";
+                 
+            } // for i
+                
+            // =-=-=-=-=-=-=-
+            // add the output parameter     
+            arg_string += "*OUT";
+            char out_param[ MAX_NAME_LEN ] = {"EMPTY_PARAM"};
+            addMsParamToArray( &params, "*OUT", STR_MS_T, out_param, NULL, 0 );
+
+            // =-=-=-=-=-=-=-
+            // rule exists, param array is build.  call the rule.
+            std::string arg_name = _name + arg_string + ")";
+            int ret = applyRuleUpdateParams( const_cast<char*>( arg_name.c_str() ), &params, &rei, NO_SAVE_REI );
+            if( 0 != ret ) {
+                return ERROR( ret, "exec_op - failed in call to applyRuleUpdateParams" );
             }
 
-            delete char_args;
+            // =-=-=-=-=-=-=-
+            // extract the value from the outgoing param to pass out to the operation
+            msParam_t* out_ms_param = getMsParamByLabel( &params, "*OUT" );
+            if( out_ms_param ) {
+                _res = reinterpret_cast< char* >( out_ms_param->inOutStruct ); 
+            } else {
+                return ERROR( -1, "exec_op - null out parameter" );    
+            }
 
-           return SUCCESS();
+            return SUCCESS();
 
-        } // exec_pre_op
+        } // exec_op
 
 }; // namespace eirods
 
