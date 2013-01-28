@@ -177,6 +177,12 @@ int mkFileDirR(
     } // while
 
 
+    if(true) {
+        std::stringstream msg;
+        msg << "qqq - Making sub directory: \"" << tmpPath << "\" of full directory: \"" << destDir << "\"";
+        DEBUGMSG(msg.str());
+    }
+    
     /* Now we go forward and make the required dir */
     while (tmpLen < pathLen) {
         /* Put back the '/' */

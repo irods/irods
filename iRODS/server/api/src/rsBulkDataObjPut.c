@@ -569,9 +569,6 @@ _bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo,
                                 rodsLog (LOG_ERROR,
                                          "bulkProcAndRegSubfile: link error %s to %s. errno = %d",
                                          subfilePath, dataObjInfo.filePath, errno);
-                                eirods::stacktrace st;
-                                st.trace();
-                                st.dump();
                                 return (UNIX_FILE_LINK_ERR - errno);
                             }
 #endif

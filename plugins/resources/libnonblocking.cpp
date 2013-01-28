@@ -140,7 +140,11 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
- 
+
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+            
             return ERROR( status, msg.str() );
         }
 

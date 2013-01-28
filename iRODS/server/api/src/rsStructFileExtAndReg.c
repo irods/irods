@@ -17,6 +17,7 @@
 #include "fileOpr.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
+#include "structFileExtAndReg.h"
 
 #include "eirods_stacktrace.h"
 
@@ -148,7 +149,7 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
         status = bulkRegUnbunSubfiles (rsComm, rescInfo, rescGroupName,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
     } else {
-        status = regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+        status = regUnbunSubfiles (rsComm, rescInfo, dataObjInfo->rescHier, rescGroupName,
                                    structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
     }
 
@@ -241,7 +242,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
  */
 
     int
-        regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+        regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
                           char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
     {
 #ifndef USE_BOOST_FS
@@ -333,7 +334,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                                         savedStatus = status;
                                         continue;
                                     }
-                                    status = regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+                                    status = regUnbunSubfiles (rsComm, rescInfo, rescHier, rescGroupName,
                                                                subObjPath, subfilePath, flags, attriArray);
                                     if (status < 0) {
                                         rodsLog (LOG_ERROR,
@@ -349,7 +350,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                                 } else if ((statbuf.st_mode & S_IFREG) != 0) {
                                     st_size = statbuf.st_size;
 #endif
-                                    status = regSubfile (rsComm, rescInfo, rescGroupName,
+                                    status = regSubfile (rsComm, rescInfo, rescHier, rescGroupName,
                                                          subObjPath, subfilePath, st_size, flags);
                                     unlink (subfilePath);
                                     if (status < 0) {
@@ -369,7 +370,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                         }
 
                         int
-                            regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char* rescHier, char *rescGroupName,
+                            regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
                                         char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
                         {
                             dataObjInfo_t dataObjInfo;
@@ -385,13 +386,13 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                             rstrcpy (dataObjInp.objPath, subObjPath, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.objPath, subObjPath, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+                            rstrcpy (dataObjInfo.rescHier, rescHier, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.dataType, "generic", NAME_LEN);
                             dataObjInfo.rescInfo = rescInfo;
                             rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
                             dataObjInfo.dataSize = dataSize;
 
-                            // status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
-                            status = getLeafRescPathName(rescHier, &dataObjInfo);
+                            status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
                             if (status < 0) {
                                 rodsLog (LOG_ERROR,
                                          "regSubFile: getFilePathName err for %s. status = %d",
@@ -452,9 +453,6 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                                         rodsLog (LOG_ERROR,
                                                  "regSubFile: link error %s to %s. errno = %d",
                                                  subfilePath, dataObjInfo.filePath, errno);
-                                        eirods::stacktrace st;
-                                        st.trace();
-                                        st.dump();
                                         return (UNIX_FILE_LINK_ERR - errno);
                                     }
 #endif

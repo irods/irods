@@ -320,9 +320,6 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                         rodsLog (LOG_ERROR,
                                  "regPhySubFile: link error %s to %s. errno = %d",
                                  subfilePath, stageDataObjInfo.filePath, errno);
-                        eirods::stacktrace st;
-                        st.trace();
-                        st.dump();
                         return (UNIX_FILE_LINK_ERR - errno);
                     }
 

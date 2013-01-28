@@ -554,9 +554,6 @@ addSubFileToDir (curSubFileCond_t *curSubFileCond,
         rodsLog (LOG_ERROR,
                  "addSubFileToDir: link error %s to %s. errno = %d",
                  curSubFileCond->cachePhyPath, curSubFileCond->subPhyPath, errno);
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
         return (UNIX_FILE_LINK_ERR - errno);
     }
     bunReplCache = (bunReplCache_t*)malloc (sizeof (bunReplCache_t));

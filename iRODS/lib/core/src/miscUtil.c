@@ -91,7 +91,7 @@ mkCollR (rcComm_t *conn, char *startColl, char *destColl)
 int
 mkdirR (char *startDir, char *destDir, int mode)
 {
-    int status;
+    int status = 0;
     int startLen;
     int pathLen, tmpLen;
     char tmpPath[MAX_NAME_LEN];
@@ -103,6 +103,12 @@ mkdirR (char *startDir, char *destDir, int mode)
 #endif
 #endif  /* USE_BOOST_FS */
 
+    if(true) {
+        std::stringstream msg;
+        msg << "qqq - Making directory: \"" << destDir << "\"";
+        DEBUGMSG(msg.str());
+    }
+    
     startLen = strlen (startDir);
     pathLen = strlen (destDir);
 
