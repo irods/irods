@@ -15,6 +15,9 @@ extern "C" {
     static void segv_handler(
         int signal)
     {
+        eirods::stacktrace st;
+        st.trace();
+        st.dump();
         exit(signal);
     }
     
@@ -24,5 +27,6 @@ extern "C" {
         action->sa_handler = segv_handler;
         sigaction(11, action, 0);
         sigaction(6, action, 0);
+        sigaction(2, action, 0);
     }
 };
