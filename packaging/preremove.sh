@@ -34,24 +34,23 @@ if [ "$SERVER_TYPE" == "resource" ] ; then
     hn=`hostname`
 	dn=`hostname -d`
 
-    fhn="$hn.$dn"	
-		
+    fhn="$hn.$dn"
+
 	echo "Pre-Remove :: Test Resource Removal"
-  
+
 	do_not_remove="FALSE"
 
 	# =-=-=-=-=-=-=-
     # do a dryrun on the resource removal to determine if this resource server can
     # be safely removed without harming any data
-	for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT` 
+	for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT`
 	do
 	    # =-=-=-=-=-=-=-
         # for each resource determine its location.  if it is this server then dryrun
         loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $OS_EIRODS_ACCT )
 
         if [[ $loc == $hn || $loc == $fhn ]]; then
-			rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_EIRODS_ACCT )
-			
+		rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_EIRODS_ACCT )
 			if [[ "x$rem" == "x" ]]; then
 	            # =-=-=-=-=-=-=-
                 # dryrun for a local resource was a success, add resc to array for removal
@@ -71,11 +70,11 @@ fi
 # stop any running E-iRODS Processes
 echo "Stopping iRODS :: $IRODS_HOME/irodsctl stop"
 cd $IRODS_HOME
-su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT 
+su --shell=/bin/bash -c "$IRODS_HOME/irodsctl stop" $OS_EIRODS_ACCT
 cd /tmp
 
 # =-=-=-=-=-=-=-
-# 
+#
 #if [ "$SERVER_TYPE" == "icat" ] ; then
 #
 #	if [ "$DB_TYPE" == "postgres" ] ; then
@@ -102,11 +101,18 @@ cd /tmp
 #	    echo "TODO: remove non-postgres database"
 #	    echo "TODO: remove non-postgres user"
 #	fi
-#fi 
+#fi
 
 # =-=-=-=-=-=-=-
 # detect operating system
 DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
+
+# =-=-=-=-=-=-=-
+# report that we are not deleting the database(s) or database role
+echo "NOTE :: Leaving the $DB_ADMIN_ROLE database(s) and role in place."
+echo "     :: The Local System Administrator should delete these in necessary."
+echo "     :: try:"
+echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropdb EICAT_9000; dropuser $DB_USER;'"
 
 # =-=-=-=-=-=-=-
 # report that we are not deleting the account(s)
