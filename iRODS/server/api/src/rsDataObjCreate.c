@@ -571,7 +571,6 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 #endif // JMC
 
     if( rei.rgi == NULL ) {
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: rei.rgi = NULL" );
         /* def resc group has not been initialized yet */
         // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
         //if( !(*myRescGrpInfo) ) {
@@ -581,9 +580,7 @@ rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: rei.rgi = NULL" );
         (*myRescGrpInfo)->rescInfo = new rescInfo_t;
         //}
 
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: call eirods::set_default_resource" );
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
-rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: call eirods::set_default_resource. done." );
         if( !set_err.ok() ) {
             eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
             status = SYS_INVALID_RESC_INPUT;
@@ -591,7 +588,6 @@ rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: call eirods::set_default_res
 
     } else {
         *myRescGrpInfo = rei.rgi;
-//rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: rei.rgi != NULL resource [%s]", rei.rgi->rescInfo->rescName );
     }
 
     status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );

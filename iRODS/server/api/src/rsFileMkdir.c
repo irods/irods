@@ -72,7 +72,6 @@ rodsServerHost_t *rodsServerHost)
 int _rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
     // =-=-=-=-=-=-=-
 	// make call to mkdir via resource plugin
-rodsLog( LOG_NOTICE, "XXXX - _rsFileMkdir :: creating a collection object for [%s]", fileMkdirInp->dirName );
 
 	eirods::collection_object coll_obj( fileMkdirInp->dirName, fileMkdirInp->mode, 0 );
 	eirods::error mkdir_err = fileMkdir( rsComm, coll_obj );

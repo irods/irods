@@ -352,7 +352,6 @@ eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
         return ret_err;
     }
     
-rodsLog( LOG_NOTICE, "XXXX - fileMkdir :: resolving resource for [%s]", _object.physical_path().c_str() );
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
@@ -360,7 +359,6 @@ rodsLog( LOG_NOTICE, "XXXX - fileMkdir :: resolving resource for [%s]", _object.
     if( !ret_err.ok() ) {
         return PASS( false, -1, "fileMkdir - failed to resolve resource", ret_err );
     }
-rodsLog( LOG_NOTICE, "XXXX - fileMkdir :: resolving resource for [%s]. done.", _object.physical_path().c_str() );
 
     // =-=-=-=-=-=-=-
     // make the call to the "mkdir" interface
