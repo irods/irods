@@ -56,6 +56,25 @@ namespace eirods {
     error collection_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
         return _mgr.resolve( *this, _ptr ); 
 
+        std::string type;
+        error ret = _ptr->get_property< std::string >( "type", type );
+        if( ret.ok() ) {
+            if( "unix file system" != type ) {
+                std::stringstream msg;
+                msg << "[+]\tcollection_object::resolve - warning :: ";
+                msg << " did not resolve a unix file system resource type [";
+                msg << type;
+                msg << "]";
+                eirods::log( LOG_NOTICE, msg.str() );
+            }
+        } else {
+            std::stringstream msg;
+            msg << "collection_object::resolve - failed in call to get_property";
+            return PASSMSG( msg.str(), ret );
+        }
+
+        return SUCCESS();
+
     } // resolve
 
 }; // namespace eirods

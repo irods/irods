@@ -95,24 +95,13 @@ namespace eirods {
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
-                if( _physical_path.find( value ) != std::string::npos || 
-                    value.find( _physical_path ) != std::string::npos ) {
-                    // =-=-=-=-=-=-=-
-                    // if we get a match, walk up the parents of the resource
-                    // until we hit the root as this could be a resource composition
-                    // and eirods should only be talking to the root of a composition.
-                    resource_ptr resc2, resc1 = itr->second;
-                    error        err  = resc1->get_parent( resc2 );
-                    while( err.ok() ) {
-                        resc1 = resc2;
-                        err = resc1->get_parent( resc2 );
-
-                    } // while
-
+                if( !value.empty() &&
+                    ( _physical_path.find( value ) != std::string::npos || 
+                      value.find( _physical_path ) != std::string::npos ) ) {
                     // =-=-=-=-=-=-=-
                     // finally set our flag and cache the resource pointer
                     found = true;
-                    _resc = resc1;
+                    _resc = itr->second;
 
                     // =-=-=-=-=-=-=-
                     // and... were done.
@@ -123,7 +112,7 @@ namespace eirods {
                 msg << "resource_manager::resolve_from_physical_path - ";
                 msg << "failed to get vault parameter from resource";
                 msg << ret.code();
-                eirods::error err = PASS( false, -1, msg.str(), ret );
+                eirods::log( PASS( false, -1, msg.str(), ret ) );
             }
 
         } // for itr
