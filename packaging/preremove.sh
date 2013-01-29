@@ -108,16 +108,18 @@ cd /tmp
 DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
 
 # =-=-=-=-=-=-=-
-# report that we are not deleting the database(s) or database role
-echo "NOTE :: Leaving the $DB_ADMIN_ROLE database(s) and role in place."
-echo "     :: The Local System Administrator should delete these in necessary."
+# report that we are not deleting some things
+echo "NOTE :: The Local System Administrator should delete these if necessary."
+
+# =-=-=-=-=-=-=-
+# database(s) and database role
+echo "     :: Leaving the E-iRODS database(s) and role in place."
 echo "     :: try:"
 echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropdb EICAT_9000; dropuser $DB_USER;'"
 
 # =-=-=-=-=-=-=-
 # report that we are not deleting the account(s)
-echo "NOTE :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
-echo "     :: The Local System Administrator should delete these if necessary."
+echo "     :: Leaving $OS_EIRODS_ACCT Service Group and Account in place."
 if [ "$DETECTEDOS" == "RedHatCompatible" ]; then # CentOS and RHEL and Fedora
     echo "     :: try:"
     echo "     ::      sudo /usr/sbin/userdel $OS_EIRODS_ACCT"
