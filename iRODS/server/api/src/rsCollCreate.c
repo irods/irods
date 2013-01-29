@@ -55,7 +55,6 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 
         if (getValByKey (&collCreateInp->condInput, RECURSIVE_OPR__KW) != 
             NULL) {
-rodsLog( LOG_NOTICE, "XXXX - creating recursive collection: [%s]", collCreateInp->collName );
             status = rsMkCollR (rsComm, "/", collCreateInp->collName);
             return (status);
         }
@@ -81,7 +80,6 @@ rodsLog( LOG_NOTICE, "XXXX - creating recursive collection: [%s]", collCreateInp
                 /*  should not be here because if has been translated */
                 return SYS_COLL_LINK_PATH_ERR;
             } else {
-rodsLog( LOG_NOTICE, "XXXX - creating recursive collection: filePath[%s] AND objPath[%s]", dataObjInfo->filePath, dataObjInfo->objPath );
                 status = l3Mkdir (rsComm, dataObjInfo);
             }
             freeDataObjInfo (dataObjInfo);

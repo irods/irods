@@ -58,6 +58,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                        &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_CREATE);
+rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - creating object for [%s]", dataObjInp->objPath );
 
     if (remoteFlag < 0) {
         return (remoteFlag);
@@ -125,6 +126,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         /* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
 
+rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling _rsDataObjCreate" );
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
 
     } else if( rodsObjStatOut->specColl != NULL &&
@@ -179,7 +181,9 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
+rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling getRescGrpForCreate" );
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
+rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling getRescGrpForCreate. done." );
     if (status < 0) return status;
 #if 1 // JMC - remove resource.c
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
@@ -567,6 +571,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 #endif // JMC
 
     if( rei.rgi == NULL ) {
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: rei.rgi = NULL" );
         /* def resc group has not been initialized yet */
         // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
         //if( !(*myRescGrpInfo) ) {
@@ -576,7 +581,9 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         (*myRescGrpInfo)->rescInfo = new rescInfo_t;
         //}
 
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: call eirods::set_default_resource" );
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
+rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: call eirods::set_default_resource. done." );
         if( !set_err.ok() ) {
             eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
             status = SYS_INVALID_RESC_INPUT;
@@ -584,6 +591,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
     } else {
         *myRescGrpInfo = rei.rgi;
+//rodsLog( LOG_NOTICE, "XXXX - getRescGrpForCreate :: rei.rgi != NULL resource [%s]", rei.rgi->rescInfo->rescName );
     }
 
     status = setRescQuota( rsComm, dataObjInp->objPath, myRescGrpInfo, dataObjInp->dataSize );
