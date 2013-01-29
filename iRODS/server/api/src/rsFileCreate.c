@@ -120,6 +120,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         // =-=-=-=-=-=-=-
         // check error on fd, did the directory exist?
         if( getErrno ( create_err.code() ) == ENOENT ) {
+rodsLog( LOG_NOTICE, "XXXX - creating directory for bagit [%s]", file_obj.physical_path().c_str() );
 
             // =-=-=-=-=-=-=-
             // the directory didnt exist, make it and then try the create once again.

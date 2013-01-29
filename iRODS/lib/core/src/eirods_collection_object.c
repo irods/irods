@@ -54,7 +54,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
     error collection_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
-        return _mgr.resolve( *this, _ptr ); 
+        _mgr.resolve( *this, _ptr ); 
 
         std::string type;
         error ret = _ptr->get_property< std::string >( "type", type );
@@ -72,6 +72,10 @@ namespace eirods {
             msg << "collection_object::resolve - failed in call to get_property";
             return PASSMSG( msg.str(), ret );
         }
+
+        std::string rname;
+        _ptr->get_property< std::string >( "name", rname );
+        rodsLog( LOG_NOTICE, "XXXX - collection object resolved resource [%s]", rname.c_str() );
 
         return SUCCESS();
 

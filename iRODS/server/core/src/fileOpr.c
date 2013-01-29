@@ -155,6 +155,7 @@ int mkFileDirR(
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
+rodsLog( LOG_NOTICE, "XXXX - creating collection_object for [%s]", tmpPath );
         eirods::collection_object tmp_coll_obj( tmpPath, 0, 0 );
         eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &statbuf );
         if ( stat_err.code() >= 0) {
@@ -182,8 +183,11 @@ int mkFileDirR(
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
      
+rodsLog( LOG_NOTICE, "XXXX - creating collection_object 2 for [%s]", tmpPath );
         eirods::collection_object tmp_coll_obj( tmpPath, mode, 0 ); 
+rodsLog( LOG_NOTICE, "XXXX - calling fileMkdir" );
         eirods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
+rodsLog( LOG_NOTICE, "XXXX - calling fileMkdir. done." );
         if ( !mkdir_err.ok() && (getErrno ( mkdir_err.code()) != EEXIST)) { // JMC - backport 4834
             std::stringstream msg;
             msg << "mkFileDirR: fileMkdir for ";
