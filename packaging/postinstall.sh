@@ -106,6 +106,14 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     fi
     if [ "$PSQLSTATUS" != "running" ] ; then
         echo "ERROR :: Installed PostgreSQL database server needs to be running, Aborting."
+        if [ "$DETECTEDOS" == "SuSE" ] ; then
+            echo "      :: try:"
+            echo "      ::      sudo /usr/sbin/rcpostgresql start"
+        elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+            echo "      :: try:"
+            echo "      ::      sudo service postgresql initdb"
+            echo "      ::      sudo service postgresql start"
+        fi
         exit 1
     fi
 
