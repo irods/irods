@@ -10,9 +10,14 @@
 
 namespace eirods {
 
+    // =-=-=-=-=-=-=-
+    /// @brief special resource for local file system operations only
+    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE( "EIRODS_LOCAL_USE_ONLY_RESOURCE" );
+    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/e-irods/EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT" );
+    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE( "unix file system" );
+
     class resource_manager {
     public:
-                
         // =-=-=-=-=-=-=-
         /// @brief constructors
         resource_manager();
@@ -143,6 +148,10 @@ namespace eirods {
         error gather_operations_recursive( const std::string&,          // child string of parent resc
                                            std::vector< std::string >&, // vector of 'done' resc names
                                            std::vector<pdmo_type>& );   // vector of ops for this composition
+        // =-=-=-=-=-=-=-
+        /// @brief initalize the special local file system resource
+        error init_local_file_system_resource(void);
+
         // =-=-=-=-=-=-=-
         // Attributes
         lookup_table< boost::shared_ptr< resource > > resources_;

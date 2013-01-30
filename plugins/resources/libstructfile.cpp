@@ -8,6 +8,7 @@
 #include "eirods_collection_object.h"
 #include "eirods_structured_object.h"
 #include "eirods_string_tokenize.h"
+#include "eirods_resource_manager.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -653,6 +654,7 @@ extern "C" {
         fileCreateInp.fileType   = UNIX_FILE_TYPE;	/* the only type for cache */
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
+        strncpy( fileCreateInp.resc_hier_, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // make the call to create a file
@@ -759,6 +761,9 @@ extern "C" {
         strncpy( fileOpenInp.addr.hostAddr,
                  resc_host.c_str(),
                  NAME_LEN );
+        strncpy( fileOpenInp.resc_hier_, 
+                 eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // make the call to create a file
@@ -1090,6 +1095,9 @@ extern "C" {
         // build a file stat structure to pass off to the server api call
         fileStatInp_t fileStatInp;
         memset( &fileStatInp, 0, sizeof ( fileStatInp ) );
+        strncpy( fileStatInp.rescHier,
+                 eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -1101,6 +1109,10 @@ extern "C" {
 
         fileStatInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         strncpy( fileStatInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
+        strncpy( fileStatInp.rescHier,
+                 eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 MAX_NAME_LEN );
+
 
         // =-=-=-=-=-=-=-
         // make the call to stat a file
@@ -1734,7 +1746,10 @@ extern "C" {
         memset (&fileRenameInp, 0, sizeof (fileRenameInp));
         fileRenameInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
         strncpy( fileRenameInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-         
+        strncpy( fileRenameInp.rescHier,
+                 eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 MAX_NAME_LEN );
+
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err_old = compose_cache_dir_physical_path( fileRenameInp.oldFileName, spec_coll, struct_obj->sub_file_path().c_str() );
@@ -2286,6 +2301,10 @@ extern "C" {
         memset( &file_stat_inp, 0, sizeof( file_stat_inp ) );
         rstrcpy( file_stat_inp.fileName, spec_coll->phyPath, MAX_NAME_LEN );
         strncpy( file_stat_inp.addr.hostAddr, _host.c_str(), NAME_LEN );
+        strncpy( file_stat_inp.rescHier,
+                 eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
+                 MAX_NAME_LEN );
+
 
         // =-=-=-=-=-=-=-
         // call file stat api to get the size of the new file

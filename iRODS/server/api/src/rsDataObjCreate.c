@@ -549,7 +549,6 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
 
-#if 0 // JMC - dont need to call rules for scheme
     if (dataObjInp->oprType == REPLICATE_OPR) { // JMC - backport 4660
         status = applyRule ("acSetRescSchemeForRepl", NULL, &rei, NO_SAVE_REI);
          
@@ -568,7 +567,6 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
         return (status);
     }
-#endif // JMC
 
     if( rei.rgi == NULL ) {
         /* def resc group has not been initialized yet */

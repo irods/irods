@@ -470,6 +470,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     // =-=-=-=-=-=-=-
     // JMC - backport 4527
     if (destL1descInx >= 0) {
+        rodsLog( LOG_NOTICE, "XXXX - _dataObjChksum :: hit destL1descInx" );
         l3Unlink (rsComm, L1desc[destL1descInx].dataObjInfo);
         freeL1desc (destL1descInx);
     }

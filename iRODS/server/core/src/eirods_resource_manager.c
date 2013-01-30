@@ -5,6 +5,7 @@
 #include "eirods_resource_manager.h"
 #include "eirods_log.h"
 #include "eirods_string_tokenize.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -41,9 +42,10 @@ namespace eirods {
     error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
 
         if( _key.empty() ) {
-            error ret;
-            ret = resolve_from_property< std::string >( "type", "unix file system", _value );
-            return ret;
+            stacktrace st;
+            st.trace();
+            st.dump();
+            return ERROR( -1, "resource_manager::resolve - empty key" );
         }
 
         if( resources_.has_entry( _key ) ) {
@@ -112,7 +114,7 @@ namespace eirods {
                 msg << "resource_manager::resolve_from_physical_path - ";
                 msg << "failed to get vault parameter from resource";
                 msg << ret.code();
-                eirods::log( PASS( false, -1, msg.str(), ret ) );
+                eirods::log( PASSMSG( msg.str(), ret ) );
             }
 
         } // for itr
@@ -223,7 +225,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // if error is not valid, clear query and bail
             if( !proc_ret.ok() ) {
-                eirods::error log_err = PASS( false, -1, "init_from_catalog - process_init_results failed", proc_ret );
+                eirods::error log_err = PASSMSG( "init_from_catalog - process_init_results failed", proc_ret );
                 eirods::log( log_err );
                 freeGenQueryOut (&genQueryOut);
                 break;
@@ -244,23 +246,30 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // pass along the error if we are in an error state
         if( !proc_ret.ok() ) {
-            return PASS( false, -1, "process_init_results failed.", proc_ret );
+            return PASSMSG( "process_init_results failed.", proc_ret );
         } 
 
         // =-=-=-=-=-=-=-
         // Update child resource maps
         proc_ret = init_child_map();
         if(!proc_ret.ok()) {
-            return PASS(false, -1, "init_child_map failed.", proc_ret);
+            return PASSMSG( "init_child_map failed.", proc_ret);
         }
  
         // =-=-=-=-=-=-=-
         // gather the post disconnect maintenance operations
         error op_ret = gather_operations();
         if( !op_ret.ok() ) {
-            return PASS( false, -1, "gather_operations failed.", op_ret);
+            return PASSMSG( "gather_operations failed.", op_ret);
         }
         
+        // =-=-=-=-=-=-=-
+        // initialize the special local file system resource
+        error spec_ret = init_local_file_system_resource(); 
+        if( !spec_ret.ok() ) {
+            return PASSMSG( "init_local_file_system_resource failed.", op_ret);
+        }
+
         // =-=-=-=-=-=-=-
         // win!
         return SUCCESS();
@@ -393,7 +402,7 @@ namespace eirods {
             resource_ptr resc;
             error ret = load_resource_plugin( resc, tmpRescType, tmpRescName, tmpRescContext );
             if( !ret.ok() ) {
-                return PASS( false, -1, "Failed to load Resource Plugin", ret );        
+                return PASSMSG( "Failed to load Resource Plugin", ret );        
             }
 
             resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
@@ -433,7 +442,6 @@ namespace eirods {
 
     } // process_init_results
 
-
     // =-=-=-=-=-=-=-
     // public - given a type, load up a resource plugin
     error resource_manager::init_from_type( std::string   _type, 
@@ -445,7 +453,7 @@ namespace eirods {
         // create the resource and add properties for column values
         error ret = load_resource_plugin( _resc, _type, _inst, _ctx );
         if( !ret.ok() ) {
-            return PASS( false, -1, "Failed to load Resource Plugin", ret );    
+            return PASSMSG( "Failed to load Resource Plugin", ret );    
         }
 
         resources_[ _key ] = _resc;
@@ -453,6 +461,74 @@ namespace eirods {
         return SUCCESS();
 
     } // init_from_type
+
+
+    // =-=-=-=-=-=-=-
+    // public - initialize the special local file system resource
+    error resource_manager::init_local_file_system_resource(void) {
+        // =-=-=-=-=-=-=-
+        // init the local fs resource 
+        resource_ptr resc;
+        error err = init_from_type( EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE,
+                                    EIRODS_LOCAL_USE_ONLY_RESOURCE,
+                                    EIRODS_LOCAL_USE_ONLY_RESOURCE,
+                                    "",
+                                    resc );
+        // =-=-=-=-=-=-=-
+        // error check
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg << "resource_manager::init_local_file_system_resource - failed to create resource";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the zone info for the local zone
+        zoneInfo_t* zone_info = 0;
+        getLocalZoneInfo( &zone_info );
+
+        // =-=-=-=-=-=-=-
+        // build a host addr struct to get the server host info
+        rodsHostAddr_t addr;
+        rstrcpy( addr.hostAddr, "localhost", LONG_NAME_LEN );
+        rstrcpy( addr.zoneName, const_cast<char*>( zone_info->zoneName ), NAME_LEN );
+
+        rodsServerHost_t* tmpRodsServerHost = 0;
+        if( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
+            rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", 
+                     addr.hostAddr );
+        }
+
+        // =-=-=-=-=-=-=-
+        // start filling in the properties
+        resc->set_property< rodsServerHost_t* >( "host", zone_info->masterServerHost );
+            
+        resc->set_property<long>( "id", 999 );
+        resc->set_property<long>( "freespace", 999 );
+        resc->set_property<long>( "quota", RESC_QUOTA_UNINIT );
+            
+        resc->set_property<std::string>( "zone",     zone_info->zoneName );
+        resc->set_property<std::string>( "name",     EIRODS_LOCAL_USE_ONLY_RESOURCE );
+        resc->set_property<std::string>( "location", "localhost" );
+        resc->set_property<std::string>( "type",     EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE );
+        resc->set_property<std::string>( "class",    "cache" );
+        resc->set_property<std::string>( "path",     EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT );
+        resc->set_property<std::string>( "info",     "info" );
+        resc->set_property<std::string>( "comments", "comments" );
+        resc->set_property<std::string>( "create",   "999" );
+        resc->set_property<std::string>( "modify",   "999" );
+        resc->set_property<std::string>( "children", "" );
+        resc->set_property<std::string>( "parent",   "" );
+        resc->set_property<std::string>( "context",  "" );
+        resc->set_property<int>( "status", INT_RESC_STATUS_UP );
+
+        // =-=-=-=-=-=-=-
+        // assign to the map
+        resources_[ EIRODS_LOCAL_USE_ONLY_RESOURCE ] = resc;
+
+        return SUCCESS();
+
+    } // init_local_file_system_resource
 
     // =-=-=-=-=-=-=-
     // private - walk the resource map and wire children up to parents
@@ -468,12 +544,12 @@ namespace eirods {
             std::string children_string;
             error ret = resc->get_property<std::string>("children", children_string);
             if(!ret.ok()) {
-                result = PASS(false, -1, "init_child_map failed.", ret);
+                result = PASSMSG( "init_child_map failed.", ret);
             } else {
                 std::string resc_name;
                 error ret = resc->get_property<std::string>("name", resc_name);
                 if(!ret.ok()) {
-                    result = PASS(false, -1, "init_child_map failed.", ret);
+                    result = PASSMSG( "init_child_map failed.", ret);
                 } else {
 
                     // Get the list of children and their contexts from the resource
@@ -482,7 +558,7 @@ namespace eirods {
                     children_parser::children_map_t children_list;
                     error ret = parser.list(children_list);
                     if(!ret.ok()) {
-                        result = PASS(false, -1, "init_child_map failed.", ret);
+                        result = PASSMSG( "init_child_map failed.", ret);
                     } else {
 
                         // Iterate over all of the children
@@ -503,7 +579,7 @@ namespace eirods {
                                 resource_ptr child_resc = child_itr->second;
                                 error ret = resc->add_child(child, context, child_resc);
                                 if(!ret.ok()) {
-                                    result = PASS(false, -1, "init_child_map failed.", ret);
+                                    result = PASSMSG( "init_child_map failed.", ret);
                                 }
 
                                 // set the parent for the child resource
@@ -615,7 +691,7 @@ namespace eirods {
         children_parser::children_map_t children_list;
         error ret = parser.list( children_list );
         if(!ret.ok()) {
-            return PASS(false, -1, "gather_operations_recursive failed.", ret);
+            return PASSMSG( "gather_operations_recursive failed.", ret);
         }
 
         // =-=-=-=-=-=-=-
