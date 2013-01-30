@@ -126,7 +126,7 @@ CHECKGROUP=`getent group $OS_EIRODS_ACCT `
 CHECKACCT=`getent passwd $OS_EIRODS_ACCT `
 set -e
 if [ "$$CHECKGROUP" = "" ]; then
-  groupadd -r $OS_EIRODS_ACCT
+  /usr/sbin/groupadd -r $OS_EIRODS_ACCT
 else
   echo "ERROR :: Please delete the existing Service Group $OS_EIRODS_ACCT before proceeding."
   if [ "$$CHECKACCT" = "" ]; then
