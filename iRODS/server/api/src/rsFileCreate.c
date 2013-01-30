@@ -131,7 +131,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                 return status;
             }
             
-            create_err = fileCreate( file_obj );
+            create_err = fileCreate( rsComm, file_obj );
                                                 
             // =-=-=-=-=-=-=-
             // capture the eirods results in the log as our error mechanism
