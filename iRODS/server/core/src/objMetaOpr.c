@@ -92,7 +92,12 @@ isData (rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
 }
 
 int // JMC - backport 4680
-getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath)
+getPhyPath (
+    rsComm_t *rsComm,
+    char *objName,
+    char *resource,
+    char *phyPath,
+    char *rescHier)
 {
    genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
@@ -109,18 +114,29 @@ getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath)
     snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName);
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
     addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_RESC_HIER, 1);
     genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
     if (status >= 0) {
         sqlResult_t *phyPathRes = NULL;
         if ((phyPathRes = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH)) ==
-          NULL) {
+	    NULL) {
             rodsLog (LOG_ERROR,
-              "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
+		     "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
             return (UNMATCHED_KEY_OR_INDEX);
         }
         if (phyPath != NULL) {
             rstrcpy (phyPath, phyPathRes->value, MAX_NAME_LEN);
+        }
+        sqlResult_t *rescHierRes = NULL;
+        if ((rescHierRes = getSqlResultByInx (genQueryOut, COL_D_RESC_HIER)) ==
+	    NULL) {
+            rodsLog (LOG_ERROR,
+		     "getPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+        if (rescHier != NULL) {
+            rstrcpy (rescHier, rescHierRes->value, MAX_NAME_LEN);
         }
         freeGenQueryOut (&genQueryOut);
     }

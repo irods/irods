@@ -3279,7 +3279,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
                 if (specColl == NULL) return (USER__NULL_INPUT_ERR);
 
-                if (type == '\0') {
+                if (*type == '\0') {
                     specColl->collClass = NO_SPEC_COLL;
                     return (SYS_UNMATCHED_SPEC_COLL_TYPE);
                 }

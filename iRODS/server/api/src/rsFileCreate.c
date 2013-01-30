@@ -116,16 +116,22 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     // =-=-=-=-=-=-=-
     // if we get a bad file descriptor
     if( !create_err.ok() ) {
-    
+
         // =-=-=-=-=-=-=-
         // check error on fd, did the directory exist?
         if( getErrno ( create_err.code() ) == ENOENT ) {
 
             // =-=-=-=-=-=-=-
             // the directory didnt exist, make it and then try the create once again.
-            mkDirForFilePath( rsComm, "/", file_obj.physical_path().c_str(), getDefDirMode() ); 
-
-            create_err = fileCreate( rsComm, file_obj );
+            int status = mkDirForFilePath( rsComm, "/", file_obj.physical_path().c_str(), getDefDirMode() ); 
+            if(status != 0) {
+                std::stringstream msg;
+                msg << "Unable to make directory: \"" << file_obj.physical_path() << "\"";
+                eirods::log(LOG_ERROR, msg.str());
+                return status;
+            }
+            
+            create_err = fileCreate( file_obj );
                                                 
             // =-=-=-=-=-=-=-
             // capture the eirods results in the log as our error mechanism
@@ -138,6 +144,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                 msg << file_obj.file_descriptor();
                 eirods::error ret_err = PASS( false, file_obj.file_descriptor(), msg.str(), create_err );
                 eirods::log( ret_err );
+
             }
 
         } else if( getErrno( create_err.code() ) == EEXIST ) {

@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -31,13 +33,13 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
     rstrcpy (collHandle->dataObjInp.objPath, openCollInp->collName, MAX_NAME_LEN);
       
     if ((openCollInp->flags & INCLUDE_CONDINPUT_IN_QUERY) != 0) {
-	    replKeyVal (&openCollInp->condInput, &collHandle->dataObjInp.condInput);
+        replKeyVal (&openCollInp->condInput, &collHandle->dataObjInp.condInput);
     }
 
     status = rsObjStat (rsComm, &collHandle->dataObjInp, &rodsObjStatOut);
     if (status < 0) {
-	    rsCloseCollection (rsComm, &handleInx);
-	    return status;
+        rsCloseCollection (rsComm, &handleInx);
+        return status;
     }
 
     if (rodsObjStatOut->objType != COLL_OBJ_T) {

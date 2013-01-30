@@ -226,8 +226,6 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
     rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
     rescName = getValByKey (condInput, RESC_NAME_KW);
     if (rescName != NULL) {
-        std::stringstream msg;
-        DEBUGMSG(msg.str());
         rstrcpy (dataObjInfo->rescName, rescName, LONG_NAME_LEN);
         rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN);
     }  

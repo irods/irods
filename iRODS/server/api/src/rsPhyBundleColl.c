@@ -23,6 +23,7 @@
 #include "regReplica.h"
 #include "unbunAndRegPhyBunfile.h"
 #include "fileChksum.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // eirods resource includes

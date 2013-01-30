@@ -140,7 +140,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
- 
+
             return ERROR( status, msg.str() );
         }
 

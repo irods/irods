@@ -1117,6 +1117,12 @@ extern "C" {
         resc->add_operation( "synctoarch",   "passthruSyncToArchPlugin" );
 
         // =-=-=-=-=-=-=-
+        // set some properties necessary for backporting to iRODS legacy code
+        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
+        resc->set_property< int >( "category",        0 );//FILE_CAT );
+
+        // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
         //     eirods::resource pointer
         return dynamic_cast<eirods::resource*>( resc );

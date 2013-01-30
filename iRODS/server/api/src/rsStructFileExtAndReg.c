@@ -17,6 +17,9 @@
 #include "fileOpr.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
+#include "structFileExtAndReg.h"
+
+#include "eirods_stacktrace.h"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,
@@ -108,7 +111,8 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
 
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
-
+    std::string rescHier = dataObjInfo->rescHier;
+    
     createPhyBundleDir (rsComm, dataObjInfo->filePath, phyBunDir);
 
     status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo, // JMC - backport 4657 
@@ -137,10 +141,10 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     }
     if (getValByKey (&structFileExtAndRegInp->condInput, BULK_OPR_KW)
         != NULL) {
-        status = bulkRegUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+        status = bulkRegUnbunSubfiles (rsComm, rescInfo, rescHier, rescGroupName,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
     } else {
-        status = regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+        status = regUnbunSubfiles (rsComm, rescInfo, dataObjInfo->rescHier, rescGroupName,
                                    structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
     }
 
@@ -233,7 +237,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
  */
 
     int
-        regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+        regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
                           char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
     {
 #ifndef USE_BOOST_FS
@@ -325,7 +329,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                                         savedStatus = status;
                                         continue;
                                     }
-                                    status = regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+                                    status = regUnbunSubfiles (rsComm, rescInfo, rescHier, rescGroupName,
                                                                subObjPath, subfilePath, flags, attriArray);
                                     if (status < 0) {
                                         rodsLog (LOG_ERROR,
@@ -341,7 +345,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                                 } else if ((statbuf.st_mode & S_IFREG) != 0) {
                                     st_size = statbuf.st_size;
 #endif
-                                    status = regSubfile (rsComm, rescInfo, rescGroupName,
+                                    status = regSubfile (rsComm, rescInfo, rescHier, rescGroupName,
                                                          subObjPath, subfilePath, st_size, flags);
                                     unlink (subfilePath);
                                     if (status < 0) {
@@ -361,7 +365,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                         }
 
                         int
-                            regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+                            regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
                                         char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
                         {
                             dataObjInfo_t dataObjInfo;
@@ -377,6 +381,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                             rstrcpy (dataObjInp.objPath, subObjPath, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.objPath, subObjPath, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+                            rstrcpy (dataObjInfo.rescHier, rescHier, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.dataType, "generic", NAME_LEN);
                             dataObjInfo.rescInfo = rescInfo;
                             rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
