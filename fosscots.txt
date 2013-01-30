@@ -57,5 +57,4 @@ centos
 ssh
 gcc
 python
-eucalyptus
-
+openstack
