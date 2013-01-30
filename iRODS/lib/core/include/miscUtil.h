@@ -126,7 +126,7 @@ typedef struct CollEnt {
     char *rescGrp;
     char *phyPath;
     char *ownerName;    	 /* valid for dataObj and collection */
-	char *dataType; // JMC - backport 4636
+    char *dataType;		 // JMC - backport 4636
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 

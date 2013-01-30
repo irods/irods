@@ -24,6 +24,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_stacktrace.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -468,7 +469,6 @@ moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 
     if (rsComm == NULL || srcDataObjInfo == NULL || destDataObjInp == NULL)
         return USER__NULL_INPUT_ERR;
-
     bzero (&destDataObjInfo, sizeof (destDataObjInfo));
     bzero (&fileRenameInp, sizeof (fileRenameInp));
     rstrcpy (destDataObjInfo.objPath, destDataObjInp->objPath, MAX_NAME_LEN);
@@ -476,6 +476,7 @@ moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     destDataObjInfo.dataSize = srcDataObjInfo->dataSize;
     destDataObjInfo.rescInfo = srcDataObjInfo->rescInfo;
     rstrcpy (destDataObjInfo.rescName, srcDataObjInfo->rescInfo->rescName, NAME_LEN);
+    rstrcpy (destDataObjInfo.rescHier, srcDataObjInfo->rescHier, MAX_NAME_LEN);
     status = getFilePathName (rsComm, &destDataObjInfo, destDataObjInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,

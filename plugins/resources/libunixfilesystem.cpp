@@ -1058,7 +1058,7 @@ extern "C" {
             std::stringstream msg;
             msg << "unixFileRenamePlugin: mkdir error for ";
             msg << new_path;
-            
+
             return PASSMSG( msg.str(), ret);
 
         }

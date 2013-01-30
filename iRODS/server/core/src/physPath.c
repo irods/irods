@@ -31,6 +31,7 @@
 // =-=-=-=-=-=-=-
 // eirods include
 #include "eirods_resource_backport.h"
+#include "eirods_hierarchy_parser.h"
 
 int
 getFileMode (dataObjInp_t *dataObjInp)
@@ -100,23 +101,29 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     if( NO_CREATE_PATH == chk_path ) {
-	    *dataObjInfo->filePath = '\0';
-	    return 0;
+        *dataObjInfo->filePath = '\0';
+        return 0;
     }
 
+    std::string vault_path;
+    status = getLeafRescPathName(dataObjInfo->rescHier, vault_path);
+    if(status != 0) {
+        return status;
+    }
+    
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {
-	    return (status);
+        return (status);
     }
 
     if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
         status = setPathForGraftPathScheme (dataObjInp->objPath, 
-                                            dataObjInfo->rescInfo->rescVaultPath, vaultPathPolicy.addUserName,
+                                            vault_path.c_str(), vaultPathPolicy.addUserName,
                                             rsComm->clientUser.userName, vaultPathPolicy.trimDirCnt, 
                                             dataObjInfo->filePath);
     } else {
         status = setPathForRandomScheme (dataObjInp->objPath,
-                                         dataObjInfo->rescInfo->rescVaultPath, rsComm->clientUser.userName,
+                                         vault_path.c_str(), rsComm->clientUser.userName,
                                          dataObjInfo->filePath);
     }
     if (status < 0) {
@@ -168,7 +175,7 @@ getVaultPathPolicy (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 }
 
 int 
-setPathForRandomScheme (char *objPath, char *vaultPath, char *userName,
+setPathForRandomScheme (char *objPath, const char *vaultPath, char *userName,
                         char *outPath)
 {
     int myRandom;
@@ -198,7 +205,7 @@ setPathForRandomScheme (char *objPath, char *vaultPath, char *userName,
 }
 
 int 
-setPathForGraftPathScheme (char *objPath, char *vaultPath, int addUserName,
+setPathForGraftPathScheme (char *objPath, const char *vaultPath, int addUserName,
                            char *userName, int trimDirCnt, char *outPath)
 {
     int i;
@@ -301,12 +308,12 @@ getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         if (rescInfo == NULL) {
             chkPathPerm = NO_CHK_PATH_PERM;
         } else {
-    	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-			rei.doi = dataObjInfo;
-			// =-=-=-=-=-=-=-
-			// JMC - backport 4774
-		    rei.status = DISALLOW_PATH_REG;             /* default */
-		    applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+            initReiWithDataObjInp (&rei, rsComm, dataObjInp);
+            rei.doi = dataObjInfo;
+            // =-=-=-=-=-=-=-
+            // JMC - backport 4774
+            rei.status = DISALLOW_PATH_REG;             /* default */
+            applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
 
             int chk_path = 0;
             eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "check_path_perm", chk_path );
@@ -314,13 +321,13 @@ getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 eirods::log( PASS( false, -1, "getchkPathPerm - failed.", err ) );
             }
 
-		    if( err.ok() && ( rei.status == NO_CHK_PATH_PERM || NO_CHK_PATH_PERM == chk_path ) ) {
+            if( err.ok() && ( rei.status == NO_CHK_PATH_PERM || NO_CHK_PATH_PERM == chk_path ) ) {
 // JMC - legacy resource RescTypeDef[rescInfo->rescTypeInx].chkPathPerm == NO_CHK_PATH_PERM ) ) {
-			   chkPathPerm = NO_CHK_PATH_PERM;
-			} else {
-			    chkPathPerm = rei.status;
-			// =-=-=-=-=-=-=-
-			}
+                chkPathPerm = NO_CHK_PATH_PERM;
+            } else {
+                chkPathPerm = rei.status;
+                // =-=-=-=-=-=-=-
+            }
         }
     } else {
         chkPathPerm = NO_CHK_PATH_PERM;
@@ -396,8 +403,8 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     if (rescClass == COMPOUND_CL) {
 #if 0
         return SYS_CANT_CHKSUM_COMP_RESC_DATA;
-       #else
-       dataObjInp_t dataObjInp;
+#else
+        dataObjInp_t dataObjInp;
         status = getCacheRescInGrp (rsComm, inpDataObjInfo->rescGroupName,inpDataObjInfo->rescInfo, &cacheResc);
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -436,11 +443,11 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     } else 
 #endif // JMC
     
-    if (rescClass == BUNDLE_CL) {
-       return SYS_CANT_CHKSUM_BUNDLED_DATA;
-    } else {
-        dataObjInfo = inpDataObjInfo;
-    }
+        if (rescClass == BUNDLE_CL) {
+            return SYS_CANT_CHKSUM_BUNDLED_DATA;
+        } else {
+            dataObjInfo = inpDataObjInfo;
+        }
 
     // =-=-=-=-=-=-=-
     rescTypeInx = rescInfo->rescTypeInx;
@@ -452,7 +459,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
 
     // JMC - legacy resource - switch ( RescTypeDef[rescTypeInx].rescCat) {
     switch( category ) {
-      case FILE_CAT:
+    case FILE_CAT:
         memset (&fileChksumInp, 0, sizeof (fileChksumInp));
         fileChksumInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,NAME_LEN);
@@ -463,7 +470,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         break;
     default:
         rodsLog (LOG_NOTICE,
-          "_dataObjChksum: rescCat type %d is not recognized", category );
+                 "_dataObjChksum: rescCat type %d is not recognized", category );
         status = SYS_INVALID_RESC_TYPE;
         break;
     }
@@ -690,8 +697,8 @@ syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-	    status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
-	 
+        status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
+         
         if (status < 0) {
             savedStatus = status;
         }
@@ -725,8 +732,8 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     if( NO_CREATE_PATH == create_path ) {  
-	    /* no need to sync for path created by resource */
-	    return 0;
+        /* no need to sync for path created by resource */
+        return 0;
     }
 
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
@@ -905,11 +912,11 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
             rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
             rstrcpy (dataObjInfo.rescHier, tmpRescName, MAX_NAME_LEN);
             /*status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
-            if (status < 0) {
-                rodsLog( LOG_ERROR,"syncCollPhyPath: resolveResc error for %s, status = %d",
-                         tmpRescName, status);
-                return (status);
-            }*/
+              if (status < 0) {
+              rodsLog( LOG_ERROR,"syncCollPhyPath: resolveResc error for %s, status = %d",
+              tmpRescName, status);
+              return (status);
+              }*/
            
             dataObjInfo.rescInfo = new rescInfo_t; 
             eirods::error err = eirods::get_resc_info( tmpRescName, *dataObjInfo.rescInfo );
@@ -1257,5 +1264,41 @@ fsDataObjLock (char *objPath, int cmd, int type, int infd)
     }
     return (myFd);
 }
+
+int
+getLeafRescPathName(
+    const std::string& _resc_hier,
+    std::string& _ret_string)
+{
+    int result = 0;
+    eirods::hierarchy_parser hp;
+    eirods::error ret;
+    ret = hp.set_string(_resc_hier);
+    if(!ret.ok()) {
+        std::stringstream msg;
+        msg << "Unable to parse hierarchy string: \"" << _resc_hier << "\"";
+        eirods::log(LOG_ERROR, msg.str());
+        result = ret.code();
+    } else {
+        std::string leaf;
+        ret = hp.last_resc(leaf);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Unable to retrieve last resource from hierarchy string: \"" << _resc_hier << "\"";
+            eirods::log(LOG_ERROR, msg.str());
+            result = ret.code();
+        } else {
+            ret = eirods::get_resource_property<std::string>(leaf, "path", _ret_string);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << "Unable to get vault path from resource: \"" << leaf << "\"";
+                eirods::log(LOG_ERROR, msg.str());
+                result = ret.code();
+            }
+        }
+    }
+    return result;
+}
+
 // =-=-=-=-=-=-=-
 

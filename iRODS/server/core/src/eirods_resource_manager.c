@@ -85,29 +85,23 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // iterate through the map and search for our path
         lookup_table< resource_ptr >::iterator itr = resources_.begin();
-        for( ; itr != resources_.end(); ++itr ) {
+        for( ; !found && itr != resources_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // query resource for the property value
             std::string value;
             error ret = itr->second->get_property<std::string>( "path", value );
 
             // =-=-=-=-=-=-=-
-            // if we get a good parameter 
-            if( ret.ok() ) {
+            // if we get a good parameter and do not match non-storage nodes with an empty physical path
+            if( ret.ok()) {
+
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
-                if( !value.empty() &&
-                    ( _physical_path.find( value ) != std::string::npos || 
-                      value.find( _physical_path ) != std::string::npos ) ) {
-                    // =-=-=-=-=-=-=-
-                    // finally set our flag and cache the resource pointer
-                    found = true;
+                if( !value.empty() && (_physical_path.find( value ) != std::string::npos || 
+                                       value.find( _physical_path ) != std::string::npos )) {
                     _resc = itr->second;
-
-                    // =-=-=-=-=-=-=-
-                    // and... were done.
-                    break;
+                    found = true;
                 }
             } else {
                 std::stringstream msg;

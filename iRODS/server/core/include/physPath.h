@@ -48,10 +48,10 @@ extern "C" {
     getVaultPathPolicy (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                         vaultPathPolicy_t *outVaultPathPolicy);
     int
-    setPathForGraftPathScheme (char *objPath, char *vaultPath, int addUserName,
+    setPathForGraftPathScheme (char *objPath, const char *vaultPath, int addUserName,
                                char *userName, int trimDirCnt, char *outPath);
     int 
-    setPathForRandomScheme (char *objPath, char *vaultPath, char *userName,
+    setPathForRandomScheme (char *objPath, const char *vaultPath, char *userName,
                             char *outPath);
     int
     resolveDupFilePath (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
@@ -106,7 +106,7 @@ extern "C" {
     int
     fsDataObjLock (char *objPath, int cmd, int type, int infd);
 // =-=-=-=-=-=-=-
-
+    int getLeafRescPathName(const std::string& _resc_hier, std::string& _ret_string);
 #ifdef  __cplusplus
 }
 #endif

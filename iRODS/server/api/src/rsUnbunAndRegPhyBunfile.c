@@ -15,11 +15,11 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 
+#include "eirods_stacktrace.h"
+
 // =-=-=-=-=-=-=-
 // eirods resource includes
 #include "eirods_resource_backport.h"
-
-
 
 int
 rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -54,7 +54,7 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return -1;
     }
     status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
-      //rescGrpInfo->rescInfo);
+    //rescGrpInfo->rescInfo);
 
     return (status);
 }
@@ -89,13 +89,13 @@ _rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return (SYS_INVALID_FILE_PATH);
     }
 
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir" );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir" );
     createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir. done." );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - createPhyBundleDir. done." );
     dataType = getValByKey (&dataObjInp->condInput, DATA_TYPE_KW); // JMC - backport 4664
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile" );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile" );
     status = unbunPhyBunFile (rsComm, dataObjInp->objPath, rescInfo, bunFilePath, phyBunDir, dataType, 0 ); // JMC - backport 4632, 4657, 4664
-rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile. done." );
+    rodsLog( LOG_NOTICE, "rsUnbunAndRegPhyBunfile - unbunPhyBunFile. done." );
      
 
     if (status < 0) {
@@ -304,142 +304,141 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                     status = stat (stageDataObjInfo.filePath, &statbuf);
                     if (status == 0 || errno != ENOENT) {
 #endif
-	status = resolveDupFilePath (rsComm, &stageDataObjInfo, &dataObjInp);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "regPhySubFile: resolveDupFilePath err for %s. status = %d",
-              stageDataObjInfo.filePath, status);
-            return (status);
-	}
-    }
-    /* make the necessary dir */
-    mkDirForFilePath( rsComm, "/", stageDataObjInfo.filePath, getDefDirMode() );
-      
-    /* add a link */
-    status = link (subfilePath, stageDataObjInfo.filePath);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "regPhySubFile: link error %s to %s. errno = %d",
-          subfilePath, stageDataObjInfo.filePath, errno);
-        return (UNIX_FILE_LINK_ERR - errno);
-    }
+                        status = resolveDupFilePath (rsComm, &stageDataObjInfo, &dataObjInp);
+                        if (status < 0) {
+                            rodsLog (LOG_ERROR,
+                                     "regPhySubFile: resolveDupFilePath err for %s. status = %d",
+                                     stageDataObjInfo.filePath, status);
+                            return (status);
+                        }
+                    }
+                    /* make the necessary dir */
+                    mkDirForFilePath (rsComm, "/", stageDataObjInfo.filePath, getDefDirMode ());
+                    /* add a link */
+                    status = link (subfilePath, stageDataObjInfo.filePath);
+                    if (status < 0) {
+                        rodsLog (LOG_ERROR,
+                                 "regPhySubFile: link error %s to %s. errno = %d",
+                                 subfilePath, stageDataObjInfo.filePath, errno);
+                        return (UNIX_FILE_LINK_ERR - errno);
+                    }
 
-    bzero (&regReplicaInp, sizeof (regReplicaInp));
-    regReplicaInp.srcDataObjInfo = bunDataObjInfo;
-    regReplicaInp.destDataObjInfo = &stageDataObjInfo;
-    addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
-    addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+                    bzero (&regReplicaInp, sizeof (regReplicaInp));
+                    regReplicaInp.srcDataObjInfo = bunDataObjInfo;
+                    regReplicaInp.destDataObjInfo = &stageDataObjInfo;
+                    addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
+                    addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
 
-    status = rsRegReplica (rsComm, &regReplicaInp);
+                    status = rsRegReplica (rsComm, &regReplicaInp);
 
-    clearKeyVal (&regReplicaInp.condInput);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "regPhySubFile: rsRegReplica error for %s. status = %d",
-          bunDataObjInfo->objPath, status);
-        return status;
-    }
+                    clearKeyVal (&regReplicaInp.condInput);
+                    if (status < 0) {
+                        rodsLog (LOG_ERROR,
+                                 "regPhySubFile: rsRegReplica error for %s. status = %d",
+                                 bunDataObjInfo->objPath, status);
+                        return status;
+                    }
 
-    return status;
-}
+                    return status;
+                }
 
-int
-unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
-                 rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, 
-                 char *dataType, int oprType ) // JMC - backport 4632, 4657
-{
-    int status;
-    structFileOprInp_t structFileOprInp;
+                int
+                    unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
+                                     rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, 
+                                     char *dataType, int oprType ) // JMC - backport 4632, 4657
+                {
+                    int status;
+                    structFileOprInp_t structFileOprInp;
 
-    /* untar the bunfile */
-    memset (&structFileOprInp, 0, sizeof (structFileOprInp_t));
-    structFileOprInp.specColl = (specColl_t*)malloc (sizeof (specColl_t));
-    memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
-    structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
-    snprintf (structFileOprInp.specColl->collection, MAX_NAME_LEN,
-      "%s.dir", objPath); // JMC - backport 4657
-    rstrcpy (structFileOprInp.specColl->objPath,
-      objPath, MAX_NAME_LEN); // JMC - backport 4657
-    structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
-    rstrcpy (structFileOprInp.specColl->resource, rescInfo->rescName,
-      NAME_LEN);
-    rstrcpy (structFileOprInp.specColl->phyPath, bunFilePath, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc,
-      NAME_LEN);
-    /* set the cacheDir */
-    rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
-    /* pass on the dataType */
+                    /* untar the bunfile */
+                    memset (&structFileOprInp, 0, sizeof (structFileOprInp_t));
+                    structFileOprInp.specColl = (specColl_t*)malloc (sizeof (specColl_t));
+                    memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
+                    structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
+                    snprintf (structFileOprInp.specColl->collection, MAX_NAME_LEN,
+                              "%s.dir", objPath); // JMC - backport 4657
+                    rstrcpy (structFileOprInp.specColl->objPath,
+                             objPath, MAX_NAME_LEN); // JMC - backport 4657
+                    structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
+                    rstrcpy (structFileOprInp.specColl->resource, rescInfo->rescName,
+                             NAME_LEN);
+                    rstrcpy (structFileOprInp.specColl->phyPath, bunFilePath, MAX_NAME_LEN);
+                    rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc,
+                             NAME_LEN);
+                    /* set the cacheDir */
+                    rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
+                    /* pass on the dataType */
 
 
-    if( dataType != NULL &&  // JMC - backport 4632
-        ( strstr (dataType, GZIP_TAR_DT_STR)  != NULL || // JMC - backport 4658
-          strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||
-          strstr (dataType, ZIP_DT_STR)       != NULL) ) {
-       addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
-    }
+                    if( dataType != NULL &&  // JMC - backport 4632
+                        ( strstr (dataType, GZIP_TAR_DT_STR)  != NULL || // JMC - backport 4658
+                          strstr (dataType, BZIP2_TAR_DT_STR) != NULL ||
+                          strstr (dataType, ZIP_DT_STR)       != NULL) ) {
+                        addKeyVal (&structFileOprInp.condInput, DATA_TYPE_KW, dataType);
+                    }
 
-    if ((oprType & PRESERVE_DIR_CONT) == 0) // JMC - backport 4657
-        rmLinkedFilesInUnixDir (phyBunDir);
-	structFileOprInp.oprType = oprType; // JMC - backport 4657
-    status = rsStructFileExtract (rsComm, &structFileOprInp);
-    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
-	/* phyBunDir is not empty */
-	if (chkOrphanDir (rsComm, phyBunDir, rescInfo->rescName) > 0) {
-	    /* it is a orphan dir */
-	    fileRenameInp_t fileRenameInp;
-	    bzero (&fileRenameInp, sizeof (fileRenameInp));
-            rstrcpy (fileRenameInp.oldFileName, phyBunDir, MAX_NAME_LEN);
-            status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, 
-	      &fileRenameInp, rescInfo, 1);
+                    if ((oprType & PRESERVE_DIR_CONT) == 0) // JMC - backport 4657
+                        rmLinkedFilesInUnixDir (phyBunDir);
+                    structFileOprInp.oprType = oprType; // JMC - backport 4657
+                    status = rsStructFileExtract (rsComm, &structFileOprInp);
+                    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
+                        /* phyBunDir is not empty */
+                        if (chkOrphanDir (rsComm, phyBunDir, rescInfo->rescName) > 0) {
+                            /* it is a orphan dir */
+                            fileRenameInp_t fileRenameInp;
+                            bzero (&fileRenameInp, sizeof (fileRenameInp));
+                            rstrcpy (fileRenameInp.oldFileName, phyBunDir, MAX_NAME_LEN);
+                            status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, 
+                                                             &fileRenameInp, rescInfo, 1);
 
-            if (status >= 0) {
-                rodsLog (LOG_NOTICE,
-                  "unbunPhyBunFile: %s has been moved to ORPHAN_DIR.stat=%d",
-                  phyBunDir, status);
-		status = rsStructFileExtract (rsComm, &structFileOprInp);
-            } else {
-        	rodsLog (LOG_ERROR,
-        	  "unbunPhyBunFile: renameFilePathToNewDir err for %s.stat=%d",
-          	  phyBunDir, status);
-		status = SYS_DIR_IN_VAULT_NOT_EMPTY;
-            }
-	}
-    }
-	clearKeyVal (&structFileOprInp.condInput); // JMC - backport 4632
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",
-          objPath, status); // JMC - backport 4657
-    }
-    free (structFileOprInp.specColl);
+                            if (status >= 0) {
+                                rodsLog (LOG_NOTICE,
+                                         "unbunPhyBunFile: %s has been moved to ORPHAN_DIR.stat=%d",
+                                         phyBunDir, status);
+                                status = rsStructFileExtract (rsComm, &structFileOprInp);
+                            } else {
+                                rodsLog (LOG_ERROR,
+                                         "unbunPhyBunFile: renameFilePathToNewDir err for %s.stat=%d",
+                                         phyBunDir, status);
+                                status = SYS_DIR_IN_VAULT_NOT_EMPTY;
+                            }
+                        }
+                    }
+                    clearKeyVal (&structFileOprInp.condInput); // JMC - backport 4632
+                    if (status < 0) {
+                        rodsLog (LOG_ERROR,
+                                 "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",
+                                 objPath, status); // JMC - backport 4657
+                    }
+                    free (structFileOprInp.specColl);
 
-    return (status);
-}
+                    return (status);
+                }
 
-int
-remoteUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsServerHost_t *rodsServerHost)
-{
-    int status;
+                int
+                    remoteUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+                                                 rodsServerHost_t *rodsServerHost)
+                {
+                    int status;
 
-    if (rodsServerHost == NULL) {
-        rodsLog (LOG_NOTICE,
-          "remoteUnbunAndRegPhyBunfile: Invalid rodsServerHost");
-        return SYS_INVALID_SERVER_HOST;
-    }
+                    if (rodsServerHost == NULL) {
+                        rodsLog (LOG_NOTICE,
+                                 "remoteUnbunAndRegPhyBunfile: Invalid rodsServerHost");
+                        return SYS_INVALID_SERVER_HOST;
+                    }
 
-    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
-        return status;
-    }
+                    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+                        return status;
+                    }
 
-    status = rcUnbunAndRegPhyBunfile (rodsServerHost->conn, dataObjInp);
+                    status = rcUnbunAndRegPhyBunfile (rodsServerHost->conn, dataObjInp);
 
-    return status;
-}
+                    return status;
+                }
 
-int
-rmLinkedFilesInUnixDir (char *phyBunDir)
-{
+                int
+                    rmLinkedFilesInUnixDir (char *phyBunDir)
+                {
 #ifndef USE_BOOST_FS
                     DIR *dirPtr;
                     struct dirent *myDirent;

@@ -14,6 +14,8 @@
 #include "rcPortalOpr.h"
 #include "apiHeaderAll.h"
 
+#include "eirods_stacktrace.h"
+
 /**
  * \fn rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,
  *   char *locFilePath)

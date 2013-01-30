@@ -132,6 +132,7 @@ typedef struct RescCacheInfo
                                           * MOUNTED_COLL - NA 
                                           */
         char resource[NAME_LEN];         /* the resource */
+        char rescHier[MAX_NAME_LEN];     // the resource hierarchy
         char phyPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-the phyPath of structFile
                                           * MOUNTED_COLL-the phyPath od mounted
                                           * directory

@@ -43,14 +43,14 @@ int
 chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
 rodsObjStat_t **rodsObjStatOut);
 int
-regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName, 
+regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName, 
 char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray);
 int
 _regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
 char *collection, char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp, 
 renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
 int
-regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *rescGroupName,
 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 

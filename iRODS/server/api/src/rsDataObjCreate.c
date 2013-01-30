@@ -143,7 +143,6 @@ rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling _rsDataObjCreate" );
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
-
             l1descInx = OVERWRITE_WITHOUT_FORCE_FLAG;
         }
     }

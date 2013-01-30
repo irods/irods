@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsStructFileBundle.c. See structFileBundle.h for a description of 
@@ -13,10 +15,11 @@
 
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsStructFileBundle (rsComm_t *rsComm,
-structFileExtAndRegInp_t *structFileBundleInp)
+                    structFileExtAndRegInp_t *structFileBundleInp)
 {
 #if 0
     char *destRescName = NULL;
@@ -30,32 +33,32 @@ structFileExtAndRegInp_t *structFileBundleInp)
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, structFileBundleInp->objPath,
-      MAX_NAME_LEN);
+             MAX_NAME_LEN);
 
     remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
-      REMOTE_CREATE);
+                                       REMOTE_CREATE);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
         status = rcStructFileBundle (rodsServerHost->conn,
-          structFileBundleInp);
+                                     structFileBundleInp);
         return status;
     }
 
 #if 0
     if ((destRescName = 
-     getValByKey (&structFileBundleInp->condInput, DEST_RESC_NAME_KW)) == NULL 
-     && (destRescName = 
-     getValByKey (&structFileBundleInp->condInput, DEF_RESC_NAME_KW)) == NULL) {
+         getValByKey (&structFileBundleInp->condInput, DEST_RESC_NAME_KW)) == NULL 
+        && (destRescName = 
+            getValByKey (&structFileBundleInp->condInput, DEF_RESC_NAME_KW)) == NULL) {
         return USER_NO_RESC_INPUT_ERR;
     }
 
     status = _getRescInfo (rsComm, destRescName, &rescGrpInfo);
     if (status < 0) {
-         rodsLog (LOG_ERROR,
-          "rsStructFileBundle: _getRescInfo of %s error for %s. stat = %d",
-          destRescName, structFileBundleInp->collection, status);
+        rodsLog (LOG_ERROR,
+                 "rsStructFileBundle: _getRescInfo of %s error for %s. stat = %d",
+                 destRescName, structFileBundleInp->collection, status);
         return status;
     }
 #else
@@ -73,9 +76,9 @@ structFileExtAndRegInp_t *structFileBundleInp)
         status = _rsStructFileBundle (rsComm, structFileBundleInp);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteStructFileBundle (rsComm, structFileBundleInp, 
-	  rodsServerHost);
+                                         rodsServerHost);
     } else if (remoteFlag < 0) {
-            status = remoteFlag;
+        status = remoteFlag;
     }
     freeAllRescGrpInfo (rescGrpInfo);
     return status;
@@ -98,28 +101,27 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     dataObjInp.openFlags = O_WRONLY;  
 
     // =-=-=-=-=-=-=-
-    // get the data type of the structured file	
+    // get the data type of the structured file 
     dataType = getValByKey( &structFileBundleInp->condInput, DATA_TYPE_KW );
 
 
     // =-=-=-=-=-=-=-
     // ensure that the file name will end in .zip, if necessary
     if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
-       int len = strlen (structFileBundleInp->objPath);
-       if (strcmp (&structFileBundleInp->objPath[len - 4], ".zip") != 0) {
-           strcat (structFileBundleInp->objPath, ".zip");
+        int len = strlen (structFileBundleInp->objPath);
+        if (strcmp (&structFileBundleInp->objPath[len - 4], ".zip") != 0) {
+            strcat (structFileBundleInp->objPath, ".zip");
         }
     }
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // capture the object path in the data obj struct
     rstrcpy( dataObjInp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
- 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // replicate the condInput. may have resource input
     replKeyVal( &structFileBundleInp->condInput, &dataObjInp.condInput );
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // open the file if we are in an add operation, otherwise create the new file
     if( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR ) != 0 ) { // JMC - backport 4643
         l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
@@ -127,11 +129,11 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     } else {
         addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
         l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
-// foo1.tar exists here exit(0);
+        // foo1.tar exists here exit(0);
 
     }
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // error check create / open
     if( l1descInx < 0 ) {
         rodsLog( LOG_ERROR,"rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
@@ -139,24 +141,22 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         return l1descInx;
     }
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // FIXME :: Why, when we replicate them above?
-	clearKeyVal (&dataObjInp.condInput); // JMC - backport 4637
+    clearKeyVal (&dataObjInp.condInput); // JMC - backport 4637
     l3Close (rsComm, l1descInx);
-// foo1.tar exists here exit( 0 );
+    // foo1.tar exists here exit( 0 );
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // zip does not like a zero length file as target
     L1desc[ l1descInx ].l3descInx = 0;
     if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
         if( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0 ) { // JMC - backport 4643
             l3Unlink( rsComm, L1desc[l1descInx].dataObjInfo );
         }
-
-    
     }
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // check object permissions / stat
     chkObjPermAndStat_t chkObjPermAndStatInp;
     memset( &chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
@@ -174,13 +174,12 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     }
 
     clearKeyVal( &chkObjPermAndStatInp.condInput );
-// foo1.tar DOESNT exist here  exit( 0 );
+    // foo1.tar DOESNT exist here  exit( 0 );
     
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // create the special hidden directory where the bundling happens
     createPhyBundleDir( rsComm, L1desc[ l1descInx ].dataObjInfo->filePath, phyBunDir );
-      
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // build a collection open input structure
     collInp_t collInp;
     bzero( &collInp, sizeof( collInp ) );
@@ -190,7 +189,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
    
     rodsLog( LOG_NOTICE, "rsStructFileBundle: calling rsOpenCollection for [%s]", structFileBundleInp->collection ); 
     
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // open the collection from which we will bundle
     handleInx = rsOpenCollection( rsComm, &collInp );
     if( handleInx < 0 ) {
@@ -200,40 +199,40 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         return handleInx;
     }
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // preserve the collection path?
     int collLen = 0;
     if( ( structFileBundleInp->oprType & PRESERVE_COLL_PATH ) != 0 ) {
-       // =-=-=-=-=-=-=-
-       // preserver the last entry of the coll path 
-       char* tmpPtr = collInp.collName;
-       int   tmpLen = 0;
-       collLen = 0;
+        // =-=-=-=-=-=-=-
+        // preserve the last entry of the coll path 
+        char* tmpPtr = collInp.collName;
+        int   tmpLen = 0;
+        collLen = 0;
 
-       // =-=-=-=-=-=-=-
-       // find length to the last '/'
+        // =-=-=-=-=-=-=-
+        // find length to the last '/'
         while( *tmpPtr != '\0' ) {
-           if( *tmpPtr == '/' ) {
-               collLen = tmpLen;
-           }
+            if( *tmpPtr == '/' ) {
+                collLen = tmpLen;
+            }
 
-           tmpLen++;
-           tmpPtr++;
-       }
+            tmpLen++;
+            tmpPtr++;
+        }
 
     } else {
         collLen = strlen( collInp.collName );
 
     }
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // preserve the collection path?
     collEnt_t* collEnt = NULL;
     while( ( status = rsReadCollection (rsComm, &handleInx, &collEnt ) ) >= 0 ) {
-		if( NULL == collEnt ) { // JMC cppcheck - nullptr
-			rodsLog( LOG_ERROR, "rsStructFileBundle: collEnt is NULL" );
-			continue; 
-		}
+        if( NULL == collEnt ) { // JMC cppcheck - nullptr
+            rodsLog( LOG_ERROR, "rsStructFileBundle: collEnt is NULL" );
+            continue; 
+        }
 
         // =-=-=-=-=-=-=-
         // entry is a data object
@@ -243,8 +242,8 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                   
             } else {
                 snprintf( tmpPath, MAX_NAME_LEN, "%s/%s/%s", phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName );
-	            mkDirForFilePath( rsComm, phyBunDir, tmpPath, getDefDirMode() );
-	          
+                mkDirForFilePath( rsComm, phyBunDir, tmpPath, getDefDirMode() );
+                  
             }
  
             // =-=-=-=-=-=-=-
@@ -259,20 +258,20 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
             }
 
         } else {
-        // =-=-=-=-=-=-=-
-        // entry is a collection
-	        if ((int) strlen (collEnt->collName) + 1 <= collLen) {
-		        free (collEnt);
-		        continue;
-	        }
+            // =-=-=-=-=-=-=-
+            // entry is a collection
+            if ((int) strlen (collEnt->collName) + 1 <= collLen) {
+                free (collEnt);
+                continue;
+            }
             snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",phyBunDir, collEnt->collName + collLen);
             mkdirR (phyBunDir, tmpPath, getDefDirMode ());
-	    } // else
+        } // else
 
-	    if( collEnt != NULL ) {
+        if( collEnt != NULL ) {
             free( collEnt );
             collEnt = NULL;
-	    }
+        }
 
     } // while
 
@@ -284,7 +283,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // call the helper function to do the actual bundling
     status = phyBundle( rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
-	                    collInp.collName, structFileBundleInp->oprType ); // JMC - backport 4643
+                        collInp.collName, structFileBundleInp->oprType ); // JMC - backport 4643
     
     int savedStatus = 0;
     if (status < 0) {
@@ -305,7 +304,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     dataObjCloseInp.l1descInx = l1descInx;
     status = rsDataObjClose( rsComm, &dataObjCloseInp );
     if( status >= 0 ) {
-	    return savedStatus;
+        return savedStatus;
     }
 
     return (status);
@@ -313,13 +312,13 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
 
 int
 remoteStructFileBundle (rsComm_t *rsComm,
-structFileExtAndRegInp_t *structFileBundleInp, rodsServerHost_t *rodsServerHost)
+                        structFileExtAndRegInp_t *structFileBundleInp, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteStructFileBundle: Invalid rodsServerHost");
+                 "remoteStructFileBundle: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
