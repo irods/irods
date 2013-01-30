@@ -45,6 +45,7 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
         int local = LOCAL_HOST;
+#if 0
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
             rodsServerHost_t* host  =  0;
@@ -63,7 +64,7 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
         } // if keyword
-
+#endif
         if( LOCAL_HOST == local ) {
             status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
                                     dataObjOutBBuf, BRANCH_MSG);

@@ -141,6 +141,7 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     }
     if (getValByKey (&structFileExtAndRegInp->condInput, BULK_OPR_KW)
         != NULL) {
+
         status = bulkRegUnbunSubfiles (rsComm, rescInfo, rescHier, rescGroupName,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
     } else {

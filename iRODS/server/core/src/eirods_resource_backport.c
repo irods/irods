@@ -232,6 +232,10 @@ namespace eirods {
     // helper function to extract useful bits from a resource plugin and fill in a 
     // resource group info structure.
     error resource_to_resc_grp_info( rescGrpInfo_t& _grp_info, resource_ptr& _resc ) {
+        // =-=-=-=-=-=-=-
+        // end the linked lists
+        _grp_info.next      = NULL;
+        _grp_info.cacheNext = NULL;
 
         // =-=-=-=-=-=-=-
         // allocate the rescinfo struct if necessary

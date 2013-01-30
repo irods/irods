@@ -10,6 +10,8 @@
 #include "objMetaOpr.h"
 #include "icatHighLevelRoutines.h"
 
+#include "eirods_stacktrace.h"
+
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
                   genQueryOut_t **bulkDataObjRegOut)
@@ -54,13 +56,20 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
 {
 #ifdef RODS_CAT
     dataObjInfo_t dataObjInfo;
-    sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
+    sqlResult_t *objPath, *dataType, *dataSize, *rescName, *rescHier, *filePath,
         *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
-    char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
+    char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpRescHier, *tmpFilePath,
         *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum, *tmpChksum;
     sqlResult_t *objId;
     char *tmpObjId;
     int status, i;
+
+    if ((rescHier =
+         getSqlResultByInx (bulkDataObjRegInp, COL_D_RESC_HIER)) == NULL) {
+        rodsLog (LOG_NOTICE,
+                 "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_HIER failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
 
     if ((objPath =
          getSqlResultByInx (bulkDataObjRegInp, COL_DATA_NAME)) == NULL) {
@@ -141,6 +150,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         tmpDataType = &dataType->value[dataType->len * i];
         tmpDataSize = &dataSize->value[dataSize->len * i];
         tmpRescName = &rescName->value[rescName->len * i];
+        tmpRescHier = &rescHier->value[rescHier->len * i];
         tmpFilePath = &filePath->value[filePath->len * i];
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpOprType = &oprType->value[oprType->len * i];
@@ -154,6 +164,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         rstrcpy (dataObjInfo.dataType, tmpDataType, NAME_LEN);
         dataObjInfo.dataSize = strtoll (tmpDataSize, 0, 0);
         rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
+        rstrcpy (dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN);
         rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
         rstrcpy (dataObjInfo.dataMode, tmpDataMode, NAME_LEN);
         rstrcpy (dataObjInfo.rescGroupName, tmpRescGroupName, NAME_LEN);

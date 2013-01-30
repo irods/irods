@@ -252,7 +252,7 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp);
 int
 initBulkDataObjRegOut (genQueryOut_t **bulkDataObjRegOut);
 int
-fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
+fillBulkDataObjRegInp (char *rescName, const std::string& rescHier, char *rescGroupName, char *objPath,
                        char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
                        int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp);
 int

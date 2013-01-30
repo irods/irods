@@ -5,7 +5,6 @@
 #include "eirods_resource_manager.h"
 #include "eirods_log.h"
 #include "eirods_string_tokenize.h"
-#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -42,9 +41,6 @@ namespace eirods {
     error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
 
         if( _key.empty() ) {
-            stacktrace st;
-            st.trace();
-            st.dump();
             return ERROR( -1, "resource_manager::resolve - empty key" );
         }
 

@@ -1113,7 +1113,6 @@ extern "C" {
                  eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
                  MAX_NAME_LEN );
 
-
         // =-=-=-=-=-=-=-
         // make the call to stat a file
         rodsStat_t* rods_stat;

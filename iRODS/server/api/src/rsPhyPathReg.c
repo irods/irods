@@ -197,7 +197,8 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     rstrcpy (dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
     rstrcpy (dataObjInfo.filePath, filePath, MAX_NAME_LEN);
     dataObjInfo.rescInfo = rescGrpInfo->rescInfo;
-    rstrcpy (dataObjInfo.rescName, rescGrpInfo->rescInfo->rescName, LONG_NAME_LEN);
+    rstrcpy (dataObjInfo.rescName, rescGrpInfo->rescInfo->rescName, NAME_LEN);
+    rstrcpy (dataObjInfo.rescHier, rescGrpInfo->rescInfo->rescName, MAX_NAME_LEN);
  
     if( getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
         (chkType = getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) != NO_CHK_PATH_PERM) { // JMC - backport 4774
@@ -302,6 +303,7 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
     dataObjInfo.rescInfo = rescInfo;
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+    rstrcpy (dataObjInfo.rescHier, rescInfo->rescName, MAX_NAME_LEN);
 
     if (dataObjInfo.dataSize <= 0 && 
         (dataObjInfo.dataSize = getSizeInVault (rsComm, &dataObjInfo)) < 0 &&
@@ -424,6 +426,8 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
         fileStatInp.fileType = fileOpendirInp.fileType; 
         fileStatInp.addr = fileOpendirInp.addr;
+        rstrcpy( fileStatInp.rescHier, rescInfo->rescName, MAX_NAME_LEN );
+
         status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
         if (status != 0) {
@@ -518,6 +522,7 @@ int mountFileDir( rsComm_t*     rsComm,
     rescTypeInx = rescInfo->rescTypeInx;
     fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
+    rstrcpy( fileStatInp.rescHier, rescInfo->rescName, MAX_NAME_LEN );
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
     if (status < 0) {

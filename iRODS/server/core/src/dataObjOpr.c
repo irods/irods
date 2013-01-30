@@ -324,7 +324,6 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             return (status);
             #endif
         }*/
-
         // =-=-=-=-=-=-=-
         // get the resource info struct given a resource name
         dataObjInfo->rescInfo = new rescInfo_t;

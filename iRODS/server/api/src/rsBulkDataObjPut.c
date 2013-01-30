@@ -284,6 +284,8 @@ createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     bzero (&dataObjInfo, sizeof (dataObjInfo));
     rstrcpy (dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN);
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+    rstrcpy (dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN);
+
     dataObjInfo.rescInfo = rescInfo;
 
     status = getFilePathName (rsComm, &dataObjInfo, dataObjInp);
@@ -604,7 +606,7 @@ _bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
         }
     }
 
-    status = bulkRegSubfile (rsComm, rescInfo->rescName, rescGroupName,
+    status = bulkRegSubfile (rsComm, rescInfo->rescName, rescHier, rescGroupName,
       subObjPath, dataObjInfo.filePath, dataSize, myDataMode, modFlag,
       dataObjInfo.replNum, myChksum, bulkDataObjRegInp, renamedPhyFiles);
 
@@ -612,7 +614,7 @@ _bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
 }
 
 int
-bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
 int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
 renamedPhyFiles_t *renamedPhyFiles)
@@ -620,7 +622,7 @@ renamedPhyFiles_t *renamedPhyFiles)
     int status;
 
     /* XXXXXXXX use NULL for chksum for now */
-    status = fillBulkDataObjRegInp (rescName, rescGroupName, subObjPath,
+    status = fillBulkDataObjRegInp (rescName, rescHier, rescGroupName, subObjPath,
       subfilePath, "generic", dataSize, dataMode, modFlag,
       replNum, chksum, bulkDataObjRegInp);
     if (status < 0) {

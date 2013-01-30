@@ -20,6 +20,10 @@
 #endif
 #include "genQuery.h"
 
+// =-=-=-=-=-=-=-
+// stl includes
+#include <string>
+
 #define TMP_PHY_BUN_DIR         "tmpPhyBunDir"
 
 typedef struct {
@@ -66,7 +70,7 @@ bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
                        int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
                        renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
 int
-bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, const std::string& rescHier, char *rescGroupName,
                 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
                 int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
                 renamedPhyFiles_t *renamedPhyFiles);

@@ -3725,7 +3725,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
                 memset (bulkDataObjRegInp, 0, sizeof (genQueryOut_t));
 
-                bulkDataObjRegInp->attriCnt = 10;
+                bulkDataObjRegInp->attriCnt = 11;
 
                 bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
                 bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
@@ -3787,6 +3787,13 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                     (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
                 bzero (bulkDataObjRegInp->sqlResult[9].value,
                        NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+                bulkDataObjRegInp->sqlResult[10].attriInx = COL_D_RESC_HIER;
+                bulkDataObjRegInp->sqlResult[10].len = MAX_NAME_LEN;
+                bulkDataObjRegInp->sqlResult[10].value =
+                    (char *)malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+                bzero (bulkDataObjRegInp->sqlResult[10].value,
+                       MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+
 
                 bulkDataObjRegInp->continueInx = -1;
 
@@ -3819,10 +3826,11 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
             }
 
             int
-                fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
+                fillBulkDataObjRegInp (char *rescName, const std::string& rescHier, char *rescGroupName, char *objPath,
                                        char *filePath, char *dataType, rodsLong_t dataSize, int dataMode, 
                                        int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp)
             {
+
                 int rowCnt;
 
                 if (bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL || 
@@ -3861,7 +3869,8 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 } else {
                     bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
                 }
-
+                snprintf (&bulkDataObjRegInp->sqlResult[10].value[MAX_NAME_LEN * rowCnt],
+                          MAX_NAME_LEN, "%s", rescHier.c_str() );
                 bulkDataObjRegInp->rowCnt++;
 
                 return 0;
