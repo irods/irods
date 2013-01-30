@@ -117,12 +117,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // capture the object path in the data obj struct
     rstrcpy( dataObjInp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - structFileBundleInp: \"" << structFileBundleInp->objPath << "\"";
-        DEBUGMSG(msg.str());
-    }
-    
     // =-=-=-=-=-=-=-
     // replicate the condInput. may have resource input
     replKeyVal( &structFileBundleInp->condInput, &dataObjInp.condInput );
@@ -185,12 +179,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // create the special hidden directory where the bundling happens
     createPhyBundleDir( rsComm, L1desc[ l1descInx ].dataObjInfo->filePath, phyBunDir );
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - phyBunDir: \"" << phyBunDir << "\"";
-        DEBUGMSG(msg.str());
-    }
-    
     // =-=-=-=-=-=-=-
     // build a collection open input structure
     collInp_t collInp;

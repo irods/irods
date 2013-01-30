@@ -173,7 +173,7 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
             if( specColl->collClass == STRUCT_FILE_COLL && 
                 specColl->type      == TAR_STRUCT_FILE_T ) {
                 /* tar struct file. need to get phyPath */
-                status = getPhyPath( rsComm, specColl->objPath, specColl->resource, specColl->phyPath );
+                status = getPhyPath( rsComm, specColl->objPath, specColl->resource, specColl->phyPath, specColl->rescHier );
                 if( status < 0 ) {
                     rodsLog( LOG_ERROR, "queueSpecCollCache - getPhyPath failed for [%s] on resource [%s] with cache dir [%s] and collection [%s]",
                              specColl->objPath, specColl->resource, specColl->cacheDir, specColl->collection );
@@ -431,6 +431,7 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         rstrcpy (myDataObjInfo->objPath, subPath, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->subPath, subPath, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->rescName, specColl->resource, NAME_LEN);
+        rstrcpy (myDataObjInfo->rescHier, specColl->resource, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->dataType, "generic", NAME_LEN);
 
         status = getMountedSubPhyPath (specColl->collection,
@@ -442,6 +443,7 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         }
         replSpecColl (specColl, &myDataObjInfo->specColl);
     } else if (specColl->collClass == LINKED_COLL) {
+        
         /* a link point */
         specCollCache_t *specCollCache = NULL;
         char newPath[MAX_NAME_LEN];
@@ -517,6 +519,7 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
             return DATA_OBJ_T;
         }
     } else if (getStructFileType (specColl) >= 0) {
+
         /* bundle */
         dataObjInp_t myDataObjInp;
         dataObjInfo_t *tmpDataObjInfo;
@@ -665,7 +668,7 @@ resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
 
     status = specCollSubStat (rsComm, cachedSpecColl, objPath,
                               specCollPerm, dataObjInfo);
-
+    
     if (status < 0) {
         if (*dataObjInfo != NULL) {
             /* does not exist. return the dataObjInfo anyway */

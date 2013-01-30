@@ -111,15 +111,10 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
 
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
-
+    std::string rescHier = dataObjInfo->rescHier;
+    
     createPhyBundleDir (rsComm, dataObjInfo->filePath, phyBunDir);
 
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - filePath: \"" << dataObjInfo->filePath << "\"";
-        DEBUGMSG(msg.str());
-    }
-    
     status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo, // JMC - backport 4657 
                               dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0);  
 
@@ -146,7 +141,7 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     }
     if (getValByKey (&structFileExtAndRegInp->condInput, BULK_OPR_KW)
         != NULL) {
-        status = bulkRegUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+        status = bulkRegUnbunSubfiles (rsComm, rescInfo, rescHier, rescGroupName,
                                        structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
     } else {
         status = regUnbunSubfiles (rsComm, rescInfo, dataObjInfo->rescHier, rescGroupName,

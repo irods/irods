@@ -127,12 +127,8 @@ fileChksum (
         return (status);
     }
 
-    DEBUGMSG("qqq - Initializing md5");
-    
     MD5Init (&context);
 
-    DEBUGMSG("qqq - Doing a fileRead");
-    
     eirods::error read_err = fileRead( file_obj, buffer, SVR_MD5_BUF_SZ );      
     bytes_read = read_err.code();
 
@@ -147,19 +143,14 @@ fileChksum (
 
     } // while
 
-    DEBUGMSG("qqq - Finalizing md5");
-    
     MD5Final (digest, &context);
 
-    DEBUGMSG("qqq - fileClose");
-    
     ret = fileClose( file_obj );
     if( !ret.ok() ) {
         eirods::error err = PASS( false, ret.code(), "fileChksum - error on close", ret );
         eirods::log( err );
     }
 
-    DEBUGMSG("qqq - Done");
     md5ToStr (digest, chksumStr);
 
 #ifdef MD5_DEBUG

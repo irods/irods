@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <execinfo.h>
+#include <stdlib.h>
 
 namespace eirods {
 
@@ -20,7 +21,7 @@ namespace eirods {
 
     error stacktrace::trace(void) {
         error result = SUCCESS();
-        void* buffer[max_stack_size];
+        void** buffer = new void*[max_stack_size];
         stack_.clear();
         int size = backtrace(buffer, max_stack_size);
         if(size) {
@@ -34,12 +35,14 @@ namespace eirods {
                         result = ERROR(-1, "Corrupt stack trace. Symbol is NULL.");
                     }
                 }
+                free(symbols);
             } else {
                 result = ERROR(-1, "Cannot generate stack symbols");
             }
         } else {
             result = ERROR(-1, "Stack trace is empty");
         }
+        delete [] buffer;
         return result;
     }
 

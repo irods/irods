@@ -143,10 +143,6 @@ extern "C" {
             msg << "', status = ";
             msg << status;
  
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-            
             return ERROR( status, msg.str() );
         }
 
@@ -1068,7 +1064,7 @@ extern "C" {
             std::stringstream msg;
             msg << "unixFileRenamePlugin: mkdir error for ";
             msg << new_path;
-            
+
             return PASSMSG( msg.str(), ret);
 
         }

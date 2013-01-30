@@ -141,7 +141,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
-
             l1descInx = OVERWRITE_WITHOUT_FORCE_FLAG;
         }
     }

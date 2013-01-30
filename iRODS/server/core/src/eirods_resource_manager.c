@@ -83,47 +83,30 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // iterate through the map and search for our path
         lookup_table< resource_ptr >::iterator itr = resources_.begin();
-        for( ; itr != resources_.end(); ++itr ) {
+        for( ; !found && itr != resources_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
             // query resource for the property value
             std::string value;
             error ret = itr->second->get_property<std::string>( "path", value );
 
             // =-=-=-=-=-=-=-
-            // if we get a good parameter 
-            if( ret.ok() ) {
+            // if we get a good parameter and do not match non-storage nodes with an empty physical path
+            if( ret.ok()) {
+
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
-                if( _physical_path.find( value ) != std::string::npos || 
-                    value.find( _physical_path ) != std::string::npos ) {
-                    // =-=-=-=-=-=-=-
-                    // if we get a match, walk up the parents of the resource
-                    // until we hit the root as this could be a resource composition
-                    // and eirods should only be talking to the root of a composition.
-                    resource_ptr resc2, resc1 = itr->second;
-                    error        err  = resc1->get_parent( resc2 );
-                    while( err.ok() ) {
-                        resc1 = resc2;
-                        err = resc1->get_parent( resc2 );
-
-                    } // while
-
-                    // =-=-=-=-=-=-=-
-                    // finally set our flag and cache the resource pointer
+                if( !value.empty() && (_physical_path.find( value ) != std::string::npos || 
+                                       value.find( _physical_path ) != std::string::npos )) {
+                    _resc = itr->second;
                     found = true;
-                    _resc = resc1;
-
-                    // =-=-=-=-=-=-=-
-                    // and... were done.
-                    break;
                 }
             } else {
                 std::stringstream msg;
                 msg << "resource_manager::resolve_from_physical_path - ";
                 msg << "failed to get vault parameter from resource";
                 msg << ret.code();
-                eirods::error err = PASS( false, -1, msg.str(), ret );
+                eirods::log(LOG_NOTICE, msg.str());
             }
 
         } // for itr

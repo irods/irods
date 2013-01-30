@@ -117,18 +117,10 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     // if we get a bad file descriptor
     if( !create_err.ok() ) {
 
-        if(true) {
-            DEBUGMSG("qqq - First bad fd");
-        }
-        
         // =-=-=-=-=-=-=-
         // check error on fd, did the directory exist?
         if( getErrno ( create_err.code() ) == ENOENT ) {
 
-            if(true) {
-                DEBUGMSG("qqq - Path does not exist");
-            }
-        
             // =-=-=-=-=-=-=-
             // the directory didnt exist, make it and then try the create once again.
             int status = mkDirForFilePath( rsComm, "/", file_obj.physical_path().c_str(), getDefDirMode() ); 
@@ -139,10 +131,6 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                 return status;
             }
             
-            if(true) {
-                DEBUGMSG("qqq - Second try");
-            }
-        
             create_err = fileCreate( file_obj );
                                                 
             // =-=-=-=-=-=-=-
@@ -157,10 +145,6 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                 eirods::error ret_err = PASS( false, file_obj.file_descriptor(), msg.str(), create_err );
                 eirods::log( ret_err );
 
-                if(true) {
-                    DEBUGMSG("qqq - Second failure");
-                }
-        
             }
 
         } else if( getErrno( create_err.code() ) == EEXIST ) {

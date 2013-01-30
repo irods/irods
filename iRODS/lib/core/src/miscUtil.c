@@ -103,12 +103,6 @@ mkdirR (char *startDir, char *destDir, int mode)
 #endif
 #endif  /* USE_BOOST_FS */
 
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Making directory: \"" << destDir << "\"";
-        DEBUGMSG(msg.str());
-    }
-    
     startLen = strlen (startDir);
     pathLen = strlen (destDir);
 
@@ -409,15 +403,6 @@ queryDataObjInColl (queryHandle_t *queryHandle, char *collection,
         addInxVal (&genQueryInp->sqlCondInp, COL_D_RESC_GROUP_NAME, collQCond);
     }
 
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Collection: \"" << collection << "\"";
-        if(rescName) {
-            msg << "Resc: \"" << rescName << "\"";
-        }
-        DEBUGMSG(msg.str());
-    }
-    
     setQueryInpForData (flags, genQueryInp);
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
@@ -1631,12 +1616,6 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     len = dataObjSqlResult->rescGrp.len;
     outCollEnt->rescGrp = &value[len * selectedInx];
 
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Resc: \"" << outCollEnt->resource << "\" PhyPath: \"" << outCollEnt->phyPath << "\"";
-        DEBUGMSG(msg.str());
-    }
-    
 #if 0
     collHandle->rowInx = nextInx;
 #endif

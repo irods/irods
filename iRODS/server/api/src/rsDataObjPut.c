@@ -454,20 +454,10 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     }
 
     prev_resc_hier = filePutInp.resc_hier_;
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Previous file path: \"" << filePutInp.fileName << "\"";
-        DEBUGMSG(msg.str());
-    }
     bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
     // update the dataObjInfo with the potential changes made by the resource - hcj
     rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
     rstrcpy(dataObjInfo->filePath, filePutInp.fileName, MAX_NAME_LEN);
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Post file path: \"" << filePutInp.fileName << "\"";
-        DEBUGMSG(msg.str());
-    }
 
     /* file already exists ? */
     while( bytesWritten < 0 && retryCnt < 10 &&

@@ -63,7 +63,7 @@ checkDupReplica (rsComm_t *rsComm, rodsLong_t dataId, char *rescName,char *fileP
 int
 getNumSubfilesInBunfileObj (rsComm_t *rsComm, char *objPath); // JMC - backport 4552
 int
-getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath); // JMC - backport 4680
+getPhyPath (rsComm_t *rsComm, char *objName,  char *resource, char *phyPath, char* rescHier); // JMC - backport 4680
 #ifdef  __cplusplus
 }
 #endif
