@@ -73,10 +73,6 @@ namespace eirods {
             return PASSMSG( msg.str(), ret );
         }
 
-        std::string rname;
-        _ptr->get_property< std::string >( "name", rname );
-        rodsLog( LOG_NOTICE, "XXXX - collection object resolved resource [%s]", rname.c_str() );
-
         return SUCCESS();
 
     } // resolve

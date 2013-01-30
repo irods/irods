@@ -55,8 +55,8 @@ typedef struct RuleExecInfo {
   int l1descInx;
   dataObjInp_t *doinp;	/* data object type input */
 #if 0
-  dataOprInp_t *dinp;   /* XXXXX - not used. data input */
-  fileOpenInp_t *finp;  /* XXXXX - not used. file type input */
+  dataOprInp_t *dinp;   /* not used. data input */
+  fileOpenInp_t *finp;  /* not used. file type input */
 #endif
   dataObjInfo_t *doi;
   rescGrpInfo_t *rgi; /* resource group */

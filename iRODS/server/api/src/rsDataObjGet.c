@@ -68,8 +68,9 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
                                     dataObjOutBBuf, BRANCH_MSG);
         } else {
-            rodsLog( LOG_NOTICE, "XXXX - rsDataObjGet :: eirods::resource_redirect selected REMOTE_HOST" );
+            rodsLog( LOG_NOTICE, "rsDataObjGet :: eirods::resource_redirect - Trying to Redirect to another server" );
             return -1;
+
         } // else remote host
 
     } else {

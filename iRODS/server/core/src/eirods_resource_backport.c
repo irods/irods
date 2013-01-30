@@ -267,7 +267,6 @@ namespace eirods {
     error set_default_resource( rsComm_t*      _comm,   std::string   _resc_list,  
                                 std::string    _option, keyValPair_t* _cond_input, 
                                 rescGrpInfo_t& _resc_grp ) {
-rodsLog( LOG_NOTICE, "XXXX - set_default_resource :: Start" );
         // =-=-=-=-=-=-=
         // quick error check
         if( _resc_list.empty() && NULL == _cond_input ) {
@@ -295,7 +294,6 @@ rodsLog( LOG_NOTICE, "XXXX - set_default_resource :: Start" );
                 // no conditional input resource
             } else {
                 cond_input_resc = name;
-rodsLog( LOG_NOTICE, "XXXX - set_default_resource :: cond resc name [%s]", name );
 
             }
 
@@ -329,8 +327,6 @@ rodsLog( LOG_NOTICE, "XXXX - set_default_resource :: cond resc name [%s]", name 
            } // if grp_err
 
         } // for itr
-
-rodsLog( LOG_NOTICE, "XXXX - set_default_resource :: default resource name [%s]", default_resc_name.c_str() );
 
         // =-=-=-=-=-=-=-
         // determine that we might need a 'preferred' resource
