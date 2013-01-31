@@ -265,7 +265,6 @@ chkAndResetRule (rsComm_t *rsComm)
     struct stat statbuf;
 #endif
     int status;
-    ruleExecInfo_t rei;
     uint mtime;
 
     configDir = getConfigDir ();
@@ -304,7 +303,6 @@ chkAndResetRule (rsComm_t *rsComm)
           "chkAndResetRule: reconf file %s has been changed. re-initializing",
 	  rulesFileName);
 	CoreIrbTimeStamp = mtime;
-	rei.rsComm = rsComm;
 	clearCoreRule();
 	/* The shared memory cache may have already been updated, do not force reload */
 	status = initRuleEngine(RULE_ENGINE_TRY_CACHE, NULL, reRuleStr, reFuncMapStr, reVariableMapStr);

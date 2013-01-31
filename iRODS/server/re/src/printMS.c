@@ -1,5 +1,7 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /**
- * @file	printMS.c
+ * @file        printMS.c
  *
  */
 
@@ -54,29 +56,29 @@
  * \post none
  * \sa writeString
  * \endcond
-**/
+ **/
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
-  int i;
-  char tmp[3];
-  char *ptr;
-  char *writeId = (char *) where->inOutStruct;
+    int i;
+    char tmp[3];
+    char *ptr;
+    char *writeId = (char *) where->inOutStruct;
 
-  if (writeId != NULL && strcmp (writeId, "serverLog") == 0 &&
-   inString->inOutStruct != NULL) {
-    rodsLog (LOG_NOTICE, "writeLine: inString = %s\n", inString->inOutStruct);
-    return 0;
-  }
+    if (writeId != NULL && strcmp (writeId, "serverLog") == 0 &&
+        inString->inOutStruct != NULL) {
+        rodsLog (LOG_NOTICE, "writeLine: inString = %s\n", inString->inOutStruct);
+        return 0;
+    }
 
-  i = writeString(where, inString,rei);
-  if (i < 0)
+    i = writeString(where, inString,rei);
+    if (i < 0)
+        return(i);
+    ptr = (char*)inString->inOutStruct;
+    sprintf(tmp,"%s\n","");
+    inString->inOutStruct =  tmp;
+    i = writeString(where, inString,rei);
+    inString->inOutStruct = ptr;
     return(i);
-  ptr = (char*)inString->inOutStruct;
-  sprintf(tmp,"%s\n","");
-  inString->inOutStruct =  tmp;
-  i = writeString(where, inString,rei);
-  inString->inOutStruct = ptr;
-  return(i);
   
 }
 
@@ -118,135 +120,135 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \post none
  * \sa none
  * \endcond
-**/
+ **/
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
-  int i;
-  char *writeId;
-  char *writeStr;
+    int i;
+    char *writeId;
+    char *writeStr;
 
-  if (where->inOutStruct == NULL)
-    writeId = where->label;
-  else
-    writeId = (char*)where->inOutStruct;
+    if (where->inOutStruct == NULL)
+        writeId = where->label;
+    else
+        writeId = (char*)where->inOutStruct;
 
-  if (inString->inOutStruct == NULL) {
-    writeStr = strdup((char *) inString->label);
-  }
-  else {
-    writeStr = strdup((char *) inString->inOutStruct);
-  }
-  i = _writeString(writeId, writeStr, rei);
+    if (inString->inOutStruct == NULL) {
+        writeStr = strdup((char *) inString->label);
+    }
+    else {
+        writeStr = strdup((char *) inString->inOutStruct);
+    }
+    i = _writeString(writeId, writeStr, rei);
 
-  free(writeStr);
-  return(i);
+    free(writeStr);
+    return(i);
 }
 
 int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
 {
-  msParamArray_t *inMsParamArray;
-  msParam_t *mP;
-  execCmdOut_t *myExecCmdOut;
+    msParamArray_t *inMsParamArray;
+    msParam_t *mP;
+    execCmdOut_t *myExecCmdOut;
 
-  // =-=-=-=-=-=-=-
-  // JMC - backport 4619
-  dataObjInp_t dataObjInp;
-  openedDataObjInp_t openedDataObjInp;
-  bytesBuf_t tmpBBuf;
-  fileLseekOut_t *dataObjLseekOut = NULL;
-  int fd,i;
-  // =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4619
+    dataObjInp_t dataObjInp;
+    openedDataObjInp_t openedDataObjInp;
+    bytesBuf_t tmpBBuf;
+    fileLseekOut_t *dataObjLseekOut = NULL;
+    int fd,i;
+    // =-=-=-=-=-=-=-
     
-  if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
-    rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
-    return 0;
-  }
-
-  // =-=-=-=-=-=-=-
-  // JMC - backport 4619
-  if (writeId != NULL && writeId[0] == '/') {
-    /* writing to an existing iRODS file */
-
-    if (rei == NULL || rei->rsComm == NULL) {
-      rodsLog (LOG_ERROR, "_writeString: input rei or rsComm is NULL");
-      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
+        rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
+        return 0;
     }
 
-    bzero (&dataObjInp, sizeof (dataObjInp));
-    dataObjInp.openFlags = O_RDWR;
-    snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s",writeId);
-    fd = rsDataObjOpen (rei->rsComm, &dataObjInp);
-    if (fd < 0) {
-      rodsLog (LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd);
-      return(fd);
+    // =-=-=-=-=-=-=-
+    // JMC - backport 4619
+    if (writeId != NULL && writeId[0] == '/') {
+        /* writing to an existing iRODS file */
+
+        if (rei == NULL || rei->rsComm == NULL) {
+            rodsLog (LOG_ERROR, "_writeString: input rei or rsComm is NULL");
+            return (SYS_INTERNAL_NULL_INPUT_ERR);
+        }
+
+        bzero (&dataObjInp, sizeof (dataObjInp));
+        dataObjInp.openFlags = O_RDWR;
+        snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s",writeId);
+        fd = rsDataObjOpen (rei->rsComm, &dataObjInp);
+        if (fd < 0) {
+            rodsLog (LOG_ERROR, "_writeString: rsDataObjOpen failed. status = %d", fd);
+            return(fd);
+        }
+
+        bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+        openedDataObjInp.l1descInx = fd;
+        openedDataObjInp.offset = 0;
+        openedDataObjInp.whence = SEEK_END;
+        i = rsDataObjLseek (rei->rsComm, &openedDataObjInp, &dataObjLseekOut);
+        if (i < 0) {
+            rodsLog (LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i);
+            return(i);
+        }
+
+        bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+        openedDataObjInp.l1descInx = fd;
+        tmpBBuf.len = openedDataObjInp.len = strlen(writeStr) + 1;
+        tmpBBuf.buf =  writeStr;
+        i = rsDataObjWrite (rei->rsComm, &openedDataObjInp, &tmpBBuf);
+        if (i < 0) {
+            rodsLog (LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i);
+            return(i);
+        }
+
+        bzero(&openedDataObjInp, sizeof(openedDataObjInp));
+        openedDataObjInp.l1descInx = fd;
+        i = rsDataObjClose (rei->rsComm, &openedDataObjInp);
+        return(i);
     }
 
-    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
-    openedDataObjInp.l1descInx = fd;
-    openedDataObjInp.offset = 0;
-    openedDataObjInp.whence = SEEK_END;
-    i = rsDataObjLseek (rei->rsComm, &openedDataObjInp, &dataObjLseekOut);
-    if (i < 0) {
-      rodsLog (LOG_ERROR, "_writeString: rsDataObjLseek failed. status = %d", i);
-      return(i);
+    // =-=-=-=-=-=-=-
+
+    mP = NULL;
+    inMsParamArray = rei->msParamArray;
+    if (((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) &&
+        (mP->inOutStruct != NULL)) {
+        if (!strcmp(mP->type,STR_MS_T)) {
+            myExecCmdOut =  (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
+            memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
+            mP->inOutStruct = myExecCmdOut;
+            mP->type = strdup(ExecCmdOut_MS_T);
+        }
+        else
+            myExecCmdOut = (execCmdOut_t*)mP->inOutStruct;
     }
-
-    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
-    openedDataObjInp.l1descInx = fd;
-    tmpBBuf.len = openedDataObjInp.len = strlen(writeStr) + 1;
-    tmpBBuf.buf =  writeStr;
-    i = rsDataObjWrite (rei->rsComm, &openedDataObjInp, &tmpBBuf);
-    if (i < 0) {
-      rodsLog (LOG_ERROR, "_writeString: rsDataObjWrite failed. status = %d", i);
-      return(i);
-    }
-
-    bzero(&openedDataObjInp, sizeof(openedDataObjInp));
-    openedDataObjInp.l1descInx = fd;
-    i = rsDataObjClose (rei->rsComm, &openedDataObjInp);
-    return(i);
-  }
-
-  // =-=-=-=-=-=-=-
-
-  mP = NULL;
-  inMsParamArray = rei->msParamArray;
-  if (((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) &&
-      (mP->inOutStruct != NULL)) {
-    if (!strcmp(mP->type,STR_MS_T)) {
-      myExecCmdOut =  (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
-      memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
-      mP->inOutStruct = myExecCmdOut;
-      mP->type = strdup(ExecCmdOut_MS_T);
-    }
-    else
-      myExecCmdOut = (execCmdOut_t*)mP->inOutStruct;
-  }
-  else {
-    myExecCmdOut =  (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
-    memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
-    if (mP == NULL)
-      addMsParam(inMsParamArray,"ruleExecOut", ExecCmdOut_MS_T,myExecCmdOut,NULL);
     else {
-      mP->inOutStruct = myExecCmdOut;
-      mP->type = strdup(ExecCmdOut_MS_T);
+        myExecCmdOut =  (execCmdOut_t*)malloc (sizeof (execCmdOut_t));
+        memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
+        if (mP == NULL)
+            addMsParam(inMsParamArray,"ruleExecOut", ExecCmdOut_MS_T,myExecCmdOut,NULL);
+        else {
+            mP->inOutStruct = myExecCmdOut;
+            mP->type = strdup(ExecCmdOut_MS_T);
+        }
     }
-  }
 
-  /***** Jun 27, 2007
-  i  = replaceVariablesAndMsParams("",writeStr, rei->msParamArray, rei);
-  if (i < 0)
-    return(i);
-  ****/
+    /***** Jun 27, 2007
+           i  = replaceVariablesAndMsParams("",writeStr, rei->msParamArray, rei);
+           if (i < 0)
+           return(i);
+    ****/
 
-  if (!strcmp(writeId,"stdout")) 
-    appendToByteBuf(&(myExecCmdOut->stdoutBuf),(char *) writeStr);
-  else if (!strcmp(writeId,"stderr")) 
-    appendToByteBuf(&(myExecCmdOut->stderrBuf),(char *) writeStr);
+    if(writeId != NULL) {
+        if (!strcmp(writeId,"stdout")) 
+            appendToByteBuf(&(myExecCmdOut->stdoutBuf),(char *) writeStr);
+        else if (!strcmp(writeId,"stderr")) 
+            appendToByteBuf(&(myExecCmdOut->stderrBuf),(char *) writeStr);
+    }
 
-
-
-  return(0);
+    return(0);
 }
 
 
@@ -281,30 +283,30 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
 {
-	char *writeId;
-	char writeStr[LONG_NAME_LEN];
-	int status;
+    char *writeId;
+    char writeStr[LONG_NAME_LEN];
+    int status;
 
-	if (where->inOutStruct != NULL) {
-		writeId = (char*)where->inOutStruct;	
-	}
-	else {
-		writeId = where->label;
-	}
+    if (where->inOutStruct != NULL) {
+        writeId = (char*)where->inOutStruct;    
+    }
+    else {
+        writeId = where->label;
+    }
 
-	if (inInt->inOutStruct != NULL) {
-		sprintf(writeStr, "%d", parseMspForPosInt (inInt));
-	}
-	else {
-		snprintf(writeStr, LONG_NAME_LEN, "%s", inInt->label);
-	}
+    if (inInt->inOutStruct != NULL) {
+        sprintf(writeStr, "%d", parseMspForPosInt (inInt));
+    }
+    else {
+        snprintf(writeStr, LONG_NAME_LEN, "%s", inInt->label);
+    }
 
-	status = _writeString(writeId, writeStr, rei);
+    status = _writeString(writeId, writeStr, rei);
 
-	return (status);
+    return (status);
 }
 
 
@@ -339,36 +341,36 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 {
-	char *writeId;
-	char *writeStr;
-	int status;
-	
-	if (where->inOutStruct != NULL) {
-		writeId = (char*)where->inOutStruct;	
-	}
-	else {
-		writeId = where->label;
-	}
-	
-	if (inBuf->inpOutBuf != NULL) {
-		writeStr = (char *) malloc(strlen((const char*)inBuf->inpOutBuf->buf) + MAX_COND_LEN);
-		strcpy(writeStr , (const char*)inBuf->inpOutBuf->buf);
-	}
-	else {
-		writeStr = (char *) malloc(strlen(inBuf->label) + MAX_COND_LEN);
-		strcpy(writeStr , inBuf->label);
-	}
+    char *writeId;
+    char *writeStr;
+    int status;
+        
+    if (where->inOutStruct != NULL) {
+        writeId = (char*)where->inOutStruct;    
+    }
+    else {
+        writeId = where->label;
+    }
+        
+    if (inBuf->inpOutBuf != NULL) {
+        writeStr = (char *) malloc(strlen((const char*)inBuf->inpOutBuf->buf) + MAX_COND_LEN);
+        strcpy(writeStr , (const char*)inBuf->inpOutBuf->buf);
+    }
+    else {
+        writeStr = (char *) malloc(strlen(inBuf->label) + MAX_COND_LEN);
+        strcpy(writeStr , inBuf->label);
+    }
 
-	status = _writeString(writeId, writeStr, rei);
-	
-	if (writeStr != NULL) {
-		free(writeStr);
-	}
+    status = _writeString(writeId, writeStr, rei);
+        
+    if (writeStr != NULL) {
+        free(writeStr);
+    }
 
-	return (status);
+    return (status);
 }
 
 /**
@@ -403,90 +405,90 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
  * \pre none
  * \post none
  * \sa none
-**/
+ **/
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei)
 {
-	keyValPair_t *KVPairs;
-	char *writeId;
-	char *writeStr;
-	char *sepStr;
-	int i;
-	size_t size;
+    keyValPair_t *KVPairs;
+    char *writeId;
+    char *writeStr;
+    char *sepStr;
+    int i;
+    size_t size;
 
 
-	RE_TEST_MACRO ("    Calling writeKeyValPairs")
+    RE_TEST_MACRO ("    Calling writeKeyValPairs")
 
-	
-	/* sanity checks */
-	if (!rei ) {
-		rodsLog (LOG_ERROR, "writeKeyValPairs: input rei is NULL.");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-	
-	if (!where) {
-		rodsLog (LOG_ERROR, "writeKeyValPairs: No destination provided for writing.");
-		return (USER__NULL_INPUT_ERR);
-	}
+        
+        /* sanity checks */
+        if (!rei ) {
+            rodsLog (LOG_ERROR, "writeKeyValPairs: input rei is NULL.");
+            return (SYS_INTERNAL_NULL_INPUT_ERR);
+        }
+        
+    if (!where) {
+        rodsLog (LOG_ERROR, "writeKeyValPairs: No destination provided for writing.");
+        return (USER__NULL_INPUT_ERR);
+    }
 
-	/* empty? */
-	if (!inKVPair || !inKVPair->inOutStruct)
-	{
-		return 0;
-	}
+    /* empty? */
+    if (!inKVPair || !inKVPair->inOutStruct)
+    {
+        return 0;
+    }
 
-	/* check for proper input type and get keyValPair input */
-	if (inKVPair->type && strcmp(inKVPair->type, KeyValPair_MS_T)) {
-		rodsLog (LOG_ERROR, "writeKeyValPairs: input parameter is not of KeyValPair_MS_T type.");
-		return(USER_PARAM_TYPE_ERR);
-	}
-	KVPairs = (keyValPair_t *)inKVPair->inOutStruct;
-
-
-	/* where are we writing to? */
-	if (where->inOutStruct != NULL) {
-		writeId = (char*)where->inOutStruct;
-	}
-	else {
-		writeId = where->label;
-	}
+    /* check for proper input type and get keyValPair input */
+    if (inKVPair->type && strcmp(inKVPair->type, KeyValPair_MS_T)) {
+        rodsLog (LOG_ERROR, "writeKeyValPairs: input parameter is not of KeyValPair_MS_T type.");
+        return(USER_PARAM_TYPE_ERR);
+    }
+    KVPairs = (keyValPair_t *)inKVPair->inOutStruct;
 
 
-	/* get separator string or use default */
-	if ((sepStr = parseMspForStr(separator)) == NULL)  {
-		sepStr = "\t|\t";
-	}
+    /* where are we writing to? */
+    if (where->inOutStruct != NULL) {
+        writeId = (char*)where->inOutStruct;
+    }
+    else {
+        writeId = where->label;
+    }
 
 
-	/* find out how much memory is needed for writeStr */
-	size = 0;
-	for (i=0; i < KVPairs->len; i++) {
-		size += strlen(KVPairs->keyWord[i]) + strlen(sepStr) + strlen(KVPairs->value[i]) + strlen("\n");
-	}
-
-	/* allocate memory for writeStr and pad with null chars */
-	writeStr = (char *)malloc(size + MAX_COND_LEN);
-	memset(writeStr, '\0', size + MAX_COND_LEN);
+    /* get separator string or use default */
+    if ((sepStr = parseMspForStr(separator)) == NULL)  {
+        sepStr = "\t|\t";
+    }
 
 
-	/* print each key-value pair to writeStr */
-	for (i=0; i < KVPairs->len; i++)  {
-		strcat(writeStr, KVPairs->keyWord[i]);
-		strcat(writeStr, sepStr);
-		strcat(writeStr, KVPairs->value[i]);
-		strcat(writeStr, "\n");
-	}
+    /* find out how much memory is needed for writeStr */
+    size = 0;
+    for (i=0; i < KVPairs->len; i++) {
+        size += strlen(KVPairs->keyWord[i]) + strlen(sepStr) + strlen(KVPairs->value[i]) + strlen("\n");
+    }
+
+    /* allocate memory for writeStr and pad with null chars */
+    writeStr = (char *)malloc(size + MAX_COND_LEN);
+    memset(writeStr, '\0', size + MAX_COND_LEN);
 
 
-	/* call _writeString() routine */
-	rei->status = _writeString(writeId, writeStr, rei);
+    /* print each key-value pair to writeStr */
+    for (i=0; i < KVPairs->len; i++)  {
+        strcat(writeStr, KVPairs->keyWord[i]);
+        strcat(writeStr, sepStr);
+        strcat(writeStr, KVPairs->value[i]);
+        strcat(writeStr, "\n");
+    }
 
-	
-	/* free writeStr since its content has been copied somewhere else */
-	if (writeStr != NULL) {
-		free(writeStr);
-	}
 
-	return (rei->status);
+    /* call _writeString() routine */
+    rei->status = _writeString(writeId, writeStr, rei);
+
+        
+    /* free writeStr since its content has been copied somewhere else */
+    if (writeStr != NULL) {
+        free(writeStr);
+    }
+
+    return (rei->status);
 }
 
 
@@ -526,28 +528,28 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
  * \pre none
  * \post none
  * \sa msiXmsgCreateStream, readXMsg
-**/
+ **/
 int 
 writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei)
 {
-  int i;
-  int streamId;
-  xmsgTicketInfo_t *xmsgTicketInfo;
+    int i;
+    int streamId;
+    xmsgTicketInfo_t *xmsgTicketInfo;
 
-  RE_TEST_MACRO ("    Calling writeXMsg")
+    RE_TEST_MACRO ("    Calling writeXMsg")
 
-    if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
-      xmsgTicketInfo = (xmsgTicketInfo_t *) inStreamId->inOutStruct;
-      streamId = (int) xmsgTicketInfo->rcvTicket;
-    }
-    else if (!strcmp(inStreamId->type,STR_MS_T)) {
-      streamId = (int) atoi((char*)inStreamId->inOutStruct);
-    }
-    else
-      streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
+        if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
+            xmsgTicketInfo = (xmsgTicketInfo_t *) inStreamId->inOutStruct;
+            streamId = (int) xmsgTicketInfo->rcvTicket;
+        }
+        else if (!strcmp(inStreamId->type,STR_MS_T)) {
+            streamId = (int) atoi((char*)inStreamId->inOutStruct);
+        }
+        else
+            streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
 
-  i = _writeXMsg(streamId, (char*)inHdr->inOutStruct, (char*)inMsg->inOutStruct);
-  return(i);
+    i = _writeXMsg(streamId, (char*)inHdr->inOutStruct, (char*)inMsg->inOutStruct);
+    return(i);
 }
 
 /**
@@ -594,50 +596,50 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
  * \pre none
  * \post none
  * \sa msiXmsgCreateStream, writeXMsg
-**/
+ **/
 
 int
 readXMsg(msParam_t* inStreamId, msParam_t *inCondRead,  
-	 msParam_t *outMsgNum, msParam_t *outSeqNum, 
-	 msParam_t *outHdr, msParam_t *outMsg, 
-	 msParam_t *outUser, msParam_t *outAddr, ruleExecInfo_t *rei)
+         msParam_t *outMsgNum, msParam_t *outSeqNum, 
+         msParam_t *outHdr, msParam_t *outMsg, 
+         msParam_t *outUser, msParam_t *outAddr, ruleExecInfo_t *rei)
 {
-  int i;
-  int sNum = 0;
-  int mNum = 0;
-  char *hdr = NULL;
-  char *msg = NULL;
-  char *user = NULL;
-  char *addr = NULL;
-  int streamId;
-  xmsgTicketInfo_t *xmsgTicketInfo;
-  char *condRead = NULL;
-  RE_TEST_MACRO ("    Calling readXMsg");
+    int i;
+    int sNum = 0;
+    int mNum = 0;
+    char *hdr = NULL;
+    char *msg = NULL;
+    char *user = NULL;
+    char *addr = NULL;
+    int streamId;
+    xmsgTicketInfo_t *xmsgTicketInfo;
+    char *condRead = NULL;
+    RE_TEST_MACRO ("    Calling readXMsg");
 
-  if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
-    xmsgTicketInfo = (xmsgTicketInfo_t *) inStreamId->inOutStruct;
-    streamId = xmsgTicketInfo->rcvTicket;
-  }
-  else if (!strcmp(inStreamId->type,STR_MS_T)) {
-    streamId = (int) atoi((char*)inStreamId->inOutStruct);
-  }
-  else
-    streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
-  condRead = (char *) inCondRead->inOutStruct;
-  i = _readXMsg(streamId, condRead, &mNum, &sNum, &hdr, &msg, &user, &addr);
-  if (i >= 0) {
-    outHdr->inOutStruct = (void *) hdr;
-    outHdr->type = strdup(STR_MS_T);
-    outMsg->inOutStruct = (void *) msg;
-    outMsg->type = strdup(STR_MS_T);
-    fillIntInMsParam(outMsgNum, mNum);
-    fillIntInMsParam(outSeqNum, sNum);
-    outUser->inOutStruct = (void *) user;
-    outUser->type = strdup(STR_MS_T);
-    outAddr->inOutStruct = (void *) addr;
-    outAddr->type = strdup(STR_MS_T);
+    if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
+        xmsgTicketInfo = (xmsgTicketInfo_t *) inStreamId->inOutStruct;
+        streamId = xmsgTicketInfo->rcvTicket;
+    }
+    else if (!strcmp(inStreamId->type,STR_MS_T)) {
+        streamId = (int) atoi((char*)inStreamId->inOutStruct);
+    }
+    else
+        streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
+    condRead = (char *) inCondRead->inOutStruct;
+    i = _readXMsg(streamId, condRead, &mNum, &sNum, &hdr, &msg, &user, &addr);
+    if (i >= 0) {
+        outHdr->inOutStruct = (void *) hdr;
+        outHdr->type = strdup(STR_MS_T);
+        outMsg->inOutStruct = (void *) msg;
+        outMsg->type = strdup(STR_MS_T);
+        fillIntInMsParam(outMsgNum, mNum);
+        fillIntInMsParam(outSeqNum, sNum);
+        outUser->inOutStruct = (void *) user;
+        outUser->type = strdup(STR_MS_T);
+        outAddr->inOutStruct = (void *) addr;
+        outAddr->type = strdup(STR_MS_T);
 
-  }
-  return(i);
+    }
+    return(i);
 }
 

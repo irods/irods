@@ -1,7 +1,5 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-
 /**
  * @file reSysDataObjOpr.c
  *
@@ -70,8 +68,7 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 {
     char *defaultRescList;
     char *optionStr;
-    rescGrpInfo_t *myRescGrpInfo = new rescGrpInfo_t;
-    myRescGrpInfo->rescInfo = new rescInfo_t;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
 
     defaultRescList = (char *) xdefaultRescList->inOutStruct;
 
@@ -79,7 +76,9 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 
     RE_TEST_MACRO ("    Calling msiSetDefaultResc")
 
-    // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, &myRescGrpInfo );
+        // JMC - legacy resource - rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, &myRescGrpInfo );
+    myRescGrpInfo = new rescGrpInfo_t;
+    myRescGrpInfo->rescInfo = new rescInfo_t;
     eirods::error err = eirods::set_default_resource( rei->rsComm, defaultRescList, optionStr, &rei->doinp->condInput, *myRescGrpInfo ); 
     rei->status = err.code();
 

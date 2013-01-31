@@ -87,7 +87,7 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     }
 
     /* Make up a physical path */ 
-    if (dataObjInfo->rescInfo == NULL) {
+    if (dataObjInp != NULL && dataObjInfo->rescInfo == NULL) {
         rodsLog (LOG_ERROR,
                  "getFilePathName: rescInfo for %s not resolved", 
                  dataObjInp->objPath);

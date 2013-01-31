@@ -295,7 +295,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     initReiWithDataObjInp (&rei, rsComm, &doinp);
 
     if (destRescName != NULL) {
-	    rescGrpInfo = new rescGrpInfo_t;
+        rescGrpInfo = new rescGrpInfo_t;
         rescGrpInfo->rescInfo = new rescInfo_t;
         //status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
         
@@ -303,10 +303,10 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         // get rescGrpInfo_t from resource name
         eirods::error err = eirods::get_resc_grp_info( destRescName, *rescGrpInfo );
         if ( err.ok() ) {
-	        rei.rgi = rescGrpInfo;
+            rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
 //            delete rescGrpInfo;
-	    
+            
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -316,20 +316,20 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                 if (numDestThr == 0) {
                     return 0;
                 } else if (numDestThr == 1 && srcRescName == NULL && 
-                      isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
-                //            delete rescGrpInfo;
-                        /* one thread and resouce on local host */
-                        return 0;
+                           isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
+                    //            delete rescGrpInfo;
+                    /* one thread and resouce on local host */
+                    return 0;
                 }
-	        }
+            }
         }
     }
 
-    if (srcRescName != NULL) {
-	    if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
-	        return numDestThr;
+    if (destRescName != NULL && srcRescName != NULL) {
+        if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
+            return numDestThr;
 
-	    rescGrpInfo = new rescGrpInfo_t;
+        rescGrpInfo = new rescGrpInfo_t;
         rescGrpInfo->rescInfo = new rescInfo_t;
         // =-=-=-=-=-=-=-
         // convert the resource into the rescGrpInfo_t
@@ -339,7 +339,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         if ( err.ok() ) {
             rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-//	        delete rescGrpInfo;
+//              delete rescGrpInfo;
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -348,7 +348,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                 numSrcThr = rei.status;
                 if (numSrcThr == 0) return 0;
             }
-	    }
+        }
     }
 
     if (numDestThr > 0) {
@@ -535,12 +535,12 @@ initDataObjInfoForRepl (
     } else if (strlen (destDataObjInfo->rescGroupName) > 0) {
         /* need to verify whether destRescInfo belongs to 
          * destDataObjInfo->rescGroupName */
-         rodsLog( LOG_NOTICE, "JMC - initDataObjInfoForRepl destDataObjInfo->rescGroupName > 0" );
+        rodsLog( LOG_NOTICE, "JMC - initDataObjInfoForRepl destDataObjInfo->rescGroupName > 0" );
         //if ( getRescInGrp( rsComm, destRescInfo->rescName, 
         //                  destDataObjInfo->rescGroupName, NULL ) < 0 ) {
         // 
-            /* destResc is not in destRescGrp */
-            destDataObjInfo->rescGroupName[0] = '\0';
+        /* destResc is not in destRescGrp */
+        destDataObjInfo->rescGroupName[0] = '\0';
         //}
     } // else
 

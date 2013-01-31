@@ -170,8 +170,6 @@ int
 agentMain (rsComm_t *rsComm)
 {
     int status = 0;
-    int retryCnt = 0;
-
 
     // =-=-=-=-=-=-=-
     // compiler backwards compatibility hack
@@ -196,7 +194,6 @@ agentMain (rsComm_t *rsComm)
 #endif
 
         if (status >= 0) {
-            retryCnt = 0;
             continue;
         } else {
             if (status == DISCONN_STATUS) {
