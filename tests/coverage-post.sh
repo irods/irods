@@ -34,10 +34,11 @@ fi
 
 # generate the lcov results
 for f in $(find . -name "*.gcno"); do foo=`pwd`;cd `dirname $f`; gcov `basename $f`; cd $foo; done
-lcov -f -c --directory . -o $TESTINFOFILE                       # generate coverage file
-lcov -a $BASEINFOFILE -a $TESTINFOFILE -o $TOTALINFOFILE        # combine base and test
-lcov -r $TOTALINFOFILE "/usr/*" --directory . -o $TOTALINFOFILE # remove /usr/* lines from file
-genhtml -o $OUTDIR $TOTALINFOFILE                               # generate html report
+lcov -f -c --directory . -o $TESTINFOFILE                           # generate coverage file
+lcov -a $BASEINFOFILE -a $TESTINFOFILE -o $TOTALINFOFILE            # combine base and test
+lcov -r $TOTALINFOFILE "/usr/*" --directory . -o $TOTALINFOFILE     # remove /usr/* lines from file
+lcov -r $TOTALINFOFILE "external/*" --directory . -o $TOTALINFOFILE # remove external/* lines from file
+genhtml -o $OUTDIR $TOTALINFOFILE                                   # generate html report
 
 # clean up
 rm $BASEINFOFILE
