@@ -20,7 +20,6 @@ int loopCnt=-1;  /* make it -1 to run infinitel */
 int
 main(int argc, char **argv)
 {
-    int status;
     int c;
     int runMode = IRODS_SERVER;
     int flagval = 0;
@@ -93,10 +92,7 @@ main(int argc, char **argv)
     daemonize (runMode, logFd);
 
 
-    status = xmsgServerMain ();
-    /*
-    cleanupAndExit (status); 
-    */
+    xmsgServerMain ();
     sleep(5);
     exit (0);
 }

@@ -60,8 +60,7 @@ int
 irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 {
     int status;
-    rescGrpInfo_t *rescGrpInfo = new rescGrpInfo_t;
-    rescGrpInfo->rescInfo = new rescInfo_t;
+    rescGrpInfo_t *rescGrpInfo = NULL;
     rodsServerHost_t *rodsServerHost = NULL;
     int remoteFlag;
     //int rescCnt;
@@ -89,33 +88,16 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     std::string resc_name;
     eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
 
+    rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
     eirods::error err = eirods::get_resc_grp_info( resc_name, *rescGrpInfo );
     if( !err.ok() ) {
          eirods::log( PASS( false, -1, "irsPhyPathReg - failed", err ) );
+         delete rescGrpInfo->rescInfo;
+         delete rescGrpInfo;
          return -1;
     }
     
-#if 0 // JMC - legacy resource
-    rescCnt = getRescCnt (rescGrpInfo);
-    if (rescCnt != 1) {
-        rodsLog (LOG_ERROR,
-                 "rsPhyPathReg: The input resource is not unique for %s",
-                 phyPathRegInp->objPath);
-        return (SYS_INVALID_RESC_TYPE);
-    }
-
-    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,RESC_GROUP_NAME_KW)) != NULL) {
-        status = getRescInGrp (rsComm, rescGrpInfo->rescInfo->rescName, rescGroupName, &tmpRescInfo);
-        if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "rsPhyPathReg: resc %s not in rescGrp %s for %s",
-                  rescGrpInfo->rescInfo->rescName, rescGroupName,
-              phyPathRegInp->objPath);
-                return SYS_UNMATCHED_RESC_IN_RESC_GRP;
-        }
-    }
-#endif
     memset (&addr, 0, sizeof (addr));
     
     rstrcpy (addr.hostAddr, rescGrpInfo->rescInfo->rescLoc, LONG_NAME_LEN);
@@ -129,17 +111,21 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
     } else {
         if (remoteFlag < 0) {
-//            delete rescGrpInfo;
+            delete rescGrpInfo->rescInfo;
+            delete rescGrpInfo;
             return (remoteFlag);
         } else {
             rodsLog (LOG_ERROR,
                      "rsPhyPathReg: resolveHost returned unrecognized value %d",
                      remoteFlag);
+            delete rescGrpInfo->rescInfo;
+            delete rescGrpInfo;
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-//    delete rescGrpInfo;
+    delete rescGrpInfo->rescInfo;
+    delete rescGrpInfo;
     return (status);
 }
 
