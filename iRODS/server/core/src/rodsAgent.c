@@ -30,11 +30,13 @@ main(int argc, char *argv[])
     rsComm_t rsComm;
     char *tmpStr;
 
+#if 0
     /* qqq - qqq */
     bool done = false;
     while(!done) {
 	sleep(1);
     }
+#endif
     
     ProcessType = AGENT_PT;
 //sleep(30);
