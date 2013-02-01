@@ -109,7 +109,7 @@ done
 touch $SETUP_RESOURCE_FLAG
 echo "==================================================================="
 
-FIRSTHALF=`hostname`
+FIRSTHALF=`hostname -s`
 SECONDHALF="Resource"
 LOCAL_RESOURCE_NAME="$FIRSTHALF$SECONDHALF"
 THIRDHALF="Vault"
