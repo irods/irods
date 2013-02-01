@@ -1500,6 +1500,9 @@ extern "C" {
     public:
         unixfilesystem_resource( const std::string& _inst_name, const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
+        
+            context_ = "MY AWESOME NEW CONTEXT!!!!";
+
             if( !context_.empty() ) {
                 // =-=-=-=-=-=-=-
                 // tokenize context string into key/val pairs assuming a ; as a separator

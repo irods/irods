@@ -47,6 +47,10 @@ namespace eirods {
         error init_from_catalog( rsComm_t* );
  
         // =-=-=-=-=-=-=-
+        /// @brief  push changes to context string etc back to catalog on shutdown
+        error update_catalog( rsComm_t* );
+ 
+        // =-=-=-=-=-=-=-
         /// @brief  load a resource plugin given a resource type
         error init_from_type( std::string,     // resource type
                               std::string,     // resource name ( key )

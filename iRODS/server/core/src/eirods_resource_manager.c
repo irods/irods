@@ -11,6 +11,7 @@
 #include "getRescQuota.h"
 #include "eirods_children_parser.h"
 #include "rsGlobalExtern.h"
+#include "generalAdmin.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -265,7 +266,74 @@ namespace eirods {
         return SUCCESS();
 
     } // init_from_catalog
-    
+
+    // =-=-=-=-=-=-=-
+    // public - call stop op on plugins and push changes back into catalog
+    error resource_manager::update_catalog( rsComm_t* _comm ) {
+        // =-=-=-=-=-=-=-
+        // ptr check!
+        if( !_comm ) {
+            return ERROR( -1, "resource_manager::update_catalog - null comm ptr" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // iterate over all resources
+        lookup_table< boost::shared_ptr< resource > >::iterator itr;
+        for( itr  = resources_.begin();
+             itr != resources_.end();
+             ++itr ) {
+            // =-=-=-=-=-=-=-
+            // cache a ref to the resource
+            resource_ptr& resc = itr->second;
+
+            // =-=-=-=-=-=-=-
+            // call the stop operation
+            resc->stop_operation();
+
+            // =-=-=-=-=-=-=-
+            // get the context string
+            std::string ctx_str = resc->context_string();
+
+            // =-=-=-=-=-=-=-
+            // get the resource name
+            std::string name;
+            error ret = resc->get_property< std::string >( "name", name );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << "resource_manager::update_catalog - failed to get name for resource";
+                eirods::log( ERROR( -1, msg.str() ) );
+                continue;
+            }
+
+            // =-=-=-=-=-=-=-
+            // call rsGeneralAdmin with the proper bits to update the context
+            // for this resource
+            generalAdminInp_t inp;
+            inp.arg0 = 0;
+            inp.arg1 = "modify";
+            inp.arg2 = "resource";
+            inp.arg3 = const_cast< char*>( name.c_str() );
+            inp.arg3 = "context";
+            inp.arg4 = const_cast< char* >( ctx_str.c_str() );
+            inp.arg5 = 0;
+            inp.arg6 = 0;
+            inp.arg7 = 0;
+            inp.arg8 = 0;
+            inp.arg9 = 0;
+            if( rsGeneralAdmin( _comm, &inp ) < 0 ) {
+                std::stringstream msg;
+                msg << "resource_manager::update_catalog - failed in rsGeneralAdmin ";
+                msg << " for [" << name << "]";
+                return ERROR( -1, msg.str() );
+            }
+
+        } // for itr
+
+
+        return SUCCESS();
+
+    } // update_catalog   
+        
     // =-=-=-=-=-=-=-
     // public - take results from genQuery, extract values and create resources
     error resource_manager::process_init_results( genQueryOut_t* _result ) {
@@ -424,6 +492,18 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // add new resource to the map
             resources_[ tmpRescName ] = resc;
+
+            // =-=-=-=-=-=-=-
+            // call the start operation on the resource
+            error start_err = resc->start_operation();
+            if( !start_err.ok() ) {
+                std::stringstream msg;
+                msg << "resource_manager::process_init_results - failed ";
+                msg << "call start_operation on resource [";
+                msg << tmpRescName;
+                msg << "]";
+                log( ERROR( -1, msg.str() ) );
+            }
 
         } // for i
 

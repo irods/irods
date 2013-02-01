@@ -59,6 +59,10 @@ namespace eirods {
         /// @brief list all of the operations in the plugin
         error enumerate_operations( std::vector< std::string >& );
 
+        // =-=-=-=-=-=-=-
+        /// @brief accessor for context string
+        const std::string& context_string( ) { return context_; }
+
         protected:
         std::string                       context_;       // context string for this plugin
         std::string                       instance_name_; // name of this instance of the plugin

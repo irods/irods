@@ -5231,6 +5231,23 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         OK=1;
     }
 
+    if (strcmp(option, "context")==0) {
+        cllBindVars[cllBindVarCount++]=optionValue;
+        cllBindVars[cllBindVarCount++]=myTime;
+        cllBindVars[cllBindVarCount++]=rescId;
+        status =  cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
+            &icss);
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc cmlExecuteNoAnswerSql update failure for resc context %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+        OK=1;
+    }
+
     if (OK==0) {
         return (CAT_INVALID_ARGUMENT);
     }

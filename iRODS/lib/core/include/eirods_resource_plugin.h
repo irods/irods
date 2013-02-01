@@ -80,7 +80,17 @@ namespace eirods {
         void set_start_operation( const std::string& );
         void set_stop_operation ( const std::string& );
 
+        // =-=-=-=-=-=-=-
+        /// @brief interface to call start / stop functions
+        error start_operation( void ) { return (*start_operation_)(); }
+        error stop_operation ( void ) { return (*stop_operation_)();  }
+
+        // =-=-=-=-=-=-=-
+        /// @brief default start operation
         static error default_start_operation() { return SUCCESS(); };
+        
+        // =-=-=-=-=-=-=-
+        /// @brief default stop operation
         static error default_stop_operation () { return SUCCESS(); };
 
         // =-=-=-=-=-=-=-
