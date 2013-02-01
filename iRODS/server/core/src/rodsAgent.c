@@ -30,6 +30,12 @@ main(int argc, char *argv[])
     rsComm_t rsComm;
     char *tmpStr;
 
+    /* qqq - qqq */
+    bool done = false;
+    while(!done) {
+	sleep(1);
+    }
+    
     ProcessType = AGENT_PT;
 //sleep(30);
 #ifdef RUN_SERVER_AS_ROOT

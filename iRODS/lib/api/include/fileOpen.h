@@ -42,7 +42,7 @@ struct fileOpenInp_t {
     rodsLong_t dataSize;
 }; // struct fileOpenInp_t
     
-#define fileOpenInp_PI "int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize;"
+#define fileOpenInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen
