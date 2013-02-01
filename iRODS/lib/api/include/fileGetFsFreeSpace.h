@@ -30,7 +30,7 @@ typedef struct {
     rodsLong_t size;
 } fileGetFsFreeSpaceOut_t;
 
-#define fileGetFsFreeSpaceInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flag;"
+#define fileGetFsFreeSpaceInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int flag;"
 
 #define fileGetFsFreeSpaceOut_PI "double size;"
 

@@ -26,7 +26,7 @@ typedef struct {
     int mode;
 } fileChmodInp_t;
     
-#define fileChmodInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int mode;"
+#define fileChmodInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int mode;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CHMOD rsFileChmod

@@ -25,7 +25,7 @@ typedef struct {
     char rescHier[MAX_NAME_LEN];
 } fileStatInp_t;
     
-#define fileStatInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN];"
+#define fileStatInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_STAT rsFileStat
