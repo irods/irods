@@ -1830,15 +1830,21 @@ sub configureIrodsUser
 
 	# List existing resources first to see if it already exists.
 	($status,$output) = run( "$iadmin lr" );
-	if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
+        if( 1 == $icatInstall ) {
+		$EICAT_LOCAL_RESOURCE_NAME = $RESOURCE_NAME;
+	}
+	else {
+		$EICAT_LOCAL_RESOURCE_NAME = $resc_name;
+	}
+	if ( $status == 0 && index($output,$EICAT_LOCAL_RESOURCE_NAME) >= 0 )
 	{
-		printStatus( "    Skipped.  Resource already created.\n" );
-		printLog( "    Skipped.  Resource already created.\n" );
+		printStatus( "    Skipped.  Resource [$EICAT_LOCAL_RESOURCE_NAME] already created.\n" );
+		printLog( "    Skipped.  Resource [$EICAT_LOCAL_RESOURCE_NAME] already created.\n" );
 	}
 	else
 	{
 		# Resource doesn't appear to exist.  Create it.
-		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unix file system' archive $thisHost $RESOURCE_DIR \"\" $ZONE_NAME" );
+		($status,$output) = run( "$iadmin mkresc $EICAT_LOCAL_RESOURCE_NAME 'unix file system' archive $thisHost $RESOURCE_DIR \"\" $ZONE_NAME" );
 		if ( $status != 0 )
 		{
 			printError( "\nInstall problem:\n" );
