@@ -68,8 +68,8 @@
 
 extern "C" {
 
-#define NB_READ_TOUT_SEC	60	/* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC	60	/* 60 sec timeout */
+#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
+#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
 
     // =-=-=-=-=-=-=-
     // 1. Define plugin Version Variable, used in plugin
@@ -78,7 +78,74 @@ extern "C" {
     double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
 
     // =-=-=-=-=-=-=-
-    // 2. Define operations which will be called by the file*
+    // 2. Define utility functions that the operations might need
+    // =-=-=-=-=-=-=-
+
+    // NOTE: All storage resources must do this on the physical path stored in the file object and then update the file object's
+    // physical path with the full path
+    
+    /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
+    eirods::error unixGenerateFullPath(
+        eirods::resource_property_map* _prop_map,
+        const std::string& physical_path,
+        std::string& ret_string)
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        std::string vault_path;
+        // TODO - getting vault path by property will not likely work for coordinating nodes
+        ret = _prop_map->get<std::string>("path", vault_path);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - resource has no vault path.";
+            result = ERROR(-1, msg.str());
+        } else {
+            if(physical_path.compare(0, vault_path.size(), vault_path) != 0) {
+                ret_string = vault_path;
+                ret_string += physical_path;
+            } else {
+                // The physical path already contains the vault path
+                ret_string = physical_path;
+            }
+        }
+        return result;
+    }
+
+    /// @brief Checks the basic operation parameters and updates the physical path in the file object
+    eirods::error unixCheckParamsAndPath(
+        eirods::resource_property_map* _prop_map,
+        eirods::resource_child_map* _cmap,
+        eirods::first_class_object* _object)
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+
+        // =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            result = ERROR( -1, "unixFileCreatePlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            result = ERROR( -1, "unixFileCreatePlugin - null resource_child_map" );
+        } else if( !_object ) {
+            result = ERROR( -1, "unixFileCreatePlugin - null first_class_object" );
+        } else {
+
+            // NOTE: Must do this for all storage resources
+            std::string full_path;
+            eirods::error ret = unixGenerateFullPath(_prop_map, _object->physical_path(), full_path);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - Failed generating full path for object.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                _object->physical_path(full_path);
+            }
+        }
+        return result;
+    }
+
+    // =-=-=-=-=-=-=-
+    // 3. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
     // =-=-=-=-=-=-=-
 
@@ -96,19 +163,15 @@ extern "C" {
                                         eirods::resource_property_map* _prop_map,
                                         eirods::resource_child_map*    _cmap, 
                                         eirods::first_class_object*    _object ) {
-                                        
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileCreatePlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileCreatePlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileCreatePlugin - null first_class_object" );
-        }
 
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // =-=-=-=-=-=-=-
         // make call to umask & open for create
         mode_t myMask = umask((mode_t) 0000);
@@ -117,7 +180,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // reset the old mask 
         (void) umask((mode_t) myMask);
-		
+                
         // =-=-=-=-=-=-=-
         // if we got a 0 descriptor, try again
         if( fd == 0 ) {
@@ -131,17 +194,17 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // cache file descriptor in out-variable
         _object->file_descriptor( fd );
-			
+                        
         // =-=-=-=-=-=-=-
         // trap error case with bad fd
         if( fd < 0 ) {
             int status = UNIX_FILE_CREATE_ERR - errno;
-			
+                        
             // =-=-=-=-=-=-=-
             // WARNING :: Major Assumptions are made upstream and use the FD also as a
             //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
             _object->file_descriptor( status );
-			
+                        
             std::stringstream msg;
             msg << "unixFileCreatePlugin: create error for ";
             msg << _object->physical_path();
@@ -166,18 +229,15 @@ extern "C" {
                                       eirods::resource_property_map* _prop_map, 
                                       eirods::resource_child_map*    _cmap, 
                                       eirods::first_class_object*    _object ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileOpenPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileOpenPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileOpenPlugin - null first_class_object" );
-        }
 
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // =-=-=-=-=-=-=-
         // handle OSX weirdness...
         int flags = _object->flags();
@@ -202,8 +262,8 @@ extern "C" {
             rodsLog( LOG_NOTICE, "unixFileOpenPlugin: 0 descriptor" );
             open ("/dev/null", O_RDWR, 0);
             fd = open( _object->physical_path().c_str(), flags, _object->mode() );
-        }	
-			
+        }       
+                        
         // =-=-=-=-=-=-=-
         // cache status in the file object
         _object->file_descriptor( fd );
@@ -212,7 +272,7 @@ extern "C" {
         // did we still get an error?
         if ( fd < 0 ) {
             fd = UNIX_FILE_OPEN_ERR - errno;
-			
+                        
             std::stringstream msg;
             msg << "unixFileOpenPlugin: open error for ";
             msg << _object->physical_path();
@@ -225,7 +285,7 @@ extern "C" {
  
             return ERROR( fd, msg.str() );
         }
-		
+                
         // =-=-=-=-=-=-=-
         // declare victory!
         return CODE( fd );
@@ -241,19 +301,15 @@ extern "C" {
                                       eirods::first_class_object*    _object,
                                       void*                          _buf, 
                                       int                            _len ) {
-									  
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+                                                                          
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // make the call to read
         int status = read( _object->file_descriptor(), _buf, _len );
@@ -262,7 +318,7 @@ extern "C" {
         // pass along an error if it was not successful
         if( status < 0 ) {
             status = UNIX_FILE_READ_ERR - errno;
-			
+                        
             std::stringstream msg;
             msg << "unixFileReadPlugin - read error fd = ";
             msg << _object->file_descriptor();
@@ -270,7 +326,7 @@ extern "C" {
             msg << strerror( errno );
             return ERROR( status, msg.str() );
         }
-		
+                
         // =-=-=-=-=-=-=-
         // win!
         return CODE( status );
@@ -280,24 +336,20 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
     eirods::error unixFileWritePlugin( rsComm_t*                      _comm,
-                                      const std::string&              _results,
-                                      eirods::resource_property_map*  _prop_map, 
+                                       const std::string&              _results,
+                                       eirods::resource_property_map*  _prop_map, 
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object,
                                        void*                          _buf, 
                                        int                            _len ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // make the call to write
         int status = write( _object->file_descriptor(), _buf, _len );
@@ -306,7 +358,7 @@ extern "C" {
         // pass along an error if it was not successful
         if (status < 0) {
             status = UNIX_FILE_WRITE_ERR - errno;
-			
+                        
             std::stringstream msg;
             msg << "unixFileWritePlugin - write fd = ";
             msg << _object->file_descriptor();
@@ -316,7 +368,7 @@ extern "C" {
             msg << status;
             return ERROR( status, msg.str() );
         }
-		
+                
         // =-=-=-=-=-=-=-
         // win!
         return CODE( status );
@@ -326,21 +378,17 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
     eirods::error unixFileClosePlugin( rsComm_t*                      _comm,
-                                      const std::string&              _results,
-                                      eirods::resource_property_map*  _prop_map, 
+                                       const std::string&              _results,
+                                       eirods::resource_property_map*  _prop_map, 
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object ) {
                                        
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
         
         // =-=-=-=-=-=-=-
@@ -351,7 +399,7 @@ extern "C" {
         // log any error
         if( status < 0 ) {
             status = UNIX_FILE_CLOSE_ERR - errno;
-			
+                        
             std::stringstream msg;
             msg << "unixFileClosePlugin: close error, ";
             msg << ", errno = '";
@@ -372,27 +420,23 @@ extern "C" {
                                         eirods::resource_property_map* _prop_map, 
                                         eirods::resource_child_map*    _cmap,
                                         eirods::first_class_object*    _object ) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // make the call to unlink	
+        // make the call to unlink      
         int status = unlink( _object->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // error handling
         if( status < 0 ) {
             status = UNIX_FILE_UNLINK_ERR - errno;
-			
+                        
             std::stringstream msg;
             msg << "unixFileUnlinkPlugin: unlink error for ";
             msg << _object->physical_path();
@@ -415,18 +459,15 @@ extern "C" {
                                       eirods::resource_child_map*    _cmap,
                                       eirods::first_class_object*    _object,
                                       struct stat*                   _statbuf ) { 
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
 
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // =-=-=-=-=-=-=-
         // make the call to stat
         int status = stat( _object->physical_path().c_str(), _statbuf );
@@ -457,7 +498,7 @@ extern "C" {
             msg << status;
             return ERROR( status, msg.str() );
         }
-		
+                
         return CODE( status );
 
     } // unixFileStatPlugin
@@ -470,18 +511,14 @@ extern "C" {
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object,
                                        struct stat*                   _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-								   
+        
         // =-=-=-=-=-=-=-
         // make the call to fstat
         int status = fstat( _object->file_descriptor(), _statbuf );
@@ -514,7 +551,7 @@ extern "C" {
             return ERROR( status, msg.str() );
 
         } // if
-	   
+           
         return CODE( status );
 
     } // unixFileFstatPlugin
@@ -528,20 +565,16 @@ extern "C" {
                                        eirods::first_class_object*    _object,
                                        size_t                         _offset, 
                                        int                            _whence ) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-									   
-        // =-=-=-=-=-=-=-
-        // make the call to lseek	
+        // make the call to lseek       
         size_t status = lseek( _object->file_descriptor(),  _offset, _whence );
 
         // =-=-=-=-=-=-=-
@@ -556,7 +589,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
         }
 
@@ -571,20 +604,16 @@ extern "C" {
                                        eirods::resource_property_map* _prop_map, 
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object ) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // make the call to fsync	
+        // make the call to fsync       
         int status = fsync( _object->file_descriptor() );
 
         // =-=-=-=-=-=-=-
@@ -599,7 +628,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
         }
 
@@ -617,15 +646,16 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
+            return ERROR( -1, "unixFileCreatePlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            return ERROR( -1, "unixFileCreatePlugin - null resource_child_map" );
+        } else if( !_object ) {
+            return ERROR( -1, "unixFileCreatePlugin - null first_class_object" );
         }
 
+        // NOTE NOTE NOTE this function assumes the object's physical path is correct and should not have the vault path prepended -
+        // hcj
+        
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
@@ -655,7 +685,7 @@ extern "C" {
                 msg << strerror( errno );
                 msg << "', status = ";
                 msg << status;
-				
+                                
                 return ERROR( status, msg.str() );
 
             } // if errno != EEXIST
@@ -673,18 +703,14 @@ extern "C" {
                                        eirods::resource_property_map* _prop_map, 
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // make the call to chmod
         int status = chmod( _object->physical_path().c_str(), _object->mode() );
@@ -701,7 +727,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
         } // if
 
@@ -716,18 +742,14 @@ extern "C" {
                                        eirods::resource_property_map* _prop_map, 
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // make the call to chmod
         int status = rmdir( _object->physical_path().c_str() );
@@ -744,7 +766,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-			
+                        
             return ERROR( errno, msg.str() );
         }
 
@@ -759,18 +781,14 @@ extern "C" {
                                          eirods::resource_property_map* _prop_map, 
                                          eirods::resource_child_map*    _cmap,
                                          eirods::first_class_object*    _object ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
@@ -808,7 +826,7 @@ extern "C" {
             msg << strerror( errno );
             msg << ", status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
         }
 
@@ -827,18 +845,14 @@ extern "C" {
                                           eirods::resource_property_map* _prop_map, 
                                           eirods::resource_child_map*    _cmap,
                                           eirods::first_class_object*    _object ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
@@ -849,7 +863,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the callt to opendir
         int status = closedir( coll_obj->directory_pointer() );
-			
+                        
         // =-=-=-=-=-=-=-
         // return an error if necessary
         if( status < 0 ) {
@@ -862,7 +876,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
         }
 
@@ -877,74 +891,70 @@ extern "C" {
                                          eirods::resource_property_map* _prop_map, 
                                          eirods::resource_child_map*    _cmap,
                                          eirods::first_class_object*    _object,
-										 struct rodsDirent**            _dirent_ptr ) {
-		// =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+                                         struct rodsDirent**            _dirent_ptr ) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
+        
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::collection_object* coll_obj = dynamic_cast< eirods::collection_object* >( _object );
         if( !coll_obj ) {
             return ERROR( -1, "failed to cast first_class_object to collection_object" );
-		}
+        }
 
         // =-=-=-=-=-=-=-
-		// zero out errno?
-		errno = 0;
-
-		// =-=-=-=-=-=-=-
-		// make the call to readdir
-		struct dirent * tmp_dirent = readdir( coll_obj->directory_pointer() );
+        // zero out errno?
+        errno = 0;
 
         // =-=-=-=-=-=-=-
-		// handle error cases
-		if( tmp_dirent == NULL ) {
-			if( errno == 0 ) { // just the end 
+        // make the call to readdir
+        struct dirent * tmp_dirent = readdir( coll_obj->directory_pointer() );
 
-				// =-=-=-=-=-=-=-
-				// cache status in out variable
-				return CODE( -1 );
-			} else {
+        // =-=-=-=-=-=-=-
+        // handle error cases
+        if( tmp_dirent == NULL ) {
+            if( errno == 0 ) { // just the end 
 
-				// =-=-=-=-=-=-=-
-				// cache status in out variable
-				int status = UNIX_FILE_READDIR_ERR - errno;
+                // =-=-=-=-=-=-=-
+                // cache status in out variable
+                return CODE( -1 );
+            } else {
 
-				std::stringstream msg;
-				msg << "unixFileReaddirPlugin: closedir error, status = ";
-				msg << status;
-				msg << ", errno = '";
-				msg << strerror( errno );
-				msg << "'";
-				
-				return ERROR( status, msg.str() );
-			}
-		} else {
-			// =-=-=-=-=-=-=-
-			// alloc dirent as necessary
+                // =-=-=-=-=-=-=-
+                // cache status in out variable
+                int status = UNIX_FILE_READDIR_ERR - errno;
+
+                std::stringstream msg;
+                msg << "unixFileReaddirPlugin: closedir error, status = ";
+                msg << status;
+                msg << ", errno = '";
+                msg << strerror( errno );
+                msg << "'";
+                                
+                return ERROR( status, msg.str() );
+            }
+        } else {
+            // =-=-=-=-=-=-=-
+            // alloc dirent as necessary
             if( !( *_dirent_ptr ) ) {
                 (*_dirent_ptr ) = new rodsDirent_t;
             }
 
-			// =-=-=-=-=-=-=-
-			// convert standard dirent to rods dirent struct
+            // =-=-=-=-=-=-=-
+            // convert standard dirent to rods dirent struct
             int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
             if( status < 0 ) {
 
             }
 
-			#if defined(solaris_platform)
-			rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
-			#endif
+#if defined(solaris_platform)
+            rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
+#endif
 
             return CODE( 0 );
         }
@@ -958,42 +968,38 @@ extern "C" {
                                        eirods::resource_property_map* _prop_map, 
                                        eirods::resource_child_map*    _cmap,
                                        eirods::first_class_object*    _object ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-		}
-		if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-		}
-		if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-		}
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
+#ifdef SAMFS_STAGE
+        int status = sam_stage (path, "i");
 
-    #ifdef SAMFS_STAGE
-		int status = sam_stage (path, "i");
+        if (status < 0) {
+            _status = UNIX_FILE_STAGE_ERR - errno;
+            rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n", (*_status) );
+            return ERROR( false, errno, "unixFileStage: sam_stage error" );
+        }
 
-		if (status < 0) {
-			_status = UNIX_FILE_STAGE_ERR - errno;
-			rodsLog( LOG_NOTICE,"unixFileStage: sam_stage error, status = %d\n", (*_status) );
-			return ERROR( false, errno, "unixFileStage: sam_stage error" );
-		}
-
-		return CODE( 0 );
-    #else
-		return CODE( 0 );
-    #endif
-	} // unixFileStagePlugin
+        return CODE( 0 );
+#else
+        return CODE( 0 );
+#endif
+    } // unixFileStagePlugin
 
     /**
      * @brief Recursively make all of the dirs in the path
      */
     eirods::error
     unixFileMkDirR(rsComm_t*                      _comm,
-                                      const std::string&             _results,
+                   const std::string&             _results,
                                        
-        const std::string& path,
-        mode_t mode) {
+                   const std::string& path,
+                   mode_t mode) {
         eirods::error result = SUCCESS();
         std::string subdir;
         std::size_t pos = 0;
@@ -1008,7 +1014,7 @@ extern "C" {
                 // handle error cases
                 if( status < 0 && errno != EEXIST) {
                     status = UNIX_FILE_RENAME_ERR - errno;
-				
+                                
                     std::stringstream msg;
                     msg << __FUNCTION__;
                     msg << ": mkdir error for ";
@@ -1017,7 +1023,7 @@ extern "C" {
                     msg << strerror(errno);
                     msg << ", status = ";
                     msg << status;
-			
+                        
                     result = ERROR( status, msg.str() );
                 }
             }
@@ -1036,23 +1042,27 @@ extern "C" {
                                         eirods::resource_child_map*    _cmap,
                                         eirods::first_class_object*    _object, 
                                         const char*                    _new_file_name ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
 
+        std::string new_full_path;
+        ret = unixGenerateFullPath(_prop_map, _new_file_name, new_full_path);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Unable to generate full path for destinate file: \"" << _new_file_name << "\"";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         // make the directories in the path to the new file
-        std::string new_path = _new_file_name;
+        std::string new_path = new_full_path;
         std::size_t last_slash = new_path.find_last_of('/');
         new_path.erase(last_slash);
-        eirods::error ret = unixFileMkDirR( _comm, "", new_path.c_str(), 0750 );
+        ret = unixFileMkDirR( _comm, "", new_path.c_str(), 0750 );
         if(!ret.ok()) {
 
             std::stringstream msg;
@@ -1065,23 +1075,23 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make the call to rename
-        int status = rename( _object->physical_path().c_str(), _new_file_name );
+        int status = rename( _object->physical_path().c_str(), new_full_path.c_str() );
 
         // =-=-=-=-=-=-=-
         // handle error cases
         if( status < 0 ) {
             status = UNIX_FILE_RENAME_ERR - errno;
-				
+                                
             std::stringstream msg;
             msg << "unixFileRenamePlugin: rename error for ";
             msg <<  _object->physical_path();
             msg << " to ";
-            msg << _new_file_name;
+            msg << new_full_path;
             msg << ", errno = ";
             msg << strerror(errno);
             msg << ", status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
 
         }
@@ -1098,18 +1108,14 @@ extern "C" {
                                           eirods::resource_child_map*    _cmap,
                                           eirods::first_class_object*    _object ) { 
                                          
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-		
+        
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
@@ -1136,7 +1142,7 @@ extern "C" {
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-			
+                        
             return ERROR( status, msg.str() );
         }
 
@@ -1144,7 +1150,7 @@ extern "C" {
 
     } // unixFileTruncatePlugin
 
-	
+        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error unixFileGetFsFreeSpacePlugin( rsComm_t*                      _comm,
@@ -1152,19 +1158,14 @@ extern "C" {
                                                 eirods::resource_property_map* _prop_map, 
                                                 eirods::resource_child_map*    _cmap,
                                                 eirods::first_class_object*    _object ) { 
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_property_map" );
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
         }
-        if( !_cmap ) {
-            return ERROR( -1, "unixFileReadPlugin - null resource_child_map" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "unixFileReadPlugin - null first_class_object" );
-        }
-
-
+        
         int status = -1;
         rodsLong_t fssize = USER_NO_SUPPORT_ERR;
 #if defined(solaris_platform)
@@ -1274,8 +1275,8 @@ extern "C" {
             if (bytesWritten <= 0) {
                 status = UNIX_FILE_WRITE_ERR - errno;
                 rodsLog (LOG_ERROR,
-			 "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
-			 destFileName, status);
+                         "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
+                         destFileName, status);
                 close (inFd);
                 close (outFd);
                 return status;
@@ -1289,7 +1290,7 @@ extern "C" {
         if (bytesCopied != statbuf.st_size) {
             rodsLog ( LOG_ERROR,
                       "unixFileCopyPlugin: Copied size %lld does not match source \
-			     size %lld of %s",
+                             size %lld of %s",
                       bytesCopied, statbuf.st_size, srcFileName );
             return SYS_COPY_LEN_ERR;
         } else {
@@ -1308,6 +1309,14 @@ extern "C" {
                                           eirods::resource_child_map*    _cmap,
                                           eirods::first_class_object*    _object,
                                           const char*                    _cache_file_name ) { 
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         int status = unixFileCopyPlugin( _object->mode(), _object->physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
             return ERROR( status, "unixStageToCachePlugin failed." );
@@ -1327,6 +1336,14 @@ extern "C" {
                                         eirods::first_class_object*    _object,
                                         char*                          _cache_file_name ) {
 
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
         int status = unixFileCopyPlugin( _object->mode(), _cache_file_name, _object->physical_path().c_str() );
         if( status < 0 ) {
             return ERROR( status, "unixSyncToArchPlugin failed." );
@@ -1428,7 +1445,7 @@ extern "C" {
         if( !_out_vote ) {
             return ERROR( -1, "unixRedirectPlugin - null outgoing vote" );
         }
-	
+        
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
         eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
@@ -1538,7 +1555,7 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-            #if 0
+#if 0
             std::string name;
             eirods::error err = get_property< std::string >( "name", name );
             if( !err.ok() ) {
@@ -1547,9 +1564,9 @@ extern "C" {
 
             _op = maintenance_operation( name );
             return SUCCESS();
-            #else
+#else
             return ERROR( -1, "nop" );
-            #endif
+#endif
         }
 
     }; // class unixfilesystem_resource
