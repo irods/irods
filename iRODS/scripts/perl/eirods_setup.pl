@@ -1761,11 +1761,6 @@ sub configureIrodsUser
 		# determined by the lack of database info passed to the script.
 		# this info will be temp. until setup_resource.sh is ran by the DGA.
 
-		# NOTE :: this does not work in windows with the -s option
-		$tmpHost=`hostname -s`;
-		chomp $tmpHost;
-		my $resc_name = $tmpHost."Resource";
-
 		printToFile( $userIrodsFile,
 			"# iRODS personal configuration file.\n" .
 			"#\n" .
@@ -1778,9 +1773,7 @@ sub configureIrodsUser
 			"irodsPort $IRODS_PORT\n" .
 			"\n" .
 			"# Default storage resource name:\n" .
-			"irodsDefResource '$resc_name'\n" .
-			"# tgr name [$RESOURCE_NAME]\n" .
-                        "# tgr dir  [$RESOURCE_DIR]\n" .
+			"irodsDefResource '$RESOURCE_NAME'\n" .
 			"# Home directory in iRODS:\n" .
 			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
 			"# Current directory in iRODS:\n" .
@@ -1832,31 +1825,27 @@ sub configureIrodsUser
 
 	# List existing resources first to see if it already exists.
 	($status,$output) = run( "$iadmin lr" );
-        if( 1 == $icatInstall ) {
-		$EIRODS_LOCAL_RESOURCE_NAME = $RESOURCE_NAME;
-		$EIRODS_LOCAL_RESOURCE_DIR  = $RESOURCE_DIR;
-	}
-	else {
-		$EIRODS_LOCAL_RESOURCE_NAME = $resc_name;
-                $EIRODS_LOCAL_RESOURCE_DIR  = $RESOURCE_DIR;
-	}
-	if ( $status == 0 && index($output,$EIRODS_LOCAL_RESOURCE_NAME) >= 0 )
+	if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
 	{
-		printStatus( "    Skipped.  Resource [$EIRODS_LOCAL_RESOURCE_NAME] already created.\n" );
-		printLog( "    Skipped.  Resource [$EIRODS_LOCAL_RESOURCE_NAME] already created.\n" );
+		printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
+		printLog( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
 	}
 	else
 	{
 		# Resource doesn't appear to exist.  Create it.
-		($status,$output) = run( "$iadmin mkresc $EIRODS_LOCAL_RESOURCE_NAME 'unix file system' archive $thisHost $RESOURCE_DIR \"\" $ZONE_NAME" );
+		($status,$output) = run( "$iadmin mkresc $RESOURCE_NAME 'unix file system' archive $thisHost $RESOURCE_DIR \"\" $ZONE_NAME" );
 		if ( $status != 0 )
 		{
 			printError( "\nInstall problem:\n" );
-			printError( "    Cannot create default resource [$EIRODS_LOCAL_RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
+			printError( "    Cannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
 			printError( "        ", $output );
-			printLog( "\nCannot create default resource [$EIRODS_LOCAL_RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
+			printLog( "\nCannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
 			printLog( "    ", $output );
 			cleanAndExit( 1 );
+		}
+		else {
+                      	printStatus( "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
+                        printLog(    "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
 		}
 	}
 
