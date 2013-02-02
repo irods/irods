@@ -100,7 +100,8 @@ extern "C" {
             msg << __FUNCTION__ << " - resource has no vault path.";
             result = ERROR(-1, msg.str());
         } else {
-            if(physical_path.compare(0, vault_path.size(), vault_path) != 0) {
+            if(physical_path.compare(0, 1, "/") != 0 &&
+               physical_path.compare(0, vault_path.size(), vault_path) != 0) {
                 ret_string = vault_path;
                 ret_string += physical_path;
             } else {
@@ -460,13 +461,18 @@ extern "C" {
                                       eirods::first_class_object*    _object,
                                       struct stat*                   _statbuf ) { 
 
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        // =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( -1, "unixFileCreatePlugin - null resource_property_map" );
+        } else if( !_cmap ) {
+            return ERROR( -1, "unixFileCreatePlugin - null resource_child_map" );
+        } else if( !_object ) {
+            return ERROR( -1, "unixFileCreatePlugin - null first_class_object" );
         }
+
+        // NOTE NOTE NOTE this function assumes the object's physical path is correct and should not have the vault path prepended -
+        // hcj
         
         // =-=-=-=-=-=-=-
         // make the call to stat

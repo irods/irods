@@ -113,6 +113,7 @@ int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **file
     // =-=-=-=-=-=-=-
     // log error if necessary
     if( !stat_err.ok() ) {
+        eirods::log(LOG_ERROR, stat_err.result());
         return stat_err.code();
     }
 
