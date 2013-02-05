@@ -12,6 +12,15 @@ namespace eirods {
     hierarchy_parser::hierarchy_parser(void) {
     }
 
+    hierarchy_parser::hierarchy_parser(
+        const hierarchy_parser& parser)
+    {
+        hierarchy_parser::const_iterator it;
+        for(it = parser.begin(); it != parser.end(); ++it) {
+            add_child(*it);
+        }
+    }
+
     hierarchy_parser::~hierarchy_parser() {
         // TODO - stub
     }
@@ -118,6 +127,16 @@ namespace eirods {
 
     hierarchy_parser::const_iterator hierarchy_parser::end(void) const {
         return resc_list_.end();
+    }
+
+    hierarchy_parser& hierarchy_parser::operator=(
+        const hierarchy_parser& rhs)
+    {
+        hierarchy_parser::const_iterator it;
+        for(it = rhs.begin(); it != rhs.end(); ++it) {
+            add_child(*it);
+        }
+        return *this;
     }
 
 }; // namespace eirods
