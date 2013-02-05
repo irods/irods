@@ -20,7 +20,14 @@ namespace eirods {
 
         /// @brief ctor doesn't do much, until it has a string
         hierarchy_parser(void);
+
+        /// @brief copy constructor
+        hierarchy_parser(const hierarchy_parser& parser);
+
         virtual ~hierarchy_parser();
+
+        /// @brief assignment operator
+        hierarchy_parser& operator=(const hierarchy_parser& parser);
 
         /// @brief Parses the specified hierarchy string
         error set_string(const std::string& _resc_hier);
