@@ -622,7 +622,8 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
 
     } else if (status > 0) {
         /* this is an orphan file. need to rename it */
-        rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
+        rstrcpy (fileRenameInp.oldFileName, filePath,           MAX_NAME_LEN);
+        rstrcpy (fileRenameInp.rescHier,    rescInfo->rescName, MAX_NAME_LEN);
         status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, &fileRenameInp, 
                                          rescInfo, 1);
         if (status >= 0) {
@@ -644,7 +645,6 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
     char *oldPtr, *newPtr;
     int rescTypeInx = rescInfo->rescTypeInx;
     char *filePath = fileRenameInp->oldFileName;
-
     // JMC - legacy resource - fileRenameInp->fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 
     rstrcpy (fileRenameInp->addr.hostAddr, rescInfo->rescLoc, NAME_LEN);

@@ -31,6 +31,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
@@ -55,6 +56,38 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         retval = rcDataObjUnlink (rodsServerHost->conn, dataObjUnlinkInp);
         return status;
     }
+
+#if 0
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    int         local = LOCAL_HOST;
+    std::string hier;
+    if( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        rodsServerHost_t* host  =  0;
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       dataObjUnlinkInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjUnlink :: failed in eirods::resource_redirect for [";
+            msg << dataObjUnlinkInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+    if( LOCAL_HOST != local ) {
+        rodsLog( LOG_NOTICE, "%s - resource_redirect requested remote server for [%s], hier string [%s]", 
+                 __FUNCTION__, dataObjUnlinkInp->objPath, hier.c_str() );
+    }
+#endif
 
     if (getValByKey (
             &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
@@ -411,7 +444,6 @@ rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     status = getDataObjInfo (rsComm, dataObjInp, dataObjInfoHead,
                              ACCESS_DELETE_OBJECT, 0);
-
     if (status < 0) {
         rodsLog (LOG_NOTICE,
                  "rsMvDataObjToTrash: getDataObjInfo error for %s. status = %d",

@@ -228,6 +228,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
             srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
             status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
                                      ACCESS_DELETE_OBJECT, 0);
+
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "_rsDataObjRename: src data %s does not exist, status = %d",
