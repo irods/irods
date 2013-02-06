@@ -21,6 +21,7 @@
 // =-=-=-=-=-=-=-
 // eirods resource includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
 
 int
@@ -45,7 +46,34 @@ rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
-        status = _rsBulkDataObjPut (rsComm, bulkOprInp, bulkOprInpBBuf);
+        int               local = LOCAL_HOST;
+        if( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == NULL ) {
+            std::string       hier;
+            rodsServerHost_t* host  =  0;
+            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                           &dataObjInp, hier, host, local );
+            if( !ret.ok() ) { 
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " :: failed in eirods::resource_redirect for [";
+                msg << dataObjInp.objPath << "]";
+                eirods::log( PASSMSG( msg.str(), ret ) );
+                return ret.code();
+            }
+           
+            // =-=-=-=-=-=-=-
+            // we resolved the redirect and have a host, set the hier str for subsequent
+            // api calls, etc.
+            addKeyVal( &bulkOprInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+        } // if keyword
+
+        if( LOCAL_HOST == local ) {
+            status = _rsBulkDataObjPut (rsComm, bulkOprInp, bulkOprInpBBuf);
+        } else {
+            rodsLog( LOG_NOTICE, "%s :: eirods::resource_redirect - Trying to Redirect to another server", __FUNCTION__ );
+            return -1;
+        }
     } else {
         status = rcBulkDataObjPut (rodsServerHost->conn, bulkOprInp,
                                    bulkOprInpBBuf);
@@ -284,7 +312,14 @@ createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     bzero (&dataObjInfo, sizeof (dataObjInfo));
     rstrcpy (dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN);
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
-    rstrcpy (dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN);
+
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( resc_hier ) {
+        rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
+    } else {
+        rodsLog( LOG_NOTICE, "XXXX - createBunDirForBulkPut :: in kw else using rescName as rescHier [%s]", rescInfo->rescName );
+        rstrcpy (dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN); // in kw else
+    }
 
     dataObjInfo.rescInfo = rescInfo;
 

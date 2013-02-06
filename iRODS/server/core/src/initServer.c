@@ -810,18 +810,17 @@ rodsServerHost_t **rodsServerHost)
 {
     int status;
 
-    status = getRcatHost (rcatType, rcatZoneHint, rodsServerHost);
+    status = getRcatHost( rcatType, rcatZoneHint, rodsServerHost );
 
     if (status < 0) {
-	rodsLog (LOG_NOTICE, 
-	 "getAndConnRcatHost:getRcatHost() failed. erro=%d", status);
-	return (status);
+	    rodsLog (LOG_NOTICE, 
+	       "getAndConnRcatHost:getRcatHost() failed. erro=%d", status);
+	    return (status);
     }
 
     if ((*rodsServerHost)->localFlag == LOCAL_HOST) {
-	return (LOCAL_HOST);
+	    return (LOCAL_HOST);
     }
- 
     status = svrToSvrConnect (rsComm, *rodsServerHost); 
 
     if (status < 0) {

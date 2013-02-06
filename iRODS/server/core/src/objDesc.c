@@ -179,6 +179,13 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
     keyValPair_t *condInput;
     char *tmpPtr;
 
+
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( resc_hier ) {
+        strncpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+    }
+
+
     condInput = &dataObjInp->condInput;
 
     if (dataObjInp != NULL) { 
@@ -217,18 +224,25 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
 int
 initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
 {
-    char *rescName, *dataType, *filePath;
-    keyValPair_t *condInput;
+    char *rescName = 0, *dataType = 0, *filePath = 0;
+    keyValPair_t *condInput = 0;
 
     condInput = &dataObjInp->condInput;
-
     memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
     rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
+
     rescName = getValByKey (condInput, RESC_NAME_KW);
     if (rescName != NULL) {
         rstrcpy (dataObjInfo->rescName, rescName, LONG_NAME_LEN);
-        rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN);
-    }  
+    }
+
+    char* rescHier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( rescHier ) {
+        rstrcpy (dataObjInfo->rescHier, rescHier, MAX_NAME_LEN);
+    } else {
+        rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoWithInp :: in kw else for resc hier" );
+        rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN); // in kw else
+    }
 
     snprintf (dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode);
 
@@ -526,7 +540,11 @@ initDataObjInfoForRepl (
     destDataObjInfo->filePath[0] = '\0';
     rstrcpy (destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN);
     // initialize the destination resource hierarchy to the root resource
-    rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN);
+
+        rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoForRepl :: using dest resc name as hier [%s]", destRescInfo->rescName );
+        rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN); // orphan right now
+
+
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
     destDataObjInfo->rescInfo = destRescInfo;
     if (destRescGroupName != NULL && strlen (destRescGroupName) > 0) {

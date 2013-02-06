@@ -16,6 +16,10 @@
 #include "dataObjCreate.h"
 #include "getRemoteZoneResc.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_redirect.h"
+
 int
 rsDataObjPhymv250 (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    transStat_t **transStat)
@@ -68,6 +72,35 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = _rcDataObjPhymv (rodsServerHost->conn, dataObjInp,
                                   transStat);
         return status;
+    }
+
+
+    int local = LOCAL_HOST;
+    if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        std::string       hier;
+        rodsServerHost_t* host  =  0;
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg <<" :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+    if( LOCAL_HOST != local ) {
+        rodsLog( LOG_NOTICE, "rsDataObjPhymv :: eirods::resource_redirect - Trying to Redirect to another server" );
+        return -1;
+
     }
 
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));

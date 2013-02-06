@@ -93,7 +93,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
                    rodsServerHost_t *rodsServerHost ) {
 
     // =-=-=-=-=-=-=-
-    // XXXX need to check resource permission and vault permission when RCAT 
+    // NOTE:: need to check resource permission and vault permission when RCAT 
     // is available 
         
     // =-=-=-=-=-=-=-

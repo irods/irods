@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 #endif
 
     logAgentProc (&rsComm);
-
+    
     status = agentMain (&rsComm);
 
     cleanupAndExit (status);
@@ -171,11 +171,12 @@ agentMain (rsComm_t *rsComm)
 {
     int status = 0;
 
+    int retryCnt = 0;
+
     // =-=-=-=-=-=-=-
     // compiler backwards compatibility hack
     // see header file for more details
     eirods::dynamic_cast_hack();
-
 
     while (1) {
 
@@ -189,9 +190,6 @@ agentMain (rsComm_t *rsComm)
         }
 
         status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
-#if 0
-        status = readAndProcClientMsg (rsComm, 0);
-#endif
 
         if (status >= 0) {
             continue;
@@ -206,9 +204,60 @@ agentMain (rsComm_t *rsComm)
     }
 
     // =-=-=-=-=-=-=-
+    // determine if we even need to connect, break the
+    // infinite reconnect loop.
+    if( !resc_mgr.need_maintenance_operations() ) {
+        return status;
+    }
+
+    // =-=-=-=-=-=-=-
+    // find the icat host
+    rodsServerHost_t *rodsServerHost = 0;
+    status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
+    if( status < 0 ) {
+        eirods::log( ERROR( -1, "agentMain - getRcatHost failed." ) );
+    }
+    
+    // =-=-=-=-=-=-=-
+    // connect to the icat host
+    status = svrToSvrConnect ( rsComm, rodsServerHost );
+    if( status < 0 ) {
+        eirods::log( ERROR( -1, "agentMain - svrToSvrConnect failed." ) );
+    }
+
+    // =-=-=-=-=-=-=-
     // call post disconnect maintenance operations before exit
-    resc_mgr.call_maintenance_operations();
+    resc_mgr.call_maintenance_operations( rodsServerHost->conn );
+
 
     return (status);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

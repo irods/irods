@@ -778,6 +778,8 @@ sub doTest
  
 	}
 
+    system( "rm -r /var/lib/e-irods/iRODS/Vault/home/rods/*" );
+
 	# Pound test
 #	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );
 #	doTestPound( );

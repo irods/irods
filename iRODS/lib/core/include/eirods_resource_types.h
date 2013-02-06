@@ -32,7 +32,8 @@ namespace eirods {
                                          resource_child_map*, 
                                          first_class_object*,
                                          ... );
-    typedef error (*resource_maintenance_operation)();
+    typedef error (*resource_maintenance_operation)( resource_property_map&, 
+                                                     resource_child_map& );
 
 }; // namespace
 

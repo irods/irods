@@ -183,6 +183,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
         rei2.uoip = &rsComm->proxyUser;
     }
 
+
     rodsLog (LOG_DEBUG,
              "_rsGeneralAdmin arg0=%s", 
              generalAdminInp->arg0);
@@ -455,6 +456,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
             return(status);
         }
         if (strcmp(generalAdminInp->arg1,"resource")==0) {
+
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
             args[0] = generalAdminInp->arg2; /* rescname */
             args[1] = generalAdminInp->arg3; /* option */

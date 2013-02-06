@@ -79,6 +79,7 @@ rsQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
     addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_D_RESC_HIER, 1);
     if (singleFlag == 0) {
         addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);

@@ -854,9 +854,9 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
 
     while (status >= 0) {
         sqlResult_t *dataIdRes, *subCollRes, *dataNameRes, *replNumRes, 
-            *rescNameRes, *filePathRes;
+            *rescNameRes, *filePathRes, *rescHierRes;
         char *tmpDataId, *tmpDataName, *tmpSubColl, *tmpReplNum, 
-            *tmpRescName, *tmpFilePath;
+            *tmpRescName, *tmpFilePath, *tmpRescHier;
         dataObjInfo_t dataObjInfo;
 
         memset (&dataObjInfo, 0, sizeof (dataObjInfo));
@@ -897,6 +897,13 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
                      "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
             return (UNMATCHED_KEY_OR_INDEX);
         }
+        if ((rescHierRes = getSqlResultByInx (genQueryOut, COL_D_RESC_HIER))
+            == NULL) {
+            rodsLog (LOG_ERROR,
+                     "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
         for (i = 0;i < genQueryOut->rowCnt; i++) {
             tmpDataId = &dataIdRes->value[dataIdRes->len * i];
             tmpDataName = &dataNameRes->value[dataNameRes->len * i];
@@ -904,13 +911,14 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
             tmpReplNum = &replNumRes->value[replNumRes->len * i];
             tmpRescName = &rescNameRes->value[rescNameRes->len * i];
             tmpFilePath = &filePathRes->value[filePathRes->len * i];
+            tmpRescHier = &rescHierRes->value[rescHierRes->len * i];
 
             dataObjInfo.dataId = strtoll (tmpDataId, 0, 0);
             snprintf (dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
                       tmpSubColl, tmpDataName);
             dataObjInfo.replNum = atoi (tmpReplNum);
             rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
-            rstrcpy (dataObjInfo.rescHier, tmpRescName, MAX_NAME_LEN);
+            rstrcpy (dataObjInfo.rescHier, tmpRescHier, MAX_NAME_LEN);
             /*status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
               if (status < 0) {
               rodsLog( LOG_ERROR,"syncCollPhyPath: resolveResc error for %s, status = %d",
