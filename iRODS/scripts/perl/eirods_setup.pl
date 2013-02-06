@@ -1761,11 +1761,6 @@ sub configureIrodsUser
 		# determined by the lack of database info passed to the script.
 		# this info will be temp. until setup_resource.sh is ran by the DGA.
 
-        # NOTE :: this does not work in windows with the -s option
-		$tmpHost=`hostname -s`;
-		chomp $tmpHost;
-		my $resc_name = $tmpHost."Resource";
-
 		printToFile( $userIrodsFile,
 			"# iRODS personal configuration file.\n" .
 			"#\n" .
@@ -1778,7 +1773,7 @@ sub configureIrodsUser
 			"irodsPort $IRODS_PORT\n" .
 			"\n" .
 			"# Default storage resource name:\n" .
-			"irodsDefResource '$resc_name'\n" .
+			"irodsDefResource '$RESOURCE_NAME'\n" .
 			"# Home directory in iRODS:\n" .
 			"irodsHome '/$ZONE_NAME/home/$IRODS_ADMIN_NAME'\n" .
 			"# Current directory in iRODS:\n" .
@@ -1832,8 +1827,8 @@ sub configureIrodsUser
 	($status,$output) = run( "$iadmin lr" );
 	if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
 	{
-		printStatus( "    Skipped.  Resource already created.\n" );
-		printLog( "    Skipped.  Resource already created.\n" );
+		printStatus( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
+		printLog( "    Skipped.  Resource [$RESOURCE_NAME] already created.\n" );
 	}
 	else
 	{
@@ -1842,11 +1837,15 @@ sub configureIrodsUser
 		if ( $status != 0 )
 		{
 			printError( "\nInstall problem:\n" );
-			printError( "    Cannot create default resource:\n" );
+			printError( "    Cannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
 			printError( "        ", $output );
-			printLog( "\nCannot create default resource:\n" );
+			printLog( "\nCannot create default resource [$RESOURCE_NAME] [$RESOURCE_DIR]:\n" );
 			printLog( "    ", $output );
 			cleanAndExit( 1 );
+		}
+		else {
+                      	printStatus( "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
+                        printLog(    "    ... Success [$RESOURCE_NAME] [$RESOURCE_DIR]\n" );
 		}
 	}
 

@@ -694,8 +694,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::first_class_object* hackPtr = _object;
-        eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( hackPtr );
+        eirods::structured_object* struct_obj = dynamic_cast< eirods::structured_object* >( _object );
         if( !struct_obj ) {
             return ERROR( -1, "failed to cast first_class_object to structured_object" );
         }

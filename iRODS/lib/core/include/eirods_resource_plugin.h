@@ -47,7 +47,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief override from parent plugin_base
         virtual error delay_load( void* _h );
-                
+        
         // =-=-=-=-=-=-=-
         /// @brief get a property from the map if it exists.  catch the exception in the case where
         // the template types may not match and return sucess/fail
@@ -82,16 +82,22 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief interface to call start / stop functions
-        error start_operation( void ) { return (*start_operation_)(); }
-        error stop_operation ( void ) { return (*stop_operation_)();  }
+        error start_operation( void ) { return (*start_operation_)( properties_, children_ ); }
+        error stop_operation ( void ) { return (*stop_operation_ )( properties_, children_ ); }
 
         // =-=-=-=-=-=-=-
         /// @brief default start operation
-        static error default_start_operation() { return SUCCESS(); };
+        static error default_start_operation( resource_property_map&,
+                                              resource_child_map& ) {
+             return SUCCESS(); 
+        };
         
         // =-=-=-=-=-=-=-
         /// @brief default stop operation
-        static error default_stop_operation () { return SUCCESS(); };
+        static error default_stop_operation( resource_property_map&,
+                                             resource_child_map& ) { 
+            return SUCCESS(); 
+        };
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param

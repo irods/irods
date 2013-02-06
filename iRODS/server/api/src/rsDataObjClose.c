@@ -412,9 +412,9 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         if (chksumStr != NULL) {
             addKeyVal (&regParam, CHKSUM_KW, chksumStr);
         }
-        addKeyVal (&regParam, FILE_PATH_KW, destDataObjInfo->filePath);
-        addKeyVal (&regParam, RESC_NAME_KW, destDataObjInfo->rescName);
-        addKeyVal (&regParam, RESC_HIER_KW, destDataObjInfo->rescHier);
+        addKeyVal (&regParam, FILE_PATH_KW,     destDataObjInfo->filePath);
+        addKeyVal (&regParam, RESC_NAME_KW,     destDataObjInfo->rescName);
+        addKeyVal (&regParam, RESC_HIER_STR_KW, destDataObjInfo->rescHier);
         addKeyVal (&regParam, RESC_GROUP_NAME_KW, 
                    destDataObjInfo->rescGroupName);
         if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput, 

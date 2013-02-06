@@ -179,6 +179,13 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
     keyValPair_t *condInput;
     char *tmpPtr;
 
+
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( resc_hier ) {
+        strncpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+    }
+
+
     condInput = &dataObjInp->condInput;
 
     if (dataObjInp != NULL) { 
@@ -217,18 +224,25 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
 int
 initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
 {
-    char *rescName, *dataType, *filePath;
-    keyValPair_t *condInput;
+    char *rescName = 0, *dataType = 0, *filePath = 0;
+    keyValPair_t *condInput = 0;
 
     condInput = &dataObjInp->condInput;
-
     memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
     rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
+
     rescName = getValByKey (condInput, RESC_NAME_KW);
     if (rescName != NULL) {
         rstrcpy (dataObjInfo->rescName, rescName, LONG_NAME_LEN);
-        rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN);
-    }  
+    }
+
+    char* rescHier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( rescHier ) {
+        rstrcpy (dataObjInfo->rescHier, rescHier, MAX_NAME_LEN);
+    } else {
+        rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoWithInp :: in kw else for resc hier" );
+        rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN); // in kw else
+    }
 
     snprintf (dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode);
 
@@ -295,7 +309,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
     initReiWithDataObjInp (&rei, rsComm, &doinp);
 
     if (destRescName != NULL) {
-	    rescGrpInfo = new rescGrpInfo_t;
+        rescGrpInfo = new rescGrpInfo_t;
         rescGrpInfo->rescInfo = new rescInfo_t;
         //status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
         
@@ -303,10 +317,10 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         // get rescGrpInfo_t from resource name
         eirods::error err = eirods::get_resc_grp_info( destRescName, *rescGrpInfo );
         if ( err.ok() ) {
-	        rei.rgi = rescGrpInfo;
+            rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
 //            delete rescGrpInfo;
-	    
+            
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -316,20 +330,20 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                 if (numDestThr == 0) {
                     return 0;
                 } else if (numDestThr == 1 && srcRescName == NULL && 
-                      isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
-                //            delete rescGrpInfo;
-                        /* one thread and resouce on local host */
-                        return 0;
+                           isLocalHost (rescGrpInfo->rescInfo->rescLoc)) {
+                    //            delete rescGrpInfo;
+                    /* one thread and resouce on local host */
+                    return 0;
                 }
-	        }
+            }
         }
     }
 
-    if (srcRescName != NULL) {
-	    if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
-	        return numDestThr;
+    if (destRescName != NULL && srcRescName != NULL) {
+        if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
+            return numDestThr;
 
-	    rescGrpInfo = new rescGrpInfo_t;
+        rescGrpInfo = new rescGrpInfo_t;
         rescGrpInfo->rescInfo = new rescInfo_t;
         // =-=-=-=-=-=-=-
         // convert the resource into the rescGrpInfo_t
@@ -339,7 +353,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
         if ( err.ok() ) {
             rei.rgi = rescGrpInfo;
             status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-//	        delete rescGrpInfo;
+//              delete rescGrpInfo;
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                          "getNumThreads: acGetNumThreads error, status = %d",
@@ -348,7 +362,7 @@ getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr,
                 numSrcThr = rei.status;
                 if (numSrcThr == 0) return 0;
             }
-	    }
+        }
     }
 
     if (numDestThr > 0) {
@@ -526,7 +540,11 @@ initDataObjInfoForRepl (
     destDataObjInfo->filePath[0] = '\0';
     rstrcpy (destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN);
     // initialize the destination resource hierarchy to the root resource
-    rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN);
+
+        rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoForRepl :: using dest resc name as hier [%s]", destRescInfo->rescName );
+        rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN); // orphan right now
+
+
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
     destDataObjInfo->rescInfo = destRescInfo;
     if (destRescGroupName != NULL && strlen (destRescGroupName) > 0) {
@@ -535,12 +553,12 @@ initDataObjInfoForRepl (
     } else if (strlen (destDataObjInfo->rescGroupName) > 0) {
         /* need to verify whether destRescInfo belongs to 
          * destDataObjInfo->rescGroupName */
-         rodsLog( LOG_NOTICE, "JMC - initDataObjInfoForRepl destDataObjInfo->rescGroupName > 0" );
+        rodsLog( LOG_NOTICE, "JMC - initDataObjInfoForRepl destDataObjInfo->rescGroupName > 0" );
         //if ( getRescInGrp( rsComm, destRescInfo->rescName, 
         //                  destDataObjInfo->rescGroupName, NULL ) < 0 ) {
         // 
-            /* destResc is not in destRescGrp */
-            destDataObjInfo->rescGroupName[0] = '\0';
+        /* destResc is not in destRescGrp */
+        destDataObjInfo->rescGroupName[0] = '\0';
         //}
     } // else
 

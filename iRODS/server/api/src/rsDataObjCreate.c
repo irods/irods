@@ -32,6 +32,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -58,8 +59,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                        &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_CREATE);
-rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - creating object for [%s]", dataObjInp->objPath );
-
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
@@ -78,6 +77,38 @@ rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - creating object for [%s]", dataObjI
         return (l1descInx);
     }
 
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    int local = LOCAL_HOST;
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( NULL == resc_hier ) {
+        std::string       hier;
+        rodsServerHost_t* host  =  0;
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                       dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+    if( LOCAL_HOST != local ) {
+            rodsLog( LOG_NOTICE, "%s :: eirods::resource_redirect - Trying to Redirect to another server", __FUNCTION__ );
+            return -1;
+
+    } // if remote host
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
@@ -125,8 +156,6 @@ rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - creating object for [%s]", dataObjI
         /* use L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY instead */
         /* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
-
-rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling _rsDataObjCreate" );
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
 
     } else if( rodsObjStatOut->specColl != NULL &&
@@ -179,14 +208,11 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int rescCnt;
 
     /* query rcat for resource info and sort it */
-
-rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling getRescGrpForCreate" );
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
-rodsLog( LOG_NOTICE, "XXXX rsDataObjCreate - calling getRescGrpForCreate. done." );
-    if (status < 0) return status;
-#if 1 // JMC - remove resource.c
+
+#if 1 // JMC - legacy resource
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
-#else // JMC - remove resource.c
+#else // JMC - legacy resource
     rescCnt = getRescCnt (myRescGrpInfo);
 
     copiesNeeded = getCopiesFromCond (&dataObjInp->condInput);
@@ -292,7 +318,6 @@ int
 _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                               rescInfo_t *rescInfo, char *rescGroupName)
 {
-    
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     int status;
@@ -302,6 +327,9 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     dataObjInfo = (dataObjInfo_t*)malloc(sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
+
+
+
 #if 0 // JMC - remove legacy resources 
     if (getRescClass (rescInfo) == COMPOUND_CL) {
         rescInfo_t *cacheResc = NULL;
@@ -322,7 +350,6 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         L1desc[l1descInx].replRescInfo = rescInfo;  /* repl to this resc */
         dataObjInfo->rescInfo = cacheResc;
         rstrcpy (dataObjInfo->rescName, cacheResc->rescName, NAME_LEN);
-        rstrcpy (dataObjInfo->rescHier, cacheResc->rescName, MAX_NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, myRescGroupName, NAME_LEN);
         if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) { // JMC - backport 4537
             L1desc[l1descInx].purgeCacheFlag = 1;
@@ -332,8 +359,16 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 #endif
         dataObjInfo->rescInfo = rescInfo;
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
-        rstrcpy (dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+        
+        char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+        if( resc_hier ) { 
+            rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN);
+        
+        } else {
+            rstrcpy(dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
+
+        }
 
 #if 0 // JMC - remove legacy resources
         // =-=-=-=-=-=-=-
@@ -545,7 +580,6 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
     ruleExecInfo_t rei;
 
     /* query rcat for resource info and sort it */
-
     initReiWithDataObjInp( &rei, rsComm, dataObjInp );
 
     if (dataObjInp->oprType == REPLICATE_OPR) { // JMC - backport 4660

@@ -1127,6 +1127,8 @@ sub doTestIcat
 	}
 	else {
 	    printStatus("All ICAT tests were successful.\n");
+            # clean up after ICAT tests - they don't clean up the Vault themselves
+            system("rm -rf $IRODS_HOME/Vault/home/rods/TestFile*");
 	}
 	printStatus( "Test report:\n" );
 	printStatus( "    $totalLine\n" );

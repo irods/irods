@@ -11,17 +11,26 @@ namespace eirods {
     // public - constructor 
     plugin_base::plugin_base( const std::string& _n,
                               const std::string& _c ) : 
-                              instance_name_( _n ),
-                              context_( _c ){
+                              context_( _c ),
+                              instance_name_( _n ) {
     } // ctor
 
     // =-=-=-=-=-=-=-
     // public - copy constructor 
     plugin_base::plugin_base( const plugin_base& _rhs ) :
-                              instance_name_( _rhs.instance_name_ ),
-                              context_( context_ ){
+                              context_( context_ ),
+                              instance_name_( _rhs.instance_name_ ) {
     } // cctor
 
+    // =-=-=-=-=-=-=-
+    // public - assignment operator
+    plugin_base& plugin_base::operator=( const plugin_base& _rhs ) {
+        instance_name_ = _rhs.instance_name_;
+        context_       = context_;
+
+        return *this;
+
+    } // operator=
 
     // =-=-=-=-=-=-=-
     // public - destructor 
@@ -35,6 +44,13 @@ namespace eirods {
        return ERROR( -1, "no defined operation" );
         
     } // post_disconnect_maintenance_operation
+ 
+    // =-=-=-=-=-=-=-
+    // public - interface to determine if a PDMO is necessary
+    error plugin_base::need_post_disconnect_maintenance_operation( bool& _b ) {
+        _b = false;
+        return SUCCESS();
+    } // need_post_disconnect_maintenance_operation
 
 
     // =-=-=-=-=-=-=-

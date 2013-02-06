@@ -4892,6 +4892,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 /* Modify a Resource (certain fields) */
 int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
                char *optionValue) {
+
     int status, OK;
     char myTime[50];
     char rescId[MAX_NAME_LEN];

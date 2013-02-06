@@ -40,23 +40,23 @@ if [ "$SERVER_TYPE" == "resource" ] ; then
 
 	do_not_remove="FALSE"
 
-	# =-=-=-=-=-=-=-
+    # =-=-=-=-=-=-=-
     # do a dryrun on the resource removal to determine if this resource server can
     # be safely removed without harming any data
-	for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT`
-	do
-	    # =-=-=-=-=-=-=-
-        # for each resource determine its location.  if it is this server then dryrun
-        loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $OS_EIRODS_ACCT )
+    for resc in `su -c "iadmin lr" $OS_EIRODS_ACCT`
+    do
+	# =-=-=-=-=-=-=-
+	# for each resource determine its location.  if it is this server then dryrun
+	loc=$( su -c "iadmin lr $resc | grep resc_net | cut -d' ' -f2" $OS_EIRODS_ACCT )
 
-        if [[ $loc == $hn || $loc == $fhn ]]; then
+	if [[ $loc == $hn || $loc == $fhn ]]; then
 		rem=$( su -c "iadmin rmresc --dryrun $resc | grep SUCCESS" $OS_EIRODS_ACCT )
-			if [[ "x$rem" == "x" ]]; then
-	            # =-=-=-=-=-=-=-
-                # dryrun for a local resource was a success, add resc to array for removal
-				do_not_remove="TRUE"
-			fi
+		if [[ "x$rem" == "x" ]]; then
+			# =-=-=-=-=-=-=-
+			# dryrun for a local resource was a success, add resc to array for removal
+			do_not_remove="TRUE"
 		fi
+	fi
     done
 
     if [[ "$do_not_remove" == "TRUE" ]]; then
@@ -111,11 +111,13 @@ DETECTEDOS=`$EIRODS_HOME_DIR/packaging/find_os.sh`
 # report that we are not deleting some things
 echo "NOTE :: The Local System Administrator should delete these if necessary."
 
-# =-=-=-=-=-=-=-
-# database(s) and database role
-echo "     :: Leaving the E-iRODS database(s) and role in place."
-echo "     :: try:"
-echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropdb EICAT_9000; dropuser $DB_USER;'"
+if [ "$SERVER_TYPE" == "icat" ] ; then
+    # =-=-=-=-=-=-=-
+    # database(s) and database role
+    echo "     :: Leaving the E-iRODS database(s) and role in place."
+    echo "     :: try:"
+    echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropdb EICAT_9000; dropuser $DB_USER;'"
+fi
 
 # =-=-=-=-=-=-=-
 # report that we are not deleting the account(s)

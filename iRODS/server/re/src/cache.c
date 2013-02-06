@@ -69,12 +69,12 @@ Cache *copyCache(unsigned char **p, size_t size, Cache *ptr) {
 Cache *restoreCache(unsigned char *buf) {
     mutex_type *mutex;
     Cache *cache = (Cache *) buf;
-    unsigned char *bufCopy;
+    unsigned char *bufCopy = NULL;
     unsigned char *pointers;
     size_t pointersSize;
     unsigned char *bufMapped;
 
-    unsigned char *pointersCopy;
+    unsigned char *pointersCopy = NULL;
     unsigned char *pointersMapped;
     size_t dataSize;
     unsigned int version, version2;
@@ -105,15 +105,27 @@ Cache *restoreCache(unsigned char *buf) {
         }
         memcpy(pointersCopy, pointersMapped+(buf - bufMapped), pointersSize);
         if(lockMutex(&mutex)!=0) {
-            free(bufCopy);
-            free(pointersCopy);
+            if(bufCopy != NULL) {
+                free(bufCopy);
+                bufCopy = NULL;
+            }
+            if(pointersCopy != NULL) {
+                free(pointersCopy);
+                pointersCopy = NULL;
+            }
             break;
         }
     	version2 = cache->version;
         unlockMutex(&mutex);
         if(version2 != version) {
-            free(bufCopy);
-            free(pointersCopy);
+            if(bufCopy != NULL) {
+                free(bufCopy);
+                bufCopy = NULL;
+            }
+            if(pointersCopy != NULL) {
+                free(pointersCopy);
+                pointersCopy = NULL;
+            }
             sleep(1);
         } else {
             success = 1;
@@ -137,11 +149,13 @@ Cache *restoreCache(unsigned char *buf) {
       long diffBuf = buf - bufMapped;
       pointers = cache->pointers + diffBuf;
       pointersSize = pointers - buf; */
-    long diff = bufCopy - bufMapped;
-    long pointerDiff = diff;
-    applyDiff(pointers, pointersSize, diff, pointerDiff);
-    free(pointersCopy);
-    cache = (Cache *) bufCopy;
+    if(bufCopy != NULL) {
+        long diff = bufCopy - bufMapped;
+        long pointerDiff = diff;
+        applyDiff(pointers, pointersSize, diff, pointerDiff);
+        free(pointersCopy);
+        cache = (Cache *) bufCopy;
+    }
     return cache;
 }
 void applyDiff(unsigned char *pointers, long pointersSize, long diff, long pointerDiff) {

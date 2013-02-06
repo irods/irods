@@ -200,7 +200,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
      if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
 	    
-        status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,ACCESS_DELETE_OBJECT, 0);
+        status = getDataObjInfo( rsComm, srcDataObjInp, &dataObjInfoHead, ACCESS_DELETE_OBJECT, 0 );
           
 	    if (status >= 0 || NULL != dataObjInfoHead ) {
 	        srcId = dataObjInfoHead->dataId;

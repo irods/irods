@@ -71,7 +71,7 @@ while [ "$STATUS" != "complete" ] ; do
   echo ""
 
   # get admin user
-  echo -n "iRODS admin username"  
+  echo -n "iRODS admin username"
   if [ "$LASTADMINUSER" ] ; then
     echo -n " [$LASTADMINUSER]"
   else
@@ -109,6 +109,11 @@ done
 touch $SETUP_RESOURCE_FLAG
 echo "==================================================================="
 
+FIRSTHALF=`hostname -s`
+SECONDHALF="Resource"
+LOCAL_RESOURCE_NAME="$FIRSTHALF$SECONDHALF"
+THIRDHALF="Vault"
+LOCAL_VAULT_NAME="$LOCAL_RESOURCE_NAME$THIRDHALF"
 IRODS_CONFIG_TEMPFILE="/tmp/tmp.irods.config"
 echo "Updating irods.config..."
 sed -e "/^\$IRODS_ICAT_HOST/s/^.*$/\$IRODS_ICAT_HOST = '$ICATHOSTORIP';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
@@ -119,11 +124,11 @@ sed -e "/^\$ZONE_NAME/s/^.*$/\$ZONE_NAME = '$ICATZONE';/" $IRODS_CONFIG_FILE > $
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 sed -e "/^\$IRODS_ADMIN_NAME/s/^.*$/\$IRODS_ADMIN_NAME = '$ADMINUSER';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-# clear unneeded resource name
-sed -e "/^\$RESOURCE_NAME/s/^.*$/\$RESOURCE_NAME = '';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+# set a default initial resource name
+sed -e "/^\$RESOURCE_NAME/s/^.*$/\$RESOURCE_NAME = '$LOCAL_RESOURCE_NAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
-# clear unneeded resource directory name (vault path)
-sed -e "/^\$RESOURCE_DIR/s/^.*$/\$RESOURCE_DIR = '';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
+# set a default initial resource directory name (vault path)
+sed -e "/^\$RESOURCE_DIR/s/^.*$/\$RESOURCE_DIR = '\/var\/lib\/e-irods\/iRODS\/$LOCAL_VAULT_NAME';/" $IRODS_CONFIG_FILE > $IRODS_CONFIG_TEMPFILE
 mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
 echo "Running eirods_setup.pl..."

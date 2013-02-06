@@ -45,10 +45,10 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief  populate resource table from icat database
         error init_from_catalog( rsComm_t* );
- 
+        
         // =-=-=-=-=-=-=-
-        /// @brief  push changes to context string etc back to catalog on shutdown
-        error update_catalog( rsComm_t* );
+        /// @brief call shutdown on resources before destruction
+        error shut_down_resources(  );
  
         // =-=-=-=-=-=-=-
         /// @brief  load a resource plugin given a resource type
@@ -61,10 +61,14 @@ namespace eirods {
         // =-=-=-=-=-=-=-
 		/// @brief print the list of local resources out to stderr
         void print_local_resources(); 
-  
+   
+        // =-=-=-=-=-=-=-
+		/// @brief determine if any pdmos need to run before doing a connection
+        bool need_maintenance_operations(  );
+
         // =-=-=-=-=-=-=-
 		/// @brief exec the pdmos ( post disconnect maintenance operations ) in order
-        void call_maintenance_operations(); 
+        void call_maintenance_operations( rcComm_t* ); 
 
         // =-=-=-=-=-=-=-
 		/// @brief resolve a resource from a match with a given property 

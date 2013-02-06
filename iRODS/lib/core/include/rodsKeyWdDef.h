@@ -17,7 +17,6 @@
 #define VERIFY_BY_SIZE_KW "verifyBySize" /* verify by size - used by irsync */
 #define OBJ_PATH_KW	"objPath"	/* logical path of the object */ 
 #define RESC_NAME_KW	"rescName"	/* resource name */
-#define RESC_HIER_KW	"rescHier"	/* resource hierarchy */
 #define DEST_RESC_NAME_KW	"destRescName"	/* destination resource name */
 #define DEF_RESC_NAME_KW	"defRescName"	/* default resource name */
 #define BACKUP_RESC_NAME_KW "backupRescName" /* destination resource name */

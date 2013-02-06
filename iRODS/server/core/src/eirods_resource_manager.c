@@ -12,6 +12,7 @@
 #include "eirods_children_parser.h"
 #include "rsGlobalExtern.h"
 #include "generalAdmin.h"
+#include "phyBundleColl.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -266,74 +267,24 @@ namespace eirods {
         return SUCCESS();
 
     } // init_from_catalog
-
+        
     // =-=-=-=-=-=-=-
-    // public - call stop op on plugins and push changes back into catalog
-    error resource_manager::update_catalog( rsComm_t* _comm ) {
+    /// @brief call shutdown on resources before destruction
+    error resource_manager::shut_down_resources(  ) {
         // =-=-=-=-=-=-=-
-        // ptr check!
-        if( !_comm ) {
-            return ERROR( -1, "resource_manager::update_catalog - null comm ptr" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // iterate over all resources
+        // iterate over all resources in the vector 
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
-        for( itr  = resources_.begin();
+        for( itr =  resources_.begin();
              itr != resources_.end();
              ++itr ) {
-            // =-=-=-=-=-=-=-
-            // cache a ref to the resource
-            resource_ptr& resc = itr->second;
-
-            // =-=-=-=-=-=-=-
-            // call the stop operation
-            resc->stop_operation();
-
-            // =-=-=-=-=-=-=-
-            // get the context string
-            std::string ctx_str = resc->context_string();
-
-            // =-=-=-=-=-=-=-
-            // get the resource name
-            std::string name;
-            error ret = resc->get_property< std::string >( "name", name );
-            if( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "resource_manager::update_catalog - failed to get name for resource";
-                eirods::log( ERROR( -1, msg.str() ) );
-                continue;
-            }
-
-            // =-=-=-=-=-=-=-
-            // call rsGeneralAdmin with the proper bits to update the context
-            // for this resource
-            generalAdminInp_t inp;
-            inp.arg0 = 0;
-            inp.arg1 = "modify";
-            inp.arg2 = "resource";
-            inp.arg3 = const_cast< char*>( name.c_str() );
-            inp.arg3 = "context";
-            inp.arg4 = const_cast< char* >( ctx_str.c_str() );
-            inp.arg5 = 0;
-            inp.arg6 = 0;
-            inp.arg7 = 0;
-            inp.arg8 = 0;
-            inp.arg9 = 0;
-            if( rsGeneralAdmin( _comm, &inp ) < 0 ) {
-                std::stringstream msg;
-                msg << "resource_manager::update_catalog - failed in rsGeneralAdmin ";
-                msg << " for [" << name << "]";
-                return ERROR( -1, msg.str() );
-            }
+            itr->second->stop_operation();
 
         } // for itr
 
-
         return SUCCESS();
+                
+    } // shut_down_resources
 
-    } // update_catalog   
-        
     // =-=-=-=-=-=-=-
     // public - take results from genQuery, extract values and create resources
     error resource_manager::process_init_results( genQueryOut_t* _result ) {
@@ -829,7 +780,33 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - exec the pdmos ( post disconnect maintenance operations ) in order
-    void resource_manager::call_maintenance_operations(  ) {
+    bool resource_manager::need_maintenance_operations( ) {
+        bool need_pdmo = false;
+
+        // =-=-=-=-=-=-=-
+        // iterate through resource plugins
+        lookup_table< resource_ptr >::iterator itr;
+        for( itr  = resources_.begin();
+             itr != resources_.end(); 
+             ++itr ) {
+            // =-=-=-=-=-=-=-
+            // if any resources need a pdmo, return true;
+            bool flg = false;
+            itr->second->need_post_disconnect_maintenance_operation( flg );
+            if( flg ) {
+                need_pdmo = true;
+                break;
+            }
+
+        } // for itr
+
+        return need_pdmo;
+
+    } // need_maintenance_operations
+
+    // =-=-=-=-=-=-=-
+    // public - exec the pdmos ( post disconnect maintenance operations ) in order
+    void resource_manager::call_maintenance_operations( rcComm_t* _comm ) {
         // =-=-=-=-=-=-=-
         // iterate through op vectors
         std::vector< std::vector< pdmo_type > >::iterator vec_itr;
@@ -844,7 +821,7 @@ namespace eirods {
                  ++op_itr ) {
                 // =-=-=-=-=-=-=-
                 // call the op
-                error ret = ((*op_itr))();
+                error ret = ((*op_itr))( _comm );
                 if( !ret.ok() ) {
                     log( PASSMSG( "resource_manager::call_maintenance_operations - op failed", ret ) );
                 }

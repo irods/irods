@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 #endif
 
     logAgentProc (&rsComm);
-
+    
     status = agentMain (&rsComm);
 
     cleanupAndExit (status);
@@ -170,21 +170,13 @@ int
 agentMain (rsComm_t *rsComm)
 {
     int status = 0;
-    int retryCnt = 0;
 
-    // =-=-=-=-=-=-=-
-    // build a rs comm to connect to the icat for pdmo, and update
-    rsComm_t icat_comm;
-    strncpy( icat_comm.myEnv.rodsZone,      rsComm->myEnv.rodsZone,      NAME_LEN );
-    strncpy( icat_comm.myEnv.rodsUserName,  rsComm->myEnv.rodsUserName,  NAME_LEN ); 
-    strncpy( icat_comm.clientUser.userName, rsComm->clientUser.userName, NAME_LEN );
-    strncpy( icat_comm.clientUser.rodsZone, rsComm->clientUser.rodsZone, NAME_LEN );
+    int retryCnt = 0;
 
     // =-=-=-=-=-=-=-
     // compiler backwards compatibility hack
     // see header file for more details
     eirods::dynamic_cast_hack();
-
 
     while (1) {
 
@@ -198,12 +190,8 @@ agentMain (rsComm_t *rsComm)
         }
 
         status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
-#if 0
-        status = readAndProcClientMsg (rsComm, 0);
-#endif
 
         if (status >= 0) {
-            retryCnt = 0;
             continue;
         } else {
             if (status == DISCONN_STATUS) {
@@ -215,30 +203,32 @@ agentMain (rsComm_t *rsComm)
         }
     }
 
-DEBUGMSG( "calling getRcatHost" );
     // =-=-=-=-=-=-=-
-    // reconnect to the icat to run our pdmo and update
-    rodsServerHost_t* icat_host = 0;
-    if( getRcatHost( MASTER_RCAT, "/tempZone/home/rods/foo", &icat_host ) < 0 ) {
-        DEBUGMSG( "agentMain :: failed to get icat host" );
+    // determine if we even need to connect, break the
+    // infinite reconnect loop.
+    if( !resc_mgr.need_maintenance_operations() ) {
         return status;
     }
-DEBUGMSG( "calling getRcatHost. done." );
-         
-DEBUGMSG( "calling svrToSvrConnect." );
-    if( svrToSvrConnect( &icat_comm, icat_host ) < 0 ) {
-        DEBUGMSG( "agentMain :: failed to connect to icat host" );
-        return status;
+
+    // =-=-=-=-=-=-=-
+    // find the icat host
+    rodsServerHost_t *rodsServerHost = 0;
+    status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
+    if( status < 0 ) {
+        eirods::log( ERROR( -1, "agentMain - getRcatHost failed." ) );
     }
-DEBUGMSG( "calling svrToSvrConnect. done." );
+    
+    // =-=-=-=-=-=-=-
+    // connect to the icat host
+    status = svrToSvrConnect ( rsComm, rodsServerHost );
+    if( status < 0 ) {
+        eirods::log( ERROR( -1, "agentMain - svrToSvrConnect failed." ) );
+    }
 
     // =-=-=-=-=-=-=-
     // call post disconnect maintenance operations before exit
-    resc_mgr.call_maintenance_operations();
+    resc_mgr.call_maintenance_operations( rodsServerHost->conn );
 
-DEBUGMSG( "calling update catalog" );
-    resc_mgr.update_catalog( &icat_comm );
-DEBUGMSG( "calling update catalog. done." );
 
     return (status);
 }
