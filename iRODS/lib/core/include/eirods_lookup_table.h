@@ -24,16 +24,17 @@ namespace eirods {
         hash_map< KeyType, ValueType, HashType > table_;
 			
     public:
-        typedef typename hash_map< KeyType, ValueType, HashType >::iterator iterator;
+        typedef typename hash_map< KeyType, ValueType, HashType >::iterator       iterator;
+        typedef typename hash_map< KeyType, ValueType, HashType >::const_iterator const_iterator;
         lookup_table(){};
         virtual ~lookup_table() {}
         ValueType& operator[]( KeyType _k ) {
             return table_[ _k ];
         }
-        int size() {
+        int size() const {
             return table_.size();
         }
-        bool has_entry( KeyType _k ) {
+        bool has_entry( KeyType _k ) const {
             return !( table_.end() == table_.find( _k ) );
         }
         size_t erase( KeyType _k ) {
@@ -42,11 +43,13 @@ namespace eirods {
         void clear() {
             table_.clear();
         }
-        bool empty() {
+        bool empty() const {
             return table_.empty();
         }
-        iterator begin() { return table_.begin(); }
-        iterator end()   { return table_.end();   }
+        iterator begin()  { return table_.begin();  }
+        iterator end()    { return table_.end();    }
+        iterator cbegin() { return table_.cbegin(); }
+        iterator cend()   { return table_.cend();   }
         iterator find(KeyType _k) { return table_.find(_k); }
  
         // =-=-=-=-=-=-=-

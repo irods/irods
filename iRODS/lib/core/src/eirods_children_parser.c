@@ -1,6 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #include "eirods_children_parser.h"
+#include "eirods_log.h"
 
 #include <sstream>
 #include <iostream>
@@ -67,45 +68,63 @@ namespace eirods {
         return ret;
     }
 
-    error children_parser::set_string(
-        const std::string& str) {
-
-        error ret = SUCCESS();
-        children_list_.clear();
-        bool done = false;
-        std::size_t pos = 0;
-        std::size_t prev_pos = 0;
-        while(!done) {
-            pos = str.find("{", prev_pos);
-            if(pos != std::string::npos) {
-                std::string child = str.substr(prev_pos, pos - prev_pos);
-                prev_pos = pos + 1;
-                pos = str.find("}", prev_pos);
-                if(pos != std::string::npos) {
-                    std::string context = str.substr(prev_pos, pos - prev_pos);
-                    children_list_[child] = context;
-                    prev_pos = pos + 1;
-                    if(prev_pos < str.size() && str.at(prev_pos) == ';') {
-                        ++prev_pos;
-                    } else {
-                        done = true;
-                    }
-                } else {
-                    std::stringstream msg;
-                    msg << "eirods::children_parser::set_string invalid context string in input: \"" << str << "\"";
-                    ret = ERROR(-1, msg.str());
-                }
-            } else {
-                done = true;
-            }
-        }
-        return ret;
-    }
-
     error children_parser::first_child(
         std::string& _child) {
         _child = children_list_.begin()->first;
         return SUCCESS();
+    }
+
+    error children_parser::set_string(
+        const std::string& str)
+    {
+        error result = SUCCESS();
+
+        // check if the string is empty
+        if(!str.empty()) {
+            
+            // loop until we have parsed all of the children
+            bool done = false;
+            std::size_t current_pos = 0;
+            while(result.ok() && !done) {
+                
+                // get the complete child string
+                std::size_t end_pos = str.find(";", current_pos);
+                std::string complete_child = str.substr(current_pos, end_pos - current_pos);
+                
+                // get the child context string if there is one
+                std::size_t context_start = complete_child.find("{");
+                std::string child = complete_child.substr(0, context_start);
+                std::string context;
+                if(context_start != std::string::npos) {
+                    ++context_start;
+                    std::size_t context_end = complete_child.find("}", context_start);
+                    if(context_end == std::string::npos) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__;
+                        msg << " - Missing matching \"}\" in child context string \"" << str << "\"";
+                        result = ERROR(-1, msg.str());
+                    } else {
+                        context = complete_child.substr(context_start, context_end - context_start);
+                    }
+                }
+                
+                // add the child to the map
+                if(result.ok()) {
+                    children_list_[child] = context;
+                    if(end_pos == std::string::npos) {
+                        done = true;
+                    } else {
+                        current_pos = end_pos + 1;
+                        // check for trailing semicolon
+                        if(current_pos >= str.size()) {
+                            done = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return result;
     }
 
 }; // namespace eirods

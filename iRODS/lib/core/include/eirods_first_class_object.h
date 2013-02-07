@@ -43,7 +43,7 @@ namespace eirods {
         // Accessors
         inline rsComm_t*   comm()            const { return comm_;            }
         inline std::string physical_path()   const { return physical_path_;   }
-        inline std::string resc_hier()       const { return resc_hier_;   }
+        inline std::string resc_hier()       const { return resc_hier_;       }
         inline std::string logical_path()    const { return logical_path_;    }
         inline std::string data_type()       const { return data_type_;       }
         inline int         file_descriptor() const { return file_descriptor_; }
@@ -58,6 +58,7 @@ namespace eirods {
         inline void flags( int _f )                         { flags_           = _f;    }
         inline void physical_path(const std::string& _path) { physical_path_   = _path; }
         inline void resc_hier(const std::string& _hier)     { resc_hier_       = _hier; }
+        inline void logical_path( const std::string& _s )   { logical_path_    = _s;    }
         
     protected:
         // =-=-=-=-=-=-=-

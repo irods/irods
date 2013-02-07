@@ -4892,6 +4892,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 /* Modify a Resource (certain fields) */
 int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
                char *optionValue) {
+
     int status, OK;
     char myTime[50];
     char rescId[MAX_NAME_LEN];
@@ -5228,6 +5229,23 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             return(status);
         }
       
+        OK=1;
+    }
+
+    if (strcmp(option, "context")==0) {
+        cllBindVars[cllBindVarCount++]=optionValue;
+        cllBindVars[cllBindVarCount++]=myTime;
+        cllBindVars[cllBindVarCount++]=rescId;
+        status =  cmlExecuteNoAnswerSql(
+            "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
+            &icss);
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc cmlExecuteNoAnswerSql update failure for resc context %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
         OK=1;
     }
 

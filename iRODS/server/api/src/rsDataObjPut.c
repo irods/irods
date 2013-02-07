@@ -27,6 +27,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 #include "eirods_hierarchy_parser.h"
 
 int
@@ -47,18 +48,50 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
-        /** since the object is written here, we apply pre procesing RAJA 
-         * Dec 2 2010 **/
-        status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, 
-                                               dataObjInp->objPath);
-        if (status2 < 0) 
-            return(status2); /* need to dealloc anything??? */
-        /** since the object is written here, we apply pre procesing RAJA 
-         * Dec 2 2010 **/
+        // =-=-=-=-=-=-=-
+        // working on the "home zone", determine if we need to redirect to a different
+        // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+        // we know that the redirection decision has already been made
+        int local = LOCAL_HOST;
+        if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+            std::string       hier;
+            rodsServerHost_t* host  =  0;
+            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                           dataObjInp, hier, host, local );
+            if( !ret.ok() ) { 
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " :: failed in eirods::resource_redirect for [";
+                msg << dataObjInp->objPath << "]";
+                eirods::log( PASSMSG( msg.str(), ret ) );
+                return ret.code();
+            }
+            // =-=-=-=-=-=-=-
+            // we resolved the redirect and have a host, set the hier str for subsequent
+            // api calls, etc.
+            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-        dataObjInp->openFlags = O_RDWR;
-        status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
-                                portalOprOut, BRANCH_MSG);
+        } // if keyword
+
+        if( LOCAL_HOST == local ) {
+            /** since the object is written here, we apply pre procesing RAJA 
+             * Dec 2 2010 **/
+            status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, 
+                                                   dataObjInp->objPath);
+            if (status2 < 0) 
+                return(status2); /* need to dealloc anything??? */
+            /** since the object is written here, we apply pre procesing RAJA 
+             * Dec 2 2010 **/
+
+            dataObjInp->openFlags = O_RDWR;
+            status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
+                                    portalOprOut, BRANCH_MSG);
+        } else {
+            rodsLog( LOG_NOTICE, "%s :: eirods::resource_redirect - Trying to Redirect to another server", __FUNCTION__ );
+            return -1;
+
+        } // else remote host
+
     } else {
         int l1descInx;
         status = _rcDataObjPut (rodsServerHost->conn, dataObjInp, 

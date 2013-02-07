@@ -773,6 +773,83 @@ extern "C" {
         return result;
     } // passthruSyncToArchPlugin
 
+
+    // =-=-=-=-=-=-=-
+    // unixRedirectPlugin - used to allow the resource to determine which host
+    //                      should provide the requested operation
+    eirods::error passthruRedirectPlugin( 
+                      rsComm_t*                      _comm,
+                      const std::string&             _results,
+                      eirods::resource_property_map* _prop_map, 
+                      eirods::resource_child_map*    _cmap,
+                      eirods::first_class_object*    _object,
+                      const std::string*             _opr,
+                      const std::string*             _curr_host,
+                      eirods::hierarchy_parser*      _out_parser,
+                      float*                         _out_vote ) {
+        // =-=-=-=-=-=-=-
+        // check incoming parameters
+        if( !_prop_map ) {
+            return ERROR( -1, "passthruRedirectPlugin - null resource_property_map" );
+        }
+        if( !_cmap ) {
+            return ERROR( -1, "passthruRedirectPlugin - null resource_child_map" );
+        }
+        if( !_opr ) {
+            return ERROR( -1, "passthruRedirectPlugin - null operation" );
+        }
+        if( !_curr_host ) {
+            return ERROR( -1, "passthruRedirectPlugin - null operation" );
+        }
+        if( !_object ) {
+            return ERROR( -1, "passthruRedirectPlugin - null first_class_object" );
+        }
+        if( !_out_parser ) {
+            return ERROR( -1, "passthruRedirectPlugin - null outgoing heir parser" );
+        }
+        if( !_out_vote ) {
+            return ERROR( -1, "passthruRedirectPlugin - null outgoing vote" );
+        }
+        
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
+        if( !file_obj ) {
+            return ERROR( -1, "failed to cast first_class_object to file_object" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the name of this resource
+        std::string resc_name;
+        eirods::error ret = _prop_map->get< std::string >( "name", resc_name );
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "passthruRedirectPlugin - failed in get property for name";
+            return ERROR( -1, msg.str() );
+        }
+
+        // =-=-=-=-=-=-=-
+        // add ourselves to the hierarchy parser by default
+        _out_parser->add_child( resc_name );
+
+        eirods::resource_ptr resc; 
+        ret = passthruGetFirstChildResc(_cmap, resc);
+        if(!ret.ok()) {
+            return PASS(false, -1, "passthruSyncToArchPlugin - failed getting the first child resource pointer.", ret);
+        } 
+
+        return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
+                         _comm, "redirect", _object, _opr, _curr_host, _out_parser, _out_vote );
+
+    } // passthruRedirectPlugin
+
+
+
+
+
+
+
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
@@ -846,6 +923,8 @@ extern "C" {
         resc->add_operation( "truncate",     "passthruFileTruncatePlugin" );
         resc->add_operation( "stagetocache", "passthruStageToCachePlugin" );
         resc->add_operation( "synctoarch",   "passthruSyncToArchPlugin" );
+        
+        resc->add_operation( "redirect",     "passthruRedirectPlugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

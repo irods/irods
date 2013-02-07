@@ -336,6 +336,14 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             return err.code();
         }
 
+        std::string hier( tmpHierString );
+        std::string resc( tmpRescName );
+
+        if( hier.empty() )
+            rodsLog( LOG_NOTICE, "XXXX - getDataObj :: empty hier string for [%s]", dataObjInfo->objPath );
+        if( resc.empty() )
+            rodsLog( LOG_NOTICE, "XXXX - getDataObj :: empty resc string for [%s]", dataObjInfo->objPath );
+
         rstrcpy (dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
         rstrcpy (dataObjInfo->dataType, tmpDataType, NAME_LEN);
         dataObjInfo->dataSize = strtoll (tmpDataSize, 0, 0);

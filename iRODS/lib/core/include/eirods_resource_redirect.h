@@ -15,9 +15,8 @@
 
 namespace eirods {
 
-    const std::string EIRODS_GET_OPERATION ( "get" );
-    const std::string EIRODS_PUT_OPERATION ( "put" );
-    const std::string EIRODS_REPL_OPERATION( "repl" );
+    const std::string EIRODS_OPEN_OPERATION( "OPEN" );
+    const std::string EIRODS_CREATE_OPERATION( "CREATE" );
 
     error resource_redirect( const std::string&, // requested operation to consider
                              rsComm_t*,          // current agent connection

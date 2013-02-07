@@ -31,6 +31,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 #include "eirods_log.h"
 
 
@@ -634,17 +635,17 @@ dataObjOpenForRepl (rsComm_t *rsComm,
                     dataObjInfo_t *inpDestDataObjInfo,
                     int updateFlag)
 {
-    dataObjInfo_t *myDestDataObjInfo, *srcDataObjInfo = NULL;
-    rescInfo_t *myDestRescInfo;
-    int destL1descInx;
-    int srcL1descInx;
-    int status;
-    int replStatus;
+    dataObjInfo_t *myDestDataObjInfo = 0, *srcDataObjInfo = NULL;
+    rescInfo_t *myDestRescInfo = 0;
+    int destL1descInx = 0;
+    int srcL1descInx = 0;
+    int status = 0;
+    int replStatus = 0;
     //int destRescClass;
-    char *destRescName, *srcRescName;
+    char *destRescName = 0, *srcRescName = 0;
     // JMC - legacy resource int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
     dataObjInfo_t *cacheDataObjInfo = NULL;
-    dataObjInp_t myDataObjInp, *l1DataObjInp;
+    dataObjInp_t dest_inp, myDataObjInp, *l1DataObjInp = 0;
 
     if (destRescInfo == NULL) {
         myDestRescInfo = inpDestDataObjInfo->rescInfo;
@@ -708,8 +709,22 @@ dataObjOpenForRepl (rsComm_t *rsComm,
 
     if (destL1descInx < 0) return destL1descInx;
 
+
+    // =-=-=-=-=-=-=-=-
+    // use for redirect
+    std::string op_name;
+    
+    strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
+
+    memset (&dest_inp.condInput, 0, sizeof (dest_inp.condInput));
+    addKeyVal( &(dest_inp.condInput), RESC_NAME_KW, myDestRescInfo->rescName );
+
     myDestDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
     if (updateFlag > 0) {
+        // =-=-=-=-=-=-=-
+        // set a open operation 
+        op_name = eirods::EIRODS_OPEN_OPERATION;
+
         /* update an existing copy */
         if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
             rodsLog( LOG_ERROR, "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
@@ -723,11 +738,33 @@ dataObjOpenForRepl (rsComm_t *rsComm,
         addKeyVal (&myDataObjInp.condInput, FORCE_FLAG_KW, "");
         myDataObjInp.openFlags |= (O_TRUNC | O_WRONLY);
     } else {	/* a new copy */
+        // =-=-=-=-=-=-=-
+        // set a creation operation 
+        op_name = eirods::EIRODS_CREATE_OPERATION;
+
         initDataObjInfoForRepl( rsComm, myDestDataObjInfo, srcDataObjInfo, 
 	                            destRescInfo, rescGroupName);
 	    replStatus = srcDataObjInfo->replStatus;
     }
 
+    // =-=-=-=-=-=-=-
+    // call redirect for our operation of choice to request the hier string appropriately 
+    int               local = LOCAL_HOST;
+    std::string       hier;
+    rodsServerHost_t* host  =  0;
+    eirods::error ret = eirods::resource_redirect( op_name, rsComm, 
+                                                   &dest_inp, hier, host, local );
+    if( !ret.ok() ) { 
+        std::stringstream msg;
+        msg << "dataObjOpenForRepl :: failed in eirods::resource_redirect for [";
+        msg << dest_inp.objPath << "]";
+        eirods::log( PASSMSG( msg.str(), ret ) );
+        return ret.code();
+    }
+
+    // =-=-=-=-=-=-=- 
+    // expected by fillL1desc 
+    addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
     fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
       
     l1DataObjInp = L1desc[destL1descInx].dataObjInp;

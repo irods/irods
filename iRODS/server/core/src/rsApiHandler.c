@@ -388,7 +388,7 @@ chkApiPermission (rsComm_t *rsComm, int apiInx)
              "chkApiPermission: xmsgServer not allowed to handle api %d",
 	      RsApiTable[apiInx].apiNumber);
             return (SYS_NO_API_PRIV);
-	}
+	    }
     } else if (xmsgSvrOnly != 0) {
         rodsLog (LOG_ERROR,
          "chkApiPermission: non xmsgServer not allowed to handle api %d",
@@ -399,12 +399,12 @@ chkApiPermission (rsComm_t *rsComm, int apiInx)
     clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
 
     if (clientUserAuth > rsComm->clientUser.authInfo.authFlag) {
-	return (SYS_NO_API_PRIV);
+	    return (SYS_NO_API_PRIV);
     }
 
     proxyUserAuth = RsApiTable[apiInx].proxyUserAuth & 0xfff;
     if (proxyUserAuth > rsComm->proxyUser.authInfo.authFlag) {
-	return (SYS_NO_API_PRIV);
+	    return (SYS_NO_API_PRIV);
     }
     return  (0);
 }
@@ -571,18 +571,18 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         status = rsApiHandler (rsComm, myHeader.intInfo, &inputStructBBuf,
           &bsBBuf);
 #ifdef SYS_TIMING
-	char tmpStr[NAME_LEN];
-	snprintf (tmpStr, NAME_LEN, "handle API %d", myHeader.intInfo);
+	    char tmpStr[NAME_LEN];
+	    snprintf (tmpStr, NAME_LEN, "handle API %d", myHeader.intInfo);
         printSysTiming ("irodsAgent", tmpStr, 0);
 #endif
         clearBBuf (&inputStructBBuf);
         clearBBuf (&bsBBuf);
         clearBBuf (&errorBBuf);
-	if ((flags & RET_API_STATUS) != 0) {
-	    return (status);
-	} else {
-	    return (0);
-	}
+        if ((flags & RET_API_STATUS) != 0) {
+            return (status);
+        } else {
+            return (0);
+        }
     } else if (strcmp (myHeader.type, RODS_DISCONNECT_T) == 0) {
         rodsLog (LOG_NOTICE,
           "readAndProcClientMsg: received disconnect msg from client");

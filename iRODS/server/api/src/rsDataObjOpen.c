@@ -347,9 +347,7 @@ l3Open (rsComm_t *rsComm, int l1descInx)
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = getFileFlags (l1descInx);
-        eirods::log( LOG_NOTICE, "XXXX l3Open - calling rsSubStructFileOpen" );
         l3descInx = rsSubStructFileOpen (rsComm, &subFile); 
-        eirods::log( LOG_NOTICE, "XXXX l3Open - calling rsSubStructFileOpen. Done." );
     } else {
         mode = getFileMode (L1desc[l1descInx].dataObjInp);
         flags = getFileFlags (l1descInx);
@@ -487,7 +485,17 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         myDataObjInfo->rescInfo = rescInfo;
         rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (myDataObjInfo->rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
-        rstrcpy (myDataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN); // Set to root of hier
+        
+        char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+        if( resc_hier ) {
+            rstrcpy (myDataObjInfo->rescHier, resc_hier, MAX_NAME_LEN); // hier sent from upper level code
+        } else {
+            rodsLog( LOG_NOTICE, "createEmptyRepl :: using rescInfo->rescName for hier" );
+            rstrcpy (myDataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
+
+        }
+
+
         status = getFilePathName (rsComm, myDataObjInfo, dataObjInp);
         if (status < 0) {
             tmpRescGrpInfo = tmpRescGrpInfo->next;

@@ -4,6 +4,7 @@
 // irods includes
 #include "msParam.h"
 #include "reGlobalsExtern.h"
+#include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -26,6 +27,7 @@
 // =-=-=-=-=-=-=-
 // boost includes
 #include <boost/function.hpp>
+#include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -1361,10 +1363,10 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error redirect_get( eirods::file_object& _file_obj,
-                                const std::string&   _resc_name, 
-                                std::string&         _out_hier,
-                                float&               _out_vote ) {
+    eirods::error redirect_get( eirods::file_object&      _file_obj,
+                                const std::string&        _resc_name, 
+                                eirods::hierarchy_parser& _out_parser,
+                                float&                    _out_vote ) {
         // =-=-=-=-=-=-=-
         // make some flags to clairify decision making
         bool need_repl = ( _file_obj.repl_requested() > -1 );
@@ -1386,11 +1388,8 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // run the heir string through the parser and get the last
             // entry.
-            eirods::hierarchy_parser parser;
-            parser.set_string( itr->resc_hier() );
-
             std::string last_resc;
-            parser.last_resc( last_resc ); 
+            _out_parser.last_resc( last_resc ); 
           
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
@@ -1404,7 +1403,7 @@ extern "C" {
                 if( !need_repl || ( need_repl && repl_us ) ) {
                     found = true;
                     _out_vote = 1.0;
-                    _out_hier = itr->resc_hier();
+                    _out_parser.add_child( _resc_name );
                     break; 
                 }
 
@@ -1426,7 +1425,7 @@ extern "C" {
                                       eirods::first_class_object*    _object,
                                       const std::string*             _opr,
                                       const std::string*             _curr_host,
-                                      std::string*                   _out_hier,
+                                      eirods::hierarchy_parser*      _out_parser,
                                       float*                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
@@ -1445,8 +1444,8 @@ extern "C" {
         if( !_object ) {
             return ERROR( -1, "unixRedirectPlugin - null first_class_object" );
         }
-        if( !_out_hier ) {
-            return ERROR( -1, "unixRedirectPlugin - null outgoing heir string" );
+        if( !_out_parser ) {
+            return ERROR( -1, "unixRedirectPlugin - null outgoing heir parser" );
         }
         if( !_out_vote ) {
             return ERROR( -1, "unixRedirectPlugin - null outgoing vote" );
@@ -1460,23 +1459,31 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // test the operation to determine which choices to make
-        if( eirods::EIRODS_GET_OPERATION == (*_opr) ) {
-            // =-=-=-=-=-=-=-
-            // get the name of this resource
-            std::string resc_name;
-            eirods::error ret = _prop_map->get< std::string >( "name", resc_name );
-            if( !ret.ok() ) {
-                std::stringstream msg;
-                msg << "unixRedirectPlugin - failed in get property for name";
-                return ERROR( -1, msg.str() );
-            }
+        // get the name of this resource
+        std::string resc_name;
+        eirods::error ret = _prop_map->get< std::string >( "name", resc_name );
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "unixRedirectPlugin - failed in get property for name";
+            return ERROR( -1, msg.str() );
+        }
 
+        // =-=-=-=-=-=-=-
+        // add ourselves to the hierarchy parser by default
+        _out_parser->add_child( resc_name );
+
+        // =-=-=-=-=-=-=-
+        // test the operation to determine which choices to make
+        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return redirect_get( (*file_obj), resc_name, (*_out_hier), (*_out_vote)  );
+            return redirect_get( (*file_obj), resc_name, (*_out_parser), (*_out_vote)  );
 
-        } 
+        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+            (*_out_vote) = 1.0;
+
+            return SUCCESS();
+        }
       
         // =-=-=-=-=-=-=-
         // must have been passed a bad operation 
@@ -1510,7 +1517,7 @@ extern "C" {
                 return *this;
             }
 
-            eirods::error operator()() {
+            eirods::error operator()( rcComm_t* ) {
                 rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
                 return SUCCESS();
             }
@@ -1523,6 +1530,7 @@ extern "C" {
     public:
         unixfilesystem_resource( const std::string& _inst_name, const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
+
             if( !context_.empty() ) {
                 // =-=-=-=-=-=-=-
                 // tokenize context string into key/val pairs assuming a ; as a separator
