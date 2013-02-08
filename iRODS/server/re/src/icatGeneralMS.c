@@ -174,6 +174,7 @@ This documentation is generated from the iRODS code.
   - #msiStrArray2String - Converts an array of strings to a string separated by \%-signs
   - #msiAssociateKeyValuePairsToObj  - Ingests object metadata into iCAT from a AVU structure
   - #msiRemoveKeyValuePairsFromObj  - Removes object metadata from iCAT using a AVU structure
+  - #msiSetKeyValuePairsToObj - Ingests or overwrites object metadata into iCAT from a AVU structure
   - #msiAddKeyVal - Adds a new key and value to a keyValPair_t 
 
  \subsection msiotheruser Other User Microservices

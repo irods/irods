@@ -1,0 +1,2349 @@
+------------------------------------------------------------------------
+JMC - Done :: r4887 | antoine | 2012-03-19 17:54:31 -0400 (Mon, 19 Mar 2012) | 2 lines
+
+Undid troublesome free() on Solaris
+
+------------------------------------------------------------------------
+JMC - No Op :: r4888 | mconway | 2012-03-20 09:13:40 -0400 (Tue, 20 Mar 2012) | 1 line
+
+pre release 3.1.0 activities
+------------------------------------------------------------------------
+JMC - No Op :: r4889 | mconway | 2012-03-20 09:15:02 -0400 (Tue, 20 Mar 2012) | 1 line
+
+remove old tests
+------------------------------------------------------------------------
+JMC - No Op :: r4891 | schroede | 2012-03-20 11:48:27 -0400 (Tue, 20 Mar 2012) | 4 lines
+
+With Mike C's latest changes, no longer build and test Jargon 
+as part of the tinderbox tests.  These have been replaced by
+Junit at RENCI.
+
+------------------------------------------------------------------------
+JMC - Done :: r4892 | terrell | 2012-03-22 09:10:29 -0400 (Thu, 22 Mar 2012) | 1 line
+
+add msiSetKeyValuePairsToObj to doxygen front page
+------------------------------------------------------------------------
+r4893 | xuh | 2012-03-26 21:02:55 -0400 (Mon, 26 Mar 2012) | 1 line
+
+Fix a problem found by Jean-Yves with reServer that deletes delayed repeated rules even though the rule executed successfully.
+------------------------------------------------------------------------
+r4894 | lisa | 2012-03-28 14:22:41 -0400 (Wed, 28 Mar 2012) | 1 line
+
+added new versioning microservice
+------------------------------------------------------------------------
+r4895 | lisa | 2012-03-28 14:24:55 -0400 (Wed, 28 Mar 2012) | 1 line
+
+added new versioning microservice
+------------------------------------------------------------------------
+r4896 | lisa | 2012-03-28 14:26:16 -0400 (Wed, 28 Mar 2012) | 1 line
+
+added new versioning microservice
+------------------------------------------------------------------------
+r4897 | lisa | 2012-03-28 14:27:30 -0400 (Wed, 28 Mar 2012) | 1 line
+
+added new versioning microservice
+------------------------------------------------------------------------
+r4898 | lisa | 2012-03-28 14:28:34 -0400 (Wed, 28 Mar 2012) | 1 line
+
+added new versioning microservice
+------------------------------------------------------------------------
+r4899 | lisa | 2012-03-28 14:33:52 -0400 (Wed, 28 Mar 2012) | 1 line
+
+added new versioning microservice
+------------------------------------------------------------------------
+r4900 | schroede | 2012-03-28 17:27:56 -0400 (Wed, 28 Mar 2012) | 6 lines
+
+Fix a bug in handling 'imeta mod' where a new null value for units was
+not taken as new and so was defaulted to the old value.  This was
+noticed in some new tests developed by Mike C.  This bug probably
+existed since 'imeta mod' was added in 2.3.
+
+
+------------------------------------------------------------------------
+r4901 | schroede | 2012-03-28 18:42:20 -0400 (Wed, 28 Mar 2012) | 7 lines
+
+Extensions so that irodssetup will ask and optionally enable Kerberos
+and set the Kerberos location (previously this was done by editing
+make-config files) and also eliminate some compiler warnings for
+format specifiers in ikrb.c.  These were provided by Martin Pollard of
+the Wellcome Trust Sanger Institute (thanks!).
+
+
+------------------------------------------------------------------------
+r4902 | schroede | 2012-03-28 19:08:47 -0400 (Wed, 28 Mar 2012) | 4 lines
+
+Update the tinderbox test input scripts (to irodssetup) to match the
+extensions made to irodssetup made a few minutes ago.  Answer the new
+question asking if Kerberos should be enabled with 'no'.
+
+------------------------------------------------------------------------
+r4903 | terrell | 2012-03-28 22:31:13 -0400 (Wed, 28 Mar 2012) | 1 line
+
+add new msiStoreVersionWithTS to doxygen front page - and update timestamp format comment (iso8601)
+------------------------------------------------------------------------
+r4904 | xuh | 2012-03-30 00:37:53 -0400 (Fri, 30 Mar 2012) | 1 line
+
+Native support for gen query syntax in the rule language. A gen query expression evaluates to an object of type genQueryInp_t
+------------------------------------------------------------------------
+r4905 | xuh | 2012-03-30 01:12:59 -0400 (Fri, 30 Mar 2012) | 1 line
+
+gen query expressions automatically executes the gen queries.
+------------------------------------------------------------------------
+r4906 | mwan | 2012-04-02 19:46:17 -0400 (Mon, 02 Apr 2012) | 3 lines
+
+Check the mounted structFile for symlink so that we don't need admin
+privilege to imcoll a tar struct file. This address a wisc security issue.
+
+------------------------------------------------------------------------
+r4907 | mwan | 2012-04-03 16:10:40 -0400 (Tue, 03 Apr 2012) | 2 lines
+
+Better error return in readCollection
+
+------------------------------------------------------------------------
+r4908 | mwan | 2012-04-03 17:22:19 -0400 (Tue, 03 Apr 2012) | 2 lines
+
+Add KEEPALIVE to setsockopt
+
+------------------------------------------------------------------------
+r4909 | mwan | 2012-04-03 17:24:02 -0400 (Tue, 03 Apr 2012) | 3 lines
+
+Handle large file restart when the tranfer reached 100% but the 
+rcComplete call failed because of connection timeout.
+
+------------------------------------------------------------------------
+r4910 | mwan | 2012-04-03 18:42:38 -0400 (Tue, 03 Apr 2012) | 2 lines
+
+add symlink check functions for wisc sec check later
+
+------------------------------------------------------------------------
+r4911 | mwan | 2012-04-03 19:01:43 -0400 (Tue, 03 Apr 2012) | 2 lines
+
+Allow --retries to run with --lfrestart
+
+------------------------------------------------------------------------
+r4912 | mwan | 2012-04-03 19:09:19 -0400 (Tue, 03 Apr 2012) | 2 lines
+
+allow retries to work with lfrestart
+
+------------------------------------------------------------------------
+r4913 | mwan | 2012-04-03 19:39:46 -0400 (Tue, 03 Apr 2012) | 2 lines
+
+check symlink routines
+
+------------------------------------------------------------------------
+r4914 | mwan | 2012-04-04 16:36:34 -0400 (Wed, 04 Apr 2012) | 3 lines
+
+Change getUnixUid to include check for user@zone.
+
+
+------------------------------------------------------------------------
+r4915 | mwan | 2012-04-04 16:43:45 -0400 (Wed, 04 Apr 2012) | 2 lines
+
+Correct previous checkin
+
+------------------------------------------------------------------------
+r4916 | mwan | 2012-04-04 17:09:34 -0400 (Wed, 04 Apr 2012) | 2 lines
+
+add regUid for registering UNIX uid in dataObjInfo_t
+
+------------------------------------------------------------------------
+r4917 | schroede | 2012-04-05 11:56:37 -0400 (Thu, 05 Apr 2012) | 6 lines
+
+Add another data-object system metadata field and column for
+data-object registration (chlRegDataObj), modification
+(chlModDataObjMeta), and queries. This will be used by Mike W for an
+extension he is developing.  The command in the patch file can be used
+to update existing 3.1 ICAT databases.
+
+------------------------------------------------------------------------
+r4918 | mwan | 2012-04-06 19:38:54 -0400 (Fri, 06 Apr 2012) | 2 lines
+
+Implement the rcNcInq - a comprehensive inquire API
+
+------------------------------------------------------------------------
+r4919 | schroede | 2012-04-09 12:12:29 -0400 (Mon, 09 Apr 2012) | 4 lines
+
+This is an experimental PAM authentication program that may be used as
+part of a PAM/LDAP authentication system that is under
+development. See the top of the source file for more information.
+
+------------------------------------------------------------------------
+r4920 | mwan | 2012-04-09 15:38:12 -0400 (Mon, 09 Apr 2012) | 2 lines
+
+Complete implementation of the ncInq API
+
+------------------------------------------------------------------------
+r4921 | mwan | 2012-04-09 18:06:25 -0400 (Mon, 09 Apr 2012) | 2 lines
+
+fix last checkin
+
+------------------------------------------------------------------------
+r4922 | mwan | 2012-04-09 19:57:17 -0400 (Mon, 09 Apr 2012) | 2 lines
+
+Get the values of the attributes for rcNcInq API
+
+------------------------------------------------------------------------
+r4923 | schroede | 2012-04-11 17:02:47 -0400 (Wed, 11 Apr 2012) | 22 lines
+
+Add a 'iadmin modrescdatapath' capability to update data-obj paths.
+This is sometimes needed after a resource path is updated (if a
+resource has been moved).  This addresses a problem recently
+encountered by Leesa, which she resolved via direct SQL.
+See the 'iadmin h modrescdatapath' text for more information.
+
+This is different than most commands in that it is relying on the
+admin-user to input strings that will be inserted into tables, so it
+warns about this and prompts to confirm.  So operation is somewhat
+dangerous, but better than having them use SQL.
+
+Most of this update is adding a sub-command to iadmin and a new ICAT
+function, a link to it, and other ICAT functionality.
+
+icatLowLevelOdbc.c and icatLowLevelOracle.c were modified so that the
+row count of updated rows can be returned for these types of calls.
+
+icatTest.pl was updated to include tests of the new functionality so
+the tinderbox tests (devtest) can still succeed, exercising the new
+SQL.
+
+
+------------------------------------------------------------------------
+r4924 | mwan | 2012-04-12 14:44:06 -0400 (Thu, 12 Apr 2012) | 4 lines
+
+Add STREAM_MS_T for streaming output from rules/workflow. The value is
+from the output of bindStreamToIRods. Caller should use rcStreamRead 
+and rcStreamClose to read close the stream.
+
+------------------------------------------------------------------------
+r4925 | mwan | 2012-04-12 15:34:28 -0400 (Thu, 12 Apr 2012) | 2 lines
+
+Correct some output string
+
+------------------------------------------------------------------------
+r4926 | terrell | 2012-04-12 16:18:23 -0400 (Thu, 12 Apr 2012) | 1 line
+
+add .gitignore file so that examples/microservices/obj/ directory exists across the svn-git bridge
+------------------------------------------------------------------------
+r4927 | xuh | 2012-04-12 19:18:17 -0400 (Thu, 12 Apr 2012) | 1 line
+
+Fix a compiler error when enabling the old rule engine in version 3.1
+------------------------------------------------------------------------
+r4928 | mwan | 2012-04-13 20:33:42 -0400 (Fri, 13 Apr 2012) | 3 lines
+
+Get rcNcInq to work and nctest to test it. Add dumpNcInqOut routine
+to dump the content of a netcdf file, just like ncdump.
+
+------------------------------------------------------------------------
+r4929 | mwan | 2012-04-16 12:50:24 -0400 (Mon, 16 Apr 2012) | 2 lines
+
+Output format mod for dumpNcInqOut to match ncdump
+
+------------------------------------------------------------------------
+r4930 | mwan | 2012-04-16 13:17:43 -0400 (Mon, 16 Apr 2012) | 2 lines
+
+Mod output of dumpNcInqOut to match ncdump format
+
+------------------------------------------------------------------------
+r4931 | mwan | 2012-04-16 19:42:53 -0400 (Mon, 16 Apr 2012) | 2 lines
+
+Allow rcNcInq to inquire individual type too
+
+------------------------------------------------------------------------
+r4932 | mwan | 2012-04-18 18:30:28 -0400 (Wed, 18 Apr 2012) | 2 lines
+
+Fix a bug from last checkin
+
+------------------------------------------------------------------------
+r4933 | mwan | 2012-04-18 18:42:18 -0400 (Wed, 18 Apr 2012) | 2 lines
+
+Add test for the new rcNcInq API
+
+------------------------------------------------------------------------
+r4934 | mwan | 2012-04-18 19:56:19 -0400 (Wed, 18 Apr 2012) | 2 lines
+
+Add msiNcInq micro-service
+
+------------------------------------------------------------------------
+r4935 | antoine | 2012-04-30 15:21:37 -0400 (Mon, 30 Apr 2012) | 2 lines
+
+Example rule for statistical analysis case study
+
+------------------------------------------------------------------------
+r4936 | mwan | 2012-04-30 17:12:13 -0400 (Mon, 30 Apr 2012) | 3 lines
+
+Add a number of helper msi to get various value from the ncInqOut_t, the
+output of msiNcInq. The work is not complete.
+
+------------------------------------------------------------------------
+r4937 | mwan | 2012-04-30 19:58:57 -0400 (Mon, 30 Apr 2012) | 2 lines
+
+Add msiStrCat msi to cat a string + minor changes in reNetcdf.c
+
+------------------------------------------------------------------------
+r4938 | mwan | 2012-04-30 20:00:08 -0400 (Mon, 30 Apr 2012) | 2 lines
+
+Test for the new msiNcInq.
+
+------------------------------------------------------------------------
+r4939 | mwan | 2012-05-01 18:20:59 -0400 (Tue, 01 May 2012) | 3 lines
+
+Add msiNcGetAttNameInInqOut, msiNcGetAttValStrInInqOut to get attribute
+name and values
+
+------------------------------------------------------------------------
+r4940 | mwan | 2012-05-01 19:47:59 -0400 (Tue, 01 May 2012) | 2 lines
+
+Add msiAddToNcArray msi
+
+------------------------------------------------------------------------
+r4941 | schroede | 2012-05-02 11:44:09 -0400 (Wed, 02 May 2012) | 8 lines
+
+Add code in the postgres installation script to update the postgres
+configuration file with a new setting needed for pg 9.1.0 and later.
+This is similar to updates made under Mac OS X for another setting but
+will be done on any OS.  The logic is such that it only updates the
+config file if the default setting is not the way we need it (that is,
+it is version 9.1.0 or later).
+
+
+------------------------------------------------------------------------
+r4942 | csmith | 2012-05-02 13:35:42 -0400 (Wed, 02 May 2012) | 3 lines
+
+Added getUnixUsername and getUnixGroupname utility functions.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4943 | csmith | 2012-05-02 14:32:52 -0400 (Wed, 02 May 2012) | 3 lines
+
+Fix tinderbox build errors for getUnixGroupname function
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4944 | csmith | 2012-05-02 14:52:03 -0400 (Wed, 02 May 2012) | 5 lines
+
+Changes to effective user management routines.
+
+Added a function to change to a given uid and made small improvements to the existing "change" routines.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4945 | antoine | 2012-05-02 16:21:37 -0400 (Wed, 02 May 2012) | 2 lines
+
+Fixed extra character bug as suggested by Hao
+
+------------------------------------------------------------------------
+r4946 | csmith | 2012-05-02 17:06:24 -0400 (Wed, 02 May 2012) | 5 lines
+
+Added new table and setup code for storing filesystem meta-data.
+
+Includes new table/index SQL statements, and setup functions and defined for the ICAT.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4947 | mwan | 2012-05-02 19:39:53 -0400 (Wed, 02 May 2012) | 5 lines
+
+Add netcdf msiAddToNcArray, msiNcGetDimLenInInqOut, msiNcGetVarIdInInqOut and
+msiFreeNcStruct to access the output of msiNcInq. Also modified the 
+msiNcGetVarsByType msi to accept int array input for start, count and
+stride. 
+
+------------------------------------------------------------------------
+r4948 | csmith | 2012-05-02 20:27:22 -0400 (Wed, 02 May 2012) | 3 lines
+
+Add support functions for the file system meta-data support.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4949 | csmith | 2012-05-02 20:29:34 -0400 (Wed, 02 May 2012) | 5 lines
+
+Implementation of file system meta-data capture.
+
+Supports collecting filesystem meta-data (from stat), and storing this information in ICAT in an adjacent table to R_DATA_MAIN and R_COLL_MAIN. Supported for ireg, iput and irsync (files to irods).
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4950 | mwan | 2012-05-02 21:23:11 -0400 (Wed, 02 May 2012) | 2 lines
+
+add msiNccfGetVara test
+
+------------------------------------------------------------------------
+r4951 | csmith | 2012-05-03 02:15:35 -0400 (Thu, 03 May 2012) | 5 lines
+
+Change fileCreate, fileOpen and fileMkdir functions to take a keyValPair_t pointer as the final argument.
+
+This change is needed to support the direct access vault, which uses the keyValPair_t argument to pass desired file or directory meta-data.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4952 | csmith | 2012-05-03 03:43:25 -0400 (Thu, 03 May 2012) | 5 lines
+
+Implementation of the direct access file system type of resource (aka the direct access vault).
+
+Added the file driver which maintains proper user permissions of files and directories within the vault path. Also fixed a bug in l3FilePutSingleBuf where file meta-data wasn't being properly copied to fileCreate/fileOpen operations.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4953 | schroede | 2012-05-03 11:32:45 -0400 (Thu, 03 May 2012) | 7 lines
+
+Add a column to an auditing extension table matching a change I made
+to the ICAT tables (icatSysTables.sql.pp) about a month ago.  This is
+needed if the NCCS auditing extensions are enabled.  I noticed the
+problem yesterday when doing some other testing; deleting a
+data-object will fail without this.
+
+
+------------------------------------------------------------------------
+r4954 | csmith | 2012-05-03 14:11:07 -0400 (Thu, 03 May 2012) | 3 lines
+
+Fix logSQL messages to fix tinderbox test errors
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4955 | csmith | 2012-05-04 13:09:07 -0400 (Fri, 04 May 2012) | 7 lines
+
+Fix for Bugzilla Bug149
+
+unixFileWrite returns error for zero-length buffer on FreeBSD.
+
+Just checks whether len == 0, and if so, doesn't call write().
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4956 | terrell | 2012-05-04 14:15:42 -0400 (Fri, 04 May 2012) | 1 line
+
+this is a test commit - no functional changes - testing github's issue auto-linking - should link to #1
+------------------------------------------------------------------------
+r4957 | terrell | 2012-05-04 14:20:06 -0400 (Fri, 04 May 2012) | 7 lines
+
+linking worked - #1 is autolinked - very exciting
+
+see the full issue page here https://github.com/trel/iRODS/issues/1
+
+
+
+
+------------------------------------------------------------------------
+r4958 | antoine | 2012-05-07 11:53:43 -0400 (Mon, 07 May 2012) | 2 lines
+
+improved version of rule example
+
+------------------------------------------------------------------------
+r4959 | xuh | 2012-05-07 14:43:49 -0400 (Mon, 07 May 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r4960 | jeanyves | 2012-05-09 11:01:13 -0400 (Wed, 09 May 2012) | 2 lines
+
+add rule example to trim a cache resource.
+
+------------------------------------------------------------------------
+r4961 | jeanyves | 2012-05-10 08:06:15 -0400 (Thu, 10 May 2012) | 2 lines
+
+fix some missing " for *CacheRescName: noticed by Robert Verkerk
+
+------------------------------------------------------------------------
+r4962 | schroede | 2012-05-10 12:53:35 -0400 (Thu, 10 May 2012) | 3 lines
+
+Commit rodsLog.c matching current error table (this is auto-updated
+via 'make').
+
+------------------------------------------------------------------------
+r4963 | csmith | 2012-05-11 16:08:23 -0400 (Fri, 11 May 2012) | 5 lines
+
+Bug fix: could not retrieve dataObjInfo for files with no filesystem meta-data
+
+If the FILESYSTEM_META support was enabled, the dataObjInfo could not be retrieved for data objects with no entries in the r_objt_filesystem_meta table. This could pose a problem for systems where they turned on this support but already had data in iRODS. Changed getDataObjInfo() to retrieve file system meta-data in a separate query, and to ignore it if not found.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4964 | schroede | 2012-05-16 13:05:12 -0400 (Wed, 16 May 2012) | 45 lines
+
+First phase for PAM authentication; new API client/server call, ICAT
+code, client changes, new error codes.
+
+The iRODS server creates a new iRODS password (a random string) which
+the i-commands then use.  Only 'iinit' makes the new PAM
+authentication call and then stores the generated password into the
+auth file (.irodsA usually), and other i-commands perform the regular
+irods authentication exchange.  This protects the PAM (system)
+passwords better as they are only used during the initial
+authentication and then iRODS-specific passwords (credentials) are
+used.  No system passwords are stored in .irodsA files (the contents
+of which are obfuscated but not encrypted).
+
+These generated passwords (iRODS-PAM passwords) expire after two weeks
+(this can be changed via a #define).  If the user does another 'iinit'
+(from any host), the existing generated (iRODS-PAM) password's life is
+extended.  It doesn't generate a new password since a different host
+might then have a non-matching .irodsA contents.  Since these are
+based on the PAM credentials (logically) we don't want them to last
+too long but they need to be long enough for batch jobs, etc.
+
+The -V option on iinit displays the iRODS-PAM password.
+
+This is just the first part of this.  What remains to be done
+includes:
+
+1) Actually call the PAM authentication process on the server side
+(based on PamAuthCheck.c committed in revision 4919).  For testing now
+it bypasses this and for this commit, it just always returns an error.
+
+2) Encrypt the new API function exchange.  We are planning to use
+OpenSSL encryption for this, which will provide strong, well-tested,
+encryption and also authenticate the server (via certificates) since,
+for a system password in particular, the client needs to confirm that
+it is talking with a legitimate iRODS server.
+
+3) Add tests, in particular for the new SQL.  This may require some
+changes on the server side and some new test code.  For now, the log
+messages use "xSQL" to bypass checks in devtest and so tinderbox.
+
+4) Add an iadmin command to remove (or expire) these iRODS-PAM
+passwords for specified users.  This is needed when admins change
+users' system passwords and want to require re-authentication for
+iRODS access too.
+
+------------------------------------------------------------------------
+r4965 | csmith | 2012-05-16 19:34:42 -0400 (Wed, 16 May 2012) | 3 lines
+
+Bug fix: S3 and HPSS file drivers missing condInput parameter from their mkdir function signatures.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4966 | csmith | 2012-05-17 01:47:06 -0400 (Thu, 17 May 2012) | 5 lines
+
+Implemented the PAM authentication code to be called from _rsPamAuthRequest().
+
+The new files pamAuth.h and pamAuth.c provide a pamAuthenticate() function that takes a username and password, and runs these through the PAM authentication stack. If PAM_AUTH is not set and the function is called, it just indicates a PAM authentication failure.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4967 | mwan | 2012-05-17 21:47:28 -0400 (Thu, 17 May 2012) | 2 lines
+
+OOI test code using curl and json
+
+------------------------------------------------------------------------
+r4968 | mwan | 2012-05-18 19:33:05 -0400 (Fri, 18 May 2012) | 2 lines
+
+More OOI test using libcurl and libjansson (json)
+
+------------------------------------------------------------------------
+r4969 | terrell | 2012-05-21 15:59:55 -0400 (Mon, 21 May 2012) | 1 line
+
+fix typo in function name, function call, logging - rsMkOrhpanPath to rsMkOrphanPath
+------------------------------------------------------------------------
+r4970 | schroede | 2012-05-22 12:00:31 -0400 (Tue, 22 May 2012) | 7 lines
+
+Add a comment for a problem when updating from 3.0 to 3.1 noticed by
+Sheau-Yen.  Admins need to update the string 'tempZone' to their local
+zone name before running the script.  If they don't do this, bundle
+operations will fail, but a simple update to the row will correct the
+problem.
+
+
+------------------------------------------------------------------------
+r4971 | jeanyves | 2012-05-24 10:46:59 -0400 (Thu, 24 May 2012) | 3 lines
+
+Print the error stack before exiting from the icommand. It allows to show customized error messages that
+are added with msiExit.
+
+------------------------------------------------------------------------
+r4972 | schroede | 2012-05-24 14:38:37 -0400 (Thu, 24 May 2012) | 14 lines
+
+Additional features for PAM authentication.
+
+When not running the IRODS servers as root (i.e. normal mode), fork
+and exec the PamAuthCheck program (which needs to be setuid root) to
+do the PAM authentication.  See comments at the top of
+auth/PamAuthCheck.c.
+
+Further simplify the PamAuthCheck.c program using some techniques used
+by Chris Smith in pamAuth.c.
+
+Remove some debug code so PAM will operate when enabled and the
+iRODS-PAM passwords will have an appropriate life time (2 weeks).
+
+
+------------------------------------------------------------------------
+r4973 | csmith | 2012-05-25 18:02:41 -0400 (Fri, 25 May 2012) | 9 lines
+
+Preliminary support for running PAM auth over SSL
+
+This commit contains the preliminary support for doing the PAM authentication over an SSL secured socket. Since PAM requires a plain text password to be passed to the server, SSL is used to encrypt the stream to secure the transfer.
+
+There are two client-driven routines for this: sslStart and sslEnd. Before calling rcPamAuthRequest(), sslStart() is called to set up SSL between the client and server on the already connected socket. Once rcPamAuthRequest() returns, sslEnd() tears down the SSL connection, leaving the connected socket in place for subsequent (normal) communications.
+
+There are still a number of limitations and this hasn't been fully tested, so only turn on USE_SSL in config.mk if you enjoy living on the edge. :-)
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4974 | csmith | 2012-05-25 18:52:07 -0400 (Fri, 25 May 2012) | 3 lines
+
+Fix build warning for unused variable in pamAuthenticate().
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4975 | mwan | 2012-05-25 21:02:58 -0400 (Fri, 25 May 2012) | 2 lines
+
+Add OOI test for amqp and magPack protocol
+
+------------------------------------------------------------------------
+r4976 | mwan | 2012-05-29 16:54:24 -0400 (Tue, 29 May 2012) | 2 lines
+
+Integrate ooiAmqptest into the test
+
+------------------------------------------------------------------------
+r4977 | mwan | 2012-05-30 18:14:37 -0400 (Wed, 30 May 2012) | 2 lines
+
+Fix a bug that "ichksum -a" skip the chksum of the copy in compound resource. 
+
+------------------------------------------------------------------------
+r4978 | mwan | 2012-05-31 18:47:57 -0400 (Thu, 31 May 2012) | 2 lines
+
+Minor refactoring
+
+------------------------------------------------------------------------
+r4979 | mwan | 2012-05-31 18:54:36 -0400 (Thu, 31 May 2012) | 2 lines
+
+minor checking
+
+------------------------------------------------------------------------
+r4980 | mwan | 2012-05-31 19:38:08 -0400 (Thu, 31 May 2012) | 2 lines
+
+Add ncOpenGroup to allow processing data stored in HDF5 groups.
+
+------------------------------------------------------------------------
+r4981 | mwan | 2012-05-31 19:44:31 -0400 (Thu, 31 May 2012) | 2 lines
+
+add documentation
+
+------------------------------------------------------------------------
+r4982 | mwan | 2012-06-01 16:45:49 -0400 (Fri, 01 Jun 2012) | 2 lines
+
+minor fix for warning message
+
+------------------------------------------------------------------------
+r4983 | mwan | 2012-06-01 17:36:56 -0400 (Fri, 01 Jun 2012) | 2 lines
+
+Add rcNcInqGrps to allow inquiry of NETCDF4 subgroups in a group.
+
+------------------------------------------------------------------------
+r4984 | mwan | 2012-06-01 17:47:00 -0400 (Fri, 01 Jun 2012) | 2 lines
+
+Take out ifdef of NETCDF_HDF5 parameter 
+
+------------------------------------------------------------------------
+r4985 | mwan | 2012-06-01 20:04:10 -0400 (Fri, 01 Jun 2012) | 2 lines
+
+Add msiNcInqGrps and msiNcOpenGroup micro-services
+
+------------------------------------------------------------------------
+r4986 | schroede | 2012-06-04 14:29:22 -0400 (Mon, 04 Jun 2012) | 2 lines
+
+Fix a problem when building PAM support into a non-IES.
+
+------------------------------------------------------------------------
+r4987 | mwan | 2012-06-04 21:30:37 -0400 (Mon, 04 Jun 2012) | 2 lines
+
+add msiNcGetNGrpsInInqOut microservice
+
+------------------------------------------------------------------------
+r4988 | csmith | 2012-06-05 17:09:48 -0400 (Tue, 05 Jun 2012) | 5 lines
+
+Allow configuration of server 'cmd' directory.
+
+execCmd will now check if the irodsServerCmdDir environment variable is set, and if so will use that as the path to commands called from rsExecCmd.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
+
+In chlModDataObjMeta, if the modify_ts is being set and is less than
+11 digits long, change it to be the irods time-standard 11 digits.
+Since the column is a string in the DB, SQL comparisons work fine if
+the column values are always the same length, and the ICAT code
+generally sets this 11 digit size.  But in this case, the caller
+(server code) is providing the value, and the ICAT code wasn't
+checking.  It seemed appropriate to fix this at the ICAT level, so
+callers need not deal with it.  This is similar to how data_expiry_ts
+is handled.  This problem was noticed by Adil, when doing an 'iput -f'
+over an existing file, and discussed on irod-chat.
+
+------------------------------------------------------------------------
+r4990 | mwan | 2012-06-05 20:33:37 -0400 (Tue, 05 Jun 2012) | 3 lines
+
+Add msiNcGetNGrpsInInqOut and msiNcGetNGrpsInInqOut micro-service to 
+get parameters out of the ncInqGrpsOut_t struct.
+
+------------------------------------------------------------------------
+r4991 | schroede | 2012-06-06 09:52:47 -0400 (Wed, 06 Jun 2012) | 9 lines
+
+Check if the admin user is deleting their own user account and, if so,
+disallow it, as it's probably an error and would be a problem,
+especially if this is the last admin account.  This is an easy check
+to add to try to protect the user from themselves.  We can't always do
+this, but one more simple check like this is a good idea (altho I
+don't think anyone has ever actually done this).  This (not allowing
+the last admin account to be deleted) was suggested by Terrell.
+
+
+------------------------------------------------------------------------
+r4992 | terrell | 2012-06-06 13:58:48 -0400 (Wed, 06 Jun 2012) | 1 line
+
+fix syntax error in rules3.0/rulemsiXsltApply.r rule file
+------------------------------------------------------------------------
+r4993 | schroede | 2012-06-06 17:53:40 -0400 (Wed, 06 Jun 2012) | 6 lines
+
+Add UNICODE as an advanced option in the irodssetup/configure system,
+mention config.mk for other configuration options, and for upgrades
+suggest checking the previous config.mk for other site-specific
+options.  Based on suggestions from, and discussion with, Jean-Yves.
+
+
+------------------------------------------------------------------------
+r4994 | mwan | 2012-06-07 13:50:00 -0400 (Thu, 07 Jun 2012) | 2 lines
+
+Use header from rpcClient
+
+------------------------------------------------------------------------
+r4995 | csmith | 2012-06-08 19:49:07 -0400 (Fri, 08 Jun 2012) | 3 lines
+
+Identify ODBC data source with irodsOdbcDSN environment variable.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4996 | csmith | 2012-06-08 19:49:30 -0400 (Fri, 08 Jun 2012) | 3 lines
+
+Can optionally set full path to genOSAuth at compile time.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4997 | csmith | 2012-06-08 19:49:53 -0400 (Fri, 08 Jun 2012) | 5 lines
+
+Allow relocation of default server paths
+
+Two parts to this change. The first is to define the irodsStateDir environment variable and DEF_STATE_DIR define as a location for packedRei and lockFileDir directories (needed for linux package creation according to lsb). The second is to allow overriding of DEF_CONFIG_DIR, DEF_STATE_DIR and DEF_LOG_DIR at compile time.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4998 | csmith | 2012-06-08 19:50:15 -0400 (Fri, 08 Jun 2012) | 3 lines
+
+Add CMD_DIR to set of config.mk compile time overrides.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r4999 | csmith | 2012-06-08 19:50:37 -0400 (Fri, 08 Jun 2012) | 3 lines
+
+Make path to PamAuthCheck a compile-time option as well.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5000 | csmith | 2012-06-08 20:10:42 -0400 (Fri, 08 Jun 2012) | 5 lines
+
+In RUN_SERVER_AS_ROOT mode, drop root privilege in rsExecCmd
+
+When running with root real-uid (RUN_SERVER_AS_ROOT mode), the process run in execCmd (through rsExecCmd) also runs with root privilege. While RUN_SERVER_AS_ROOT does imply this privilege, it seems better to run the programs from 'cmd' with the privilege of the iRODS service user.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5001 | mwan | 2012-06-11 14:55:13 -0400 (Mon, 11 Jun 2012) | 2 lines
+
+Add --age to irmtrash to remove trash that is older than certain age.
+
+------------------------------------------------------------------------
+r5002 | mwan | 2012-06-11 15:47:48 -0400 (Mon, 11 Jun 2012) | 2 lines
+
+To get "rmtrash --age" to working from the last checkin
+
+------------------------------------------------------------------------
+r5003 | schroede | 2012-06-11 17:26:39 -0400 (Mon, 11 Jun 2012) | 12 lines
+
+Add tests for the SQL performed for PAM authentication.  Remove the
+temporary 'commenting-out' (xSQL) so that these tests are required for
+'devtest' to succeed.  
+
+Add anther test function in chl_test.c for this, add tests in
+icatMiscTest.pl, and make some changes in the ICAT code to support the
+tests.  As part of the ICAT changes, remove an ifdef PAM_AUTH
+requirement in chlCheckAuth.  This is fine as it is almost no overhead
+(basically a string compare) and then the tests can work without
+PAM_AUTH enabled.
+
+
+------------------------------------------------------------------------
+r5004 | schroede | 2012-06-12 13:58:41 -0400 (Tue, 12 Jun 2012) | 4 lines
+
+Add an iadmin sub-command to remove iRODS passwords derived from PAM
+passwords and add a test so the SQL is exercised.  See the help text
+for more.  We now have 365 SQL forms that are tested via 'devtest'.
+
+------------------------------------------------------------------------
+r5005 | mwan | 2012-06-12 16:35:25 -0400 (Tue, 12 Jun 2012) | 2 lines
+
+Minor change in help message.
+
+------------------------------------------------------------------------
+r5006 | mwan | 2012-06-12 17:44:06 -0400 (Tue, 12 Jun 2012) | 2 lines
+
+Add --age option to irsync. This implementation is not yet complete.
+
+------------------------------------------------------------------------
+r5007 | mwan | 2012-06-13 14:37:33 -0400 (Wed, 13 Jun 2012) | 2 lines
+
+Finish adding --age to irsync
+
+------------------------------------------------------------------------
+r5008 | mwan | 2012-06-13 14:57:07 -0400 (Wed, 13 Jun 2012) | 2 lines
+
+modify printNoSync to handle splitPathByKey failed
+
+------------------------------------------------------------------------
+r5009 | mwan | 2012-06-13 15:57:53 -0400 (Wed, 13 Jun 2012) | 2 lines
+
+get --age option to work with irods to irods sync
+
+------------------------------------------------------------------------
+r5010 | schroede | 2012-06-13 16:02:39 -0400 (Wed, 13 Jun 2012) | 3 lines
+
+When a data-object is moved, update its modify time.
+This is needed for the irmtrash --age feature.
+
+------------------------------------------------------------------------
+r5011 | mwan | 2012-06-13 18:50:43 -0400 (Wed, 13 Jun 2012) | 2 lines
+
+Add -K option to irsync as requested by a user
+
+------------------------------------------------------------------------
+r5012 | mwan | 2012-06-14 17:16:14 -0400 (Thu, 14 Jun 2012) | 4 lines
+
+Add a list_accounts function to list all bank accounts. Add json code to
+parse an array of keyValue ovjects.
+
+
+------------------------------------------------------------------------
+r5013 | mwan | 2012-06-14 18:41:16 -0400 (Thu, 14 Jun 2012) | 3 lines
+
+Pack list of param keyValue pair item by item to make it more flexible
+to pack an open ended number of keyValue pair.
+
+------------------------------------------------------------------------
+r5014 | mwan | 2012-06-14 20:36:31 -0400 (Thu, 14 Jun 2012) | 2 lines
+
+Add code to check the age of the collection being removed
+
+------------------------------------------------------------------------
+r5015 | mwan | 2012-06-15 12:14:59 -0400 (Fri, 15 Jun 2012) | 3 lines
+
+Update modify time in syncDataObjPhyPath to allow --age to work.
+Also revert last change in rsRmcoll.
+
+------------------------------------------------------------------------
+r5016 | mwan | 2012-06-15 19:52:23 -0400 (Fri, 15 Jun 2012) | 2 lines
+
+Add data structure to handle dictionary type for OOI CI
+
+------------------------------------------------------------------------
+r5017 | schroede | 2012-06-18 15:47:04 -0400 (Mon, 18 Jun 2012) | 7 lines
+
+Python script and config file provided by Adil/KEK, useful for
+scanning irods log files.  To use, update the allowed users in
+readlogs.cfg and execute via iexecmd.  For example:
+iexecmd "readRodsLog.py -s 2012-06-18::12:24:00 -e 2012-06-18::12:25:00"
+See the help text for more.
+
+
+------------------------------------------------------------------------
+r5018 | mwan | 2012-06-18 16:07:28 -0400 (Mon, 18 Jun 2012) | 2 lines
+
+Add routines to handle OOI dictionary.
+
+------------------------------------------------------------------------
+r5019 | mwan | 2012-06-18 18:53:44 -0400 (Mon, 18 Jun 2012) | 2 lines
+
+Add support for array in OOI dictionary
+
+------------------------------------------------------------------------
+r5020 | mwan | 2012-06-18 19:22:26 -0400 (Mon, 18 Jun 2012) | 2 lines
+
+Minor changes
+
+------------------------------------------------------------------------
+r5021 | mwan | 2012-06-18 20:37:06 -0400 (Mon, 18 Jun 2012) | 2 lines
+
+Add code for the first OOI call - rcOoiGenServReq
+
+------------------------------------------------------------------------
+r5022 | mwan | 2012-06-18 20:51:54 -0400 (Mon, 18 Jun 2012) | 2 lines
+
+Turn OOI_CI off by default
+
+------------------------------------------------------------------------
+r5023 | mwan | 2012-06-19 13:19:27 -0400 (Tue, 19 Jun 2012) | 2 lines
+
+Fix a compile error by ifdef out OOI and NETCDF specific stuff.
+
+------------------------------------------------------------------------
+r5024 | schroede | 2012-06-19 14:52:01 -0400 (Tue, 19 Jun 2012) | 5 lines
+
+When a collection is being moved, also update the collection
+modify-time.  This is similar to change made for data-objects a few
+days ago and, like that, will be used for the new irmtrash --age
+feature in some cases.
+
+------------------------------------------------------------------------
+r5025 | mwan | 2012-06-19 18:35:51 -0400 (Tue, 19 Jun 2012) | 2 lines
+
+Complete jsonPackDictionary to pack a dictionary.
+
+------------------------------------------------------------------------
+r5026 | mwan | 2012-06-19 19:57:24 -0400 (Tue, 19 Jun 2012) | 3 lines
+
+OOI development -- add routines jsonPackOoiServReqForPost, jsonPackOoiServReq
+and jsonPackDictionary to pack post type service request msg
+
+------------------------------------------------------------------------
+r5027 | mwan | 2012-06-20 20:41:18 -0400 (Wed, 20 Jun 2012) | 4 lines
+
+OOI task - add a number of unpacking routines - jsonUnpackOoiRespStr,
+jsonUnpackOoiRespDict, jsonUnpackDict, jsonUnpackOoiRespDictArray,
+jsonUnpackOoiRespDictArrInArr and clearDictArray.
+
+------------------------------------------------------------------------
+r5028 | mwan | 2012-06-21 20:18:05 -0400 (Thu, 21 Jun 2012) | 2 lines
+
+Test OOI APIs
+
+------------------------------------------------------------------------
+r5029 | mwan | 2012-06-22 14:24:14 -0400 (Fri, 22 Jun 2012) | 2 lines
+
+get the rcOoiGenServReq to work
+
+------------------------------------------------------------------------
+r5030 | mwan | 2012-06-22 16:12:18 -0400 (Fri, 22 Jun 2012) | 2 lines
+
+Get rcOoiGenServReq to run with array of dictionary as output
+
+------------------------------------------------------------------------
+r5031 | mwan | 2012-06-22 21:16:18 -0400 (Fri, 22 Jun 2012) | 2 lines
+
+Test some datastore services
+
+------------------------------------------------------------------------
+r5032 | mwan | 2012-06-25 19:54:59 -0400 (Mon, 25 Jun 2012) | 3 lines
+
+Add OOI functionalities such as dictionary in a dictionary to get accessing
+OOI datastore service to work.
+
+------------------------------------------------------------------------
+r5033 | csmith | 2012-06-26 12:11:48 -0400 (Tue, 26 Jun 2012) | 3 lines
+
+A long term typo. clientRodsZone, not clientRodsZine
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5034 | csmith | 2012-06-26 12:12:10 -0400 (Tue, 26 Jun 2012) | 9 lines
+
+Added SSL for server to server rcPamAuthRequest. Adjust privilege for pam API calls. Connect to ICAT host based on client zone.
+
+Added calls to start and end SSL when the server makes an rcPamAuthRequest call to a remote ICAT in order to protect the client's clear text password.
+
+Some PAM plugins need root privilege (pam_unix to check /etc/shadow) and some further need uid==euid==root (pam_sss), so when in RUN_SERVER_AS_ROOT, set uid=euid=0 before pam calls.
+
+Connect to an ICAT host (MASTER_RCAT) based on the client zone.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5035 | mwan | 2012-06-26 12:54:54 -0400 (Tue, 26 Jun 2012) | 3 lines
+
+OOI - take out arrLen input for dictSetAttr() since array is implemented
+as a different struct.
+
+------------------------------------------------------------------------
+r5036 | mwan | 2012-06-26 12:55:41 -0400 (Tue, 26 Jun 2012) | 2 lines
+
+cleanup
+
+------------------------------------------------------------------------
+r5037 | csmith | 2012-06-26 14:16:37 -0400 (Tue, 26 Jun 2012) | 3 lines
+
+Fixed case where remote user was getting local user privilege in multi-zone deployment.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5038 | mwan | 2012-06-26 15:24:18 -0400 (Tue, 26 Jun 2012) | 2 lines
+
+OOI - Add genArray_t for array and codes to handle this type
+
+------------------------------------------------------------------------
+r5039 | mwan | 2012-06-26 21:09:43 -0400 (Tue, 26 Jun 2012) | 3 lines
+
+Modify OOI code to use the more generic genArray_t instead of dictArray_t.
+Add more tests.
+
+------------------------------------------------------------------------
+r5040 | mwan | 2012-06-26 22:05:20 -0400 (Tue, 26 Jun 2012) | 3 lines
+
+OOI - Add support for OOI_INT_TYPE, OOI_FLOAT_TYPE and OOI_BOOL_TYPE
+response value.
+
+------------------------------------------------------------------------
+r5041 | csmith | 2012-06-27 16:23:07 -0400 (Wed, 27 Jun 2012) | 3 lines
+
+Call to open() had too many arguments.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5042 | csmith | 2012-06-27 18:03:55 -0400 (Wed, 27 Jun 2012) | 3 lines
+
+Fuse link error when USE_SSL defined.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5043 | csmith | 2012-06-27 18:04:18 -0400 (Wed, 27 Jun 2012) | 5 lines
+
+Don't print SSL verification errors for self-signed certs.
+
+Any certificate verification errors cause lots of messages to be printed to the user's screen (e.g. when running iinit) which could be confusing if the system is configured to use self-signed certificates, which is perfectly valid for certain use cases (e.g. testing).
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5044 | csmith | 2012-06-27 18:29:11 -0400 (Wed, 27 Jun 2012) | 8 lines
+
+Refactored some PAM authentication code.
+
+- will call PamAuthCheck for RUN_SERVER_AS_ROOT mode as well, so one code path
+- added PamAuthCheck to server Makefile and put binary in server/bin after build
+- created src/obj sub-structure to server/auth sub-directory
+- removed dead code (pamAuth.h/pamAuth.c)
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5045 | csmith | 2012-06-27 18:51:47 -0400 (Wed, 27 Jun 2012) | 5 lines
+
+File describing server environment variables.
+
+The server/config/server.env.in file contains a list of environment variables that can be used to modify the operational behaviour of the iRODS server. The file is suitable to be sourced in /bin/sh shell scripts.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5046 | mwan | 2012-06-27 21:00:00 -0400 (Wed, 27 Jun 2012) | 2 lines
+
+OOI: Add "data product" service to the test.
+
+------------------------------------------------------------------------
+r5047 | csmith | 2012-06-28 04:01:52 -0400 (Thu, 28 Jun 2012) | 3 lines
+
+Turn off debug in PamAuthCheck
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5048 | mwan | 2012-06-28 13:05:20 -0400 (Thu, 28 Jun 2012) | 2 lines
+
+Take out outInx from ooiGenServReqInp_t because it is not used
+
+------------------------------------------------------------------------
+r5049 | mwan | 2012-06-28 14:56:23 -0400 (Thu, 28 Jun 2012) | 2 lines
+
+Add resource type "ooici" to configure ooici services
+
+------------------------------------------------------------------------
+r5050 | mwan | 2012-06-29 22:10:37 -0400 (Fri, 29 Jun 2012) | 2 lines
+
+A test for using HTTP get for file transfer
+
+------------------------------------------------------------------------
+r5051 | mwan | 2012-07-02 23:03:00 -0400 (Mon, 02 Jul 2012) | 3 lines
+
+add CURLOPT_FOLLOWLOCATION to handle redirect location to get the ERDDAP
+site working
+
+------------------------------------------------------------------------
+r5052 | mwan | 2012-07-03 14:25:39 -0400 (Tue, 03 Jul 2012) | 2 lines
+
+Add opendap file type
+
+------------------------------------------------------------------------
+r5053 | mwan | 2012-07-03 21:11:44 -0400 (Tue, 03 Jul 2012) | 2 lines
+
+Add test routine to query the pydap directory
+
+------------------------------------------------------------------------
+r5054 | mwan | 2012-07-03 21:12:55 -0400 (Tue, 03 Jul 2012) | 2 lines
+
+Allow path with http: prefix to be registered.
+
+------------------------------------------------------------------------
+r5055 | mwan | 2012-07-05 17:24:44 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Add pydapClosedir function adn refactor pydapReaddir.
+
+------------------------------------------------------------------------
+r5056 | mwan | 2012-07-05 18:23:34 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Add pydapStat and the associated test routine.
+
+------------------------------------------------------------------------
+r5057 | mwan | 2012-07-05 18:46:56 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Minor comment change
+
+------------------------------------------------------------------------
+r5058 | mwan | 2012-07-05 19:01:07 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+minor change
+
+------------------------------------------------------------------------
+r5059 | mwan | 2012-07-05 19:22:44 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Add pydap driver functions
+
+------------------------------------------------------------------------
+r5060 | mwan | 2012-07-05 20:37:53 -0400 (Thu, 05 Jul 2012) | 2 lines
+
+Get recursive registration of pydap path to work.
+
+------------------------------------------------------------------------
+r5061 | mwan | 2012-07-06 13:52:39 -0400 (Fri, 06 Jul 2012) | 2 lines
+
+Add pydapStageToCache driver function to stage/download files from pydap
+
+------------------------------------------------------------------------
+r5062 | mwan | 2012-07-06 16:49:49 -0400 (Fri, 06 Jul 2012) | 2 lines
+
+Handle UNKNOWN_FILE_SZ when staging from HTTP to cache
+
+------------------------------------------------------------------------
+r5063 | mwan | 2012-07-06 17:27:00 -0400 (Fri, 06 Jul 2012) | 2 lines
+
+refine last checkin
+
+------------------------------------------------------------------------
+r5064 | mwan | 2012-07-06 17:43:27 -0400 (Fri, 06 Jul 2012) | 2 lines
+
+Minor change from last checkin
+
+------------------------------------------------------------------------
+r5065 | mwan | 2012-07-06 19:26:01 -0400 (Fri, 06 Jul 2012) | 4 lines
+
+Add NO_STAGING_KW to rcNcOpen and rcDataOpen to specify no staging from
+compund resource to cache is needed since nc_open can handle opendap
+files directly.
+
+------------------------------------------------------------------------
+r5066 | mwan | 2012-07-09 12:58:16 -0400 (Mon, 09 Jul 2012) | 2 lines
+
+Fix a test script failure caused by last checkin
+
+------------------------------------------------------------------------
+r5067 | mwan | 2012-07-09 14:33:09 -0400 (Mon, 09 Jul 2012) | 2 lines
+
+Set NO_STAGING_KW for test
+
+------------------------------------------------------------------------
+r5068 | mwan | 2012-07-09 14:51:16 -0400 (Mon, 09 Jul 2012) | 2 lines
+
+Add code to handle NC_SHORT and NC_USHORT attributes
+
+------------------------------------------------------------------------
+r5069 | schroede | 2012-07-09 16:20:44 -0400 (Mon, 09 Jul 2012) | 23 lines
+
+Implement an option to perform upper-case in queries and use it in
+imeta and iquest, providing a basic case-insensitive capability.  This
+was requested recently on irods-chat in "Case-insensitive AVU queries
+(Jargon)".
+
+Added a general option to general-query to request the feature. When
+present this causes the ICAT general-query functions to wrap the
+table.column names in the 'where' cause with 'upper( )'.  This has
+been tested for Postgres and should work from MySQL but may not
+(currently) for Oracle.
+
+In 'imeta', added a 'upper' command to toggle between upper-case mode
+and, wnen on, pass the option to general-query for the 'qu' (query)
+sub-command.  Note that since all columns in 'where' get 'upper( )'
+added, this applies to the AVU Attribute names as well as the Value
+and Units.
+
+In 'iquest' added an option, 'uppercase' (actually,
+'uppper[anything]'), to request this.  A test and example using a
+case-insensitive data-object name matching seems to work fine.
+
+Added a basic test to icatTest.pl (used in 'devtest').
+
+------------------------------------------------------------------------
+r5070 | schroede | 2012-07-10 19:27:40 -0400 (Tue, 10 Jul 2012) | 25 lines
+
+Fix some problems found by 'devtest' when using Oracle Xe (on
+srbbrick15) as the ICAT DB, found by 'devtest'.
+
+icatHighLevelRoutines.c: 
+
+1) Avoid an extra bind variable.  Apparently ODBC doesn't mind having
+additional ones available but OCI noticed the error (and returned a
+failure).  Not sure if this is just for Oracle/Xe, or if it now occurs
+with other Oracle versions too.
+
+2) Add a 'distinct' in a quota calculation SQL as there are sometimes
+duplicate rows in the r_quota_usage table.  Not sure if ODBC/Postgres
+doesn't encounter the duplicates or if the SQL form used doesn't have
+a problem with duplicates.
+
+icatLowLevelOracle.c:
+
+1) In cllGetRowCount, return noResultRowCount if the input statement
+number is negative (i.e. none), matching what is done in the ODBC
+version.  Not sure why this wasn't a problem before (or if it was) but
+this was causing a segfault in when processing the 'iadmin
+modrescdatapaths' request.  Perhaps 'modrescdatapaths' hadn't been
+tested with Oracle since it was added.
+
+
+------------------------------------------------------------------------
+r5071 | mwan | 2012-07-10 19:37:23 -0400 (Tue, 10 Jul 2012) | 3 lines
+
+Modify dumpNcInqOut to allow it to dump a subset of variable since
+a data set can be very large
+
+------------------------------------------------------------------------
+r5072 | schroede | 2012-07-11 12:22:33 -0400 (Wed, 11 Jul 2012) | 41 lines
+
+For 'ils -A' (access) on collections, have it display user-groups but
+no longer also expand user-groups to individual users, so this now
+matches how it is done for data-objects.  This is needed by a large
+iRODS site (iPlant) so they can use group ACLs and avoid very large
+numbers of user ACLs which seems to be causing a performance problem.
+
+This is done via a new specific-query.  If the specific-query fails,
+it will use the previous general-query call as a fall-back, but that
+will expand the groups to users.
+
+The specific-query API function has been expanded to include a
+zoneHint to operate properly in a federated environment.  This is a
+new condInput in the specific-query input structure, so the zoneHint
+can be used so the server (rs) function can connect to remote zones
+when needed (since this will be used for any ils -A on a collection).
+Note that this changes the protocol for the specific-query so clients
+will need to be in sync with the server.  Since, until now,
+specific-query is only lightly used, this should be an easy transition
+for most sites.
+
+For this to work properly, a new specific query needs to be defined.
+When iRODS is installed from scratch, the table will be set with the
+proper value.  To do this interactively, you can use the iadmin asp
+(add specific query) command:
+asq "select distinct R_USER_MAIN.user_name ,R_USER_MAIN.zone_name, R_TOKN_MAIN.t
+oken_name from R_USER_MAIN , R_TOKN_MAIN, R_OBJT_ACCESS, R_COLL_MAIN where R_OBJ
+T_ACCESS.object_id = R_COLL_MAIN.coll_id AND r_COLL_MAIN.coll_name = ? AND R_TOK
+N_MAIN.token_namespace = 'access_type' AND R_USER_MAIN.user_id = R_OBJT_ACCESS.u
+ser_id AND R_OBJT_ACCESS.access_type_id = R_TOKN_MAIN.token_id" ShowCollAcls
+
+(put the above asq line (as one line) into a file and run 'iadmin < file')
+
+The general-query expands the group names into individual users due to
+an artifact of how the tables are defined that allow it to generate
+SQL for these cases.  Since the collection table is linked to many
+other tables and the access table is for all types of objects, there
+is difficulty in defining it to avoid 'cycles' and possible infinite
+loops in generating the SQL.  But the specific-query is available for
+cases like these.
+
+
+------------------------------------------------------------------------
+r5073 | schroede | 2012-07-11 14:29:02 -0400 (Wed, 11 Jul 2012) | 3 lines
+
+Update some comments to match our current PAM-authentication
+implementation.
+
+------------------------------------------------------------------------
+r5074 | schroede | 2012-07-11 17:47:58 -0400 (Wed, 11 Jul 2012) | 4 lines
+
+Update comments for the PAM program under here.  Also see updates on
+the irods.org wiki including the SSL Setup procedure for PAM provided
+by Chris Smith.  
+
+------------------------------------------------------------------------
+r5075 | mwan | 2012-07-11 18:20:15 -0400 (Wed, 11 Jul 2012) | 2 lines
+
+Add ERDDAP opendir/readdir/closedir test routine
+
+------------------------------------------------------------------------
+r5076 | mwan | 2012-07-11 20:55:57 -0400 (Wed, 11 Jul 2012) | 2 lines
+
+Add erddap resource type.
+
+------------------------------------------------------------------------
+r5077 | mwan | 2012-07-12 17:12:15 -0400 (Thu, 12 Jul 2012) | 2 lines
+
+Add erddap driver
+
+------------------------------------------------------------------------
+r5078 | mwan | 2012-07-13 14:48:46 -0400 (Fri, 13 Jul 2012) | 2 lines
+
+Allow a path input
+
+------------------------------------------------------------------------
+r5079 | mwan | 2012-07-13 16:35:57 -0400 (Fri, 13 Jul 2012) | 2 lines
+
+Better output for NC_CHAR type in dumpNcInqOut
+
+------------------------------------------------------------------------
+r5080 | jeanyves | 2012-07-16 08:03:00 -0400 (Mon, 16 Jul 2012) | 6 lines
+
+DefFileMode and DefDirMode should be declared between quotes since 3.1.
+If not, the default values for DefFileMode and DefDirMode will be used by iRODS.
+The reason is that since 3.1, it is checking if these values are octal numbers starting with a 0.
+If DefFileMode and DefDirMode are not declared as strings in the perl script, they will be ignored
+as they will be converted into a decimal integer, hence they will not have the required format.
+
+------------------------------------------------------------------------
+r5081 | mwan | 2012-07-16 16:14:36 -0400 (Mon, 16 Jul 2012) | 2 lines
+
+Treat NC_CHAR type as string in dumpNcInqOut to give better output
+
+------------------------------------------------------------------------
+r5082 | mwan | 2012-07-16 19:06:23 -0400 (Mon, 16 Jul 2012) | 3 lines
+
+Add dumpNcInqOutToNcFile routine to dump ncInqOut (result of rcNcInq API)
+to a NETCDF format file. The implementation is not done yet.
+
+------------------------------------------------------------------------
+r5083 | mwan | 2012-07-16 19:41:06 -0400 (Mon, 16 Jul 2012) | 2 lines
+
+Completed dumpNcInqOutToNcFile routine
+
+------------------------------------------------------------------------
+r5084 | mwan | 2012-07-17 14:21:13 -0400 (Tue, 17 Jul 2012) | 2 lines
+
+get dumpNcInqOutToNcFile to work
+
+------------------------------------------------------------------------
+r5085 | schroede | 2012-07-17 16:12:45 -0400 (Tue, 17 Jul 2012) | 38 lines
+
+Extensions so that 'irodssetup' can optionally use system-installed
+Postgresql and ODBC (i.e. installed via a package manager).
+
+For ODBC, 'irodssetup' will notice that a key system ODBC file exists
+(/usr/lib/odbc/psqlodbca.so) and if it does, ask whether the user wants
+to use this (recommending so).
+
+For Postgres, one enters the system location, for example:
+  /usr/lib/postgresql/8.4
+
+On Ubuntu (10.04.4 LTS), to install Postgres via apt-get, you would run:
+  sudo apt-get install postgresql
+
+For a system-installed Postgres, one needs to create the account to
+use using the 'postgres' user.  For example, to create user
+'schroeder':
+  sudo -u postgres psql postgres
+  create role schroeder with CREATEDB LOGIN;
+  \password schroeder
+  [enter password]
+  \q
+
+To install ODBC via apt-get:
+  sudo apt-get install odbc-postgresql
+  sudo apt-get install unixodbc-dev
+
+The odbc-postgresql includes the /usr/lib/odbc/psqlodbca.so which is
+the driver (which goes in the .odbc.ini file) and I believe
+unixodbc-dev is needed for the include files for building irods.
+
+It is also possible to use the system-installed ODBC and still
+download and use various versions of Postgres.
+
+In testing, I noticed that 'devtest' was somewhat slower when using
+the system-installed postgres, which is probably because it's an older
+version. On Ubuntu 10.04.4 LTS apt-get installs postgres 8.4 where we
+download and use postgres 9.1.3.
+
+------------------------------------------------------------------------
+r5086 | mwan | 2012-07-17 17:11:33 -0400 (Tue, 17 Jul 2012) | 3 lines
+
+Move check for NC operation down to l3Close from _rsDataObjClose
+so closeAllL1desc won't get an error return
+
+------------------------------------------------------------------------
+r5087 | mwan | 2012-07-17 18:25:19 -0400 (Tue, 17 Jul 2012) | 2 lines
+
+ndle short integer in ncValueToStr and getNcTypeStr.
+
+------------------------------------------------------------------------
+r5088 | mwan | 2012-07-17 19:48:20 -0400 (Tue, 17 Jul 2012) | 2 lines
+
+minor bug fix for dumpNcInqOut
+
+------------------------------------------------------------------------
+r5089 | mwan | 2012-07-18 16:48:02 -0400 (Wed, 18 Jul 2012) | 2 lines
+
+Minor change in dumpNcInqOut to handle rcNcGetVarsByType error
+
+------------------------------------------------------------------------
+r5090 | mwan | 2012-07-19 13:30:46 -0400 (Thu, 19 Jul 2012) | 2 lines
+
+test for short int packing
+
+------------------------------------------------------------------------
+r5091 | mwan | 2012-07-19 13:52:44 -0400 (Thu, 19 Jul 2012) | 3 lines
+
+ifdef out nctest
+
+
+------------------------------------------------------------------------
+r5092 | xuh | 2012-07-19 16:19:36 -0400 (Thu, 19 Jul 2012) | 1 line
+
+Foreach statement for rule language integerated general query.
+------------------------------------------------------------------------
+r5093 | xuh | 2012-07-19 16:23:38 -0400 (Thu, 19 Jul 2012) | 1 line
+
+Support for lower case keywords in rule language integrated general query
+------------------------------------------------------------------------
+r5094 | mwan | 2012-07-19 17:55:56 -0400 (Thu, 19 Jul 2012) | 2 lines
+
+Add pack/unpack for int16 (short integer) needed by NETCDF
+
+------------------------------------------------------------------------
+r5095 | mwan | 2012-07-19 18:20:06 -0400 (Thu, 19 Jul 2012) | 2 lines
+
+A bug fix on last checkin
+
+------------------------------------------------------------------------
+r5096 | mwan | 2012-07-19 20:27:41 -0400 (Thu, 19 Jul 2012) | 2 lines
+
+Handle int16 for NETCDF API.
+
+------------------------------------------------------------------------
+r5097 | mwan | 2012-07-23 19:51:58 -0400 (Mon, 23 Jul 2012) | 2 lines
+
+Add rcNcRegGlobalAttr API to Register the global attributes of NETCDF files
+
+------------------------------------------------------------------------
+r5098 | mwan | 2012-07-24 13:56:24 -0400 (Tue, 24 Jul 2012) | 2 lines
+
+Add test for rcNcRegGlobalAttr API
+
+------------------------------------------------------------------------
+r5099 | mwan | 2012-07-24 16:04:33 -0400 (Tue, 24 Jul 2012) | 3 lines
+
+Add msiNcRegGlobalAttr micro-service to extract and register NETCDF global
+attributes.
+
+------------------------------------------------------------------------
+r5100 | schroede | 2012-07-25 12:19:49 -0400 (Wed, 25 Jul 2012) | 48 lines
+
+Fixes for Solaris. With these, it builds again and most of 'devtest'
+succeeds, including all of the ICAT tests.  See testiCommands.pl below
+for a description of the remaining problems.
+
+config/config.mk.in:
+For Solaris, use 'which gtar' to find the correct tar (GNU tar) to
+use, as 'tar' will usually be the Solaris version which is not
+compatible for 'ibun'.
+
+server/icat/src/icatHighLevelRoutines.c:
+Fixes for Solaris (C compiler).
+
+server/icat/src/icatLowLevelOdbc.c:
+Fixes for Solaris (C compiler).
+
+lib/core/src/msParam.c:
+Fixes for Solaris.  There is no strtof so use (float)strtod.
+
+server/icat/src/convertSql.pl:
+On Solaris, cpp may not be available so use 'gcc -E' instead to to
+preprocess icatSysTables.sql.pp into icatSysTables.sql and
+icatCoreTables.sql.pp into icatCoreTables.sql.
+
+clients/icommands/test/testiCommands.pl:
+Changed to use 'gtar' instead of 'tar' which fixes a few errors.
+
+With that, four of the testiCommands.pl tests still fail:
+95 - diff -r /var/tmp/testx /var/tmp/testx1/icmdtestx  ====> error code = 0
+99 - diff -r /var/tmp/testx /var/tmp/icmdtestgz/icmdtestx  ====> error code = 0
+104 - diff -r /var/tmp/testx /var/tmp/icmdtestbz2/icmdtestx  ====> error code = 0
+145 - diff -r  /var/tmp/testx /var/tmp/testt  ====> error code = 0
+
+The first one is just due to 'diff' differences; on solaris 'diff'
+prints 'Common subdirectories' and lists the names so the check in
+runCmd notices output and flags it as an error.  runCmd can check for
+listed lines but not, as far as I can tell, with pattern matching.  To
+get around this, you can't just pipe it thru 'grep -v Common' because
+then the exit code is non-0 (from grep, not diff, I believe).  So a
+work around would be to do diff|grep and then cat the file to check if
+non-empty, altho then the listed command is 'cat'.
+
+Even with the above change, the '99' diff fails, but this one
+seems to be an actual problem with 'ibun'.
+
+I'm not sure if 104 and 145 are just 'diff' problems or more
+significant but thought I'd commit this work to this point.
+
+
+------------------------------------------------------------------------
+r5101 | schroede | 2012-07-25 19:04:28 -0400 (Wed, 25 Jul 2012) | 14 lines
+
+More updates for Solaris for the testiCommands.pl script.  With this
+'devtest' now succeeds on Solaris too, at least on merrimac.
+
+Added an option in runCmd to ignore the return-code but still check
+the stdout and added code to use this for SunOS and pipe the results
+thru grep -v to remove the 'Common ...' lines.  This will give a
+non-zero return code, but if there is text in the output it should
+still notice the problem.
+
+In the commit earlier today, I had indicated that the '99' test was
+still getting an error, but with this change it seems to be OK.  As
+far as I can tell the check in runCmd is working right.  I'm not sure
+what was going wrong in the previous tests, but it seems OK now.
+
+------------------------------------------------------------------------
+r5102 | mwan | 2012-07-26 15:44:03 -0400 (Thu, 26 Jul 2012) | 2 lines
+
+Add rsNcClose to close the opened file after it is done
+
+------------------------------------------------------------------------
+r5103 | xuh | 2012-07-26 16:00:59 -0400 (Thu, 26 Jul 2012) | 3 lines
+
+Fix potential random characters in writeLine if the parameter is an iRODS type.
+
+Integration of msiCollectionSpider with the new rule engine env.
+------------------------------------------------------------------------
+r5104 | terrell | 2012-07-26 16:25:31 -0400 (Thu, 26 Jul 2012) | 1 line
+
+update iput -h output - fix a couple typos and add clarification
+------------------------------------------------------------------------
+r5105 | terrell | 2012-07-26 16:38:50 -0400 (Thu, 26 Jul 2012) | 1 line
+
+update iput -h output - fix a couple more options, grammar
+------------------------------------------------------------------------
+r5106 | mwan | 2012-07-26 19:29:45 -0400 (Thu, 26 Jul 2012) | 2 lines
+
+add incattr command to register, list and query NETCDF global attributes
+
+------------------------------------------------------------------------
+r5107 | xuh | 2012-07-27 14:45:30 -0400 (Fri, 27 Jul 2012) | 1 line
+
+Integration of collectionSpider with foreach loop; stricter static typechecking for foreach; fix bugs in general query foreach integration.
+------------------------------------------------------------------------
+r5108 | mwan | 2012-07-27 19:25:14 -0400 (Fri, 27 Jul 2012) | 2 lines
+
+Add query data file by AVU, accept multiple attrName for --attr to incattr.
+
+------------------------------------------------------------------------
+r5109 | schroede | 2012-07-30 15:10:57 -0400 (Mon, 30 Jul 2012) | 6 lines
+
+A small change to handle solaris_pc_platform in addition to
+solaris_platform.  With this and the other Solaris fixes done last
+week, iRODS now builds and passes 'devtest' again on Solaris PCs at
+the new NMI BaTLab (Build & Test).
+
+
+------------------------------------------------------------------------
+r5110 | mwan | 2012-07-30 16:13:58 -0400 (Mon, 30 Jul 2012) | 3 lines
+
+Add option to rcNcRegGlobalAttr to allow the specification of a list of
+global attributes to register instead of all global attributes.
+
+------------------------------------------------------------------------
+r5111 | mwan | 2012-07-30 16:43:15 -0400 (Mon, 30 Jul 2012) | 2 lines
+
+Handle memory leaks in NETCDF API calls.
+
+------------------------------------------------------------------------
+r5112 | mwan | 2012-08-01 15:02:05 -0400 (Wed, 01 Aug 2012) | 2 lines
+
+Allow incattr to remove the specified list of attributes
+
+------------------------------------------------------------------------
+r5113 | mwan | 2012-08-02 21:17:55 -0400 (Thu, 02 Aug 2012) | 2 lines
+
+add test for TDS driver
+
+------------------------------------------------------------------------
+r5114 | mwan | 2012-08-03 20:24:04 -0400 (Fri, 03 Aug 2012) | 2 lines
+
+test program for the Thredds Data Server Driver development.
+
+------------------------------------------------------------------------
+r5115 | mwan | 2012-08-06 20:01:01 -0400 (Mon, 06 Aug 2012) | 2 lines
+
+Debug the listTdsDir routine
+
+------------------------------------------------------------------------
+r5116 | mwan | 2012-08-07 19:26:47 -0400 (Tue, 07 Aug 2012) | 2 lines
+
+Implement and test tdsOpendir/tdsReaddir/tdsClosedir
+
+------------------------------------------------------------------------
+r5117 | mwan | 2012-08-07 19:39:20 -0400 (Tue, 07 Aug 2012) | 2 lines
+
+Change default URL
+
+------------------------------------------------------------------------
+r5118 | mwan | 2012-08-07 19:42:09 -0400 (Tue, 07 Aug 2012) | 2 lines
+
+Error msg for TDS
+
+------------------------------------------------------------------------
+r5119 | mwan | 2012-08-08 19:23:29 -0400 (Wed, 08 Aug 2012) | 2 lines
+
+Add TDS driver. Implementation not complete. Missing tdsStageToCache
+
+------------------------------------------------------------------------
+r5120 | mwan | 2012-08-09 14:03:55 -0400 (Thu, 09 Aug 2012) | 2 lines
+
+Allow NETCDF api to build without enabling netcdf-4 (HDF5).
+
+------------------------------------------------------------------------
+r5121 | mwan | 2012-08-09 14:24:22 -0400 (Thu, 09 Aug 2012) | 2 lines
+
+Allow NETCDF api to build without enabling netcdf-4 (HDF5).
+
+------------------------------------------------------------------------
+r5122 | mwan | 2012-08-09 17:30:14 -0400 (Thu, 09 Aug 2012) | 2 lines
+
+Add tdsStageToCache to download from tds using Opendap to cache.
+
+------------------------------------------------------------------------
+r5123 | mwan | 2012-08-09 19:33:03 -0400 (Thu, 09 Aug 2012) | 2 lines
+
+test routine setTdsCurdir to track folder dataset 
+
+------------------------------------------------------------------------
+r5124 | mwan | 2012-08-10 14:24:47 -0400 (Fri, 10 Aug 2012) | 2 lines
+
+Add code to manage current directory of the TDS driver.
+
+------------------------------------------------------------------------
+r5125 | mwan | 2012-08-10 20:08:32 -0400 (Fri, 10 Aug 2012) | 3 lines
+
+Add the framework for the inc command for NETCDF operations. This is just
+a start for the implementation.
+
+------------------------------------------------------------------------
+r5126 | mwan | 2012-08-13 14:55:46 -0400 (Mon, 13 Aug 2012) | 2 lines
+
+add -lnetcdf to CL_LDADD for inc command
+
+------------------------------------------------------------------------
+r5127 | mwan | 2012-08-13 20:17:36 -0400 (Mon, 13 Aug 2012) | 2 lines
+
+Implement [--header] [--dim] [--ascitime] options of the "inc" command
+
+------------------------------------------------------------------------
+r5128 | mwan | 2012-08-14 16:52:20 -0400 (Tue, 14 Aug 2012) | 2 lines
+
+print the global attributes nicely with a new printNice function
+
+------------------------------------------------------------------------
+r5129 | mwan | 2012-08-14 17:40:54 -0400 (Tue, 14 Aug 2012) | 2 lines
+
+Minor changes in output of inc.
+
+------------------------------------------------------------------------
+r5130 | mwan | 2012-08-14 19:25:53 -0400 (Tue, 14 Aug 2012) | 2 lines
+
+add --noattr option to "inc" plus some changes in the output.
+
+------------------------------------------------------------------------
+r5131 | mwan | 2012-08-15 19:31:19 -0400 (Wed, 15 Aug 2012) | 2 lines
+
+Get --subset and --var option of "inc" working.
+
+------------------------------------------------------------------------
+r5132 | mwan | 2012-08-16 16:15:41 -0400 (Thu, 16 Aug 2012) | 4 lines
+
+Fix a bug that icp does not work when the source and target are in different
+remote zones because of proxy user privilege issues. Added a new routine
+singleL1Copy to copy at the L1 level.
+
+------------------------------------------------------------------------
+r5133 | mwan | 2012-08-16 19:59:57 -0400 (Thu, 16 Aug 2012) | 2 lines
+
+Refactor the "inc" routine.
+
+------------------------------------------------------------------------
+r5134 | mwan | 2012-08-17 18:26:51 -0400 (Fri, 17 Aug 2012) | 3 lines
+
+Implement writing result of subsetting to a NETCDF file for the "inc"
+command. i.e., --subet and -o option together.
+
+------------------------------------------------------------------------
+r5135 | mwan | 2012-08-17 20:37:13 -0400 (Fri, 17 Aug 2012) | 2 lines
+
+More documentation plus some clean up of the 'inc' command.
+
+------------------------------------------------------------------------
+r5136 | mwan | 2012-08-21 14:13:55 -0400 (Tue, 21 Aug 2012) | 2 lines
+
+include file for inc command
+
+------------------------------------------------------------------------
+r5137 | mwan | 2012-08-21 19:44:00 -0400 (Tue, 21 Aug 2012) | 3 lines
+
+Restructure the NETCDF code to support building iRODS client with NETCDF 
+without having to install the NETCDF C library and header files. 
+
+------------------------------------------------------------------------
+r5138 | csmith | 2012-08-23 00:09:30 -0400 (Thu, 23 Aug 2012) | 3 lines
+
+Add a timestamp to rule engine audit xmessages. The format of the message header will now be 'iaudit:<timestamp>:<call label>'.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5139 | schroede | 2012-08-23 16:43:21 -0400 (Thu, 23 Aug 2012) | 5 lines
+
+Update chlRegReplica so that the data_mode field will also be copied
+for the new replicate (row).  Thanks to Howard Lander of RENCI for
+this fix.
+
+
+------------------------------------------------------------------------
+r5140 | schroede | 2012-08-23 19:25:20 -0400 (Thu, 23 Aug 2012) | 4 lines
+
+In msiSendMail, fix a malloc problem to avoid a segfault when a
+subject line is very long.  This was noticed by Tanya Levshina
+(fnal.gov) and discussed on irods-chat.
+
+------------------------------------------------------------------------
+r5141 | mwan | 2012-08-24 18:26:53 -0400 (Fri, 24 Aug 2012) | 2 lines
+
+Add unreg option to msiDataObjUnlink.
+
+------------------------------------------------------------------------
+r5142 | schroede | 2012-08-27 12:14:03 -0400 (Mon, 27 Aug 2012) | 7 lines
+
+Fix a bug in msiSysMetaModify where comparisons on input options can
+fail due to extra characters in a temporary variable.  Just need to
+clear the buffer in case non-zero data is there before using it.  See
+irods-chat discussion, "Using expirytime for tracking access time in
+iRODS 3.1?".
+
+
+------------------------------------------------------------------------
+r5143 | mwan | 2012-08-27 18:48:26 -0400 (Mon, 27 Aug 2012) | 4 lines
+
+change the compilation of the pydap driver to be dependent on NETCDF_API
+instead of OOI_CI to avoid having to install the json and xml library
+for the demo.
+
+------------------------------------------------------------------------
+r5144 | mwan | 2012-08-28 18:58:35 -0400 (Tue, 28 Aug 2012) | 3 lines
+
+Minor NETCDF change to dump all variables if --var is not specified for the
+"inc" command.
+
+------------------------------------------------------------------------
+r5145 | mwan | 2012-08-29 12:10:24 -0400 (Wed, 29 Aug 2012) | 2 lines
+
+handle varibale with zero dimension
+
+------------------------------------------------------------------------
+r5146 | mwan | 2012-08-29 14:59:28 -0400 (Wed, 29 Aug 2012) | 3 lines
+
+Modify dumpNcInqOutToNcFile such that it will get/put chucks of NC_VAR_TRANS_SZ
+if the variable size is too large.
+
+------------------------------------------------------------------------
+r5147 | mwan | 2012-08-29 15:51:49 -0400 (Wed, 29 Aug 2012) | 3 lines
+
+Better handle NETCDF error code. Should add NETCDF code instead since
+netcdf returns negative value for error.
+
+------------------------------------------------------------------------
+r5148 | mwan | 2012-08-29 16:46:46 -0400 (Wed, 29 Aug 2012) | 2 lines
+
+Use NC_NETCDF4 for nc_create if NETCDF4_API is defined.
+
+------------------------------------------------------------------------
+r5149 | mwan | 2012-08-29 17:11:04 -0400 (Wed, 29 Aug 2012) | 3 lines
+
+nc_close sometimes returns -62 for opendap files. Use LOG_NOTICE for 
+rodsLog for now. 
+
+------------------------------------------------------------------------
+r5150 | mwan | 2012-08-29 19:16:08 -0400 (Wed, 29 Aug 2012) | 2 lines
+
+Minor changes in output format for "inc"
+
+------------------------------------------------------------------------
+r5151 | mwan | 2012-08-30 16:48:05 -0400 (Thu, 30 Aug 2012) | 2 lines
+
+Script to test the libcf subseting msi msiNccfGetVara
+
+------------------------------------------------------------------------
+r5152 | mwan | 2012-08-30 16:50:21 -0400 (Thu, 30 Aug 2012) | 3 lines
+
+Move netcdfTest.r to netcdfTest2.r. Add the test files pres_temp_4D.nc and
+sfc_pres_temp.nc.
+
+------------------------------------------------------------------------
+r5153 | mwan | 2012-08-30 17:11:35 -0400 (Thu, 30 Aug 2012) | 2 lines
+
+did a delete by mistake. adding it back
+
+------------------------------------------------------------------------
+r5154 | mwan | 2012-08-30 17:34:25 -0400 (Thu, 30 Aug 2012) | 2 lines
+
+Output array of NC_CHAR as NC_STRING in msiNcGetAttValStrInInqOut.
+
+------------------------------------------------------------------------
+r5155 | mwan | 2012-08-30 18:13:24 -0400 (Thu, 30 Aug 2012) | 3 lines
+
+refactor to extract parseVarStrForSubset and parseSubsetStr so that they can 
+be used by netcdf subsetting msi later.
+
+------------------------------------------------------------------------
+r5156 | mwan | 2012-08-30 19:52:22 -0400 (Thu, 30 Aug 2012) | 3 lines
+
+malloc myBuf in unixFileCopy instead of statically allocated in the stack
+to prevent stack overflow.
+
+------------------------------------------------------------------------
+r5157 | mwan | 2012-08-31 22:20:04 -0400 (Fri, 31 Aug 2012) | 2 lines
+
+add msiNcSubsetVar msi for NETCDF subsetting operation
+
+------------------------------------------------------------------------
+r5158 | mwan | 2012-09-04 18:37:28 -0400 (Tue, 04 Sep 2012) | 4 lines
+
+Complete test for the subsetting msi - msiNcSubsetVar and max/min/ave
+# computation msi - msiNcVarStat
+
+
+------------------------------------------------------------------------
+r5159 | schroede | 2012-09-04 18:39:42 -0400 (Tue, 04 Sep 2012) | 4 lines
+
+Update the example MySrbPath for SRB MSOs to match that used on the
+Micro-Service_Objects page; suggested by Sheau-yen,
+
+
+------------------------------------------------------------------------
+r5160 | mwan | 2012-09-04 18:40:16 -0400 (Tue, 04 Sep 2012) | 2 lines
+
+add msiNcVarStat msi to compute max/min/ave of NETCDF variables.
+
+------------------------------------------------------------------------
+r5161 | xuh | 2012-09-05 13:24:24 -0400 (Wed, 05 Sep 2012) | 1 line
+
+Add a macro switch that enables logging rules executed into a temp file; this feature can be used to generate a list of rules applied in a single run of an icommand; removed used macro switch.
+------------------------------------------------------------------------
+r5162 | schroede | 2012-09-05 15:27:27 -0400 (Wed, 05 Sep 2012) | 5 lines
+
+Add a function to validate strings used in 'system' system calls and
+use it in msiSendMail and msiAutoReplicateService (UnixSendEmail).
+Added a specific error code for this.
+
+
+------------------------------------------------------------------------
+r5163 | schroede | 2012-09-05 17:17:40 -0400 (Wed, 05 Sep 2012) | 6 lines
+
+Correct an inadvertent dependency on settings in a 'devtest'
+sub-script.  In the tpwforother (temp password for other) test, need
+to use the admin password as that's the context for the hash (not the
+other user's).
+
+
+------------------------------------------------------------------------
+r5164 | schroede | 2012-09-06 12:27:02 -0400 (Thu, 06 Sep 2012) | 16 lines
+
+Changes to improve performance for ichmod in instances where large
+numbers of access control items (ACLs) are being used (users/groups),
+for example at the iPlant Collaborative.
+
+In chlModAccessControl and _modInheritance (called by it), changed the
+SQL to no longer use a substr operation as that causes the indexes to
+be inapplicable.  Instead, the functions create a path string, with
+escaped (\) SQL special characters (_ and %) ending with /% that is
+used via a 'like' clause (to find all sub-collections).
+
+The psql 'explain' description indicates that this should perform
+significantly better.  We have not yet been able to test it at scale
+but it should perform at least as well, and appears to function
+correctly.
+
+
+------------------------------------------------------------------------
+r5165 | mwan | 2012-09-06 14:38:20 -0400 (Thu, 06 Sep 2012) | 3 lines
+
+Mod from Thomas Ledoux of the French National Library to make the reServer 
+logfile to rotate.
+
+------------------------------------------------------------------------
+r5166 | mwan | 2012-09-06 16:25:06 -0400 (Thu, 06 Sep 2012) | 3 lines
+
+Separate definition for PYDAP, TDS and ERDDAP so that these drivers can be
+built separately instead of lumping them under OOI
+
+------------------------------------------------------------------------
+r5167 | xuh | 2012-09-06 16:59:35 -0400 (Thu, 06 Sep 2012) | 1 line
+
+Fix a problem that the RULE_ENGINE_N macro definition compiler flag is not propagated to modules.
+------------------------------------------------------------------------
+r5168 | csmith | 2012-09-07 04:10:18 -0400 (Fri, 07 Sep 2012) | 3 lines
+
+Implemented hostname verification checking in the SSL client.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5169 | schroede | 2012-09-07 18:53:04 -0400 (Fri, 07 Sep 2012) | 25 lines
+
+When displaying ACLs for groups in ils via the new specific-query,
+prepend a "g:" to group nemes to differentiate them from users.
+
+This is an extension to r5072 in which user-groups are no longer
+expanded to individual users (if the specific query is defined).
+
+For today's change, the specific query needs to be modified from the
+r5072 version:
+
+iadmin rsq ShowCollAcls  (remove old specific query if it exists)
+
+Then, on one line:
+
+iadmin asq "select distinct R_USER_MAIN.user_name,
+R_USER_MAIN.zone_name, R_TOKN_MAIN.token_name,
+R_USER_MAIN.user_type_name from R_USER_MAIN , R_TOKN_MAIN,
+R_OBJT_ACCESS, R_COLL_MAIN where R_OBJT_ACCESS.object_id =
+R_COLL_MAIN.coll_id AND r_COLL_MAIN.coll_name = ? AND
+R_TOKN_MAIN.token_namespace = 'access_type' AND R_USER_MAIN.user_id =
+R_OBJT_ACCESS.user_id AND R_OBJT_ACCESS.access_type_id =
+R_TOKN_MAIN.token_id" ShowCollAcls
+
+This adds the R_USER_MAIN.user_type_name to the selected fields.
+
+
+------------------------------------------------------------------------
+r5170 | mwan | 2012-09-07 20:13:21 -0400 (Fri, 07 Sep 2012) | 2 lines
+
+NETCDF API documentation
+
+------------------------------------------------------------------------
+r5171 | xuh | 2012-09-09 13:33:04 -0400 (Sun, 09 Sep 2012) | 1 line
+
+Fix a problem where a backward compatibility feature is available under nonbackward compatible mode in the rule engine.
+------------------------------------------------------------------------
+r5172 | xuh | 2012-09-09 15:57:06 -0400 (Sun, 09 Sep 2012) | 1 line
+
+Remove repeated constant definition and mismatching constant usage in the rule engine.
+------------------------------------------------------------------------
+r5173 | xuh | 2012-09-09 16:04:52 -0400 (Sun, 09 Sep 2012) | 1 line
+
+Add some new features to the parser library.
+------------------------------------------------------------------------
+r5174 | terrell | 2012-09-10 09:01:05 -0400 (Mon, 10 Sep 2012) | 1 line
+
+add note to irm help describing how to remove a replica on a named resource (use itrim instead)
+------------------------------------------------------------------------
+r5175 | schroede | 2012-09-10 12:54:30 -0400 (Mon, 10 Sep 2012) | 5 lines
+
+Un-do r4917, which added a data-object system metadata field and
+column for data-object registration (chlRegDataObj), modification
+(chlModDataObjMeta), and queries.  This was added for something 
+Mike W was developing but he has since decided against.
+
+------------------------------------------------------------------------
+r5176 | mwan | 2012-09-10 13:16:15 -0400 (Mon, 10 Sep 2012) | 2 lines
+
+iMinor chnage with ifdef OOI
+
+------------------------------------------------------------------------
+r5177 | xuh | 2012-09-10 15:21:37 -0400 (Mon, 10 Sep 2012) | 1 line
+
+Source and header files changes so that the rule engine can be compiled separately from the irods server. They can now be compiled from the command line.
+------------------------------------------------------------------------
+r5178 | mwan | 2012-09-10 17:33:26 -0400 (Mon, 10 Sep 2012) | 2 lines
+
+Minor change in documentation
+
+------------------------------------------------------------------------
+r5179 | mwan | 2012-09-10 17:34:52 -0400 (Mon, 10 Sep 2012) | 2 lines
+
+Doxygen documentation of rcNccfGetVara.
+
+------------------------------------------------------------------------
+r5180 | mwan | 2012-09-12 15:57:22 -0400 (Wed, 12 Sep 2012) | 2 lines
+
+Minor NETCDF ifdef changes
+
+------------------------------------------------------------------------
+r5181 | schroede | 2012-09-12 17:05:18 -0400 (Wed, 12 Sep 2012) | 2 lines
+
+Add 5 new resource-types for recent additions made by Mike W.
+
+------------------------------------------------------------------------
+r5182 | mwan | 2012-09-12 21:03:25 -0400 (Wed, 12 Sep 2012) | 2 lines
+
+Minor doc change
+
+------------------------------------------------------------------------
+r5183 | mwan | 2012-09-12 21:05:38 -0400 (Wed, 12 Sep 2012) | 2 lines
+
+Take out handlerFlag in _rsDataObjPut. It is not longer used.
+
+------------------------------------------------------------------------
+r5184 | jeanyves | 2012-09-14 11:14:48 -0400 (Fri, 14 Sep 2012) | 3 lines
+
+add quotes for parameters input to be fed to the univMSSInterface.sh script.
+This allows to take care for phys file path with empty spaces.
+
+------------------------------------------------------------------------
+r5185 | mwan | 2012-09-14 14:42:02 -0400 (Fri, 14 Sep 2012) | 3 lines
+
+Handle replication of zero length file to compound resources - create
+a file whenever possible
+
+------------------------------------------------------------------------
+r5186 | mwan | 2012-09-14 19:16:12 -0400 (Fri, 14 Sep 2012) | 2 lines
+
+Add comment, slight restructure and spelling to make it easier to read.
+
+------------------------------------------------------------------------
+r5187 | terrell | 2012-09-14 21:14:53 -0400 (Fri, 14 Sep 2012) | 1 line
+
+fix single typo
+------------------------------------------------------------------------
+r5188 | mwan | 2012-09-17 17:01:38 -0400 (Mon, 17 Sep 2012) | 3 lines
+
+Add capability to register data with dataType == "netcdf" if the resource
+type is TDS, ERDDAP or PYDAP.
+
+------------------------------------------------------------------------
+r5189 | schroede | 2012-09-18 13:22:18 -0400 (Tue, 18 Sep 2012) | 4 lines
+
+Add a description of how to have single quotes(') in the specific
+query SQL in the iadmin help text for asq (add specific query).
+
+
+------------------------------------------------------------------------
+r5190 | schroede | 2012-09-18 16:26:24 -0400 (Tue, 18 Sep 2012) | 2 lines
+
+Add netcdf and hdf5 data-types
+
+------------------------------------------------------------------------
+r5191 | mwan | 2012-09-18 18:00:29 -0400 (Tue, 18 Sep 2012) | 2 lines
+
+Fix a CAT_UNKNOWN_FILE error from overwriting a mounted file with icp
+
+------------------------------------------------------------------------
+r5192 | mwan | 2012-09-18 19:28:47 -0400 (Tue, 18 Sep 2012) | 3 lines
+
+add routines timeToAsci and asciToTime to convert between asci time and
+time_t UTC time
+
+------------------------------------------------------------------------
+r5193 | mwan | 2012-09-18 19:30:23 -0400 (Tue, 18 Sep 2012) | 2 lines
+
+Add data struct for aggregation of NETCDF files. Not done yet.
+
+------------------------------------------------------------------------
+r5194 | mwan | 2012-09-18 19:46:06 -0400 (Tue, 18 Sep 2012) | 2 lines
+
+Data Struct for NETCDF files aggregation
+
+------------------------------------------------------------------------
+r5195 | mwan | 2012-09-19 11:43:23 -0400 (Wed, 19 Sep 2012) | 2 lines
+
+Take out overlapping rstrcpy in parseRodsPath as suggested by a user.
+
+------------------------------------------------------------------------
+r5196 | schroede | 2012-09-19 13:36:35 -0400 (Wed, 19 Sep 2012) | 4 lines
+
+Fix a typo (the case on one character) in the definition of the
+ShowCollAcls specific-query.  Makes a difference when MySQL is the
+ICAT DBMS (table names are case sensitive).
+
+------------------------------------------------------------------------
+r5197 | mwan | 2012-09-19 18:27:00 -0400 (Wed, 19 Sep 2012) | 3 lines
+
+Add --SUBSET option to "inc" to do subsetting by the values of the dimension
+variable instead of the dimension index. code has not been tested yet.
+
+------------------------------------------------------------------------
+r5198 | schroede | 2012-09-19 18:28:15 -0400 (Wed, 19 Sep 2012) | 4 lines
+
+Un-do r4288 (Aug 9) where we were adding data_reg_user_id for this
+too, as we've now removed it again.  This is needed for the NCCS
+extensions to continue to work.
+
+------------------------------------------------------------------------
+r5199 | mwan | 2012-09-20 12:25:01 -0400 (Thu, 20 Sep 2012) | 2 lines
+
+Fix from last checkin
+
+------------------------------------------------------------------------
+r5200 | mwan | 2012-09-20 17:39:26 -0400 (Thu, 20 Sep 2012) | 2 lines
+
+Documentation of the 4 server internal levels
+
+------------------------------------------------------------------------
+r5201 | mwan | 2012-09-20 19:09:23 -0400 (Thu, 20 Sep 2012) | 2 lines
+
+Add comment on why TRANSLATED_PATH_KW was used for collection
+
+------------------------------------------------------------------------
+r5202 | mwan | 2012-09-21 17:40:28 -0400 (Fri, 21 Sep 2012) | 4 lines
+
+Added and tested the --SUBSET option of 'inc' to allow subsetting conditions 
+to be specified using on the values of the dimension valuable instead of using
+the dimension indeces.
+
+------------------------------------------------------------------------
+r5203 | csmith | 2012-09-22 04:44:35 -0400 (Sat, 22 Sep 2012) | 7 lines
+
+Support added for the storageadmin role
+
+One can run an iRODS data server with very limited privilege by running the server using user credentials for a user of type 'storageadmin'. When running a server with this privilege level, a user can connect to the server to perform operations of data objects (i.e. put and get), but the server can only relay client connections to the zone's ICAT server with NO_USER_AUTH privilege level, except for limited operations (GEN_QUERY_AN).
+
+This mode is best used when you want to let somebody add a storage server to your zone, but don't want to give them rodsadmin privilege.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5204 | antoine | 2012-09-24 11:56:28 -0400 (Mon, 24 Sep 2012) | 2 lines
+
+Fixed a bug in msiGetDataObjAIP reported by Terrell.
+
+------------------------------------------------------------------------
+r5205 | mwan | 2012-09-25 14:22:12 -0400 (Tue, 25 Sep 2012) | 2 lines
+
+add comment
+
+------------------------------------------------------------------------
+r5206 | mwan | 2012-09-25 15:01:12 -0400 (Tue, 25 Sep 2012) | 2 lines
+
+Add mso work done by Raja
+
+------------------------------------------------------------------------
+r5207 | mwan | 2012-09-25 15:15:20 -0400 (Tue, 25 Sep 2012) | 2 lines
+
+add missing module for MSSO
+
+------------------------------------------------------------------------
+r5208 | schroede | 2012-09-25 15:36:20 -0400 (Tue, 25 Sep 2012) | 2 lines
+
+Add the new msso data-type to the 3.2 sql patch file
+
+------------------------------------------------------------------------
+r5209 | schroede | 2012-09-25 17:46:08 -0400 (Tue, 25 Sep 2012) | 50 lines
+
+Changes to support current GSI (Globus 5.2.1) and/or GSI installations
+without type; irodssetup, Makefiles, and igsi.c.
+
+In igsi.c, changed some variables as needed to build with 5.2.1.  This
+is ifdef'ed but on by default.
+
+In irodssetup and the Makefiles, handle a different pattern of GSI
+include files and library names.  The include files are actually under
+/usr/local/globus-5.2.1/include/globus but via the new 'none' option
+we use -I/usr/local/globus-5.2.1/include/ which seems to work.  The
+Mekefiles, for 'none', now can use library name patterns without '_'
+and the install type.  I had been working on something like this with
+a site months ago for a similar problem, but they were unable to test
+it.
+
+This was tested on a local Ubuntu desktop system, installing GSI via
+gt5.2.1-all-source-installer.tar.gz.  Had tried
+globus-repository-5.2-stable-lucid_0.0.3_all.deb but it didn't seem to
+include what is needed for building GSI clients such as iRODS.  Tried
+various experiments, but the following worked:
+
+Procedure:
+create user 'globus'
+make /usr/local/globus-5.2.1 and chown to globus
+download gt5.2.1-all-source-installer.tar.gz from globus web site
+Then as user 'globus':
+tar xf gt5.2.1-all-source-installer.tar.gz
+cd gt5.2.1-all-source-installer
+export GLOBUS_LOCATION=/usr/local/globus-5.2.1
+./configure --prefix $GLOBUS_LOCATION
+make
+(Doesn't seem to need 'make install')
+
+Then with these changes in iRODS, I was able to run 'irodssetup' and
+select GSI, use /usr/local/globus-5.2.1 as globus location, and use
+'none' as the GSI install type, and it builds and links OK.  For
+clients (i-commands), to avoid a missing load libraries one needs to:
+  export GLOBUS_LOCATION=/usr/local/globus-5.2.1 
+  source $GLOBUS_LOCATION/etc/globus-user-env.sh 
+(instead of the source, could probably just set the LD_LIBRARY_PATH to
+include /usr/local/globus-5.2.1/lib )
+
+I had trouble trying to make the globus simpleCA (Certificate
+Authority), but documents indicate that it's just a wrapper around the
+OpenSSL 'ca' command, so I expect I can just use 'openssl ca'.
+
+I still need to actually test this by making some certificates,
+setting it all up, and using it, but the changes in this commit seem
+valid.
+
+------------------------------------------------------------------------
+r5210 | mwan | 2012-09-25 19:00:59 -0400 (Tue, 25 Sep 2012) | 2 lines
+
+Add comments on collInfo1 and collInfo2
+
+------------------------------------------------------------------------
+r5211 | csmith | 2012-09-25 19:15:18 -0400 (Tue, 25 Sep 2012) | 3 lines
+
+Make sure storageadmin is from the local zone.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5212 | schroede | 2012-09-26 09:01:39 -0400 (Wed, 26 Sep 2012) | 3 lines
+
+Update the version ids of the irodssetup sub-scripts that have been
+updated since the last release.
+
+------------------------------------------------------------------------
+r5213 | schroede | 2012-09-26 09:32:44 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Fix a compiler warning
+
+------------------------------------------------------------------------
+r5214 | schroede | 2012-09-26 10:07:31 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Fix a compiler warning
+
+------------------------------------------------------------------------
+r5215 | schroede | 2012-09-26 12:14:45 -0400 (Wed, 26 Sep 2012) | 3 lines
+
+Convert the postgres patch file to a patch file for all 3 DBMS types
+since the needed SQL is the same for all.
+
+------------------------------------------------------------------------
+r5216 | schroede | 2012-09-26 12:16:11 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Change the upgrade notice for the ICAT patch file for 3.2.
+
+------------------------------------------------------------------------
+r5217 | schroede | 2012-09-26 13:55:33 -0400 (Wed, 26 Sep 2012) | 3 lines
+
+Add inc and incattr to ihelp and those and some missing ones (ifsck,
+ilocate, ips) to the list that can be run with -h for detailed help.
+
+------------------------------------------------------------------------
+r5218 | mwan | 2012-09-26 14:21:11 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Add usage comment
+
+------------------------------------------------------------------------
+r5219 | antoine | 2012-09-26 14:45:35 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Fixed a typo
+
+------------------------------------------------------------------------
+r5220 | mwan | 2012-09-26 20:09:33 -0400 (Wed, 26 Sep 2012) | 2 lines
+
+Add comment
+
+------------------------------------------------------------------------
+r5221 | mwan | 2012-09-27 12:23:29 -0400 (Thu, 27 Sep 2012) | 2 lines
+
+minor comment change
+
+------------------------------------------------------------------------
+r5222 | jeanyves | 2012-09-27 13:34:23 -0400 (Thu, 27 Sep 2012) | 2 lines
+
+add some explanation in the help page for the "-n" option.
+
+------------------------------------------------------------------------
+r5223 | schroede | 2012-09-27 14:14:54 -0400 (Thu, 27 Sep 2012) | 3 lines
+
+A couple refinements for update r5162 to work under Solaris and be a
+bit more fail-safe.
+
+------------------------------------------------------------------------
+r5224 | antoine | 2012-09-28 03:00:44 -0400 (Fri, 28 Sep 2012) | 2 lines
+
+Headers for plug-able microservice interface
+
+------------------------------------------------------------------------
+r5225 | antoine | 2012-09-28 03:02:07 -0400 (Fri, 28 Sep 2012) | 2 lines
+
+Headers for plug-able microservice interface
+
+------------------------------------------------------------------------
+r5226 | antoine | 2012-09-28 03:10:13 -0400 (Fri, 28 Sep 2012) | 2 lines
+
+Added code for plug-able ms interface
+
+------------------------------------------------------------------------
+r5227 | antoine | 2012-09-28 03:12:19 -0400 (Fri, 28 Sep 2012) | 2 lines
+
+Added missing #ifndef 
+
+------------------------------------------------------------------------
+r5228 | csmith | 2012-09-28 03:48:08 -0400 (Fri, 28 Sep 2012) | 7 lines
+
+Implementation of exclude patterns for ireg -C
+
+There is a new option to ireg, '--exclude-from', which takes as an argument a file of pathname pattern matches evaluated by fnmatch(3). During a recursive registration, any pathname that matches one of the patterns will not be registered.
+
+The --exclude-from file must be readable on the data server where the files will be registered, and the file format is one pattern per line. Lines starting with '#' are treated as comments.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5229 | schroede | 2012-09-28 11:39:23 -0400 (Fri, 28 Sep 2012) | 2 lines
+
+Update the version and release date for releasing 3.2 next week.
+
+------------------------------------------------------------------------
+r5230 | schroede | 2012-09-28 14:25:24 -0400 (Fri, 28 Sep 2012) | 2 lines
+
+Updates for 3.2
+
+------------------------------------------------------------------------
+r5231 | antoine | 2012-10-01 14:31:05 -0400 (Mon, 01 Oct 2012) | 2 lines
+
+Pluggable microservice code, not included for compilation by default.
+
+------------------------------------------------------------------------
+r5232 | antoine | 2012-10-01 14:33:36 -0400 (Mon, 01 Oct 2012) | 2 lines
+
+e-iRODS header 
+
+------------------------------------------------------------------------
+r5233 | antoine | 2012-10-01 14:37:18 -0400 (Mon, 01 Oct 2012) | 2 lines
+
+rename a e-irods header
+
+------------------------------------------------------------------------
+r5234 | schroede | 2012-10-01 18:40:17 -0400 (Mon, 01 Oct 2012) | 2 lines
+
+Bump doxygen version numbers for upcoming release (3.2)
+
+------------------------------------------------------------------------
+r5235 | mwan | 2012-10-02 14:26:06 -0400 (Tue, 02 Oct 2012) | 3 lines
+
+Modify comment on msiSetReServerNumProc that numProc=0 is no longer
+supported.
+
+------------------------------------------------------------------------
+r5236 | antoine | 2012-10-02 18:06:49 -0400 (Tue, 02 Oct 2012) | 2 lines
+
+e-irods source, not compiled by default.
+
+------------------------------------------------------------------------
+r5237 | mwan | 2012-10-02 18:43:12 -0400 (Tue, 02 Oct 2012) | 3 lines
+
+Move ncInq, inqAtt and getAttValue from the server to the client for
+nc aggregate development.
+
+------------------------------------------------------------------------
+r5238 | mwan | 2012-10-02 19:19:13 -0400 (Tue, 02 Oct 2012) | 2 lines
+
+change the name of a netcdf struct. This struct is not being used
+
+------------------------------------------------------------------------
+r5239 | xuh | 2012-10-02 21:26:52 -0400 (Tue, 02 Oct 2012) | 1 line
+
+Make language integrated general not dependent on msiMakeGenQuery. Fixed bugs in language integrated general query.
+------------------------------------------------------------------------
+r5240 | csmith | 2012-10-03 17:20:23 -0400 (Wed, 03 Oct 2012) | 5 lines
+
+rcAuthCheck must talk to a MASTER_RCAT
+
+Since the chlCheckAuth function called from rsAuthCheck modifies the ICAT, it is no longer possible to perform this function on a SLAVE_RCAT machine.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+
