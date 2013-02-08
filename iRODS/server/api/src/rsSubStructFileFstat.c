@@ -84,6 +84,8 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
     struct_obj.comm( _comm );
     struct_obj.file_descriptor( _fstat_inp->fd );
 
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
     struct stat fs;

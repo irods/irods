@@ -149,6 +149,11 @@ namespace eirods {
         /// @brief top level function to gather the post disconnect maintenance 
         //         operations from the resources, in breadth first order
         error gather_operations(void);
+  
+        // =-=-=-=-=-=-=-
+        /// @brief top level function to call the start operation on the resource
+        //         plugins
+        error start_resource_plugins(void);
         
         // =-=-=-=-=-=-=-
         /// @brief lower level recursive call to gather the post disconnect 

@@ -73,6 +73,8 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
     eirods::structured_object struct_obj( *_sub_file );
     struct_obj.comm( _comm );
 
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
     // call abstrcated interface to stat
     struct stat my_stat;

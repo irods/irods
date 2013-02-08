@@ -78,6 +78,8 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     eirods::structured_object struct_obj( *_sub_file );
     struct_obj.comm( _comm );
 
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
     // force the opening of a file?
     if (_sub_file->flags & FORCE_FLAG) {

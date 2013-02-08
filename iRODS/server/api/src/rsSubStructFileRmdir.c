@@ -71,6 +71,8 @@ int _rsSubStructFileRmdir( rsComm_t*  _comm,
     eirods::structured_object struct_obj( *_sub_file );
     struct_obj.comm( _comm );
 
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
     // call abstrcated interface to rmdir
     eirods::error rmdir_err = fileRmdir( _comm, struct_obj );

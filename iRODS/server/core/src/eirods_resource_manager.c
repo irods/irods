@@ -267,6 +267,13 @@ st.dump();
         }
 
         // =-=-=-=-=-=-=-
+        // call start for plugins
+        error start_err = start_resource_plugins();
+        if( !start_err.ok() ) {
+            return PASSMSG( "start_resource_plugins failed.", start_err );
+        }
+
+        // =-=-=-=-=-=-=-
         // win!
         return SUCCESS();
 
@@ -448,18 +455,6 @@ st.dump();
             // add new resource to the map
             resources_[ tmpRescName ] = resc;
 
-            // =-=-=-=-=-=-=-
-            // call the start operation on the resource
-            error start_err = resc->start_operation();
-            if( !start_err.ok() ) {
-                std::stringstream msg;
-                msg << "resource_manager::process_init_results - failed ";
-                msg << "call start_operation on resource [";
-                msg << tmpRescName;
-                msg << "]";
-                log( ERROR( -1, msg.str() ) );
-            }
-
         } // for i
 
         
@@ -576,7 +571,6 @@ st.dump();
                 if(!ret.ok()) {
                     result = PASSMSG( "init_child_map failed.", ret);
                 } else {
-
                     // Get the list of children and their contexts from the resource
                     children_parser parser;
                     parser.set_string(children_string);
@@ -781,6 +775,29 @@ st.dump();
         return SUCCESS();
 
     } // gather_operations_recursive
+
+    // =-=-=-=-=-=-=-
+    // public - call the start op on the resource plugins
+    error resource_manager::start_resource_plugins( ) {
+        // =-=-=-=-=-=-=-
+        // iterate through resource plugins
+        lookup_table< resource_ptr >::iterator itr;
+        for( itr  = resources_.begin();
+             itr != resources_.end(); 
+             ++itr ) {
+            // =-=-=-=-=-=-=-
+            // if any resources need a pdmo, return true;
+            error ret = itr->second->start_operation( );
+            if( !ret.ok() ) {
+                eirods::log( ret );
+            }
+
+        } // for itr
+
+        return SUCCESS();
+
+    } // start_resource_operations
+
 
     // =-=-=-=-=-=-=-
     // public - exec the pdmos ( post disconnect maintenance operations ) in order

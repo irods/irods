@@ -84,6 +84,8 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
     struct_obj.comm( _comm );
     struct_obj.file_descriptor( _read_inp->fd );
 
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
     eirods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _read_inp->len );
