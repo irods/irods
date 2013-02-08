@@ -48,6 +48,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - interface to determine if a PDMO is necessary
     error plugin_base::need_post_disconnect_maintenance_operation( bool& _b ) {
+        rodsLog( LOG_NOTICE, "plugin_base::need_post_disconnect_maintenance_operation called [%s]", instance_name_.c_str() );
         _b = false;
         return SUCCESS();
     } // need_post_disconnect_maintenance_operation

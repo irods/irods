@@ -23,6 +23,8 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
+#include "eirods_hierarchy_parser.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -69,6 +71,32 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     //char *rescGroupName = NULL;
     //rescInfo_t *tmpRescInfo = NULL;
 
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    int          local = LOCAL_HOST;
+    std::string  hier;
+    if( getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        rodsServerHost_t* host  =  0;
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                       phyPathRegInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in eirods::resource_redirect for [";
+            msg << phyPathRegInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &phyPathRegInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+
     if ((tmpStr = getValByKey (&phyPathRegInp->condInput,
                                COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, UNMOUNT_STR) == 0) {
         status = unmountFileDir (rsComm, phyPathRegInp);
@@ -81,12 +109,21 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         status = linkCollReg (rsComm, phyPathRegInp);
         return (status);
     }
+//        if( LOCAL_HOST == local ) {
+ 
+
 
     // =-=-=-=-=-=-=-
     // 
     // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
     std::string resc_name;
-    eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
+    //eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
+
+    eirods::hierarchy_parser parser;
+    parser.set_string( hier );
+    parser.first_resc( resc_name );
+
+rodsLog( LOG_NOTICE, "XXXX - rsPhyPathReg :: heir [%s], first [%s]", hier.c_str(), resc_name.c_str() );
 
     rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
@@ -97,6 +134,10 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
          delete rescGrpInfo;
          return -1;
     }
+   
+   
+   
+   
     
     memset (&addr, 0, sizeof (addr));
     

@@ -76,6 +76,8 @@ int _rsSubStructFileWrite( rsComm_t*                _comm,
     struct_obj.file_descriptor( _write_inp->fd );
     struct_obj.comm( _comm );
 
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
     // call abstrcated interface to write
     eirods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );

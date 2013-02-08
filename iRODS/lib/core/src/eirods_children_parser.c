@@ -104,8 +104,12 @@ namespace eirods {
 
     error children_parser::first_child(
         std::string& _child) {
-        _child = children_list_.begin()->first;
-        return SUCCESS();
+        if( children_list_.empty() ) {
+            return ERROR( -1, "children_parser::first_child - empty child string" );
+        } else {
+            _child = children_list_.begin()->first;
+            return SUCCESS();
+        }
     }
 
 }; // namespace eirods

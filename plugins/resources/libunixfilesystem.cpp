@@ -1528,7 +1528,8 @@ extern "C" {
         }; // class maintenance_operation
 
     public:
-        unixfilesystem_resource( const std::string& _inst_name, const std::string& _context ) : 
+        unixfilesystem_resource( const std::string& _inst_name, 
+                                 const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
 
             if( !context_.empty() ) {
@@ -1564,6 +1565,13 @@ extern "C" {
             } // if context not empty
 
         } // ctor
+
+
+        eirods::error need_post_disconnect_maintenance_operation( bool& _b ) {
+            _b = false;
+            return SUCCESS();
+        }
+
 
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after

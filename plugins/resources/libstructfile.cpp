@@ -1003,6 +1003,7 @@ extern "C" {
         // build a file unlink structure to pass off to the server api call
         fileUnlinkInp_t fileUnlinkInp;
         memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
+        strncpy( fileUnlinkInp.rescHier, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir

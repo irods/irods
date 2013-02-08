@@ -2148,7 +2148,6 @@ chlDelChildResc(
     int status;
     char resc_id[MAX_NAME_LEN];
     std::string child_string(rescInfo->rescChildren);
-    
     std::string child;
     eirods::children_parser parser;
     parser.set_string(child_string);
