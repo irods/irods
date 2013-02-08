@@ -23,7 +23,7 @@ JMC - Done :: r4892 | terrell | 2012-03-22 09:10:29 -0400 (Thu, 22 Mar 2012) | 1
 
 add msiSetKeyValuePairsToObj to doxygen front page
 ------------------------------------------------------------------------
-r4893 | xuh | 2012-03-26 21:02:55 -0400 (Mon, 26 Mar 2012) | 1 line
+JMC - Done :: r4893 | xuh | 2012-03-26 21:02:55 -0400 (Mon, 26 Mar 2012) | 1 line
 
 Fix a problem found by Jean-Yves with reServer that deletes delayed repeated rules even though the rule executed successfully.
 ------------------------------------------------------------------------
