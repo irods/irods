@@ -695,20 +695,34 @@ waitAndFreeReThr (rsComm_t *rsComm, reExec_t *reExec) // JMC - backport 4695
            
            status1 = getReInfoById (rsComm, ruleExecId, &genQueryOut);
            if (status1 >= 0) {
-               /* something wrong since the entry is not deleted. could
-                * be core dump */
-               freeGenQueryOut (&genQueryOut);
-                if ((reExecProc->jobType & RE_FAILED_STATUS) == 0) {
-                    /* first time. just mark it RE_FAILED */
-                    regExeStatus (rsComm, ruleExecId, RE_FAILED);
-                } else {
-                   ruleExecDelInp_t ruleExecDelInp;
-                   rodsLog (LOG_ERROR,
-                     "waitAndFreeReThr: %s executed but still in iCat. Job deleted",
-                     ruleExecId);
-                   rstrcpy (ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN);
-                    status = rsRuleExecDel (rsComm, &ruleExecDelInp);
+               sqlResult_t *exeFrequency, *exeStatus;
+               if ((exeFrequency = getSqlResultByInx (genQueryOut,
+                COL_RULE_EXEC_FREQUENCY)) == NULL) {
+                   rodsLog (LOG_NOTICE,
+                    "waitAndFreeReThr:getResultByInx for RULE_EXEC_FREQUENCY failed");
                }
+               if ((exeStatus = getSqlResultByInx (genQueryOut,
+                COL_RULE_EXEC_STATUS)) == NULL) {
+                   rodsLog (LOG_NOTICE,
+                            "waitAndFreeReThr:getResultByInx for RULE_EXEC_STATUS failed");
+               }
+
+               if(exeFrequency == NULL || strlen(exeFrequency->value) == 0 || strcmp(exeStatus->value, RE_RUNNING) == 0) {
+                   /* something wrong since the entry is not deleted. could
+                    * be core dump */
+                    if ((reExecProc->jobType & RE_FAILED_STATUS) == 0) {
+                        /* first time. just mark it RE_FAILED */
+                        regExeStatus (rsComm, ruleExecId, RE_FAILED);
+                    } else {
+                       ruleExecDelInp_t ruleExecDelInp;
+                       rodsLog (LOG_ERROR,
+                         "waitAndFreeReThr: %s executed but still in iCat. Job deleted",
+                         ruleExecId);
+                       rstrcpy (ruleExecDelInp.ruleExecId, ruleExecId, NAME_LEN);
+                        status = rsRuleExecDel (rsComm, &ruleExecDelInp);
+                   }
+               }
+               freeGenQueryOut (&genQueryOut);
            }
            freeReThr (reExec, thrInx);
        }        
