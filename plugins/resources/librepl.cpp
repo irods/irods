@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Plug-in defining a replicating resource. This resource isn't particularly useful except for testing purposes.
+// Plug-in defining a replicating resource. This resource makes sure that all of its data is replicated to all of its children
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -9,6 +9,7 @@
 // irods includes
 #include "msParam.h"
 #include "reGlobalsExtern.h"
+#include "dataObjRepl.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -18,6 +19,7 @@
 #include "eirods_string_tokenize.h"
 #include "eirods_hierarchy_parser.h"
 #include "eirods_resource_backport.h"
+#include "eirods_plugin_base.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -63,7 +65,8 @@
 
 
 
-
+typedef std::vector<eirods::hierarchy_parser> child_list_t;
+typedef std::vector<eirods::first_class_object> object_list_t;
 
 extern "C" {
 
@@ -1261,6 +1264,151 @@ extern "C" {
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class repl_resource : public eirods::resource {
+
+        // create a class for doing the post disconnect operations. For the repl resource the post disconnect operation will be to
+        // replicate the current file object to all children other than the currently selected child
+        class repl_pdmo {
+        public:
+            /// @brief ctor
+            repl_pdmo(eirods::resource_property_map& _prop_map) : properties_(_prop_map) {
+            }
+            
+            /// @brief cctor
+            repl_pdmo(const repl_pdmo& _rhs) : properties_(_rhs.properties_) {
+            }
+
+            /// @brief assignment operator
+            repl_pdmo& operator=(const repl_pdmo& _rhs) {
+                properties_ = _rhs.properties_;
+                return *this;
+            }
+
+            /// @brief ftor
+            eirods::error operator()(
+                rcComm_t* _comm)
+                {
+                    eirods::error result = SUCCESS();
+                    eirods::error ret;
+                    if(pdmo_needed()) {
+                        std::string selected_hierarchy;
+                        std::string root_resource;
+                        ret = get_selected_hierarchy(selected_hierarchy, root_resource);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to get the selected hierarchy information.";
+                            result = PASSMSG(msg.str(), ret);
+                        } else {
+                            ret = replicate_children(_comm, selected_hierarchy, root_resource);
+                            if(!ret.ok()) {
+                                std::stringstream msg;
+                                msg << __FUNCTION__;
+                                msg << " - Failed to replicate the selected object, \"" << selected_hierarchy << "\" to the other children";
+                                result = PASSMSG(msg.str(), ret);
+                            }
+                        }
+                    }
+                    return result;
+                }
+            
+        private:
+            bool pdmo_needed(void)
+                {
+                    bool result = false;
+                    bool need_pdmo;
+                    eirods::error ret;
+                    ret = properties_.get<bool>("Need PDMO", need_pdmo);
+                    if(ret.ok()) {
+                        result = need_pdmo;
+                    }
+                    return result;
+                }
+
+            eirods::error get_selected_hierarchy(
+                std::string& _hier_string,
+                std::string& _root_resc)
+                {
+                    eirods::error result = SUCCESS();
+                    eirods::error ret;
+                    eirods::hierarchy_parser selected_parser;
+                    ret = properties_.get<eirods::hierarchy_parser>("hierarchy", selected_parser);
+                    if(!ret.ok()) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__;
+                        msg << " - Failed to get the parser for the selected resource hierarchy.";
+                        result = PASSMSG(msg.str(), ret);
+                    } else {
+                        ret = selected_parser.str(_hier_string);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to get the hierarchy string from the parser.";
+                            result = PASSMSG(msg.str(), ret);
+                        } else {
+                            ret = selected_parser.first_resc(_root_resc);
+                            if(!ret.ok()) {
+                                std::stringstream msg;
+                                msg << __FUNCTION__;
+                                msg << " - Failed to get the root resource from the parser.";
+                                result = PASSMSG(msg.str(), ret);
+                            }
+                        }
+                    }
+                    return result;
+                }
+
+            eirods::error replicate_children(
+                rcComm_t* _comm,
+                const std::string& _selected_hierarchy,
+                const std::string& _root_resc)
+                {
+                    eirods::error result = SUCCESS();
+                    eirods::error ret;
+                    child_list_t children;
+                    ret = properties_.get<child_list_t>("child list", children);
+                    // its okay if there are no other children
+                    if(ret.ok()) {
+                        child_list_t::const_iterator child_it;
+                        for(child_it = children.begin(); result.ok() && child_it != children.end(); ++child_it) {
+                            eirods::hierarchy_parser parser = *child_it;
+                            std::string hierarchy_string;
+                            parser.str(hierarchy_string);
+                            object_list_t objects;
+                            ret = properties_.get<object_list_t>("object list", objects);
+                            if(!ret.ok()) {
+                                std::stringstream msg;
+                                msg << __FUNCTION__;
+                                msg << " - Failed to get the resources object list.";
+                                result = PASSMSG(msg.str(), ret);
+                            } else {
+                                object_list_t::const_iterator object_it;
+                                for(object_it = objects.begin(); result.ok() && object_it != objects.end(); ++object_it) {
+                                    eirods::first_class_object object = *object_it;
+                                    dataObjInp_t dataObjInp;
+                                    bzero(&dataObjInp, sizeof(dataObjInp));
+                                    rstrcpy(dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN);
+                                    dataObjInp.createMode = object.mode();
+                                    addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, _selected_hierarchy.c_str());
+                                    addKeyVal(&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str());
+                                    addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, _root_resc.c_str());
+                                    addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, _root_resc.c_str());
+                                    int status = rcDataObjRepl(_comm, &dataObjInp);
+                                    if(status < 0) {
+                                        std::stringstream msg;
+                                        msg << __FUNCTION__;
+                                        msg << " - Failed to replicate the data object to child \"" << hierarchy_string << "\"";
+                                        result = ERROR(status, msg.str());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return result;
+                }
+            
+            eirods::resource_property_map& properties_;
+        };
+            
     public:
         repl_resource(
             const std::string _inst_name,
@@ -1290,9 +1438,8 @@ extern "C" {
 
             } // ctor
 
-#if 0
         eirods::error post_disconnect_maintenance_operation(
-            pdmo_type& _out_pdmo)
+            eirods::pdmo_type& _out_pdmo)
             {
                 eirods::error result = SUCCESS();
                 _out_pdmo = repl_pdmo(properties_);
@@ -1305,7 +1452,6 @@ extern "C" {
                 eirods::error result = SUCCESS();
                 return result;
             }
-#endif
         
     }; // class repl_resource
   
