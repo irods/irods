@@ -1,4 +1,5 @@
 myTestRule {
+# This microservice is deprecated
 #Input parameters are:
 #  Collection path name
 #  Destination resource name for replicas

@@ -207,6 +207,8 @@ runCmd( "iput $dir_w/misc/email.tag test");
 runCmd( "iput $dir_w/misc/sample.email test/sample2.email");
 runCmd( "iput $dir_w/misc/email.tag test/email2.tag");
 
+runCmd( "ls > foo1" );
+
 # get listing of example rules in ./rules3.0
 my @rules;
 my $rulefile;
