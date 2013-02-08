@@ -568,7 +568,7 @@ msiSetKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
   char *objType;
   int ret;
 
-  RE_TEST_MACRO ("Loopback on msiSetKeyValuePairToObj");
+  RE_TEST_MACRO ("Loopback on msiSetKeyValuePairsToObj");
 
   if (strcmp(metadataParam->type, KeyValPair_MS_T) != 0)
     return(USER_PARAM_TYPE_ERR);
