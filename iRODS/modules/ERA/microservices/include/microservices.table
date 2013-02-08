@@ -36,6 +36,8 @@
         table_[ "msiFlagDataObjwithAVU"] = new eirods::ms_table_entry( "msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU );
         table_[ "msiFlagInfectedObjs"] = new eirods::ms_table_entry( "msiFlagInfectedObjs",			3,		(funcPtr) msiFlagInfectedObjs );
         table_[ "msiStripAVUs"] = new eirods::ms_table_entry( "msiStripAVUs",				3,		(funcPtr) msiStripAVUs );
+        table_[ "msiStoreVersionWithTS"] = new eirods::ms_table_entry( "msiStoreVersionWithTS",				3,		(funcPtr) msiStoreVersionWithTS );
+
 #else
 // ERA module microservices
 // Service name				# args		Service function

@@ -2090,4 +2090,54 @@ getObjectByFilePath(char *filePath, char *rescName, char *objPath, rsComm_t *rsC
 }
 
 
+void timestampDataObjName(dataObjCopyInp_t *myDataObjCopyInp)
+{
+        char timestamp[TIMESTAMP_LEN + 1];
+       time_t caltime;
+        struct tm *tm_time;
+        char *postfix_start_ptr = NULL;
+        char *filename_start_ptr = NULL;
+        int filename_len = 0;
+        int postfix_len = 0;
+
+        // find beginning of file name in path
+        filename_start_ptr = strrchr(myDataObjCopyInp->srcDataObjInp.objPath, '/');
+        if (filename_start_ptr == NULL) {
+                filename_start_ptr = myDataObjCopyInp->srcDataObjInp.objPath;
+        }
+        filename_len = strlen(filename_start_ptr);
+
+        // find beginning of file name postfix in path
+        postfix_start_ptr = strrchr(myDataObjCopyInp->srcDataObjInp.objPath, '.');
+        if(postfix_start_ptr != NULL) {
+                postfix_len = strlen(postfix_start_ptr);
+                if (postfix_len > 1) {
+                        postfix_start_ptr++;
+                }
+        }
+
+        // find current time, convert to broken-down time
+        // should this timestamp always be local time?
+        time(&caltime);
+        //tm_time = localtime(&caltime);
+        //use UTC time instead? maybe this should be a parameter option?
+        tm_time = gmtime(&caltime);
+
+        // append timestamp in the format "_yymmdd_hhmmss"
+        strftime(timestamp,TIMESTAMP_LEN,"_%Y%m%dT%H%M%SZ",tm_time);
+
+        // apparently "/" at end of destination path is added by parse param functions
+
+        // copy file name, timestamp and postfix to end of dest path
+        strncat(myDataObjCopyInp->destDataObjInp.objPath, filename_start_ptr, filename_len - (postfix_len));
+        strcat(myDataObjCopyInp->destDataObjInp.objPath, timestamp);
+
+        // check for valid postfix
+        if ((postfix_len > 0) && (postfix_len < filename_len)) {
+                strcat(myDataObjCopyInp->destDataObjInp.objPath, ".");
+                strcat(myDataObjCopyInp->destDataObjInp.objPath, postfix_start_ptr);
+        }
+
+        return;
+}
 
