@@ -969,6 +969,7 @@ sub doTestIcommands
 	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 	my $tmpDir   = File::Spec->catdir( File::Spec->tmpdir( ), $username );
 	mkpath($tmpDir);
+	chmod( 755, $tmpDir );
 	my $passwordTmp = File::Spec->catfile( $tmpDir, "irods_test_$$.tmp" );
 
 # Use the same technique to get the hostname as testiCommands.pl
