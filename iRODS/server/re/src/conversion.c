@@ -548,6 +548,8 @@ char* convertResToString(Res *res0) {
             return res;
         case T_IRODS:
             res = (char *)malloc(sizeof(char)*1024);
+            res[0] = 0;
+
             type = res0->exprType->text;
             if(strcmp(type, KeyValPair_MS_T)==0) {
                 keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(res0);

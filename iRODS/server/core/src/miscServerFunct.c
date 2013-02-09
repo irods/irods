@@ -2317,6 +2317,68 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     }
 }
 
+int
+singleL1Copy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
+{
+    dataOprInp_t *dataOprInp;
+    rodsLong_t dataSize;
+    int srcL1descInx, destL1descInx;
+    bytesBuf_t dataObjReadInpBBuf;
+    bytesBuf_t dataObjWriteInpBBuf;
+    openedDataObjInp_t dataObjReadInp;
+    openedDataObjInp_t dataObjWriteInp;
+    int bytesWritten, bytesRead;
+    rodsLong_t totalWritten = 0;
+
+    if (dataCopyInp == NULL) {
+        rodsLog (LOG_NOTICE,
+          "singleL1Copy: NULL dataCopyInp input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    dataOprInp = &dataCopyInp->dataOprInp;
+    destL1descInx = dataCopyInp->portalOprOut.l1descInx;
+    srcL1descInx = L1desc[destL1descInx].srcL1descInx;
+
+    dataSize = dataOprInp->dataSize;
+    bzero (&dataObjReadInp, sizeof (dataObjReadInp));
+    dataObjReadInpBBuf.buf = malloc (TRANS_BUF_SZ);
+    dataObjReadInpBBuf.len = dataObjReadInp.len = TRANS_BUF_SZ;
+    dataObjReadInp.l1descInx = srcL1descInx;
+
+    bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
+    dataObjWriteInpBBuf.buf = dataObjReadInpBBuf.buf;
+    dataObjWriteInpBBuf.len = 0;
+    dataObjWriteInp.l1descInx = destL1descInx;
+
+    while ((bytesRead = rsDataObjRead (rsComm, &dataObjReadInp,
+      &dataObjReadInpBBuf)) > 0) {
+        dataObjWriteInp.len =  dataObjWriteInpBBuf.len = bytesRead;
+        bytesWritten = rsDataObjWrite (rsComm, &dataObjWriteInp,
+          &dataObjWriteInpBBuf);
+
+        if (bytesWritten != bytesRead) {
+           rodsLog (LOG_ERROR,
+            "singleL1Copy: Read %d bytes, Wrote %d bytes.\n ",
+            bytesRead, bytesWritten);
+            free (dataObjReadInpBBuf.buf);
+            return (SYS_COPY_LEN_ERR);
+        } else {
+            totalWritten += bytesWritten;
+        }
+    }
+    free (dataObjReadInpBBuf.buf);
+    if (dataSize <= 0 || totalWritten == dataSize ||
+      getValByKey (&dataOprInp->condInput, NO_CHK_COPY_LEN_KW) != NULL) {
+        return (0);
+    } else {
+        rodsLog (LOG_ERROR,
+          "singleL1Copy: totalWritten %lld dataSize %lld mismatch",
+          totalWritten, dataSize);
+        return (SYS_COPY_LEN_ERR);
+    }
+}
+
+
 /* readStartupPack - Read the startup packet from client.
  * Note: initServerInfo must be called first because it calls getLocalZoneInfo.
  */

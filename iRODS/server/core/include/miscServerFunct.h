@@ -87,6 +87,8 @@ singleRemToLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
 int
 singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
 int
+singleL1Copy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+int
 isUserPrivileged(rsComm_t *rsComm);
 #if !defined(solaris_platform)
 char *regcmp (char *pat, char *end);

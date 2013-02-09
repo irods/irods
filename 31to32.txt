@@ -1398,38 +1398,38 @@ JMC - Done :: r5093 | xuh | 2012-07-19 16:23:38 -0400 (Thu, 19 Jul 2012) | 1 lin
 
 Support for lower case keywords in rule language integrated general query
 ------------------------------------------------------------------------
-r5094 | mwan | 2012-07-19 17:55:56 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5094 | mwan | 2012-07-19 17:55:56 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 Add pack/unpack for int16 (short integer) needed by NETCDF
 
 ------------------------------------------------------------------------
-r5095 | mwan | 2012-07-19 18:20:06 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5095 | mwan | 2012-07-19 18:20:06 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 A bug fix on last checkin
 
 ------------------------------------------------------------------------
-r5096 | mwan | 2012-07-19 20:27:41 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5096 | mwan | 2012-07-19 20:27:41 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 Handle int16 for NETCDF API.
 
 ------------------------------------------------------------------------
-r5097 | mwan | 2012-07-23 19:51:58 -0400 (Mon, 23 Jul 2012) | 2 lines
+JMC - No Op :: r5097 | mwan | 2012-07-23 19:51:58 -0400 (Mon, 23 Jul 2012) | 2 lines
 
 Add rcNcRegGlobalAttr API to Register the global attributes of NETCDF files
 
 ------------------------------------------------------------------------
-r5098 | mwan | 2012-07-24 13:56:24 -0400 (Tue, 24 Jul 2012) | 2 lines
+JMC - No Op :: r5098 | mwan | 2012-07-24 13:56:24 -0400 (Tue, 24 Jul 2012) | 2 lines
 
 Add test for rcNcRegGlobalAttr API
 
 ------------------------------------------------------------------------
-r5099 | mwan | 2012-07-24 16:04:33 -0400 (Tue, 24 Jul 2012) | 3 lines
+JMC - No Op :: r5099 | mwan | 2012-07-24 16:04:33 -0400 (Tue, 24 Jul 2012) | 3 lines
 
 Add msiNcRegGlobalAttr micro-service to extract and register NETCDF global
 attributes.
 
 ------------------------------------------------------------------------
-r5100 | schroede | 2012-07-25 12:19:49 -0400 (Wed, 25 Jul 2012) | 48 lines
+JMC - No Op :: r5100 | schroede | 2012-07-25 12:19:49 -0400 (Wed, 25 Jul 2012) | 48 lines
 
 Fixes for Solaris. With these, it builds again and most of 'devtest'
 succeeds, including all of the ICAT tests.  See testiCommands.pl below
@@ -1480,7 +1480,7 @@ significant but thought I'd commit this work to this point.
 
 
 ------------------------------------------------------------------------
-r5101 | schroede | 2012-07-25 19:04:28 -0400 (Wed, 25 Jul 2012) | 14 lines
+JMC - No Op :: r5101 | schroede | 2012-07-25 19:04:28 -0400 (Wed, 25 Jul 2012) | 14 lines
 
 More updates for Solaris for the testiCommands.pl script.  With this
 'devtest' now succeeds on Solaris too, at least on merrimac.
@@ -1497,26 +1497,26 @@ far as I can tell the check in runCmd is working right.  I'm not sure
 what was going wrong in the previous tests, but it seems OK now.
 
 ------------------------------------------------------------------------
-r5102 | mwan | 2012-07-26 15:44:03 -0400 (Thu, 26 Jul 2012) | 2 lines
+JMC - No Op :: r5102 | mwan | 2012-07-26 15:44:03 -0400 (Thu, 26 Jul 2012) | 2 lines
 
 Add rsNcClose to close the opened file after it is done
 
 ------------------------------------------------------------------------
-r5103 | xuh | 2012-07-26 16:00:59 -0400 (Thu, 26 Jul 2012) | 3 lines
+JMC - No Op :: r5103 | xuh | 2012-07-26 16:00:59 -0400 (Thu, 26 Jul 2012) | 3 lines
 
 Fix potential random characters in writeLine if the parameter is an iRODS type.
 
 Integration of msiCollectionSpider with the new rule engine env.
 ------------------------------------------------------------------------
-r5104 | terrell | 2012-07-26 16:25:31 -0400 (Thu, 26 Jul 2012) | 1 line
+JMC - No Op :: r5104 | terrell | 2012-07-26 16:25:31 -0400 (Thu, 26 Jul 2012) | 1 line
 
 update iput -h output - fix a couple typos and add clarification
 ------------------------------------------------------------------------
-r5105 | terrell | 2012-07-26 16:38:50 -0400 (Thu, 26 Jul 2012) | 1 line
+JMC - No Op :: r5105 | terrell | 2012-07-26 16:38:50 -0400 (Thu, 26 Jul 2012) | 1 line
 
 update iput -h output - fix a couple more options, grammar
 ------------------------------------------------------------------------
-r5106 | mwan | 2012-07-26 19:29:45 -0400 (Thu, 26 Jul 2012) | 2 lines
+JMC - No Op :: r5106 | mwan | 2012-07-26 19:29:45 -0400 (Thu, 26 Jul 2012) | 2 lines
 
 add incattr command to register, list and query NETCDF global attributes
 
@@ -1525,12 +1525,12 @@ r5107 | xuh | 2012-07-27 14:45:30 -0400 (Fri, 27 Jul 2012) | 1 line
 
 Integration of collectionSpider with foreach loop; stricter static typechecking for foreach; fix bugs in general query foreach integration.
 ------------------------------------------------------------------------
-r5108 | mwan | 2012-07-27 19:25:14 -0400 (Fri, 27 Jul 2012) | 2 lines
+JMC - No Op :: r5108 | mwan | 2012-07-27 19:25:14 -0400 (Fri, 27 Jul 2012) | 2 lines
 
 Add query data file by AVU, accept multiple attrName for --attr to incattr.
 
 ------------------------------------------------------------------------
-r5109 | schroede | 2012-07-30 15:10:57 -0400 (Mon, 30 Jul 2012) | 6 lines
+JMC - No Op :: r5109 | schroede | 2012-07-30 15:10:57 -0400 (Mon, 30 Jul 2012) | 6 lines
 
 A small change to handle solaris_pc_platform in addition to
 solaris_platform.  With this and the other Solaris fixes done last
@@ -1539,114 +1539,114 @@ the new NMI BaTLab (Build & Test).
 
 
 ------------------------------------------------------------------------
-r5110 | mwan | 2012-07-30 16:13:58 -0400 (Mon, 30 Jul 2012) | 3 lines
+JMC - No Op :: r5110 | mwan | 2012-07-30 16:13:58 -0400 (Mon, 30 Jul 2012) | 3 lines
 
 Add option to rcNcRegGlobalAttr to allow the specification of a list of
 global attributes to register instead of all global attributes.
 
 ------------------------------------------------------------------------
-r5111 | mwan | 2012-07-30 16:43:15 -0400 (Mon, 30 Jul 2012) | 2 lines
+JMC - No Op :: r5111 | mwan | 2012-07-30 16:43:15 -0400 (Mon, 30 Jul 2012) | 2 lines
 
 Handle memory leaks in NETCDF API calls.
 
 ------------------------------------------------------------------------
-r5112 | mwan | 2012-08-01 15:02:05 -0400 (Wed, 01 Aug 2012) | 2 lines
+JMC - No Op :: r5112 | mwan | 2012-08-01 15:02:05 -0400 (Wed, 01 Aug 2012) | 2 lines
 
 Allow incattr to remove the specified list of attributes
 
 ------------------------------------------------------------------------
-r5113 | mwan | 2012-08-02 21:17:55 -0400 (Thu, 02 Aug 2012) | 2 lines
+JMC - No Op :: r5113 | mwan | 2012-08-02 21:17:55 -0400 (Thu, 02 Aug 2012) | 2 lines
 
 add test for TDS driver
 
 ------------------------------------------------------------------------
-r5114 | mwan | 2012-08-03 20:24:04 -0400 (Fri, 03 Aug 2012) | 2 lines
+JMC - No Op :: r5114 | mwan | 2012-08-03 20:24:04 -0400 (Fri, 03 Aug 2012) | 2 lines
 
 test program for the Thredds Data Server Driver development.
 
 ------------------------------------------------------------------------
-r5115 | mwan | 2012-08-06 20:01:01 -0400 (Mon, 06 Aug 2012) | 2 lines
+JMC - No Op :: r5115 | mwan | 2012-08-06 20:01:01 -0400 (Mon, 06 Aug 2012) | 2 lines
 
 Debug the listTdsDir routine
 
 ------------------------------------------------------------------------
-r5116 | mwan | 2012-08-07 19:26:47 -0400 (Tue, 07 Aug 2012) | 2 lines
+JMC - No Op :: r5116 | mwan | 2012-08-07 19:26:47 -0400 (Tue, 07 Aug 2012) | 2 lines
 
 Implement and test tdsOpendir/tdsReaddir/tdsClosedir
 
 ------------------------------------------------------------------------
-r5117 | mwan | 2012-08-07 19:39:20 -0400 (Tue, 07 Aug 2012) | 2 lines
+JMC - No Op :: r5117 | mwan | 2012-08-07 19:39:20 -0400 (Tue, 07 Aug 2012) | 2 lines
 
 Change default URL
 
 ------------------------------------------------------------------------
-r5118 | mwan | 2012-08-07 19:42:09 -0400 (Tue, 07 Aug 2012) | 2 lines
+JMC - No Op :: r5118 | mwan | 2012-08-07 19:42:09 -0400 (Tue, 07 Aug 2012) | 2 lines
 
 Error msg for TDS
 
 ------------------------------------------------------------------------
-r5119 | mwan | 2012-08-08 19:23:29 -0400 (Wed, 08 Aug 2012) | 2 lines
+JMC - No Op :: r5119 | mwan | 2012-08-08 19:23:29 -0400 (Wed, 08 Aug 2012) | 2 lines
 
 Add TDS driver. Implementation not complete. Missing tdsStageToCache
 
 ------------------------------------------------------------------------
-r5120 | mwan | 2012-08-09 14:03:55 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5120 | mwan | 2012-08-09 14:03:55 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 Allow NETCDF api to build without enabling netcdf-4 (HDF5).
 
 ------------------------------------------------------------------------
-r5121 | mwan | 2012-08-09 14:24:22 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5121 | mwan | 2012-08-09 14:24:22 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 Allow NETCDF api to build without enabling netcdf-4 (HDF5).
 
 ------------------------------------------------------------------------
-r5122 | mwan | 2012-08-09 17:30:14 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5122 | mwan | 2012-08-09 17:30:14 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 Add tdsStageToCache to download from tds using Opendap to cache.
 
 ------------------------------------------------------------------------
-r5123 | mwan | 2012-08-09 19:33:03 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5123 | mwan | 2012-08-09 19:33:03 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 test routine setTdsCurdir to track folder dataset 
 
 ------------------------------------------------------------------------
-r5124 | mwan | 2012-08-10 14:24:47 -0400 (Fri, 10 Aug 2012) | 2 lines
+JMC - No Op :: r5124 | mwan | 2012-08-10 14:24:47 -0400 (Fri, 10 Aug 2012) | 2 lines
 
 Add code to manage current directory of the TDS driver.
 
 ------------------------------------------------------------------------
-r5125 | mwan | 2012-08-10 20:08:32 -0400 (Fri, 10 Aug 2012) | 3 lines
+JMC - No Op :: r5125 | mwan | 2012-08-10 20:08:32 -0400 (Fri, 10 Aug 2012) | 3 lines
 
 Add the framework for the inc command for NETCDF operations. This is just
 a start for the implementation.
 
 ------------------------------------------------------------------------
-r5126 | mwan | 2012-08-13 14:55:46 -0400 (Mon, 13 Aug 2012) | 2 lines
+JMC - No Op :: r5126 | mwan | 2012-08-13 14:55:46 -0400 (Mon, 13 Aug 2012) | 2 lines
 
 add -lnetcdf to CL_LDADD for inc command
 
 ------------------------------------------------------------------------
-r5127 | mwan | 2012-08-13 20:17:36 -0400 (Mon, 13 Aug 2012) | 2 lines
+JMC - No Op :: r5127 | mwan | 2012-08-13 20:17:36 -0400 (Mon, 13 Aug 2012) | 2 lines
 
 Implement [--header] [--dim] [--ascitime] options of the "inc" command
 
 ------------------------------------------------------------------------
-r5128 | mwan | 2012-08-14 16:52:20 -0400 (Tue, 14 Aug 2012) | 2 lines
+JMC - No Op :: r5128 | mwan | 2012-08-14 16:52:20 -0400 (Tue, 14 Aug 2012) | 2 lines
 
 print the global attributes nicely with a new printNice function
 
 ------------------------------------------------------------------------
-r5129 | mwan | 2012-08-14 17:40:54 -0400 (Tue, 14 Aug 2012) | 2 lines
+JMC - No Op :: r5129 | mwan | 2012-08-14 17:40:54 -0400 (Tue, 14 Aug 2012) | 2 lines
 
 Minor changes in output of inc.
 
 ------------------------------------------------------------------------
-r5130 | mwan | 2012-08-14 19:25:53 -0400 (Tue, 14 Aug 2012) | 2 lines
+JMC - No Op :: r5130 | mwan | 2012-08-14 19:25:53 -0400 (Tue, 14 Aug 2012) | 2 lines
 
 add --noattr option to "inc" plus some changes in the output.
 
 ------------------------------------------------------------------------
-r5131 | mwan | 2012-08-15 19:31:19 -0400 (Wed, 15 Aug 2012) | 2 lines
+JMC - No Op :: r5131 | mwan | 2012-08-15 19:31:19 -0400 (Wed, 15 Aug 2012) | 2 lines
 
 Get --subset and --var option of "inc" working.
 
