@@ -126,18 +126,18 @@ JMC - Done :: r4912 | mwan | 2012-04-03 19:09:19 -0400 (Tue, 03 Apr 2012) | 2 li
 allow retries to work with lfrestart
 
 ------------------------------------------------------------------------
-r4913 | mwan | 2012-04-03 19:39:46 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4913 | mwan | 2012-04-03 19:39:46 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 check symlink routines
 
 ------------------------------------------------------------------------
-r4914 | mwan | 2012-04-04 16:36:34 -0400 (Wed, 04 Apr 2012) | 3 lines
+JMC - Done :: r4914 | mwan | 2012-04-04 16:36:34 -0400 (Wed, 04 Apr 2012) | 3 lines
 
 Change getUnixUid to include check for user@zone.
 
 
 ------------------------------------------------------------------------
-r4915 | mwan | 2012-04-04 16:43:45 -0400 (Wed, 04 Apr 2012) | 2 lines
+JMC - Done :: r4915 | mwan | 2012-04-04 16:43:45 -0400 (Wed, 04 Apr 2012) | 2 lines
 
 Correct previous checkin
 

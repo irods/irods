@@ -1316,13 +1316,20 @@ int
 getUnixUid (char *userName)
 {
 #ifndef _WIN32
-    struct passwd *pw;
-    int myuid;
+    struct passwd *pw = 0;
+    int myuid = 0;
+    char* splitPos = 0;
+
+    if ((splitPos = strchr (userName, '@')) != NULL) {
+        *splitPos = '\0';       /* skip @ */
+    }
+
     if (!(pw = getpwnam(userName))) {
         myuid = -1;
     } else {
         myuid = (int) pw->pw_uid;
     }
+    if (splitPos != NULL) *splitPos = '@';
     return (myuid);
 #else
     return (-1);
