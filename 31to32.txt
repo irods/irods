@@ -656,7 +656,7 @@ execCmd will now check if the irodsServerCmdDir environment variable is set, and
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-JMC - ????r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
+JMC - Done :: r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
 
 In chlModDataObjMeta, if the modify_ts is being set and is less than
 11 digits long, change it to be the irods time-standard 11 digits.
@@ -670,13 +670,13 @@ is handled.  This problem was noticed by Adil, when doing an 'iput -f'
 over an existing file, and discussed on irod-chat.
 
 ------------------------------------------------------------------------
-r4990 | mwan | 2012-06-05 20:33:37 -0400 (Tue, 05 Jun 2012) | 3 lines
+JMC - No Op :: r4990 | mwan | 2012-06-05 20:33:37 -0400 (Tue, 05 Jun 2012) | 3 lines
 
 Add msiNcGetNGrpsInInqOut and msiNcGetNGrpsInInqOut micro-service to 
 get parameters out of the ncInqGrpsOut_t struct.
 
 ------------------------------------------------------------------------
-r4991 | schroede | 2012-06-06 09:52:47 -0400 (Wed, 06 Jun 2012) | 9 lines
+JMC - Done :: r4991 | schroede | 2012-06-06 09:52:47 -0400 (Wed, 06 Jun 2012) | 9 lines
 
 Check if the admin user is deleting their own user account and, if so,
 disallow it, as it's probably an error and would be a problem,

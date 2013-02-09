@@ -2479,6 +2479,14 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         rstrcpy(zoneToUse, zoneName, NAME_LEN);
     }
 
+    if (strncmp(rsComm->clientUser.userName, userName2, sizeof(userName2))==0 &&
+        strncmp(rsComm->clientUser.rodsZone, zoneToUse, sizeof(zoneToUse))==0) {
+       int i;
+       i = addRErrorMsg (&rsComm->rError, 0, "Cannot remove your own admin account, probably unintended");
+       return(CAT_INVALID_USER);
+    }
+   
+
     if (logSQL!=0) rodsLog(LOG_SQL, "chlDelUserRE SQL 1 ");
     status = cmlGetStringValueFromSql(
         "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
