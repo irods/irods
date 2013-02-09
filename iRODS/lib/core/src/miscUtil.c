@@ -1130,6 +1130,7 @@ int
 readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
 {
     int status = 0;
+    int savedStatus = 0;
     collMetaInfo_t collMetaInfo;
     dataObjMetaInfo_t dataObjMetaInfo;
     queryHandle_t *queryHandle = &collHandle->queryHandle;
@@ -1191,6 +1192,9 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
     } else {
         if (collHandle->state == COLL_OPENED) {
             status = genDataResInColl (queryHandle, collHandle);
+            if (status < 0 && status != CAT_NO_ROWS_FOUND)
+                savedStatus = status;
+
         }
 
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
@@ -1212,6 +1216,9 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
             }
 
             status = genCollResInColl (queryHandle, collHandle);
+            if (status < 0 && status != CAT_NO_ROWS_FOUND)
+                savedStatus = status;
+
         }
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
@@ -1230,7 +1237,13 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
                 /* Nothing else to do. cleanup */
                 collHandle->state = COLL_CLOSED;
             }
-            return status;
+
+           if (savedStatus < 0) {
+               return savedStatus;
+           } else {
+               return status;
+           }
+
         }
     }
     return (CAT_NO_ROWS_FOUND);
