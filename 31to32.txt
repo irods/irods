@@ -688,11 +688,11 @@ the last admin account to be deleted) was suggested by Terrell.
 
 
 ------------------------------------------------------------------------
-r4992 | terrell | 2012-06-06 13:58:48 -0400 (Wed, 06 Jun 2012) | 1 line
+JMC - No Op :: r4992 | terrell | 2012-06-06 13:58:48 -0400 (Wed, 06 Jun 2012) | 1 line
 
 fix syntax error in rules3.0/rulemsiXsltApply.r rule file
 ------------------------------------------------------------------------
-r4993 | schroede | 2012-06-06 17:53:40 -0400 (Wed, 06 Jun 2012) | 6 lines
+JMC - No Op :: r4993 | schroede | 2012-06-06 17:53:40 -0400 (Wed, 06 Jun 2012) | 6 lines
 
 Add UNICODE as an advanced option in the irodssetup/configure system,
 mention config.mk for other configuration options, and for upgrades
@@ -701,24 +701,24 @@ options.  Based on suggestions from, and discussion with, Jean-Yves.
 
 
 ------------------------------------------------------------------------
-r4994 | mwan | 2012-06-07 13:50:00 -0400 (Thu, 07 Jun 2012) | 2 lines
+JMC - No Op :: r4994 | mwan | 2012-06-07 13:50:00 -0400 (Thu, 07 Jun 2012) | 2 lines
 
 Use header from rpcClient
 
 ------------------------------------------------------------------------
-r4995 | csmith | 2012-06-08 19:49:07 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4995 | csmith | 2012-06-08 19:49:07 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Identify ODBC data source with irodsOdbcDSN environment variable.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4996 | csmith | 2012-06-08 19:49:30 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4996 | csmith | 2012-06-08 19:49:30 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Can optionally set full path to genOSAuth at compile time.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4997 | csmith | 2012-06-08 19:49:53 -0400 (Fri, 08 Jun 2012) | 5 lines
+JMC - No Op :: r4997 | csmith | 2012-06-08 19:49:53 -0400 (Fri, 08 Jun 2012) | 5 lines
 
 Allow relocation of default server paths
 
@@ -726,19 +726,19 @@ Two parts to this change. The first is to define the irodsStateDir environment v
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4998 | csmith | 2012-06-08 19:50:15 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4998 | csmith | 2012-06-08 19:50:15 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Add CMD_DIR to set of config.mk compile time overrides.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4999 | csmith | 2012-06-08 19:50:37 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4999 | csmith | 2012-06-08 19:50:37 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Make path to PamAuthCheck a compile-time option as well.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5000 | csmith | 2012-06-08 20:10:42 -0400 (Fri, 08 Jun 2012) | 5 lines
+JMC - No Op :: r5000 | csmith | 2012-06-08 20:10:42 -0400 (Fri, 08 Jun 2012) | 5 lines
 
 In RUN_SERVER_AS_ROOT mode, drop root privilege in rsExecCmd
 
@@ -756,7 +756,7 @@ r5002 | mwan | 2012-06-11 15:47:48 -0400 (Mon, 11 Jun 2012) | 2 lines
 To get "rmtrash --age" to working from the last checkin
 
 ------------------------------------------------------------------------
-r5003 | schroede | 2012-06-11 17:26:39 -0400 (Mon, 11 Jun 2012) | 12 lines
+JMC - No Op :: r5003 | schroede | 2012-06-11 17:26:39 -0400 (Mon, 11 Jun 2012) | 12 lines
 
 Add tests for the SQL performed for PAM authentication.  Remove the
 temporary 'commenting-out' (xSQL) so that these tests are required for
@@ -771,19 +771,19 @@ PAM_AUTH enabled.
 
 
 ------------------------------------------------------------------------
-r5004 | schroede | 2012-06-12 13:58:41 -0400 (Tue, 12 Jun 2012) | 4 lines
+JMC - No Op :: r5004 | schroede | 2012-06-12 13:58:41 -0400 (Tue, 12 Jun 2012) | 4 lines
 
 Add an iadmin sub-command to remove iRODS passwords derived from PAM
 passwords and add a test so the SQL is exercised.  See the help text
 for more.  We now have 365 SQL forms that are tested via 'devtest'.
 
 ------------------------------------------------------------------------
-r5005 | mwan | 2012-06-12 16:35:25 -0400 (Tue, 12 Jun 2012) | 2 lines
+JMC - No Op :: r5005 | mwan | 2012-06-12 16:35:25 -0400 (Tue, 12 Jun 2012) | 2 lines
 
 Minor change in help message.
 
 ------------------------------------------------------------------------
-r5006 | mwan | 2012-06-12 17:44:06 -0400 (Tue, 12 Jun 2012) | 2 lines
+JMC - Done :: r5006 | mwan | 2012-06-12 17:44:06 -0400 (Tue, 12 Jun 2012) | 2 lines
 
 Add --age option to irsync. This implementation is not yet complete.
 
@@ -814,7 +814,7 @@ r5011 | mwan | 2012-06-13 18:50:43 -0400 (Wed, 13 Jun 2012) | 2 lines
 Add -K option to irsync as requested by a user
 
 ------------------------------------------------------------------------
-r5012 | mwan | 2012-06-14 17:16:14 -0400 (Thu, 14 Jun 2012) | 4 lines
+JMC - No Op :: r5012 | mwan | 2012-06-14 17:16:14 -0400 (Thu, 14 Jun 2012) | 4 lines
 
 Add a list_accounts function to list all bank accounts. Add json code to
 parse an array of keyValue ovjects.
@@ -838,12 +838,12 @@ Update modify time in syncDataObjPhyPath to allow --age to work.
 Also revert last change in rsRmcoll.
 
 ------------------------------------------------------------------------
-r5016 | mwan | 2012-06-15 19:52:23 -0400 (Fri, 15 Jun 2012) | 2 lines
+JMC - No Op :: r5016 | mwan | 2012-06-15 19:52:23 -0400 (Fri, 15 Jun 2012) | 2 lines
 
 Add data structure to handle dictionary type for OOI CI
 
 ------------------------------------------------------------------------
-r5017 | schroede | 2012-06-18 15:47:04 -0400 (Mon, 18 Jun 2012) | 7 lines
+JMC - No Op :: r5017 | schroede | 2012-06-18 15:47:04 -0400 (Mon, 18 Jun 2012) | 7 lines
 
 Python script and config file provided by Adil/KEK, useful for
 scanning irods log files.  To use, update the allowed users in
@@ -853,32 +853,32 @@ See the help text for more.
 
 
 ------------------------------------------------------------------------
-r5018 | mwan | 2012-06-18 16:07:28 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5018 | mwan | 2012-06-18 16:07:28 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Add routines to handle OOI dictionary.
 
 ------------------------------------------------------------------------
-r5019 | mwan | 2012-06-18 18:53:44 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5019 | mwan | 2012-06-18 18:53:44 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Add support for array in OOI dictionary
 
 ------------------------------------------------------------------------
-r5020 | mwan | 2012-06-18 19:22:26 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5020 | mwan | 2012-06-18 19:22:26 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Minor changes
 
 ------------------------------------------------------------------------
-r5021 | mwan | 2012-06-18 20:37:06 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5021 | mwan | 2012-06-18 20:37:06 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Add code for the first OOI call - rcOoiGenServReq
 
 ------------------------------------------------------------------------
-r5022 | mwan | 2012-06-18 20:51:54 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5022 | mwan | 2012-06-18 20:51:54 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Turn OOI_CI off by default
 
 ------------------------------------------------------------------------
-r5023 | mwan | 2012-06-19 13:19:27 -0400 (Tue, 19 Jun 2012) | 2 lines
+JMC - No Op :: r5023 | mwan | 2012-06-19 13:19:27 -0400 (Tue, 19 Jun 2012) | 2 lines
 
 Fix a compile error by ifdef out OOI and NETCDF specific stuff.
 
@@ -891,57 +891,57 @@ days ago and, like that, will be used for the new irmtrash --age
 feature in some cases.
 
 ------------------------------------------------------------------------
-r5025 | mwan | 2012-06-19 18:35:51 -0400 (Tue, 19 Jun 2012) | 2 lines
+JMC - No Op :: r5025 | mwan | 2012-06-19 18:35:51 -0400 (Tue, 19 Jun 2012) | 2 lines
 
 Complete jsonPackDictionary to pack a dictionary.
 
 ------------------------------------------------------------------------
-r5026 | mwan | 2012-06-19 19:57:24 -0400 (Tue, 19 Jun 2012) | 3 lines
+JMC - No Op :: r5026 | mwan | 2012-06-19 19:57:24 -0400 (Tue, 19 Jun 2012) | 3 lines
 
 OOI development -- add routines jsonPackOoiServReqForPost, jsonPackOoiServReq
 and jsonPackDictionary to pack post type service request msg
 
 ------------------------------------------------------------------------
-r5027 | mwan | 2012-06-20 20:41:18 -0400 (Wed, 20 Jun 2012) | 4 lines
+JMC - No Op :: r5027 | mwan | 2012-06-20 20:41:18 -0400 (Wed, 20 Jun 2012) | 4 lines
 
 OOI task - add a number of unpacking routines - jsonUnpackOoiRespStr,
 jsonUnpackOoiRespDict, jsonUnpackDict, jsonUnpackOoiRespDictArray,
 jsonUnpackOoiRespDictArrInArr and clearDictArray.
 
 ------------------------------------------------------------------------
-r5028 | mwan | 2012-06-21 20:18:05 -0400 (Thu, 21 Jun 2012) | 2 lines
+JMC - No Op :: r5028 | mwan | 2012-06-21 20:18:05 -0400 (Thu, 21 Jun 2012) | 2 lines
 
 Test OOI APIs
 
 ------------------------------------------------------------------------
-r5029 | mwan | 2012-06-22 14:24:14 -0400 (Fri, 22 Jun 2012) | 2 lines
+JMC - No Op :: r5029 | mwan | 2012-06-22 14:24:14 -0400 (Fri, 22 Jun 2012) | 2 lines
 
 get the rcOoiGenServReq to work
 
 ------------------------------------------------------------------------
-r5030 | mwan | 2012-06-22 16:12:18 -0400 (Fri, 22 Jun 2012) | 2 lines
+JMC - No Op :: r5030 | mwan | 2012-06-22 16:12:18 -0400 (Fri, 22 Jun 2012) | 2 lines
 
 Get rcOoiGenServReq to run with array of dictionary as output
 
 ------------------------------------------------------------------------
-r5031 | mwan | 2012-06-22 21:16:18 -0400 (Fri, 22 Jun 2012) | 2 lines
+JMC - No Op :: r5031 | mwan | 2012-06-22 21:16:18 -0400 (Fri, 22 Jun 2012) | 2 lines
 
 Test some datastore services
 
 ------------------------------------------------------------------------
-r5032 | mwan | 2012-06-25 19:54:59 -0400 (Mon, 25 Jun 2012) | 3 lines
+JMC - No Op :: r5032 | mwan | 2012-06-25 19:54:59 -0400 (Mon, 25 Jun 2012) | 3 lines
 
 Add OOI functionalities such as dictionary in a dictionary to get accessing
 OOI datastore service to work.
 
 ------------------------------------------------------------------------
-r5033 | csmith | 2012-06-26 12:11:48 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5033 | csmith | 2012-06-26 12:11:48 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 A long term typo. clientRodsZone, not clientRodsZine
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5034 | csmith | 2012-06-26 12:12:10 -0400 (Tue, 26 Jun 2012) | 9 lines
+JMC - No Op :: r5034 | csmith | 2012-06-26 12:12:10 -0400 (Tue, 26 Jun 2012) | 9 lines
 
 Added SSL for server to server rcPamAuthRequest. Adjust privilege for pam API calls. Connect to ICAT host based on client zone.
 
@@ -953,13 +953,13 @@ Connect to an ICAT host (MASTER_RCAT) based on the client zone.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5035 | mwan | 2012-06-26 12:54:54 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5035 | mwan | 2012-06-26 12:54:54 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 OOI - take out arrLen input for dictSetAttr() since array is implemented
 as a different struct.
 
 ------------------------------------------------------------------------
-r5036 | mwan | 2012-06-26 12:55:41 -0400 (Tue, 26 Jun 2012) | 2 lines
+JMC - No Op :: r5036 | mwan | 2012-06-26 12:55:41 -0400 (Tue, 26 Jun 2012) | 2 lines
 
 cleanup
 
@@ -970,18 +970,18 @@ Fixed case where remote user was getting local user privilege in multi-zone depl
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5038 | mwan | 2012-06-26 15:24:18 -0400 (Tue, 26 Jun 2012) | 2 lines
+JMC - No Op :: r5038 | mwan | 2012-06-26 15:24:18 -0400 (Tue, 26 Jun 2012) | 2 lines
 
 OOI - Add genArray_t for array and codes to handle this type
 
 ------------------------------------------------------------------------
-r5039 | mwan | 2012-06-26 21:09:43 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5039 | mwan | 2012-06-26 21:09:43 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 Modify OOI code to use the more generic genArray_t instead of dictArray_t.
 Add more tests.
 
 ------------------------------------------------------------------------
-r5040 | mwan | 2012-06-26 22:05:20 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5040 | mwan | 2012-06-26 22:05:20 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 OOI - Add support for OOI_INT_TYPE, OOI_FLOAT_TYPE and OOI_BOOL_TYPE
 response value.

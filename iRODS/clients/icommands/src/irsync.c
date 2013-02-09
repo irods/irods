@@ -120,7 +120,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : irsync [-rahsvV] [-N numThreads] [-R resource] [--link]",
+"Usage : irsync [-rahsvV] [-N numThreads] [-R resource] [--link] [--age age_in_minutes]",
 "          sourceFile|sourceDirectory [....] targetFile|targetDirectory",
 " ",
 "Synchronize the data between a  local  copy  (local file  system)  and",
@@ -194,6 +194,8 @@ usage ()
 " -a   synchronize to all replica if the target is a  iRODS file/collection.",
 " -s   use the size instead of the checksum value for determining", 
 "      synchronization.",
+" --age age_in_minutes - The maximum age of the source copy in minutes for sync.",
+"      i.e., age larger than age_in_minutes will not be synced.",
 " ",
 "Also see 'irepl' for the replication and synchronization of physical",
 "copies (replica).",

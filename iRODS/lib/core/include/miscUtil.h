@@ -164,7 +164,7 @@ initSysTiming (char *procName, char *action, int envVarFlag);
 int 
 printSysTiming (char *procName, char *action, int envVarFlag);
 int
-printNoSync (char *objPath, rodsLong_t fileSize);
+printNoSync (char *objPath, rodsLong_t fileSize,char *reason);
 int
 queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint,
                  genQueryOut_t **genQueryOut); // JMC - backport 4516
