@@ -644,6 +644,35 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint, genQueryOut_t **g
 
 }
 
+int
+queryCollAclSpecific(rcComm_t *conn, char *collName, char *zoneHint,
+              genQueryOut_t **genQueryOut)
+{
+    genQueryOut_t *myGenQueryOut;
+    int status;
+    specificQueryInp_t specificQueryInp;
+
+    if (collName == NULL || genQueryOut == NULL) {
+        return (USER__NULL_INPUT_ERR);
+    }
+
+    myGenQueryOut = *genQueryOut =
+      (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
+    memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
+
+    memset (&specificQueryInp, 0, sizeof (specificQueryInp_t));
+    if (zoneHint != NULL) {
+      addKeyVal (&specificQueryInp.condInput, ZONE_KW, zoneHint);
+    }
+
+    specificQueryInp.maxRows= MAX_SQL_ROWS;
+    specificQueryInp.continueInx=0;
+    specificQueryInp.sql="ShowCollAcls";
+    specificQueryInp.args[0]=collName;
+    status = rcSpecificQuery (conn, &specificQueryInp, genQueryOut);
+    return(status);
+}
+
 
 int
 queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint, genQueryOut_t **genQueryOut) // JMC - bacport 4516

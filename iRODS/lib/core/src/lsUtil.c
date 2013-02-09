@@ -620,9 +620,28 @@ printCollAcl (rcComm_t *conn, char *collName)
     sqlResult_t *userName, *userZone, *dataAccess ;
     char *userNameStr, *userZoneStr, *dataAccessStr;
 
-    status = queryCollAcl (conn, collName, zoneHint, &genQueryOut); // JMC - backport 4516
-
     printf ("        ACL - ");
+   /* First try a specific-query.  If this is defined, it should be
+       used as it returns the group names without expanding them to
+       individual users and this is important to some sites (iPlant,
+       in particular).  If this fails, go on the the general-query.
+    */
+    status = queryCollAclSpecific (conn, collName, zoneHint, &genQueryOut);
+    if (status >= 0) {
+      int i, j;
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+       char *tResult[10];
+       for (j=0;j<genQueryOut->attriCnt && j<10;j++) {
+         tResult[j] = genQueryOut->sqlResult[j].value;
+         tResult[j] += i*genQueryOut->sqlResult[j].len;
+       }
+       printf ("%s#%s:%s   ",  tResult[0], tResult[1], tResult[2]);
+      }
+      printf ("\n");
+      return(status);
+    }
+
+    status = queryCollAcl (conn, collName, zoneHint, &genQueryOut); // JMC - backport 4516
 
     if (status < 0) {
 	printf ("\n");
