@@ -81,11 +81,11 @@ JMC - Done :: r4903 | terrell | 2012-03-28 22:31:13 -0400 (Wed, 28 Mar 2012) | 1
 
 add new msiStoreVersionWithTS to doxygen front page - and update timestamp format comment (iso8601)
 ------------------------------------------------------------------------
-r4904 | xuh | 2012-03-30 00:37:53 -0400 (Fri, 30 Mar 2012) | 1 line
+JMC - Done :: r4904 | xuh | 2012-03-30 00:37:53 -0400 (Fri, 30 Mar 2012) | 1 line
 
 Native support for gen query syntax in the rule language. A gen query expression evaluates to an object of type genQueryInp_t
 ------------------------------------------------------------------------
-r4905 | xuh | 2012-03-30 01:12:59 -0400 (Fri, 30 Mar 2012) | 1 line
+JMC - Done :: r4905 | xuh | 2012-03-30 01:12:59 -0400 (Fri, 30 Mar 2012) | 1 line
 
 gen query expressions automatically executes the gen queries.
 ------------------------------------------------------------------------

@@ -373,8 +373,8 @@ void columnToString(Node *n, char **queryStr, int *size) {
 
 
 }
-int
-msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
+int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
+int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 
 Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
        char queryStr[1024];
@@ -435,7 +435,9 @@ Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int rei
        msParam_t condParam;
        msParam_t selectListParam;
        msParam_t genQInpParam;
+       msParam_t genQOutParam;
        memset(&genQInpParam, 0, sizeof(msParam_t));
+       memset(&genQOutParam, 0, sizeof(msParam_t));
        convertResToMsParam(&condParam, newStringRes(rNew, condStr), errmsg);
        convertResToMsParam(&selectListParam, newStringRes(rNew, queryStr), errmsg);
        int status = msiMakeGenQuery(&selectListParam, &condParam, &genQInpParam, rei);
@@ -446,11 +448,27 @@ Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int rei
                generateAndAddErrMsg("msiMakeGenQuery error", node, status, errmsg);
                return newErrorRes(r, status);
        }
+
+       status = msiExecGenQuery(&genQInpParam, &genQOutParam, rei);
+       if(status < 0) {
+               region_free(rNew);
+               generateAndAddErrMsg("msiExecGenQuery error", node, status, errmsg);
+               return newErrorRes(r, status);
+       }
+
        Res *res = newRes(r);
        convertMsParamToResAndFreeNonIRODSType(&genQInpParam, res, errmsg, r);
+       Res *res2 = newRes(r);
+       convertMsParamToResAndFreeNonIRODSType(&genQOutParam, res2, errmsg, r);
+
        region_free(rNew);
 
-       return res;
+       Res **comps = (Res **) region_alloc(r, sizeof(Res *) * 2);
+       comps[0] = res;
+       comps[1] = res2;
+
+       return newTupleRes(2, comps, r);
+
 }
 
 
@@ -2192,6 +2210,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "split", newFunctionFD("string * string -> list string", smsi_split, r));
     insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI`", smsi_query, r));
+    insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
     insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
     insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionFD("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
