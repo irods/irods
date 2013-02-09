@@ -266,6 +266,7 @@ This documentation is generated from the iRODS code.
   - #msiIsData - Checks if an iRODS path is a data object (an iRODS file). For use in workflows
   - #msiStructFileBundle - Bundles a collection for export
   - #msiFlagInfectedObjs - Parses output from clamscan and flags infected objects
+  - #msiStoreVersionWithTS - Creates a timestamped backup version of an iRODS data object
 
  \subsection msiurl URL
   - #msiFtpGet - Gets a remote file using FTP and writes it to an iRODS object

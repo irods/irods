@@ -51,7 +51,7 @@ JMC - Done :: r4899 | lisa | 2012-03-28 14:33:52 -0400 (Wed, 28 Mar 2012) | 1 li
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4900 | schroede | 2012-03-28 17:27:56 -0400 (Wed, 28 Mar 2012) | 6 lines
+JMC - Done :: r4900 | schroede | 2012-03-28 17:27:56 -0400 (Wed, 28 Mar 2012) | 6 lines
 
 Fix a bug in handling 'imeta mod' where a new null value for units was
 not taken as new and so was defaulted to the old value.  This was
