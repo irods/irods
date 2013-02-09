@@ -438,8 +438,8 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         "dataMode", "rescHier", "END"
     };
 
-    /* If you update colNames, be sure to update DATA_EXPIRE_TS_IX if
-     * you add items before "data_expiry_ts" */
+   /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
+    * you add items before "data_expiry_ts" and */
     char *colNames[]={
         "data_repl_num", "data_type_name", "data_size",
         "resc_name", "data_path", "data_owner_name", "data_owner_zone",
@@ -448,6 +448,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         "data_mode", "resc_hier"
     };
     int DATA_EXPIRY_TS_IX=9; /* must match index in above colNames table */
+    int MODIFY_TS_IX=12;     /* must match index in above colNames table */
 
     char objIdString[MAX_NAME_LEN];
     char *neededAccess;
@@ -484,6 +485,21 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                     }
                 }
             }
+
+            if (i==MODIFY_TS_IX) { /* if modify_ts, also make sure it's
+                                            in the standard time-stamp
+                                            format: "%011d" */
+               if (strcmp(colNames[i],"modify_ts") == 0) { /* double check*/
+                  if (strlen(theVal) < 11) {
+                     static char theVal3[20];
+                     time_t myTimeValue;
+                     myTimeValue=atoll(theVal);
+                     snprintf(theVal3, sizeof theVal3, "%011d", (int)myTimeValue);
+                     updateVals[j]=theVal3;
+                  }
+               }
+            }
+
             j++;
 
             /* If the datatype is being updated, check that it is valid */
