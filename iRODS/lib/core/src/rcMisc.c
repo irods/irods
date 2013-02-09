@@ -4630,3 +4630,65 @@ hasSymlinkInDir (char *mydir)
     return 0;
 }
 
+int
+hasSymlinkInPartialPath (char *myPath, int pos)
+{
+    char *nextPtr;
+    char *curPtr = myPath + pos;
+    struct stat statbuf;
+    int status;
+
+    status = lstat (myPath, &statbuf);
+    if (status != 0) {
+        rodsLog (LOG_ERROR,
+          "hasSymlinkInPartialPath: stat error for %s, errno = %d",
+          myPath, errno);
+        return 0;
+    }
+    if ((statbuf.st_mode & S_IFLNK) == S_IFLNK) {
+        rodsLog (LOG_ERROR,
+          "hasSymlinkInPartialPath: %s is a symlink", myPath);
+        return 1;
+    }
+
+    while ((nextPtr = strchr (curPtr, '/')) != NULL) {
+       *nextPtr = '\0';
+        status = lstat (myPath, &statbuf);
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "hasSymlinkInPartialPath: stat error for %s, errno = %d",
+              myPath, errno);
+           *nextPtr = '/';
+           return 0;
+        }
+        if ((statbuf.st_mode & S_IFLNK) == S_IFLNK) {
+            rodsLog (LOG_ERROR,
+              "hasSymlinkInPartialPath: %s is a symlink", myPath);
+           *nextPtr = '/';
+            return 1;
+        }
+       *nextPtr = '/';
+       curPtr = nextPtr + 1;
+    }
+    return 0;
+}
+
+int
+hasSymlinkInPath (char *myPath)
+{
+    static char lastCheckedPath[MAX_NAME_LEN];
+    int status, i;
+    int lastSlashPos = 0;
+
+    for (i = 0; i < MAX_NAME_LEN; i++) {
+       if (lastCheckedPath[i] != myPath[i]) break;
+       if (lastCheckedPath[i] == '/') lastSlashPos = i;
+    }
+    status = hasSymlinkInPartialPath (myPath, lastSlashPos + 1);
+    if (status == 0) {
+       rstrcpy (lastCheckedPath, myPath, MAX_NAME_LEN);
+    }
+    return status;
+}
+
+

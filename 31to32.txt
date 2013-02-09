@@ -105,13 +105,13 @@ JMC - Done :: r4908 | mwan | 2012-04-03 17:22:19 -0400 (Tue, 03 Apr 2012) | 2 li
 Add KEEPALIVE to setsockopt
 
 ------------------------------------------------------------------------
-r4909 | mwan | 2012-04-03 17:24:02 -0400 (Tue, 03 Apr 2012) | 3 lines
+JMC - Done :: r4909 | mwan | 2012-04-03 17:24:02 -0400 (Tue, 03 Apr 2012) | 3 lines
 
 Handle large file restart when the tranfer reached 100% but the 
 rcComplete call failed because of connection timeout.
 
 ------------------------------------------------------------------------
-r4910 | mwan | 2012-04-03 18:42:38 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4910 | mwan | 2012-04-03 18:42:38 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 add symlink check functions for wisc sec check later
 
