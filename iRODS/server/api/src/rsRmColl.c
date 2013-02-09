@@ -189,6 +189,8 @@ int
 _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
               dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 {
+
+    char *tmpValue;
     int status;
     collInp_t openCollInp;
     collEnt_t *collEnt;

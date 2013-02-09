@@ -987,19 +987,19 @@ OOI - Add support for OOI_INT_TYPE, OOI_FLOAT_TYPE and OOI_BOOL_TYPE
 response value.
 
 ------------------------------------------------------------------------
-r5041 | csmith | 2012-06-27 16:23:07 -0400 (Wed, 27 Jun 2012) | 3 lines
+JMC - No Op :: r5041 | csmith | 2012-06-27 16:23:07 -0400 (Wed, 27 Jun 2012) | 3 lines
 
 Call to open() had too many arguments.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5042 | csmith | 2012-06-27 18:03:55 -0400 (Wed, 27 Jun 2012) | 3 lines
+JMC - No Op :: r5042 | csmith | 2012-06-27 18:03:55 -0400 (Wed, 27 Jun 2012) | 3 lines
 
 Fuse link error when USE_SSL defined.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5043 | csmith | 2012-06-27 18:04:18 -0400 (Wed, 27 Jun 2012) | 5 lines
+JMC - No Op :: r5043 | csmith | 2012-06-27 18:04:18 -0400 (Wed, 27 Jun 2012) | 5 lines
 
 Don't print SSL verification errors for self-signed certs.
 
@@ -1007,7 +1007,7 @@ Any certificate verification errors cause lots of messages to be printed to the 
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5044 | csmith | 2012-06-27 18:29:11 -0400 (Wed, 27 Jun 2012) | 8 lines
+JMC - No Op :: r5044 | csmith | 2012-06-27 18:29:11 -0400 (Wed, 27 Jun 2012) | 8 lines
 
 Refactored some PAM authentication code.
 
@@ -1018,7 +1018,7 @@ Refactored some PAM authentication code.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5045 | csmith | 2012-06-27 18:51:47 -0400 (Wed, 27 Jun 2012) | 5 lines
+JMC - No Op :: r5045 | csmith | 2012-06-27 18:51:47 -0400 (Wed, 27 Jun 2012) | 5 lines
 
 File describing server environment variables.
 
@@ -1026,126 +1026,126 @@ The server/config/server.env.in file contains a list of environment variables th
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5046 | mwan | 2012-06-27 21:00:00 -0400 (Wed, 27 Jun 2012) | 2 lines
+JMC - No Op :: r5046 | mwan | 2012-06-27 21:00:00 -0400 (Wed, 27 Jun 2012) | 2 lines
 
 OOI: Add "data product" service to the test.
 
 ------------------------------------------------------------------------
-r5047 | csmith | 2012-06-28 04:01:52 -0400 (Thu, 28 Jun 2012) | 3 lines
+JMC - No Op :: r5047 | csmith | 2012-06-28 04:01:52 -0400 (Thu, 28 Jun 2012) | 3 lines
 
 Turn off debug in PamAuthCheck
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5048 | mwan | 2012-06-28 13:05:20 -0400 (Thu, 28 Jun 2012) | 2 lines
+JMC - No Op :: r5048 | mwan | 2012-06-28 13:05:20 -0400 (Thu, 28 Jun 2012) | 2 lines
 
 Take out outInx from ooiGenServReqInp_t because it is not used
 
 ------------------------------------------------------------------------
-r5049 | mwan | 2012-06-28 14:56:23 -0400 (Thu, 28 Jun 2012) | 2 lines
+JMC - No Op :: r5049 | mwan | 2012-06-28 14:56:23 -0400 (Thu, 28 Jun 2012) | 2 lines
 
 Add resource type "ooici" to configure ooici services
 
 ------------------------------------------------------------------------
-r5050 | mwan | 2012-06-29 22:10:37 -0400 (Fri, 29 Jun 2012) | 2 lines
+JMC - No Op :: r5050 | mwan | 2012-06-29 22:10:37 -0400 (Fri, 29 Jun 2012) | 2 lines
 
 A test for using HTTP get for file transfer
 
 ------------------------------------------------------------------------
-r5051 | mwan | 2012-07-02 23:03:00 -0400 (Mon, 02 Jul 2012) | 3 lines
+JMC - No Op :: r5051 | mwan | 2012-07-02 23:03:00 -0400 (Mon, 02 Jul 2012) | 3 lines
 
 add CURLOPT_FOLLOWLOCATION to handle redirect location to get the ERDDAP
 site working
 
 ------------------------------------------------------------------------
-r5052 | mwan | 2012-07-03 14:25:39 -0400 (Tue, 03 Jul 2012) | 2 lines
+JMC - No Op :: r5052 | mwan | 2012-07-03 14:25:39 -0400 (Tue, 03 Jul 2012) | 2 lines
 
 Add opendap file type
 
 ------------------------------------------------------------------------
-r5053 | mwan | 2012-07-03 21:11:44 -0400 (Tue, 03 Jul 2012) | 2 lines
+JMC - No Op :: r5053 | mwan | 2012-07-03 21:11:44 -0400 (Tue, 03 Jul 2012) | 2 lines
 
 Add test routine to query the pydap directory
 
 ------------------------------------------------------------------------
-r5054 | mwan | 2012-07-03 21:12:55 -0400 (Tue, 03 Jul 2012) | 2 lines
+JMC - No Op :: r5054 | mwan | 2012-07-03 21:12:55 -0400 (Tue, 03 Jul 2012) | 2 lines
 
 Allow path with http: prefix to be registered.
 
 ------------------------------------------------------------------------
-r5055 | mwan | 2012-07-05 17:24:44 -0400 (Thu, 05 Jul 2012) | 2 lines
+JMC - No Op :: r5055 | mwan | 2012-07-05 17:24:44 -0400 (Thu, 05 Jul 2012) | 2 lines
 
 Add pydapClosedir function adn refactor pydapReaddir.
 
 ------------------------------------------------------------------------
-r5056 | mwan | 2012-07-05 18:23:34 -0400 (Thu, 05 Jul 2012) | 2 lines
+JMC - No Op :: r5056 | mwan | 2012-07-05 18:23:34 -0400 (Thu, 05 Jul 2012) | 2 lines
 
 Add pydapStat and the associated test routine.
 
 ------------------------------------------------------------------------
-r5057 | mwan | 2012-07-05 18:46:56 -0400 (Thu, 05 Jul 2012) | 2 lines
+JMC - No Op :: r5057 | mwan | 2012-07-05 18:46:56 -0400 (Thu, 05 Jul 2012) | 2 lines
 
 Minor comment change
 
 ------------------------------------------------------------------------
-r5058 | mwan | 2012-07-05 19:01:07 -0400 (Thu, 05 Jul 2012) | 2 lines
+JMC - No Op :: r5058 | mwan | 2012-07-05 19:01:07 -0400 (Thu, 05 Jul 2012) | 2 lines
 
 minor change
 
 ------------------------------------------------------------------------
-r5059 | mwan | 2012-07-05 19:22:44 -0400 (Thu, 05 Jul 2012) | 2 lines
+JMC - No Op :: r5059 | mwan | 2012-07-05 19:22:44 -0400 (Thu, 05 Jul 2012) | 2 lines
 
 Add pydap driver functions
 
 ------------------------------------------------------------------------
-r5060 | mwan | 2012-07-05 20:37:53 -0400 (Thu, 05 Jul 2012) | 2 lines
+JMC - No Op :: r5060 | mwan | 2012-07-05 20:37:53 -0400 (Thu, 05 Jul 2012) | 2 lines
 
 Get recursive registration of pydap path to work.
 
 ------------------------------------------------------------------------
-r5061 | mwan | 2012-07-06 13:52:39 -0400 (Fri, 06 Jul 2012) | 2 lines
+JMC - No Op :: r5061 | mwan | 2012-07-06 13:52:39 -0400 (Fri, 06 Jul 2012) | 2 lines
 
 Add pydapStageToCache driver function to stage/download files from pydap
 
 ------------------------------------------------------------------------
-r5062 | mwan | 2012-07-06 16:49:49 -0400 (Fri, 06 Jul 2012) | 2 lines
+JMC - No Op :: r5062 | mwan | 2012-07-06 16:49:49 -0400 (Fri, 06 Jul 2012) | 2 lines
 
 Handle UNKNOWN_FILE_SZ when staging from HTTP to cache
 
 ------------------------------------------------------------------------
-r5063 | mwan | 2012-07-06 17:27:00 -0400 (Fri, 06 Jul 2012) | 2 lines
+JMC - No Op :: r5063 | mwan | 2012-07-06 17:27:00 -0400 (Fri, 06 Jul 2012) | 2 lines
 
 refine last checkin
 
 ------------------------------------------------------------------------
-r5064 | mwan | 2012-07-06 17:43:27 -0400 (Fri, 06 Jul 2012) | 2 lines
+JMC - No Op :: r5064 | mwan | 2012-07-06 17:43:27 -0400 (Fri, 06 Jul 2012) | 2 lines
 
 Minor change from last checkin
 
 ------------------------------------------------------------------------
-r5065 | mwan | 2012-07-06 19:26:01 -0400 (Fri, 06 Jul 2012) | 4 lines
+JMC - No Op :: r5065 | mwan | 2012-07-06 19:26:01 -0400 (Fri, 06 Jul 2012) | 4 lines
 
 Add NO_STAGING_KW to rcNcOpen and rcDataOpen to specify no staging from
 compund resource to cache is needed since nc_open can handle opendap
 files directly.
 
 ------------------------------------------------------------------------
-r5066 | mwan | 2012-07-09 12:58:16 -0400 (Mon, 09 Jul 2012) | 2 lines
+JMC - No Op :: r5066 | mwan | 2012-07-09 12:58:16 -0400 (Mon, 09 Jul 2012) | 2 lines
 
 Fix a test script failure caused by last checkin
 
 ------------------------------------------------------------------------
-r5067 | mwan | 2012-07-09 14:33:09 -0400 (Mon, 09 Jul 2012) | 2 lines
+JMC - No Op :: r5067 | mwan | 2012-07-09 14:33:09 -0400 (Mon, 09 Jul 2012) | 2 lines
 
 Set NO_STAGING_KW for test
 
 ------------------------------------------------------------------------
-r5068 | mwan | 2012-07-09 14:51:16 -0400 (Mon, 09 Jul 2012) | 2 lines
+JMC - No Op :: r5068 | mwan | 2012-07-09 14:51:16 -0400 (Mon, 09 Jul 2012) | 2 lines
 
 Add code to handle NC_SHORT and NC_USHORT attributes
 
 ------------------------------------------------------------------------
-r5069 | schroede | 2012-07-09 16:20:44 -0400 (Mon, 09 Jul 2012) | 23 lines
+JMC - Done ::r5069 | schroede | 2012-07-09 16:20:44 -0400 (Mon, 09 Jul 2012) | 23 lines
 
 Implement an option to perform upper-case in queries and use it in
 imeta and iquest, providing a basic case-insensitive capability.  This
@@ -1171,7 +1171,7 @@ case-insensitive data-object name matching seems to work fine.
 Added a basic test to icatTest.pl (used in 'devtest').
 
 ------------------------------------------------------------------------
-r5070 | schroede | 2012-07-10 19:27:40 -0400 (Tue, 10 Jul 2012) | 25 lines
+JMC - No Op :: r5070 | schroede | 2012-07-10 19:27:40 -0400 (Tue, 10 Jul 2012) | 25 lines
 
 Fix some problems found by 'devtest' when using Oracle Xe (on
 srbbrick15) as the ICAT DB, found by 'devtest'.
@@ -1199,7 +1199,7 @@ tested with Oracle since it was added.
 
 
 ------------------------------------------------------------------------
-r5071 | mwan | 2012-07-10 19:37:23 -0400 (Tue, 10 Jul 2012) | 3 lines
+JMC - No Op :: r5071 | mwan | 2012-07-10 19:37:23 -0400 (Tue, 10 Jul 2012) | 3 lines
 
 Modify dumpNcInqOut to allow it to dump a subset of variable since
 a data set can be very large
