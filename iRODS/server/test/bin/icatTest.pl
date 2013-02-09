@@ -604,6 +604,12 @@ runCmd(0, "iadmin modresc $Resc2 status up");
 runCmd(0, "iadmin lr $Resc2");
 runCmd(0, "iput -R $Resc2 $F1");
 
+
+# After a file is put, so that at least one will be moved
+runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 $Resc2Path/ /tmp/v1/");
+runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 /tmp/v1/ $Resc2Path/ rods");
+
+
 # repl
 runCmd(0, "irepl -R $Resc $F1");
 runCmd(0, "irm -f $F1");

@@ -4895,6 +4895,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     int status, OK;
     char myTime[50];
     char rescId[MAX_NAME_LEN];
+    char rescPath[MAX_NAME_LEN]="";
+    char rescPathMsg[MAX_NAME_LEN+100];
     char commentStr[200];
     struct hostent *myHostEnt; // JMC - backport 4597
 
@@ -5132,6 +5134,19 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 
     if (strcmp(option, "path")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 10");
+      status = cmlGetStringValueFromSql(
+         "select resc_def_path from R_RESC_MAIN where resc_id=?",
+        rescPath, MAX_NAME_LEN, rescId, 0, 0, &icss);
+      if (status != 0) {
+        rodsLog(LOG_NOTICE,
+                "chlModResc cmlGetStringValueFromSql query failure %d",
+                status);
+        _rollback("chlModResc");
+        return(status);
+      }
+
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 11");
+
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
@@ -5149,7 +5164,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
 
     if (strcmp(option, "status")==0) {
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 11");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 12");
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
@@ -5167,7 +5182,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
 
     if (strcmp(option, "name")==0) {
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 12");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 13");
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
@@ -5183,7 +5198,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             return(status);
         }
 
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 13");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 14");
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
@@ -5198,7 +5213,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             return(status);
         }
 
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 14");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 15");
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
@@ -5213,7 +5228,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             return(status);
         }
 
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 15");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 16");
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
@@ -5275,8 +5290,137 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
                 status);
         return(status);
     }
+
+   if (rescPath[0]!='\0') {
+      /* if the path was gotten, return it */
+      int i;
+      snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
+              rescPath);
+      i = addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
+   }
+
     return(0);
 }
+
+/* Modify a Resource Data Paths */
+int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
+                       char *newPath, char *userName) {
+   char rescId[MAX_NAME_LEN];
+   int status, len, rows;
+   char *cptr;
+//   char userId[NAME_LEN]="";
+   char userZone[NAME_LEN];
+   char zoneToUse[NAME_LEN];
+   char userName2[NAME_LEN];
+
+   char oldPath2[MAX_NAME_LEN];
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths");
+
+   if (rescName == NULL || oldPath==NULL || newPath==NULL) {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   if (*rescName == '\0' || *oldPath == '\0' || *newPath=='\0') {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   /* the paths must begin and end with / */
+   if (*oldPath != '/' or *newPath != '/') {
+      return (CAT_INVALID_ARGUMENT);
+   }
+   len = strlen(oldPath);
+   cptr = oldPath+len-1;
+   if (*cptr != '/') return (CAT_INVALID_ARGUMENT);
+   len = strlen(newPath);
+   cptr = newPath+len-1;
+   if (*cptr != '/') return (CAT_INVALID_ARGUMENT);
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   status = getLocalZone();
+   if (status != 0) return(status);
+
+   rescId[0]='\0';
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths SQL 1 ");
+   status = cmlGetStringValueFromSql(
+       "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+       rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+      _rollback("chlModRescDataPaths");
+      return(status);
+   }
+
+   /* This is needed for like clause which is needed to get the
+      correct number of rows that were updated (seems like the DBMS will
+      return a row count for rows looked at for the replace). */
+   strncpy(oldPath2, oldPath, sizeof(oldPath2));
+   strncat(oldPath2, "%", sizeof(oldPath2));
+
+   if (userName != NULL && *userName != '\0') {
+      strncpy(zoneToUse, localZone, NAME_LEN);
+      status = parseUserName(userName, userName2, userZone);
+      if (userZone[0]!='\0') {
+        rstrcpy(zoneToUse, userZone, NAME_LEN);
+      }
+
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths SQL 2");
+      cllBindVars[cllBindVarCount++]=oldPath;
+      cllBindVars[cllBindVarCount++]=newPath;
+      cllBindVars[cllBindVarCount++]=rescName;
+      cllBindVars[cllBindVarCount++]=oldPath2;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneToUse;
+      status =  cmlExecuteNoAnswerSql(
+        "update R_DATA_MAIN DM set data_path = replace (DM.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
+        &icss);
+   }
+   else {
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescDataPaths SQL 3");
+      cllBindVars[cllBindVarCount++]=oldPath;
+      cllBindVars[cllBindVarCount++]=newPath;
+      cllBindVars[cllBindVarCount++]=rescName;
+      cllBindVars[cllBindVarCount++]=oldPath2;
+      status =  cmlExecuteNoAnswerSql(
+        "update R_DATA_MAIN DM set data_path = replace (DM.data_path, ?, ?) where resc_name=? and data_path like ?",
+        &icss);
+   }
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+             "chlModRescDataPaths cmlExecuteNoAnswerSql update failure %d",
+             status);
+      _rollback("chlModResc");
+      return(status);
+   }
+
+   rows = cllGetRowCount(&icss,-1);
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+             "chlModResc cmlExecuteNoAnswerSql commit failure %d",
+             status);
+      return(status);
+   }
+
+   if (rows > 0) {
+      char rowsMsg[100];
+      snprintf(rowsMsg, 100, "%d rows updated", 
+                 rows);
+      status = addRErrorMsg (&rsComm->rError, 0, rowsMsg);
+   }
+
+   return(0);
+}
+
+
+
 
 
 /* Add or substract to the resource free_space */

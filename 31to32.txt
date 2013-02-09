@@ -142,12 +142,12 @@ JMC - Done :: r4915 | mwan | 2012-04-04 16:43:45 -0400 (Wed, 04 Apr 2012) | 2 li
 Correct previous checkin
 
 ------------------------------------------------------------------------
-r4916 | mwan | 2012-04-04 17:09:34 -0400 (Wed, 04 Apr 2012) | 2 lines
+JMC - Done :: r4916 | mwan | 2012-04-04 17:09:34 -0400 (Wed, 04 Apr 2012) | 2 lines
 
 add regUid for registering UNIX uid in dataObjInfo_t
 
 ------------------------------------------------------------------------
-r4917 | schroede | 2012-04-05 11:56:37 -0400 (Thu, 05 Apr 2012) | 6 lines
+JMC - No Op :: r4917 | schroede | 2012-04-05 11:56:37 -0400 (Thu, 05 Apr 2012) | 6 lines
 
 Add another data-object system metadata field and column for
 data-object registration (chlRegDataObj), modification
@@ -156,34 +156,34 @@ extension he is developing.  The command in the patch file can be used
 to update existing 3.1 ICAT databases.
 
 ------------------------------------------------------------------------
-r4918 | mwan | 2012-04-06 19:38:54 -0400 (Fri, 06 Apr 2012) | 2 lines
+JMC - No Op :: r4918 | mwan | 2012-04-06 19:38:54 -0400 (Fri, 06 Apr 2012) | 2 lines
 
 Implement the rcNcInq - a comprehensive inquire API
 
 ------------------------------------------------------------------------
-r4919 | schroede | 2012-04-09 12:12:29 -0400 (Mon, 09 Apr 2012) | 4 lines
+JMC - No Op :: r4919 | schroede | 2012-04-09 12:12:29 -0400 (Mon, 09 Apr 2012) | 4 lines
 
 This is an experimental PAM authentication program that may be used as
 part of a PAM/LDAP authentication system that is under
 development. See the top of the source file for more information.
 
 ------------------------------------------------------------------------
-r4920 | mwan | 2012-04-09 15:38:12 -0400 (Mon, 09 Apr 2012) | 2 lines
+JMC - No Op :: r4920 | mwan | 2012-04-09 15:38:12 -0400 (Mon, 09 Apr 2012) | 2 lines
 
 Complete implementation of the ncInq API
 
 ------------------------------------------------------------------------
-r4921 | mwan | 2012-04-09 18:06:25 -0400 (Mon, 09 Apr 2012) | 2 lines
+JMC - No Op :: r4921 | mwan | 2012-04-09 18:06:25 -0400 (Mon, 09 Apr 2012) | 2 lines
 
 fix last checkin
 
 ------------------------------------------------------------------------
-r4922 | mwan | 2012-04-09 19:57:17 -0400 (Mon, 09 Apr 2012) | 2 lines
+JMC - No Op :: r4922 | mwan | 2012-04-09 19:57:17 -0400 (Mon, 09 Apr 2012) | 2 lines
 
 Get the values of the attributes for rcNcInq API
 
 ------------------------------------------------------------------------
-r4923 | schroede | 2012-04-11 17:02:47 -0400 (Wed, 11 Apr 2012) | 22 lines
+JMC - Done :: r4923 | schroede | 2012-04-11 17:02:47 -0400 (Wed, 11 Apr 2012) | 22 lines
 
 Add a 'iadmin modrescdatapath' capability to update data-obj paths.
 This is sometimes needed after a resource path is updated (if a
@@ -208,63 +208,63 @@ SQL.
 
 
 ------------------------------------------------------------------------
-r4924 | mwan | 2012-04-12 14:44:06 -0400 (Thu, 12 Apr 2012) | 4 lines
+JMC - No Op :: r4924 | mwan | 2012-04-12 14:44:06 -0400 (Thu, 12 Apr 2012) | 4 lines
 
 Add STREAM_MS_T for streaming output from rules/workflow. The value is
 from the output of bindStreamToIRods. Caller should use rcStreamRead 
 and rcStreamClose to read close the stream.
 
 ------------------------------------------------------------------------
-r4925 | mwan | 2012-04-12 15:34:28 -0400 (Thu, 12 Apr 2012) | 2 lines
+JMC - No Op :: r4925 | mwan | 2012-04-12 15:34:28 -0400 (Thu, 12 Apr 2012) | 2 lines
 
 Correct some output string
 
 ------------------------------------------------------------------------
-r4926 | terrell | 2012-04-12 16:18:23 -0400 (Thu, 12 Apr 2012) | 1 line
+JMC - No Op :: r4926 | terrell | 2012-04-12 16:18:23 -0400 (Thu, 12 Apr 2012) | 1 line
 
 add .gitignore file so that examples/microservices/obj/ directory exists across the svn-git bridge
 ------------------------------------------------------------------------
-r4927 | xuh | 2012-04-12 19:18:17 -0400 (Thu, 12 Apr 2012) | 1 line
+JMC - No Op :: r4927 | xuh | 2012-04-12 19:18:17 -0400 (Thu, 12 Apr 2012) | 1 line
 
 Fix a compiler error when enabling the old rule engine in version 3.1
 ------------------------------------------------------------------------
-r4928 | mwan | 2012-04-13 20:33:42 -0400 (Fri, 13 Apr 2012) | 3 lines
+JMC - No Op :: r4928 | mwan | 2012-04-13 20:33:42 -0400 (Fri, 13 Apr 2012) | 3 lines
 
 Get rcNcInq to work and nctest to test it. Add dumpNcInqOut routine
 to dump the content of a netcdf file, just like ncdump.
 
 ------------------------------------------------------------------------
-r4929 | mwan | 2012-04-16 12:50:24 -0400 (Mon, 16 Apr 2012) | 2 lines
+JMC - No Op :: r4929 | mwan | 2012-04-16 12:50:24 -0400 (Mon, 16 Apr 2012) | 2 lines
 
 Output format mod for dumpNcInqOut to match ncdump
 
 ------------------------------------------------------------------------
-r4930 | mwan | 2012-04-16 13:17:43 -0400 (Mon, 16 Apr 2012) | 2 lines
+JMC - No Op :: r4930 | mwan | 2012-04-16 13:17:43 -0400 (Mon, 16 Apr 2012) | 2 lines
 
 Mod output of dumpNcInqOut to match ncdump format
 
 ------------------------------------------------------------------------
-r4931 | mwan | 2012-04-16 19:42:53 -0400 (Mon, 16 Apr 2012) | 2 lines
+JMC - No Op :: r4931 | mwan | 2012-04-16 19:42:53 -0400 (Mon, 16 Apr 2012) | 2 lines
 
 Allow rcNcInq to inquire individual type too
 
 ------------------------------------------------------------------------
-r4932 | mwan | 2012-04-18 18:30:28 -0400 (Wed, 18 Apr 2012) | 2 lines
+JMC - No Op :: r4932 | mwan | 2012-04-18 18:30:28 -0400 (Wed, 18 Apr 2012) | 2 lines
 
 Fix a bug from last checkin
 
 ------------------------------------------------------------------------
-r4933 | mwan | 2012-04-18 18:42:18 -0400 (Wed, 18 Apr 2012) | 2 lines
+JMC - No Op :: r4933 | mwan | 2012-04-18 18:42:18 -0400 (Wed, 18 Apr 2012) | 2 lines
 
 Add test for the new rcNcInq API
 
 ------------------------------------------------------------------------
-r4934 | mwan | 2012-04-18 19:56:19 -0400 (Wed, 18 Apr 2012) | 2 lines
+JMC - No Op :: r4934 | mwan | 2012-04-18 19:56:19 -0400 (Wed, 18 Apr 2012) | 2 lines
 
 Add msiNcInq micro-service
 
 ------------------------------------------------------------------------
-r4935 | antoine | 2012-04-30 15:21:37 -0400 (Mon, 30 Apr 2012) | 2 lines
+JMC - No Op :: r4935 | antoine | 2012-04-30 15:21:37 -0400 (Mon, 30 Apr 2012) | 2 lines
 
 Example rule for statistical analysis case study
 
@@ -656,7 +656,7 @@ execCmd will now check if the irodsServerCmdDir environment variable is set, and
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
+JMC - ????r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
 
 In chlModDataObjMeta, if the modify_ts is being set and is less than
 11 digits long, change it to be the irods time-standard 11 digits.
