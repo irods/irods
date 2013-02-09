@@ -591,10 +591,7 @@ printNoSync (char *objPath, rodsLong_t fileSize, char *reason)
    
 
     if ((status = splitPathByKey (objPath, myDir, myFile, '/')) < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "printNoSync: splitPathByKey for %s error, status = %d",
-                      objPath, status);
-        return (status);
+        rstrcpy (myFile, objPath, MAX_NAME_LEN); 
     }
 
     if (fileSize <= 0) {

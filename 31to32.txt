@@ -788,28 +788,28 @@ JMC - Done :: r5006 | mwan | 2012-06-12 17:44:06 -0400 (Tue, 12 Jun 2012) | 2 li
 Add --age option to irsync. This implementation is not yet complete.
 
 ------------------------------------------------------------------------
-r5007 | mwan | 2012-06-13 14:37:33 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5007 | mwan | 2012-06-13 14:37:33 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 Finish adding --age to irsync
 
 ------------------------------------------------------------------------
-r5008 | mwan | 2012-06-13 14:57:07 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5008 | mwan | 2012-06-13 14:57:07 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 modify printNoSync to handle splitPathByKey failed
 
 ------------------------------------------------------------------------
-r5009 | mwan | 2012-06-13 15:57:53 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5009 | mwan | 2012-06-13 15:57:53 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 get --age option to work with irods to irods sync
 
 ------------------------------------------------------------------------
-r5010 | schroede | 2012-06-13 16:02:39 -0400 (Wed, 13 Jun 2012) | 3 lines
+JMC - Done :: r5010 | schroede | 2012-06-13 16:02:39 -0400 (Wed, 13 Jun 2012) | 3 lines
 
 When a data-object is moved, update its modify time.
 This is needed for the irmtrash --age feature.
 
 ------------------------------------------------------------------------
-r5011 | mwan | 2012-06-13 18:50:43 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5011 | mwan | 2012-06-13 18:50:43 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 Add -K option to irsync as requested by a user
 

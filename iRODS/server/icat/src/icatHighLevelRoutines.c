@@ -8266,10 +8266,11 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         /* update the table */
         getNowStr(myTime);
         cllBindVars[cllBindVarCount++]=collIdString;
+        cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=objIdString;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 6");
         status =  cmlExecuteNoAnswerSql(
-            "update R_DATA_MAIN set coll_id=? where data_id=?",
+            "update R_DATA_MAIN set coll_id=?, modify_ts=? where data_id=?",
             &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
