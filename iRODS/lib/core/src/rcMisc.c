@@ -4584,3 +4584,49 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                                              }
 #endif
 
+
+int
+hasSymlinkInDir (char *mydir)
+{
+    int status;
+    char subfilePath[MAX_NAME_LEN];
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+
+    if (mydir == NULL) return 0;
+    dirPtr = opendir (mydir);
+    if (dirPtr == NULL) return 0;
+
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          mydir, myDirent->d_name);
+        status = lstat (subfilePath, &statbuf);
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "hasSymlinkIndir: stat error for %s, errno = %d",
+              subfilePath, errno);
+            continue;
+        }
+        if ((statbuf.st_mode & S_IFLNK) == S_IFLNK) {
+            rodsLog (LOG_ERROR,
+              "hasSymlinkIndir: %s is a symlink",
+              subfilePath);
+           closedir (dirPtr);
+            return 1;
+        }
+        if ((statbuf.st_mode & S_IFDIR) != 0) {
+           if (hasSymlinkInDir (subfilePath)) {
+                closedir (dirPtr);
+                return 1;
+           }
+        }
+    }
+    closedir (dirPtr);
+    return 0;
+}
+

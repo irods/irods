@@ -716,11 +716,11 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     rodsObjStat_t *rodsObjStatOut = NULL;
     specCollCache_t *specCollCache = NULL;
     rescInfo_t *rescInfo = NULL;
-
+#if 0
     /* make it a privileged call for now */ // JMC - backport 4871
     if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
         return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-
+#endif
     if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
         == NULL) {
         rodsLog (LOG_ERROR,
