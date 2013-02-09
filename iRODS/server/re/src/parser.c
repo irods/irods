@@ -1129,7 +1129,7 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
 
      OR(value)
         int n = 0;
-        TTEXT("SELECT");
+        TTEXT2("SELECT", "select");
        LOOP_BEGIN(columns)
                NT(Column);
                n++;
@@ -1140,12 +1140,12 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
                END_TRY(columnDelim)
        LOOP_END(columns)
        OPTIONAL_BEGIN(where)
-               TTEXT("WHERE");
+                       TTEXT2("WHERE", "where");
                LOOP_BEGIN(queryConds)
                        NT(QueryCond);
                        n++;
                        TRY(queryCondDelim)
-                               TTEXT("AND");
+                       TTEXT2("AND", "and");
                        OR(queryCondDelim)
                                DONE(queryConds)
                        END_TRY(queryCondDelim)

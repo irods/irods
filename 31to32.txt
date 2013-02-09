@@ -1249,45 +1249,45 @@ cases like these.
 
 
 ------------------------------------------------------------------------
-r5073 | schroede | 2012-07-11 14:29:02 -0400 (Wed, 11 Jul 2012) | 3 lines
+JMC - No Op :: r5073 | schroede | 2012-07-11 14:29:02 -0400 (Wed, 11 Jul 2012) | 3 lines
 
 Update some comments to match our current PAM-authentication
 implementation.
 
 ------------------------------------------------------------------------
-r5074 | schroede | 2012-07-11 17:47:58 -0400 (Wed, 11 Jul 2012) | 4 lines
+JMC - No Op :: r5074 | schroede | 2012-07-11 17:47:58 -0400 (Wed, 11 Jul 2012) | 4 lines
 
 Update comments for the PAM program under here.  Also see updates on
 the irods.org wiki including the SSL Setup procedure for PAM provided
 by Chris Smith.  
 
 ------------------------------------------------------------------------
-r5075 | mwan | 2012-07-11 18:20:15 -0400 (Wed, 11 Jul 2012) | 2 lines
+JMC - No Op :: r5075 | mwan | 2012-07-11 18:20:15 -0400 (Wed, 11 Jul 2012) | 2 lines
 
 Add ERDDAP opendir/readdir/closedir test routine
 
 ------------------------------------------------------------------------
-r5076 | mwan | 2012-07-11 20:55:57 -0400 (Wed, 11 Jul 2012) | 2 lines
+JMC - No Op :: r5076 | mwan | 2012-07-11 20:55:57 -0400 (Wed, 11 Jul 2012) | 2 lines
 
 Add erddap resource type.
 
 ------------------------------------------------------------------------
-r5077 | mwan | 2012-07-12 17:12:15 -0400 (Thu, 12 Jul 2012) | 2 lines
+JMC - No Op :: r5077 | mwan | 2012-07-12 17:12:15 -0400 (Thu, 12 Jul 2012) | 2 lines
 
 Add erddap driver
 
 ------------------------------------------------------------------------
-r5078 | mwan | 2012-07-13 14:48:46 -0400 (Fri, 13 Jul 2012) | 2 lines
+JMC - No Op :: r5078 | mwan | 2012-07-13 14:48:46 -0400 (Fri, 13 Jul 2012) | 2 lines
 
 Allow a path input
 
 ------------------------------------------------------------------------
-r5079 | mwan | 2012-07-13 16:35:57 -0400 (Fri, 13 Jul 2012) | 2 lines
+JMC - No Op :: r5079 | mwan | 2012-07-13 16:35:57 -0400 (Fri, 13 Jul 2012) | 2 lines
 
 Better output for NC_CHAR type in dumpNcInqOut
 
 ------------------------------------------------------------------------
-r5080 | jeanyves | 2012-07-16 08:03:00 -0400 (Mon, 16 Jul 2012) | 6 lines
+JMC - Done :: r5080 | jeanyves | 2012-07-16 08:03:00 -0400 (Mon, 16 Jul 2012) | 6 lines
 
 DefFileMode and DefDirMode should be declared between quotes since 3.1.
 If not, the default values for DefFileMode and DefDirMode will be used by iRODS.
@@ -1296,28 +1296,28 @@ If DefFileMode and DefDirMode are not declared as strings in the perl script, th
 as they will be converted into a decimal integer, hence they will not have the required format.
 
 ------------------------------------------------------------------------
-r5081 | mwan | 2012-07-16 16:14:36 -0400 (Mon, 16 Jul 2012) | 2 lines
+JMC - No Op :: r5081 | mwan | 2012-07-16 16:14:36 -0400 (Mon, 16 Jul 2012) | 2 lines
 
 Treat NC_CHAR type as string in dumpNcInqOut to give better output
 
 ------------------------------------------------------------------------
-r5082 | mwan | 2012-07-16 19:06:23 -0400 (Mon, 16 Jul 2012) | 3 lines
+JMC - No Op :: r5082 | mwan | 2012-07-16 19:06:23 -0400 (Mon, 16 Jul 2012) | 3 lines
 
 Add dumpNcInqOutToNcFile routine to dump ncInqOut (result of rcNcInq API)
 to a NETCDF format file. The implementation is not done yet.
 
 ------------------------------------------------------------------------
-r5083 | mwan | 2012-07-16 19:41:06 -0400 (Mon, 16 Jul 2012) | 2 lines
+JMC - No Op :: r5083 | mwan | 2012-07-16 19:41:06 -0400 (Mon, 16 Jul 2012) | 2 lines
 
 Completed dumpNcInqOutToNcFile routine
 
 ------------------------------------------------------------------------
-r5084 | mwan | 2012-07-17 14:21:13 -0400 (Tue, 17 Jul 2012) | 2 lines
+JMC - No Op :: r5084 | mwan | 2012-07-17 14:21:13 -0400 (Tue, 17 Jul 2012) | 2 lines
 
 get dumpNcInqOutToNcFile to work
 
 ------------------------------------------------------------------------
-r5085 | schroede | 2012-07-17 16:12:45 -0400 (Tue, 17 Jul 2012) | 38 lines
+JMC - No Op :: r5085 | schroede | 2012-07-17 16:12:45 -0400 (Tue, 17 Jul 2012) | 38 lines
 
 Extensions so that 'irodssetup' can optionally use system-installed
 Postgresql and ODBC (i.e. installed via a package manager).
@@ -1358,43 +1358,43 @@ version. On Ubuntu 10.04.4 LTS apt-get installs postgres 8.4 where we
 download and use postgres 9.1.3.
 
 ------------------------------------------------------------------------
-r5086 | mwan | 2012-07-17 17:11:33 -0400 (Tue, 17 Jul 2012) | 3 lines
+JMC - No Op :: r5086 | mwan | 2012-07-17 17:11:33 -0400 (Tue, 17 Jul 2012) | 3 lines
 
 Move check for NC operation down to l3Close from _rsDataObjClose
 so closeAllL1desc won't get an error return
 
 ------------------------------------------------------------------------
-r5087 | mwan | 2012-07-17 18:25:19 -0400 (Tue, 17 Jul 2012) | 2 lines
+JMC - No Op :: r5087 | mwan | 2012-07-17 18:25:19 -0400 (Tue, 17 Jul 2012) | 2 lines
 
 ndle short integer in ncValueToStr and getNcTypeStr.
 
 ------------------------------------------------------------------------
-r5088 | mwan | 2012-07-17 19:48:20 -0400 (Tue, 17 Jul 2012) | 2 lines
+JMC - No Op :: r5088 | mwan | 2012-07-17 19:48:20 -0400 (Tue, 17 Jul 2012) | 2 lines
 
 minor bug fix for dumpNcInqOut
 
 ------------------------------------------------------------------------
-r5089 | mwan | 2012-07-18 16:48:02 -0400 (Wed, 18 Jul 2012) | 2 lines
+JMC - No Op :: r5089 | mwan | 2012-07-18 16:48:02 -0400 (Wed, 18 Jul 2012) | 2 lines
 
 Minor change in dumpNcInqOut to handle rcNcGetVarsByType error
 
 ------------------------------------------------------------------------
-r5090 | mwan | 2012-07-19 13:30:46 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5090 | mwan | 2012-07-19 13:30:46 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 test for short int packing
 
 ------------------------------------------------------------------------
-r5091 | mwan | 2012-07-19 13:52:44 -0400 (Thu, 19 Jul 2012) | 3 lines
+JMC - No Op :: r5091 | mwan | 2012-07-19 13:52:44 -0400 (Thu, 19 Jul 2012) | 3 lines
 
 ifdef out nctest
 
 
 ------------------------------------------------------------------------
-r5092 | xuh | 2012-07-19 16:19:36 -0400 (Thu, 19 Jul 2012) | 1 line
+JMC - Done :: r5092 | xuh | 2012-07-19 16:19:36 -0400 (Thu, 19 Jul 2012) | 1 line
 
 Foreach statement for rule language integerated general query.
 ------------------------------------------------------------------------
-r5093 | xuh | 2012-07-19 16:23:38 -0400 (Thu, 19 Jul 2012) | 1 line
+JMC - Done :: r5093 | xuh | 2012-07-19 16:23:38 -0400 (Thu, 19 Jul 2012) | 1 line
 
 Support for lower case keywords in rule language integrated general query
 ------------------------------------------------------------------------
