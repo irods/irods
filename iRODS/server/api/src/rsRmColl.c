@@ -212,17 +212,37 @@ _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
         return (handleInx);
     }
 
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    memset (&tmpCollInp, 0, sizeof (tmpCollInp));
+    /* catch the UNREG_OPR */
+    dataObjInp.oprType = tmpCollInp.oprType = rmCollInp->oprType;
+
+     if ((tmpValue = getValByKey (&rmCollInp->condInput, AGE_KW)) != NULL) {
+       if (CollHandle[handleInx].rodsObjStat != NULL) {
+           /* when a collection is moved, the modfiyTime of the object in
+             * the collectin does not change. So, we'll depend on the
+             * modfiyTime of the collection */
+           int ageLimit = atoi (tmpValue) * 60;
+            int modifyTime =
+              atoi (CollHandle[handleInx].rodsObjStat->modifyTime);
+           if ((time (0) - modifyTime) < ageLimit) {
+               rsCloseCollection (rsComm, &handleInx);
+               return 0;
+           }
+        }
+        addKeyVal (&dataObjInp.condInput, AGE_KW, tmpValue);
+        addKeyVal (&tmpCollInp.condInput, AGE_KW, tmpValue);
+    }
+    addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
+    addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
+
     if (collOprStat != NULL && *collOprStat == NULL) {
         *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));
         memset (*collOprStat, 0, sizeof (collOprStat_t));
     }
 
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
-    memset (&tmpCollInp, 0, sizeof (tmpCollInp));
-    /* catch the UNREG_OPR */
-    dataObjInp.oprType = tmpCollInp.oprType = rmCollInp->oprType;
-    addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
-    addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
+
+
     if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {
         if (isTrashPath (rmCollInp->collName) == False) {
             return (SYS_INVALID_FILE_PATH);
