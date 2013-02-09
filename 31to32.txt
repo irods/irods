@@ -27,27 +27,28 @@ JMC - Done :: r4893 | xuh | 2012-03-26 21:02:55 -0400 (Mon, 26 Mar 2012) | 1 lin
 
 Fix a problem found by Jean-Yves with reServer that deletes delayed repeated rules even though the rule executed successfully.
 ------------------------------------------------------------------------
-r4894 | lisa | 2012-03-28 14:22:41 -0400 (Wed, 28 Mar 2012) | 1 line
+
+JMC - Done :: r4894 | lisa | 2012-03-28 14:22:41 -0400 (Wed, 28 Mar 2012) | 1 line
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4895 | lisa | 2012-03-28 14:24:55 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4895 | lisa | 2012-03-28 14:24:55 -0400 (Wed, 28 Mar 2012) | 1 line
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4896 | lisa | 2012-03-28 14:26:16 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4896 | lisa | 2012-03-28 14:26:16 -0400 (Wed, 28 Mar 2012) | 1 line
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4897 | lisa | 2012-03-28 14:27:30 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4897 | lisa | 2012-03-28 14:27:30 -0400 (Wed, 28 Mar 2012) | 1 line
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4898 | lisa | 2012-03-28 14:28:34 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4898 | lisa | 2012-03-28 14:28:34 -0400 (Wed, 28 Mar 2012) | 1 line
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4899 | lisa | 2012-03-28 14:33:52 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4899 | lisa | 2012-03-28 14:33:52 -0400 (Wed, 28 Mar 2012) | 1 line
 
 added new versioning microservice
 ------------------------------------------------------------------------
