@@ -99,6 +99,7 @@ main(int argc, char **argv) {
    status = modDelayedRule(argv[argOffset], argv[argOffset+1],
 			   argv[argOffset+2]);
 
+    printErrorStack(Conn->rError);
    rcDisconnect(Conn);
 
    if (status!=0) exit(4);

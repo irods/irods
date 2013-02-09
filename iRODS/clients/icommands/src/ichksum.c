@@ -70,6 +70,7 @@ main(int argc, char **argv) {
 
     status = chksumUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
 
     if (status < 0) {

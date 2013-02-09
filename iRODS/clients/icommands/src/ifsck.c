@@ -71,6 +71,8 @@ main(int argc, char **argv) {
 	
 	status = fsckObj (conn, &myRodsArgs, &rodsPathInp, hostname);
 
+    printErrorStack(conn->rError);
+   
     rcDisconnect(conn);
 
     exit(status);

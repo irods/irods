@@ -1012,7 +1012,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         printf("OK, performing the resource data paths update\n");
 
         generalAdmin(0, "modify", "resourcedatapaths", cmdToken[1],
-                     cmdToken[2], cmdToken[3], cmdToken[4], "", "");
+                     cmdToken[2], cmdToken[3], cmdToken[4], "", "", "", "" );
       }
       return(0);
     }
@@ -1033,7 +1033,7 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                 printf("OK, performing the resource rename\n");
                 int stat;
                 stat = generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2],
-                              cmdToken[3], "", "", "");
+                              cmdToken[3], "", "", "", "", "");
                 if (strcmp(cmdToken[2], "path")==0) {
                    if (stat==0) {
                       printf("Modify resource path was successful.\n");
@@ -1414,6 +1414,7 @@ main(int argc, char **argv) {
         }
     }
 
+    printErrorStack(Conn->rError);
     rcDisconnect(Conn);
 
     if (lastCommandStatus != 0) exit(4);
