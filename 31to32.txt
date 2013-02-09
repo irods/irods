@@ -100,7 +100,7 @@ JMC - Done :: r4907 | mwan | 2012-04-03 16:10:40 -0400 (Tue, 03 Apr 2012) | 2 li
 Better error return in readCollection
 
 ------------------------------------------------------------------------
-r4908 | mwan | 2012-04-03 17:22:19 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4908 | mwan | 2012-04-03 17:22:19 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 Add KEEPALIVE to setsockopt
 

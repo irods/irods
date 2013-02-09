@@ -187,9 +187,11 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 	    return (myInput[0].status);
 	} else {
 	    if (dataSize <= 0 || myInput[0].bytesWritten == dataSize) {
+#if 0
                 if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
                     clearLfRestartFile (&conn->fileRestart);
                 }
+#endif
 		return (0);
 	    } else {
 		rodsLog (LOG_ERROR,
@@ -244,9 +246,11 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 	    return (retVal);
         } else {
 	    if (dataSize <= 0 || totalWritten == dataSize) { 
+#if 0
                 if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
                     clearLfRestartFile (&conn->fileRestart);
                 }
+#endif
                 if (gGuiProgressCB != NULL) 
 		    gGuiProgressCB (&conn->operProgress);
                 return (0);
@@ -497,9 +501,11 @@ rodsLong_t dataSize)
     close (in_fd);
 
     if (dataSize <= 0 || totalWritten == dataSize) {
+#if 0
         if (info->numSeg > 0) {     /* file restart */
             clearLfRestartFile (&conn->fileRestart);
         }
+#endif
         if (gGuiProgressCB != NULL) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
             gGuiProgressCB (&conn->operProgress);
@@ -662,9 +668,11 @@ rodsLong_t dataSize)
 #else
     if (bytesRead >= 0) {
 #endif
+#if 0
         if (info->numSeg > 0) {     /* file restart */
             clearLfRestartFile (&conn->fileRestart);
         }
+#endif
         if (gGuiProgressCB != NULL) {
             conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
 	    gGuiProgressCB (&conn->operProgress);
@@ -755,9 +763,11 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
             return (myInput[0].status);
         } else {
             if (dataSize <= 0 || myInput[0].bytesWritten == dataSize) {
+#if 0
                 if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
                     clearLfRestartFile (&conn->fileRestart);
                 }
+#endif
                 return (0);
             } else {
                 rodsLog (LOG_ERROR,
@@ -818,9 +828,11 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
             return (retVal);
         } else {
             if (dataSize <= 0 || totalWritten == dataSize) {
+#if 0
                 if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
                     clearLfRestartFile (&conn->fileRestart);
                 }
+#endif
                 if (gGuiProgressCB != NULL)
                     gGuiProgressCB (&conn->operProgress);
                 return (0);

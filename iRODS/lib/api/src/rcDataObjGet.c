@@ -189,6 +189,10 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         }
     }
 
+    if (status >= 0 && conn->fileRestart.info.numSeg > 0) {   /* file restart */
+        clearLfRestartFile (&conn->fileRestart);
+    }
+
     if (getValByKey (&dataObjInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
         if (portalOprOut == NULL || strlen (portalOprOut->chksum) == 0) {
             rodsLog (LOG_ERROR, 
