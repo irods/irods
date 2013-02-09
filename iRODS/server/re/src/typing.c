@@ -913,6 +913,28 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 			}
 			res = typeExpression3(expr->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
 			return expr->exprType = res;
+       case N_ATTR:
+               /* todo type */
+               for(i=0;i<expr->degree;i++) {
+                       res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+                       if(getNodeType(res) == T_ERROR) {
+                               return expr->exprType = res;
+                       }
+               }
+               return expr->exprType = newSimpType(T_DYNAMIC, r);
+       case N_QUERY_COND:
+               /* todo type */
+               for(i=0;i<expr->degree;i++) {
+                       res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+                       if(getNodeType(res) == T_ERROR) {
+                               return expr->exprType = res;
+                       }
+               }
+               return expr->exprType = newSimpType(T_DYNAMIC, r);
+       case TK_COL:
+               /* todo type */
+               return expr->exprType = newSimpType(T_DYNAMIC, r);
+
         default:
 			break;
 		}

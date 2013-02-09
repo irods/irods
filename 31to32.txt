@@ -60,7 +60,7 @@ existed since 'imeta mod' was added in 2.3.
 
 
 ------------------------------------------------------------------------
-r4901 | schroede | 2012-03-28 18:42:20 -0400 (Wed, 28 Mar 2012) | 7 lines
+JMC - No Op :: r4901 | schroede | 2012-03-28 18:42:20 -0400 (Wed, 28 Mar 2012) | 7 lines
 
 Extensions so that irodssetup will ask and optionally enable Kerberos
 and set the Kerberos location (previously this was done by editing
@@ -70,14 +70,14 @@ the Wellcome Trust Sanger Institute (thanks!).
 
 
 ------------------------------------------------------------------------
-r4902 | schroede | 2012-03-28 19:08:47 -0400 (Wed, 28 Mar 2012) | 4 lines
+JMC - No Op :: r4902 | schroede | 2012-03-28 19:08:47 -0400 (Wed, 28 Mar 2012) | 4 lines
 
 Update the tinderbox test input scripts (to irodssetup) to match the
 extensions made to irodssetup made a few minutes ago.  Answer the new
 question asking if Kerberos should be enabled with 'no'.
 
 ------------------------------------------------------------------------
-r4903 | terrell | 2012-03-28 22:31:13 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4903 | terrell | 2012-03-28 22:31:13 -0400 (Wed, 28 Mar 2012) | 1 line
 
 add new msiStoreVersionWithTS to doxygen front page - and update timestamp format comment (iso8601)
 ------------------------------------------------------------------------

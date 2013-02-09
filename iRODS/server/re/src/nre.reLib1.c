@@ -1053,10 +1053,10 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
 		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
 		  p = ruleCondStr;
 		  s = MAX_RULE_LEN;
-		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1], 0 );
 		  p = ruleActionRecoveryStr;
 		  s = MAX_RULE_LEN;
-		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[2]);
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[2], 0 );
 		  avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
 		  if(avu!=NULL) {
 			  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);
@@ -1071,7 +1071,7 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
 		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
 		  p = ruleCondStr;
 		  s = MAX_RULE_LEN;
-		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1]);
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1], 0 );
 		  p = ruleActionRecoveryStr;
 		  s = MAX_RULE_LEN;
 		  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);

@@ -528,7 +528,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Printing ");
 				ptr = myhdr + strlen(myhdr);
 				i = HEADER_TYPE_LEN - 1 - strlen(myhdr);
-				termToString(&ptr, &i, 0, MIN_PREC, n);
+				termToString(&ptr, &i, 0, MIN_PREC, n,0);
 				snprintf(ptr, i, "\n");
 				if(env != NULL) {
 					disableReDebugger(grdf);

@@ -55,6 +55,8 @@ PARSER_FUNC_PROTO(FuncExpr);
 PARSER_FUNC_PROTO(Type);
 PARSER_FUNC_PROTO2(_Type, int prec, int lifted);
 PARSER_FUNC_PROTO(TypeSet);
+PARSER_FUNC_PROTO(Column);
+PARSER_FUNC_PROTO(QueryCond);
 PARSER_FUNC_PROTO(FuncType);
 PARSER_FUNC_PROTO(_FuncType);
 PARSER_FUNC_PROTO(TypingConstraints);
@@ -1125,6 +1127,32 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         }
         BUILD_APP_NODE(fn, &start,1);
 
+     OR(value)
+        int n = 0;
+        TTEXT("SELECT");
+       LOOP_BEGIN(columns)
+               NT(Column);
+               n++;
+               TRY(columnDelim)
+                       TTEXT(",");
+               OR(columnDelim)
+                       DONE(columns)
+               END_TRY(columnDelim)
+       LOOP_END(columns)
+       OPTIONAL_BEGIN(where)
+               TTEXT("WHERE");
+               LOOP_BEGIN(queryConds)
+                       NT(QueryCond);
+                       n++;
+                       TRY(queryCondDelim)
+                               TTEXT("AND");
+                       OR(queryCondDelim)
+                               DONE(queryConds)
+                       END_TRY(queryCondDelim)
+               LOOP_END(queryConds)
+       OPTIONAL_END(where)
+       BUILD_APP_NODE("query", &start, n);
+
     OR(value)
         TRY(func)
             ABORT(!rulegen);
@@ -1326,6 +1354,90 @@ PARSER_FUNC_BEGIN1(Value, int rulegen)
         NT1(StringExpression, NULL);
     END_TRY(value)
 PARSER_FUNC_END(Value)
+
+PARSER_FUNC_BEGIN(Column)
+       int rulegen = 1;
+
+    TRY(Column)
+       Label colFuncStart = *FPOS;
+               char *columnFunc;
+               TRY(columnFunc)
+                       TTEXT2("count", "COUNT");
+               columnFunc = "count";
+      OR(columnFunc)
+               TTEXT2("sum", "SUM");
+               columnFunc = "sum";
+       OR(columnFunc)
+               TTEXT2("order_desc", "ORDER_DESC");
+               columnFunc = "order_desc";
+       OR(columnFunc)
+               TTEXT2("order_asc", "ORDER_ASC");
+               columnFunc = "order_asc";
+       END_TRY(columnFunc)
+       TTEXT("(");
+        Label colStart = *FPOS;
+       TTYPE(TK_TEXT);
+       BUILD_NODE(TK_COL, token->text, &colStart, 0, 0);
+       TTEXT(")");
+       BUILD_NODE(N_ATTR, columnFunc, &colFuncStart, 1, 1);
+    OR(Column)
+        Label colStart = *FPOS;
+               TTYPE(TK_TEXT);
+       BUILD_NODE(TK_COL, token->text, &colStart, 0, 0);
+               BUILD_NODE(N_ATTR, "", &colStart, 1, 1);
+    END_TRY(Column)
+PARSER_FUNC_END(Column)
+
+PARSER_FUNC_BEGIN(QueryCond)
+       int rulegen = 1;
+
+       TRY(QueryCond)
+               NT(Column)
+               TRY(QueryCondOp)
+                       TTEXT2("=", "==");
+               NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "=", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT2("<>", "!=");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "<>", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT(">");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, ">", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT("<");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "<", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT(">=");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, ">=", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT("<=");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "<=", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT2("in", "IN");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "in", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT2("between", "BETWEEN");
+                       NT1(Value, 1);
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "between", &start, 3, 3);
+               OR(QueryCondOp)
+                       TTEXT2("like", "LIKE");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "like", &start, 2, 2);
+               OR(QueryCondOp)
+                       TTEXT2("not", "NOT");
+                       TTEXT2("like", "LIKE");
+                       NT1(Value, 1);
+                       BUILD_NODE(N_QUERY_COND, "not like", &start, 2, 2);
+               END_TRY(QueryCondOp)
+       END_TRY(QueryCond)
+PARSER_FUNC_END(QueryCond)
 
 int nextStringBase2(Pointer *e, char *value, char* delim) {
 		nextChar(e);
@@ -1548,7 +1660,6 @@ void printTree(Node *n, int indent) {
 	}
 
 }
-#define PRINT(p, s, f, d) 	snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
 void patternToString(char **p, int *s, int indent, int prec, Node *n) {
 	switch(getNodeType(n)) {
 	case N_APPLICATION:
@@ -1628,7 +1739,7 @@ void patternToString(char **p, int *s, int indent, int prec, Node *n) {
 		PRINT(p, s, "%s", "<unsupported>");
 	}
 }
-void termToString(char **p, int *s, int indent, int prec, Node *n) {
+void termToString(char **p, int *s, int indent, int prec, Node *n, int quote) {
 	switch(getNodeType(n)) {
 	case N_ACTIONS_RECOVERY:
 		actionsToString(p, s, indent, n->subtrees[0], n->subtrees[1]);
@@ -1638,7 +1749,7 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 			char *fn = n->subtrees[0]->text;
 			if(strcmp(fn, "if") == 0) {
 				PRINT(p, s, "%s", "if (");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", ") ");
 				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[3]);
 				PRINT(p, s, "%s", " else ");
@@ -1647,59 +1758,59 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 			}
 			if(strcmp(fn, "if2") == 0) {
 				PRINT(p, s, "%s", "if ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", " then ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1],quote);
 				PRINT(p, s, "%s", " else ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2],quote);
 				break;
 			}
 			if(strcmp(fn, "while") == 0) {
 				PRINT(p, s, "%s", "while (");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", ") ");
 				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[2]);
 				break;
 			}
 			if(strcmp(fn, "foreach") == 0) {
 				PRINT(p, s, "%s", "foreach (");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", ") ");
 				actionsToString(p, s, indent, n->subtrees[1]->subtrees[1], n->subtrees[1]->subtrees[2]);
 				break;
 			}
 			if(strcmp(fn, "foreach2") == 0) {
 				PRINT(p, s, "%s", "foreach (");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", " in ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1],quote);
 				PRINT(p, s, "%s", ") ");
 				actionsToString(p, s, indent, n->subtrees[1]->subtrees[2], n->subtrees[1]->subtrees[3]);
 				break;
 			}
 			if(strcmp(fn, "for") == 0) {
 				PRINT(p, s, "%s", "for (");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", ";");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1],quote);
 				PRINT(p, s, "%s", ";");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2],quote);
 				PRINT(p, s, "%s", ") ");
 				actionsToString(p, s, indent, n->subtrees[1]->subtrees[3], n->subtrees[1]->subtrees[4]);
 				break;
 			}
 			if(strcmp(fn, "let") == 0) {
 				PRINT(p, s, "%s", "let ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, "%s", " = ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1],quote);
 				PRINT(p, s, "%s", " in ");
-				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2]);
+				termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[2],quote);
 				break;
 			}
 			if(strcmp(fn, "match") == 0) {
 				PRINT(p, s, "%s", "match ");
-				termToString(p, s, indent, MIN_PREC, N_APP_ARG(n, 0));
+				termToString(p, s, indent, MIN_PREC, N_APP_ARG(n, 0),quote);
 				PRINT(p, s, "%s", " with");
 				int i;
 				for(i=1;i<N_APP_ARITY(n);i++) {
@@ -1708,14 +1819,14 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 					PRINT(p, s, "%s", "| ");
 					patternToString(p, s, indent + 1, MIN_PREC, N_APP_ARG(n, i)->subtrees[0]);
 					PRINT(p, s, "%s", " => ");
-					termToString(p, s, indent + 1, MIN_PREC, N_APP_ARG(n, i)->subtrees[1]);
+					termToString(p, s, indent + 1, MIN_PREC, N_APP_ARG(n, i)->subtrees[1],quote);
 				}
 				break;
 			}
 			if(strcmp(fn, "assign") == 0) {
 							patternToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[0]);
 							PRINT(p, s, "%s", " = ");
-							termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1]);
+							termToString(p, s, indent, MIN_PREC, n->subtrees[1]->subtrees[1],quote);
 							break;
 						}
 			Token t;
@@ -1725,17 +1836,17 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 				if(opPrec < prec) {
 					PRINT(p, s, "%s", "(");
 				}
-				termToString(p, s, indent, prec, n->subtrees[1]->subtrees[0]);
+				termToString(p, s, indent, prec, n->subtrees[1]->subtrees[0],quote);
 				PRINT(p, s, " %s ", fn);
-				termToString(p, s, indent, prec+1, n->subtrees[1]->subtrees[1]);
+				termToString(p, s, indent, prec+1, n->subtrees[1]->subtrees[1],quote);
 				if(opPrec < prec) {
 					PRINT(p, s, "%s", ")");
 				}
 				break;
 			}
 		}
-		termToString(p, s, indent, MIN_PREC, n->subtrees[0]);
-		termToString(p, s, indent, MIN_PREC, n->subtrees[1]);
+		termToString(p, s, indent, MIN_PREC, n->subtrees[0],quote);
+		termToString(p, s, indent, MIN_PREC, n->subtrees[1],quote);
 		break;
 	case N_TUPLE:
 		PRINT(p, s, "%s", "(");
@@ -1744,7 +1855,7 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 			if(i!=0) {
 				PRINT(p, s, "%s", ",");
 			}
-			termToString(p, s, indent, MIN_PREC, n->subtrees[i]);
+			termToString(p, s, indent, MIN_PREC, n->subtrees[i],quote);
 		}
 		PRINT(p, s, "%s", ")");
 		break;
@@ -1756,7 +1867,7 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 		PRINT(p, s, "%s", n->text);
 		break;
 	case TK_STRING:
-		PRINT(p, s, "%s", "\"");
+        PRINT(p, s, "%s", quote?"\'":"\"");
 		unsigned int k;
 		for(k=0;k<strlen(n->text);k++) {
 			switch(n->text[k]) {
@@ -1783,7 +1894,7 @@ void termToString(char **p, int *s, int indent, int prec, Node *n) {
 			}
 
 		}
-		PRINT(p, s, "%s", "\"");
+        PRINT(p, s, "%s", quote?"\'":"\"");
 		break;
 	default:
 		PRINT(p, s, "%s", "<unsupported>");
@@ -1803,10 +1914,10 @@ void actionsToString(char **p, int *s, int indent, Node *na, Node *nr) {
 	PRINT(p, s, "%s", "{\n");
 	for(i=0;i<n;i++) {
 		indentToString(p, s, indent+1);
-		termToString(p, s, indent+1, MIN_PREC, na->subtrees[i]);
+		termToString(p, s, indent+1, MIN_PREC, na->subtrees[i],0);
 		if(nr!=NULL && i<nr->degree && (getNodeType(nr->subtrees[i])!=N_APPLICATION || strcmp(nr->subtrees[i]->subtrees[0]->text, "nop")!=0)) {
 			PRINT(p, s, "%s", ":::");
-			termToString(p, s, indent+1, MIN_PREC, nr->subtrees[i]);
+			termToString(p, s, indent+1, MIN_PREC, nr->subtrees[i],0);
 		}
 		if((*p)[-1]!='}')
 		PRINT(p, s, "%s", ";");
@@ -1822,11 +1933,11 @@ void metadataToString(char **p, int *s, int indent, Node *nm) {
 	for(i=0;i<n;i++) {
 		indentToString(p, s, indent);
 		PRINT(p, s, "%s", "@(");
-		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[0]);
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[0],0);
 		PRINT(p, s, "%s", ", ");
-		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[1]);
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[1],0);
 		PRINT(p, s, "%s", ", ");
-		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2]);
+		termToString(p, s, indent, MIN_PREC, nm->subtrees[i]->subtrees[2],0);
 		PRINT(p, s, "%s", ")\n");
 	}
 }
@@ -1951,7 +2062,7 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 				PRINT(p, s, "%s", "{\n");
 				indentToString(p, s, 1);
 				PRINT(p, s, "%s", "on ");
-				termToString(p, s, 1, MIN_PREC, node->subtrees[1]);
+				termToString(p, s, 1, MIN_PREC, node->subtrees[1],0);
 				PRINT(p, s, "%s", " ");
 				indent = 1;
 			} else {
@@ -1971,7 +2082,7 @@ void ruleToString(char *buf, int size, RuleDesc *rd) {
 	case RK_FUNC:
 		ruleNameToString(p, s, 0, node->subtrees[0]);
 		PRINT(p, s, "%s", " = ");
-		termToString(p, s, 1, MIN_PREC, node->subtrees[2]);
+		termToString(p, s, 1, MIN_PREC, node->subtrees[2],0);
 		PRINT(p, s, "%s", "\n");
 		metadataToString(p, s, 0, node->subtrees[4]);
 		break;
@@ -2015,7 +2126,7 @@ void functionApplicationToString(char *buf, int size, char *fn, Node **args, int
 			actionsToString(p, s, 0, args[i], NULL);
 			break;
 		default:
-			termToString(p, s, 0, MIN_PREC, args[i]);
+			termToString(p, s, 0, MIN_PREC, args[i],0);
 		}
 		if(i != n-1) {
 			PRINT(p, s, "%s", ", ");
