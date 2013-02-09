@@ -71,6 +71,7 @@ main(int argc, char **argv)
     }
 
     status = getRodsObjType (Conn, &rodsPath);
+    printErrorStack(Conn->rError);
     rcDisconnect(Conn);
 
     if (status < 0) {

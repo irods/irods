@@ -52,7 +52,7 @@ JMC - Done :: r4899 | lisa | 2012-03-28 14:33:52 -0400 (Wed, 28 Mar 2012) | 1 li
 
 added new versioning microservice
 ------------------------------------------------------------------------
-r4900 | schroede | 2012-03-28 17:27:56 -0400 (Wed, 28 Mar 2012) | 6 lines
+JMC - Done :: r4900 | schroede | 2012-03-28 17:27:56 -0400 (Wed, 28 Mar 2012) | 6 lines
 
 Fix a bug in handling 'imeta mod' where a new null value for units was
 not taken as new and so was defaulted to the old value.  This was
@@ -61,7 +61,7 @@ existed since 'imeta mod' was added in 2.3.
 
 
 ------------------------------------------------------------------------
-r4901 | schroede | 2012-03-28 18:42:20 -0400 (Wed, 28 Mar 2012) | 7 lines
+JMC - No Op :: r4901 | schroede | 2012-03-28 18:42:20 -0400 (Wed, 28 Mar 2012) | 7 lines
 
 Extensions so that irodssetup will ask and optionally enable Kerberos
 and set the Kerberos location (previously this was done by editing
@@ -71,84 +71,84 @@ the Wellcome Trust Sanger Institute (thanks!).
 
 
 ------------------------------------------------------------------------
-r4902 | schroede | 2012-03-28 19:08:47 -0400 (Wed, 28 Mar 2012) | 4 lines
+JMC - No Op :: r4902 | schroede | 2012-03-28 19:08:47 -0400 (Wed, 28 Mar 2012) | 4 lines
 
 Update the tinderbox test input scripts (to irodssetup) to match the
 extensions made to irodssetup made a few minutes ago.  Answer the new
 question asking if Kerberos should be enabled with 'no'.
 
 ------------------------------------------------------------------------
-r4903 | terrell | 2012-03-28 22:31:13 -0400 (Wed, 28 Mar 2012) | 1 line
+JMC - Done :: r4903 | terrell | 2012-03-28 22:31:13 -0400 (Wed, 28 Mar 2012) | 1 line
 
 add new msiStoreVersionWithTS to doxygen front page - and update timestamp format comment (iso8601)
 ------------------------------------------------------------------------
-r4904 | xuh | 2012-03-30 00:37:53 -0400 (Fri, 30 Mar 2012) | 1 line
+JMC - Done :: r4904 | xuh | 2012-03-30 00:37:53 -0400 (Fri, 30 Mar 2012) | 1 line
 
 Native support for gen query syntax in the rule language. A gen query expression evaluates to an object of type genQueryInp_t
 ------------------------------------------------------------------------
-r4905 | xuh | 2012-03-30 01:12:59 -0400 (Fri, 30 Mar 2012) | 1 line
+JMC - Done :: r4905 | xuh | 2012-03-30 01:12:59 -0400 (Fri, 30 Mar 2012) | 1 line
 
 gen query expressions automatically executes the gen queries.
 ------------------------------------------------------------------------
-r4906 | mwan | 2012-04-02 19:46:17 -0400 (Mon, 02 Apr 2012) | 3 lines
+JMC - Done :: r4906 | mwan | 2012-04-02 19:46:17 -0400 (Mon, 02 Apr 2012) | 3 lines
 
 Check the mounted structFile for symlink so that we don't need admin
 privilege to imcoll a tar struct file. This address a wisc security issue.
 
 ------------------------------------------------------------------------
-r4907 | mwan | 2012-04-03 16:10:40 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4907 | mwan | 2012-04-03 16:10:40 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 Better error return in readCollection
 
 ------------------------------------------------------------------------
-r4908 | mwan | 2012-04-03 17:22:19 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4908 | mwan | 2012-04-03 17:22:19 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 Add KEEPALIVE to setsockopt
 
 ------------------------------------------------------------------------
-r4909 | mwan | 2012-04-03 17:24:02 -0400 (Tue, 03 Apr 2012) | 3 lines
+JMC - Done :: r4909 | mwan | 2012-04-03 17:24:02 -0400 (Tue, 03 Apr 2012) | 3 lines
 
 Handle large file restart when the tranfer reached 100% but the 
 rcComplete call failed because of connection timeout.
 
 ------------------------------------------------------------------------
-r4910 | mwan | 2012-04-03 18:42:38 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4910 | mwan | 2012-04-03 18:42:38 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 add symlink check functions for wisc sec check later
 
 ------------------------------------------------------------------------
-r4911 | mwan | 2012-04-03 19:01:43 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4911 | mwan | 2012-04-03 19:01:43 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 Allow --retries to run with --lfrestart
 
 ------------------------------------------------------------------------
-r4912 | mwan | 2012-04-03 19:09:19 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4912 | mwan | 2012-04-03 19:09:19 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 allow retries to work with lfrestart
 
 ------------------------------------------------------------------------
-r4913 | mwan | 2012-04-03 19:39:46 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4913 | mwan | 2012-04-03 19:39:46 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 check symlink routines
 
 ------------------------------------------------------------------------
-r4914 | mwan | 2012-04-04 16:36:34 -0400 (Wed, 04 Apr 2012) | 3 lines
+JMC - Done :: r4914 | mwan | 2012-04-04 16:36:34 -0400 (Wed, 04 Apr 2012) | 3 lines
 
 Change getUnixUid to include check for user@zone.
 
 
 ------------------------------------------------------------------------
-r4915 | mwan | 2012-04-04 16:43:45 -0400 (Wed, 04 Apr 2012) | 2 lines
+JMC - Done :: r4915 | mwan | 2012-04-04 16:43:45 -0400 (Wed, 04 Apr 2012) | 2 lines
 
 Correct previous checkin
 
 ------------------------------------------------------------------------
-r4916 | mwan | 2012-04-04 17:09:34 -0400 (Wed, 04 Apr 2012) | 2 lines
+JMC - Done :: r4916 | mwan | 2012-04-04 17:09:34 -0400 (Wed, 04 Apr 2012) | 2 lines
 
 add regUid for registering UNIX uid in dataObjInfo_t
 
 ------------------------------------------------------------------------
-r4917 | schroede | 2012-04-05 11:56:37 -0400 (Thu, 05 Apr 2012) | 6 lines
+JMC - No Op :: r4917 | schroede | 2012-04-05 11:56:37 -0400 (Thu, 05 Apr 2012) | 6 lines
 
 Add another data-object system metadata field and column for
 data-object registration (chlRegDataObj), modification
@@ -157,34 +157,34 @@ extension he is developing.  The command in the patch file can be used
 to update existing 3.1 ICAT databases.
 
 ------------------------------------------------------------------------
-r4918 | mwan | 2012-04-06 19:38:54 -0400 (Fri, 06 Apr 2012) | 2 lines
+JMC - No Op :: r4918 | mwan | 2012-04-06 19:38:54 -0400 (Fri, 06 Apr 2012) | 2 lines
 
 Implement the rcNcInq - a comprehensive inquire API
 
 ------------------------------------------------------------------------
-r4919 | schroede | 2012-04-09 12:12:29 -0400 (Mon, 09 Apr 2012) | 4 lines
+JMC - No Op :: r4919 | schroede | 2012-04-09 12:12:29 -0400 (Mon, 09 Apr 2012) | 4 lines
 
 This is an experimental PAM authentication program that may be used as
 part of a PAM/LDAP authentication system that is under
 development. See the top of the source file for more information.
 
 ------------------------------------------------------------------------
-r4920 | mwan | 2012-04-09 15:38:12 -0400 (Mon, 09 Apr 2012) | 2 lines
+JMC - No Op :: r4920 | mwan | 2012-04-09 15:38:12 -0400 (Mon, 09 Apr 2012) | 2 lines
 
 Complete implementation of the ncInq API
 
 ------------------------------------------------------------------------
-r4921 | mwan | 2012-04-09 18:06:25 -0400 (Mon, 09 Apr 2012) | 2 lines
+JMC - No Op :: r4921 | mwan | 2012-04-09 18:06:25 -0400 (Mon, 09 Apr 2012) | 2 lines
 
 fix last checkin
 
 ------------------------------------------------------------------------
-r4922 | mwan | 2012-04-09 19:57:17 -0400 (Mon, 09 Apr 2012) | 2 lines
+JMC - No Op :: r4922 | mwan | 2012-04-09 19:57:17 -0400 (Mon, 09 Apr 2012) | 2 lines
 
 Get the values of the attributes for rcNcInq API
 
 ------------------------------------------------------------------------
-r4923 | schroede | 2012-04-11 17:02:47 -0400 (Wed, 11 Apr 2012) | 22 lines
+JMC - Done :: r4923 | schroede | 2012-04-11 17:02:47 -0400 (Wed, 11 Apr 2012) | 22 lines
 
 Add a 'iadmin modrescdatapath' capability to update data-obj paths.
 This is sometimes needed after a resource path is updated (if a
@@ -209,95 +209,95 @@ SQL.
 
 
 ------------------------------------------------------------------------
-r4924 | mwan | 2012-04-12 14:44:06 -0400 (Thu, 12 Apr 2012) | 4 lines
+JMC - No Op :: r4924 | mwan | 2012-04-12 14:44:06 -0400 (Thu, 12 Apr 2012) | 4 lines
 
 Add STREAM_MS_T for streaming output from rules/workflow. The value is
 from the output of bindStreamToIRods. Caller should use rcStreamRead 
 and rcStreamClose to read close the stream.
 
 ------------------------------------------------------------------------
-r4925 | mwan | 2012-04-12 15:34:28 -0400 (Thu, 12 Apr 2012) | 2 lines
+JMC - No Op :: r4925 | mwan | 2012-04-12 15:34:28 -0400 (Thu, 12 Apr 2012) | 2 lines
 
 Correct some output string
 
 ------------------------------------------------------------------------
-r4926 | terrell | 2012-04-12 16:18:23 -0400 (Thu, 12 Apr 2012) | 1 line
+JMC - No Op :: r4926 | terrell | 2012-04-12 16:18:23 -0400 (Thu, 12 Apr 2012) | 1 line
 
 add .gitignore file so that examples/microservices/obj/ directory exists across the svn-git bridge
 ------------------------------------------------------------------------
-r4927 | xuh | 2012-04-12 19:18:17 -0400 (Thu, 12 Apr 2012) | 1 line
+JMC - No Op :: r4927 | xuh | 2012-04-12 19:18:17 -0400 (Thu, 12 Apr 2012) | 1 line
 
 Fix a compiler error when enabling the old rule engine in version 3.1
 ------------------------------------------------------------------------
-r4928 | mwan | 2012-04-13 20:33:42 -0400 (Fri, 13 Apr 2012) | 3 lines
+JMC - No Op :: r4928 | mwan | 2012-04-13 20:33:42 -0400 (Fri, 13 Apr 2012) | 3 lines
 
 Get rcNcInq to work and nctest to test it. Add dumpNcInqOut routine
 to dump the content of a netcdf file, just like ncdump.
 
 ------------------------------------------------------------------------
-r4929 | mwan | 2012-04-16 12:50:24 -0400 (Mon, 16 Apr 2012) | 2 lines
+JMC - No Op :: r4929 | mwan | 2012-04-16 12:50:24 -0400 (Mon, 16 Apr 2012) | 2 lines
 
 Output format mod for dumpNcInqOut to match ncdump
 
 ------------------------------------------------------------------------
-r4930 | mwan | 2012-04-16 13:17:43 -0400 (Mon, 16 Apr 2012) | 2 lines
+JMC - No Op :: r4930 | mwan | 2012-04-16 13:17:43 -0400 (Mon, 16 Apr 2012) | 2 lines
 
 Mod output of dumpNcInqOut to match ncdump format
 
 ------------------------------------------------------------------------
-r4931 | mwan | 2012-04-16 19:42:53 -0400 (Mon, 16 Apr 2012) | 2 lines
+JMC - No Op :: r4931 | mwan | 2012-04-16 19:42:53 -0400 (Mon, 16 Apr 2012) | 2 lines
 
 Allow rcNcInq to inquire individual type too
 
 ------------------------------------------------------------------------
-r4932 | mwan | 2012-04-18 18:30:28 -0400 (Wed, 18 Apr 2012) | 2 lines
+JMC - No Op :: r4932 | mwan | 2012-04-18 18:30:28 -0400 (Wed, 18 Apr 2012) | 2 lines
 
 Fix a bug from last checkin
 
 ------------------------------------------------------------------------
-r4933 | mwan | 2012-04-18 18:42:18 -0400 (Wed, 18 Apr 2012) | 2 lines
+JMC - No Op :: r4933 | mwan | 2012-04-18 18:42:18 -0400 (Wed, 18 Apr 2012) | 2 lines
 
 Add test for the new rcNcInq API
 
 ------------------------------------------------------------------------
-r4934 | mwan | 2012-04-18 19:56:19 -0400 (Wed, 18 Apr 2012) | 2 lines
+JMC - No Op :: r4934 | mwan | 2012-04-18 19:56:19 -0400 (Wed, 18 Apr 2012) | 2 lines
 
 Add msiNcInq micro-service
 
 ------------------------------------------------------------------------
-r4935 | antoine | 2012-04-30 15:21:37 -0400 (Mon, 30 Apr 2012) | 2 lines
+JMC - No Op :: r4935 | antoine | 2012-04-30 15:21:37 -0400 (Mon, 30 Apr 2012) | 2 lines
 
 Example rule for statistical analysis case study
 
 ------------------------------------------------------------------------
-r4936 | mwan | 2012-04-30 17:12:13 -0400 (Mon, 30 Apr 2012) | 3 lines
+JMC - No Op :: r4936 | mwan | 2012-04-30 17:12:13 -0400 (Mon, 30 Apr 2012) | 3 lines
 
 Add a number of helper msi to get various value from the ncInqOut_t, the
 output of msiNcInq. The work is not complete.
 
 ------------------------------------------------------------------------
-r4937 | mwan | 2012-04-30 19:58:57 -0400 (Mon, 30 Apr 2012) | 2 lines
+JMC - No Op :: r4937 | mwan | 2012-04-30 19:58:57 -0400 (Mon, 30 Apr 2012) | 2 lines
 
 Add msiStrCat msi to cat a string + minor changes in reNetcdf.c
 
 ------------------------------------------------------------------------
-r4938 | mwan | 2012-04-30 20:00:08 -0400 (Mon, 30 Apr 2012) | 2 lines
+JMC - No Op :: r4938 | mwan | 2012-04-30 20:00:08 -0400 (Mon, 30 Apr 2012) | 2 lines
 
 Test for the new msiNcInq.
 
 ------------------------------------------------------------------------
-r4939 | mwan | 2012-05-01 18:20:59 -0400 (Tue, 01 May 2012) | 3 lines
+JMC - No Op :: r4939 | mwan | 2012-05-01 18:20:59 -0400 (Tue, 01 May 2012) | 3 lines
 
 Add msiNcGetAttNameInInqOut, msiNcGetAttValStrInInqOut to get attribute
 name and values
 
 ------------------------------------------------------------------------
-r4940 | mwan | 2012-05-01 19:47:59 -0400 (Tue, 01 May 2012) | 2 lines
+JMC - No Op :: r4940 | mwan | 2012-05-01 19:47:59 -0400 (Tue, 01 May 2012) | 2 lines
 
 Add msiAddToNcArray msi
 
 ------------------------------------------------------------------------
-r4941 | schroede | 2012-05-02 11:44:09 -0400 (Wed, 02 May 2012) | 8 lines
+JMC - No Op :: r4941 | schroede | 2012-05-02 11:44:09 -0400 (Wed, 02 May 2012) | 8 lines
 
 Add code in the postgres installation script to update the postgres
 configuration file with a new setting needed for pg 9.1.0 and later.
@@ -308,19 +308,19 @@ it is version 9.1.0 or later).
 
 
 ------------------------------------------------------------------------
-r4942 | csmith | 2012-05-02 13:35:42 -0400 (Wed, 02 May 2012) | 3 lines
+JMC - No Op :: r4942 | csmith | 2012-05-02 13:35:42 -0400 (Wed, 02 May 2012) | 3 lines
 
 Added getUnixUsername and getUnixGroupname utility functions.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4943 | csmith | 2012-05-02 14:32:52 -0400 (Wed, 02 May 2012) | 3 lines
+JMC - No Op :: r4943 | csmith | 2012-05-02 14:32:52 -0400 (Wed, 02 May 2012) | 3 lines
 
 Fix tinderbox build errors for getUnixGroupname function
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4944 | csmith | 2012-05-02 14:52:03 -0400 (Wed, 02 May 2012) | 5 lines
+JMC - No Op :: r4944 | csmith | 2012-05-02 14:52:03 -0400 (Wed, 02 May 2012) | 5 lines
 
 Changes to effective user management routines.
 
@@ -328,12 +328,12 @@ Added a function to change to a given uid and made small improvements to the exi
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4945 | antoine | 2012-05-02 16:21:37 -0400 (Wed, 02 May 2012) | 2 lines
+JMC - No Op :: r4945 | antoine | 2012-05-02 16:21:37 -0400 (Wed, 02 May 2012) | 2 lines
 
 Fixed extra character bug as suggested by Hao
 
 ------------------------------------------------------------------------
-r4946 | csmith | 2012-05-02 17:06:24 -0400 (Wed, 02 May 2012) | 5 lines
+JMC - No Op :: r4946 | csmith | 2012-05-02 17:06:24 -0400 (Wed, 02 May 2012) | 5 lines
 
 Added new table and setup code for storing filesystem meta-data.
 
@@ -341,7 +341,7 @@ Includes new table/index SQL statements, and setup functions and defined for the
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4947 | mwan | 2012-05-02 19:39:53 -0400 (Wed, 02 May 2012) | 5 lines
+JMC - No Op :: r4947 | mwan | 2012-05-02 19:39:53 -0400 (Wed, 02 May 2012) | 5 lines
 
 Add netcdf msiAddToNcArray, msiNcGetDimLenInInqOut, msiNcGetVarIdInInqOut and
 msiFreeNcStruct to access the output of msiNcInq. Also modified the 
@@ -349,13 +349,13 @@ msiNcGetVarsByType msi to accept int array input for start, count and
 stride. 
 
 ------------------------------------------------------------------------
-r4948 | csmith | 2012-05-02 20:27:22 -0400 (Wed, 02 May 2012) | 3 lines
+JMC - No Op :: r4948 | csmith | 2012-05-02 20:27:22 -0400 (Wed, 02 May 2012) | 3 lines
 
 Add support functions for the file system meta-data support.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4949 | csmith | 2012-05-02 20:29:34 -0400 (Wed, 02 May 2012) | 5 lines
+JMC - No Op :: r4949 | csmith | 2012-05-02 20:29:34 -0400 (Wed, 02 May 2012) | 5 lines
 
 Implementation of file system meta-data capture.
 
@@ -363,12 +363,12 @@ Supports collecting filesystem meta-data (from stat), and storing this informati
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4950 | mwan | 2012-05-02 21:23:11 -0400 (Wed, 02 May 2012) | 2 lines
+JMC - No Op :: r4950 | mwan | 2012-05-02 21:23:11 -0400 (Wed, 02 May 2012) | 2 lines
 
 add msiNccfGetVara test
 
 ------------------------------------------------------------------------
-r4951 | csmith | 2012-05-03 02:15:35 -0400 (Thu, 03 May 2012) | 5 lines
+JMC - No Op :: r4951 | csmith | 2012-05-03 02:15:35 -0400 (Thu, 03 May 2012) | 5 lines
 
 Change fileCreate, fileOpen and fileMkdir functions to take a keyValPair_t pointer as the final argument.
 
@@ -376,7 +376,7 @@ This change is needed to support the direct access vault, which uses the keyValP
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4952 | csmith | 2012-05-03 03:43:25 -0400 (Thu, 03 May 2012) | 5 lines
+JMC - No Op :: r4952 | csmith | 2012-05-03 03:43:25 -0400 (Thu, 03 May 2012) | 5 lines
 
 Implementation of the direct access file system type of resource (aka the direct access vault).
 
@@ -384,7 +384,7 @@ Added the file driver which maintains proper user permissions of files and direc
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4953 | schroede | 2012-05-03 11:32:45 -0400 (Thu, 03 May 2012) | 7 lines
+JMC - No Op :: r4953 | schroede | 2012-05-03 11:32:45 -0400 (Thu, 03 May 2012) | 7 lines
 
 Add a column to an auditing extension table matching a change I made
 to the ICAT tables (icatSysTables.sql.pp) about a month ago.  This is
@@ -394,13 +394,13 @@ data-object will fail without this.
 
 
 ------------------------------------------------------------------------
-r4954 | csmith | 2012-05-03 14:11:07 -0400 (Thu, 03 May 2012) | 3 lines
+JMC - No Op :: r4954 | csmith | 2012-05-03 14:11:07 -0400 (Thu, 03 May 2012) | 3 lines
 
 Fix logSQL messages to fix tinderbox test errors
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4955 | csmith | 2012-05-04 13:09:07 -0400 (Fri, 04 May 2012) | 7 lines
+JMC - No Op :: r4955 | csmith | 2012-05-04 13:09:07 -0400 (Fri, 04 May 2012) | 7 lines
 
 Fix for Bugzilla Bug149
 
@@ -410,11 +410,11 @@ Just checks whether len == 0, and if so, doesn't call write().
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4956 | terrell | 2012-05-04 14:15:42 -0400 (Fri, 04 May 2012) | 1 line
+JMC - No Op :: r4956 | terrell | 2012-05-04 14:15:42 -0400 (Fri, 04 May 2012) | 1 line
 
 this is a test commit - no functional changes - testing github's issue auto-linking - should link to #1
 ------------------------------------------------------------------------
-r4957 | terrell | 2012-05-04 14:20:06 -0400 (Fri, 04 May 2012) | 7 lines
+JMC - No Op :: r4957 | terrell | 2012-05-04 14:20:06 -0400 (Fri, 04 May 2012) | 7 lines
 
 linking worked - #1 is autolinked - very exciting
 
@@ -424,32 +424,32 @@ see the full issue page here https://github.com/trel/iRODS/issues/1
 
 
 ------------------------------------------------------------------------
-r4958 | antoine | 2012-05-07 11:53:43 -0400 (Mon, 07 May 2012) | 2 lines
+JMC - No Op :: r4958 | antoine | 2012-05-07 11:53:43 -0400 (Mon, 07 May 2012) | 2 lines
 
 improved version of rule example
 
 ------------------------------------------------------------------------
-r4959 | xuh | 2012-05-07 14:43:49 -0400 (Mon, 07 May 2012) | 1 line
+JMC - No Op :: r4959 | xuh | 2012-05-07 14:43:49 -0400 (Mon, 07 May 2012) | 1 line
 
 
 ------------------------------------------------------------------------
-r4960 | jeanyves | 2012-05-09 11:01:13 -0400 (Wed, 09 May 2012) | 2 lines
+JMC - No Op :: r4960 | jeanyves | 2012-05-09 11:01:13 -0400 (Wed, 09 May 2012) | 2 lines
 
 add rule example to trim a cache resource.
 
 ------------------------------------------------------------------------
-r4961 | jeanyves | 2012-05-10 08:06:15 -0400 (Thu, 10 May 2012) | 2 lines
+JMC - No Op :: r4961 | jeanyves | 2012-05-10 08:06:15 -0400 (Thu, 10 May 2012) | 2 lines
 
 fix some missing " for *CacheRescName: noticed by Robert Verkerk
 
 ------------------------------------------------------------------------
-r4962 | schroede | 2012-05-10 12:53:35 -0400 (Thu, 10 May 2012) | 3 lines
+JMC - No Op :: r4962 | schroede | 2012-05-10 12:53:35 -0400 (Thu, 10 May 2012) | 3 lines
 
 Commit rodsLog.c matching current error table (this is auto-updated
 via 'make').
 
 ------------------------------------------------------------------------
-r4963 | csmith | 2012-05-11 16:08:23 -0400 (Fri, 11 May 2012) | 5 lines
+JMC - No Op :: r4963 | csmith | 2012-05-11 16:08:23 -0400 (Fri, 11 May 2012) | 5 lines
 
 Bug fix: could not retrieve dataObjInfo for files with no filesystem meta-data
 
@@ -457,7 +457,7 @@ If the FILESYSTEM_META support was enabled, the dataObjInfo could not be retriev
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4964 | schroede | 2012-05-16 13:05:12 -0400 (Wed, 16 May 2012) | 45 lines
+JMC - No Op :: r4964 | schroede | 2012-05-16 13:05:12 -0400 (Wed, 16 May 2012) | 45 lines
 
 First phase for PAM authentication; new API client/server call, ICAT
 code, client changes, new error codes.
@@ -505,13 +505,13 @@ users' system passwords and want to require re-authentication for
 iRODS access too.
 
 ------------------------------------------------------------------------
-r4965 | csmith | 2012-05-16 19:34:42 -0400 (Wed, 16 May 2012) | 3 lines
+JMC - No Op :: r4965 | csmith | 2012-05-16 19:34:42 -0400 (Wed, 16 May 2012) | 3 lines
 
 Bug fix: S3 and HPSS file drivers missing condInput parameter from their mkdir function signatures.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4966 | csmith | 2012-05-17 01:47:06 -0400 (Thu, 17 May 2012) | 5 lines
+JMC - No Op :: r4966 | csmith | 2012-05-17 01:47:06 -0400 (Thu, 17 May 2012) | 5 lines
 
 Implemented the PAM authentication code to be called from _rsPamAuthRequest().
 
@@ -519,21 +519,21 @@ The new files pamAuth.h and pamAuth.c provide a pamAuthenticate() function that 
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4967 | mwan | 2012-05-17 21:47:28 -0400 (Thu, 17 May 2012) | 2 lines
+JMC - No Op :: r4967 | mwan | 2012-05-17 21:47:28 -0400 (Thu, 17 May 2012) | 2 lines
 
 OOI test code using curl and json
 
 ------------------------------------------------------------------------
-r4968 | mwan | 2012-05-18 19:33:05 -0400 (Fri, 18 May 2012) | 2 lines
+JMC - No Op :: r4968 | mwan | 2012-05-18 19:33:05 -0400 (Fri, 18 May 2012) | 2 lines
 
 More OOI test using libcurl and libjansson (json)
 
 ------------------------------------------------------------------------
-r4969 | terrell | 2012-05-21 15:59:55 -0400 (Mon, 21 May 2012) | 1 line
+JMC - No Op :: r4969 | terrell | 2012-05-21 15:59:55 -0400 (Mon, 21 May 2012) | 1 line
 
 fix typo in function name, function call, logging - rsMkOrhpanPath to rsMkOrphanPath
 ------------------------------------------------------------------------
-r4970 | schroede | 2012-05-22 12:00:31 -0400 (Tue, 22 May 2012) | 7 lines
+JMC - No Op :: r4970 | schroede | 2012-05-22 12:00:31 -0400 (Tue, 22 May 2012) | 7 lines
 
 Add a comment for a problem when updating from 3.0 to 3.1 noticed by
 Sheau-Yen.  Admins need to update the string 'tempZone' to their local
@@ -543,13 +543,13 @@ problem.
 
 
 ------------------------------------------------------------------------
-r4971 | jeanyves | 2012-05-24 10:46:59 -0400 (Thu, 24 May 2012) | 3 lines
+JMC - Done :: r4971 | jeanyves | 2012-05-24 10:46:59 -0400 (Thu, 24 May 2012) | 3 lines
 
 Print the error stack before exiting from the icommand. It allows to show customized error messages that
 are added with msiExit.
 
 ------------------------------------------------------------------------
-r4972 | schroede | 2012-05-24 14:38:37 -0400 (Thu, 24 May 2012) | 14 lines
+JMC - No Op :: r4972 | schroede | 2012-05-24 14:38:37 -0400 (Thu, 24 May 2012) | 14 lines
 
 Additional features for PAM authentication.
 
@@ -566,7 +566,7 @@ iRODS-PAM passwords will have an appropriate life time (2 weeks).
 
 
 ------------------------------------------------------------------------
-r4973 | csmith | 2012-05-25 18:02:41 -0400 (Fri, 25 May 2012) | 9 lines
+JMC - No Op :: r4973 | csmith | 2012-05-25 18:02:41 -0400 (Fri, 25 May 2012) | 9 lines
 
 Preliminary support for running PAM auth over SSL
 
@@ -578,78 +578,78 @@ There are still a number of limitations and this hasn't been fully tested, so on
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4974 | csmith | 2012-05-25 18:52:07 -0400 (Fri, 25 May 2012) | 3 lines
+JMC - No Op :: r4974 | csmith | 2012-05-25 18:52:07 -0400 (Fri, 25 May 2012) | 3 lines
 
 Fix build warning for unused variable in pamAuthenticate().
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4975 | mwan | 2012-05-25 21:02:58 -0400 (Fri, 25 May 2012) | 2 lines
+JMC - No Op :: r4975 | mwan | 2012-05-25 21:02:58 -0400 (Fri, 25 May 2012) | 2 lines
 
 Add OOI test for amqp and magPack protocol
 
 ------------------------------------------------------------------------
-r4976 | mwan | 2012-05-29 16:54:24 -0400 (Tue, 29 May 2012) | 2 lines
+JMC - No Op :: r4976 | mwan | 2012-05-29 16:54:24 -0400 (Tue, 29 May 2012) | 2 lines
 
 Integrate ooiAmqptest into the test
 
 ------------------------------------------------------------------------
-r4977 | mwan | 2012-05-30 18:14:37 -0400 (Wed, 30 May 2012) | 2 lines
+JMC - No Op :: r4977 | mwan | 2012-05-30 18:14:37 -0400 (Wed, 30 May 2012) | 2 lines
 
 Fix a bug that "ichksum -a" skip the chksum of the copy in compound resource. 
 
 ------------------------------------------------------------------------
-r4978 | mwan | 2012-05-31 18:47:57 -0400 (Thu, 31 May 2012) | 2 lines
+JMC - No Op :: r4978 | mwan | 2012-05-31 18:47:57 -0400 (Thu, 31 May 2012) | 2 lines
 
 Minor refactoring
 
 ------------------------------------------------------------------------
-r4979 | mwan | 2012-05-31 18:54:36 -0400 (Thu, 31 May 2012) | 2 lines
+JMC - No Op :: r4979 | mwan | 2012-05-31 18:54:36 -0400 (Thu, 31 May 2012) | 2 lines
 
 minor checking
 
 ------------------------------------------------------------------------
-r4980 | mwan | 2012-05-31 19:38:08 -0400 (Thu, 31 May 2012) | 2 lines
+JMC - No Op :: r4980 | mwan | 2012-05-31 19:38:08 -0400 (Thu, 31 May 2012) | 2 lines
 
 Add ncOpenGroup to allow processing data stored in HDF5 groups.
 
 ------------------------------------------------------------------------
-r4981 | mwan | 2012-05-31 19:44:31 -0400 (Thu, 31 May 2012) | 2 lines
+JMC - No Op :: r4981 | mwan | 2012-05-31 19:44:31 -0400 (Thu, 31 May 2012) | 2 lines
 
 add documentation
 
 ------------------------------------------------------------------------
-r4982 | mwan | 2012-06-01 16:45:49 -0400 (Fri, 01 Jun 2012) | 2 lines
+JMC - No Op :: r4982 | mwan | 2012-06-01 16:45:49 -0400 (Fri, 01 Jun 2012) | 2 lines
 
 minor fix for warning message
 
 ------------------------------------------------------------------------
-r4983 | mwan | 2012-06-01 17:36:56 -0400 (Fri, 01 Jun 2012) | 2 lines
+JMC - No Op :: r4983 | mwan | 2012-06-01 17:36:56 -0400 (Fri, 01 Jun 2012) | 2 lines
 
 Add rcNcInqGrps to allow inquiry of NETCDF4 subgroups in a group.
 
 ------------------------------------------------------------------------
-r4984 | mwan | 2012-06-01 17:47:00 -0400 (Fri, 01 Jun 2012) | 2 lines
+JMC - No Op :: r4984 | mwan | 2012-06-01 17:47:00 -0400 (Fri, 01 Jun 2012) | 2 lines
 
 Take out ifdef of NETCDF_HDF5 parameter 
 
 ------------------------------------------------------------------------
-r4985 | mwan | 2012-06-01 20:04:10 -0400 (Fri, 01 Jun 2012) | 2 lines
+JMC - No Op :: r4985 | mwan | 2012-06-01 20:04:10 -0400 (Fri, 01 Jun 2012) | 2 lines
 
 Add msiNcInqGrps and msiNcOpenGroup micro-services
 
 ------------------------------------------------------------------------
-r4986 | schroede | 2012-06-04 14:29:22 -0400 (Mon, 04 Jun 2012) | 2 lines
+JMC - No Op :: r4986 | schroede | 2012-06-04 14:29:22 -0400 (Mon, 04 Jun 2012) | 2 lines
 
 Fix a problem when building PAM support into a non-IES.
 
 ------------------------------------------------------------------------
-r4987 | mwan | 2012-06-04 21:30:37 -0400 (Mon, 04 Jun 2012) | 2 lines
+JMC - No Op :: r4987 | mwan | 2012-06-04 21:30:37 -0400 (Mon, 04 Jun 2012) | 2 lines
 
 add msiNcGetNGrpsInInqOut microservice
 
 ------------------------------------------------------------------------
-r4988 | csmith | 2012-06-05 17:09:48 -0400 (Tue, 05 Jun 2012) | 5 lines
+JMC - No Op :: r4988 | csmith | 2012-06-05 17:09:48 -0400 (Tue, 05 Jun 2012) | 5 lines
 
 Allow configuration of server 'cmd' directory.
 
@@ -657,7 +657,7 @@ execCmd will now check if the irodsServerCmdDir environment variable is set, and
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
+JMC - Done :: r4989 | schroede | 2012-06-05 19:07:16 -0400 (Tue, 05 Jun 2012) | 11 lines
 
 In chlModDataObjMeta, if the modify_ts is being set and is less than
 11 digits long, change it to be the irods time-standard 11 digits.
@@ -671,13 +671,13 @@ is handled.  This problem was noticed by Adil, when doing an 'iput -f'
 over an existing file, and discussed on irod-chat.
 
 ------------------------------------------------------------------------
-r4990 | mwan | 2012-06-05 20:33:37 -0400 (Tue, 05 Jun 2012) | 3 lines
+JMC - No Op :: r4990 | mwan | 2012-06-05 20:33:37 -0400 (Tue, 05 Jun 2012) | 3 lines
 
 Add msiNcGetNGrpsInInqOut and msiNcGetNGrpsInInqOut micro-service to 
 get parameters out of the ncInqGrpsOut_t struct.
 
 ------------------------------------------------------------------------
-r4991 | schroede | 2012-06-06 09:52:47 -0400 (Wed, 06 Jun 2012) | 9 lines
+JMC - Done :: r4991 | schroede | 2012-06-06 09:52:47 -0400 (Wed, 06 Jun 2012) | 9 lines
 
 Check if the admin user is deleting their own user account and, if so,
 disallow it, as it's probably an error and would be a problem,
@@ -689,11 +689,11 @@ the last admin account to be deleted) was suggested by Terrell.
 
 
 ------------------------------------------------------------------------
-r4992 | terrell | 2012-06-06 13:58:48 -0400 (Wed, 06 Jun 2012) | 1 line
+JMC - No Op :: r4992 | terrell | 2012-06-06 13:58:48 -0400 (Wed, 06 Jun 2012) | 1 line
 
 fix syntax error in rules3.0/rulemsiXsltApply.r rule file
 ------------------------------------------------------------------------
-r4993 | schroede | 2012-06-06 17:53:40 -0400 (Wed, 06 Jun 2012) | 6 lines
+JMC - No Op :: r4993 | schroede | 2012-06-06 17:53:40 -0400 (Wed, 06 Jun 2012) | 6 lines
 
 Add UNICODE as an advanced option in the irodssetup/configure system,
 mention config.mk for other configuration options, and for upgrades
@@ -702,24 +702,24 @@ options.  Based on suggestions from, and discussion with, Jean-Yves.
 
 
 ------------------------------------------------------------------------
-r4994 | mwan | 2012-06-07 13:50:00 -0400 (Thu, 07 Jun 2012) | 2 lines
+JMC - No Op :: r4994 | mwan | 2012-06-07 13:50:00 -0400 (Thu, 07 Jun 2012) | 2 lines
 
 Use header from rpcClient
 
 ------------------------------------------------------------------------
-r4995 | csmith | 2012-06-08 19:49:07 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4995 | csmith | 2012-06-08 19:49:07 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Identify ODBC data source with irodsOdbcDSN environment variable.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4996 | csmith | 2012-06-08 19:49:30 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4996 | csmith | 2012-06-08 19:49:30 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Can optionally set full path to genOSAuth at compile time.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4997 | csmith | 2012-06-08 19:49:53 -0400 (Fri, 08 Jun 2012) | 5 lines
+JMC - No Op :: r4997 | csmith | 2012-06-08 19:49:53 -0400 (Fri, 08 Jun 2012) | 5 lines
 
 Allow relocation of default server paths
 
@@ -727,19 +727,19 @@ Two parts to this change. The first is to define the irodsStateDir environment v
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4998 | csmith | 2012-06-08 19:50:15 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4998 | csmith | 2012-06-08 19:50:15 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Add CMD_DIR to set of config.mk compile time overrides.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r4999 | csmith | 2012-06-08 19:50:37 -0400 (Fri, 08 Jun 2012) | 3 lines
+JMC - No Op :: r4999 | csmith | 2012-06-08 19:50:37 -0400 (Fri, 08 Jun 2012) | 3 lines
 
 Make path to PamAuthCheck a compile-time option as well.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5000 | csmith | 2012-06-08 20:10:42 -0400 (Fri, 08 Jun 2012) | 5 lines
+JMC - No Op :: r5000 | csmith | 2012-06-08 20:10:42 -0400 (Fri, 08 Jun 2012) | 5 lines
 
 In RUN_SERVER_AS_ROOT mode, drop root privilege in rsExecCmd
 
@@ -757,7 +757,7 @@ r5002 | mwan | 2012-06-11 15:47:48 -0400 (Mon, 11 Jun 2012) | 2 lines
 To get "rmtrash --age" to working from the last checkin
 
 ------------------------------------------------------------------------
-r5003 | schroede | 2012-06-11 17:26:39 -0400 (Mon, 11 Jun 2012) | 12 lines
+JMC - No Op :: r5003 | schroede | 2012-06-11 17:26:39 -0400 (Mon, 11 Jun 2012) | 12 lines
 
 Add tests for the SQL performed for PAM authentication.  Remove the
 temporary 'commenting-out' (xSQL) so that these tests are required for
@@ -772,50 +772,50 @@ PAM_AUTH enabled.
 
 
 ------------------------------------------------------------------------
-r5004 | schroede | 2012-06-12 13:58:41 -0400 (Tue, 12 Jun 2012) | 4 lines
+JMC - No Op :: r5004 | schroede | 2012-06-12 13:58:41 -0400 (Tue, 12 Jun 2012) | 4 lines
 
 Add an iadmin sub-command to remove iRODS passwords derived from PAM
 passwords and add a test so the SQL is exercised.  See the help text
 for more.  We now have 365 SQL forms that are tested via 'devtest'.
 
 ------------------------------------------------------------------------
-r5005 | mwan | 2012-06-12 16:35:25 -0400 (Tue, 12 Jun 2012) | 2 lines
+JMC - No Op :: r5005 | mwan | 2012-06-12 16:35:25 -0400 (Tue, 12 Jun 2012) | 2 lines
 
 Minor change in help message.
 
 ------------------------------------------------------------------------
-r5006 | mwan | 2012-06-12 17:44:06 -0400 (Tue, 12 Jun 2012) | 2 lines
+JMC - Done :: r5006 | mwan | 2012-06-12 17:44:06 -0400 (Tue, 12 Jun 2012) | 2 lines
 
 Add --age option to irsync. This implementation is not yet complete.
 
 ------------------------------------------------------------------------
-r5007 | mwan | 2012-06-13 14:37:33 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5007 | mwan | 2012-06-13 14:37:33 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 Finish adding --age to irsync
 
 ------------------------------------------------------------------------
-r5008 | mwan | 2012-06-13 14:57:07 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5008 | mwan | 2012-06-13 14:57:07 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 modify printNoSync to handle splitPathByKey failed
 
 ------------------------------------------------------------------------
-r5009 | mwan | 2012-06-13 15:57:53 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5009 | mwan | 2012-06-13 15:57:53 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 get --age option to work with irods to irods sync
 
 ------------------------------------------------------------------------
-r5010 | schroede | 2012-06-13 16:02:39 -0400 (Wed, 13 Jun 2012) | 3 lines
+JMC - Done :: r5010 | schroede | 2012-06-13 16:02:39 -0400 (Wed, 13 Jun 2012) | 3 lines
 
 When a data-object is moved, update its modify time.
 This is needed for the irmtrash --age feature.
 
 ------------------------------------------------------------------------
-r5011 | mwan | 2012-06-13 18:50:43 -0400 (Wed, 13 Jun 2012) | 2 lines
+JMC - Done :: r5011 | mwan | 2012-06-13 18:50:43 -0400 (Wed, 13 Jun 2012) | 2 lines
 
 Add -K option to irsync as requested by a user
 
 ------------------------------------------------------------------------
-r5012 | mwan | 2012-06-14 17:16:14 -0400 (Thu, 14 Jun 2012) | 4 lines
+JMC - No Op :: r5012 | mwan | 2012-06-14 17:16:14 -0400 (Thu, 14 Jun 2012) | 4 lines
 
 Add a list_accounts function to list all bank accounts. Add json code to
 parse an array of keyValue ovjects.
@@ -839,12 +839,12 @@ Update modify time in syncDataObjPhyPath to allow --age to work.
 Also revert last change in rsRmcoll.
 
 ------------------------------------------------------------------------
-r5016 | mwan | 2012-06-15 19:52:23 -0400 (Fri, 15 Jun 2012) | 2 lines
+JMC - No Op :: r5016 | mwan | 2012-06-15 19:52:23 -0400 (Fri, 15 Jun 2012) | 2 lines
 
 Add data structure to handle dictionary type for OOI CI
 
 ------------------------------------------------------------------------
-r5017 | schroede | 2012-06-18 15:47:04 -0400 (Mon, 18 Jun 2012) | 7 lines
+JMC - No Op :: r5017 | schroede | 2012-06-18 15:47:04 -0400 (Mon, 18 Jun 2012) | 7 lines
 
 Python script and config file provided by Adil/KEK, useful for
 scanning irods log files.  To use, update the allowed users in
@@ -854,32 +854,32 @@ See the help text for more.
 
 
 ------------------------------------------------------------------------
-r5018 | mwan | 2012-06-18 16:07:28 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5018 | mwan | 2012-06-18 16:07:28 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Add routines to handle OOI dictionary.
 
 ------------------------------------------------------------------------
-r5019 | mwan | 2012-06-18 18:53:44 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5019 | mwan | 2012-06-18 18:53:44 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Add support for array in OOI dictionary
 
 ------------------------------------------------------------------------
-r5020 | mwan | 2012-06-18 19:22:26 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5020 | mwan | 2012-06-18 19:22:26 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Minor changes
 
 ------------------------------------------------------------------------
-r5021 | mwan | 2012-06-18 20:37:06 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5021 | mwan | 2012-06-18 20:37:06 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Add code for the first OOI call - rcOoiGenServReq
 
 ------------------------------------------------------------------------
-r5022 | mwan | 2012-06-18 20:51:54 -0400 (Mon, 18 Jun 2012) | 2 lines
+JMC - No Op :: r5022 | mwan | 2012-06-18 20:51:54 -0400 (Mon, 18 Jun 2012) | 2 lines
 
 Turn OOI_CI off by default
 
 ------------------------------------------------------------------------
-r5023 | mwan | 2012-06-19 13:19:27 -0400 (Tue, 19 Jun 2012) | 2 lines
+JMC - No Op :: r5023 | mwan | 2012-06-19 13:19:27 -0400 (Tue, 19 Jun 2012) | 2 lines
 
 Fix a compile error by ifdef out OOI and NETCDF specific stuff.
 
@@ -892,57 +892,57 @@ days ago and, like that, will be used for the new irmtrash --age
 feature in some cases.
 
 ------------------------------------------------------------------------
-r5025 | mwan | 2012-06-19 18:35:51 -0400 (Tue, 19 Jun 2012) | 2 lines
+JMC - No Op :: r5025 | mwan | 2012-06-19 18:35:51 -0400 (Tue, 19 Jun 2012) | 2 lines
 
 Complete jsonPackDictionary to pack a dictionary.
 
 ------------------------------------------------------------------------
-r5026 | mwan | 2012-06-19 19:57:24 -0400 (Tue, 19 Jun 2012) | 3 lines
+JMC - No Op :: r5026 | mwan | 2012-06-19 19:57:24 -0400 (Tue, 19 Jun 2012) | 3 lines
 
 OOI development -- add routines jsonPackOoiServReqForPost, jsonPackOoiServReq
 and jsonPackDictionary to pack post type service request msg
 
 ------------------------------------------------------------------------
-r5027 | mwan | 2012-06-20 20:41:18 -0400 (Wed, 20 Jun 2012) | 4 lines
+JMC - No Op :: r5027 | mwan | 2012-06-20 20:41:18 -0400 (Wed, 20 Jun 2012) | 4 lines
 
 OOI task - add a number of unpacking routines - jsonUnpackOoiRespStr,
 jsonUnpackOoiRespDict, jsonUnpackDict, jsonUnpackOoiRespDictArray,
 jsonUnpackOoiRespDictArrInArr and clearDictArray.
 
 ------------------------------------------------------------------------
-r5028 | mwan | 2012-06-21 20:18:05 -0400 (Thu, 21 Jun 2012) | 2 lines
+JMC - No Op :: r5028 | mwan | 2012-06-21 20:18:05 -0400 (Thu, 21 Jun 2012) | 2 lines
 
 Test OOI APIs
 
 ------------------------------------------------------------------------
-r5029 | mwan | 2012-06-22 14:24:14 -0400 (Fri, 22 Jun 2012) | 2 lines
+JMC - No Op :: r5029 | mwan | 2012-06-22 14:24:14 -0400 (Fri, 22 Jun 2012) | 2 lines
 
 get the rcOoiGenServReq to work
 
 ------------------------------------------------------------------------
-r5030 | mwan | 2012-06-22 16:12:18 -0400 (Fri, 22 Jun 2012) | 2 lines
+JMC - No Op :: r5030 | mwan | 2012-06-22 16:12:18 -0400 (Fri, 22 Jun 2012) | 2 lines
 
 Get rcOoiGenServReq to run with array of dictionary as output
 
 ------------------------------------------------------------------------
-r5031 | mwan | 2012-06-22 21:16:18 -0400 (Fri, 22 Jun 2012) | 2 lines
+JMC - No Op :: r5031 | mwan | 2012-06-22 21:16:18 -0400 (Fri, 22 Jun 2012) | 2 lines
 
 Test some datastore services
 
 ------------------------------------------------------------------------
-r5032 | mwan | 2012-06-25 19:54:59 -0400 (Mon, 25 Jun 2012) | 3 lines
+JMC - No Op :: r5032 | mwan | 2012-06-25 19:54:59 -0400 (Mon, 25 Jun 2012) | 3 lines
 
 Add OOI functionalities such as dictionary in a dictionary to get accessing
 OOI datastore service to work.
 
 ------------------------------------------------------------------------
-r5033 | csmith | 2012-06-26 12:11:48 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5033 | csmith | 2012-06-26 12:11:48 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 A long term typo. clientRodsZone, not clientRodsZine
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5034 | csmith | 2012-06-26 12:12:10 -0400 (Tue, 26 Jun 2012) | 9 lines
+JMC - No Op :: r5034 | csmith | 2012-06-26 12:12:10 -0400 (Tue, 26 Jun 2012) | 9 lines
 
 Added SSL for server to server rcPamAuthRequest. Adjust privilege for pam API calls. Connect to ICAT host based on client zone.
 
@@ -954,13 +954,13 @@ Connect to an ICAT host (MASTER_RCAT) based on the client zone.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5035 | mwan | 2012-06-26 12:54:54 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5035 | mwan | 2012-06-26 12:54:54 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 OOI - take out arrLen input for dictSetAttr() since array is implemented
 as a different struct.
 
 ------------------------------------------------------------------------
-r5036 | mwan | 2012-06-26 12:55:41 -0400 (Tue, 26 Jun 2012) | 2 lines
+JMC - No Op :: r5036 | mwan | 2012-06-26 12:55:41 -0400 (Tue, 26 Jun 2012) | 2 lines
 
 cleanup
 
@@ -971,18 +971,18 @@ Fixed case where remote user was getting local user privilege in multi-zone depl
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5038 | mwan | 2012-06-26 15:24:18 -0400 (Tue, 26 Jun 2012) | 2 lines
+JMC - No Op :: r5038 | mwan | 2012-06-26 15:24:18 -0400 (Tue, 26 Jun 2012) | 2 lines
 
 OOI - Add genArray_t for array and codes to handle this type
 
 ------------------------------------------------------------------------
-r5039 | mwan | 2012-06-26 21:09:43 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5039 | mwan | 2012-06-26 21:09:43 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 Modify OOI code to use the more generic genArray_t instead of dictArray_t.
 Add more tests.
 
 ------------------------------------------------------------------------
-r5040 | mwan | 2012-06-26 22:05:20 -0400 (Tue, 26 Jun 2012) | 3 lines
+JMC - No Op :: r5040 | mwan | 2012-06-26 22:05:20 -0400 (Tue, 26 Jun 2012) | 3 lines
 
 OOI - Add support for OOI_INT_TYPE, OOI_FLOAT_TYPE and OOI_BOOL_TYPE
 response value.

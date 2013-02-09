@@ -363,6 +363,117 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
     setVariableValue(varName, orig, rei, env, errmsg, r);
     return res;
 }
+void columnToString(Node *n, char **queryStr, int *size) {
+       if(strlen(n->text)==0) { /* no attribute function */
+               PRINT(queryStr, size, "%s", n->subtrees[0]->text);
+       } else {
+               PRINT(queryStr, size, "%s", n->text);
+               PRINT(queryStr, size, "(%s)", n->subtrees[0]->text);
+       }
+
+
+}
+int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
+int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
+
+Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+       char queryStr[1024];
+       char condStr[1024];
+       int size = 1024;
+       char *p = queryStr;
+       int where = 0;
+       int i;
+       for(i=0;i<n;i++) {
+               switch(getNodeType(subtrees[i])) {
+               case N_ATTR:
+                       columnToString(subtrees[i], &p, &size);
+                       break;
+               case N_QUERY_COND:
+                       where = 1;
+                       break;
+               default:
+                       generateAndAddErrMsg("unsupported node type", subtrees[i], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                       return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+               }
+               if(where == 1) {
+                       break;
+               }
+               PRINT(&p, &size, "%s", ",");
+       }
+       if(p != queryStr) {
+               p--;
+               *p = '\0';
+       }
+
+
+       if(where == 1) {
+               p = condStr;
+               for(;i<n;i++) {
+                       switch(getNodeType(subtrees[i])) {
+               case N_QUERY_COND:
+                       columnToString(subtrees[i]->subtrees[0], &p, &size);
+                       PRINT(&p, &size, " %s ", subtrees[i]->text);
+                       if(strcmp(subtrees[i]->text, "between")==0) {
+                               termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[1], 1);
+                               PRINT(&p, &size, "%s", " ");
+                               termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[2], 1);
+                       } else {
+                               termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[1], 1);
+                       }
+                       break;
+               default:
+                       generateAndAddErrMsg("unsupported node type", subtrees[i], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                       return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+               }
+               if(i != n - 1) {
+                       PRINT(&p, &size, "%s", " AND ");
+               }
+               }
+       }
+
+       Region *rNew = make_region(0, NULL);
+       msParam_t condParam;
+       msParam_t selectListParam;
+       msParam_t genQInpParam;
+       msParam_t genQOutParam;
+       memset(&genQInpParam, 0, sizeof(msParam_t));
+       memset(&genQOutParam, 0, sizeof(msParam_t));
+       convertResToMsParam(&condParam, newStringRes(rNew, condStr), errmsg);
+       convertResToMsParam(&selectListParam, newStringRes(rNew, queryStr), errmsg);
+       int status = msiMakeGenQuery(&selectListParam, &condParam, &genQInpParam, rei);
+       clearMsParam(&condParam, 1);
+       clearMsParam(&selectListParam, 1);
+       if(status < 0) {
+               region_free(rNew);
+               generateAndAddErrMsg("msiMakeGenQuery error", node, status, errmsg);
+               return newErrorRes(r, status);
+       }
+
+       status = msiExecGenQuery(&genQInpParam, &genQOutParam, rei);
+       if(status < 0) {
+               region_free(rNew);
+               generateAndAddErrMsg("msiExecGenQuery error", node, status, errmsg);
+               return newErrorRes(r, status);
+       }
+
+       Res *res = newRes(r);
+       convertMsParamToResAndFreeNonIRODSType(&genQInpParam, res, errmsg, r);
+       Res *res2 = newRes(r);
+       convertMsParamToResAndFreeNonIRODSType(&genQOutParam, res2, errmsg, r);
+
+       region_free(rNew);
+
+       Res **comps = (Res **) region_alloc(r, sizeof(Res *) * 2);
+       comps[0] = res;
+       comps[1] = res2;
+
+       return newTupleRes(2, comps, r);
+
+}
+
+
+
+
 Res *smsi_break(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
     Res *   res = newRes(r);
@@ -1991,6 +2102,13 @@ Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Re
     return res;
 }
 
+Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+
+       char *a = NULL;
+       putchar(*a);
+        return NULL;
+}
+
 void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "do", newFunctionFD("e ?->?", smsi_do, r));
     insertIntoHashTable(ft, "eval", newFunctionFD("string->?", smsi_eval, r));
@@ -2091,6 +2209,8 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "strlen", newFunctionFD("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "split", newFunctionFD("string * string -> list string", smsi_split, r));
+    insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI`", smsi_query, r));
+    insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
     insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
     insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionFD("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
@@ -2115,6 +2235,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "whileExec", newFunctionFD("e boolean * a ? * a ?->?", smsi_whileExec, r));
     insertIntoHashTable(ft, "forEachExec", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
     insertIntoHashTable(ft, "msiGetRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+    insertIntoHashTable(ft, "msiSegFault", newFunctionFD(" -> integer", smsi_segfault, r));
 #endif
 
 }

@@ -82,6 +82,7 @@ main(int argc, char **argv) {
 	
 	status = scanObj (conn, &myRodsArgs, &rodsPathInp, hostname);
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
 
     exit(status);

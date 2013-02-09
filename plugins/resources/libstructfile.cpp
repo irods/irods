@@ -316,8 +316,14 @@ extern "C" {
         // extract the special collection from the struct file table
         specColl_t* spec_coll = PluginStructFileDesc[_index].specColl;
         if( spec_coll == NULL ) {
-            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "" );            
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "stage_tar_struct_file - null spec coll" );
         }
+
+        rsComm_t* comm = PluginStructFileDesc[ _index ].rsComm;
+        if( comm == NULL ) {
+            return ERROR( SYS_INTERNAL_NULL_INPUT_ERR, "stage_tar_struct_file - null comm" );
+        }
+
 
         // =-=-=-=-=-=-=-
         // check to see if we have a cache dir and make one if not
@@ -346,10 +352,33 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // register the CacheDir 
-            status = modCollInfo2( PluginStructFileDesc[ _index ].rsComm, spec_coll, 0 );
+            status = modCollInfo2( comm, spec_coll, 0 );
             if( status < 0 ) {
                 return ERROR( status, "stage_tar_struct_file - modCollInfo2 failed." ); 
             }
+
+            // =-=-=-=-=-=-=-
+            // if the left over cache dir has a symlink in it, remove the
+            // directory ( addresses Wisc Security Issue r4906 )
+            if( hasSymlinkInDir( spec_coll->cacheDir ) ) {
+                rodsLog( LOG_ERROR, "extractTarFile: cacheDir %s has symlink in it",
+                spec_coll->cacheDir ); 
+
+                /* remove cache */
+                fileRmdirInp_t fileRmdirInp;
+                memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
+                rstrcpy( fileRmdirInp.dirName,       spec_coll->cacheDir,                MAX_NAME_LEN );
+                rstrcpy( fileRmdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN );
+                fileRmdirInp.flags = RMDIR_RECUR;
+                int status = rsFileRmdir( comm, &fileRmdirInp );
+                if (status < 0) {
+                    std::stringstream msg;
+                    msg << "stage_tar_struct_file - rmdir error for [";
+                    msg << spec_coll->cacheDir << "]";
+                    return ERROR( status, msg.str() );
+                }
+
+            } // if hasSymlinkInDir
 
         } // if empty cachedir  
 
@@ -1951,6 +1980,32 @@ extern "C" {
             return PASS( false, SYS_TAR_STRUCT_FILE_EXTRACT_ERR - errno, msg.str(), ext_err );
         }
 
+        // =-=-=-=-=-=-=-
+        // if the left over cache dir has a symlink in it, remove the
+        // directory ( addresses Wisc Security Issue r4906 )
+        if( hasSymlinkInDir( spec_coll->cacheDir ) ) {
+            rodsLog( LOG_ERROR, "extractTarFile: cacheDir %s has symlink in it",
+            spec_coll->cacheDir ); 
+
+            rodsHostAddr_t* host_addr = 0;
+            _prop_map->get< rodsHostAddr_t* >( "location", host_addr );    
+
+            /* remove cache */
+            fileRmdirInp_t fileRmdirInp;
+            memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
+            rstrcpy( fileRmdirInp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
+            rstrcpy( fileRmdirInp.addr.hostAddr, host_addr->hostAddr, NAME_LEN );
+            fileRmdirInp.flags = RMDIR_RECUR;
+            int status = rsFileRmdir( comm, &fileRmdirInp );
+            if (status < 0) {
+                std::stringstream msg;
+                msg << "tarFileExtractPlugin - rmdir error for [";
+                msg << spec_coll->cacheDir << "]";
+                return ERROR( status, msg.str() );
+            }
+
+        } // if hasSymlinkInDir
+
         return CODE( ext_err.code() );
 
 	} // tarFileExtractPlugin
@@ -2102,7 +2157,7 @@ extern "C" {
         // check struct desc table in use flag
         if( PluginStructFileDesc[ _index ].inuseFlag <= 0 ) {
             std::stringstream msg;
-            msg << "extract_file - struct file index: ";
+            msg << "bundle_cache_dir - struct file index: ";
             msg << _index;
             msg << " is not in use";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );

@@ -359,7 +359,7 @@ void ruleNameToString(char **p, int *s, int indent, Node *rn);
 void ruleToString(char *buf, int size, RuleDesc *rd);
 void actionsToString(char **p, int *s, int indent, Node *na, Node *nr);
 void indentToString(char **p, int *s, int indent);
-void termToString(char **p, int *s, int indent, int prec, Node *n);
+void termToString(char **p, int *s, int indent, int prec, Node *n, int quote);
 void patternToString(char **p, int *s, int indent, int prec, Node *n);
 void typeToStringParser(char **p, int *s, int indent, int lifted, Node *n);
 void functionApplicationToString(char *buf, int size, char *fn, Node **args, int n);

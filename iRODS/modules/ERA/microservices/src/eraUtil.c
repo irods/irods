@@ -2123,7 +2123,7 @@ void timestampDataObjName(dataObjCopyInp_t *myDataObjCopyInp)
         //use UTC time instead? maybe this should be a parameter option?
         tm_time = gmtime(&caltime);
 
-        // append timestamp in the format "_yymmdd_hhmmss"
+        // append timestamp in the format "_yyyymmddThhmmssZ" (ISO 8601)
         strftime(timestamp,TIMESTAMP_LEN,"_%Y%m%dT%H%M%SZ",tm_time);
 
         // apparently "/" at end of destination path is added by parse param functions

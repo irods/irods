@@ -312,6 +312,7 @@ main(int argc, char **argv) {
    }
    
    /* status = parseUserName(cmdToken[1], userName, zoneName); */
+    printErrorStack(Conn->rError);
    rcDisconnect(Conn);
 
    exit(status);

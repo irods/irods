@@ -321,7 +321,10 @@ initCondForGet (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                           rodsArgs->restartFileString);
             return (status);
         }
-    } else if (rodsArgs->retries == True) {
+    }
+
+    if (rodsArgs->retries == True && rodsArgs->restart == False &&
+      rodsArgs->lfrestart == False) {
         rodsLog (LOG_ERROR,
                  "initCondForGet: --retries must be used with -X option");
         return USER_INPUT_OPTION_ERR;

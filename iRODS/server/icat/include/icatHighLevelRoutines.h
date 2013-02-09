@@ -63,6 +63,8 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
                 char *userName, char *userZone);
 int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
                char *optionValue);
+int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
+    char *newPath, char *userName);
 int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, 
                         int updateValue);
 int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo);

@@ -521,6 +521,7 @@ main(int argc, char **argv) {
       }
    }
 
+    printErrorStack(Conn->rError);
    rcDisconnect(Conn);
 
    /* Exit 0 if one or more items were displayed */
