@@ -8384,13 +8384,15 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         /* Update the table */
 
         /* First, set the collection name and parent collection to the
-           new strings */
+        new strings, and update the modify-time */
+        getNowStr(myTime);
         cllBindVars[cllBindVarCount++]=newCollName;
         cllBindVars[cllBindVarCount++]=targetCollName;
+        cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=objIdString;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
         status =  cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_name = ?, parent_coll_name=? where coll_id = ?",
+                  "update R_COLL_MAIN set coll_name = ?, parent_coll_name=?, modify_ts=? where coll_id = ?",
             &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
