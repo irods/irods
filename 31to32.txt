@@ -116,12 +116,12 @@ JMC - Done :: r4910 | mwan | 2012-04-03 18:42:38 -0400 (Tue, 03 Apr 2012) | 2 li
 add symlink check functions for wisc sec check later
 
 ------------------------------------------------------------------------
-r4911 | mwan | 2012-04-03 19:01:43 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4911 | mwan | 2012-04-03 19:01:43 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 Allow --retries to run with --lfrestart
 
 ------------------------------------------------------------------------
-r4912 | mwan | 2012-04-03 19:09:19 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4912 | mwan | 2012-04-03 19:09:19 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 allow retries to work with lfrestart
 

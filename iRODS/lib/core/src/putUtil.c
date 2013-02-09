@@ -416,11 +416,15 @@ initCondForPut (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
                 }
             }
         }
-    } else if (rodsArgs->retries == True) {
-        rodsLog (LOG_ERROR,
-                 "initCondForPut: --retries must be used with -X option");
-        return USER_INPUT_OPTION_ERR;
-    }
+       }
+       if( rodsArgs->retries == True && rodsArgs->restart == False &&
+           rodsArgs->lfrestart == False) {
+        
+            rodsLog (LOG_ERROR,
+                    "initCondForPut: --retries must be used with -X or --lfrestart option");
+             
+            return USER_INPUT_OPTION_ERR;
+        }
 
     /* Not needed - dataObjOprInp->createMode = 0700; */
     /* mmap in rbudp needs O_RDWR */
