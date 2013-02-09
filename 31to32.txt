@@ -95,7 +95,7 @@ Check the mounted structFile for symlink so that we don't need admin
 privilege to imcoll a tar struct file. This address a wisc security issue.
 
 ------------------------------------------------------------------------
-r4907 | mwan | 2012-04-03 16:10:40 -0400 (Tue, 03 Apr 2012) | 2 lines
+JMC - Done :: r4907 | mwan | 2012-04-03 16:10:40 -0400 (Tue, 03 Apr 2012) | 2 lines
 
 Better error return in readCollection
 

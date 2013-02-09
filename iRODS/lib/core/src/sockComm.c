@@ -672,6 +672,12 @@ rodsSetSockOpt (int sock, int windowSize)
     if (status < 0)
         savedStatus = status;
 
+    /* keep connection alive */
+    temp = 1;
+    status = setsockopt (sock, SOL_SOCKET, SO_KEEPALIVE, &temp, sizeof (temp));
+    if (status < 0)
+        savedStatus = status;
+
     linger.l_onoff = 1;
     linger.l_linger = 5;
     status = setsockopt(sock, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
