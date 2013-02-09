@@ -1205,7 +1205,7 @@ Modify dumpNcInqOut to allow it to dump a subset of variable since
 a data set can be very large
 
 ------------------------------------------------------------------------
-r5072 | schroede | 2012-07-11 12:22:33 -0400 (Wed, 11 Jul 2012) | 41 lines
+JMC - Done :: r5072 | schroede | 2012-07-11 12:22:33 -0400 (Wed, 11 Jul 2012) | 41 lines
 
 For 'ils -A' (access) on collections, have it display user-groups but
 no longer also expand user-groups to individual users, so this now
