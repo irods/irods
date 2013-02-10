@@ -224,9 +224,6 @@ Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
         paramsr[1] = newStringRes(r, ",");
         return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
     } else if(TYPE(coll) != T_CONS &&
-            (TYPE(coll) != T_TUPLE || coll->degree != 2 ||
-            TYPE(coll->subtrees[0]) != T_IRODS || strcmp(coll->subtrees[0]->exprType->text, GenQueryInp_MS_T) != 0 ||
-            TYPE(coll->subtrees[1]) != T_IRODS || strcmp(coll->subtrees[1]->exprType->text, GenQueryOut_MS_T) != 0) &&
               (TYPE(coll) != T_IRODS || (
                   strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
                   strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
@@ -239,14 +236,6 @@ Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
         return coll;
     }
 }
-
-int
-msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int
-msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* contInxParam, ruleExecInfo_t *rei);
-int
-msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
-
 Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
     Res *res = newRes(r);
@@ -274,69 +263,6 @@ Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, 
         if(getNodeType(res) != N_ERROR) {
             res = newIntRes(r,0);
         }
-
-       } else if (TYPE(coll) == T_TUPLE ) {
-               int i;
-               Res* elem;
-               int cont = 1;
-               msParam_t genQInpParam;
-               msParam_t genQOutParam;
-               msParam_t contInxParam;
-               GC_BEGIN
-               while(cont) {
-                       genQueryOut_t *genQueryOut = (genQueryOut_t*)RES_UNINTER_STRUCT(coll->subtrees[1]);
-                       cont = genQueryOut->continueInx > 0;
-                       int len = getCollectionSize(coll->subtrees[1]->exprType->text, RES_UNINTER_STRUCT(coll->subtrees[1]), r);
-                       for(i=0;i<len;i++) {
-                               GC_ON(env);
-                               elem = getValueFromCollection(coll->subtrees[1]->exprType->text, RES_UNINTER_STRUCT(coll->subtrees[1]), i, GC_REGION);
-                               setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
-                               res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
-                               clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
-                               free(RES_UNINTER_STRUCT(elem));
-
-                               if(getNodeType(res) == N_ERROR) {
-                                      convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-                                       convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
-                                       int status = msiCloseGenQuery(&genQInpParam, &genQOutParam, rei);
-                                       clearMsParam(&genQInpParam, 0);
-                                       clearMsParam(&genQOutParam, 0);
-                                       if(status < 0) {
-                                               generateAndAddErrMsg("msiCloseGenQuery error", node, status, errmsg);
-                                       }
-                                       cont = 0;
-                                       break;
-                               }
-                               if(TYPE(res) == T_BREAK) {
-                                       convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-                                       convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
-                                       int status = msiCloseGenQuery(&genQInpParam, &genQOutParam, rei);
-                                       clearMsParam(&genQInpParam, 0);
-                                       clearMsParam(&genQOutParam, 0);
-                                       if(status < 0) {
-                                               generateAndAddErrMsg("msiCloseGenQuery error", node, status, errmsg);
-                                       }
-                                       cont = 0;
-                                       break;
-                               }
-                       }
-                       convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-                       convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
-                       memset(&contInxParam, 0, sizeof(msParam_t));
-                       int status = msiGetMoreRows(&genQInpParam, &genQOutParam, &contInxParam, rei);
-                       clearMsParam(&contInxParam, 1);
-                       if(status < 0) {
-                               generateAndAddErrMsg("msiGetMoreRows error", node, status, errmsg);
-                               res = newErrorRes(GC_REGION, status);
-                               break;
-                       }
-               }
-               cpEnv(env, r);
-               res = cpRes(res, r);
-               GC_END
-               if(getNodeType(res) != N_ERROR) {
-                       res = newIntRes(r,0);
-               }
     } else {
         int i;
         Res* elem;
