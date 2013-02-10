@@ -1864,7 +1864,7 @@ correctly.
 
 
 ------------------------------------------------------------------------
-r5165 | mwan | 2012-09-06 14:38:20 -0400 (Thu, 06 Sep 2012) | 3 lines
+JMC - Done :: r5165 | mwan | 2012-09-06 14:38:20 -0400 (Thu, 06 Sep 2012) | 3 lines
 
 Mod from Thomas Ledoux of the French National Library to make the reServer 
 logfile to rotate.

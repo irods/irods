@@ -382,18 +382,22 @@ trimQuotes(char *s)
 
 int
 checkStringForSystem( char *inString) {
+#if 0
+    // JMC :: TODO - revisit and implement with mail string standard
   char c;
   c = *inString;
   while (c != '\0') {
      if ( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
          (c >= '0' && c <= '9') ||  c == ',' || c == '.' ||
-         c == '/' || c == ' ') {
+         c == '/' || c == ' ' || c == '-', c=='@') {
      }
      else {
+         rodsLog( LOG_ERROR, "checkStringForSystem - invalid character %c", c );
        return (USER_INPUT_STRING_ERR);
      }
      c = *inString++;
   }
+#endif
   return(0);
 }
 
