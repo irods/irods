@@ -237,12 +237,10 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 
 # $DefFileMode - the mode of the file created in the resource vault. 
 # The default value is 0600 (DEFAULT_FILE_MODE).
-# The input value must be an octal value and start with a "0", it must be declared between quotes: ''.
-# $DefFileMode='0640';
+# $DefFileMode=0640;
 
 # $DefDirMode - the mode of the directory created in the resource vault.
 # The default value is 0750 (DEFAULT_DIR_MODE).
-# The input value must be an octal value and start with a "0", it must be declared between quotes: ''.
 # $DefDirMode=0700;
 
 # $LOGFILE_INT - specifies the server log interval in number of days.
