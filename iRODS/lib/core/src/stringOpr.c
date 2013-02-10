@@ -380,6 +380,23 @@ trimQuotes(char *s)
   return (0);
 }
 
+int
+checkStringForSystem( char *inString) {
+  char c;
+  c = *inString;
+  while (c != '\0') {
+     if ( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+         (c >= '0' && c <= '9') ||  c == ',' || c == '.' ||
+         c == '/' || c == ' ') {
+     }
+     else {
+       return (USER_INPUT_STRING_ERR);
+     }
+     c = *inString++;
+  }
+  return(0);
+}
+
 #ifdef MYMALLOC_H
 #undef malloc
 #undef calloc

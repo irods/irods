@@ -1205,7 +1205,7 @@ Modify dumpNcInqOut to allow it to dump a subset of variable since
 a data set can be very large
 
 ------------------------------------------------------------------------
-r5072 | schroede | 2012-07-11 12:22:33 -0400 (Wed, 11 Jul 2012) | 41 lines
+JMC - Done :: r5072 | schroede | 2012-07-11 12:22:33 -0400 (Wed, 11 Jul 2012) | 41 lines
 
 For 'ils -A' (access) on collections, have it display user-groups but
 no longer also expand user-groups to individual users, so this now
@@ -1249,45 +1249,45 @@ cases like these.
 
 
 ------------------------------------------------------------------------
-r5073 | schroede | 2012-07-11 14:29:02 -0400 (Wed, 11 Jul 2012) | 3 lines
+JMC - No Op :: r5073 | schroede | 2012-07-11 14:29:02 -0400 (Wed, 11 Jul 2012) | 3 lines
 
 Update some comments to match our current PAM-authentication
 implementation.
 
 ------------------------------------------------------------------------
-r5074 | schroede | 2012-07-11 17:47:58 -0400 (Wed, 11 Jul 2012) | 4 lines
+JMC - No Op :: r5074 | schroede | 2012-07-11 17:47:58 -0400 (Wed, 11 Jul 2012) | 4 lines
 
 Update comments for the PAM program under here.  Also see updates on
 the irods.org wiki including the SSL Setup procedure for PAM provided
 by Chris Smith.  
 
 ------------------------------------------------------------------------
-r5075 | mwan | 2012-07-11 18:20:15 -0400 (Wed, 11 Jul 2012) | 2 lines
+JMC - No Op :: r5075 | mwan | 2012-07-11 18:20:15 -0400 (Wed, 11 Jul 2012) | 2 lines
 
 Add ERDDAP opendir/readdir/closedir test routine
 
 ------------------------------------------------------------------------
-r5076 | mwan | 2012-07-11 20:55:57 -0400 (Wed, 11 Jul 2012) | 2 lines
+JMC - No Op :: r5076 | mwan | 2012-07-11 20:55:57 -0400 (Wed, 11 Jul 2012) | 2 lines
 
 Add erddap resource type.
 
 ------------------------------------------------------------------------
-r5077 | mwan | 2012-07-12 17:12:15 -0400 (Thu, 12 Jul 2012) | 2 lines
+JMC - No Op :: r5077 | mwan | 2012-07-12 17:12:15 -0400 (Thu, 12 Jul 2012) | 2 lines
 
 Add erddap driver
 
 ------------------------------------------------------------------------
-r5078 | mwan | 2012-07-13 14:48:46 -0400 (Fri, 13 Jul 2012) | 2 lines
+JMC - No Op :: r5078 | mwan | 2012-07-13 14:48:46 -0400 (Fri, 13 Jul 2012) | 2 lines
 
 Allow a path input
 
 ------------------------------------------------------------------------
-r5079 | mwan | 2012-07-13 16:35:57 -0400 (Fri, 13 Jul 2012) | 2 lines
+JMC - No Op :: r5079 | mwan | 2012-07-13 16:35:57 -0400 (Fri, 13 Jul 2012) | 2 lines
 
 Better output for NC_CHAR type in dumpNcInqOut
 
 ------------------------------------------------------------------------
-r5080 | jeanyves | 2012-07-16 08:03:00 -0400 (Mon, 16 Jul 2012) | 6 lines
+JMC - Done :: r5080 | jeanyves | 2012-07-16 08:03:00 -0400 (Mon, 16 Jul 2012) | 6 lines
 
 DefFileMode and DefDirMode should be declared between quotes since 3.1.
 If not, the default values for DefFileMode and DefDirMode will be used by iRODS.
@@ -1296,28 +1296,28 @@ If DefFileMode and DefDirMode are not declared as strings in the perl script, th
 as they will be converted into a decimal integer, hence they will not have the required format.
 
 ------------------------------------------------------------------------
-r5081 | mwan | 2012-07-16 16:14:36 -0400 (Mon, 16 Jul 2012) | 2 lines
+JMC - No Op :: r5081 | mwan | 2012-07-16 16:14:36 -0400 (Mon, 16 Jul 2012) | 2 lines
 
 Treat NC_CHAR type as string in dumpNcInqOut to give better output
 
 ------------------------------------------------------------------------
-r5082 | mwan | 2012-07-16 19:06:23 -0400 (Mon, 16 Jul 2012) | 3 lines
+JMC - No Op :: r5082 | mwan | 2012-07-16 19:06:23 -0400 (Mon, 16 Jul 2012) | 3 lines
 
 Add dumpNcInqOutToNcFile routine to dump ncInqOut (result of rcNcInq API)
 to a NETCDF format file. The implementation is not done yet.
 
 ------------------------------------------------------------------------
-r5083 | mwan | 2012-07-16 19:41:06 -0400 (Mon, 16 Jul 2012) | 2 lines
+JMC - No Op :: r5083 | mwan | 2012-07-16 19:41:06 -0400 (Mon, 16 Jul 2012) | 2 lines
 
 Completed dumpNcInqOutToNcFile routine
 
 ------------------------------------------------------------------------
-r5084 | mwan | 2012-07-17 14:21:13 -0400 (Tue, 17 Jul 2012) | 2 lines
+JMC - No Op :: r5084 | mwan | 2012-07-17 14:21:13 -0400 (Tue, 17 Jul 2012) | 2 lines
 
 get dumpNcInqOutToNcFile to work
 
 ------------------------------------------------------------------------
-r5085 | schroede | 2012-07-17 16:12:45 -0400 (Tue, 17 Jul 2012) | 38 lines
+JMC - No Op :: r5085 | schroede | 2012-07-17 16:12:45 -0400 (Tue, 17 Jul 2012) | 38 lines
 
 Extensions so that 'irodssetup' can optionally use system-installed
 Postgresql and ODBC (i.e. installed via a package manager).
@@ -1358,78 +1358,78 @@ version. On Ubuntu 10.04.4 LTS apt-get installs postgres 8.4 where we
 download and use postgres 9.1.3.
 
 ------------------------------------------------------------------------
-r5086 | mwan | 2012-07-17 17:11:33 -0400 (Tue, 17 Jul 2012) | 3 lines
+JMC - No Op :: r5086 | mwan | 2012-07-17 17:11:33 -0400 (Tue, 17 Jul 2012) | 3 lines
 
 Move check for NC operation down to l3Close from _rsDataObjClose
 so closeAllL1desc won't get an error return
 
 ------------------------------------------------------------------------
-r5087 | mwan | 2012-07-17 18:25:19 -0400 (Tue, 17 Jul 2012) | 2 lines
+JMC - No Op :: r5087 | mwan | 2012-07-17 18:25:19 -0400 (Tue, 17 Jul 2012) | 2 lines
 
 ndle short integer in ncValueToStr and getNcTypeStr.
 
 ------------------------------------------------------------------------
-r5088 | mwan | 2012-07-17 19:48:20 -0400 (Tue, 17 Jul 2012) | 2 lines
+JMC - No Op :: r5088 | mwan | 2012-07-17 19:48:20 -0400 (Tue, 17 Jul 2012) | 2 lines
 
 minor bug fix for dumpNcInqOut
 
 ------------------------------------------------------------------------
-r5089 | mwan | 2012-07-18 16:48:02 -0400 (Wed, 18 Jul 2012) | 2 lines
+JMC - No Op :: r5089 | mwan | 2012-07-18 16:48:02 -0400 (Wed, 18 Jul 2012) | 2 lines
 
 Minor change in dumpNcInqOut to handle rcNcGetVarsByType error
 
 ------------------------------------------------------------------------
-r5090 | mwan | 2012-07-19 13:30:46 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5090 | mwan | 2012-07-19 13:30:46 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 test for short int packing
 
 ------------------------------------------------------------------------
-r5091 | mwan | 2012-07-19 13:52:44 -0400 (Thu, 19 Jul 2012) | 3 lines
+JMC - No Op :: r5091 | mwan | 2012-07-19 13:52:44 -0400 (Thu, 19 Jul 2012) | 3 lines
 
 ifdef out nctest
 
 
 ------------------------------------------------------------------------
-r5092 | xuh | 2012-07-19 16:19:36 -0400 (Thu, 19 Jul 2012) | 1 line
+JMC - Done :: r5092 | xuh | 2012-07-19 16:19:36 -0400 (Thu, 19 Jul 2012) | 1 line
 
 Foreach statement for rule language integerated general query.
 ------------------------------------------------------------------------
-r5093 | xuh | 2012-07-19 16:23:38 -0400 (Thu, 19 Jul 2012) | 1 line
+JMC - Done :: r5093 | xuh | 2012-07-19 16:23:38 -0400 (Thu, 19 Jul 2012) | 1 line
 
 Support for lower case keywords in rule language integrated general query
 ------------------------------------------------------------------------
-r5094 | mwan | 2012-07-19 17:55:56 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5094 | mwan | 2012-07-19 17:55:56 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 Add pack/unpack for int16 (short integer) needed by NETCDF
 
 ------------------------------------------------------------------------
-r5095 | mwan | 2012-07-19 18:20:06 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5095 | mwan | 2012-07-19 18:20:06 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 A bug fix on last checkin
 
 ------------------------------------------------------------------------
-r5096 | mwan | 2012-07-19 20:27:41 -0400 (Thu, 19 Jul 2012) | 2 lines
+JMC - No Op :: r5096 | mwan | 2012-07-19 20:27:41 -0400 (Thu, 19 Jul 2012) | 2 lines
 
 Handle int16 for NETCDF API.
 
 ------------------------------------------------------------------------
-r5097 | mwan | 2012-07-23 19:51:58 -0400 (Mon, 23 Jul 2012) | 2 lines
+JMC - No Op :: r5097 | mwan | 2012-07-23 19:51:58 -0400 (Mon, 23 Jul 2012) | 2 lines
 
 Add rcNcRegGlobalAttr API to Register the global attributes of NETCDF files
 
 ------------------------------------------------------------------------
-r5098 | mwan | 2012-07-24 13:56:24 -0400 (Tue, 24 Jul 2012) | 2 lines
+JMC - No Op :: r5098 | mwan | 2012-07-24 13:56:24 -0400 (Tue, 24 Jul 2012) | 2 lines
 
 Add test for rcNcRegGlobalAttr API
 
 ------------------------------------------------------------------------
-r5099 | mwan | 2012-07-24 16:04:33 -0400 (Tue, 24 Jul 2012) | 3 lines
+JMC - No Op :: r5099 | mwan | 2012-07-24 16:04:33 -0400 (Tue, 24 Jul 2012) | 3 lines
 
 Add msiNcRegGlobalAttr micro-service to extract and register NETCDF global
 attributes.
 
 ------------------------------------------------------------------------
-r5100 | schroede | 2012-07-25 12:19:49 -0400 (Wed, 25 Jul 2012) | 48 lines
+JMC - No Op :: r5100 | schroede | 2012-07-25 12:19:49 -0400 (Wed, 25 Jul 2012) | 48 lines
 
 Fixes for Solaris. With these, it builds again and most of 'devtest'
 succeeds, including all of the ICAT tests.  See testiCommands.pl below
@@ -1480,7 +1480,7 @@ significant but thought I'd commit this work to this point.
 
 
 ------------------------------------------------------------------------
-r5101 | schroede | 2012-07-25 19:04:28 -0400 (Wed, 25 Jul 2012) | 14 lines
+JMC - No Op :: r5101 | schroede | 2012-07-25 19:04:28 -0400 (Wed, 25 Jul 2012) | 14 lines
 
 More updates for Solaris for the testiCommands.pl script.  With this
 'devtest' now succeeds on Solaris too, at least on merrimac.
@@ -1497,26 +1497,26 @@ far as I can tell the check in runCmd is working right.  I'm not sure
 what was going wrong in the previous tests, but it seems OK now.
 
 ------------------------------------------------------------------------
-r5102 | mwan | 2012-07-26 15:44:03 -0400 (Thu, 26 Jul 2012) | 2 lines
+JMC - No Op :: r5102 | mwan | 2012-07-26 15:44:03 -0400 (Thu, 26 Jul 2012) | 2 lines
 
 Add rsNcClose to close the opened file after it is done
 
 ------------------------------------------------------------------------
-r5103 | xuh | 2012-07-26 16:00:59 -0400 (Thu, 26 Jul 2012) | 3 lines
+JMC - No Op :: r5103 | xuh | 2012-07-26 16:00:59 -0400 (Thu, 26 Jul 2012) | 3 lines
 
 Fix potential random characters in writeLine if the parameter is an iRODS type.
 
 Integration of msiCollectionSpider with the new rule engine env.
 ------------------------------------------------------------------------
-r5104 | terrell | 2012-07-26 16:25:31 -0400 (Thu, 26 Jul 2012) | 1 line
+JMC - No Op :: r5104 | terrell | 2012-07-26 16:25:31 -0400 (Thu, 26 Jul 2012) | 1 line
 
 update iput -h output - fix a couple typos and add clarification
 ------------------------------------------------------------------------
-r5105 | terrell | 2012-07-26 16:38:50 -0400 (Thu, 26 Jul 2012) | 1 line
+JMC - No Op :: r5105 | terrell | 2012-07-26 16:38:50 -0400 (Thu, 26 Jul 2012) | 1 line
 
 update iput -h output - fix a couple more options, grammar
 ------------------------------------------------------------------------
-r5106 | mwan | 2012-07-26 19:29:45 -0400 (Thu, 26 Jul 2012) | 2 lines
+JMC - No Op :: r5106 | mwan | 2012-07-26 19:29:45 -0400 (Thu, 26 Jul 2012) | 2 lines
 
 add incattr command to register, list and query NETCDF global attributes
 
@@ -1525,12 +1525,12 @@ r5107 | xuh | 2012-07-27 14:45:30 -0400 (Fri, 27 Jul 2012) | 1 line
 
 Integration of collectionSpider with foreach loop; stricter static typechecking for foreach; fix bugs in general query foreach integration.
 ------------------------------------------------------------------------
-r5108 | mwan | 2012-07-27 19:25:14 -0400 (Fri, 27 Jul 2012) | 2 lines
+JMC - No Op :: r5108 | mwan | 2012-07-27 19:25:14 -0400 (Fri, 27 Jul 2012) | 2 lines
 
 Add query data file by AVU, accept multiple attrName for --attr to incattr.
 
 ------------------------------------------------------------------------
-r5109 | schroede | 2012-07-30 15:10:57 -0400 (Mon, 30 Jul 2012) | 6 lines
+JMC - No Op :: r5109 | schroede | 2012-07-30 15:10:57 -0400 (Mon, 30 Jul 2012) | 6 lines
 
 A small change to handle solaris_pc_platform in addition to
 solaris_platform.  With this and the other Solaris fixes done last
@@ -1539,114 +1539,114 @@ the new NMI BaTLab (Build & Test).
 
 
 ------------------------------------------------------------------------
-r5110 | mwan | 2012-07-30 16:13:58 -0400 (Mon, 30 Jul 2012) | 3 lines
+JMC - No Op :: r5110 | mwan | 2012-07-30 16:13:58 -0400 (Mon, 30 Jul 2012) | 3 lines
 
 Add option to rcNcRegGlobalAttr to allow the specification of a list of
 global attributes to register instead of all global attributes.
 
 ------------------------------------------------------------------------
-r5111 | mwan | 2012-07-30 16:43:15 -0400 (Mon, 30 Jul 2012) | 2 lines
+JMC - No Op :: r5111 | mwan | 2012-07-30 16:43:15 -0400 (Mon, 30 Jul 2012) | 2 lines
 
 Handle memory leaks in NETCDF API calls.
 
 ------------------------------------------------------------------------
-r5112 | mwan | 2012-08-01 15:02:05 -0400 (Wed, 01 Aug 2012) | 2 lines
+JMC - No Op :: r5112 | mwan | 2012-08-01 15:02:05 -0400 (Wed, 01 Aug 2012) | 2 lines
 
 Allow incattr to remove the specified list of attributes
 
 ------------------------------------------------------------------------
-r5113 | mwan | 2012-08-02 21:17:55 -0400 (Thu, 02 Aug 2012) | 2 lines
+JMC - No Op :: r5113 | mwan | 2012-08-02 21:17:55 -0400 (Thu, 02 Aug 2012) | 2 lines
 
 add test for TDS driver
 
 ------------------------------------------------------------------------
-r5114 | mwan | 2012-08-03 20:24:04 -0400 (Fri, 03 Aug 2012) | 2 lines
+JMC - No Op :: r5114 | mwan | 2012-08-03 20:24:04 -0400 (Fri, 03 Aug 2012) | 2 lines
 
 test program for the Thredds Data Server Driver development.
 
 ------------------------------------------------------------------------
-r5115 | mwan | 2012-08-06 20:01:01 -0400 (Mon, 06 Aug 2012) | 2 lines
+JMC - No Op :: r5115 | mwan | 2012-08-06 20:01:01 -0400 (Mon, 06 Aug 2012) | 2 lines
 
 Debug the listTdsDir routine
 
 ------------------------------------------------------------------------
-r5116 | mwan | 2012-08-07 19:26:47 -0400 (Tue, 07 Aug 2012) | 2 lines
+JMC - No Op :: r5116 | mwan | 2012-08-07 19:26:47 -0400 (Tue, 07 Aug 2012) | 2 lines
 
 Implement and test tdsOpendir/tdsReaddir/tdsClosedir
 
 ------------------------------------------------------------------------
-r5117 | mwan | 2012-08-07 19:39:20 -0400 (Tue, 07 Aug 2012) | 2 lines
+JMC - No Op :: r5117 | mwan | 2012-08-07 19:39:20 -0400 (Tue, 07 Aug 2012) | 2 lines
 
 Change default URL
 
 ------------------------------------------------------------------------
-r5118 | mwan | 2012-08-07 19:42:09 -0400 (Tue, 07 Aug 2012) | 2 lines
+JMC - No Op :: r5118 | mwan | 2012-08-07 19:42:09 -0400 (Tue, 07 Aug 2012) | 2 lines
 
 Error msg for TDS
 
 ------------------------------------------------------------------------
-r5119 | mwan | 2012-08-08 19:23:29 -0400 (Wed, 08 Aug 2012) | 2 lines
+JMC - No Op :: r5119 | mwan | 2012-08-08 19:23:29 -0400 (Wed, 08 Aug 2012) | 2 lines
 
 Add TDS driver. Implementation not complete. Missing tdsStageToCache
 
 ------------------------------------------------------------------------
-r5120 | mwan | 2012-08-09 14:03:55 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5120 | mwan | 2012-08-09 14:03:55 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 Allow NETCDF api to build without enabling netcdf-4 (HDF5).
 
 ------------------------------------------------------------------------
-r5121 | mwan | 2012-08-09 14:24:22 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5121 | mwan | 2012-08-09 14:24:22 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 Allow NETCDF api to build without enabling netcdf-4 (HDF5).
 
 ------------------------------------------------------------------------
-r5122 | mwan | 2012-08-09 17:30:14 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5122 | mwan | 2012-08-09 17:30:14 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 Add tdsStageToCache to download from tds using Opendap to cache.
 
 ------------------------------------------------------------------------
-r5123 | mwan | 2012-08-09 19:33:03 -0400 (Thu, 09 Aug 2012) | 2 lines
+JMC - No Op :: r5123 | mwan | 2012-08-09 19:33:03 -0400 (Thu, 09 Aug 2012) | 2 lines
 
 test routine setTdsCurdir to track folder dataset 
 
 ------------------------------------------------------------------------
-r5124 | mwan | 2012-08-10 14:24:47 -0400 (Fri, 10 Aug 2012) | 2 lines
+JMC - No Op :: r5124 | mwan | 2012-08-10 14:24:47 -0400 (Fri, 10 Aug 2012) | 2 lines
 
 Add code to manage current directory of the TDS driver.
 
 ------------------------------------------------------------------------
-r5125 | mwan | 2012-08-10 20:08:32 -0400 (Fri, 10 Aug 2012) | 3 lines
+JMC - No Op :: r5125 | mwan | 2012-08-10 20:08:32 -0400 (Fri, 10 Aug 2012) | 3 lines
 
 Add the framework for the inc command for NETCDF operations. This is just
 a start for the implementation.
 
 ------------------------------------------------------------------------
-r5126 | mwan | 2012-08-13 14:55:46 -0400 (Mon, 13 Aug 2012) | 2 lines
+JMC - No Op :: r5126 | mwan | 2012-08-13 14:55:46 -0400 (Mon, 13 Aug 2012) | 2 lines
 
 add -lnetcdf to CL_LDADD for inc command
 
 ------------------------------------------------------------------------
-r5127 | mwan | 2012-08-13 20:17:36 -0400 (Mon, 13 Aug 2012) | 2 lines
+JMC - No Op :: r5127 | mwan | 2012-08-13 20:17:36 -0400 (Mon, 13 Aug 2012) | 2 lines
 
 Implement [--header] [--dim] [--ascitime] options of the "inc" command
 
 ------------------------------------------------------------------------
-r5128 | mwan | 2012-08-14 16:52:20 -0400 (Tue, 14 Aug 2012) | 2 lines
+JMC - No Op :: r5128 | mwan | 2012-08-14 16:52:20 -0400 (Tue, 14 Aug 2012) | 2 lines
 
 print the global attributes nicely with a new printNice function
 
 ------------------------------------------------------------------------
-r5129 | mwan | 2012-08-14 17:40:54 -0400 (Tue, 14 Aug 2012) | 2 lines
+JMC - No Op :: r5129 | mwan | 2012-08-14 17:40:54 -0400 (Tue, 14 Aug 2012) | 2 lines
 
 Minor changes in output of inc.
 
 ------------------------------------------------------------------------
-r5130 | mwan | 2012-08-14 19:25:53 -0400 (Tue, 14 Aug 2012) | 2 lines
+JMC - No Op :: r5130 | mwan | 2012-08-14 19:25:53 -0400 (Tue, 14 Aug 2012) | 2 lines
 
 add --noattr option to "inc" plus some changes in the output.
 
 ------------------------------------------------------------------------
-r5131 | mwan | 2012-08-15 19:31:19 -0400 (Wed, 15 Aug 2012) | 2 lines
+JMC - No Op :: r5131 | mwan | 2012-08-15 19:31:19 -0400 (Wed, 15 Aug 2012) | 2 lines
 
 Get --subset and --var option of "inc" working.
 
@@ -1691,7 +1691,7 @@ Add a timestamp to rule engine audit xmessages. The format of the message header
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5139 | schroede | 2012-08-23 16:43:21 -0400 (Thu, 23 Aug 2012) | 5 lines
+JMC - Done :: r5139 | schroede | 2012-08-23 16:43:21 -0400 (Thu, 23 Aug 2012) | 5 lines
 
 Update chlRegReplica so that the data_mode field will also be copied
 for the new replicate (row).  Thanks to Howard Lander of RENCI for
@@ -1699,19 +1699,19 @@ this fix.
 
 
 ------------------------------------------------------------------------
-r5140 | schroede | 2012-08-23 19:25:20 -0400 (Thu, 23 Aug 2012) | 4 lines
+JMC - Done :: r5140 | schroede | 2012-08-23 19:25:20 -0400 (Thu, 23 Aug 2012) | 4 lines
 
 In msiSendMail, fix a malloc problem to avoid a segfault when a
 subject line is very long.  This was noticed by Tanya Levshina
 (fnal.gov) and discussed on irods-chat.
 
 ------------------------------------------------------------------------
-r5141 | mwan | 2012-08-24 18:26:53 -0400 (Fri, 24 Aug 2012) | 2 lines
+JMC - Done :: r5141 | mwan | 2012-08-24 18:26:53 -0400 (Fri, 24 Aug 2012) | 2 lines
 
 Add unreg option to msiDataObjUnlink.
 
 ------------------------------------------------------------------------
-r5142 | schroede | 2012-08-27 12:14:03 -0400 (Mon, 27 Aug 2012) | 7 lines
+JMC - Done :: r5142 | schroede | 2012-08-27 12:14:03 -0400 (Mon, 27 Aug 2012) | 7 lines
 
 Fix a bug in msiSysMetaModify where comparisons on input options can
 fail due to extra characters in a temporary variable.  Just need to
@@ -1721,114 +1721,114 @@ iRODS 3.1?".
 
 
 ------------------------------------------------------------------------
-r5143 | mwan | 2012-08-27 18:48:26 -0400 (Mon, 27 Aug 2012) | 4 lines
+JMC - No Op :: r5143 | mwan | 2012-08-27 18:48:26 -0400 (Mon, 27 Aug 2012) | 4 lines
 
 change the compilation of the pydap driver to be dependent on NETCDF_API
 instead of OOI_CI to avoid having to install the json and xml library
 for the demo.
 
 ------------------------------------------------------------------------
-r5144 | mwan | 2012-08-28 18:58:35 -0400 (Tue, 28 Aug 2012) | 3 lines
+JMC - No Op :: r5144 | mwan | 2012-08-28 18:58:35 -0400 (Tue, 28 Aug 2012) | 3 lines
 
 Minor NETCDF change to dump all variables if --var is not specified for the
 "inc" command.
 
 ------------------------------------------------------------------------
-r5145 | mwan | 2012-08-29 12:10:24 -0400 (Wed, 29 Aug 2012) | 2 lines
+JMC - No Op :: r5145 | mwan | 2012-08-29 12:10:24 -0400 (Wed, 29 Aug 2012) | 2 lines
 
 handle varibale with zero dimension
 
 ------------------------------------------------------------------------
-r5146 | mwan | 2012-08-29 14:59:28 -0400 (Wed, 29 Aug 2012) | 3 lines
+JMC - No Op :: r5146 | mwan | 2012-08-29 14:59:28 -0400 (Wed, 29 Aug 2012) | 3 lines
 
 Modify dumpNcInqOutToNcFile such that it will get/put chucks of NC_VAR_TRANS_SZ
 if the variable size is too large.
 
 ------------------------------------------------------------------------
-r5147 | mwan | 2012-08-29 15:51:49 -0400 (Wed, 29 Aug 2012) | 3 lines
+JMC - No Op :: r5147 | mwan | 2012-08-29 15:51:49 -0400 (Wed, 29 Aug 2012) | 3 lines
 
 Better handle NETCDF error code. Should add NETCDF code instead since
 netcdf returns negative value for error.
 
 ------------------------------------------------------------------------
-r5148 | mwan | 2012-08-29 16:46:46 -0400 (Wed, 29 Aug 2012) | 2 lines
+JMC - No Op :: r5148 | mwan | 2012-08-29 16:46:46 -0400 (Wed, 29 Aug 2012) | 2 lines
 
 Use NC_NETCDF4 for nc_create if NETCDF4_API is defined.
 
 ------------------------------------------------------------------------
-r5149 | mwan | 2012-08-29 17:11:04 -0400 (Wed, 29 Aug 2012) | 3 lines
+JMC - No Op :: r5149 | mwan | 2012-08-29 17:11:04 -0400 (Wed, 29 Aug 2012) | 3 lines
 
 nc_close sometimes returns -62 for opendap files. Use LOG_NOTICE for 
 rodsLog for now. 
 
 ------------------------------------------------------------------------
-r5150 | mwan | 2012-08-29 19:16:08 -0400 (Wed, 29 Aug 2012) | 2 lines
+JMC - No Op :: r5150 | mwan | 2012-08-29 19:16:08 -0400 (Wed, 29 Aug 2012) | 2 lines
 
 Minor changes in output format for "inc"
 
 ------------------------------------------------------------------------
-r5151 | mwan | 2012-08-30 16:48:05 -0400 (Thu, 30 Aug 2012) | 2 lines
+JMC - No Op :: r5151 | mwan | 2012-08-30 16:48:05 -0400 (Thu, 30 Aug 2012) | 2 lines
 
 Script to test the libcf subseting msi msiNccfGetVara
 
 ------------------------------------------------------------------------
-r5152 | mwan | 2012-08-30 16:50:21 -0400 (Thu, 30 Aug 2012) | 3 lines
+JMC - No Op :: r5152 | mwan | 2012-08-30 16:50:21 -0400 (Thu, 30 Aug 2012) | 3 lines
 
 Move netcdfTest.r to netcdfTest2.r. Add the test files pres_temp_4D.nc and
 sfc_pres_temp.nc.
 
 ------------------------------------------------------------------------
-r5153 | mwan | 2012-08-30 17:11:35 -0400 (Thu, 30 Aug 2012) | 2 lines
+JMC - No Op :: r5153 | mwan | 2012-08-30 17:11:35 -0400 (Thu, 30 Aug 2012) | 2 lines
 
 did a delete by mistake. adding it back
 
 ------------------------------------------------------------------------
-r5154 | mwan | 2012-08-30 17:34:25 -0400 (Thu, 30 Aug 2012) | 2 lines
+JMC - No Op :: r5154 | mwan | 2012-08-30 17:34:25 -0400 (Thu, 30 Aug 2012) | 2 lines
 
 Output array of NC_CHAR as NC_STRING in msiNcGetAttValStrInInqOut.
 
 ------------------------------------------------------------------------
-r5155 | mwan | 2012-08-30 18:13:24 -0400 (Thu, 30 Aug 2012) | 3 lines
+JMC - No Op :: r5155 | mwan | 2012-08-30 18:13:24 -0400 (Thu, 30 Aug 2012) | 3 lines
 
 refactor to extract parseVarStrForSubset and parseSubsetStr so that they can 
 be used by netcdf subsetting msi later.
 
 ------------------------------------------------------------------------
-r5156 | mwan | 2012-08-30 19:52:22 -0400 (Thu, 30 Aug 2012) | 3 lines
+JMC - No Op :: r5156 | mwan | 2012-08-30 19:52:22 -0400 (Thu, 30 Aug 2012) | 3 lines
 
 malloc myBuf in unixFileCopy instead of statically allocated in the stack
 to prevent stack overflow.
 
 ------------------------------------------------------------------------
-r5157 | mwan | 2012-08-31 22:20:04 -0400 (Fri, 31 Aug 2012) | 2 lines
+JMC - No Op :: r5157 | mwan | 2012-08-31 22:20:04 -0400 (Fri, 31 Aug 2012) | 2 lines
 
 add msiNcSubsetVar msi for NETCDF subsetting operation
 
 ------------------------------------------------------------------------
-r5158 | mwan | 2012-09-04 18:37:28 -0400 (Tue, 04 Sep 2012) | 4 lines
+JMC - No Op :: r5158 | mwan | 2012-09-04 18:37:28 -0400 (Tue, 04 Sep 2012) | 4 lines
 
 Complete test for the subsetting msi - msiNcSubsetVar and max/min/ave
 # computation msi - msiNcVarStat
 
 
 ------------------------------------------------------------------------
-r5159 | schroede | 2012-09-04 18:39:42 -0400 (Tue, 04 Sep 2012) | 4 lines
+JMC - No Op :: r5159 | schroede | 2012-09-04 18:39:42 -0400 (Tue, 04 Sep 2012) | 4 lines
 
 Update the example MySrbPath for SRB MSOs to match that used on the
 Micro-Service_Objects page; suggested by Sheau-yen,
 
 
 ------------------------------------------------------------------------
-r5160 | mwan | 2012-09-04 18:40:16 -0400 (Tue, 04 Sep 2012) | 2 lines
+JMC - No Op :: r5160 | mwan | 2012-09-04 18:40:16 -0400 (Tue, 04 Sep 2012) | 2 lines
 
 add msiNcVarStat msi to compute max/min/ave of NETCDF variables.
 
 ------------------------------------------------------------------------
-r5161 | xuh | 2012-09-05 13:24:24 -0400 (Wed, 05 Sep 2012) | 1 line
+JMC - Done :: r5161 | xuh | 2012-09-05 13:24:24 -0400 (Wed, 05 Sep 2012) | 1 line
 
 Add a macro switch that enables logging rules executed into a temp file; this feature can be used to generate a list of rules applied in a single run of an icommand; removed used macro switch.
 ------------------------------------------------------------------------
-r5162 | schroede | 2012-09-05 15:27:27 -0400 (Wed, 05 Sep 2012) | 5 lines
+JMC - Done :: r5162 | schroede | 2012-09-05 15:27:27 -0400 (Wed, 05 Sep 2012) | 5 lines
 
 Add a function to validate strings used in 'system' system calls and
 use it in msiSendMail and msiAutoReplicateService (UnixSendEmail).
@@ -1836,7 +1836,7 @@ Added a specific error code for this.
 
 
 ------------------------------------------------------------------------
-r5163 | schroede | 2012-09-05 17:17:40 -0400 (Wed, 05 Sep 2012) | 6 lines
+JMC - No Op :: r5163 | schroede | 2012-09-05 17:17:40 -0400 (Wed, 05 Sep 2012) | 6 lines
 
 Correct an inadvertent dependency on settings in a 'devtest'
 sub-script.  In the tpwforother (temp password for other) test, need
@@ -1870,17 +1870,17 @@ Mod from Thomas Ledoux of the French National Library to make the reServer
 logfile to rotate.
 
 ------------------------------------------------------------------------
-r5166 | mwan | 2012-09-06 16:25:06 -0400 (Thu, 06 Sep 2012) | 3 lines
+JMC - No Op ::r5166 | mwan | 2012-09-06 16:25:06 -0400 (Thu, 06 Sep 2012) | 3 lines
 
 Separate definition for PYDAP, TDS and ERDDAP so that these drivers can be
 built separately instead of lumping them under OOI
 
 ------------------------------------------------------------------------
-r5167 | xuh | 2012-09-06 16:59:35 -0400 (Thu, 06 Sep 2012) | 1 line
+JMC - No Op ::r5167 | xuh | 2012-09-06 16:59:35 -0400 (Thu, 06 Sep 2012) | 1 line
 
 Fix a problem that the RULE_ENGINE_N macro definition compiler flag is not propagated to modules.
 ------------------------------------------------------------------------
-r5168 | csmith | 2012-09-07 04:10:18 -0400 (Fri, 07 Sep 2012) | 3 lines
+JMC - No Op ::r5168 | csmith | 2012-09-07 04:10:18 -0400 (Fri, 07 Sep 2012) | 3 lines
 
 Implemented hostname verification checking in the SSL client.
 

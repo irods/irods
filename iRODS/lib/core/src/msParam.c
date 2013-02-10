@@ -1187,7 +1187,10 @@ char *hintForMissingKw, int validKwFlags, char **outBadKeyWd)
             rstrcpy (dataObjInp->objPath, parsedMsKeyValStr.valPtr,
 	      MAX_NAME_LEN);
             continue;
-	}
+	 } else if (strcmp (parsedMsKeyValStr.kwPtr, UNREG_KW) == 0) {
+                dataObjInp->oprType = UNREG_OPR;
+     }
+
         addKeyVal (condInput, parsedMsKeyValStr.kwPtr, 
 	  parsedMsKeyValStr.valPtr); 
     }

@@ -15,6 +15,10 @@
 #include "reAction.h"
 #endif
 
+
+/* #define RE_LOG_RULES_TMP */
+
+
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
 #define malloc(x) malloc(x)
@@ -142,7 +146,7 @@ int
 applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag)
 {
-    #ifdef DEBUG
+    #if defined(DEBUG) || defined(RE_LOG_RULES_TMP)
     writeToTmp("entry.log", "applyRule: ");
     writeToTmp("entry.log", inAction);
     writeToTmp("entry.log", "\n");

@@ -58,6 +58,7 @@
 #define COLLECTION_KW    "collection"
 #define IRODS_ADMIN_KW    "irodsAdmin"
 #define IRODS_ADMIN_RMTRASH_KW "irodsAdminRmTrash"
+#define UNREG_KW       "unreg"
 #define IRODS_RMTRASH_KW "irodsRmTrash"
 #define RECURSIVE_OPR__KW    "recursiveOpr"
 #define COLLECTION_TYPE_KW    "collectionType"
