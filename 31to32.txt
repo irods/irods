@@ -1845,7 +1845,7 @@ other user's).
 
 
 ------------------------------------------------------------------------
-r5164 | schroede | 2012-09-06 12:27:02 -0400 (Thu, 06 Sep 2012) | 16 lines
+JMC - Done :: r5164 | schroede | 2012-09-06 12:27:02 -0400 (Thu, 06 Sep 2012) | 16 lines
 
 Changes to improve performance for ichmod in instances where large
 numbers of access control items (ACLs) are being used (users/groups),
@@ -1914,12 +1914,12 @@ This adds the R_USER_MAIN.user_type_name to the selected fields.
 
 
 ------------------------------------------------------------------------
-r5170 | mwan | 2012-09-07 20:13:21 -0400 (Fri, 07 Sep 2012) | 2 lines
+JMC - No Op :: r5170 | mwan | 2012-09-07 20:13:21 -0400 (Fri, 07 Sep 2012) | 2 lines
 
 NETCDF API documentation
 
 ------------------------------------------------------------------------
-r5171 | xuh | 2012-09-09 13:33:04 -0400 (Sun, 09 Sep 2012) | 1 line
+JMC - No Op :: r5171 | xuh | 2012-09-09 13:33:04 -0400 (Sun, 09 Sep 2012) | 1 line
 
 Fix a problem where a backward compatibility feature is available under nonbackward compatible mode in the rule engine.
 ------------------------------------------------------------------------
@@ -1935,7 +1935,7 @@ r5174 | terrell | 2012-09-10 09:01:05 -0400 (Mon, 10 Sep 2012) | 1 line
 
 add note to irm help describing how to remove a replica on a named resource (use itrim instead)
 ------------------------------------------------------------------------
-r5175 | schroede | 2012-09-10 12:54:30 -0400 (Mon, 10 Sep 2012) | 5 lines
+JMC - No Op :: r5175 | schroede | 2012-09-10 12:54:30 -0400 (Mon, 10 Sep 2012) | 5 lines
 
 Un-do r4917, which added a data-object system metadata field and
 column for data-object registration (chlRegDataObj), modification
@@ -1943,7 +1943,7 @@ column for data-object registration (chlRegDataObj), modification
 Mike W was developing but he has since decided against.
 
 ------------------------------------------------------------------------
-r5176 | mwan | 2012-09-10 13:16:15 -0400 (Mon, 10 Sep 2012) | 2 lines
+JMC - No Op :: r5176 | mwan | 2012-09-10 13:16:15 -0400 (Mon, 10 Sep 2012) | 2 lines
 
 iMinor chnage with ifdef OOI
 
@@ -1952,27 +1952,27 @@ r5177 | xuh | 2012-09-10 15:21:37 -0400 (Mon, 10 Sep 2012) | 1 line
 
 Source and header files changes so that the rule engine can be compiled separately from the irods server. They can now be compiled from the command line.
 ------------------------------------------------------------------------
-r5178 | mwan | 2012-09-10 17:33:26 -0400 (Mon, 10 Sep 2012) | 2 lines
+JMC - No Op :: r5178 | mwan | 2012-09-10 17:33:26 -0400 (Mon, 10 Sep 2012) | 2 lines
 
 Minor change in documentation
 
 ------------------------------------------------------------------------
-r5179 | mwan | 2012-09-10 17:34:52 -0400 (Mon, 10 Sep 2012) | 2 lines
+JMC - No Op :: r5179 | mwan | 2012-09-10 17:34:52 -0400 (Mon, 10 Sep 2012) | 2 lines
 
 Doxygen documentation of rcNccfGetVara.
 
 ------------------------------------------------------------------------
-r5180 | mwan | 2012-09-12 15:57:22 -0400 (Wed, 12 Sep 2012) | 2 lines
+JMC - No Op :: r5180 | mwan | 2012-09-12 15:57:22 -0400 (Wed, 12 Sep 2012) | 2 lines
 
 Minor NETCDF ifdef changes
 
 ------------------------------------------------------------------------
-r5181 | schroede | 2012-09-12 17:05:18 -0400 (Wed, 12 Sep 2012) | 2 lines
+JMC - No Op :: r5181 | schroede | 2012-09-12 17:05:18 -0400 (Wed, 12 Sep 2012) | 2 lines
 
 Add 5 new resource-types for recent additions made by Mike W.
 
 ------------------------------------------------------------------------
-r5182 | mwan | 2012-09-12 21:03:25 -0400 (Wed, 12 Sep 2012) | 2 lines
+JMC - No Op :: r5182 | mwan | 2012-09-12 21:03:25 -0400 (Wed, 12 Sep 2012) | 2 lines
 
 Minor doc change
 
@@ -1988,22 +1988,22 @@ add quotes for parameters input to be fed to the univMSSInterface.sh script.
 This allows to take care for phys file path with empty spaces.
 
 ------------------------------------------------------------------------
-r5185 | mwan | 2012-09-14 14:42:02 -0400 (Fri, 14 Sep 2012) | 3 lines
+JMC - No Op :: r5185 | mwan | 2012-09-14 14:42:02 -0400 (Fri, 14 Sep 2012) | 3 lines
 
 Handle replication of zero length file to compound resources - create
 a file whenever possible
 
 ------------------------------------------------------------------------
-r5186 | mwan | 2012-09-14 19:16:12 -0400 (Fri, 14 Sep 2012) | 2 lines
+JMC - No Op :: r5186 | mwan | 2012-09-14 19:16:12 -0400 (Fri, 14 Sep 2012) | 2 lines
 
 Add comment, slight restructure and spelling to make it easier to read.
 
 ------------------------------------------------------------------------
-r5187 | terrell | 2012-09-14 21:14:53 -0400 (Fri, 14 Sep 2012) | 1 line
+JMC - No Op :: r5187 | terrell | 2012-09-14 21:14:53 -0400 (Fri, 14 Sep 2012) | 1 line
 
 fix single typo
 ------------------------------------------------------------------------
-r5188 | mwan | 2012-09-17 17:01:38 -0400 (Mon, 17 Sep 2012) | 3 lines
+JMC - No Op :: r5188 | mwan | 2012-09-17 17:01:38 -0400 (Mon, 17 Sep 2012) | 3 lines
 
 Add capability to register data with dataType == "netcdf" if the resource
 type is TDS, ERDDAP or PYDAP.
@@ -2016,7 +2016,7 @@ query SQL in the iadmin help text for asq (add specific query).
 
 
 ------------------------------------------------------------------------
-r5190 | schroede | 2012-09-18 16:26:24 -0400 (Tue, 18 Sep 2012) | 2 lines
+JMC - No Op :: r5190 | schroede | 2012-09-18 16:26:24 -0400 (Tue, 18 Sep 2012) | 2 lines
 
 Add netcdf and hdf5 data-types
 
@@ -2032,12 +2032,12 @@ add routines timeToAsci and asciToTime to convert between asci time and
 time_t UTC time
 
 ------------------------------------------------------------------------
-r5193 | mwan | 2012-09-18 19:30:23 -0400 (Tue, 18 Sep 2012) | 2 lines
+JMC - No Op :: r5193 | mwan | 2012-09-18 19:30:23 -0400 (Tue, 18 Sep 2012) | 2 lines
 
 Add data struct for aggregation of NETCDF files. Not done yet.
 
 ------------------------------------------------------------------------
-r5194 | mwan | 2012-09-18 19:46:06 -0400 (Tue, 18 Sep 2012) | 2 lines
+JMC - No Op :: r5194 | mwan | 2012-09-18 19:46:06 -0400 (Tue, 18 Sep 2012) | 2 lines
 
 Data Struct for NETCDF files aggregation
 
@@ -2054,30 +2054,30 @@ ShowCollAcls specific-query.  Makes a difference when MySQL is the
 ICAT DBMS (table names are case sensitive).
 
 ------------------------------------------------------------------------
-r5197 | mwan | 2012-09-19 18:27:00 -0400 (Wed, 19 Sep 2012) | 3 lines
+JMC - No Op :: r5197 | mwan | 2012-09-19 18:27:00 -0400 (Wed, 19 Sep 2012) | 3 lines
 
 Add --SUBSET option to "inc" to do subsetting by the values of the dimension
 variable instead of the dimension index. code has not been tested yet.
 
 ------------------------------------------------------------------------
-r5198 | schroede | 2012-09-19 18:28:15 -0400 (Wed, 19 Sep 2012) | 4 lines
+JMC - No Op :: r5198 | schroede | 2012-09-19 18:28:15 -0400 (Wed, 19 Sep 2012) | 4 lines
 
 Un-do r4288 (Aug 9) where we were adding data_reg_user_id for this
 too, as we've now removed it again.  This is needed for the NCCS
 extensions to continue to work.
 
 ------------------------------------------------------------------------
-r5199 | mwan | 2012-09-20 12:25:01 -0400 (Thu, 20 Sep 2012) | 2 lines
+JMC - No Op :: r5199 | mwan | 2012-09-20 12:25:01 -0400 (Thu, 20 Sep 2012) | 2 lines
 
 Fix from last checkin
 
 ------------------------------------------------------------------------
-r5200 | mwan | 2012-09-20 17:39:26 -0400 (Thu, 20 Sep 2012) | 2 lines
+JMC - No Op :: r5200 | mwan | 2012-09-20 17:39:26 -0400 (Thu, 20 Sep 2012) | 2 lines
 
 Documentation of the 4 server internal levels
 
 ------------------------------------------------------------------------
-r5201 | mwan | 2012-09-20 19:09:23 -0400 (Thu, 20 Sep 2012) | 2 lines
+JMC - No Op :: r5201 | mwan | 2012-09-20 19:09:23 -0400 (Thu, 20 Sep 2012) | 2 lines
 
 Add comment on why TRANSLATED_PATH_KW was used for collection
 

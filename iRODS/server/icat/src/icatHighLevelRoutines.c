@@ -7218,15 +7218,30 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
     return(status);
 }
 
+/* create a path name with escaped SQL special characters (% and _) */
+void
+makeEscapedPath(char *inPath, char *outPath, int size) {
+   int i;
+   for (i=0;i<size-1;i++) {
+      if (*inPath=='%' || *inPath=='_') {
+         *outPath++='\\';
+      }
+      if (*inPath=='\0') {
+         *outPath++=*inPath++;
+         break;
+      }
+      *outPath++=*inPath++;
+   }
+   return;
+}
+
 /* Internal routine to modify inheritance */
 /* inheritFlag =1 to set, 2 to remove */
 int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *pathName) {
     rodsLong_t status;
     char myTime[50];
     char newValue[10];
-    char pathStart[MAX_NAME_LEN];
-    int len;
-    char pathStartLen[20];
+    char pathStart[MAX_NAME_LEN*2];
     char auditStr[30];
 
     if (recursiveFlag==0) {
@@ -7262,19 +7277,16 @@ int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *p
     }
     else {
         /* Recursive mode */
-
-        snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
-        len = strlen(pathStart);
-        snprintf(pathStartLen, 10, "%d", len);
+        makeEscapedPath(pathName, pathStart, sizeof(pathStart));
+        strncat(pathStart, "/%", sizeof(pathStart));
 
         cllBindVars[cllBindVarCount++]=newValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=pathName;
-        cllBindVars[cllBindVarCount++]=pathStartLen;
         cllBindVars[cllBindVarCount++]=pathStart;
         if (logSQL!=0) rodsLog(LOG_SQL, "_modInheritance SQL 2");
         status =  cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or substr(coll_name,1,?) = ?",
+            "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or coll_name like ?",
             &icss);
     }
     if (status != 0) {
@@ -7443,9 +7455,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     char *myZone;
     char userIdStr[MAX_NAME_LEN];
     char objIdStr[MAX_NAME_LEN];
-    char pathStart[MAX_NAME_LEN];
-    int len;
-    char pathStartLen[20];
+    char pathStart[MAX_NAME_LEN*2];
     int inheritFlag=0;
     char myAccessStr[LONG_NAME_LEN];
     int adminMode=0;
@@ -7754,19 +7764,19 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
         return(CAT_INVALID_ARGUMENT);
     }
 
-    snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
-    len = strlen(pathStart);
-    snprintf(pathStartLen, 10, "%d", len);
+
+    makeEscapedPath(pathName, pathStart, sizeof(pathStart));
+    strncat(pathStart, "/%", sizeof(pathStart));
 
     cllBindVars[cllBindVarCount++]=userIdStr;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 8");
     status =  cmlExecuteNoAnswerSql(
-        "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
-        &icss);
+              "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+              &icss);
+     
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
         _rollback("chlModAccessControl");
         return(status);
@@ -7774,13 +7784,12 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     cllBindVars[cllBindVarCount++]=userIdStr;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
     status =  cmlExecuteNoAnswerSql(
-        "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
-        &icss);
+               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+              &icss);
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
         _rollback("chlModAccessControl");
         return(status);
@@ -7806,29 +7815,27 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     }
 
     getNowStr(myTime);
-    snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
-    len = strlen(pathStart);
-    snprintf(pathStartLen, 10, "%d", len);
+    makeEscapedPath(pathName, pathStart, sizeof(pathStart));
+    strncat(pathStart, "/%", sizeof(pathStart));
     cllBindVars[cllBindVarCount++]=userIdStr;
     cllBindVars[cllBindVarCount++]=myAccessLev;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 10");
 #if ORA_ICAT
     /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
         &icss);
 #elif MY_ICAT
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
         &icss);
 #else
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
         &icss);
 #endif
     if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no files, OK */
@@ -7844,21 +7851,20 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 11");
 #if ORA_ICAT
     /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
         &icss);
 #elif MY_ICAT
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
         &icss);
 #else
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
         &icss);
 #endif
     if (status != 0) {
