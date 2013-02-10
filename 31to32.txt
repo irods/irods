@@ -1651,41 +1651,41 @@ r5131 | mwan | 2012-08-15 19:31:19 -0400 (Wed, 15 Aug 2012) | 2 lines
 Get --subset and --var option of "inc" working.
 
 ------------------------------------------------------------------------
-r5132 | mwan | 2012-08-16 16:15:41 -0400 (Thu, 16 Aug 2012) | 4 lines
+JMC - Done :: r5132 | mwan | 2012-08-16 16:15:41 -0400 (Thu, 16 Aug 2012) | 4 lines
 
 Fix a bug that icp does not work when the source and target are in different
 remote zones because of proxy user privilege issues. Added a new routine
 singleL1Copy to copy at the L1 level.
 
 ------------------------------------------------------------------------
-r5133 | mwan | 2012-08-16 19:59:57 -0400 (Thu, 16 Aug 2012) | 2 lines
+JMC - No Op :: r5133 | mwan | 2012-08-16 19:59:57 -0400 (Thu, 16 Aug 2012) | 2 lines
 
 Refactor the "inc" routine.
 
 ------------------------------------------------------------------------
-r5134 | mwan | 2012-08-17 18:26:51 -0400 (Fri, 17 Aug 2012) | 3 lines
+JMC - No Op :: r5134 | mwan | 2012-08-17 18:26:51 -0400 (Fri, 17 Aug 2012) | 3 lines
 
 Implement writing result of subsetting to a NETCDF file for the "inc"
 command. i.e., --subet and -o option together.
 
 ------------------------------------------------------------------------
-r5135 | mwan | 2012-08-17 20:37:13 -0400 (Fri, 17 Aug 2012) | 2 lines
+JMC - No Op :: r5135 | mwan | 2012-08-17 20:37:13 -0400 (Fri, 17 Aug 2012) | 2 lines
 
 More documentation plus some clean up of the 'inc' command.
 
 ------------------------------------------------------------------------
-r5136 | mwan | 2012-08-21 14:13:55 -0400 (Tue, 21 Aug 2012) | 2 lines
+JMC - No Op :: r5136 | mwan | 2012-08-21 14:13:55 -0400 (Tue, 21 Aug 2012) | 2 lines
 
 include file for inc command
 
 ------------------------------------------------------------------------
-r5137 | mwan | 2012-08-21 19:44:00 -0400 (Tue, 21 Aug 2012) | 3 lines
+JMC - No Op :: r5137 | mwan | 2012-08-21 19:44:00 -0400 (Tue, 21 Aug 2012) | 3 lines
 
 Restructure the NETCDF code to support building iRODS client with NETCDF 
 without having to install the NETCDF C library and header files. 
 
 ------------------------------------------------------------------------
-r5138 | csmith | 2012-08-23 00:09:30 -0400 (Thu, 23 Aug 2012) | 3 lines
+JMC - No Op :: r5138 | csmith | 2012-08-23 00:09:30 -0400 (Thu, 23 Aug 2012) | 3 lines
 
 Add a timestamp to rule engine audit xmessages. The format of the message header will now be 'iaudit:<timestamp>:<call label>'.
 

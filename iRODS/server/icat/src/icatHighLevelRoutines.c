@@ -911,18 +911,20 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     int statementNumber;
     int nextReplNum;
     char nextRepl[30];
-    char theColls[]="data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, r_comment, create_ts, modify_ts";
+    char theColls[]="data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, data_mode, r_comment, create_ts, modify_ts";
     int IX_DATA_REPL_NUM=3;  /* index of data_repl_num in theColls */
+    int IX_RESC_GROUP_NAME=7;/* index into theColls */
     int IX_RESC_NAME=8;      /* index into theColls */
     int IX_RESC_HIER=9;
-    int IX_RESC_GROUP_NAME=7;/* index into theColls */
     int IX_DATA_PATH=10;      /* index into theColls */
-    int IX_CREATE_TS=19;
-    int IX_MODIFY_TS=20;
-    int IX_RESC_NAME2=21; // JMC - backport 4669
-    int IX_DATA_PATH2=22; // JMC - backport 4669
-    int IX_DATA_ID2=23; // JMC - backport 4669
-    int nColumns=24; // JMC - backport 4669
+
+    int IX_DATA_MODE=18;
+    int IX_CREATE_TS=20;
+    int IX_MODIFY_TS=21;
+    int IX_RESC_NAME2=22;
+    int IX_DATA_PATH2=23;
+    int IX_DATA_ID2=24;
+    int nColumns=25;
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -997,6 +999,8 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     cVal[IX_RESC_HIER]=dstDataObjInfo->rescHier;
     cVal[IX_RESC_GROUP_NAME]=dstDataObjInfo->rescGroupName;
     cVal[IX_DATA_PATH]=dstDataObjInfo->filePath;
+    cVal[IX_DATA_MODE]=dstDataObjInfo->dataMode;
+
 
     getNowStr(myTime);
     cVal[IX_MODIFY_TS]=myTime;
@@ -1013,10 +1017,13 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
     /* MySQL and Oracle */
-    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4692
+    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
+            theColls);
 #else  
     /* Postgres */
-    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4669
+    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
+            theColls);
+
 #endif            
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
     status = cmlExecuteNoAnswerSql(tSQL,  &icss);
