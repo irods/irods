@@ -1886,7 +1886,7 @@ Implemented hostname verification checking in the SSL client.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5169 | schroede | 2012-09-07 18:53:04 -0400 (Fri, 07 Sep 2012) | 25 lines
+JMC - Done :: r5169 | schroede | 2012-09-07 18:53:04 -0400 (Fri, 07 Sep 2012) | 25 lines
 
 When displaying ACLs for groups in ils via the new specific-query,
 prepend a "g:" to group nemes to differentiate them from users.
@@ -1923,15 +1923,15 @@ JMC - No Op :: r5171 | xuh | 2012-09-09 13:33:04 -0400 (Sun, 09 Sep 2012) | 1 li
 
 Fix a problem where a backward compatibility feature is available under nonbackward compatible mode in the rule engine.
 ------------------------------------------------------------------------
-r5172 | xuh | 2012-09-09 15:57:06 -0400 (Sun, 09 Sep 2012) | 1 line
+JMC - Code Diff Issues with typing.c??? :: r5172 | xuh | 2012-09-09 15:57:06 -0400 (Sun, 09 Sep 2012) | 1 line
 
 Remove repeated constant definition and mismatching constant usage in the rule engine.
 ------------------------------------------------------------------------
-r5173 | xuh | 2012-09-09 16:04:52 -0400 (Sun, 09 Sep 2012) | 1 line
+JMC - Done :: r5173 | xuh | 2012-09-09 16:04:52 -0400 (Sun, 09 Sep 2012) | 1 line
 
 Add some new features to the parser library.
 ------------------------------------------------------------------------
-r5174 | terrell | 2012-09-10 09:01:05 -0400 (Mon, 10 Sep 2012) | 1 line
+JMC - No Op :: r5174 | terrell | 2012-09-10 09:01:05 -0400 (Mon, 10 Sep 2012) | 1 line
 
 add note to irm help describing how to remove a replica on a named resource (use itrim instead)
 ------------------------------------------------------------------------
@@ -1948,7 +1948,7 @@ JMC - No Op :: r5176 | mwan | 2012-09-10 13:16:15 -0400 (Mon, 10 Sep 2012) | 2 l
 iMinor chnage with ifdef OOI
 
 ------------------------------------------------------------------------
-r5177 | xuh | 2012-09-10 15:21:37 -0400 (Mon, 10 Sep 2012) | 1 line
+JMC - Hold For Now :: r5177 | xuh | 2012-09-10 15:21:37 -0400 (Mon, 10 Sep 2012) | 1 line
 
 Source and header files changes so that the rule engine can be compiled separately from the irods server. They can now be compiled from the command line.
 ------------------------------------------------------------------------
@@ -1977,7 +1977,7 @@ JMC - No Op :: r5182 | mwan | 2012-09-12 21:03:25 -0400 (Wed, 12 Sep 2012) | 2 l
 Minor doc change
 
 ------------------------------------------------------------------------
-r5183 | mwan | 2012-09-12 21:05:38 -0400 (Wed, 12 Sep 2012) | 2 lines
+JMC - Done :: r5183 | mwan | 2012-09-12 21:05:38 -0400 (Wed, 12 Sep 2012) | 2 lines
 
 Take out handlerFlag in _rsDataObjPut. It is not longer used.
 

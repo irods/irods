@@ -631,11 +631,19 @@ printCollAcl (rcComm_t *conn, char *collName)
       int i, j;
       for (i=0;i<genQueryOut->rowCnt;i++) {
        char *tResult[10];
+       char typeStr[8];
+       tResult[3]=0;
+
        for (j=0;j<genQueryOut->attriCnt && j<10;j++) {
          tResult[j] = genQueryOut->sqlResult[j].value;
          tResult[j] += i*genQueryOut->sqlResult[j].len;
        }
-       printf ("%s#%s:%s   ",  tResult[0], tResult[1], tResult[2]);
+       typeStr[0]='\0';
+       if (tResult[3]!=0 && strncmp(tResult[3],"rodsgroup",9)==0) {
+         strncpy(typeStr,"g:",3);
+       }
+       printf ("%s%s#%s:%s   ",  typeStr, tResult[0], tResult[1], tResult[2]);
+
       }
       printf ("\n");
       return(status);

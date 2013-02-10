@@ -85,7 +85,7 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
             dataObjInp->openFlags = O_RDWR;
             status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
-                                    portalOprOut, BRANCH_MSG);
+                                    portalOprOut );
         } else {
             rodsLog( LOG_NOTICE, "%s :: eirods::resource_redirect - Trying to Redirect to another server", __FUNCTION__ );
             return -1;
@@ -120,13 +120,11 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
  * request/reply protocol and uses the sendAndRecvOffMainMsg call
  * to handle a sequence of request/reply until a return value of
  * SYS_HANDLER_NO_ERROR.
- * handlerFlag - INTERNAL_SVR_CALL - called internally by the server.
- *                 affect how return values are handled
  */
 
 int
 _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-               bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
+               bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut )
 {
     int status;
     int l1descInx;
@@ -223,13 +221,9 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         clearKeyVal (&replDataObjInp.condInput);
     }
 
-    if (handlerFlag & INTERNAL_SVR_CALL) {
-        /* internal call. want to know the real status */
-        return (retval);
-    } else {
-        /* already send the client the status */
-        return (SYS_NO_HANDLER_REPLY_MSG);
-    }
+    /* already send the client the status */
+    return (SYS_NO_HANDLER_REPLY_MSG);
+
 }
 
 /* preProcParaPut - preprocessing for parallel put. Basically it calls
