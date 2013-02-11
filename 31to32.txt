@@ -2021,12 +2021,12 @@ JMC - No Op :: r5190 | schroede | 2012-09-18 16:26:24 -0400 (Tue, 18 Sep 2012) |
 Add netcdf and hdf5 data-types
 
 ------------------------------------------------------------------------
-r5191 | mwan | 2012-09-18 18:00:29 -0400 (Tue, 18 Sep 2012) | 2 lines
+JMC - Done :: r5191 | mwan | 2012-09-18 18:00:29 -0400 (Tue, 18 Sep 2012) | 2 lines
 
 Fix a CAT_UNKNOWN_FILE error from overwriting a mounted file with icp
 
 ------------------------------------------------------------------------
-r5192 | mwan | 2012-09-18 19:28:47 -0400 (Tue, 18 Sep 2012) | 3 lines
+JMC - No Op :: r5192 | mwan | 2012-09-18 19:28:47 -0400 (Tue, 18 Sep 2012) | 3 lines
 
 add routines timeToAsci and asciToTime to convert between asci time and
 time_t UTC time
@@ -2042,12 +2042,12 @@ JMC - No Op :: r5194 | mwan | 2012-09-18 19:46:06 -0400 (Tue, 18 Sep 2012) | 2 l
 Data Struct for NETCDF files aggregation
 
 ------------------------------------------------------------------------
-r5195 | mwan | 2012-09-19 11:43:23 -0400 (Wed, 19 Sep 2012) | 2 lines
+JMC - Done :: r5195 | mwan | 2012-09-19 11:43:23 -0400 (Wed, 19 Sep 2012) | 2 lines
 
 Take out overlapping rstrcpy in parseRodsPath as suggested by a user.
 
 ------------------------------------------------------------------------
-r5196 | schroede | 2012-09-19 13:36:35 -0400 (Wed, 19 Sep 2012) | 4 lines
+JMC - Done :: r5196 | schroede | 2012-09-19 13:36:35 -0400 (Wed, 19 Sep 2012) | 4 lines
 
 Fix a typo (the case on one character) in the definition of the
 ShowCollAcls specific-query.  Makes a difference when MySQL is the

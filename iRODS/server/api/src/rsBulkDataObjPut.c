@@ -154,7 +154,7 @@ unbunBulkBuf (
         // if (status < 0) return status;
 
         rstrcpy(dataObjInp->objPath, tmpObjPath, MAX_NAME_LEN);
-        status = _rsDataObjPut(rsComm, dataObjInp, &buffer, NULL, BRANCH_MSG);
+        status = _rsDataObjPut(rsComm, dataObjInp, &buffer, NULL );
         if(status < 0) {
             std::stringstream msg;
             msg << __FUNCTION__ << ": Failed to put data into file \"" << phyBunPath << "\"";
