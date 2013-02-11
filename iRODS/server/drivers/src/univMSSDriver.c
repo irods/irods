@@ -29,10 +29,11 @@ int univMSSSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 	if ( status == 0 ) {
 		rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 		strcat(cmdArgv, "syncToArch");
-		strcat(cmdArgv, " ");
+		strcat(cmdArgv, " '");
 		strcat(cmdArgv, cacheFilename);
-		strcat(cmdArgv, " ");
+		strcat(cmdArgv, "' '");
 		strcat(cmdArgv, filename);
+		strcat(cmdArgv, "'");
 		rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 		rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 		status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
@@ -63,10 +64,11 @@ int univMSSStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
         bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "stageToCache");
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, " '");
 	strcat(cmdArgv, filename);
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, "' '");
 	strcat(cmdArgv, cacheFilename);
+	strcat(cmdArgv, "'");
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
@@ -93,8 +95,9 @@ int univMSSFileUnlink (rsComm_t *rsComm, char *filename) {
         bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "rm");
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, " '");
 	strcat(cmdArgv, filename);
+	strcat(cmdArgv, "'");
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
@@ -120,8 +123,9 @@ int univMSSFileMkdir (rsComm_t *rsComm, char *dirname, int mode) {
 	bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "mkdir");
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, " '");
 	strcat(cmdArgv, dirname);
+	strcat(cmdArgv, "'");
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
@@ -154,9 +158,9 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
         bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "chmod");
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, " '");
 	strcat(cmdArgv, name);
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, "' ");
 	sprintf (strmode, "%o", mode);
 	strcat(cmdArgv, strmode);
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
@@ -191,8 +195,9 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
         bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "stat");
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, " '");
 	strcat(cmdArgv, filename);
+	strcat(cmdArgv, "' ");
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
@@ -260,10 +265,11 @@ int univMSSFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName) {
     bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "mv");
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, " '");
 	strcat(cmdArgv, oldFileName);
-	strcat(cmdArgv, " ");
+	strcat(cmdArgv, "' '");
 	strcat(cmdArgv, newFileName);
+	strcat(cmdArgv, "'");
 	rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
 	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
