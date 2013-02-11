@@ -116,7 +116,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     # database(s) and database role
     echo "     :: Leaving the E-iRODS database(s) and role in place."
     echo "     :: try:"
-    echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropdb EICAT_9000; dropuser $DB_USER;'"
+    echo "     ::      sudo su - postgres -c 'dropdb $DB_NAME; dropuser $DB_USER;'"
 fi
 
 # =-=-=-=-=-=-=-
