@@ -134,7 +134,12 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // make a call to build the linked list 
         dataObjInfo_t* head_ptr = 0;
+        
         int status = getDataObjInfoIncSpecColl ( _comm, _data_obj_inp, &head_ptr );
+        if( status < 0 ) {
+            status = getDataObjInfo( _comm, _data_obj_inp, &head_ptr, 0, 0 );
+        }
+
         if( 0 == head_ptr || status < 0 ) {
             std::stringstream msg;
             msg << "file_object_factory :: failed in call to getDataObjInfoIncSpecColl";
