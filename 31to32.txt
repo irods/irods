@@ -2252,27 +2252,27 @@ A couple refinements for update r5162 to work under Solaris and be a
 bit more fail-safe.
 
 ------------------------------------------------------------------------
-r5224 | antoine | 2012-09-28 03:00:44 -0400 (Fri, 28 Sep 2012) | 2 lines
+JMC - No Op :: r5224 | antoine | 2012-09-28 03:00:44 -0400 (Fri, 28 Sep 2012) | 2 lines
 
 Headers for plug-able microservice interface
 
 ------------------------------------------------------------------------
-r5225 | antoine | 2012-09-28 03:02:07 -0400 (Fri, 28 Sep 2012) | 2 lines
+JMC - No Op :: r5225 | antoine | 2012-09-28 03:02:07 -0400 (Fri, 28 Sep 2012) | 2 lines
 
 Headers for plug-able microservice interface
 
 ------------------------------------------------------------------------
-r5226 | antoine | 2012-09-28 03:10:13 -0400 (Fri, 28 Sep 2012) | 2 lines
+JMC - No Op :: r5226 | antoine | 2012-09-28 03:10:13 -0400 (Fri, 28 Sep 2012) | 2 lines
 
 Added code for plug-able ms interface
 
 ------------------------------------------------------------------------
-r5227 | antoine | 2012-09-28 03:12:19 -0400 (Fri, 28 Sep 2012) | 2 lines
+JMC - No Op :: r5227 | antoine | 2012-09-28 03:12:19 -0400 (Fri, 28 Sep 2012) | 2 lines
 
 Added missing #ifndef 
 
 ------------------------------------------------------------------------
-r5228 | csmith | 2012-09-28 03:48:08 -0400 (Fri, 28 Sep 2012) | 7 lines
+JMC - Done :: r5228 | csmith | 2012-09-28 03:48:08 -0400 (Fri, 28 Sep 2012) | 7 lines
 
 Implementation of exclude patterns for ireg -C
 
@@ -2282,32 +2282,32 @@ The --exclude-from file must be readable on the data server where the files will
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5229 | schroede | 2012-09-28 11:39:23 -0400 (Fri, 28 Sep 2012) | 2 lines
+JMC - No Op :: r5229 | schroede | 2012-09-28 11:39:23 -0400 (Fri, 28 Sep 2012) | 2 lines
 
 Update the version and release date for releasing 3.2 next week.
 
 ------------------------------------------------------------------------
-r5230 | schroede | 2012-09-28 14:25:24 -0400 (Fri, 28 Sep 2012) | 2 lines
+JMC - No Op :: r5230 | schroede | 2012-09-28 14:25:24 -0400 (Fri, 28 Sep 2012) | 2 lines
 
 Updates for 3.2
 
 ------------------------------------------------------------------------
-r5231 | antoine | 2012-10-01 14:31:05 -0400 (Mon, 01 Oct 2012) | 2 lines
+JMC - No Op :: r5231 | antoine | 2012-10-01 14:31:05 -0400 (Mon, 01 Oct 2012) | 2 lines
 
 Pluggable microservice code, not included for compilation by default.
 
 ------------------------------------------------------------------------
-r5232 | antoine | 2012-10-01 14:33:36 -0400 (Mon, 01 Oct 2012) | 2 lines
+JMC - No Op :: r5232 | antoine | 2012-10-01 14:33:36 -0400 (Mon, 01 Oct 2012) | 2 lines
 
 e-iRODS header 
 
 ------------------------------------------------------------------------
-r5233 | antoine | 2012-10-01 14:37:18 -0400 (Mon, 01 Oct 2012) | 2 lines
+JMC - No Op :: r5233 | antoine | 2012-10-01 14:37:18 -0400 (Mon, 01 Oct 2012) | 2 lines
 
 rename a e-irods header
 
 ------------------------------------------------------------------------
-r5234 | schroede | 2012-10-01 18:40:17 -0400 (Mon, 01 Oct 2012) | 2 lines
+JMC - No Op :: r5234 | schroede | 2012-10-01 18:40:17 -0400 (Mon, 01 Oct 2012) | 2 lines
 
 Bump doxygen version numbers for upcoming release (3.2)
 
@@ -2318,18 +2318,18 @@ Modify comment on msiSetReServerNumProc that numProc=0 is no longer
 supported.
 
 ------------------------------------------------------------------------
-r5236 | antoine | 2012-10-02 18:06:49 -0400 (Tue, 02 Oct 2012) | 2 lines
+JMC - No Op :: r5236 | antoine | 2012-10-02 18:06:49 -0400 (Tue, 02 Oct 2012) | 2 lines
 
 e-irods source, not compiled by default.
 
 ------------------------------------------------------------------------
-r5237 | mwan | 2012-10-02 18:43:12 -0400 (Tue, 02 Oct 2012) | 3 lines
+JMC - No Op :: r5237 | mwan | 2012-10-02 18:43:12 -0400 (Tue, 02 Oct 2012) | 3 lines
 
 Move ncInq, inqAtt and getAttValue from the server to the client for
 nc aggregate development.
 
 ------------------------------------------------------------------------
-r5238 | mwan | 2012-10-02 19:19:13 -0400 (Tue, 02 Oct 2012) | 2 lines
+JMC - No Op :: r5238 | mwan | 2012-10-02 19:19:13 -0400 (Tue, 02 Oct 2012) | 2 lines
 
 change the name of a netcdf struct. This struct is not being used
 

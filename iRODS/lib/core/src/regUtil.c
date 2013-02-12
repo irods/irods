@@ -141,6 +141,17 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
         addKeyVal (&dataObjOprInp->condInput, REG_REPL_KW, "");
     }
 
+    if (rodsArgs->excludeFile == True) {
+        if (rodsArgs->excludeFileString == NULL) {
+            rodsLog (LOG_ERROR, "initCondForReg: NULL excludeFileString error");
+            return (USER__NULL_INPUT_ERR);
+        }
+        else {
+            addKeyVal (&dataObjOprInp->condInput, EXCLUDE_FILE_KW,
+                       rodsArgs->excludeFileString);
+        }
+    }
+
     return (0);
 }
 

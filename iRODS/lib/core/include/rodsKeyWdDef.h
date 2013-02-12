@@ -204,6 +204,10 @@
 #define RULE_LAST_EXE_TIME_KW        "lastExeTime"
 #define RULE_EXE_STATUS_KW           "exeStatus"
 
+
+#define EXCLUDE_FILE_KW         "excludeFile"
+
+
 // =-=-=-=-=-=-=-
 // e-irods keywords definitions
 #define RESC_HIER_STR_KW             "resc_hier_string"

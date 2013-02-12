@@ -6,6 +6,7 @@
 #ifndef windows_platform
 #include <sys/time.h>
 #endif
+#include <fnmatch.h>
 #include "rodsClient.h"
 #include "rodsLog.h"
 #include "miscUtil.h"
@@ -2311,4 +2312,160 @@ getZoneHintForGenQuery (genQueryInp_t *genQueryInp)
 #endif
                                                 return count;
                                             }
+
+
+
+pathnamePatterns_t *
+readPathnamePatterns(char *buf, int buflen)
+{
+    pathnamePatterns_t *pp;
+    char **patterns;
+    char *pattern_buf;
+    int num_patterns;
+    char *cp1, *cp2;
+    int c_count, in_comment, i;
+
+    if (buf == NULL || buflen <= 0) {
+        return NULL;
+    }
+
+    /* copy the passed in buffer since we'll be
+       manipulating it */
+    pattern_buf = (char*)malloc(buflen);
+    if (pattern_buf == NULL) {
+        rodsLog(LOG_NOTICE, "readPathnamePatterns: could not allocate pattern buffer");
+        return NULL;
+    }
+    memcpy(pattern_buf, buf, buflen);
+
+    /* count the number of patterns in the buffer.
+       They'll be delimited by newlines. */
+    num_patterns = 0;
+    cp1 = pattern_buf;
+    c_count = 0;
+    in_comment = 0;
+    while (cp1 != pattern_buf + buflen) {
+        if (*cp1 == '\n') {
+            if (c_count) {
+                /* don't include empty lines */
+                num_patterns++;
+            }
+            c_count = 0;
+            in_comment = 0;
+        }
+        else if (*cp1 == '#' && c_count == 0) {
+            /* hash mark at beginning of line means comment */
+            in_comment = 1;
+        }
+        else if (in_comment == 0) {
+            c_count++;
+        }
+        cp1++;
+    }
+
+    /* now allocate a string array for the patterns, and
+       make each array element point to a pattern string
+       in place in the buffer */
+    patterns = (char**)malloc(sizeof(char*) * num_patterns);
+    if (patterns == NULL ) {
+        rodsLog(LOG_NOTICE, "readPathnamePatterns: could not allocate pattern array");
+        free(pattern_buf);
+        return NULL;
+    }
+    cp1 = cp2 = pattern_buf;
+    i = c_count = in_comment = 0;
+    while (cp1 != pattern_buf + buflen) {
+        if (*cp1 == '\n') {
+            *cp1 = '\0';
+            if (c_count) {
+                patterns[i++] = cp2;
+            }
+            c_count = 0;
+            in_comment = 0;
+            cp2 = cp1 + 1;
+        }
+        else if (*cp1 == '#' && c_count == 0) {
+            in_comment = 1;
+        }
+        else if (in_comment == 0) {
+            c_count++;
+        }
+        cp1++;
+    }
+    
+    /* Allocate and initialize the return structure */
+    pp = (pathnamePatterns_t*)malloc(sizeof(pathnamePatterns_t));
+    if (pp == NULL) {
+        rodsLog(LOG_NOTICE, "readPathnamePatterns: could not allocate pp struct");
+        free(pattern_buf);
+        free(patterns);
+        return NULL;
+    }
+    
+    pp->pattern_buf = pattern_buf;
+    pp->patterns = patterns;
+    pp->num_patterns = num_patterns;
+
+    return pp;
+}
+
+void
+freePathnamePatterns(pathnamePatterns_t *pp)
+{
+    if (pp == NULL) {
+        return;
+    }
+
+    if (pp->patterns) {
+        free(pp->patterns);
+    }
+    if (pp->pattern_buf) {
+        free(pp->pattern_buf);
+    }
+    free(pp);
+}
+
+int
+matchPathname(pathnamePatterns_t *pp, char *name, char *dirname)
+{
+    int index;
+    char pathname[MAX_NAME_LEN];
+    char *pattern;
+
+    if (pp == NULL || name == NULL || dirname == NULL) {
+        return 0;
+    }
+
+    /* If the pattern starts with '/', try to match the full path. 
+       Otherwise, just match name. */
+    for (index = 0; index < pp->num_patterns; index++) {
+        pattern = pp->patterns[index];
+        if (*pattern == '/') {
+            /* a directory pattern */
+            snprintf(pathname, MAX_NAME_LEN, "%s/%s", dirname, name);
+            if (fnmatch(pattern, pathname, FNM_PATHNAME) == 0) {
+                rodsLog(LOG_DEBUG, "matchPathname: match name %s with pattern %s",
+                        pathname, pattern); 
+                /* we have a match */
+                return 1;
+            }
+        }
+        else {
+            if (fnmatch(pattern, name, 0) == 0) {
+                rodsLog(LOG_DEBUG, "matchPathname: match name %s with pattern %s",
+                        name, pattern); 
+                /* we have a match */
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+
+
 
