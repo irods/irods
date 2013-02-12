@@ -197,6 +197,7 @@ _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
     int handleInx;
     dataObjInp_t dataObjInp;
     collInp_t tmpCollInp;
+    char *tmpValue;
     int rmtrashFlag =0;
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
@@ -237,6 +238,11 @@ _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
     }
     addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
     addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
+
+    if ((tmpValue = getValByKey (&rmCollInp->condInput, AGE_KW)) != NULL) {
+        addKeyVal (&dataObjInp.condInput, AGE_KW, tmpValue);
+        addKeyVal (&tmpCollInp.condInput, AGE_KW, tmpValue);
+    }
 
     if (collOprStat != NULL && *collOprStat == NULL) {
         *collOprStat = (collOprStat_t*)malloc (sizeof (collOprStat_t));

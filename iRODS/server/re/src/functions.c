@@ -377,6 +377,7 @@ int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* gen
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 
 Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+       char condStr[1024];
        int size = 1024;
        int where = 0;
        int i;

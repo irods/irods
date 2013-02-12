@@ -207,6 +207,7 @@
 
 #define EXCLUDE_FILE_KW         "excludeFile"
 
+#define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
 // e-irods keywords definitions
