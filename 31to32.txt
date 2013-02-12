@@ -2082,14 +2082,14 @@ JMC - No Op :: r5201 | mwan | 2012-09-20 19:09:23 -0400 (Thu, 20 Sep 2012) | 2 l
 Add comment on why TRANSLATED_PATH_KW was used for collection
 
 ------------------------------------------------------------------------
-r5202 | mwan | 2012-09-21 17:40:28 -0400 (Fri, 21 Sep 2012) | 4 lines
+JMC - No Op :: r5202 | mwan | 2012-09-21 17:40:28 -0400 (Fri, 21 Sep 2012) | 4 lines
 
 Added and tested the --SUBSET option of 'inc' to allow subsetting conditions 
 to be specified using on the values of the dimension valuable instead of using
 the dimension indeces.
 
 ------------------------------------------------------------------------
-r5203 | csmith | 2012-09-22 04:44:35 -0400 (Sat, 22 Sep 2012) | 7 lines
+JMC - ???? :: r5203 | csmith | 2012-09-22 04:44:35 -0400 (Sat, 22 Sep 2012) | 7 lines
 
 Support added for the storageadmin role
 
@@ -2099,32 +2099,32 @@ This mode is best used when you want to let somebody add a storage server to you
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5204 | antoine | 2012-09-24 11:56:28 -0400 (Mon, 24 Sep 2012) | 2 lines
+JMC - Prev Done :: r5204 | antoine | 2012-09-24 11:56:28 -0400 (Mon, 24 Sep 2012) | 2 lines
 
 Fixed a bug in msiGetDataObjAIP reported by Terrell.
 
 ------------------------------------------------------------------------
-r5205 | mwan | 2012-09-25 14:22:12 -0400 (Tue, 25 Sep 2012) | 2 lines
+JMC - No Op :: r5205 | mwan | 2012-09-25 14:22:12 -0400 (Tue, 25 Sep 2012) | 2 lines
 
 add comment
 
 ------------------------------------------------------------------------
-r5206 | mwan | 2012-09-25 15:01:12 -0400 (Tue, 25 Sep 2012) | 2 lines
+JMC - No Op :: r5206 | mwan | 2012-09-25 15:01:12 -0400 (Tue, 25 Sep 2012) | 2 lines
 
 Add mso work done by Raja
 
 ------------------------------------------------------------------------
-r5207 | mwan | 2012-09-25 15:15:20 -0400 (Tue, 25 Sep 2012) | 2 lines
+JMC - No Op :: r5207 | mwan | 2012-09-25 15:15:20 -0400 (Tue, 25 Sep 2012) | 2 lines
 
 add missing module for MSSO
 
 ------------------------------------------------------------------------
-r5208 | schroede | 2012-09-25 15:36:20 -0400 (Tue, 25 Sep 2012) | 2 lines
+JMC - No Op :: r5208 | schroede | 2012-09-25 15:36:20 -0400 (Tue, 25 Sep 2012) | 2 lines
 
 Add the new msso data-type to the 3.2 sql patch file
 
 ------------------------------------------------------------------------
-r5209 | schroede | 2012-09-25 17:46:08 -0400 (Tue, 25 Sep 2012) | 50 lines
+JMC - No Op :: SAVE FOR LATER :: r5209 | schroede | 2012-09-25 17:46:08 -0400 (Tue, 25 Sep 2012) | 50 lines
 
 Changes to support current GSI (Globus 5.2.1) and/or GSI installations
 without type; irodssetup, Makefiles, and igsi.c.
@@ -2177,76 +2177,76 @@ setting it all up, and using it, but the changes in this commit seem
 valid.
 
 ------------------------------------------------------------------------
-r5210 | mwan | 2012-09-25 19:00:59 -0400 (Tue, 25 Sep 2012) | 2 lines
+JMC - Done :: r5210 | mwan | 2012-09-25 19:00:59 -0400 (Tue, 25 Sep 2012) | 2 lines
 
 Add comments on collInfo1 and collInfo2
 
 ------------------------------------------------------------------------
-r5211 | csmith | 2012-09-25 19:15:18 -0400 (Tue, 25 Sep 2012) | 3 lines
+JMC - No Op :: r5211 | csmith | 2012-09-25 19:15:18 -0400 (Tue, 25 Sep 2012) | 3 lines
 
 Make sure storageadmin is from the local zone.
 
 Signed-off-by: Chris Smith <chris@distributedbio.com>
 ------------------------------------------------------------------------
-r5212 | schroede | 2012-09-26 09:01:39 -0400 (Wed, 26 Sep 2012) | 3 lines
+JMC - No Op :: r5212 | schroede | 2012-09-26 09:01:39 -0400 (Wed, 26 Sep 2012) | 3 lines
 
 Update the version ids of the irodssetup sub-scripts that have been
 updated since the last release.
 
 ------------------------------------------------------------------------
-r5213 | schroede | 2012-09-26 09:32:44 -0400 (Wed, 26 Sep 2012) | 2 lines
+JMC - No Op :: r5213 | schroede | 2012-09-26 09:32:44 -0400 (Wed, 26 Sep 2012) | 2 lines
 
 Fix a compiler warning
 
 ------------------------------------------------------------------------
-r5214 | schroede | 2012-09-26 10:07:31 -0400 (Wed, 26 Sep 2012) | 2 lines
+JMC - No Op :: r5214 | schroede | 2012-09-26 10:07:31 -0400 (Wed, 26 Sep 2012) | 2 lines
 
 Fix a compiler warning
 
 ------------------------------------------------------------------------
-r5215 | schroede | 2012-09-26 12:14:45 -0400 (Wed, 26 Sep 2012) | 3 lines
+JMC - No Op :: r5215 | schroede | 2012-09-26 12:14:45 -0400 (Wed, 26 Sep 2012) | 3 lines
 
 Convert the postgres patch file to a patch file for all 3 DBMS types
 since the needed SQL is the same for all.
 
 ------------------------------------------------------------------------
-r5216 | schroede | 2012-09-26 12:16:11 -0400 (Wed, 26 Sep 2012) | 2 lines
+JMC - No Op :: r5216 | schroede | 2012-09-26 12:16:11 -0400 (Wed, 26 Sep 2012) | 2 lines
 
 Change the upgrade notice for the ICAT patch file for 3.2.
 
 ------------------------------------------------------------------------
-r5217 | schroede | 2012-09-26 13:55:33 -0400 (Wed, 26 Sep 2012) | 3 lines
+JMC - No Op :: r5217 | schroede | 2012-09-26 13:55:33 -0400 (Wed, 26 Sep 2012) | 3 lines
 
 Add inc and incattr to ihelp and those and some missing ones (ifsck,
 ilocate, ips) to the list that can be run with -h for detailed help.
 
 ------------------------------------------------------------------------
-r5218 | mwan | 2012-09-26 14:21:11 -0400 (Wed, 26 Sep 2012) | 2 lines
+JMC - Done :: r5218 | mwan | 2012-09-26 14:21:11 -0400 (Wed, 26 Sep 2012) | 2 lines
 
 Add usage comment
 
 ------------------------------------------------------------------------
-r5219 | antoine | 2012-09-26 14:45:35 -0400 (Wed, 26 Sep 2012) | 2 lines
+JMC - Done :: r5219 | antoine | 2012-09-26 14:45:35 -0400 (Wed, 26 Sep 2012) | 2 lines
 
 Fixed a typo
 
 ------------------------------------------------------------------------
-r5220 | mwan | 2012-09-26 20:09:33 -0400 (Wed, 26 Sep 2012) | 2 lines
+JMC - No Op :: r5220 | mwan | 2012-09-26 20:09:33 -0400 (Wed, 26 Sep 2012) | 2 lines
 
 Add comment
 
 ------------------------------------------------------------------------
-r5221 | mwan | 2012-09-27 12:23:29 -0400 (Thu, 27 Sep 2012) | 2 lines
+JMC - No Op :: r5221 | mwan | 2012-09-27 12:23:29 -0400 (Thu, 27 Sep 2012) | 2 lines
 
 minor comment change
 
 ------------------------------------------------------------------------
-r5222 | jeanyves | 2012-09-27 13:34:23 -0400 (Thu, 27 Sep 2012) | 2 lines
+JMC - Done :: r5222 | jeanyves | 2012-09-27 13:34:23 -0400 (Thu, 27 Sep 2012) | 2 lines
 
 add some explanation in the help page for the "-n" option.
 
 ------------------------------------------------------------------------
-r5223 | schroede | 2012-09-27 14:14:54 -0400 (Thu, 27 Sep 2012) | 3 lines
+JMC - No Op :: r5223 | schroede | 2012-09-27 14:14:54 -0400 (Thu, 27 Sep 2012) | 3 lines
 
 A couple refinements for update r5162 to work under Solaris and be a
 bit more fail-safe.

@@ -385,6 +385,7 @@ checkStringForSystem( char *inString) {
 #if 0
     // JMC :: TODO - revisit and implement with mail string standard
   char c;
+  if (inString==NULL) return(0);
   c = *inString;
   while (c != '\0') {
      if ( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
