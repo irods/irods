@@ -218,16 +218,16 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 Res *smsi_split(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 
 Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
-    if(TYPE(coll) == T_STRING) { /* backward compatible mode only */
-        Res *paramsr[2];
-        paramsr[0] = coll;
-        paramsr[1] = newStringRes(r, ",");
-        return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
-    } else if(TYPE(coll) != T_CONS &&
-              (TYPE(coll) != T_IRODS || (
-                  strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
-                  strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
-                  strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0))) {
+       if(TYPE(coll) != T_STRING &&
+          TYPE(coll) != T_CONS &&
+          (TYPE(coll) != T_TUPLE || coll->degree != 2 ||
+          TYPE(coll->subtrees[0]) != T_IRODS || strcmp(coll->subtrees[0]->exprType->text, GenQueryInp_MS_T) != 0 ||
+          TYPE(coll->subtrees[1]) != T_IRODS || strcmp(coll->subtrees[1]->exprType->text, GenQueryOut_MS_T) != 0) &&
+          (TYPE(coll) != T_IRODS || (
+          strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
+          strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
+          strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0 &&
+          strcmp(coll->exprType->text, CollInp_MS_T) != 0))) {
         char errbuf[ERR_MSG_LEN];
         snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
         generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
@@ -236,6 +236,22 @@ Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
         return coll;
     }
 }
+
+Res *collTypeBackwardCompatible(Res *coll, Node *node, rError_t *errmsg, Region *r) {
+       if(TYPE(coll) == T_STRING) { /* backward compatible mode only */
+               Res *paramsr[2];
+               paramsr[0] = coll;
+               paramsr[1] = newStringRes(r, ",");
+               return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
+       } else {
+               return collType(coll, node, errmsg, r);
+       }
+}
+
+int msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
+int msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
+Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
+
 Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
     Res *res = newRes(r);
@@ -2151,6 +2167,169 @@ Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int 
         return NULL;
 }
 
+int
+parseResForCollInp (Node *inpParam, collInp_t *collInpCache,
+collInp_t **outCollInp, int outputToCache)
+{
+    *outCollInp = NULL;
+
+    if (inpParam == NULL) {
+        rodsLog (LOG_ERROR,
+          "parseMspForCollInp: input inpParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (TYPE(inpParam) == T_STRING) {
+        /* str input */
+        if (collInpCache == NULL) {
+            collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
+        }
+        memset (collInpCache, 0, sizeof (collInp_t));
+        *outCollInp = collInpCache;
+        if (strcmp (inpParam->text, "null") != 0) {
+            rstrcpy(collInpCache->collName, (char*)inpParam->text, MAX_NAME_LEN);
+        }
+        return (0);
+    } else if (TYPE(inpParam) == T_IRODS && strcmp(RES_IRODS_TYPE(inpParam), CollInp_MS_T) == 0) {
+       if (outputToCache == 1) {
+               collInp_t *tmpCollInp;
+               tmpCollInp = (collInp_t *) RES_UNINTER_STRUCT(inpParam);
+            if (collInpCache == NULL) {
+                collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
+            }
+            *collInpCache = *tmpCollInp;
+           /* zero out the condition of the original because it has been
+            * moved */
+            memset (&tmpCollInp->condInput, 0, sizeof (keyValPair_t));
+            *outCollInp = collInpCache;
+       } else {
+            *outCollInp = (collInp_t *) RES_UNINTER_STRUCT(inpParam);
+       }
+       return (0);
+    } else {
+       char buf[ERR_MSG_LEN];
+       Hashtable *varTypes = newHashTable(10);
+       typeToString(inpParam->exprType, varTypes, buf, ERR_MSG_LEN);
+       deleteHashTable(varTypes, NULL);
+        rodsLog (LOG_ERROR,
+          "parseMspForCollInp: Unsupported input Param1 type %s",
+          buf);
+        return (USER_PARAM_TYPE_ERR);
+    }
+}
+
+Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+       collInp_t collInpCache, *collInp;               /* input for rsOpenCollection */
+       collEnt_t *collEnt;                                             /* input for rsReadCollection */
+       int handleInx;                                                  /* collection handler */
+       dataObjInp_t *dataObjInp;                               /* will contain pathnames for each object (one at a time) */
+
+       /* Sanity test */
+       if (rei == NULL || rei->rsComm == NULL) {
+       generateAndAddErrMsg("msiCollectionSpider: input rei or rsComm is NULL.", node, SYS_INTERNAL_NULL_INPUT_ERR, errmsg);
+       return newErrorRes(r, SYS_INTERNAL_NULL_INPUT_ERR);
+       }
+
+       /* Parse collection input */
+       rei->status = parseResForCollInp (subtrees[1], &collInpCache, &collInp, 0);
+       if (rei->status < 0) {
+               char buf[ERR_MSG_LEN];
+               snprintf(buf, ERR_MSG_LEN, "msiIsCollectionSpider: input collection error. status = %d", rei->status);
+               generateAndAddErrMsg(buf, node, rei->status, errmsg);
+               return newErrorRes(r, rei->status);
+       }
+
+       /* Check if "objects" input has proper form */
+    if(getNodeType(subtrees[0])!=TK_VAR) {
+               char buf[ERR_MSG_LEN];
+               snprintf(buf, ERR_MSG_LEN, "msiIsCollectionSpider: input objects error. status = %d", rei->status);
+       generateAndAddErrMsg(buf, node, rei->status, errmsg);
+               return newErrorRes(r, rei->status);
+    }
+    char* varname = subtrees[0]->text;
+
+    /* Allocate memory for dataObjInp. Needs to be persistent since will be freed later along with other msParams */
+    dataObjInp = (dataObjInp_t *)malloc(sizeof(dataObjInp_t));
+
+       /* Open collection in recursive mode */
+       collInp->flags = RECUR_QUERY_FG;
+       handleInx = rsOpenCollection (rei->rsComm, collInp);
+       if (handleInx < 0)
+       {
+               char buf[ERR_MSG_LEN];
+               snprintf(buf, ERR_MSG_LEN, "msiCollectionSpider: rsOpenCollection of %s error. status = %d", collInp->collName, handleInx);
+       generateAndAddErrMsg(buf, node, handleInx, errmsg);
+               return newErrorRes(r, handleInx);
+       }
+
+       GC_BEGIN
+       /* save the old value of variable with name varname in the current env only */
+       Res *oldVal = (Res *) lookupFromHashTable(env->current, varname);
+
+    /* Read our collection one object at a time */
+       while ((rei->status = rsReadCollection (rei->rsComm, &handleInx, &collEnt)) >= 0)
+       {
+               GC_ON(env);
+               /* Skip collection entries */
+               if (collEnt != NULL) {
+                       if(collEnt->objType == DATA_OBJ_T)
+                       {
+                               /* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
+
+                               memset(dataObjInp, 0, sizeof(dataObjInp_t));
+                               snprintf(dataObjInp->objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
+
+                               /* Free collEnt only. Content will be freed by rsCloseCollection() */
+                               free(collEnt);
+
+                               /* Set var with name varname in the current environment */
+                               updateInEnv(env, varname, newUninterpretedRes(GC_REGION, DataObjInp_MS_T, (void *) dataObjInp, NULL));
+
+                               /* Run actionStr on our object */
+                               Res *ret = evaluateActions(subtrees[2], subtrees[3], 0, rei, reiSaveFlag, env, errmsg, GC_REGION);
+                               if (TYPE(ret) == T_ERROR)
+                               {
+                                       /* If an error occurs, log incident but keep going */
+                                       char buf[ERR_MSG_LEN];
+                                       snprintf(buf, ERR_MSG_LEN, "msiCollectionSpider: execMyRule error. status = %d", RES_ERR_CODE(ret));
+                                       generateAndAddErrMsg(buf, node, RES_ERR_CODE(ret), errmsg);
+                               }
+                               else if (TYPE(ret) == T_BREAK) {
+                                       break;
+                               }
+
+                       } else {
+                               /* Free collEnt only. Content will be freed by rsCloseCollection() */
+                               free(collEnt);
+                       }
+               }
+
+       }
+
+       if(oldVal == NULL) {
+               deleteFromHashTable(env->current, varname);
+       } else {
+               updateInEnv(env, varname, oldVal);
+       }
+       cpEnv2(env, GC_REGION, r);
+       GC_END
+
+       free(dataObjInp);
+
+       /* Close collection */
+       rei->status = rsCloseCollection (rei->rsComm, &handleInx);
+
+       /* Return operation status */
+       if(rei->status < 0) {
+               return newErrorRes(r, rei->status);
+       } else {
+               return newIntRes(r, rei->status);
+       }
+
+}
+
+
 void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "do", newFunctionFD("e ?->?", smsi_do, r));
     insertIntoHashTable(ft, "eval", newFunctionFD("string->?", smsi_eval, r));
@@ -2268,6 +2447,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleSet_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
     insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+    insertIntoHashTable(ft, "collectionSpider", newFunctionFD("forall X in {string `CollInpNew_PI`}, expression ? * X * actions ? * actions ? -> integer", smsiCollectionSpider, r));   
     insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncTypePtr) NULL, r));
 
 #ifdef RE_BACKWARD_COMPATIBLE // JMC - backport 4545
