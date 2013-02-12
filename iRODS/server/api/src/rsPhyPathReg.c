@@ -30,6 +30,16 @@
 // stl includes
 #include <iostream>
 
+/* holds a struct that describes pathname match patterns
+   to exclude from registration. Needs to be global due
+   to the recursive dirPathReg() calls. */
+static pathnamePatterns_t *ExcludePatterns = NULL;
+
+/* function to read pattern file from a data server */
+pathnamePatterns_t *
+readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, rescInfo_t *rescInfo);
+
+
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with 
  * no checking for path Perm.
  */
@@ -201,14 +211,15 @@ int
 _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, 
                rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
 {
-    int status;
+    int status = 0;
     fileOpenInp_t chkNVPathPermInp;
-    int rescTypeInx;
-    char *tmpFilePath;
+    int rescTypeInx = 0;
+    char *tmpFilePath = 0;
     char filePath[MAX_NAME_LEN];
     dataObjInfo_t dataObjInfo;
     char *tmpStr = NULL;
     int chkType = 0; // JMC - backport 4774
+    char *excludePatternFile = 0;
 
     if ((tmpFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))== NULL) {
         rodsLog( LOG_ERROR,"_rsPhyPathReg: No filePath input for %s",
@@ -258,7 +269,19 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     }
 
     if (getValByKey (&phyPathRegInp->condInput, COLLECTION_KW) != NULL) {
+        excludePatternFile = getValByKey(&phyPathRegInp->condInput, EXCLUDE_FILE_KW);
+        if (excludePatternFile != NULL) {
+            ExcludePatterns = readPathnamePatternsFromFile(rsComm,
+                                                           excludePatternFile,
+                                                           rescGrpInfo->rescInfo);
+        }
+
 	    status = dirPathReg (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo); 
+        if (excludePatternFile != NULL) {
+            freePathnamePatterns(ExcludePatterns);
+            ExcludePatterns = NULL;
+        }
+
     } else if ((tmpStr = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, MOUNT_POINT_STR) == 0) {
                 
         status = mountFileDir (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo);
@@ -455,9 +478,15 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         fileStatInp_t fileStatInp;
         rodsStat_t *myStat = NULL;
 
+        if (strlen (rodsDirent->d_name) == 0) break;
+
         if (strcmp (rodsDirent->d_name, ".") == 0 ||
             strcmp (rodsDirent->d_name, "..") == 0) {
             free (rodsDirent); // JMC - backport 4835
+            continue;
+        }
+
+        if (matchPathname(ExcludePatterns, rodsDirent->d_name, filePath)) {
             continue;
         }
 
@@ -986,4 +1015,78 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
     return (status);
 }
+
+pathnamePatterns_t *
+readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, rescInfo_t *rescInfo)
+{
+    int status;
+    rodsStat_t *stbuf;
+    fileStatInp_t fileStatInp;
+    bytesBuf_t fileReadBuf;
+    fileOpenInp_t fileOpenInp;
+    fileReadInp_t fileReadInp;
+    fileCloseInp_t fileCloseInp;
+    int buf_len, fd;
+    pathnamePatterns_t *pp;
+
+    if (rsComm == NULL || filename == NULL || rescInfo == NULL) {
+        return NULL;
+    }
+
+    memset(&fileStatInp, 0, sizeof(fileStatInp));
+    rstrcpy(fileStatInp.fileName, filename, MAX_NAME_LEN);
+    // JMC - legacy resource fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescInfo->rescTypeInx].driverType;
+    rstrcpy(fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+    status = rsFileStat(rsComm, &fileStatInp, &stbuf);
+    if (status != 0) {
+        if (status != UNIX_FILE_STAT_ERR - ENOENT) {
+            rodsLog(LOG_DEBUG, "readPathnamePatternsFromFile: can't stat %s. status = %d",
+                    fileStatInp.fileName, status);
+        }
+        return NULL;
+    }
+    buf_len = stbuf->st_size;
+    free(stbuf);
+    
+    memset(&fileOpenInp, 0, sizeof(fileOpenInp));
+    rstrcpy(fileOpenInp.fileName, filename, MAX_NAME_LEN);
+    // JMC - legacy resource fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescInfo->rescTypeInx].driverType;
+    rstrcpy(fileOpenInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+    fileOpenInp.flags = O_RDONLY;
+    fd = rsFileOpen(rsComm, &fileOpenInp);
+    if (fd < 0) {
+        rodsLog(LOG_NOTICE, 
+                "readPathnamePatternsFromFile: can't open %s for reading. status = %d",
+                fileOpenInp.fileName, fd);
+        return NULL;
+    }
+
+    memset(&fileReadBuf, 0, sizeof(fileReadBuf));
+    fileReadBuf.buf = malloc(buf_len);
+    if (fileReadBuf.buf == NULL) {
+        rodsLog(LOG_NOTICE, "readPathnamePatternsFromFile: could not malloc buffer");
+        return NULL;
+    }
+    
+    memset(&fileReadInp, 0, sizeof(fileReadInp));
+    fileReadInp.fileInx = fd;
+    fileReadInp.len = buf_len;
+    status = rsFileRead(rsComm, &fileReadInp, &fileReadBuf);
+    
+    memset(&fileCloseInp, 0, sizeof(fileCloseInp));
+    fileCloseInp.fileInx = fd;
+    rsFileClose(rsComm, &fileCloseInp);
+    
+    if (status < 0) {
+        rodsLog(LOG_NOTICE, "readPathnamePatternsFromFile: could not read %s. status = %d",
+                fileOpenInp.fileName, status);
+        free(fileReadBuf.buf);
+        return NULL;
+    }
+
+    pp = readPathnamePatterns((char*)fileReadBuf.buf, buf_len);
+
+    return pp;
+}
+
 

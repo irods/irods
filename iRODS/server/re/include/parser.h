@@ -307,6 +307,36 @@ CONCAT(done, l) = 1; \
 goto CONCAT(exit, l);
 #endif
 
+#define COUNTER(l) \
+               CONCAT(l, Counter)
+
+#define REPEAT_BEGIN(l) \
+int COUNTER(l) = 0; \
+LOOP_BEGIN(l) \
+       TRY(l) \
+
+#define REPEAT_END(l) \
+               COUNTER(l)++; \
+       OR(l) \
+               DONE(l); \
+       END_TRY(l) \
+LOOP_END(l)
+
+#define LIST_BEGIN(l) \
+       int COUNTER(l) = 0; \
+       LOOP_BEGIN(l) \
+
+#define LIST_DELIM(l) \
+       COUNTER(l)++; \
+       TRY(l) \
+
+#define LIST_END(l) \
+       OR(l) \
+               DONE(l); \
+       END_TRY(l) \
+LOOP_END(l)
+
+
 /** utility functions */
 ParserContext *newParserContext(rError_t *errmsg, Region *r);
 void deleteParserContext(ParserContext *t);

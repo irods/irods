@@ -111,6 +111,10 @@ typedef struct {
    int silent;
    int sql;
    int optind;  /* index into argv where non-recognized options begin */
+
+
+   int excludeFile;
+   char *excludeFileString;
 } rodsArguments_t;
 
 int

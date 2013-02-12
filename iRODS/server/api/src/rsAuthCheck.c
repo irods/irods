@@ -74,7 +74,7 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     rodsServerHost_t *rodsServerHost;
     int status;
 
-   status = getAndConnRcatHostNoLogin (rsComm, SLAVE_RCAT,
+   status = getAndConnRcatHostNoLogin (rsComm, MASTER_RCAT,
     rsComm->proxyUser.rodsZone, &rodsServerHost);
 
     if (status < 0) {

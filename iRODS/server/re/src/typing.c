@@ -618,15 +618,49 @@ ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable*
         ExprType *varType = (ExprType *)lookupFromHashTable(var_type_table, varname);
         ExprType *collType = varType == NULL? NULL:dereference(varType, var_type_table, r);
         if(collType!=NULL) {
-            /* error if res is not a collection type or a type variable (primitive union type excluded) */
-            RE_ERROR2(getNodeType(collType) != T_CONS && (getNodeType(collType) != T_VAR || T_VAR_NUM_DISJUNCTS(collType)!=0 ), "foreach is applied to a non collection type");
-            /* overwrite type of collection variable */
-            if(getNodeType(collType) == T_VAR) {
-                unifyTVarL(collType, newCollType(newTVar(r), r), var_type_table, r);
-                collType = dereference(collType, var_type_table, r);
+            /* error if res is not a collection type, a type variable (primitive union type excluded), a pair, a CollInp_MS_T, or a string */
+            switch(getNodeType(collType)) {
+            case T_CONS:
+                /* dereference element type as only top level vars are dereferenced by the dereference function and we are accessing a subtree of the type */
+            	updateInHashTable(var_type_table, varname, dereference(T_CONS_TYPE_ARG(collType, 0), var_type_table, r));
+            	break;
+            case T_VAR:
+            	if(T_VAR_NUM_DISJUNCTS(collType)!=0) {
+            		Node *disjuncts[2] = {newSimpType(T_STRING, r), newIRODSType(CollInp_MS_T, r)};
+            		Res *unified = unifyTVarL(collType, newTVar2(2, disjuncts, r), var_type_table, r);
+            		RE_ERROR2(getNodeType(unified) == T_ERROR, "foreach is applied to a non collection type");
+            		collType = dereference(collType, var_type_table, r);
+            		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
+            		break;
+            	} else {
+                    /* overwrite type of collection variable */
+            		/* if this has to be later unified with CollInp_MS_T, we need a special rule to handle it */
+                    unifyTVarL(collType, newCollType(newTVar(r), r), var_type_table, r);
+                    collType = dereference(collType, var_type_table, r);
+                    updateInHashTable(var_type_table, varname, dereference(T_CONS_TYPE_ARG(collType, 0), var_type_table, r));
+                    break;
+            	}
+            case T_TUPLE:
+            	RE_ERROR2(T_CONS_ARITY(collType)!=2 ||
+            			getNodeType(T_CONS_TYPE_ARG(collType, 0)) != T_IRODS ||
+            			strcmp(T_CONS_TYPE_NAME(T_CONS_TYPE_ARG(collType, 0)), GenQueryInp_MS_T) !=0 ||
+            			getNodeType(T_CONS_TYPE_ARG(collType, 1)) != T_IRODS ||
+						strcmp(T_CONS_TYPE_NAME(T_CONS_TYPE_ARG(collType, 0)), GenQueryOut_MS_T) !=0, "foreach is applied to a non collection type");
+            		updateInHashTable(var_type_table, varname, newIRODSType(KeyValPair_MS_T, r));
+            		break;
+            case T_IRODS:
+            	RE_ERROR2(strcmp(T_CONS_TYPE_NAME(collType), CollInp_MS_T)!=0, "foreach is applied to a non collection type");
+        		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
+        		break;
+            case T_STRING:
+        		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
+        		break;
+            default:
+            	RE_ERROR2(TRUE, "foreach is applied to a non collection type");
+            	break;
             }
-            /* dereference element type as only top level vars are dereferenced by the dereference function and we are accessing a subtree of the type */
-            updateInHashTable(var_type_table, varname, dereference(T_CONS_TYPE_ARG(collType, 0), var_type_table, r));
+
+
         } else {
             ExprType *elemType;
             insertIntoHashTable(var_type_table, varname, elemType = newTVar(r));
@@ -913,27 +947,27 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 			}
 			res = typeExpression3(expr->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
 			return expr->exprType = res;
-       case N_ATTR:
-               /* todo type */
-               for(i=0;i<expr->degree;i++) {
-                       res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-                       if(getNodeType(res) == T_ERROR) {
-                               return expr->exprType = res;
-                       }
-               }
-               return expr->exprType = newSimpType(T_DYNAMIC, r);
-       case N_QUERY_COND:
-               /* todo type */
-               for(i=0;i<expr->degree;i++) {
-                       res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-                       if(getNodeType(res) == T_ERROR) {
-                               return expr->exprType = res;
-                       }
-               }
-               return expr->exprType = newSimpType(T_DYNAMIC, r);
-       case TK_COL:
-               /* todo type */
-               return expr->exprType = newSimpType(T_DYNAMIC, r);
+		case N_ATTR:
+			/* todo type */
+			for(i=0;i<expr->degree;i++) {
+				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				if(getNodeType(res) == T_ERROR) {
+					return expr->exprType = res;
+				}
+			}
+			return expr->exprType = newSimpType(T_DYNAMIC, r);
+		case N_QUERY_COND:
+			/* todo type */
+			for(i=0;i<expr->degree;i++) {
+				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				if(getNodeType(res) == T_ERROR) {
+					return expr->exprType = res;
+				}
+			}
+			return expr->exprType = newSimpType(T_DYNAMIC, r);
+		case TK_COL:
+			/* todo type */
+			return expr->exprType = newSimpType(T_DYNAMIC, r);
 
         default:
 			break;

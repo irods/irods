@@ -911,18 +911,20 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     int statementNumber;
     int nextReplNum;
     char nextRepl[30];
-    char theColls[]="data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, r_comment, create_ts, modify_ts";
+    char theColls[]="data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, resc_hier, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_status, data_checksum, data_expiry_ts, data_map_id, data_mode, r_comment, create_ts, modify_ts";
     int IX_DATA_REPL_NUM=3;  /* index of data_repl_num in theColls */
+    int IX_RESC_GROUP_NAME=7;/* index into theColls */
     int IX_RESC_NAME=8;      /* index into theColls */
     int IX_RESC_HIER=9;
-    int IX_RESC_GROUP_NAME=7;/* index into theColls */
     int IX_DATA_PATH=10;      /* index into theColls */
-    int IX_CREATE_TS=19;
-    int IX_MODIFY_TS=20;
-    int IX_RESC_NAME2=21; // JMC - backport 4669
-    int IX_DATA_PATH2=22; // JMC - backport 4669
-    int IX_DATA_ID2=23; // JMC - backport 4669
-    int nColumns=24; // JMC - backport 4669
+
+    int IX_DATA_MODE=18;
+    int IX_CREATE_TS=20;
+    int IX_MODIFY_TS=21;
+    int IX_RESC_NAME2=22;
+    int IX_DATA_PATH2=23;
+    int IX_DATA_ID2=24;
+    int nColumns=25;
 
     char objIdString[MAX_NAME_LEN];
     char replNumString[MAX_NAME_LEN];
@@ -997,6 +999,8 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     cVal[IX_RESC_HIER]=dstDataObjInfo->rescHier;
     cVal[IX_RESC_GROUP_NAME]=dstDataObjInfo->rescGroupName;
     cVal[IX_DATA_PATH]=dstDataObjInfo->filePath;
+    cVal[IX_DATA_MODE]=dstDataObjInfo->dataMode;
+
 
     getNowStr(myTime);
     cVal[IX_MODIFY_TS]=myTime;
@@ -1013,10 +1017,13 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     cllBindVarCount = nColumns;
 #if (defined ORA_ICAT || defined MY_ICAT) // JMC - backport 4685
     /* MySQL and Oracle */
-    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4692
+    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? from DUAL where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
+            theColls);
 #else  
     /* Postgres */
-    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",theColls); // JMC - backport 4669
+    snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) select ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? where not exists (select data_id from R_DATA_MAIN where resc_name=? and data_path=? and data_id=?)",
+            theColls);
+
 #endif            
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
     status = cmlExecuteNoAnswerSql(tSQL,  &icss);
@@ -7211,15 +7218,30 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
     return(status);
 }
 
+/* create a path name with escaped SQL special characters (% and _) */
+void
+makeEscapedPath(char *inPath, char *outPath, int size) {
+   int i;
+   for (i=0;i<size-1;i++) {
+      if (*inPath=='%' || *inPath=='_') {
+         *outPath++='\\';
+      }
+      if (*inPath=='\0') {
+         *outPath++=*inPath++;
+         break;
+      }
+      *outPath++=*inPath++;
+   }
+   return;
+}
+
 /* Internal routine to modify inheritance */
 /* inheritFlag =1 to set, 2 to remove */
 int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *pathName) {
     rodsLong_t status;
     char myTime[50];
     char newValue[10];
-    char pathStart[MAX_NAME_LEN];
-    int len;
-    char pathStartLen[20];
+    char pathStart[MAX_NAME_LEN*2];
     char auditStr[30];
 
     if (recursiveFlag==0) {
@@ -7255,19 +7277,16 @@ int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *p
     }
     else {
         /* Recursive mode */
-
-        snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
-        len = strlen(pathStart);
-        snprintf(pathStartLen, 10, "%d", len);
+        makeEscapedPath(pathName, pathStart, sizeof(pathStart));
+        strncat(pathStart, "/%", sizeof(pathStart));
 
         cllBindVars[cllBindVarCount++]=newValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=pathName;
-        cllBindVars[cllBindVarCount++]=pathStartLen;
         cllBindVars[cllBindVarCount++]=pathStart;
         if (logSQL!=0) rodsLog(LOG_SQL, "_modInheritance SQL 2");
         status =  cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or substr(coll_name,1,?) = ?",
+            "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or coll_name like ?",
             &icss);
     }
     if (status != 0) {
@@ -7436,9 +7455,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     char *myZone;
     char userIdStr[MAX_NAME_LEN];
     char objIdStr[MAX_NAME_LEN];
-    char pathStart[MAX_NAME_LEN];
-    int len;
-    char pathStartLen[20];
+    char pathStart[MAX_NAME_LEN*2];
     int inheritFlag=0;
     char myAccessStr[LONG_NAME_LEN];
     int adminMode=0;
@@ -7747,19 +7764,19 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
         return(CAT_INVALID_ARGUMENT);
     }
 
-    snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
-    len = strlen(pathStart);
-    snprintf(pathStartLen, 10, "%d", len);
+
+    makeEscapedPath(pathName, pathStart, sizeof(pathStart));
+    strncat(pathStart, "/%", sizeof(pathStart));
 
     cllBindVars[cllBindVarCount++]=userIdStr;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 8");
     status =  cmlExecuteNoAnswerSql(
-        "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
-        &icss);
+              "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
+              &icss);
+     
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
         _rollback("chlModAccessControl");
         return(status);
@@ -7767,13 +7784,12 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     cllBindVars[cllBindVarCount++]=userIdStr;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
     status =  cmlExecuteNoAnswerSql(
-        "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
-        &icss);
+               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
+              &icss);
     if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
         _rollback("chlModAccessControl");
         return(status);
@@ -7799,29 +7815,27 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     }
 
     getNowStr(myTime);
-    snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
-    len = strlen(pathStart);
-    snprintf(pathStartLen, 10, "%d", len);
+    makeEscapedPath(pathName, pathStart, sizeof(pathStart));
+    strncat(pathStart, "/%", sizeof(pathStart));
     cllBindVars[cllBindVarCount++]=userIdStr;
     cllBindVars[cllBindVarCount++]=myAccessLev;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 10");
 #if ORA_ICAT
     /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
         &icss);
 #elif MY_ICAT
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
         &icss);
 #else
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or coll_name like ?))",
         &icss);
 #endif
     if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no files, OK */
@@ -7837,21 +7851,20 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=myTime;
     cllBindVars[cllBindVarCount++]=pathName;
-    cllBindVars[cllBindVarCount++]=pathStartLen;
     cllBindVars[cllBindVarCount++]=pathStart;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModAccessControl SQL 11");
 #if ORA_ICAT
     /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
         &icss);
 #elif MY_ICAT
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
         &icss);
 #else
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
+              "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or coll_name like ?)",
         &icss);
 #endif
     if (status != 0) {
@@ -8384,13 +8397,15 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         /* Update the table */
 
         /* First, set the collection name and parent collection to the
-           new strings */
+        new strings, and update the modify-time */
+        getNowStr(myTime);
         cllBindVars[cllBindVarCount++]=newCollName;
         cllBindVars[cllBindVarCount++]=targetCollName;
+        cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=objIdString;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
         status =  cmlExecuteNoAnswerSql(
-            "update R_COLL_MAIN set coll_name = ?, parent_coll_name=? where coll_id = ?",
+                  "update R_COLL_MAIN set coll_name = ?, parent_coll_name=?, modify_ts=? where coll_id = ?",
             &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,

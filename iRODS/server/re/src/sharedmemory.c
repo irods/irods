@@ -65,7 +65,7 @@ int removeSharedMemory() {
 	getResourceName(shm_name, shm_rname);
 #ifdef USE_BOOST
 	if(!boost::interprocess::shared_memory_object::remove(shm_name)) {
-		return SHM_UNLINK_ERROR;
+		return RE_SHM_UNLINK_ERROR;
 	}
 
 #else

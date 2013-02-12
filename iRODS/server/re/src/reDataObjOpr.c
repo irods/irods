@@ -748,6 +748,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *            '=' character is still needed
  *        \li "irodsAdminRmTrash" - Admin rm trash. This keyWd has no value.
  *        \li "irodsRmTrash" - rm trash. This keyWd has no value.
+ *        \li "unreg" - unregister the path. This keyWd has no value.
  *
  * \param[out] outParam - a msParam of type INT_MS_T for the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically

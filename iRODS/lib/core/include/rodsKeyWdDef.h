@@ -58,6 +58,7 @@
 #define COLLECTION_KW    "collection"
 #define IRODS_ADMIN_KW    "irodsAdmin"
 #define IRODS_ADMIN_RMTRASH_KW "irodsAdminRmTrash"
+#define UNREG_KW       "unreg"
 #define IRODS_RMTRASH_KW "irodsRmTrash"
 #define RECURSIVE_OPR__KW    "recursiveOpr"
 #define COLLECTION_TYPE_KW    "collectionType"
@@ -202,6 +203,11 @@
 #define RULE_NOTIFICATION_ADDR_KW    "notificationAddr"
 #define RULE_LAST_EXE_TIME_KW        "lastExeTime"
 #define RULE_EXE_STATUS_KW           "exeStatus"
+
+
+#define EXCLUDE_FILE_KW         "excludeFile"
+
+#define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
 // e-irods keywords definitions

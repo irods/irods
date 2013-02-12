@@ -1922,6 +1922,8 @@ usage(char *subOpt)
         "Use 'iquest --sql ls' to see the currently defined list.",
         "If 'iquest --sql ls' fails see icatSysInserts.sql for the definitions of two",
         "built-in specific queries (r_specific_query) that are needed.",
+        "To add a specific query with single quotes(') within, use double",
+        "quotes(\") around the SQL.",
         "Also see rsq.",
         ""};
 

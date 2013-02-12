@@ -176,7 +176,7 @@ Token* nextTokenRuleGen(Pointer* e, ParserContext *context, int rulegen) {
             break;
         } else {
             int i;
-            if (ch == '{' || ch == '}' || ch == '(' || ch == ')' || ch == ',' || ch == '@' || (ch == '|' && (!rulegen || lookAhead(e, 1) != '|')) || ch == ';' || ch == '?') {
+            if (ch == '{' || ch == '}' || ch == '[' || ch == ']' || ch == '(' || ch == ')' || ch == ',' || ch == '@' || (ch == '|' && (!rulegen || lookAhead(e, 1) != '|')) || ch == ';' || ch == '?') {
                 *(token->text) = ch;
                 (token->text)[1] = '\0';
                 token->type = TK_MISC_OP;

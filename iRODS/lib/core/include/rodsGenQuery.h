@@ -46,6 +46,8 @@ typedef struct GenQueryInp {
                                 even if more rows are available.  -1 is
                                 returned as the continueInx if there were
                                 (possibly) additional rows available.
+                                If UPPER_CASE_WHERE is set, make the 'where'
+                                columns upper case.
                              */
     keyValPair_t condInput;
     inxIvalPair_t selectInp; /* 1st int array is columns to return (select),
@@ -85,6 +87,7 @@ primary ordering column.
 #define NO_DISTINCT 0x40
 #define QUOTA_QUERY 0x80
 #define AUTO_CLOSE  0x100
+#define UPPER_CASE_WHERE  0x200
 
 
 /* 

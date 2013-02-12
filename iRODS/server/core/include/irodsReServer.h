@@ -30,7 +30,7 @@ uint CoreIrbTimeStamp = 0;
 #define v_FLAG  0x1
 
 void
-reServerMain (rsComm_t *rsComm);
+reServerMain (rsComm_t *rsComm, char* logDir);
 int
 reSvrSleep (rsComm_t *rsComm);
 int

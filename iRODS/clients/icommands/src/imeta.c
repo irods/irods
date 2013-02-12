@@ -16,6 +16,7 @@ char cwd[BIG_STR];
 int debug=0;
 int testMode=0; /* some some particular internal tests */
 int longMode=0; /* more detailed listing */
+int upperCaseFlag=0;
 
 char zoneArgument[MAX_NAME_LEN+2]="";
 
@@ -92,6 +93,9 @@ showDataObj(char *name, char *attrName, int wild)
    char *columnNames[]={"attribute", "value", "units", "id"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printf("AVUs defined for dataObj %s:\n",name);
    printCount=0;
@@ -215,6 +219,9 @@ showColl(char *name, char *attrName, int wild)
    char *columnNames[]={"attribute", "value", "units"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printf("AVUs defined for collection %s:\n",name);
    printCount=0;
@@ -320,6 +327,9 @@ showResc(char *name, char *attrName, int wild)
    char *columnNames[]={"attribute", "value", "units"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printf("AVUs defined for resource %s:\n",name);
    printCount=0;
@@ -407,6 +417,9 @@ showRescGroup(char *name, char *attrName, int wild)
    char *columnNames[]={"attribute", "value", "units"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printf("AVUs defined for resource group %s:\n",name);
    printCount=0;
@@ -510,6 +523,9 @@ showUser(char *name, char *attrName, int wild)
    }
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printf("AVUs defined for user %s#%s:\n",userName, userZone);
    printCount=0;
@@ -604,6 +620,9 @@ int queryDataObj(char *cmdToken[]) {
    char vstr[20] [BIG_STR];
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printCount=0;
    i1a[0]=COL_COLL_NAME;
@@ -691,6 +710,9 @@ int queryCollection(char *cmdToken[]) {
    char vstr[20] [BIG_STR];
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printCount=0;
    i1a[0]=COL_COLL_NAME;
@@ -773,6 +795,9 @@ int queryResc(char *attribute, char *op, char *value) {
    char *columnNames[]={"resource"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printCount=0;
    i1a[0]=COL_R_RESC_NAME;
@@ -832,6 +857,9 @@ int queryRescGroup(char *attribute, char *op, char *value) {
    char *columnNames[]={"resource group"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    printCount=0;
    i1a[0]=COL_RESC_GROUP_NAME;
@@ -894,6 +922,9 @@ int queryUser(char *attribute, char *op, char *value) {
 
    printCount=0;
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
+   }
 
    i1a[0]=COL_USER_NAME;
    i1b[0]=0;  /* (unused) */
@@ -1351,6 +1382,18 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
 
+   if (strcmp(cmdToken[0],"upper") == 0) {
+      if (upperCaseFlag ==1) {
+       upperCaseFlag = 0;
+       printf("upper case mode disabled\n");
+      }
+      else {
+       upperCaseFlag = 1;
+       printf("upper case mode for 'qu' command enabled\n");
+      }
+      return(0);
+   }
+   
    if (strcmp(cmdToken[0],"test") == 0) {
       if (testMode) {
 	 testMode=0;
@@ -1570,6 +1613,7 @@ void usageMain()
 " lsw -[l]d|C|R|G|u Name [AttName] (List existing AVUs, use Wildcards)", 
 " qu -d|C|R|G|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
 " cp -d|C|R|G|u -d|C|R|G|u Name1 Name2 (Copy AVUs from item Name1 to Name2)", 
+" upper (Toggle between upper case mode for queries (qu)",
 " ", 
 "Metadata attribute-value-units triplets (AVUs) consist of an Attribute-Name,", 
 "Attribute-Value, and an optional Attribute-Units.  They can be added", 
@@ -1816,6 +1860,22 @@ usage(char *subOpt)
 	    if (strlen(msgs[i])==0) return(0);
 	    printf("%s\n",msgs[i]);
 	 }
+      }
+      if (strcmp(subOpt,"upper")==0) {
+        char *msgs[]={
+" upper (Toggle between upper case mode for queries (qu)",
+"When enabled, the 'qu' queries will use the upper-case mode for the 'where'",
+"clause, so you can do a case-insensitive query (using an upper case literal)",
+"to compare against.  For example:",
+"  upper",
+"  qu -d A like B%",
+"will return all dataobjects with an AVU named 'A' or 'a' with a value that",
+"begins with 'b' or 'B'.",
+""};
+        for (i=0;;i++) {
+           if (strlen(msgs[i])==0) return(0);
+           printf("%s\n",msgs[i]);
+        }
       }
       printf("Sorry, either %s is an invalid command or the help has not been written yet\n",
 	     subOpt);

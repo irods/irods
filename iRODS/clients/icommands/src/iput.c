@@ -171,6 +171,7 @@ usage ()
 " -k  checksum - calculate a checksum on the data",
 " -K  verify checksum - calculate and verify the checksum on the data",
 " --link - ignore symlink.",
+" -n  replNum  - the replica to be replaced, typically not needed",
 " -N  numThreads - the number of threads to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.",

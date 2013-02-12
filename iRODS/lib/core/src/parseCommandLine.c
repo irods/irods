@@ -95,7 +95,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	 if (strcmp("--retries", argv[i])==0) {  /* also -Y */
 	    rodsArgs->retries=True;
 	    argv[i]="-Z";
-            if (i + 2 < argc) {
+            if (i + 2 <= argc) {
                if (*argv[i+1] == '-') {
                    rodsLog (LOG_ERROR,
                     "--retries option needs an iput file");
@@ -120,7 +120,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          if (strcmp("--lfrestart", argv[i])==0) {
             rodsArgs->lfrestart=True;
             argv[i]="-Z";
-            if (i + 2 < argc) {
+            if (i + 2 <= argc) {
 	       if (*argv[i+1] == '-') {
                    rodsLog (LOG_ERROR,
                     "--lfrestart option needs an iput file");
@@ -149,10 +149,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          if (strcmp("--age", argv[i])==0) {  /* also -Y */
             rodsArgs->age=True;
             argv[i]="-Z";
-            if (i + 2 < argc) {
+            if ( argc >= i + 2 ) {
                if (*argv[i+1] == '-') {
                    rodsLog (LOG_ERROR,
-                    "--age option needs an iput file");
+                    "--age option needs an iput number");
                     return USER_INPUT_OPTION_ERR;
                }
                rodsArgs->agevalue=atoi(argv[i+1]);
@@ -176,7 +176,20 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
             rodsArgs->add=True;
             argv[i]="-Z";
          }
-
+      
+         if (strcmp("--exclude-from", argv[i])==0) {
+            rodsArgs->excludeFile=True;
+            argv[i]="-Z";
+            if (i + 2 < argc) {
+               if (*argv[i+1] == '-') {
+                   rodsLog (LOG_ERROR,
+                    "--exclude-from option takes a file argument");
+                   return USER_INPUT_OPTION_ERR;
+               }
+               rodsArgs->excludeFileString=strdup(argv[i+1]);
+               argv[i+1]="-Z";
+            }
+         }
       }
    }
 
