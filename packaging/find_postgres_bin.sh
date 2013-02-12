@@ -1,24 +1,16 @@
 #!/bin/bash
 
 # =-=-=-=-=-=-=-
-# determine how many hits we have for finding psql
-num_res=$( find /usr -name "psql" -print 2> /dev/null | wc -l )
-
-# =-=-=-=-=-=-=-
-# count only binary ELF files
-if [ $num_res -gt 1 ]; then
-	ctr=0
-	for file in `find /usr -name "psql" -print 2> /dev/null`
-	do
-		elfstatus=`file $file | grep ELF | wc -l`
-		if [ "$elfstatus" == "1" ]; then
-			elf_links[$ctr]=$file
-       			ctr=$ctr+1
-		fi
-	done
-else
-	elf_links[0]=`find /usr -name "psql" -print 2> /dev/null`
-fi
+# count only binary ELF files for psql hits
+ctr=0
+for file in `find /usr -name "psql" -print 2> /dev/null`
+do
+	elfstatus=`file $file | grep ELF | wc -l`
+	if [ "$elfstatus" == "1" ]; then
+		elf_links[$ctr]=$file
+		ctr=$ctr+1
+	fi
+done
 
 # prepopulate the return variable with the proper values,
 # in the case of a failure this will be overwritten with
