@@ -197,7 +197,6 @@ _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
     int handleInx;
     dataObjInp_t dataObjInp;
     collInp_t tmpCollInp;
-    char *tmpValue;
     int rmtrashFlag =0;
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
