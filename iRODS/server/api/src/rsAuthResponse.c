@@ -33,7 +33,7 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    /* need to do NoLogin because it could get into inf loop for cross 
     * zone auth */
 
-   status = getAndConnRcatHostNoLogin (rsComm, SLAVE_RCAT, 
+   status = getAndConnRcatHostNoLogin (rsComm, MASTER_RCAT, 
     rsComm->proxyUser.rodsZone, &rodsServerHost);
    if (status < 0) {
       return(status);

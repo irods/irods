@@ -357,8 +357,7 @@ acSetVaultPathPolicy {msiSetGraftPathScheme("no","1"); }
 # muli-task such that one or two long running jobs cannot block the execution
 # of other jobs. One function can be called:
 #    msiSetReServerNumProc(numProc) - numProc can be "default" or a number
-#    in the range 0-4. A value of 0 means no forking. numProc will be set to 
-#    1 if "default" is the input. 
+#    in the range 1-4. numProc will be set to 1 if "default" is the input.
 #
 acSetReServerNumProc {msiSetReServerNumProc("default"); }
 #

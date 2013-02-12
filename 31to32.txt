@@ -2312,7 +2312,7 @@ JMC - No Op :: r5234 | schroede | 2012-10-01 18:40:17 -0400 (Mon, 01 Oct 2012) |
 Bump doxygen version numbers for upcoming release (3.2)
 
 ------------------------------------------------------------------------
-r5235 | mwan | 2012-10-02 14:26:06 -0400 (Tue, 02 Oct 2012) | 3 lines
+JMC - Done :: r5235 | mwan | 2012-10-02 14:26:06 -0400 (Tue, 02 Oct 2012) | 3 lines
 
 Modify comment on msiSetReServerNumProc that numProc=0 is no longer
 supported.
@@ -2334,11 +2334,11 @@ JMC - No Op :: r5238 | mwan | 2012-10-02 19:19:13 -0400 (Tue, 02 Oct 2012) | 2 l
 change the name of a netcdf struct. This struct is not being used
 
 ------------------------------------------------------------------------
-r5239 | xuh | 2012-10-02 21:26:52 -0400 (Tue, 02 Oct 2012) | 1 line
+JMC - Done :: r5239 | xuh | 2012-10-02 21:26:52 -0400 (Tue, 02 Oct 2012) | 1 line
 
 Make language integrated general not dependent on msiMakeGenQuery. Fixed bugs in language integrated general query.
 ------------------------------------------------------------------------
-r5240 | csmith | 2012-10-03 17:20:23 -0400 (Wed, 03 Oct 2012) | 5 lines
+JMC - Done :: r5240 | csmith | 2012-10-03 17:20:23 -0400 (Wed, 03 Oct 2012) | 5 lines
 
 rcAuthCheck must talk to a MASTER_RCAT
 

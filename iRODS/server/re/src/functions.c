@@ -377,16 +377,41 @@ int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* gen
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 
 Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
-       char queryStr[1024];
-       char condStr[1024];
        int size = 1024;
-       char *p = queryStr;
        int where = 0;
        int i;
+       char errmsgBuf[ERR_MSG_LEN];
+       int column_inx, function_inx, att_inx;
+       Res *res0, *res1;
+       NodeType nodeType0, nodeType1;
+       char *value0, *value1;
+
+       genQueryInp_t *genQueryInp = (genQueryInp_t*)malloc(sizeof(genQueryInp_t));
+       memset(genQueryInp, 0, sizeof(genQueryInp_t));
+       genQueryInp->maxRows = MAX_SQL_ROWS;
+
+       msParam_t genQInpParam;
+       genQInpParam.inOutStruct = (void*)genQueryInp;
+       genQInpParam.type = strdup(GenQueryInp_MS_T);
+
        for(i=0;i<n;i++) {
                switch(getNodeType(subtrees[i])) {
                case N_ATTR:
-                       columnToString(subtrees[i], &p, &size);
+                       /* Parse function and convert to index directly, getSelVal() returns 1 if string is NULL or empty. */
+                       function_inx = getSelVal(subtrees[i]->text);
+
+                       /* Get column index */
+                       column_inx = getAttrIdFromAttrName(subtrees[i]->subtrees[0]->text);
+
+                       /* Error? */
+                       if (column_inx < 0) {
+                               snprintf(errmsgBuf, ERR_MSG_LEN, "Unable to get valid ICAT column index for %s.", subtrees[i]->subtrees[0]->text);
+                               generateAndAddErrMsg(errmsgBuf, subtrees[i]->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                               return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+                       }
+
+                       /* Add column and function to genQueryInput */
+                       addInxIval (&genQueryInp->selectInp, column_inx, function_inx);
                        break;
                case N_QUERY_COND:
                        where = 1;
@@ -398,58 +423,74 @@ Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int rei
                if(where == 1) {
                        break;
                }
-               PRINT(&p, &size, "%s", ",");
        }
-       if(p != queryStr) {
-               p--;
-               *p = '\0';
-       }
-
 
        if(where == 1) {
-               p = condStr;
                for(;i<n;i++) {
                        switch(getNodeType(subtrees[i])) {
                case N_QUERY_COND:
-                       columnToString(subtrees[i]->subtrees[0], &p, &size);
-                       PRINT(&p, &size, " %s ", subtrees[i]->text);
-                       if(strcmp(subtrees[i]->text, "between")==0) {
-                               termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[1], 1);
-                               PRINT(&p, &size, "%s", " ");
-                               termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[2], 1);
-                       } else {
-                               termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[1], 1);
+                               /* Get attribute index */
+                               att_inx = getAttrIdFromAttrName(subtrees[i]->subtrees[0]->subtrees[0]->text);
+
+                               /* Error? */
+                               if (att_inx < 0) {
+                                       snprintf(errmsgBuf, ERR_MSG_LEN, "Unable to get valid ICAT column index for %s.", subtrees[i]->subtrees[0]->text);
+                                       generateAndAddErrMsg(errmsgBuf, subtrees[i]->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                                       return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+                               }
+
+                               /* Make the condition */
+                               res0 = evaluateExpression3(subtrees[i]->subtrees[1], 0, 0,rei, reiSaveFlag, env, errmsg, r);
+                               if(getNodeType(res0) == N_ERROR) {
+                                       return res0;
+                               }
+                               nodeType0 = (NodeType) TYPE(res0);
+                              if(nodeType0 != T_DOUBLE && nodeType0 != T_INT && nodeType0 != T_STRING) {
+                                       generateAndAddErrMsg("dynamic type error", subtrees[i]->subtrees[1], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                                       return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+                               }
+                               value0 = convertResToString(res0);
+                               if(strcmp(subtrees[i]->text, "between")==0) {
+                                       res1 = evaluateExpression3(subtrees[i]->subtrees[2], 0, 0,rei, reiSaveFlag, env, errmsg, r);
+                                       if(getNodeType(res1) == N_ERROR) {
+                                               return res1;
+                                       }
+                                       nodeType1 = (NodeType) TYPE(res1);
+                                       if(((nodeType0 == T_DOUBLE || nodeType0 == T_INT) && nodeType1 != T_DOUBLE && nodeType1 != T_INT) || (nodeType0 == T_STRING && nodeType1 != T_STRING)) {
+                                               generateAndAddErrMsg("dynamic type error", subtrees[i]->subtrees[2], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                                               return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+                                       }
+                                       value1 = convertResToString(res1);
+                                       if(nodeType0 == T_STRING) {
+                                               snprintf(condStr, 1024, "%s '%s' '%s'", subtrees[i]->text, value0, value1);
+                                       } else {
+                                               snprintf(condStr, 1024, "%s %s %s", subtrees[i]->text, value0, value1);
+                                       }
+                                       free(value0);
+                                       free(value1);
+                               } else {
+                                       if(nodeType0 == T_STRING) {
+                                               snprintf(condStr, 1024, "%s '%s'", subtrees[i]->text, value0);
+                                       } else {
+                                               snprintf(condStr, 1024, "%s %s", subtrees[i]->text, value0);
+                                       }
+                                       free(value0);
+                               }
+
+                               /* Add condition to genQueryInput */
+                               addInxVal (&genQueryInp->sqlCondInp, att_inx, condStr);   /* condStr gets strdup'ed */
+                               break;
+                       default:
+                               generateAndAddErrMsg("unsupported node type", subtrees[i], RE_DYNAMIC_TYPE_ERROR, errmsg);
+                               return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
                        }
-                       break;
-               default:
-                       generateAndAddErrMsg("unsupported node type", subtrees[i], RE_DYNAMIC_TYPE_ERROR, errmsg);
-                       return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
-               }
-               if(i != n - 1) {
-                       PRINT(&p, &size, "%s", " AND ");
-               }
-               }
+             } // for
        }
 
        Region *rNew = make_region(0, NULL);
-       msParam_t condParam;
-       msParam_t selectListParam;
-       msParam_t genQInpParam;
        msParam_t genQOutParam;
-       memset(&genQInpParam, 0, sizeof(msParam_t));
        memset(&genQOutParam, 0, sizeof(msParam_t));
-       convertResToMsParam(&condParam, newStringRes(rNew, condStr), errmsg);
-       convertResToMsParam(&selectListParam, newStringRes(rNew, queryStr), errmsg);
-       int status = msiMakeGenQuery(&selectListParam, &condParam, &genQInpParam, rei);
-       clearMsParam(&condParam, 1);
-       clearMsParam(&selectListParam, 1);
-       if(status < 0) {
-               region_free(rNew);
-               generateAndAddErrMsg("msiMakeGenQuery error", node, status, errmsg);
-               return newErrorRes(r, status);
-       }
-
-       status = msiExecGenQuery(&genQInpParam, &genQOutParam, rei);
+       int status = msiExecGenQuery(&genQInpParam, &genQOutParam, rei);
        if(status < 0) {
                region_free(rNew);
                generateAndAddErrMsg("msiExecGenQuery error", node, status, errmsg);
