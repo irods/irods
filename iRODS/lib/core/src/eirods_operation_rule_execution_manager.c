@@ -13,48 +13,46 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // public - Constructor
         operation_rule_execution_manager::operation_rule_execution_manager( 
-                                          const std::string& _inst_name,
-                                          const std::string& _op_name ) {
-            rule_name_ = _inst_name + "_" + _op_name;
+                                          const std::string& _instance,
+                                          const std::string& _op_name ) :
+                                          instance_( _instance ) {
+            rule_name_ = "pep_" + _op_name;
 
         } // ctor
 
         // =-=-=-=-=-=-=-
         // public - execute rule for pre operation
-        error operation_rule_execution_manager::exec_pre_op( rsComm_t*                         _comm, 
-                                                             const std::vector< std::string >& _args,
-                                                             std::string&                      _res ) {
+        error operation_rule_execution_manager::exec_pre_op( rsComm_t*    _comm, 
+                                                             std::string& _res ) {
             // =-=-=-=-=-=-=-
             // manufacture pre rule name
             std::string pre_name = rule_name_ + "_pre";
 
             // =-=-=-=-=-=-=-
             // execute the rule
-            return exec_op( pre_name, _comm, _args, _res ); 
+            return exec_op( pre_name, _comm, _res ); 
 
         } // exec_post_op
 
         // =-=-=-=-=-=-=-
         // public - execute rule for post operation
-        error operation_rule_execution_manager::exec_post_op( rsComm_t*                         _comm, 
-                                                              const std::vector< std::string >& _args,
-                                                              std::string&                      _res ) {
+        error operation_rule_execution_manager::exec_post_op( rsComm_t*    _comm, 
+                                                              std::string& _res ) {
             // =-=-=-=-=-=-=-
             // manufacture pre rule name
             std::string post_name = rule_name_ + "_post";
 
             // =-=-=-=-=-=-=-
             // execute the rule
-            return exec_op( post_name, _comm, _args, _res ); 
+            return exec_op( post_name, _comm, _res ); 
 
         } // exec_post_op
 
         // =-=-=-=-=-=-=-
         // private - execute rule for pre operation
-        error operation_rule_execution_manager::exec_op( const std::string&                _name,
-                                                         rsComm_t*                         _comm, 
-                                                         const std::vector< std::string >& _args,
-                                                         std::string&                      _res ) {
+        error operation_rule_execution_manager::exec_op( const std::string& _name,
+                                                         rsComm_t*          _comm, 
+                                                         std::string&       _res ) {
             // =-=-=-=-=-=-=-
             // check comm ptr
             if( !_comm ) {
@@ -72,51 +70,24 @@ namespace eirods {
             }
             
             // =-=-=-=-=-=-=-
-            // check that args are not larger than max args for rules
-            if( _args.size() > MAX_NUM_OF_ARGS_IN_ACTION ) {
-                std::stringstream msg;
-                msg << _name;
-                msg << " arg vector is longer than ";
-                msg << MAX_NUM_OF_ARGS_IN_ACTION;
-                return ERROR( -1, msg.str() );
-            }
-
-            // =-=-=-=-=-=-=-
             // manufacture an rei for the applyRule
             ruleExecInfo_t rei;
             memset ((char*)&rei, 0, sizeof (ruleExecInfo_t));
             rei.rsComm = _comm;
             rei.uoic   = &_comm->clientUser;
             rei.uoip   = &_comm->proxyUser;
+            rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
 
-            // =-=-=-=-=-=-=-
-            // build an argument list for applyRule from the gathered op params
-            msParamArray_t params;
-            memset( &params, 0, sizeof( params ) );
-
-            int            label_index = 0;
-            std::string    label_base( "*ARG" );
-            std::string    arg_string( "(" );
-            for( size_t i = 0; i < _args.size(); ++i ) {
-                std::stringstream idx; 
-                idx << label_index++; 
-                std::string label = label_base + idx.str();
-                
-                addMsParamToArray( &params, const_cast<char*>( label.c_str() ), STR_MS_T, const_cast<char*>( _args[ i ].c_str() ), NULL, 0 );
-               
-                arg_string += label + ",";
-                 
-            } // for i
-                
             // =-=-=-=-=-=-=-
             // add the output parameter     
-            arg_string += "*OUT";
+            msParamArray_t params;
+            memset( &params, 0, sizeof( msParamArray_t ) );
             char out_param[ MAX_NAME_LEN ] = {"EMPTY_PARAM"};
             addMsParamToArray( &params, "*OUT", STR_MS_T, out_param, NULL, 0 );
 
             // =-=-=-=-=-=-=-
             // rule exists, param array is build.  call the rule.
-            std::string arg_name = _name + arg_string + ")";
+            std::string arg_name = _name + "(*OUT)";
             int ret = applyRuleUpdateParams( const_cast<char*>( arg_name.c_str() ), &params, &rei, NO_SAVE_REI );
             if( 0 != ret ) {
                 return ERROR( ret, "exec_op - failed in call to applyRuleUpdateParams" );

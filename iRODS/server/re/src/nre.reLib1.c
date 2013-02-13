@@ -797,6 +797,7 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
      configDir = getConfigDir ();
      snprintf (dvarsFileName,MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir,dvarBaseName);
    }
+
    file = fopen(dvarsFileName, "r");
    if (file == NULL) {
      rodsLog(LOG_NOTICE,
@@ -811,10 +812,12 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
        continue;
      rSplitStr(buf, l1, MAX_DVAR_LENGTH, l0, MAX_DVAR_LENGTH, '|');
      inRuleVarDef->varName[i] = strdup(l1);  /** varName **/
+
      rSplitStr(l0, l1, MAX_DVAR_LENGTH, l3, MAX_DVAR_LENGTH,'|');
      inRuleVarDef->action[i] = strdup(l1); /** action **/
      rSplitStr(l3, l1, MAX_DVAR_LENGTH, l2, MAX_DVAR_LENGTH,'|');
      inRuleVarDef->var2CMap[i] = strdup(l1);  /** var2CMap **/
+
      if (strlen(l2) > 0)
        inRuleVarDef->varId[i] = atoll(l2);   /** varId **/
      else
