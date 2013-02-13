@@ -50,6 +50,7 @@ typedef struct RuleExecInfo {
   char statusStr[MAX_NAME_LEN];
   char ruleName[NAME_LEN];	/* name of rule */
   rsComm_t *rsComm;
+  char pluginInstanceName[MAX_NAME_LEN];
   msParamArray_t *msParamArray;
   msParamArray_t inOutMsParamArray;
   int l1descInx;

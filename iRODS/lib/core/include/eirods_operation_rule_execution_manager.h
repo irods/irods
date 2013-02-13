@@ -27,20 +27,19 @@ namespace eirods {
     public: 
         // =-=-=-=-=-=-=-
         /// @brief Constructor
-        operation_rule_execution_manager( const std::string&,   // instance name
+        operation_rule_execution_manager( const std::string&,   // name of the plugin
                                           const std::string& ); // operation name
+                                          
 
         // =-=-=-=-=-=-=-
         /// @brief execute rule for pre operation
-        error exec_pre_op( rsComm_t*,                         // client connection
-                           const std::vector< std::string >&, // args to operation
-                           std::string& );                    // results of call to rule
+        error exec_pre_op( rsComm_t*,      // client connection
+                           std::string& ); // results of call to rule
 
         // =-=-=-=-=-=-=-
         /// @brief execute rule for post operation
-        error exec_post_op( rsComm_t*,                        // client connection
-                           const std::vector< std::string >&, // args to operation
-                            std::string& );                   // results of call to rule
+        error exec_post_op( rsComm_t*,      // client connection
+                            std::string& ); // results of call to rule
 
     private:
         // =-=-=-=-=-=-=-
@@ -49,10 +48,11 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief execute rule for post operation
-        error exec_op( const std::string&,                // rule name 
-                       rsComm_t*,                         // client connection
-                       const std::vector< std::string >&, // args to operation
-                       std::string& );                    // results of call to rule
+        error exec_op( const std::string&, // rule name 
+                       rsComm_t*,          // client connection
+                       std::string& );     // results of call to rule
+
+        std::string instance_; // instance name of the plugin
 
     }; // class operation_rule_execution_manager
 

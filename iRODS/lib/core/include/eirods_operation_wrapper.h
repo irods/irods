@@ -70,16 +70,14 @@ namespace eirods {
                     resource_child_map*    _cmap, 
                     first_class_object*    _obj ) {
             if( operation_ ) {
-               std::vector< std::string > arg_vec;
-               
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
-
+ 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -88,7 +86,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
               return op_err;
 
@@ -109,21 +107,13 @@ namespace eirods {
                     T1 _t1 ) {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-
-               // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
-
+               
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -132,7 +122,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
               return op_err;
 
@@ -153,25 +143,13 @@ namespace eirods {
                     T2                     _t2 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
-
-               // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -180,7 +158,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
@@ -202,29 +180,13 @@ namespace eirods {
                     T3                     _t3 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
- 
-               std::stringstream p3;  
-               p3 << _t3;
-               arg_vec.push_back( p3.str() );
-
-               // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -233,7 +195,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
@@ -255,27 +217,6 @@ namespace eirods {
                     T3                     _t3, 
                     T4                     _t4 ) {
 		   if( operation_ ) {
-	           // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
-               
-               std::stringstream p3;  
-               p3 << _t3;
-               arg_vec.push_back( p3.str() );
-            
-               std::stringstream p4;  
-               p4 << _t4;
-               arg_vec.push_back( p4.str() );
-
-
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
@@ -283,7 +224,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -292,7 +233,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
@@ -316,38 +257,14 @@ namespace eirods {
                     T4                     _t4, 
                     T5                     _t5 ) {
 		   if( operation_ ) {
-	           // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
-               
-               std::stringstream p3;  
-               p3 << _t3;
-               arg_vec.push_back( p3.str() );
-            
-               std::stringstream p4;  
-               p4 << _t4;
-               arg_vec.push_back( p4.str() );
-         
-               std::stringstream p5;  
-               p5 << _t5;
-               arg_vec.push_back( p5.str() );
-
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
-
+ 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -356,7 +273,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
@@ -380,34 +297,6 @@ namespace eirods {
                     T5                     _t5, 
                     T6                     _t6 ) {
 		   if( operation_ ) {
-	           // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
-               
-               std::stringstream p3;  
-               p3 << _t3;
-               arg_vec.push_back( p3.str() );
-            
-               std::stringstream p4;  
-               p4 << _t4;
-               arg_vec.push_back( p4.str() );
-         
-               std::stringstream p5;  
-               p5 << _t5;
-               arg_vec.push_back( p5.str() );
-      
-               std::stringstream p6;  
-               p6 << _t6;
-               arg_vec.push_back( p6.str() );
-
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
@@ -415,7 +304,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -424,7 +313,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
@@ -449,38 +338,6 @@ namespace eirods {
                     T6                     _t6, 
                     T7                     _t7 ) {
 		   if( operation_ ) {
-	           // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
-               
-               std::stringstream p3;  
-               p3 << _t3;
-               arg_vec.push_back( p3.str() );
-            
-               std::stringstream p4;  
-               p4 << _t4;
-               arg_vec.push_back( p4.str() );
-         
-               std::stringstream p5;  
-               p5 << _t5;
-               arg_vec.push_back( p5.str() );
-      
-               std::stringstream p6;  
-               p6 << _t6;
-               arg_vec.push_back( p6.str() );
-   
-               std::stringstream p7;  
-               p7 << _t7;
-               arg_vec.push_back( p7.str() );
-
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
@@ -488,7 +345,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -497,7 +354,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
@@ -523,42 +380,6 @@ namespace eirods {
                         T7                     _t7,
                         T8                     _t8 ) {
 		   if( operation_ ) {
-	           // =-=-=-=-=-=-=-
-               // ingest incoming params as string to pass to the rule exec
-               std::vector< std::string > arg_vec;
-               
-               std::stringstream p1;  
-               p1 << _t1;
-               arg_vec.push_back( p1.str() );
-               
-               std::stringstream p2;  
-               p2 << _t2;
-               arg_vec.push_back( p2.str() );
-               
-               std::stringstream p3;  
-               p3 << _t3;
-               arg_vec.push_back( p3.str() );
-            
-               std::stringstream p4;  
-               p4 << _t4;
-               arg_vec.push_back( p4.str() );
-         
-               std::stringstream p5;  
-               p5 << _t5;
-               arg_vec.push_back( p5.str() );
-      
-               std::stringstream p6;  
-               p6 << _t6;
-               arg_vec.push_back( p6.str() );
-   
-               std::stringstream p7;  
-               p7 << _t7;
-               arg_vec.push_back( p7.str() );
- 
-               std::stringstream p8;  
-               p8 << _t8;
-               arg_vec.push_back( p8.str() );
-
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
@@ -566,16 +387,16 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, arg_vec, pre_results );
+               rule_exec.exec_pre_op( _comm, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
- 
+			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, 
+                                                _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, arg_vec, post_results );
+               rule_exec.exec_post_op( _comm, post_results );
 
                return op_err;
 
