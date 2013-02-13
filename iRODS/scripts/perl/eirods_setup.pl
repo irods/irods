@@ -33,13 +33,20 @@ use Config;
 
 $version{"eirods_setup.pl"} = "Jan 2012";
 
+
 # =-=-=-=-=-=-=-
-# set flag to determine if this is an iCAT installation or not
 # for testing later...
-$icatInstall = 0;
-if( scalar(@ARGV) > 0 ) {
-	$icatInstall = 1;
+# set flag determining if this is an automated cloud resource server
+$cloudResourceInstall = 0;
+if( scalar(@ARGV) == 1) {
+        $cloudResourceInstall = 1;
 }
+# set flag to determine if this is an iCAT installation or not
+$icatInstall = 0;    
+if( scalar(@ARGV) > 1 ) {
+        $icatInstall = 1;
+}
+
 
 #
 # Design Notes:  Perl and OS compatability
@@ -492,18 +499,29 @@ if( 1 == $icatInstall )
 # TGR :: for a resource server, prompt for icat admin password
 else
 {
-    # call out to external shell script so live password can be hidden
-    # and never shown to the user and never written to disk or visible to
-    # the unix process listing (ps)
-    print "\n";
-    print "The following password will not be written to disk\n";
-    print "or made visible to any process other than this setup script.\n";
-    print "\n";
-    print "  iCAT server's admin username: $IRODS_ADMIN_NAME\n";
-    print "  iCAT server's admin password: ";
-    $IRODS_ADMIN_PASSWORD = `/var/lib/e-irods/packaging/get_icat_server_password.sh`;
-    print "\n";
-    print "\n";
+    if ( 1 == $cloudResourceInstall )
+    {
+        # get the password from argv
+        print "\n";
+        print "Reading [$IRODS_ADMIN_NAME] password from input...\n";
+        print "\n";
+        $IRODS_ADMIN_PASSWORD = $ARGV[0];
+        chomp $IRODS_ADMIN_PASSWORD;
+    }
+    else {
+        # call out to external shell script so live password can be hidden
+        # and never shown to the user and never written to disk or visible to
+        # the unix process listing (ps)
+        print "\n";
+        print "The following password will not be written to disk\n";
+        print "or made visible to any process other than this setup script.\n";
+        print "\n";
+        print "  iCAT server's admin username: $IRODS_ADMIN_NAME\n";
+        print "  iCAT server's admin password: ";
+        $IRODS_ADMIN_PASSWORD = `/var/lib/e-irods/packaging/get_icat_server_password.sh`;
+        print "\n";
+        print "\n";
+    }
 }
 
 ########################################################################
