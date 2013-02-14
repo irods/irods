@@ -212,7 +212,6 @@ ln -s    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/ic
 ln -s    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum           
 ln -s    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod            
 ln -s    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp               
-ln -s    /usr/bin/idbo                    ${IRODS_HOME}/clients/icommands/bin/idbo              
 ln -s    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug             
 ln -s    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv              
 ln -s    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror            
