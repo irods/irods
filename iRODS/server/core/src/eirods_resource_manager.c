@@ -14,6 +14,7 @@
 #include "rsGlobalExtern.h"
 #include "generalAdmin.h"
 #include "phyBundleColl.h"
+#include "miscServerFunct.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -509,8 +510,11 @@ st.dump();
 
         // =-=-=-=-=-=-=-
         // build a host addr struct to get the server host info
+        char host_name[ MAX_NAME_LEN ];
+        gethostname( host_name, MAX_NAME_LEN );
+
         rodsHostAddr_t addr;
-        rstrcpy( addr.hostAddr, "localhost", LONG_NAME_LEN );
+        rstrcpy( addr.hostAddr, host_name, LONG_NAME_LEN );
         rstrcpy( addr.zoneName, const_cast<char*>( zone_info->zoneName ), NAME_LEN );
 
         rodsServerHost_t* tmpRodsServerHost = 0;
@@ -518,11 +522,11 @@ st.dump();
             rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", 
                      addr.hostAddr );
         }
-
+    
+        resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
+            
         // =-=-=-=-=-=-=-
         // start filling in the properties
-        resc->set_property< rodsServerHost_t* >( "host", zone_info->masterServerHost );
-            
         resc->set_property<long>( "id", 999 );
         resc->set_property<long>( "freespace", 999 );
         resc->set_property<long>( "quota", RESC_QUOTA_UNINIT );
