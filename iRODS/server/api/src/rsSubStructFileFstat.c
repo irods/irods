@@ -105,7 +105,7 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
             *_stat_out = new rodsStat_t;
         }
         
-        int status = statToRodsStat( *_stat_out, &fs );
+        statToRodsStat( *_stat_out, &fs );
 
         return fstat_err.code();
 

@@ -43,7 +43,7 @@ allocFileDesc ()
 }
 
 int
-allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char *fileName,
+allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char* objPath, char *fileName,
                       char* rescHier, fileDriverType_t fileType, int fd, int mode)
 {
     int fileInx;
@@ -54,6 +54,7 @@ allocAndFillFileDesc (rodsServerHost_t *rodsServerHost, char *fileName,
     }
 
     FileDesc[fileInx].rodsServerHost = rodsServerHost;
+    FileDesc[fileInx].objPath  = strdup (objPath);
     FileDesc[fileInx].fileName = strdup (fileName);
     FileDesc[fileInx].rescHier = strdup (rescHier);
     FileDesc[fileInx].fileType = fileType;
@@ -467,6 +468,7 @@ matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 int
 filePathTypeInResc (
     rsComm_t *rsComm,
+    char* objPath,
     char *fileName,
     char *rescHier,
     rescInfo_t *rescInfo)
@@ -480,7 +482,7 @@ filePathTypeInResc (
 
     rstrcpy (fileStatInp.fileName, fileName, MAX_NAME_LEN);
     rstrcpy (fileStatInp.rescHier, rescHier, MAX_NAME_LEN);
-
+    rstrcpy (fileStatInp.objPath,  objPath,  MAX_NAME_LEN);
     rescTypeInx = rescInfo->rescTypeInx;
     fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
@@ -504,7 +506,7 @@ bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd)
 {
     int fileInx;
 
-    fileInx = allocAndFillFileDesc (rodsServerHost, STREAM_FILE_NAME, "",
+    fileInx = allocAndFillFileDesc (rodsServerHost, "", STREAM_FILE_NAME, "",
                                     UNIX_FILE_TYPE, fd, DEFAULT_FILE_MODE);
 
     return fileInx;

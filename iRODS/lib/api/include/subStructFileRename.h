@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 /* subStructFileRename.h  
@@ -29,7 +31,7 @@ int
 _rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp);
 int
 remoteSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp,
-rodsServerHost_t *rodsServerHost);
+                           rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_RENAME NULL
 #endif
@@ -38,4 +40,4 @@ rodsServerHost_t *rodsServerHost);
 int
 rcSubStructFileRename (rcComm_t *conn, subStructFileRenameInp_t *subStructFileRenameInp);
 
-#endif	/* SUB_STRUCT_FILE_RENAME_H */
+#endif  /* SUB_STRUCT_FILE_RENAME_H */

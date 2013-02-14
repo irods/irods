@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -9,84 +8,85 @@
 namespace eirods {
 
     // =-=-=-=-=-=-=-
-	// public - ctor
+    // public - ctor
     structured_object::structured_object() :
-                       first_class_object(),
-                       sub_file_path_(""),
-                       mode_(0),
-                       flags_(0),
-                       offset_(0),
-                       spec_coll_(0),
-                       data_type_(""),
-                       opr_type_(0) {
-	} // structured_object
+        first_class_object(),
+        sub_file_path_(""),
+        mode_(0),
+        flags_(0),
+        offset_(0),
+        spec_coll_(0),
+        data_type_(""),
+        opr_type_(0) {
+    } // structured_object
 
     // =-=-=-=-=-=-=-
-	// public - cctor
-	structured_object::structured_object( const structured_object& _rhs ) : 
-                       first_class_object( _rhs ) {
+    // public - cctor
+    structured_object::structured_object( const structured_object& _rhs ) : 
+        first_class_object( _rhs ) {
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
-		mode_          = _rhs.mode_;
-		flags_         = _rhs.flags_;
+        mode_          = _rhs.mode_;
+        flags_         = _rhs.flags_;
         offset_        = _rhs.offset_;
         spec_coll_     = _rhs.spec_coll_;
         data_type_     = _rhs.data_type_;
         opr_type_      = _rhs.opr_type_;
 
-	} // cctor 
+    } // cctor 
 
     // =-=-=-=-=-=-=-
-	// public - cctor
+    // public - cctor
     structured_object::structured_object( subFile_t& _sub ) :
-	             first_class_object(),
-                       sub_file_path_(""),
-                       mode_(0),
-                       flags_(0),
-                       offset_(0),
-                       spec_coll_(0),
-                       data_type_(""),
-                       opr_type_(0) {
+        first_class_object(),
+        sub_file_path_(""),
+        mode_(0),
+        flags_(0),
+        offset_(0),
+        spec_coll_(0),
+        data_type_(""),
+        opr_type_(0) {
 
         // =-=-=-=-=-=-=-
         // pull out subFile attributes
         addr_          = _sub.addr;
         sub_file_path_ = _sub.subFilePath;
-		mode_          = _sub.mode;
-		flags_         = _sub.flags;
+        mode_          = _sub.mode;
+        flags_         = _sub.flags;
         offset_        = _sub.offset;
         spec_coll_     = _sub.specColl;
 
         // =-=-=-=-=-=-=-
         // file* functions will fail with an empty physical_path_
         physical_path_ = _sub.subFilePath;
+        logical_path(spec_coll_->objPath);
 
-	} // structured_object
+    } // structured_object
 
     // =-=-=-=-=-=-=-
-	// public - dtor
-	structured_object::~structured_object() {
-	} // dtor
+    // public - dtor
+    structured_object::~structured_object() {
+    } // dtor
 
-	// =-=-=-=-=-=-=-
-	// public - assignment operator
-	structured_object& structured_object::operator=( const structured_object& _rhs ) {
-		// =-=-=-=-=-=-=-
-		// call base class assignment first
+    // =-=-=-=-=-=-=-
+    // public - assignment operator
+    structured_object& structured_object::operator=( const structured_object& _rhs ) {
+        // =-=-=-=-=-=-=-
+        // call base class assignment first
         first_class_object::operator=( _rhs );
 
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
-		mode_          = _rhs.mode_;
-		flags_         = _rhs.flags_;
+        mode_          = _rhs.mode_;
+        flags_         = _rhs.flags_;
         offset_        = _rhs.offset_;
         spec_coll_     = _rhs.spec_coll_;
         data_type_     = _rhs.data_type_;
         opr_type_      = _rhs.opr_type_;
 
-		return *this;
+        return *this;
 
-	}  // operator=
+    }  // operator=
 
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object

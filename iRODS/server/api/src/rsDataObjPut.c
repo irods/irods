@@ -240,11 +240,8 @@ int
 preProcParaPut (rsComm_t *rsComm, int l1descInx, 
                 portalOprOut_t **portalOprOut)
 {
-    int l3descInx;
     int status;
     dataOprInp_t dataOprInp;
-
-    l3descInx = L1desc[l1descInx].l3descInx;
 
     initDataOprInp (&dataOprInp, l1descInx, PUT_OPR);
     /* add RESC_NAME_KW for getNumThreads */
@@ -424,7 +421,6 @@ int
 l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 {
     dataObjInfo_t *dataObjInfo;
-    int rescTypeInx;
     fileOpenInp_t filePutInp;
     int bytesWritten;
     dataObjInp_t *dataObjInp;
@@ -463,6 +459,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         memset (&filePutInp, 0, sizeof (filePutInp));
     rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+    rstrcpy( filePutInp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
     if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
         filePutInp.otherFlags |= FORCE_FLAG;
     }

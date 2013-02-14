@@ -15,6 +15,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
@@ -91,9 +92,26 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
      * when RCAT is available 
      */
 
+    if(FileDesc[fileReadInp->fileInx].objPath == NULL ||
+       FileDesc[fileReadInp->fileInx].objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // call resource plugin for POSIX read
     eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileReadInp->fileInx].objPath,
                                   FileDesc[fileReadInp->fileInx].fileName,
                                   FileDesc[fileReadInp->fileInx].rescHier,
                                   FileDesc[fileReadInp->fileInx].fd,  

@@ -13,7 +13,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
-
+#include "eirods_stacktrace.h"
 
 int
 rsFileFsync (rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp)
@@ -76,9 +76,27 @@ remoteFileFsync (rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp,
 // =-=-=-=-=-=-=-
 // local function to handle call to fsync via resource plugin
 int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
+
+    if(FileDesc[fileFsyncInp->fileInx].objPath == NULL ||
+       FileDesc[fileFsyncInp->fileInx].objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make call to fsync via resource plugin
     eirods::file_object file_obj(  rsComm,
+                                   FileDesc[fileFsyncInp->fileInx].objPath,
                                    FileDesc[fileFsyncInp->fileInx].fileName,
                                    FileDesc[fileFsyncInp->fileInx].rescHier,
                                    FileDesc[fileFsyncInp->fileInx].fd,

@@ -203,7 +203,6 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 {
     int status;
     fileOpenInp_t chkNVPathPermInp;
-    int rescTypeInx;
     char *tmpFilePath;
     char filePath[MAX_NAME_LEN];
     dataObjInfo_t dataObjInfo;
@@ -239,7 +238,6 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
                        
         memset (&chkNVPathPermInp, 0, sizeof (chkNVPathPermInp));
 
-        rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
         rstrcpy (chkNVPathPermInp.fileName, filePath, MAX_NAME_LEN);
         chkNVPathPermInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
         rstrcpy (chkNVPathPermInp.addr.hostAddr,  
@@ -397,7 +395,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     collInp_t collCreateInp;
     fileOpendirInp_t fileOpendirInp;
     fileClosedirInp_t fileClosedirInp;
-    int rescTypeInx;
     int status;
     int dirFd;
     dataObjInp_t subPhyPathRegInp;
@@ -429,11 +426,11 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
 
-    rescTypeInx = rescInfo->rescTypeInx;
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
     fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpendirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
-
+    rstrcpy (fileOpendirInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
+    
     dirFd = rsFileOpendir (rsComm, &fileOpendirInp);
     if (dirFd < 0) {
         rodsLog (LOG_ERROR,
@@ -461,11 +458,14 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             continue;
         }
 
+        subPhyPathRegInp = *phyPathRegInp;
+        snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
+                  phyPathRegInp->objPath, rodsDirent->d_name);
+
         memset (&fileStatInp, 0, sizeof (fileStatInp));
 
-        snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s",
-                  filePath, rodsDirent->d_name);
-
+        snprintf (fileStatInp.fileName, MAX_NAME_LEN, "%s/%s", filePath, rodsDirent->d_name);
+        rstrcpy(fileStatInp.objPath, subPhyPathRegInp.objPath, MAX_NAME_LEN);
         fileStatInp.fileType = fileOpendirInp.fileType; 
         fileStatInp.addr = fileOpendirInp.addr;
 
@@ -487,10 +487,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
             free (rodsDirent); // JMC - backport 4835
             return (status);
         }
-
-        subPhyPathRegInp = *phyPathRegInp;
-        snprintf (subPhyPathRegInp.objPath, MAX_NAME_LEN, "%s/%s",
-                  phyPathRegInp->objPath, rodsDirent->d_name);
 
         if ((myStat->st_mode & S_IFREG) != 0) {     /* a file */
             if (forceFlag > 0) {
@@ -534,7 +530,6 @@ int mountFileDir( rsComm_t*     rsComm,
                   char*         filePath, 
                   rescInfo_t*   rescInfo ) {
     collInp_t collCreateInp;
-    int rescTypeInx;
     int status;
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
@@ -568,8 +563,7 @@ int mountFileDir( rsComm_t*     rsComm,
     memset (&fileStatInp, 0, sizeof (fileStatInp));
 
     rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
-
-    rescTypeInx = rescInfo->rescTypeInx;
+    rstrcpy (fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
     fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 

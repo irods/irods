@@ -21,13 +21,14 @@
 typedef struct {
     char resc_name_[MAX_NAME_LEN];
     char resc_hier_[MAX_NAME_LEN];
+    char objPath[MAX_NAME_LEN];
     
     fileDriverType_t fileType;
     rodsHostAddr_t addr;
     char dirName[MAX_NAME_LEN];
 } fileOpendirInp_t;
     
-#define fileOpendirInp_PI "int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN];" 
+#define fileOpendirInp_PI "str resc_name_[MAX_NAME_LEN]; str resc_hier_[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN];" 
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPENDIR rsFileOpendir

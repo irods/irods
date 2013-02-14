@@ -64,7 +64,7 @@ rodsServerHost_t *rodsServerHost)
     return fd;
 }
 
-int _rsSubStructFileMkdir( rsComm_t*  _comm, 
+int _rsSubStructFileMkdir( rsComm_t*  _comm,
                            subFile_t* _sub_file ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 

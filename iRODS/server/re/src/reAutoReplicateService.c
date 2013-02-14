@@ -303,8 +303,8 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
    genQueryInp_t genQueryInp;
    int i;
    genQueryOut_t *genQueryOut = NULL;
-   sqlResult_t *replNumStruct, *rescStruct, *grpRescStruct, *dataPathStruct, *chkSumStruct;
-   char *replNum, *rescName, *grpRescName, *dataPathName, *chkSum;
+   sqlResult_t *replNumStruct, *rescStruct, *dataPathStruct, *chkSumStruct;
+   char *replNum, *rescName, *dataPathName, *chkSum;
    int t;
 
    int i1a[10];
@@ -396,8 +396,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       rescStruct = getSqlResultByInx (genQueryOut, COL_D_RESC_NAME);
       rescName = &rescStruct->value[rescStruct->len*i];
    
-      grpRescStruct = getSqlResultByInx (genQueryOut, COL_D_RESC_GROUP_NAME);
-      grpRescName = &grpRescStruct->value[grpRescStruct->len*i];
+      getSqlResultByInx (genQueryOut, COL_D_RESC_GROUP_NAME);
    
       dataPathStruct = getSqlResultByInx(genQueryOut, COL_D_DATA_PATH);
       dataPathName = &dataPathStruct->value[dataPathStruct->len*i];

@@ -21,6 +21,7 @@
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
 
 #include <string>
 
@@ -53,8 +54,8 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
         return (fd);
     }
 
-    fileInx = allocAndFillFileDesc (rodsServerHost, fileCreateInp->fileName, fileCreateInp->resc_hier_, fileCreateInp->fileType, fd,
-                                    fileCreateInp->mode);
+    fileInx = allocAndFillFileDesc (rodsServerHost, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_,
+                                    fileCreateInp->fileType, fd, fileCreateInp->mode);
 
     return (fileInx);
 }
@@ -106,10 +107,25 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         }
     }
 
+    if(fileCreateInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // dont capture the eirods results in the log here as there may be an issue with
     // needing to create a directory, etc.
-    eirods::file_object file_obj( rsComm, fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, fileCreateInp->mode, fileCreateInp->flags );
+    eirods::file_object file_obj( rsComm, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, fileCreateInp->mode, fileCreateInp->flags );
     
     eirods::error create_err = fileCreate( rsComm, file_obj );
 

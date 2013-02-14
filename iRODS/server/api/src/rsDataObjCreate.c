@@ -200,12 +200,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     
     int status;
     rescGrpInfo_t* myRescGrpInfo  = 0;
-    rescGrpInfo_t *tmpRescGrpInfo = 0;
-    rescInfo_t *tmpRescInfo;
     int l1descInx;
-    int copiesNeeded;
-    int failedCount = 0;
-    int rescCnt;
 
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
@@ -504,7 +499,6 @@ int
 l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
                    dataObjInfo_t *dataObjInfo)
 {
-    int rescTypeInx;
     int l3descInx;
 
 #if 0 // JMC legacy resource 
@@ -521,6 +515,7 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     memset (&fileCreateInp, 0, sizeof (fileCreateInp));
     rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier,           MAX_NAME_LEN );
+    rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,            MAX_NAME_LEN );
     fileCreateInp.fileType = static_cast< fileDriverType_t >( -1 );// RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
              NAME_LEN);

@@ -1122,7 +1122,6 @@ rodsLog(int level, const char *formatStr, ...) {
    char bigString[BIG_STRING_LEN];
    char *prefix;
    time_t timeValue;
-   int i;
    FILE *errOrOut;
    va_list ap;
 
@@ -1149,7 +1148,7 @@ rodsLog(int level, const char *formatStr, ...) {
    if (!okToLog) return;
 
    va_start(ap, formatStr);
-   i = vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
+   vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
    va_end(ap);
    
    extraInfo[0]='\0';
@@ -1227,7 +1226,6 @@ char *formatStr, ...) {
    char bigString[BIG_STRING_LEN];
    char *prefix;
    time_t timeValue;
-   int i;
    FILE *errOrOut;
    va_list ap;
    char errMsg[ERR_MSG_LEN];
@@ -1241,7 +1239,7 @@ char *formatStr, ...) {
 
 
    va_start(ap, formatStr);
-   i = vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
+   vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
    va_end(ap);
    
    extraInfo[0]='\0';
@@ -1394,7 +1392,6 @@ rodsLogErrorOld(int level, int rodsErrorCode, char *textStr) {
 void
 rodsLogError(int level, int rodsErrorCode, char *formatStr, ...) {
    char bigString[BIG_STRING_LEN];
-   int i;
    char *errName;
    char *errSubName;
    va_list ap;
@@ -1403,7 +1400,7 @@ rodsLogError(int level, int rodsErrorCode, char *formatStr, ...) {
 
    
    va_start(ap, formatStr);
-   i = vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
+   vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
    va_end(ap);
    
    errName = rodsErrorName(rodsErrorCode, &errSubName);

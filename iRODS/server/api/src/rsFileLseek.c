@@ -14,6 +14,7 @@
 // eirods inludes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, 
@@ -80,9 +81,27 @@ remoteFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
 // =-=-=-=-=-=-=-
 // local function to handle call to stat via resource plugin
 int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut) {
+
+    if(FileDesc[fileLseekInp->fileInx].objPath == NULL ||
+       FileDesc[fileLseekInp->fileInx].objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make call to lseek via resource plugin
     eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileLseekInp->fileInx].objPath,
                                   FileDesc[fileLseekInp->fileInx].fileName,
                                   FileDesc[fileLseekInp->fileInx].rescHier,
                                   FileDesc[fileLseekInp->fileInx].fd,

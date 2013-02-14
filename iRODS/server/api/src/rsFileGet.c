@@ -97,7 +97,15 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
         fileGetOutBBuf->buf = malloc (len);
     }
 
-    eirods::file_object file_obj( rsComm, fileGetInp->fileName, fileGetInp->resc_hier_, fd, fileGetInp->mode, fileGetInp->flags  );
+    if(fileGetInp->objPath[0] == '\0') {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
+    eirods::file_object file_obj( rsComm, fileGetInp->objPath, fileGetInp->fileName, fileGetInp->resc_hier_, fd, fileGetInp->mode, fileGetInp->flags  );
     eirods::error read_err = fileRead( rsComm,
                                        file_obj,
                                        fileGetOutBBuf->buf, 

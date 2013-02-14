@@ -17,7 +17,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h" 
-
+#include "eirods_stacktrace.h"
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
@@ -81,9 +81,24 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
   
     // mkDirForFilePath( rsComm, "/", fileRenameInp->newFileName, getDefDirMode () ); - The actual file path depends on the resource
 
+    if(fileRenameInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
-    eirods::file_object file_obj( rsComm, fileRenameInp->oldFileName, fileRenameInp->rescHier, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileRenameInp->objPath, fileRenameInp->oldFileName, fileRenameInp->rescHier, 0, 0, 0 );
     eirods::error rename_err = fileRename( rsComm, file_obj, fileRenameInp->newFileName );
 
     // =-=-=-=-=-=-=-

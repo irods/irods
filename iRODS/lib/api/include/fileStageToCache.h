@@ -25,10 +25,11 @@ typedef struct {
     rodsHostAddr_t addr;
     char filename[MAX_NAME_LEN];
     char cacheFilename[MAX_NAME_LEN];
+    char objPath[MAX_NAME_LEN];
     keyValPair_t condInput;
 } fileStageSyncInp_t;
     
-#define fileStageSyncInp_PI "int fileType; int cacheFileType; int mode; int flags; double dataSize; struct RHostAddr_PI; str filename[MAX_NAME_LEN]; str cacheFilename[MAX_NAME_LEN]; struct KeyValPair_PI;"
+#define fileStageSyncInp_PI "int fileType; int cacheFileType; int mode; int flags; double dataSize; struct RHostAddr_PI; str filename[MAX_NAME_LEN]; str cacheFilename[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_STAGE_TO_CACHE rsFileStageToCache

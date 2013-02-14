@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -10,6 +12,7 @@
 // eirods include
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
@@ -28,26 +31,26 @@ rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileUnlink: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileUnlink: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-      /* Manually insert call-specific code here */
+    /* Manually insert call-specific code here */
 
     return (status);
 }
 
 int
 remoteFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
-rodsServerHost_t *rodsServerHost)
+                  rodsServerHost_t *rodsServerHost)
 {
     int status;
 
-        if (rodsServerHost == NULL) {
+    if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileUnlink: Invalid rodsServerHost");
+                 "remoteFileUnlink: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -60,8 +63,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileUnlink: rcFileUnlink failed for %s, status = %d",
-          fileUnlinkInp->fileName, status);
+                 "remoteFileUnlink: rcFileUnlink failed for %s, status = %d",
+                 fileUnlinkInp->fileName, status);
     }
 
     return status;
@@ -71,22 +74,37 @@ rodsServerHost_t *rodsServerHost)
 // local function for calling unlink via resource plugin
 int _rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp ) {
     int status;
-   
+
+    if(fileUnlinkInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // call unlink via resource plugin
-    eirods::file_object file_obj( rsComm, fileUnlinkInp->fileName, fileUnlinkInp->rescHier, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileUnlinkInp->objPath, fileUnlinkInp->fileName, fileUnlinkInp->rescHier, 0, 0, 0 );
     eirods::error unlink_err = fileUnlink( rsComm, file_obj );
      
     // =-=-=-=-=-=-=-
     // log potential error message
     if( unlink_err.code() < 0 ) {
-		std::stringstream msg;
-		msg << "_rsFileUnlink: fileRead for ";
-		msg << fileUnlinkInp->fileName;
-		msg << ", status = ";
-		msg << unlink_err.code();
-		eirods::error ret_err = PASS( false, unlink_err.code(), msg.str(), unlink_err );
-		eirods::log( ret_err );
+        std::stringstream msg;
+        msg << "_rsFileUnlink: fileRead for ";
+        msg << fileUnlinkInp->fileName;
+        msg << ", status = ";
+        msg << unlink_err.code();
+        eirods::error ret_err = PASS( false, unlink_err.code(), msg.str(), unlink_err );
+        eirods::log( ret_err );
     }
 
     return (unlink_err.code());

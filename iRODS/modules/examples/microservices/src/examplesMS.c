@@ -66,8 +66,6 @@ msiGetRescAddr( msParam_t *rescName, msParam_t *outAddress,
 	ruleExecInfo_t *rei )
 {
     char *tmpPtr;
-    int status;
-    rescGrpInfo_t *rescGrpInfo = NULL;
 
     RE_TEST_MACRO( "    Calling msiGetRescAddr" );
 

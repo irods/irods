@@ -67,7 +67,7 @@ rodsServerHost_t *rodsServerHost)
 
 // =-=-=-=-=-=-=-
 // local function to handle sub file creation
-int _rsSubStructFileCreate( rsComm_t*  _comm, 
+int _rsSubStructFileCreate( rsComm_t*  _comm,
                             subFile_t* _sub_file ) {
 
     eirods::structured_object struct_obj( *_sub_file );

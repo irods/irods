@@ -217,11 +217,8 @@ _rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int
 preProcParaGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
 {
-    int l3descInx;
     int status;
     dataOprInp_t dataOprInp;
-
-    l3descInx = L1desc[l1descInx].l3descInx;
 
     initDataOprInp (&dataOprInp, l1descInx, GET_OPR);
     /* add RESC_NAME_KW for getNumThreads */
@@ -305,7 +302,6 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
                     bytesBuf_t *dataObjOutBBuf)
 {
     dataObjInfo_t *dataObjInfo;
-    int rescTypeInx;
     fileOpenInp_t fileGetInp;
     int bytesRead;
     dataObjInp_t *dataObjInp;
@@ -342,6 +338,7 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
         rstrcpy( fileGetInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+        rstrcpy( fileGetInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
         fileGetInp.mode = getFileMode (dataObjInp);
         fileGetInp.flags = O_RDONLY;
         fileGetInp.dataSize = dataObjInfo->dataSize;

@@ -92,7 +92,6 @@ convertLogLevel(char *inputStr) {
 
 int getRodsEnv(rodsEnv *rodsEnvArg) {
     char *getVar = NULL;
-    int status;
     int ppid;
     char ppidStr[BUF_LEN];
 
@@ -141,9 +140,9 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
     memset(rodsEnvArg,0,sizeof(rodsEnv));
 
     /* RAJA CHANGED Feb 1, 207  from LOG_NOTICE to LOG_DEBUG */
-    status = getRodsEnvFromFile(configFileName, rodsEnvArg, LOG_DEBUG);
-    status = getRodsEnvFromEnv(rodsEnvArg);
-    status = createRodsEnvDefaults(rodsEnvArg);
+    getRodsEnvFromFile(configFileName, rodsEnvArg, LOG_DEBUG);
+    getRodsEnvFromEnv(rodsEnvArg);
+    createRodsEnvDefaults(rodsEnvArg);
 
     /* Only client processes will do this, otherwise a lot of errors */
     if (ProcessType == CLIENT_PT) {
@@ -166,7 +165,7 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
         }
         rstrcat(configFileName, ppidStr, LONG_NAME_LEN);
 #endif
-        status = getRodsEnvFromFile(configFileName, rodsEnvArg, LOG_DEBUG);
+        getRodsEnvFromFile(configFileName, rodsEnvArg, LOG_DEBUG);
     }
 
 #ifdef windows_platform
@@ -181,7 +180,6 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
     FILE *file;
     char buf[LARGE_BUF_LEN];
     char *fchar;
-    int envFileFound;
     char *key;
     int msgLevel;
 
@@ -197,14 +195,12 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 /*
   Read and process the env file
 */
-    envFileFound=0;
 #ifdef windows_platform
     file = iRODSNt_fopen(fileName, "r");
 #else
     file = fopen(fileName, "r");
 #endif
     if (file != NULL) {
-        envFileFound=1;
         buf[LARGE_BUF_LEN-1]='\0';
         fchar = fgets(buf, LARGE_BUF_LEN-1, file);
         for(;fchar!='\0';) {

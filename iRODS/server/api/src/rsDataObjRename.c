@@ -162,7 +162,6 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     dataObjInfo_t *dataObjInfoHead = NULL;
     rodsLong_t srcId, destId;
     int multiCopyFlag;
-    int renameFlag = 0;
     int acPreProcFromRenameFlag = 0;
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
@@ -261,7 +260,6 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
             status = srcId;
             return (status);
         }
-        renameFlag = 1;
 
         /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
         argc    = 2;
@@ -396,7 +394,6 @@ specCollObjRename (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 int
 l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
 {
-    int rescTypeInx;
     fileRenameInp_t fileRenameInp;
     int status;
 
@@ -409,8 +406,7 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         rstrcpy (subStructFileRenameInp.subFile.subFilePath, dataObjInfo->subPath,
                  MAX_NAME_LEN);
         rstrcpy (subStructFileRenameInp.newSubFilePath, newFileName, MAX_NAME_LEN);
-        rstrcpy (subStructFileRenameInp.subFile.addr.hostAddr, 
-                 dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+        rstrcpy (subStructFileRenameInp.subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
         subStructFileRenameInp.subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRename (rsComm, &subStructFileRenameInp);
     } else {
@@ -425,6 +421,7 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
             rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,          MAX_NAME_LEN );
             rstrcpy( fileRenameInp.newFileName,   newFileName,                    MAX_NAME_LEN );
             rstrcpy (fileRenameInp.rescHier,      dataObjInfo->rescHier,          MAX_NAME_LEN);
+            rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,           MAX_NAME_LEN );
             rstrcpy( fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
             status = rsFileRename (rsComm, &fileRenameInp);
        #if 0 // JMC legacy resource 
@@ -486,8 +483,7 @@ moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return (status);
     }
 
-    status = filePathTypeInResc (rsComm, destDataObjInfo.filePath,
-                                 destDataObjInfo.rescHier,
+    status = filePathTypeInResc (rsComm, destDataObjInfo.objPath, destDataObjInfo.filePath, destDataObjInfo.rescHier,
                                  destDataObjInfo.rescInfo);
     if (status == LOCAL_DIR_T) {
         status = SYS_PATH_IS_NOT_A_FILE;

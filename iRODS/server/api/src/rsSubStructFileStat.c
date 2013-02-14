@@ -65,7 +65,7 @@ rodsStat_t **subStructFileStatOut, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int _rsSubStructFileStat( rsComm_t*    _comm, 
+int _rsSubStructFileStat( rsComm_t*    _comm,
                           subFile_t*   _sub_file, 
                           rodsStat_t** _stat_out ) {
     // =-=-=-=-=-=-=-
@@ -76,7 +76,7 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
     struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
-    // call abstrcated interface to stat
+    // call abstracted interface to stat
     struct stat my_stat;
     eirods::error stat_err = fileStat( _comm, struct_obj, &my_stat );
 

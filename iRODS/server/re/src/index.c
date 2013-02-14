@@ -298,7 +298,7 @@ int createMacorsIndex()
 #ifdef USE_EIRODS
 	rodsLog( LOG_ERROR, "createMacorsIndex :: calling function which is supposedly not used." );
 	assert( 0 );
-#else USE_EIRODS
+#else 
 	clearIndex(&microsTableIndex);
 	microsTableIndex = newHashTable(NumOfAction*2);
 	if (microsTableIndex == NULL)

@@ -63,7 +63,7 @@ rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int _rsSubStructFileUnlink( rsComm_t*  _comm, 
+int _rsSubStructFileUnlink( rsComm_t*  _comm,
                             subFile_t* _sub_file ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 

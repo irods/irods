@@ -697,7 +697,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 int
 l3Close (rsComm_t *rsComm, int l1descInx)
 {
-    int rescTypeInx;
     fileCloseInp_t fileCloseInp;
     int status;
 
@@ -772,7 +771,6 @@ _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx)
 int
 l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
 {
-    int rescTypeInx;
     fileStatInp_t fileStatInp;
     int status;
 
@@ -799,6 +797,7 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
             rstrcpy (fileStatInp.addr.hostAddr,  
                      dataObjInfo->rescInfo->rescLoc, NAME_LEN);
             rstrcpy(fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+            rstrcpy(fileStatInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
             status = rsFileStat (rsComm, &fileStatInp, myStat);
 #if 0 // JMC - legacy resource 
             break;

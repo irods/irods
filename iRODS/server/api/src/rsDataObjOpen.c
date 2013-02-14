@@ -114,15 +114,15 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (status < 0) {
         if (dataObjInp->openFlags & O_CREAT && writeFlag > 0) {
             l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-           status = l1descInx; // JMC - backport 4604
+            status = l1descInx; // JMC - backport 4604
         }
-	    // =-=-=-=-=-=-=-
- 	    // JMC - backport 4604
+        // =-=-=-=-=-=-=-
+        // JMC - backport 4604
         if (lockFd >= 0) {
             if (status > 0) {
                 L1desc[l1descInx].lockFd = lockFd;
             } else {
-                 rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+                rsDataObjUnlock (rsComm, dataObjInp, lockFd);
             }
         }
         return (status);
@@ -131,17 +131,17 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         /* screen out any stale copies */
         status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, &dataObjInp->condInput, writeFlag);
         if (status < 0) { // JMC - backport 4604
-           if (lockFd > 0) 
-               rsDataObjUnlock (rsComm, dataObjInp, lockFd);
-           return status;
+            if (lockFd > 0) 
+                rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+            return status;
         }
 
         status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
         if (status < 0) { // JMC - backport 4604
-           if (lockFd > 0) 
-               rsDataObjUnlock (rsComm, dataObjInp, lockFd);
-           return status;
-       }
+            if (lockFd > 0) 
+                rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+            return status;
+        }
     }
 
     if (getStructFileType (dataObjInfoHead->specColl) >= 0) {
@@ -156,7 +156,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     if (status < 0) {
-		if (lockFd > 0) 
+        if (lockFd > 0) 
             rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
         freeAllDataObjInfo (dataObjInfoHead);
         return status;
@@ -165,14 +165,14 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     // JMC - legacy resource ::   if (getRescClass (dataObjInfoHead->rescInfo) == BUNDLE_CL) [[
     std::string resc_class;
     eirods::error prop_err = eirods::get_resource_property<std::string>( 
-                                 dataObjInfoHead->rescInfo->rescName, "class", resc_class );
+        dataObjInfoHead->rescInfo->rescName, "class", resc_class );
     if( prop_err.ok() ) {
         if( resc_class == "bundle" ) {
-	        status = stageBundledData (rsComm, &dataObjInfoHead);
+            status = stageBundledData (rsComm, &dataObjInfoHead);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
-                  "_rsDataObjOpen: stageBundledData of %s failed stat=%d",
-                  dataObjInfoHead->objPath, status);
+                         "_rsDataObjOpen: stageBundledData of %s failed stat=%d",
+                         dataObjInfoHead->objPath, status);
                 freeAllDataObjInfo (dataObjInfoHead);
                 if (lockFd >= 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4604
                 return status;
@@ -196,55 +196,55 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
-        #if 0 // JMC - legacy resource
-	    if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
-			/* this check is not necessary but won't hurt */
-	        if (compDataObjInfo != tmpDataObjInfo)  {
-				/* save it in otherDataObjInfo so no mem leak */ // JMC - backport 4590
-		        queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
+#if 0 // JMC - legacy resource
+        if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
+            /* this check is not necessary but won't hurt */
+            if (compDataObjInfo != tmpDataObjInfo)  {
+                /* save it in otherDataObjInfo so no mem leak */ // JMC - backport 4590
+                queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
             }
-	        tmpDataObjInfo = nextDataObjInfo;
-	        continue;
-	    } else 
-        #endif // JMC - legacy resource 
-        if ( writeFlag > 0 && cacheDataObjInfo != NULL && 
-	                tmpDataObjInfo != cacheDataObjInfo) {
-	        /* skip anything that does not match cacheDataObjInfo */
-            queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
             tmpDataObjInfo = nextDataObjInfo;
-	        continue;
-	    }
-	   
-		status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
+            continue;
+        } else 
+#endif // JMC - legacy resource 
+            if ( writeFlag > 0 && cacheDataObjInfo != NULL && 
+                 tmpDataObjInfo != cacheDataObjInfo) {
+                /* skip anything that does not match cacheDataObjInfo */
+                queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
+                tmpDataObjInfo = nextDataObjInfo;
+                continue;
+            }
+           
+        status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
-	        if (compDataObjInfo != NULL) {
-               L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
-           } else if (compRescInfo != NULL) {
-               L1desc[l1descInx].replRescInfo = compRescInfo;
-		   } 
+            if (compDataObjInfo != NULL) {
+                L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
+            } else if (compRescInfo != NULL) {
+                L1desc[l1descInx].replRescInfo = compRescInfo;
+            } 
 
-		    queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 0, 1); // JMC - backport 4542
-		    L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
+            queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 0, 1); // JMC - backport 4542
+            L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo; // JMC - backport 4542
 
-	        if (writeFlag > 0) {
-	            L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
-	        } else {
-               L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
-	        }
-			// =-=-=-=-=-=-=-
-			// JMC - backport 4604
+            if (writeFlag > 0) {
+                L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
+            } else {
+                L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
+            }
+            // =-=-=-=-=-=-=-
+            // JMC - backport 4604
             if (lockFd >= 0) {
                 if (l1descInx >= 0) {
-                     L1desc[l1descInx].lockFd = lockFd;
+                    L1desc[l1descInx].lockFd = lockFd;
                 } else {
                     rsDataObjUnlock (rsComm, dataObjInp, lockFd);
                 }
             } 
-			// =-=-=-=-=-=-=-
-	        return (l1descInx);
-	    
-		} // if status >= 0
+            // =-=-=-=-=-=-=-
+            return (l1descInx);
+            
+        } // if status >= 0
 
         tmpDataObjInfo = nextDataObjInfo;
     } // while
@@ -359,26 +359,26 @@ l3Open (rsComm_t *rsComm, int l1descInx)
 int
 _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
 {
-    int rescTypeInx;
     int l3descInx;
     fileOpenInp_t fileOpenInp;
 
-       #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-       #endif // JMC legacy resource 
+    case FILE_CAT:
+#endif // JMC legacy resource 
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
         rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
         rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+        rstrcpy( fileOpenInp.objPath,    dataObjInfo->objPath, MAX_NAME_LEN );
         fileOpenInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
         rstrcpy (fileOpenInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
         rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         fileOpenInp.mode = mode;
         fileOpenInp.flags = flags;
         l3descInx = rsFileOpen (rsComm, &fileOpenInp);
-       #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
         break;
     default:
         rodsLog (LOG_NOTICE,
@@ -387,7 +387,7 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
         l3descInx = SYS_INVALID_RESC_TYPE;
         break;
     }
-       #endif // JMC legacy resource 
+#endif // JMC legacy resource 
     return (l3descInx);
 }
 
@@ -401,20 +401,20 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
     fileOpenInp_t fileOpenInp;
     int newL3descInx;
 
-       #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-       #endif // JMC legacy resource 
+    case FILE_CAT:
+#endif // JMC legacy resource 
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
         fileOpenInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
         rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
-        rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, 
-                 MAX_NAME_LEN);
+        rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN);
+        rstrcpy(fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN);
         fileOpenInp.mode = FileDesc[l3descInx].mode;
         fileOpenInp.flags = flags;
         newL3descInx = rsFileOpenByHost (rsComm, &fileOpenInp, 
                                          FileDesc[l3descInx].rodsServerHost);
-       #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
         break;
     default:
         rodsLog (LOG_NOTICE,
@@ -423,7 +423,7 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
         l3descInx = SYS_INVALID_RESC_TYPE;
         break;
     }
-       #endif // JMC legacy resource 
+#endif // JMC legacy resource 
     return (newL3descInx);
 }
 
@@ -481,7 +481,7 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *myDataObjInfo = *(*dataObjInfoHead);
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
-	    rescInfo = tmpRescGrpInfo->rescInfo;
+        rescInfo = tmpRescGrpInfo->rescInfo;
         myDataObjInfo->rescInfo = rescInfo;
         rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (myDataObjInfo->rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
@@ -573,7 +573,7 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         } else 
 #endif // JMC - legacy resource
         {     /* dest resource is not a compound resource */
-           /* we don't have a copy, so create an empty dataObjInfo */
+            /* we don't have a copy, so create an empty dataObjInfo */
             status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
@@ -609,7 +609,7 @@ procDataObjOpenForExistObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status = 0;
     rescGrpInfo_t *myRescGrpInfo = NULL;
    
-    #if 0 // JMC - legacy resource 
+#if 0 // JMC - legacy resource 
     if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
         /* It is a COMPOUND_CL. Save the comp object because it can be
          * requeued by stageAndRequeDataToCache */
@@ -623,27 +623,27 @@ procDataObjOpenForExistObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
         *cacheDataObjInfo = *dataObjInfoHead;
     } else 
-    #endif // JMC - legacy resource 
-    if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&strlen ((*dataObjInfoHead)->rescGroupName) > 0) {
+#endif // JMC - legacy resource 
+        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&strlen ((*dataObjInfoHead)->rescGroupName) > 0) {
       
-        /* Do purge cache and destResc is a resource group. See if we
-         * a COMPOUND_CL resource in the group */
-        if( getRescInGrpByClass(rsComm, (*dataObjInfoHead)->rescGroupName, COMPOUND_CL, compRescInfo, &myRescGrpInfo) >= 0 ) {
-           /* get cacheDataObjInfo */
-            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,*dataObjInfoHead, NULL, myRescGrpInfo, NULL,cacheDataObjInfo);
-            if (status < 0) {
-                rodsLogError (LOG_NOTICE, status,
-                              "procDataObjOpenForExistObj: getCacheDataInfo of %s failed",
-                              (*dataObjInfoHead)->objPath);
-            } else {
-                if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
-                                       compDataObjInfo) >= 0) {
-                    /* we have a compDataObjInfo */
-                    *compRescInfo = NULL;
+            /* Do purge cache and destResc is a resource group. See if we
+             * a COMPOUND_CL resource in the group */
+            if( getRescInGrpByClass(rsComm, (*dataObjInfoHead)->rescGroupName, COMPOUND_CL, compRescInfo, &myRescGrpInfo) >= 0 ) {
+                /* get cacheDataObjInfo */
+                status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,*dataObjInfoHead, NULL, myRescGrpInfo, NULL,cacheDataObjInfo);
+                if (status < 0) {
+                    rodsLogError (LOG_NOTICE, status,
+                                  "procDataObjOpenForExistObj: getCacheDataInfo of %s failed",
+                                  (*dataObjInfoHead)->objPath);
+                } else {
+                    if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
+                                           compDataObjInfo) >= 0) {
+                        /* we have a compDataObjInfo */
+                        *compRescInfo = NULL;
+                    }
                 }
             }
         }
-    }
     freeAllRescGrpInfo (myRescGrpInfo);
     return status;
 }

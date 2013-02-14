@@ -26,6 +26,7 @@ namespace eirods {
         file_object();
         file_object( const file_object& );
         file_object( rsComm_t* _comm,
+                     const std::string& _logical_name,
                      const std::string& _filename,
                      const std::string& _resc_hier,
                      int _fd,

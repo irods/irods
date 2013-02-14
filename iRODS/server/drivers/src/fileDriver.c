@@ -25,6 +25,16 @@ eirods::error fileCreate( rsComm_t* _comm, eirods::first_class_object& _object )
         return ret_err;
     }
       
+    if(_object.logical_path().empty()) {
+
+        if(true) {
+            std::stringstream msg;
+            msg << "qqq - logical path is empty.";
+            DEBUGMSG(msg.str());
+        }
+
+    }
+    
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
@@ -138,7 +148,10 @@ eirods::error fileWrite( rsComm_t* _comm, eirods::first_class_object& _object, v
     if( !ret_err.ok() ) {
         return PASS( false, ret_err.code(), "fileWrite - failed to call 'write'", ret_err );
     } else {
-        return CODE( ret_err.code() );
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Write successful.";
+        return PASSMSG(msg.str(), ret_err);
     }
 
 } // fileWrite

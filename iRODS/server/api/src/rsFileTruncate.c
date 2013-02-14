@@ -12,6 +12,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
@@ -72,9 +73,25 @@ remoteFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
 // =-=-=-=-=-=-=-
 // local function which makes the call to truncate via the resource plugin
 int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
+
+    if(fileTruncateInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
-    eirods::file_object file_obj( rsComm, fileTruncateInp->fileName, fileTruncateInp->resc_hier_, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileTruncateInp->objPath, fileTruncateInp->fileName, fileTruncateInp->resc_hier_, 0, 0, 0 );
     file_obj.size( fileTruncateInp->dataSize );
     eirods::error trunc_err = fileTruncate( rsComm, file_obj );
 

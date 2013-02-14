@@ -105,9 +105,24 @@ remoteFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
 int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut ) {
     struct stat myFileStat;
 
+    if(fileStatInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
-    eirods::file_object file_obj( rsComm, fileStatInp->fileName, fileStatInp->rescHier, 0, 0, 0 );
+    eirods::file_object file_obj( rsComm, fileStatInp->objPath, fileStatInp->fileName, fileStatInp->rescHier, 0, 0, 0 );
     eirods::error stat_err = fileStat( rsComm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-

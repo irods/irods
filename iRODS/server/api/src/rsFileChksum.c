@@ -80,7 +80,7 @@ _rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
 
     *chksumStr = (char*)malloc (NAME_LEN);
 
-    status = fileChksum (fileChksumInp->fileType, rsComm, 
+    status = fileChksum (fileChksumInp->fileType, rsComm, fileChksumInp->objPath,
                          fileChksumInp->fileName, fileChksumInp->rescHier, *chksumStr);
 
     if (status < 0) {
@@ -99,6 +99,7 @@ int
 fileChksum (
     int fileType,
     rsComm_t *rsComm,
+    char* objPath,
     char *fileName,
     char* rescHier,
     char *chksumStr)
@@ -111,9 +112,25 @@ fileChksum (
 #ifdef MD5_DEBUG
     rodsLong_t total_bytes_read = 0;    /* XXXX debug */
 #endif
+
+    if(objPath == NULL || objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
-    eirods::file_object file_obj( rsComm, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
+    eirods::file_object file_obj( rsComm, objPath, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
     eirods::error ret = fileOpen( rsComm, file_obj );
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;

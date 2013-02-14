@@ -100,8 +100,7 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
        status = chlCommit(rsComm);
     }
     else {
-       int status1;
-       status1 = chlRollback(rsComm);
+       chlRollback(rsComm);
     }
 
     return (status);

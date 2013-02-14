@@ -70,8 +70,8 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
         return (fd);
     }
 
-    fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->fileName, fileOpenInp->resc_hier_, fileOpenInp->fileType, fd,
-                                    fileOpenInp->mode);
+    fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->objPath, fileOpenInp->fileName, fileOpenInp->resc_hier_,
+                                    fileOpenInp->fileType, fd, fileOpenInp->mode);
 
     return (fileInx);
 }
@@ -123,9 +123,24 @@ int _rsFileOpen( rsComm_t*      _comm,
         _open_inp->flags &= ~(O_WRONLY);
     }
 
+    if(_open_inp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // call file open on the resource plugin 
-    eirods::file_object file_obj( _comm, _open_inp->fileName, _open_inp->resc_hier_, 0, _open_inp->mode, _open_inp->flags );
+    eirods::file_object file_obj( _comm, _open_inp->objPath, _open_inp->fileName, _open_inp->resc_hier_, 0, _open_inp->mode, _open_inp->flags );
     eirods::error ret_err = fileOpen( _comm, file_obj );
     
     // =-=-=-=-=-=-=-

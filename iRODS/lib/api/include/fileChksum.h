@@ -23,10 +23,11 @@ typedef struct FileChksumInp {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
+    char objPath[MAX_NAME_LEN];
     int flag;   /* not used for now */
 } fileChksumInp_t;
     
-#define fileChksumInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int flags;"
+#define fileChksumInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags;"
 
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
 
@@ -43,7 +44,7 @@ int
 remoteFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
                   char **chksumStr, rodsServerHost_t *rodsServerHost);
 int
-fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char* rescHier, char *chksumStr);
+fileChksum (int fileType, rsComm_t *rsComm, char* objPath, char *fileName, char* rescHier, char *chksumStr);
 #else
 #define RS_FILE_CHKSUM NULL
 #endif

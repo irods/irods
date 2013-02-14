@@ -12,7 +12,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
-
+#include "eirods_stacktrace.h"
 
 int
 rsFileGetFsFreeSpace (rsComm_t *rsComm, 
@@ -83,9 +83,25 @@ remoteFileGetFsFreeSpace (rsComm_t *rsComm,
 // local function to make call to freespace via resource plugin
 int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
                            fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
+
+    if(fileGetFsFreeSpaceInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make call to freespace via resource plugin
-    eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->fileName, fileGetFsFreeSpaceInp->rescHier,
+    eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->objPath, fileGetFsFreeSpaceInp->fileName, fileGetFsFreeSpaceInp->rescHier,
                                   0, 0, fileGetFsFreeSpaceInp->flag );
  
     eirods::error free_err = fileGetFsFreeSpace( rsComm, file_obj );
