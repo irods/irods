@@ -82,6 +82,7 @@ main(int argc, char **argv) {
 
     status = regUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
 
     if (status < 0) {
@@ -136,6 +137,9 @@ usage ()
         " -k  calculate a checksum on the iRODS client and store with the file details.",
         " -K  calculate a checksum on the iRODS server and store with the file details.",
         " --repl  register the physical path as a replica.",
+        " --exclude-from filename - don't register files matching patterns contained",
+        "     in the specified file. The file must be readable on the server where the",
+        "     resource is located and must be an absolute pathname.",
         " -v  verbose",
         " -V  Very verbose",
         " -h  this help",

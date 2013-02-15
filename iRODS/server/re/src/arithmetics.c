@@ -11,27 +11,17 @@
 #include "functions.h"
 #include "configuration.h"
 
-
-
-
-
-#ifdef USE_EIRODS
-//	#include "eirods_ms_plugin.h"
-//	extern eirods::ms_table MicrosTable;
-//	extern int NumOfAction;
-#else
-	#ifndef DEBUG
-	#include "regExpMatch.h"
-	#include "rodsErrorTable.h"
-	typedef struct {
-	  char action[MAX_ACTION_SIZE];
-	  int numberOfStringArgs;
-	  funcPtr callAction;
-	} microsdef_t;
-	extern int NumOfAction;
-	extern microsdef_t MicrosTable[];
-	#endif
-#endif // ifdef USE_EIRODS
+#ifndef DEBUG
+#include "regExpMatch.h"
+#include "rodsErrorTable.h"
+typedef struct {
+  char action[MAX_ACTION_SIZE];
+  int numberOfStringArgs;
+  funcPtr callAction;
+} microsdef_t;
+extern int NumOfAction;
+extern microsdef_t MicrosTable[];
+#endif
 
 #define RE_ERROR(x, y) if(x) {if((y)!=NULL){(y)->type.t=RE_ERROR;*errnode=node;}return;}
 #define OUTOFMEMORY(x, res) if(x) {(res)->value.e = OUT_OF_MEMORY;TYPE(res) = RE_ERROR;return;}
@@ -369,9 +359,9 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
                 res = evaluateExpression3(nodei, applyAll, 0, rei, reiSaveFlag, env, errmsg,r);
                 if(getNodeType(res) == N_ERROR) {
                     #ifndef DEBUG
-                        sprintf(tmpStr,"executeRuleAction Failed for %s",N_APP_FUNC(nodei)->text); // JMC - backport 4826
+                        sprintf(tmpStr,"executeRuleAction Failed for %s",N_APP_FUNC(nodei)->text);
                         rodsLogError(LOG_ERROR,RES_ERR_CODE(res),tmpStr);
-                        rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",N_APP_FUNC(nodei)->text,RES_ERR_CODE(res)); // JMC - backport 4826
+                        rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",N_APP_FUNC(nodei)->text,RES_ERR_CODE(res));
                     #endif
                     /* run recovery chain */
                     if(RES_ERR_CODE(res) != RETRY_WITHOUT_RECOVERY_ERR && reco!=NULL) {
@@ -392,7 +382,7 @@ Res* evaluateActions(Node *expr, Node *reco, int applyAll, ruleExecInfo_t *rei, 
                             Res *res2 = evaluateExpression3(reco->subtrees[i2], 0, 0, rei, reiSaveFlag, env, errmsg, r);
                             if(getNodeType(res2) == N_ERROR) {
                             #ifndef DEBUG
-                                sprintf(tmpStr,"executeRuleRecovery Failed for %s",N_APP_FUNC(reco->subtrees[i2])->text); // JMC - backport 4826
+                                sprintf(tmpStr,"executeRuleRecovery Failed for %s",N_APP_FUNC(reco->subtrees[i2])->text);
                                 rodsLogError(LOG_ERROR,RES_ERR_CODE(res2),tmpStr);
                             #endif
                             }
@@ -813,7 +803,6 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
 	strcpy(action, actionName);
 	mapExternalFuncToInternalProc2(action);
 
-
     /* no action (microservice) found, try to lookup a rule */
     Res *actionRet = execRule(actionName, args, nargs, applyAllRule, env, rei, reiSaveFlag, errmsg, r);
     if( getNodeType(actionRet) == N_ERROR && (
@@ -836,8 +825,8 @@ Res* execAction3(char *actionName, Res** args, unsigned int nargs, int applyAllR
     else {
         return actionRet;
     }
- 
 }
+
 /**
  * execute micro service msiName
  */
@@ -850,33 +839,22 @@ Res* execMicroService3 (char *msName, Res **args, unsigned int nargs, Node *node
 	int ii;
 	msParam_t *myArgv[MAX_PARAMS_LEN];
     Res *res;
-#ifdef USE_EIRODS
-//rodsLog( LOG_NOTICE, "calling pluggable MSVC from arithmetics.c:execMicroService3" );
-	// =-=-=-=-=-=-=-
-	// switch to using pluggable usvc
+
+	/* look up the micro service */
 	eirods::ms_table_entry ms_entry;
     actionInx = actionTableLookUp( ms_entry, msName );
-#else
-	/* look up the micro service */
-	actionInx = actionTableLookUp(msName);
-#endif
-	char errbuf[ERR_MSG_LEN];
+
+    char errbuf[ERR_MSG_LEN];
 	if (actionInx < 0) {
             int ret = NO_MICROSERVICE_FOUND_ERR;
             generateErrMsg("execMicroService3: no micro service found", NODE_EXPR_POS(node), node->base, errbuf);
             addRErrorMsg(errmsg, ret, errbuf);
             return newErrorRes(r, ret);
 
-	}
+        }
 
-#ifdef USE_EIRODS
 	myFunc       = ms_entry.call_action_;
 	numOfStrArgs = ms_entry.num_args_;
-#else
-	myFunc =  MicrosTable[actionInx].callAction;
-	numOfStrArgs = MicrosTable[actionInx].numberOfStringArgs;
-#endif
-
 	if (nargs != numOfStrArgs) {
             int ret = ACTION_ARG_COUNT_MISMATCH;
             generateErrMsg("execMicroService3: wrong number of arguments", NODE_EXPR_POS(node), node->base, errbuf);

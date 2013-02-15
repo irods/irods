@@ -24,7 +24,7 @@ main(int argc, char **argv) {
     int i;
     
 
-    optStr = "ahlN:rR:svVZ";
+    optStr = "ahKlN:rR:svVZ";
    
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
@@ -105,6 +105,7 @@ main(int argc, char **argv) {
 
     status = rsyncUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
 
     if (status < 0) {
@@ -119,7 +120,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : irsync [-rahsvV] [-N numThreads] [-R resource] [--link]",
+"Usage : irsync [-rahKsvV] [-N numThreads] [-R resource] [--link] [--age age_in_minutes]",
 "          sourceFile|sourceDirectory [....] targetFile|targetDirectory",
 " ",
 "Synchronize the data between a  local  copy  (local file  system)  and",
@@ -178,6 +179,7 @@ usage ()
 "always means the  synchronization  of  the local directory foo1 to collection",
 "foo2, no matter whether foo2 exists or not.",
 " ",
+" -K  verify checksum - calculate and verify the checksum on the data",
 " -N  numThreads - the number of thread to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server",
 "       decides the number of threads to use.",
@@ -193,6 +195,8 @@ usage ()
 " -a   synchronize to all replica if the target is a  iRODS file/collection.",
 " -s   use the size instead of the checksum value for determining", 
 "      synchronization.",
+" --age age_in_minutes - The maximum age of the source copy in minutes for sync.",
+"      i.e., age larger than age_in_minutes will not be synced.",
 " ",
 "Also see 'irepl' for the replication and synchronization of physical",
 "copies (replica).",

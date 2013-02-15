@@ -1753,6 +1753,9 @@ msiSysMetaModify (msParam_t *sysMetadata, msParam_t *value, ruleExecInfo_t *rei)
 
     RE_TEST_MACRO (" Calling msiSysMetaModify")
 
+    memset(&mdname, 0, sizeof(mdname));
+
+
         if (rei == NULL || rei->rsComm == NULL) {
             rodsLog (LOG_ERROR,
                      "msiSysMetaModify: input rei or rsComm is NULL");

@@ -133,7 +133,7 @@ main(int argc, char **argv)
              exit (1);
         }
     } else {
-        reServerMain (&rsComm);
+        reServerMain (&rsComm, logDir);
     }
     cleanupAndExit (status);
 
@@ -151,7 +151,7 @@ int usage (char *prog)
 }
 
 void
-reServerMain (rsComm_t *rsComm)
+reServerMain (rsComm_t *rsComm, char* logDir )
 {
     int status = 0;
     genQueryOut_t *genQueryOut = NULL;
@@ -163,6 +163,11 @@ reServerMain (rsComm_t *rsComm)
     initReExec (rsComm, &reExec);
     LastRescUpdateTime = time (NULL);
     while (1) {
+#ifndef windows_platform
+#ifndef IRODS_SYSLOG
+        chkLogfileName (logDir, RULE_EXEC_LOGFILE);
+#endif
+#endif 
 	chkAndResetRule (rsComm);
         rodsLog (LOG_NOTICE,
           "reServerMain: checking the queue for jobs");

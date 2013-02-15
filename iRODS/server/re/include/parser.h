@@ -307,6 +307,36 @@ CONCAT(done, l) = 1; \
 goto CONCAT(exit, l);
 #endif
 
+#define COUNTER(l) \
+               CONCAT(l, Counter)
+
+#define REPEAT_BEGIN(l) \
+int COUNTER(l) = 0; \
+LOOP_BEGIN(l) \
+       TRY(l) \
+
+#define REPEAT_END(l) \
+               COUNTER(l)++; \
+       OR(l) \
+               DONE(l); \
+       END_TRY(l) \
+LOOP_END(l)
+
+#define LIST_BEGIN(l) \
+       int COUNTER(l) = 0; \
+       LOOP_BEGIN(l) \
+
+#define LIST_DELIM(l) \
+       COUNTER(l)++; \
+       TRY(l) \
+
+#define LIST_END(l) \
+       OR(l) \
+               DONE(l); \
+       END_TRY(l) \
+LOOP_END(l)
+
+
 /** utility functions */
 ParserContext *newParserContext(rError_t *errmsg, Region *r);
 void deleteParserContext(ParserContext *t);
@@ -359,7 +389,7 @@ void ruleNameToString(char **p, int *s, int indent, Node *rn);
 void ruleToString(char *buf, int size, RuleDesc *rd);
 void actionsToString(char **p, int *s, int indent, Node *na, Node *nr);
 void indentToString(char **p, int *s, int indent);
-void termToString(char **p, int *s, int indent, int prec, Node *n);
+void termToString(char **p, int *s, int indent, int prec, Node *n, int quote);
 void patternToString(char **p, int *s, int indent, int prec, Node *n);
 void typeToStringParser(char **p, int *s, int indent, int lifted, Node *n);
 void functionApplicationToString(char *buf, int size, char *fn, Node **args, int n);

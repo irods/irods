@@ -39,6 +39,10 @@ copyRuleExecInfo(ruleExecInfo_t *from, ruleExecInfo_t *to)
        
 
     ***/
+    if( strlen( from->pluginInstanceName ) != 0 ) {
+        rstrcpy( to->pluginInstanceName, from->pluginInstanceName, MAX_NAME_LEN );
+    }
+
     if (from->doi != NULL) {
         to->doi = (dataObjInfo_t *) mallocAndZero(sizeof(dataObjInfo_t));
         copyDataObjInfo(from->doi, to->doi);

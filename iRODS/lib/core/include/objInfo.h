@@ -209,9 +209,21 @@ typedef struct RescCacheInfo
         char backupRescName[NAME_LEN];
         char subPath[MAX_NAME_LEN];
         specColl_t *specColl;
+        int regUid;                /* the UNIX uid the registering user */
+        int otherFlags;    /* not used for now */
         struct DataObjInfo *next;
     } dataObjInfo_t;
 
+/* collInfo_t definitions:
+ * collInfo1:
+ *   MOUNTED_COLL - physical directory path
+ *   LINKED_COLL - linked logical path
+ *   TAR_STRUCT_FILE_T - logical path of the tar file
+ * collInfo2:
+ *   MOUNTED_COLL - resource
+ *   LINKED_COLL - none
+ *   TAR_STRUCT_FILE_T - cacheDirPath;;;resource;;;cacheDirty
+ */
     typedef struct CollInfo {
         rodsLong_t collId;
         char collName[MAX_NAME_LEN];

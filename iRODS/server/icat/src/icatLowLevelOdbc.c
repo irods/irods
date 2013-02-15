@@ -74,6 +74,7 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 #include <ctype.h>
 
 static int didBegin=0;
+static int noResultRowCount=0;
 
 // =-=-=-=-=-=-=-
 // JMC :: Needed to add this due to crash issues with the SQLBindCol + SQLFetch
@@ -595,6 +596,9 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
 #ifdef NEW_ODBC
     int i;
 #endif
+    noResultRowCount=0;
+    rowCount=0;
+
     myHdbc = icss->connectPtr;
     rodsLog(LOG_DEBUG1, sql);
     stat = SQLAllocStmt(myHdbc, &myHstmt); 
@@ -667,6 +671,8 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
     if (stat != SQL_SUCCESS) {
         rodsLog(LOG_ERROR, "_cllExecSqlNoResult: SQLFreeStmt error: %d", stat);
     }
+
+    noResultRowCount = rowCount;
 
     return(result);
 }
@@ -1174,6 +1180,8 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
     HSTMT hstmt;
     icatStmtStrct *myStatement;
     SQL_INT_OR_LEN RowCount;
+
+    if (statementNumber < 0) return(noResultRowCount);
 
     myStatement=icss->stmtPtr[statementNumber];
     hstmt = myStatement->stmtPtr;

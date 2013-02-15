@@ -8,7 +8,7 @@
 #include "parseCommandLine.h"
 
 char *icmds[]={
-   "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbo", "idbug", "ienv",
+   "iadmin", "ibun", "icd", "ichksum", "ichmod", "icp", "idbug", "ienv",
    "ierror", "iexecmd", "iexit", "ifsck", "iget", "igetwild",
    "ihelp", "iinit", "ilocate", "ils", "ilsresc",
    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
@@ -32,7 +32,6 @@ printMainHelp()
 "ichksum  - checksum one or more data-objects or collections.",
 "ichmod   - change access permissions to collections or data-objects.",
 "icp      - copy a data-object (file) or collection (directory) to another.",
-"idbo     - execute Database Objects on Database Resources, etc." ,
 "idbug    - interactively debug rules.",
 "ienv     - display current irods environment.",
 "ierror   - convert an irods error code to text.",

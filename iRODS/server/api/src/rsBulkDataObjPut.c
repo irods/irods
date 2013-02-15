@@ -47,9 +47,9 @@ rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
         int               local = LOCAL_HOST;
+        rodsServerHost_t* host  =  0;
         if( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            rodsServerHost_t* host  =  0;
             eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                                            &dataObjInp, hier, host, local );
             if( !ret.ok() ) { 
@@ -69,10 +69,10 @@ rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         } // if keyword
 
         if( LOCAL_HOST == local ) {
-            status = _rsBulkDataObjPut (rsComm, bulkOprInp, bulkOprInpBBuf);
+            status = _rsBulkDataObjPut( rsComm, bulkOprInp, bulkOprInpBBuf );
         } else {
-            rodsLog( LOG_NOTICE, "%s :: eirods::resource_redirect - Trying to Redirect to another server", __FUNCTION__ );
-            return -1;
+            status = rcBulkDataObjPut( host->conn, bulkOprInp, bulkOprInpBBuf );
+                                   
         }
     } else {
         status = rcBulkDataObjPut (rodsServerHost->conn, bulkOprInp,
@@ -154,7 +154,7 @@ unbunBulkBuf (
         // if (status < 0) return status;
 
         rstrcpy(dataObjInp->objPath, tmpObjPath, MAX_NAME_LEN);
-        status = _rsDataObjPut(rsComm, dataObjInp, &buffer, NULL, BRANCH_MSG);
+        status = _rsDataObjPut(rsComm, dataObjInp, &buffer, NULL );
         if(status < 0) {
             std::stringstream msg;
             msg << __FUNCTION__ << ": Failed to put data into file \"" << phyBunPath << "\"";

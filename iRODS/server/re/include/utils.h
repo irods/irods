@@ -27,6 +27,8 @@
 
 #define IS_TVAR_NAME(x) ((x)[0] == '?')
 
+#define PRINT(p, s, f, d)      snprintf(*p, *s, f, d);*s -= strlen(*p); *p += strlen(*p);
+
 int newTVarId();
 
 char* getTVarName(int vid, char name[128]);

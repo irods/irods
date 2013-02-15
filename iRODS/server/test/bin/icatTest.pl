@@ -22,6 +22,8 @@ $F1="TestFile1";
 $F1LC="testfile1";
 $F2="TestFile2";
 $F3="TestFile3";
+$F4="TestFile4";
+$F4U="TESTFILE4";
 $D1="directory1";
 $D2="DIR2";
 $D3="direct003";
@@ -159,6 +161,13 @@ runCmd(0, "irm -f $F1");
 
 # basic exercise of without-distinct query
 runCmd(0, "iquest no-distinct \"select RESC_ID\" ");
+
+# basic exercise of upper case query
+`ls -l > $F4`;
+runCmd(1, "irm -f $F4");
+runCmd(0, "iput $F4");
+runCmd(0, "iquest uppercase \"select COLL_NAME, DATA_NAME WHERE DATA_NAME like '$F4U' \" ");
+runCmd(0, "irm -f $F4");
 
 # basic resource-down test
 runCmd(0, "iadmin modresc $Resc status down");
@@ -603,6 +612,12 @@ runCmd(0, "iadmin modresc $Resc2 status up");
 
 runCmd(0, "iadmin lr $Resc2");
 runCmd(0, "iput -R $Resc2 $F1");
+
+
+# After a file is put, so that at least one will be moved
+runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 $Resc2Path/ /tmp/v1/");
+runCmd(0, "echo yes | iadmin modrescdatapaths $Resc2 /tmp/v1/ $Resc2Path/ rods");
+
 
 # repl
 runCmd(0, "irepl -R $Resc $F1");

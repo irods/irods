@@ -455,6 +455,13 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
                                   NO_SAVE_REI);
             return(status);
         }
+        if (strcmp(generalAdminInp->arg1,"resourcedatapaths")==0) {
+          status = chlModRescDataPaths(rsComm, generalAdminInp->arg2,
+                       generalAdminInp->arg3, generalAdminInp->arg4,
+                       generalAdminInp->arg5);
+                                       
+          return(status);
+        }
         if (strcmp(generalAdminInp->arg1,"resource")==0) {
 
             /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/

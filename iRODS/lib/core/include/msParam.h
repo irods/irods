@@ -119,6 +119,8 @@ typedef struct ValidKeyWd {
 #define RBUDP_SEND_RATE_FLAG 	0x1000000
 #define RBUDP_PACK_SIZE_FLAG 	0x2000000
 #define BULK_OPR_FLAG 		0x4000000
+#define UNREG_FLAG             0x8000000
+
 
 int
 resetMsParam (msParam_t *msParam);

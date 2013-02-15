@@ -48,7 +48,7 @@ Cache ruleEngineConfig = {
 };
 
 #ifdef DEBUG
-#define RULE_SET_DEF_LENGTH 1000
+
 int rSplitStr(char *all, char *head, int headLen, char *tail, int tailLen, char sep) {
     char *i = strchr(all, sep);
     if(i==NULL) {

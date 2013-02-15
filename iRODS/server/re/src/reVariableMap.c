@@ -165,6 +165,7 @@ getVarNameFromVarMap(char *varMap, char *varName, char **varMapCPtr)
     p++;
     *varMapCPtr = p;
   }
+
   trimWS(varName);
   return(0);
 
@@ -181,13 +182,14 @@ getVarValue(char *varMap, ruleExecInfo_t *rei, char **varValue)
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
     return(i);
-  
   if (!strcmp(varName,"rei")) {
+
     i = getSetValFromRuleExecInfo(varMapCPtr, &rei, varValue,NULL);
     return(i);
   }
-  else
+  else {
     return(UNDEFINED_VARIABLE_MAP_ERR);
+  }
 }
 
 int
@@ -221,6 +223,8 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
 
   rei = *inrei;
 
+
+
   if (varMap == NULL) {
       i = getSetLeafValue(varValue, (void**)inrei, (void **) inrei, (char*)newVarValue, RE_PTR);
       return(i);
@@ -232,7 +236,11 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
   if (i != 0)
     return(i);
 
-  if (!strcmp(varName, "status") ) 
+  if( !strcmp( varName, "pluginInstanceName" ) ) {
+    i = getSetLeafValue( varValue, (rei->pluginInstanceName), 
+                         (void**) rei->pluginInstanceName, (char*)newVarValue, RE_STR );
+  }
+  else if (!strcmp(varName, "status") ) 
     i = getSetLeafValue(varValue,&(rei->status), (void **)  CAST_INT_VOIDPTR rei->status, (char*)newVarValue, RE_INT);
   else  if (!strcmp(varName, "statusStr") ) 
     i = getSetLeafValue(varValue,&(rei->statusStr), (void **) rei->statusStr, (char*)newVarValue,RE_STR);
@@ -278,8 +286,10 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
   /*    *varValue = rei->ruleSet;*/
   else  if (!strcmp(varName, "next") )
     i = getSetValFromRuleExecInfo(varMapCPtr, &(rei->next), varValue,newVarValue);
-  else 
+  else {
     return(UNDEFINED_VARIABLE_MAP_ERR);
+  }
+
   return(i);
 
 }

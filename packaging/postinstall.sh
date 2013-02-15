@@ -141,7 +141,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
       echo "ERROR :: Role $DB_USER Already Exists in Database, Aborting."
 	  exit 1
     fi
- 
+
     # =-=-=-=-=-=-=-
     # create the database role
 	echo "Creating Database Role: $DB_USER as $DB_ADMIN_ROLE"
@@ -154,17 +154,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     su --shell=/bin/bash -c "$PSQL -c \"$ALTERPASSCMD\"" $DB_ADMIN_ROLE &> /dev/null
 
     # =-=-=-=-=-=-=-
-    # create the iCAT primary database
+    # create the database
 	echo "Creating Database: $DB_NAME as $DB_USER"
 	su --shell=/bin/bash -c "createdb $DB_NAME" $DB_USER &> /dev/null
-    # =-=-=-=-=-=-=-
-    # create the default iCAT local zone database
-        LOCAL_ZONE_DB_NAME=${DB_NAME}_9000
-        echo "Creating Database: $LOCAL_ZONE_DB_NAME as $DB_USER"
-        su --shell=/bin/bash -c "createdb $LOCAL_ZONE_DB_NAME" $DB_USER \
-            &> /dev/null
 
-  else 
+  else
     # =-=-=-=-=-=-=-
     # catch other database types
     echo "TODO: detect location of non-postgres database"
@@ -172,7 +166,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     echo "TODO: check for existing database"
 
   fi
- 
+
 
 
 fi
@@ -182,7 +176,7 @@ fi
 chown -R $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $IRODS_HOME
 
 # =-=-=-=-=-=-=-
-# touch odbc file so it exists for the install script to update 
+# touch odbc file so it exists for the install script to update
 touch $EIRODS_HOME_DIR/.odbc.ini
 chown $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR/.odbc.ini
 
@@ -218,7 +212,6 @@ ln -s    /usr/bin/icd                     ${IRODS_HOME}/clients/icommands/bin/ic
 ln -s    /usr/bin/ichksum                 ${IRODS_HOME}/clients/icommands/bin/ichksum           
 ln -s    /usr/bin/ichmod                  ${IRODS_HOME}/clients/icommands/bin/ichmod            
 ln -s    /usr/bin/icp                     ${IRODS_HOME}/clients/icommands/bin/icp               
-ln -s    /usr/bin/idbo                    ${IRODS_HOME}/clients/icommands/bin/idbo              
 ln -s    /usr/bin/idbug                   ${IRODS_HOME}/clients/icommands/bin/idbug             
 ln -s    /usr/bin/ienv                    ${IRODS_HOME}/clients/icommands/bin/ienv              
 ln -s    /usr/bin/ierror                  ${IRODS_HOME}/clients/icommands/bin/ierror            

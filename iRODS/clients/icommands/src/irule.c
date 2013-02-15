@@ -591,6 +591,7 @@ main(int argc, char **argv) {
 	}
     }
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
     exit(0);	
 

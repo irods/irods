@@ -59,6 +59,7 @@ int firstCall=1;
 
 char selectSQL[MAX_SQL_SIZE_GQ];
 int selectSQLInitFlag;
+int doUpperCase;
 char fromSQL[MAX_SQL_SIZE_GQ];
 char whereSQL[MAX_SQL_SIZE_GQ];
 char orderBySQL[MAX_SQL_SIZE_GQ];
@@ -607,9 +608,19 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	    if (castOption==1) {
 	       rstrcat(whereSQL, "cast (", MAX_SQL_SIZE_GQ);
 	    }
+
+        if (doUpperCase==1) {
+           rstrcat(whereSQL, "upper (", MAX_SQL_SIZE_GQ);
+        }
+
 	    rstrcat(whereSQL, Tables[i].tableName, MAX_SQL_SIZE_GQ);
 	    rstrcat(whereSQL, ".", MAX_SQL_SIZE_GQ);
 	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE_GQ);
+
+        if (doUpperCase==1) {
+            rstrcat(whereSQL, " )", MAX_SQL_SIZE_GQ);
+        }
+
 	    if (castOption==1) {
                /* For PostgreSQL and MySQL, 'decimal' seems to work
                   fine but for Oracle 'number' is needed to handle
@@ -1470,6 +1481,10 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       rstrcpy(selectSQL, "select distinct ", MAX_SQL_SIZE_GQ);
    }
    selectSQLInitFlag=1;   /* selectSQL is currently initialized (no Columns) */
+   doUpperCase=0;
+   if (genQueryInp.options & UPPER_CASE_WHERE) {
+        doUpperCase=1;
+   }
 
    rstrcpy(fromSQL, "from ", MAX_SQL_SIZE_GQ);
    fromCount=0;

@@ -992,6 +992,31 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         /* (rm childfromresc parent child) */
         return(0);
     }
+
+    if (strcmp(cmdToken[0],"modrescdatapaths") ==0) {
+      char ttybuf[100];
+
+      printf(
+    "Warning, this command, more than others, is relying on your direct\n"
+    "input to modify ICAT tables (potentially, many rows).  It will do a\n"
+    "string pattern find and replace operation on the main data-object\n"
+    "table for the paths at which the physical files are stored. If you\n"
+    "are not sure what you are doing, do not run this command.  You may\n"
+    "want to backup the ICAT database before running this.  See the help\n"
+    "text for more information.\n"
+    "\n"
+    "Are you sure you want to run this command? [y/N]:");
+      fgets(ttybuf, 50, stdin);
+      if (strcmp(ttybuf, "y\n") == 0 ||
+         strcmp(ttybuf, "yes\n") == 0) {
+        printf("OK, performing the resource data paths update\n");
+
+        generalAdmin(0, "modify", "resourcedatapaths", cmdToken[1],
+                     cmdToken[2], cmdToken[3], cmdToken[4], "", "", "", "" );
+      }
+      return(0);
+    }
+
     if (strcmp(cmdToken[0],"modresc") ==0) {
         if (strcmp(cmdToken[2], "name")==0)       {
             char ttybuf[100];
@@ -1006,8 +1031,18 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
             if (strcmp(ttybuf, "y\n") == 0 ||
                 strcmp(ttybuf, "yes\n") == 0) {
                 printf("OK, performing the resource rename\n");
-                generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2], 
-                             cmdToken[3], "", "", "", "", "" );
+                int stat;
+                stat = generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2],
+                              cmdToken[3], "", "", "", "", "");
+                if (strcmp(cmdToken[2], "path")==0) {
+                   if (stat==0) {
+                      printf("Modify resource path was successful.\n");
+                      printf("If the existing iRODS files have been physically moved,\n");
+                      printf("you may want to run 'iadmin modrescdatapaths' with the old\n");
+                      printf("and new path.  See 'iadmin h modrescdatapaths' for more information.\n");
+                   }
+                }
+
             }
             else {
                 printf("Resource rename aborted\n");
@@ -1379,6 +1414,7 @@ main(int argc, char **argv) {
         }
     }
 
+    printErrorStack(Conn->rError);
     rcDisconnect(Conn);
 
     if (lastCommandStatus != 0) exit(4);
@@ -1421,7 +1457,10 @@ void usageMain()
         " mkdir Name [username] (make directory(collection))",
         " rmdir Name (remove directory) ",
         " mkresc Name Type Class Host [Path] [ContextString] (make Resource)",
-        " modresc Name [name, type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
+        " modresc Name [name, type, class, host, path, status, comment, info, ",
+        "      freespace] Value (mod Resc)",
+        " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
+        "      sometimes needed after modresc path)",
         " rmresc Name (remove resource)",
         " addchildtoresc Parent Child [ContextString]",
         " rmchildfromresc Parent Child",
@@ -1438,7 +1477,8 @@ void usageMain()
         " rt tokenNamespace Name [Value1] (remove token) ",
         " spass Password Key (print a scrambled form of a password for DB)",
         " dspass Password Key (descramble a password and print it)",
-        " pv [date-time] [repeat-time(minutes)] (initiate a periodic rule to vacuum the DB)",
+        " pv [date-time] [repeat-time(minutes)] ",
+        "           (initiate a periodic rule to vacuum the DB)",
         " ctime Time (convert an iRODS time (integer) to local time; & other forms)",
         " suq User ResourceName-or-'total' Value (set user quota)",
         " sgq Group ResourceName-or-'total' Value (set group quota)",
@@ -1675,6 +1715,44 @@ usage(char *subOpt)
         "The freespace value can be simply specified, or if it starts with + or -",
         "the freespace amount will be incremented or decremented by the value.",
         ""};
+    char *modrescDataPathsMsgs[]={
+        " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
+        "      sometimes needed after modresc path)",
+
+        " ",
+        "Modify the paths for existing iRODS files (data-objects) to match a",
+        "change of the resource path that had been done via 'iadmin modresc",
+        "Resc path'.  This is only needed if the physical files and directories",
+        "of existing iRODS files have been moved, via tools outside of iRODS;",
+        "i.e the physical resource has been moved.  If you only changed the",
+        "path so that new files will be stored under the new path directory,",
+        "you do not need to run this.",
+        " ",
+        "Each data-object has a physical path associated with it.  If the old",
+        "physical paths are no longer valid, you can update them via this.  It",
+        "will change the beginning part of the path (the Vault) from the old",
+        "path to the new.",
+        " ",
+        "This does a pattern replacement on the paths for files in the named",
+        "resource.  The old and new path strings must begin and end with a",
+        "slash (/) to make it more likely the correct patterns are replaced",
+        "(should the pattern repeat within a path).",
+        " ",
+        "If you include the optional user, only iRODS files owned by that",
+        "user will be updated.",
+        " ",
+        "When the command runs, it will tell you how many data-object rows",
+        "has been updated.",
+        " ",
+        "The 'iadmin modresc Rescname path' command now returns the previous",
+        "path of the resource which can be used as the oldPath for this",
+        "modrescdatapaths command.  It also refers to user to this command.",
+        " ",
+        "To see if you have any files under a given path, use iquest, for example:",
+        "iquest \"select count(DATA_ID) where DATA_PATH like '/iRODS/Vault3/%'\" ",
+        "And to restict it to a certain user add:",
+        " and USER_NAME = 'name' ",
+        ""};
 
     char *rmrescMsgs[]={
         " rmresc Name (remove resource)",
@@ -1844,6 +1922,8 @@ usage(char *subOpt)
         "Use 'iquest --sql ls' to see the currently defined list.",
         "If 'iquest --sql ls' fails see icatSysInserts.sql for the definitions of two",
         "built-in specific queries (r_specific_query) that are needed.",
+        "To add a specific query with single quotes(') within, use double",
+        "quotes(\") around the SQL.",
         "Also see rsq.",
         ""};
 
@@ -1872,7 +1952,8 @@ usage(char *subOpt)
                      "lg", "lgd", "lrg", "lf", "mkuser",
                      "moduser", "aua", "rua",
                      "rmuser", "mkdir", "rmdir", "mkresc",
-                     "modresc", "rmresc", "addchildtoresc", "rmchildfromresc",
+                     "modresc", "modrescdatapaths","rmresc", 
+                     "addchildtoresc", "rmchildfromresc",
                      "mkzone", "modzone", "rmzone",
                      "mkgroup", "rmgroup", "atg",
                      "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
@@ -1887,8 +1968,8 @@ usage(char *subOpt)
                      lgMsgs, lgdMsgs, lrgMsgs, lfMsgs, mkuserMsgs, 
                      moduserMsgs, auaMsgs, ruaMsgs,
                      rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
-                     modrescMsgs, rmrescMsgs, addchildtorescMsgs,
-                     mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
+                     modrescMsgs, modrescDataPathsMsgs,rmrescMsgs, 
+                     addchildtorescMsgs, mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
                      mkgroupMsgs, rmgroupMsgs,atgMsgs, 
                      rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
                      dspassMsgs, pvMsgs, ctimeMsgs, 

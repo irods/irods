@@ -968,7 +968,7 @@ sub doTestIcommands
 	my $program     = File::Spec->catfile( $icommandsTestDir, "testiCommands.pl" );
 	my $username = $ENV{LOGNAME} || $ENV{USER} || getpwuid($<);
 	my $tmpDir   = File::Spec->catdir( File::Spec->tmpdir( ), $username );
-	mkpath($tmpDir);
+	mkpath($tmpDir,0,01777);
 	my $passwordTmp = File::Spec->catfile( $tmpDir, "irods_test_$$.tmp" );
 
 # Use the same technique to get the hostname as testiCommands.pl

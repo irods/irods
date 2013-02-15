@@ -130,6 +130,14 @@ typedef struct CollEnt {
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
+/* used to store regex patterns used to match pathnames */
+typedef struct {
+  char *pattern_buf;
+  char **patterns;
+  int num_patterns;
+} pathnamePatterns_t;
+
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -164,13 +172,16 @@ initSysTiming (char *procName, char *action, int envVarFlag);
 int 
 printSysTiming (char *procName, char *action, int envVarFlag);
 int
-printNoSync (char *objPath, rodsLong_t fileSize);
+printNoSync (char *objPath, rodsLong_t fileSize,char *reason);
 int
 queryDataObjAcl (rcComm_t *conn, char *dataId, char *zoneHint,
                  genQueryOut_t **genQueryOut); // JMC - backport 4516
 int
 queryCollAcl (rcComm_t *conn, char *collName, char *zoneHint,
               genQueryOut_t **genQueryOut); // JMC - backport 4516
+int
+queryCollAclSpecific (rcComm_t *conn, char *collName, char *zoneHint,
+              genQueryOut_t **genQueryOut);
 int
 queryCollInheritance (rcComm_t *conn, char *collName, 
 		      genQueryOut_t **genQueryOut);
@@ -242,6 +253,12 @@ int
 rmFilesInDir (char *mydir);
 int
 mkdirForFilePath (char* filePath);
+pathnamePatterns_t *
+readPathnamePatterns(char *buf, int buflen);
+void
+freePathnamePatterns(pathnamePatterns_t *pp);
+int
+matchPathname(pathnamePatterns_t *pp, char *name, char *dirname);
 #ifdef  __cplusplus
 }
 #endif

@@ -106,6 +106,37 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
+    // =-=-=-=-=-=-=-
+    // call redirect for our operation of choice to request the hier string appropriately 
+    std::string       hier;
+    int               local    = LOCAL_HOST;
+    rodsServerHost_t* host     =  0;
+    char*             tmp_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( 0 == tmp_hier ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjRepl :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+    } else {
+        hier = tmp_hier;
+    }
+
+    // =-=-=-=-=-=-=-
+    // redirect to the desired server
+    if( LOCAL_HOST != local ) {
+        return _rcDataObjRepl( host->conn, dataObjInp, transStat );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // performing a local replication
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
     // =-=-=-=-=-=-=-
@@ -255,8 +286,12 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 DEBUGMSG(msg.str());
             }
 
-
+            // =-=-=-=-=-=-=-
+            // JMC - backport 4450
 #if 0 // JMC - legacy resource :: we no longer deal with the cache here
+            dataObjInfo_t *cacheDataObjInfo = NULL;
+            dataObjInfo_t *compDataObjInfo  = NULL; // JMC - backport 4594
+
 
             if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL           &&
                 // =-=-=-=-=-=-=-
@@ -473,6 +508,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
     int status;
     int allFlag;
     int savedStatus = 0;
+
 #if 0
     rescInfo_t *compRescInfo = NULL; // JMC - backport 4593
     rescInfo_t *cacheRescInfo = NULL; // JMC - backport 4593
@@ -757,17 +793,23 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
 
         // =-=-=-=-=-=-=-
         // call redirect for our operation of choice to request the hier string appropriately 
-        int               local = LOCAL_HOST;
         std::string       hier;
-        rodsServerHost_t* host  =  0;
-        eirods::error ret = eirods::resource_redirect( op_name, rsComm, 
-                                                       &dest_inp, hier, host, local );
-        if( !ret.ok() ) { 
-            std::stringstream msg;
-            msg << "dataObjOpenForRepl :: failed in eirods::resource_redirect for [";
-            msg << dest_inp.objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
+        int               local    = LOCAL_HOST;
+        rodsServerHost_t* host     =  0;
+        char*             tmp_hier = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+        if( 0 == tmp_hier ) {
+            eirods::error ret = eirods::resource_redirect( op_name, rsComm, 
+                                                           &dest_inp, hier, host, local );
+            if( !ret.ok() ) { 
+                std::stringstream msg;
+                msg << "dataObjOpenForRepl :: failed in eirods::resource_redirect for [";
+                msg << dest_inp.objPath << "]";
+                eirods::log( PASSMSG( msg.str(), ret ) );
+                return ret.code();
+            }
+       
+        } else {
+            hier = tmp_hier;  
         }
 
         // =-=-=-=-=-=-=- 
@@ -1489,7 +1531,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                                       rescInfo_t **outCacheResc, int rmBunCopyFlag)
         {
             int status;
-            // rescInfo_t *cacheResc;
+            //rescInfo_t *cacheResc;
             dataObjInp_t dataObjInp;
 
             bzero (&dataObjInp, sizeof (dataObjInp));

@@ -85,6 +85,7 @@ main(int argc, char **argv) {
 
     status = replUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
 
     if (status < 0) {
@@ -132,6 +133,9 @@ usage ()
         "-a option is used and the object is stored in one of the resources in a",
         "resource group, then a copy is made for each resource in the resource group",
         "and any stale copy in the resource group will also be updated.", 
+        "Note that if the source copy has a checksum value associated with it,",
+        "a checksum will be computed for the replicated copy and compare with",
+        "the source value for verification.",
         " ",
         "Note that replication is always within a zone.  For cross-zone duplication",
         "see irsync which can operate within a zone or across zones.",

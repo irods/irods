@@ -32,6 +32,9 @@ usage () {
 "Use % and _ as wild-cards, and use \\ to escape them.",
 "If 'no-distinct' appears before the selectConditionString, the normal",
 "distinct option on the SQL will bypassed (this is useful in rare cases).",
+"If uppercase (or upper) appears before the selectConditionString, the",
+"database value in the 'where' condition will be made upper case so one can do",
+"case-insensitive tests (using upper-case literals).",
 " ",
 "The --sql option executes a pre-defined SQL query.  The specified query must",
 "match one defined by the admin (see 'iadmin h asq' (add specific query)).",
@@ -51,6 +54,8 @@ usage () {
 " iquest \"User %-6.6s has %-5.5s access to file %s\" \"SELECT USER_NAME,  DATA_ACCESS_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \" %-5.5s access has been given to user %-6.6s for the file %s\" \"SELECT DATA_ACCESS_NAME, USER_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest no-distinct \"select META_DATA_ATTR_NAME\"",
+" iquest uppercase \"select COLL_NAME, DATA_NAME WHERE DATA_NAME like 'F1'\"",
+
 " iquest \"SELECT RESC_NAME, RESC_LOC, RESC_VAULT_PATH, DATA_PATH WHERE DATA_NAME = 't2' AND COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \"User %-9.9s uses %14.14s bytes in %8.8s files in '%s'\" \"SELECT USER_NAME, sum(DATA_SIZE),count(DATA_NAME),RESC_NAME\"",
 " iquest \"select sum(DATA_SIZE) where COLL_NAME = '/tempZone/home/rods'\"",
@@ -139,7 +144,7 @@ printBasicGenQueryOut(genQueryOut_t *genQueryOut, char *format) {
 int
 queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, 
 		    char *selectConditionString, int noDistinctFlag,
-                    char *zoneArgument, int noPageFlag)
+            int upperCaseFlag, char *zoneArgument, int noPageFlag)
 {
 /*
   NoDistinctFlag is 1 if the user is requesting 'distinct' to be skipped.
@@ -156,6 +161,9 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format,
 
   if (noDistinctFlag) {
      genQueryInp.options = NO_DISTINCT;
+  }
+  if (upperCaseFlag) {
+     genQueryInp.options = UPPER_CASE_WHERE;
   }
 
   if (zoneArgument!=0 && zoneArgument[0]!='\0') {
@@ -280,6 +288,7 @@ main(int argc, char **argv) {
     rodsArguments_t myRodsArgs;
     char *optStr;
     int noDistinctFlag=0;
+    int upperCaseFlag=0;
 
     optStr = "hz:Z";
    
@@ -291,6 +300,13 @@ main(int argc, char **argv) {
 	  myRodsArgs.optind++;
        }
     }
+    if (myRodsArgs.optind < argc) {
+       if (strncmp(argv[myRodsArgs.optind], "upper",5)==0) {
+         upperCaseFlag=1;
+         myRodsArgs.optind++;
+       }
+    }
+
 
     if (status < 0) {
         printf("Use -h for help\n");
@@ -350,19 +366,22 @@ main(int argc, char **argv) {
 
     if (myRodsArgs.optind == (argc - 3)) {
        status = queryAndShowStrCond(conn, argv[argc-3], 
-				    argv[argc-2], argv[argc-1], 
-				    noDistinctFlag, myRodsArgs.zoneName,
-				    myRodsArgs.noPage);
+				    argv[argc-2], argv[argc-1],
+                    noDistinctFlag, upperCaseFlag,
+                    myRodsArgs.zoneName,
+                    myRodsArgs.noPage);
     }
     else if (myRodsArgs.optind == (argc - 2)) {
        status = queryAndShowStrCond(conn, NULL, argv[argc-2], argv[argc-1], 
-				    noDistinctFlag, myRodsArgs.zoneName,
-				    myRodsArgs.noPage);
+                                   noDistinctFlag, upperCaseFlag,
+                                   myRodsArgs.zoneName,
+				                   myRodsArgs.noPage);
     }
     else {
        status = queryAndShowStrCond(conn, NULL, NULL, argv[argc-1],
-				    noDistinctFlag, myRodsArgs.zoneName,
-				    myRodsArgs.noPage);
+                    noDistinctFlag, upperCaseFlag,
+                    myRodsArgs.zoneName,
+                    myRodsArgs.noPage);
     }
     rcDisconnect(conn);
 

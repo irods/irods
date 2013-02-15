@@ -100,7 +100,10 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
 {
     struct stat myFileStat;
     int sysUid;
-    char userName[NAME_LEN], tmpPath[MAX_NAME_LEN];
+#if 0
+    char userName[NAME_LEN]
+#endif
+    char  tmpPath[MAX_NAME_LEN];
     int len;
     char *tmpPtr;
 
@@ -125,13 +128,16 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
         /* have tried before */
         return (SYS_NO_PATH_PERMISSION);
     } else if (sysUid == 0) {
+#if 0
         if (strstr (rsComm->clientUser.userName, "@") != NULL) {
             splitPathByKey (rsComm->clientUser.userName, userName, tmpPath, '@');
         } else {
             rstrcpy (userName, rsComm->clientUser.userName, NAME_LEN);
         }
+#endif
+       sysUid = rsComm->clientUser.sysUid =
+         getUnixUid (rsComm->clientUser.userName);
 
-        sysUid = rsComm->clientUser.sysUid = getUnixUid (userName);
         if (sysUid < 0) {
             rsComm->clientUser.sysUid = sysUid;
             return (SYS_NO_PATH_PERMISSION);

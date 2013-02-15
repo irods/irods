@@ -45,17 +45,24 @@
 **/
 int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei)
 {
-  char *mailStr;
+  char *mailStr  = 0;
   char fName[100];
-  char *t1, *t2;
-  FILE *fd;
-  char *toAddr;
-  char *subjectLine;
-  char *body;
+  char *t1 = 0, *t2  = 0;
+  FILE *fd = 0;
+  char *toAddr = 0;
+  char *subjectLine = 0;
+  char *body = 0;
+  int status = 0;
+
 
   toAddr = (char *) xtoAddr->inOutStruct;
   subjectLine = (char *) xsubjectLine->inOutStruct;
   body = (char *) xbody->inOutStruct;
+
+  status = checkStringForSystem(toAddr);
+  if (status) return(status);
+  status = checkStringForSystem(subjectLine);
+  if (status) return(status);
 
 
     if (reTestFlag > 0 ) {
@@ -97,7 +104,7 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
 	t1 = NULL;
     }
     fclose(fd);
-    mailStr = (char*)malloc (strlen(toAddr)+100);
+    mailStr = (char*)malloc (strlen(toAddr)+strlen(subjectLine)+100);
     if (mailStr == NULL) return SYS_MALLOC_ERR;
 
 #ifdef solaris_platform

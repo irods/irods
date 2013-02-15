@@ -72,6 +72,7 @@ main(int argc, char **argv) {
 
     status = phymvUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+    printErrorStack(conn->rError);
     rcDisconnect(conn);
 
     if (status < 0) {
@@ -89,6 +90,10 @@ usage ()
    char *msgs[]={
 "Usage : iphymv [-hMrvV] [-n replNum] [-S srcResource]  [-R destResource] ",
 "dataObj|collection ... ",
+" ",
+"Note that if the source copy has a checksum value associated with it,",
+"a checksum will be computed for the replicated copy and compare with",
+"the source value for verification.",
 " ",
 "Physically move a file in iRODS to another storage resource.",
 "Options are:",

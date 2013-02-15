@@ -286,6 +286,13 @@ isPathSymlink (rodsArguments_t *rodsArgs, char *path);
 int
 getAttriInAttriArray (char *objPath, genQueryOut_t *attriArray,
                       int *outDataMode, char **outChksum);
+int
+hasSymlinkInDir (char *mydir);
+int
+hasSymlinkInPath (char *myPath);
+int
+hasSymlinkInPartialPath (char *myPath, int pos);
+
 #ifdef USE_BOOST_FS
 int
 getPathStMode (path & p);

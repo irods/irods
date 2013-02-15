@@ -30,9 +30,10 @@ typedef struct {
                                 call is to get more rows. */
    int rowOffset;           /* Currently unused. */
    int options;             /* Bits for special options, currently unused. */
+   keyValPair_t condInput;
 } specificQueryInp_t;
 
-#define specificQueryInp_PI "str *sql; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7; str *arg8; str *arg9; str *arg10; int maxRows; int continueInx; int rowOffset; int options;"
+#define specificQueryInp_PI "str *sql; str *arg1; str *arg2; str *arg3; str *arg4; str *arg5; str *arg6; str *arg7; str *arg8; str *arg9; str *arg10; int maxRows; int continueInx; int rowOffset; int options; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_SPECIFIC_QUERY rsSpecificQuery

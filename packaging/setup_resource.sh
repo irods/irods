@@ -133,5 +133,11 @@ mv $IRODS_CONFIG_TEMPFILE $IRODS_CONFIG_FILE
 
 echo "Running eirods_setup.pl..."
 cd iRODS
-perl ./scripts/perl/eirods_setup.pl
+if [ $# -eq 1 ] ; then
+    # for devtest in the cloud
+    perl ./scripts/perl/eirods_setup.pl $1
+else
+    # manual
+    perl ./scripts/perl/eirods_setup.pl
+fi
 

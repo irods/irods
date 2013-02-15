@@ -7,6 +7,7 @@
 # action that invokes this mapping is in the list.
 # The mappings are searched top-down in a file.
 #
+pluginInstanceName||rei->pluginInstanceName
 status||rei->status
 objPath||rei->doi->objPath
 objPath||rei->doinp->objPath
