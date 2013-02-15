@@ -13,7 +13,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
-
+#include "eirods_stacktrace.h"
 
 int
 rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, 
@@ -81,10 +81,28 @@ remoteFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp,
 // =-=-=-=-=-=-=-
 // 
 int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **fileFstatOut ) {
+
+    if(FileDesc[fileFstatInp->fileInx].objPath == NULL ||
+       FileDesc[fileFstatInp->fileInx].objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
     struct stat myFileStat;
     eirods::file_object file_obj( rsComm, 
+                                  FileDesc[fileFstatInp->fileInx].objPath, 
                                   FileDesc[fileFstatInp->fileInx].fileName, 
                                   FileDesc[fileFstatInp->fileInx].rescHier, 
                                   FileDesc[fileFstatInp->fileInx].fd,

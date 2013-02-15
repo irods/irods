@@ -19,7 +19,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
-
+#include "eirods_stacktrace.h"
 
 
 /* rsFilePut - Put the content of a small file from a single buffer
@@ -123,9 +123,24 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
         return (fd);
     }
 
+    if(filePutInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // call write for resource plugin
-    eirods::file_object file_obj( rsComm, filePutInp->fileName, filePutInp->resc_hier_, fd, 0, 0 );
+    eirods::file_object file_obj( rsComm, filePutInp->objPath, filePutInp->fileName, filePutInp->resc_hier_, fd, 0, 0 );
     eirods::error write_err = fileWrite( rsComm,
                                          file_obj, 
                                          filePutInpBBuf->buf, 

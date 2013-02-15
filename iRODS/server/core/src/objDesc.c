@@ -30,6 +30,7 @@
 // =-=-=-=-=-=-=-
 // eirods_includes
 #include "eirods_resource_backport.h"
+#include "eirods_stacktrace.h"
 
 int
 initL1desc ()
@@ -539,10 +540,10 @@ initDataObjInfoForRepl (
     *destDataObjInfo = *srcDataObjInfo;
     destDataObjInfo->filePath[0] = '\0';
     rstrcpy (destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN);
-    // initialize the destination resource hierarchy to the root resource
 
-        rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoForRepl :: using dest resc name as hier [%s]", destRescInfo->rescName );
-        rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN); // orphan right now
+    // initialize the destination resource hierarchy to the root resource
+    rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoForRepl :: using dest resc name as hier [%s]", destRescInfo->rescName );
+    rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN); // orphan right now
 
 
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;

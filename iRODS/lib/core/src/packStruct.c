@@ -1739,7 +1739,6 @@ packChildStruct (void **inPtr, packedOutput_t *packedOutput,
     }
 
     for (i = 0; i < numElement; i++) {
-        int doubleInStruct;
         packItemHead = NULL;
 
         status = parsePackInstruct ((char*)packInstruct, &packItemHead);
@@ -1756,8 +1755,6 @@ packChildStruct (void **inPtr, packedOutput_t *packedOutput,
         }
 
         /* now pack each child item */
-
-        doubleInStruct = 0;
         tmpItem = packItemHead;
         while (tmpItem != NULL) {
 #if defined(solaris_platform) && !defined(i86_hardware)

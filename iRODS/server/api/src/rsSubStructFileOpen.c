@@ -66,7 +66,7 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsSubStructFileOpen( rsComm_t*  _comm, 
+_rsSubStructFileOpen( rsComm_t*  _comm,
                       subFile_t* _sub_file ) {
 
     // =-=-=-=-=-=-=-

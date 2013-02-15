@@ -15,7 +15,6 @@ static char krbAuthReqErrorMsg[1000];
 int
 rsKrbAuthRequest (rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut)
 {
-    krbAuthRequestOut_t *result;
     int status;
 
     if (krbAuthReqStatus==1) {
@@ -30,9 +29,9 @@ rsKrbAuthRequest (rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut)
     *krbAuthRequestOut = (krbAuthRequestOut_t*)malloc(sizeof(krbAuthRequestOut_t));
     memset((char *)*krbAuthRequestOut, 0, sizeof(krbAuthRequestOut_t));
 
-    result = *krbAuthRequestOut;
-
 #if defined(KRB_AUTH)
+    krbAuthRequestOut_t *result;
+    result = *krbAuthRequestOut;
     status = ikrbSetupCreds(NULL, rsComm, KerberosName,
     			    &result->serverName);
     if (status==0) {

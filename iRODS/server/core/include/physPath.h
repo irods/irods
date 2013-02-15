@@ -72,7 +72,7 @@ extern "C" {
     dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                          char **chksumStr);
     int
-    chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, 
+    chkAndHandleOrphanFile (rsComm_t *rsComm, char* objPath, char* rescHIer, char *filePath, 
                             rescInfo_t *rescInfo, int replStatus);
     int
     renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,

@@ -943,7 +943,7 @@ parseMetadataModLine(char *inpLine, rsComm_t *rsComm)
 
 	/* get user privilege level */
 	/* maybe used to skip test in rsModAVUMetadata() */
-	rsComm->clientUser.authInfo.authFlag;
+	/* rsComm->clientUser.authInfo.authFlag; statement has no effect. what was the intent? - hcj*/
 
 
 	/* init modAVU input */

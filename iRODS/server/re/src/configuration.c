@@ -427,7 +427,7 @@ ret:
 }
 int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
 {
-  int i;
+
 /*  char l0[MAX_RULE_LENGTH]; */
 /*  char l1[MAX_RULE_LENGTH]; */
 /*  char l2[MAX_RULE_LENGTH]; */
@@ -437,7 +437,7 @@ int readRuleStructAndRuleSetFromFile(char *ruleBaseName, ruleStruct_t *inRuleStr
 /*   char buf[MAX_RULE_LENGTH]; */
    char *configDir;
 /*   char *t; */
-   i = inRuleStrct->MaxNumOfRules;
+   /* inRuleStrct->MaxNumOfRules; What was the intent here? - hcj */
 
    if (ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||
        ruleBaseName[1] == ':') {

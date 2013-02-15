@@ -16,7 +16,7 @@ void usage (char *prog);
 int
 mkrodsdir() {
    char dirName[NAME_LEN];
-   int status, mode;
+   int mode;
    char *getVar;
 #ifdef windows_platform
    getVar = iRODSNt_gethome();
@@ -27,9 +27,9 @@ mkrodsdir() {
    rstrcat(dirName, "/.irods", NAME_LEN);
    mode = 0700;
 #ifdef _WIN32
-   status = iRODSNt_mkdir (dirName, mode);
+   iRODSNt_mkdir (dirName, mode);
 #else
-   status = mkdir (dirName, mode);
+   mkdir (dirName, mode);
 #endif
    return(0); /* no error messages as it normally fails */
 }

@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #ifndef __EIRODS_PLUGIN_BASE_H__
 #define __EIRODS_PLUGIN_BASE_H__
@@ -27,41 +26,41 @@ namespace eirods {
     typedef boost::function< eirods::error( rcComm_t* ) > pdmo_type;
     
     /**
-	  * \class plugin_base - ABC for E-iRODS Plugins
-	  * \author Jason M. Coposky 
-	  * \date   October 2011
-	  * \brief  This class enforces the delay_load interface necessary for the 
-                load_plugin call to load any other non-member symbols from the 
-                shared object.  
-                reference iRODS/lib/core/include/eirods_load_plugin.h
-	  **/
+     * \class plugin_base - ABC for E-iRODS Plugins
+     * \author Jason M. Coposky 
+     * \date   October 2011
+     * \brief  This class enforces the delay_load interface necessary for the 
+     load_plugin call to load any other non-member symbols from the 
+     shared object.  
+     reference iRODS/lib/core/include/eirods_load_plugin.h
+    **/
     class plugin_base {
-        public:
+    public:
         // =-=-=-=-=-=-=-
         /// @brief Constructors
-		plugin_base( const std::string&,   // instance name
+        plugin_base( const std::string&,   // instance name
                      const std::string& ); // context
         plugin_base( const plugin_base& );
             
         // =-=-=-=-=-=-=-
         /// @brief assignment operator
-		plugin_base& operator=( const plugin_base& );
+        plugin_base& operator=( const plugin_base& );
           
         // =-=-=-=-=-=-=-
         /// @brief Destructor
-		virtual ~plugin_base();
+        virtual ~plugin_base();
 
         // =-=-=-=-=-=-=-
         /// @brief interface to load operations from the shared object
-		virtual error delay_load( void* ) = 0;
+        virtual error delay_load( void* ) = 0;
         
         // =-=-=-=-=-=-=-
         /// @brief interface to create and register a PDMO
-		virtual error post_disconnect_maintenance_operation( pdmo_type& );
+        virtual error post_disconnect_maintenance_operation( pdmo_type& );
          
         // =-=-=-=-=-=-=-
         /// @brief interface to determine if a PDMO is necessary
-		virtual error need_post_disconnect_maintenance_operation( bool& );
+        virtual error need_post_disconnect_maintenance_operation( bool& );
 
         // =-=-=-=-=-=-=-
         /// @brief interface to add operations - key, function name
@@ -75,7 +74,7 @@ namespace eirods {
         /// @brief accessor for context string
         const std::string& context_string( ) { return context_; }
 
-        protected:
+    protected:
         std::string                       context_;       // context string for this plugin
         std::string                       instance_name_; // name of this instance of the plugin
  
@@ -83,7 +82,7 @@ namespace eirods {
         /// @brief Map holding resource operations
         std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
 
-	}; // class plugin_base
+    }; // class plugin_base
 
 }; // namespace eirods
 

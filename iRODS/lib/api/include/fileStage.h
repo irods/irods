@@ -23,10 +23,11 @@ typedef struct {
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
+    char objPath[MAX_NAME_LEN];
     int flag;
 } fileStageInp_t;
     
-#define fileStageInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int flag;"
+#define fileStageInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flag;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_STAGE rsFileStage

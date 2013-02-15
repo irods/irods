@@ -1127,7 +1127,7 @@ static int removeAVUs() {
 /**
  * @brief Returns true if there is only one repl associated with this data object
  */
-static bool
+bool
 _dataIsLastRepl(
     dataObjInfo_t* _dataObjInfo) {
 
@@ -1867,10 +1867,7 @@ chlAddChildResc(
 {
     int result = 0;
     
-    rodsLong_t seqNum;
-    char idNum[MAX_SQL_SIZE];
     int status;
-    char myTime[50];
     static const char* func_name = "chlAddChildResc";
     eirods::sql_logger logger(func_name, logSQL);
     std::string new_child_string(rescInfo->rescChildren);
@@ -1884,18 +1881,16 @@ chlAddChildResc(
             result = status;
 
         } else if (rescInfo->zoneName != NULL && strlen(rescInfo->zoneName) > 0 && strcmp(rescInfo->zoneName, localZone) !=0) {
-            int i;
-            i = addRErrorMsg (&rsComm->rError, 0, 
-                              "Currently, resources must be in the local zone");
+            addRErrorMsg (&rsComm->rError, 0, 
+                          "Currently, resources must be in the local zone");
             result = CAT_INVALID_ZONE;
 
         } else if(_childHasData(new_child_string)) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, 
                      "resource '%s' contains one or more dataObjects",
                      rescInfo->rescName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             result = CAT_RESOURCE_NOT_EMPTY;
         } else {
 
@@ -1978,9 +1973,8 @@ int chlRegResc(rsComm_t *rsComm,
 
     if (rescInfo->zoneName != NULL && strlen(rescInfo->zoneName) > 0) {
         if (strcmp(rescInfo->zoneName, localZone) !=0) {
-            int i;
-            i = addRErrorMsg (&rsComm->rError, 0, 
-                              "Currently, resources must be in the local zone");
+            addRErrorMsg (&rsComm->rError, 0, 
+                          "Currently, resources must be in the local zone");
             return(CAT_INVALID_ZONE);
         }
     }
@@ -1995,12 +1989,11 @@ int chlRegResc(rsComm_t *rsComm,
     // JMC - backport 4597
     myHostEnt = gethostbyname(rescInfo->rescLoc);
     if (myHostEnt <= 0) {
-        int i;
         char errMsg[155];
         snprintf(errMsg, 150, 
                  "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
                  rescInfo->rescLoc);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
     }
     if (strcmp(rescInfo->rescLoc, "localhost") == 0) { // JMC - backport 4650
         addRErrorMsg( &rsComm->rError, 0, 
@@ -2156,6 +2149,7 @@ _rescHasChildren(
     } else if(strlen(children) != 0) {
         result = true;
     }
+    return result;
 }
 
 /**
@@ -2180,12 +2174,11 @@ chlDelChildResc(
         if((status = getLocalZone())) {
             result = status;
         } else if(_rescHasData(child) || _rescHasChildren(child)) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, 
                      "resource '%s' contains one or more dataObjects",
                      child.c_str());
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             result = CAT_RESOURCE_NOT_EMPTY;
         } else {
             logger.log();
@@ -2270,7 +2263,6 @@ _rescHasParentOrChild(
 int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
           
     int status;
-    rodsLong_t iVal;
     char rescId[MAX_NAME_LEN];
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlDelResc");
@@ -2290,22 +2282,20 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
     // JMC - backport 4629
     if (strncmp(rescInfo->rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
         char errMsg[155];
-        int i;
         snprintf(errMsg, 150, 
                  "%s is a built-in resource needed for bundle operations.", 
                  BUNDLE_RESC);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
     }
     // =-=-=-=-=-=-=-
 
     if (_rescHasData(rescInfo->rescName)) {
-        int i;
         char errMsg[105];
         snprintf(errMsg, 100, 
                  "resource '%s' contains one or more dataObjects",
                  rescInfo->rescName);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_RESOURCE_NOT_EMPTY);
     }
 
@@ -2320,12 +2310,11 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
         rescId, MAX_NAME_LEN, rescInfo->rescName, 0, 0, &icss);
     if (status != 0) {
         if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, 
                      "resource '%s' does not exist",
                      rescInfo->rescName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(status);
         }
         _rollback("chlDelResc");
@@ -2333,12 +2322,11 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
     }
 
     if(_rescHasParentOrChild(rescId)) {
-        int i;
         char errMsg[105];
         snprintf(errMsg, 100, 
                  "resource '%s' has a parent or child",
                  rescInfo->rescName);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_RESOURCE_NOT_EMPTY);
     }
     
@@ -2349,12 +2337,11 @@ int chlDelResc(rsComm_t *rsComm, rescInfo_t *rescInfo, int _dryrun ) {
         &icss);
     if (status != 0) {
         if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, 
                      "resource '%s' does not exist",
                      rescInfo->rescName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(status);
         }
         _rollback("chlDelResc");
@@ -2500,8 +2487,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         iValStr, 200, userName2, zoneToUse, 0, &icss);
     if (status==CAT_SUCCESS_BUT_WITH_NO_INFO ||
         status==CAT_NO_ROWS_FOUND) {
-        int i;
-        i = addRErrorMsg (&rsComm->rError, 0, "Invalid user");
+        addRErrorMsg (&rsComm->rError, 0, "Invalid user");
         return(CAT_INVALID_USER); 
     }
     if (status != 0) {
@@ -2527,13 +2513,12 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         "delete from R_USER_PASSWORD where user_id=?",
         &icss);
     if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-        int i;
         char errMsg[MAX_NAME_LEN+40];
         rodsLog(LOG_NOTICE,
                 "chlDelUserRE delete password failure %d",
                 status);
         snprintf(errMsg, sizeof errMsg, "Error removing password entry");
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         _rollback("chlDelUserRE");
         return(status);
     }
@@ -2547,13 +2532,12 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         "delete from R_USER_GROUP where user_id=? or group_user_id=?",
         &icss);
     if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-        int i;
         char errMsg[MAX_NAME_LEN+40];
         rodsLog(LOG_NOTICE,
                 "chlDelUserRE delete user_group entry failure %d",
                 status);
         snprintf(errMsg, sizeof errMsg, "Error removing user_group entry");
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         _rollback("chlDelUserRE");
         return(status);
     }
@@ -2565,13 +2549,12 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         "delete from R_USER_AUTH where user_id=?",
         &icss);
     if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
-        int i;
         char errMsg[MAX_NAME_LEN+40];
         rodsLog(LOG_NOTICE,
                 "chlDelUserRE delete user_auth entries failure %d",
                 status);
         snprintf(errMsg, sizeof errMsg, "Error removing user_auth entries");
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         _rollback("chlDelUserRE");
         return(status);
     }
@@ -2660,13 +2643,12 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
         "select coll_id from R_COLL_MAIN where coll_name=?",
         &iVal, logicalParentDirName, 0, 0, 0, 0, &icss);
     if (status < 0) {
-        int i;
         char errMsg[MAX_NAME_LEN+40];
         if (status == CAT_NO_ROWS_FOUND) {
             snprintf(errMsg, sizeof errMsg,
                      "collection '%s' is unknown, cannot create %s under it",
                      logicalParentDirName, logicalEndName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(status);
         }
         _rollback("chlRegCollByAdmin");
@@ -2727,14 +2709,13 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
     status =  cmlExecuteNoAnswerSql(tSQL,
                                     &icss);
     if (status != 0) {
-        int i;
         char errMsg[105];
         if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
             snprintf(errMsg, 100, "Error %d %s",
                      status,
                      "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME"
                 );
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
 
         rodsLog(LOG_NOTICE,
@@ -2830,12 +2811,11 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
                                           rsComm->clientUser.rodsZone, 
                                           ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
     if (status < 0) {
-        int i;
         char errMsg[105];
         if (status == CAT_UNKNOWN_COLLECTION) {
             snprintf(errMsg, 100, "collection '%s' is unknown",
                      logicalParentDirName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(status);
         }
         _rollback("chlRegColl");
@@ -3028,18 +3008,17 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
                        ACCESS_MODIFY_OBJECT, &icss);
 
     if (iVal < 0) {
-        int i;
         char errMsg[105];
         if (iVal==CAT_UNKNOWN_COLLECTION) {
             snprintf(errMsg, 100, "collection '%s' is unknown", 
                      collInfo->collName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_UNKNOWN_COLLECTION);
         }
         if (iVal==CAT_NO_ACCESS_PERMISSION) {
             snprintf(errMsg, 100, "no permission to update collection '%s'", 
                      collInfo->collName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return (CAT_NO_ACCESS_PERMISSION);
         }
         return(iVal);
@@ -3142,9 +3121,8 @@ int chlRegZone(rsComm_t *rsComm,
     }
 
     if (strncmp(zoneType, "remote", 6) != 0) {
-        int i;
-        i = addRErrorMsg (&rsComm->rError, 0, 
-                          "Currently, only zones of type 'remote' are allowed");
+        addRErrorMsg (&rsComm->rError, 0, 
+                      "Currently, only zones of type 'remote' are allowed");
         return(CAT_INVALID_ARGUMENT);
     }
 
@@ -3271,9 +3249,8 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
     }
     if (strcmp(option, "name")==0) {
         if (strcmp(zoneName,localZone)==0) {
-            int i;
-            i = addRErrorMsg (&rsComm->rError, 0, 
-                              "It is not valid to rename the local zone via chlModZone; iadmin should use acRenameLocalZone");
+            addRErrorMsg (&rsComm->rError, 0, 
+                          "It is not valid to rename the local zone via chlModZone; iadmin should use acRenameLocalZone");
             return (CAT_INVALID_ARGUMENT);
         }
         cllBindVars[cllBindVarCount++]=optionValue;
@@ -3523,9 +3500,8 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
     }
 
     if (strcmp(zoneType, "remote") != 0) {
-        int i;
-        i = addRErrorMsg (&rsComm->rError, 0, 
-                          "It is not permitted to remove the local zone");
+        addRErrorMsg (&rsComm->rError, 0, 
+                      "It is not permitted to remove the local zone");
         return(CAT_INVALID_ARGUMENT);
     }
 
@@ -3815,11 +3791,10 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
  
     if (status != CAT_NO_ROWS_FOUND) {
         if (status == 0) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, "collection '%s' is not empty",
                      collInfo->collName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_COLLECTION_NOT_EMPTY);
         }
         _rollback("chlDelCollByAdmin");
@@ -3868,11 +3843,10 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
                                     &icss);
 
     if (status != 0) {
-        int i;
         char errMsg[105];
         snprintf(errMsg, 100, "collection '%s' is unknown", 
                  collInfo->collName);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         _rollback("chlDelCollByAdmin");
         return(CAT_UNKNOWN_COLLECTION);
     }
@@ -3936,12 +3910,11 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
                          ACCESS_MODIFY_OBJECT, 
                          &icss);
     if (status < 0) {
-        int i;
         char errMsg[105];
         if (status == CAT_UNKNOWN_COLLECTION) {
             snprintf(errMsg, 100, "collection '%s' is unknown",
                      logicalParentDirName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(status);
         }
         _rollback("_delColl");
@@ -4483,10 +4456,9 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
     if (pwLen2 > MAX_PASSWORD_LEN-5 && pwLen2==pwLen1) {
         /* probable failure */
         char errMsg[160];
-        int i;
         snprintf(errMsg, 150, 
                  "Error with password encoding.\nPlease try connecting directly to the ICAT host (setenv irodsHost)");
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_PASSWORD_ENCODING_ERROR);
     }
     strcpy(out, upassword);
@@ -4728,10 +4700,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
                 &iVal, newValue, 0, 0, 0, 0, &icss);
             if (status2 != 0) {
                 char errMsg[105];
-                int i;
                 snprintf(errMsg, 100, "user_type '%s' is not valid", 
                          newValue);
-                i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
 
                 rodsLog(LOG_NOTICE,
                         "chlModUser invalid user_type");
@@ -4952,11 +4923,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     // JMC - backport 4629
     if (strncmp(rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
         char errMsg[155];
-        int i;
         snprintf(errMsg, 150, 
                  "%s is a built-in resource needed for bundle operations.", 
                  BUNDLE_RESC);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
     }
     // =-=-=-=-=-=-=-
@@ -5076,12 +5046,11 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         // JMC - backport 4597
         myHostEnt = gethostbyname(optionValue);
         if (myHostEnt <= 0) {
-            int i;
             char errMsg[155];
             snprintf(errMsg, 150, 
                      "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
                      optionValue);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
         if (strcmp(optionValue, "localhost") == 0) { // JMC - backport 4650
             addRErrorMsg (&rsComm->rError, 0, 
@@ -5109,11 +5078,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 6");
         status = cmlCheckNameToken("resc_type", optionValue, &icss);
         if (status !=0 ) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, "resource_type '%s' is not valid", 
                      optionValue);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_TYPE);
         }
 
@@ -5138,11 +5106,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 8");
         status = cmlCheckNameToken("resc_class", optionValue, &icss);
         if (status !=0 ) {
-            int i;
             char errMsg[105];
             snprintf(errMsg, 100, "resource_class '%s' is not valid", 
                      optionValue);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_CLASS);
         }
 
@@ -5737,7 +5704,6 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
     if ( *userInfo->userType=='\0' || 
          strcmp(userInfo->userType, lastValidUserType)!=0 ) {
         char errMsg[105];
-        int i;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlRegUserRE SQL 1 ");
         status = cmlGetStringValueFromSql(
             "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?", 
@@ -5748,7 +5714,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         else {
             snprintf(errMsg, 100, "user_type '%s' is not valid", 
                      userInfo->userType);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_USER_TYPE);
         }
     }
@@ -5783,12 +5749,11 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
             zoneId, MAX_NAME_LEN, userZone, "", 0, &icss);
         if (status != 0) {
             if (status==CAT_NO_ROWS_FOUND) {
-                int i;
                 char errMsg[105];
                 snprintf(errMsg, 100, 
                          "zone '%s' does not exist",
                          userZone);
-                i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
                 return(CAT_INVALID_ZONE);
             }
             return(status);
@@ -5820,12 +5785,11 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
     if (status != 0) {
         if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
             char errMsg[105];
-            int i;
             snprintf(errMsg, 100, "Error %d %s",
                      status,
                      "CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME"
                 );
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
         _rollback("chlRegUserRE");
         rodsLog(LOG_NOTICE,
@@ -5965,12 +5929,11 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
                              rsComm->clientUser.rodsZone,
                              access, &icss); 
         if (status < 0) {
-            int i;
             char errMsg[105];
             if (status == CAT_UNKNOWN_COLLECTION) {
                 snprintf(errMsg, 100, "collection '%s' is unknown",
                          name);
-                i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
             }
             return(status);
         }
@@ -6131,10 +6094,9 @@ int chlSetAVUMetadata(rsComm_t *rsComm, char *type,
                       char *newUnit) {
     int status;
     char myTime[50];
-    rodsLong_t objId, iVal;
+    rodsLong_t objId;
     char metaIdStr[MAX_NAME_LEN*2]; /* twice as needed to query multiple */
     char objIdStr[MAX_NAME_LEN];
-    char newMetaIdStr[MAX_NAME_LEN];
 
     memset(metaIdStr, 0, sizeof(metaIdStr));
     if (logSQL != 0) rodsLog(LOG_SQL, "chlSetAVUMetadata");
@@ -6636,13 +6598,12 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
                                  ACCESS_CREATE_METADATA, &icss);
         }
         if (status < 0) {
-            int i;
             char errMsg[105];
             _rollback("chlAddAVUMetadata");
             if (status == CAT_UNKNOWN_COLLECTION) {
                 snprintf(errMsg, 100, "collection '%s' is unknown",
                          name);
-                i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
             } else {
                 _rollback("chlAddAVUMetadata");
             }
@@ -6938,12 +6899,11 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
                              rsComm->clientUser.rodsZone,
                              ACCESS_DELETE_METADATA, &icss);
         if (status < 0) {
-            int i;
             char errMsg[105];
             if (status == CAT_UNKNOWN_COLLECTION) {
                 snprintf(errMsg, 100, "collection '%s' is unknown",
                          name);
-                i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
             }
             return(status);
         }
@@ -7339,11 +7299,10 @@ int chlModAccessControlResc(rsComm_t *rsComm, int recursiveFlag,
     else if (strcmp(myAccessStr,AP_WRITE)==0){myAccessLev=ACCESS_MODIFY_OBJECT;}
     else if (strcmp(myAccessStr,AP_OWN)==0) {myAccessLev=ACCESS_OWN;}
     else {
-        int i;
         char errMsg[105];
         snprintf(errMsg, 100, "access level '%s' is invalid for a resource",
                  myAccessStr);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_INVALID_ARGUMENT);
     }
 
@@ -7472,8 +7431,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     if (strncmp(accessLevel, MOD_ADMIN_MODE_PREFIX, 
                 strlen(MOD_ADMIN_MODE_PREFIX))==0) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-            int i;
-            i = addRErrorMsg (&rsComm->rError, 0, 
+            addRErrorMsg (&rsComm->rError, 0, 
                               "You must be the admin to use the -M admin mode");
             return(CAT_NO_ACCESS_PERMISSION);
         }
@@ -7494,11 +7452,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
         inheritFlag=2;
     }
     else {
-        int i;
         char errMsg[105];
         snprintf(errMsg, 100, "access level '%s' is invalid",
                  accessLevel);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_INVALID_ARGUMENT);
     }
 
@@ -7533,11 +7490,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
     }
 
     if (status1 < 0 && inheritFlag!=0) {
-        int i;
         char errMsg[105];
         snprintf(errMsg, 100, "access level '%s' is valid only for collections",
                  accessLevel);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_INVALID_ARGUMENT);
     }
 
@@ -7571,14 +7527,13 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     /* If both failed, it doesn't exist or there's no permission */
     if (status1 < 0 && status2 < 0) {
-        int i;
         char errMsg[205];
 
         if (status1 == CAT_UNKNOWN_COLLECTION && status2 == CAT_UNKNOWN_FILE) {
             snprintf(errMsg, 200, 
                      "Input path is not a collection and not a dataObj: %s",
                      pathName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_ARGUMENT);
         }
         if (status1 != CAT_UNKNOWN_COLLECTION) {
@@ -7754,13 +7709,12 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
     /* Recursive */
     if (objId) {
-        int i;
         char errMsg[205];
 
         snprintf(errMsg, 200, 
                  "Input path is not a collection and recursion was requested: %s",
                  pathName);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_INVALID_ARGUMENT);
     }
 
@@ -7905,7 +7859,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
     char collName[MAX_NAME_LEN]="";
     char *cVal[3];
     int iVal[3];
-    int pLen, newNameLen, cLen, len;
+    int pLen, cLen, len;
     int isRootDir=0;
     char objIdString[MAX_NAME_LEN];
     char collIdString[MAX_NAME_LEN];
@@ -8048,7 +8002,6 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
         /* update the table */
         pLen = strlen(parentCollName);
         cLen=strlen(collName);
-        newNameLen = strlen(newName);
         if (pLen<=0 || cLen <=0) return(CAT_INVALID_ARGUMENT);  /* invalid 
                                                                    argument is not really right, but something is really wrong */
 
@@ -8202,7 +8155,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
     char targetCollName[MAX_NAME_LEN]="";
     char parentTargetCollName[MAX_NAME_LEN]="";
     char newCollName[MAX_NAME_LEN]="";
-    int pLen, newNameLen, ocLen;
+    int pLen, ocLen;
     int i, OK, len;
     char *cp;
     char objIdString[MAX_NAME_LEN];
@@ -8373,7 +8326,6 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
         strncpy(newCollName, targetCollName, MAX_NAME_LEN);
         strncat(newCollName, "/", MAX_NAME_LEN);
         strncat(newCollName, endCollName, MAX_NAME_LEN);
-        newNameLen = strlen(newCollName);
 
         if (logSQL!=0) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
         status = cmlGetIntegerValueFromSql(
@@ -8499,7 +8451,6 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
     char myTime[50];
     rodsLong_t seqNum;
     char errMsg[205];
-    int i;
     char seqNumStr[MAX_NAME_LEN];
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegToken");
@@ -8515,7 +8466,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
         snprintf(errMsg, 200, 
                  "Token namespace '%s' does not exist",
                  nameSpace);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return (CAT_INVALID_ARGUMENT);
     }
 
@@ -8527,7 +8478,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
         snprintf(errMsg, 200, 
                  "Token '%s' already exists in namespace '%s'",
                  name, nameSpace);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return (CAT_INVALID_ARGUMENT);
     }
 
@@ -8596,7 +8547,6 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
     int status;
     rodsLong_t objId;
     char errMsg[205];
-    int i;
     char objIdStr[60];
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlDelToken");
@@ -8612,7 +8562,7 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
         snprintf(errMsg, 200, 
                  "Token '%s' does not exist in namespace '%s'",
                  name, nameSpace);
-        i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+        addRErrorMsg (&rsComm->rError, 0, errMsg);
         return (CAT_INVALID_ARGUMENT);
     }
 
@@ -9555,7 +9505,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
 {
     int status;
     int i;
-    rodsLong_t seqNum = -1, seqNum2;
+    rodsLong_t seqNum = -1;
     char msrvcIdStr[MAX_NAME_LEN];
     if (logSQL!=0) rodsLog(LOG_SQL, "chlInsMsrvcTable");
 
@@ -9637,7 +9587,6 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
     }
     else { /* micro-service already there */
         snprintf(msrvcIdStr, MAX_NAME_LEN, "%lld", seqNum);
-        seqNum2 = seqNum;
         /* Check if same host and location exists - if so no need to insert a new row */
         if (logSQL!=0) rodsLog(LOG_SQL, "chlInsMsrvcTable SQL 4");
         i=0;
@@ -10038,8 +9987,7 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
         if (needToGetNextRow) {
             status = cmlGetNextRowFromStatement(statementNum, icss);
             if (status == CAT_NO_ROWS_FOUND) {
-                int status2;
-                status2 = cmlFreeStatement(statementNum, icss);
+                cmlFreeStatement(statementNum, icss);
                 result->continueInx=0;
                 if (result->rowCnt==0) return(status); /* NO ROWS; in this 
                                                           case a continuation call is finding no more rows */

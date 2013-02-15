@@ -43,6 +43,7 @@ namespace eirods {
     // public - ctor
     file_object::file_object(
         rsComm_t* _c,
+        const std::string& _logical_path,
         const std::string& _fn,
         const std::string& _resc_hier,
         int _fd,
@@ -50,6 +51,7 @@ namespace eirods {
         int _f ) :
         first_class_object(),
         size_( -1 ) {
+        logical_path(_logical_path);
         comm_            = _c;
         physical_path_   = _fn;
         resc_hier_       = _resc_hier;

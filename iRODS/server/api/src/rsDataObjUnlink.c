@@ -52,8 +52,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     if (status < 0 || NULL == rodsServerHost ) { // JMC cppcheck - nullptr
         return (status);
     } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
-        int retval;
-        retval = rcDataObjUnlink (rodsServerHost->conn, dataObjUnlinkInp);
+        rcDataObjUnlink (rodsServerHost->conn, dataObjUnlinkInp);
         return status;
     }
 
@@ -377,7 +376,6 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 int
 l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
-    int rescTypeInx;
     fileUnlinkInp_t fileUnlinkInp;
     int status;
 
@@ -423,6 +421,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileUnlinkInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
 #if 0 // JMC - legacy resource 
             break;

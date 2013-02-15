@@ -13,7 +13,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
-
+#include "eirods_stacktrace.h"
 
 
 int
@@ -81,9 +81,27 @@ remoteFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
 int
 _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 {
+
+    if(FileDesc[fileCloseInp->fileInx].objPath == NULL ||
+       FileDesc[fileCloseInp->fileInx].objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // call the resource plugin close operation 
     eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileCloseInp->fileInx].objPath, 
                                   FileDesc[fileCloseInp->fileInx].fileName, 
                                   FileDesc[fileCloseInp->fileInx].rescHier, 
                                   FileDesc[fileCloseInp->fileInx].fd,

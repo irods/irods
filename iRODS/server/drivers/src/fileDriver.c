@@ -138,7 +138,10 @@ eirods::error fileWrite( rsComm_t* _comm, eirods::first_class_object& _object, v
     if( !ret_err.ok() ) {
         return PASS( false, ret_err.code(), "fileWrite - failed to call 'write'", ret_err );
     } else {
-        return CODE( ret_err.code() );
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Write successful.";
+        return PASSMSG(msg.str(), ret_err);
     }
 
 } // fileWrite

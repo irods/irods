@@ -171,8 +171,6 @@ agentMain (rsComm_t *rsComm)
 {
     int status = 0;
 
-    int retryCnt = 0;
-
     // =-=-=-=-=-=-=-
     // compiler backwards compatibility hack
     // see header file for more details

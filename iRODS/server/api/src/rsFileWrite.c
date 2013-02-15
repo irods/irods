@@ -16,6 +16,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
@@ -88,9 +89,26 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
     // XXXX need to check resource permission and vault permission
     // when RCAT is available 
 
+    if(FileDesc[fileWriteInp->fileInx].objPath == NULL ||
+       FileDesc[fileWriteInp->fileInx].objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make a call to the resource write
     eirods::file_object file_obj( rsComm,
+                                  FileDesc[fileWriteInp->fileInx].objPath,
                                   FileDesc[fileWriteInp->fileInx].fileName,
                                   FileDesc[fileWriteInp->fileInx].rescHier,
                                   FileDesc[fileWriteInp->fileInx].fd,

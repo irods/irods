@@ -14,6 +14,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
@@ -106,8 +107,22 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     int len;
     char *tmpPtr;
 
-    /* Need to match path's owner uid with sysUid */
+    if(chkNVPathPermInp->objPath[0] == '\0') {
 
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
+    /* Need to match path's owner uid with sysUid */
     sysUid = rsComm->clientUser.sysUid;
     if (sysUid < 0) {
         /* have tried before */
@@ -136,7 +151,7 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     eirods::error stat_err;
     while (1) {
        
-        eirods::file_object file_obj( rsComm, tmpPath, chkNVPathPermInp->resc_hier_, 0, 0, 0 ); 
+        eirods::file_object file_obj( rsComm, chkNVPathPermInp->objPath, tmpPath, chkNVPathPermInp->resc_hier_, 0, 0, 0 ); 
         stat_err = fileStat( rsComm, file_obj, &myFileStat ); 
         if ( stat_err.code() >= 0) {
             break;

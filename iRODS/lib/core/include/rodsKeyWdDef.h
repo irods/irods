@@ -212,5 +212,6 @@
 // =-=-=-=-=-=-=-
 // e-irods keywords definitions
 #define RESC_HIER_STR_KW             "resc_hier_string"
+#define DEST_RESC_HIER_STR_KW        "dest_resc_hier_string"
 
 #endif	/* RODS_KEYWD_DEF */

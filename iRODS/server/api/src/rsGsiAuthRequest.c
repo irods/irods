@@ -15,7 +15,6 @@ static char gsiAuthReqErrorMsg[1000];
 int
 rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
 {
-    gsiAuthRequestOut_t *result;
     int status;
 
     if (gsiAuthReqStatus==1) {
@@ -29,8 +28,6 @@ rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
 
     *gsiAuthRequestOut = (gsiAuthRequestOut_t *)malloc(sizeof(gsiAuthRequestOut_t));
     memset((char *)*gsiAuthRequestOut, 0, sizeof(gsiAuthRequestOut_t));
-
-    result = *gsiAuthRequestOut;
 
 #if defined(GSI_AUTH)
     status = igsiSetupCreds(NULL, rsComm, NULL, &result->serverDN);

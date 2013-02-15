@@ -96,14 +96,9 @@ replaceStarVar(char *action,  char *start, int size,   msParamArray_t *inMsParam
 {
   char varName[NAME_LEN];
   /*  char *varMap;*/
-  char *varValue;
   int i,nLen;
   char *t1;
-  char tmpVarValue[MAX_NAME_LEN];
   msParam_t *mP;
-
-  varValue = tmpVarValue;
-
 
   t1 = start + 1 ;
   while (isalnum(*t1) ||   *t1 == '_') t1++;

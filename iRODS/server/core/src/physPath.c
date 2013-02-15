@@ -261,7 +261,7 @@ resolveDupFilePath (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         /* a dir */
         return (SYS_PATH_IS_NOT_A_FILE);
     }
-    if (chkAndHandleOrphanFile (rsComm, dataObjInfo->filePath, 
+    if (chkAndHandleOrphanFile (rsComm, dataObjInfo->objPath, dataObjInfo->rescHier, dataObjInfo->filePath, 
                                 dataObjInfo->rescInfo, dataObjInfo->replStatus) >= 0) {
         /* this is an orphan file or has been renamed */
         return 0;
@@ -390,7 +390,6 @@ int
 _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumStr) // JMC - backport 4527
 {
     fileChksumInp_t fileChksumInp;
-    int rescTypeInx = 0;
     int rescClass = 0;
     int status = 0;
     // =-=-=-=-=-=-=-
@@ -398,7 +397,6 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     dataObjInfo_t *dataObjInfo; 
     rescInfo_t *rescInfo = inpDataObjInfo->rescInfo;
     int destL1descInx = -1;
-    rescInfo_t *cacheResc;
 
 #if 0 // JMC - removing compound resources 
     if (rescClass == COMPOUND_CL) {
@@ -451,7 +449,6 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         }
 
     // =-=-=-=-=-=-=-
-    rescTypeInx = rescInfo->rescTypeInx;
     int category = 0;
     eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
     if( !err.ok() ) {
@@ -466,6 +463,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+        rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
 
         break;
@@ -532,14 +530,13 @@ dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
  */
 
 int
-chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
+chkAndHandleOrphanFile (rsComm_t *rsComm, char* objPath, char* rescHier, char *filePath, rescInfo_t *rescInfo,
                         int replStatus)
 {
 
     fileRenameInp_t fileRenameInp;
     int status;
     dataObjInfo_t myDataObjInfo;
-    int rescTypeInx = rescInfo->rescTypeInx;
 
     int category = 0;
     eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
@@ -564,7 +561,9 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
     if ((status = chkOrphanFile (rsComm, filePath, rescInfo->rescName, &myDataObjInfo)) == 0) {
         rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
-        rstrcpy (fileRenameInp.rescHier, myDataObjInfo.rescHier, MAX_NAME_LEN);
+        rstrcpy (fileRenameInp.rescHier, rescHier, MAX_NAME_LEN);
+        rstrcpy(fileRenameInp.objPath, objPath, MAX_NAME_LEN);
+        
         /* not an orphan file */
         if (replStatus > OLD_COPY || isTrashPath (myDataObjInfo.objPath)) {
             modDataObjMeta_t modDataObjMetaInp;
@@ -623,7 +622,8 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
     } else if (status > 0) {
         /* this is an orphan file. need to rename it */
         rstrcpy (fileRenameInp.oldFileName, filePath,           MAX_NAME_LEN);
-        rstrcpy (fileRenameInp.rescHier,    rescInfo->rescName, MAX_NAME_LEN);
+        rstrcpy (fileRenameInp.rescHier,    rescHier,           MAX_NAME_LEN);
+        rstrcpy (fileRenameInp.objPath,     objPath,            MAX_NAME_LEN);
         status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, &fileRenameInp, 
                                          rescInfo, 1);
         if (status >= 0) {
@@ -643,7 +643,6 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
 {
     int len, status;
     char *oldPtr, *newPtr;
-    int rescTypeInx = rescInfo->rescTypeInx;
     char *filePath = fileRenameInp->oldFileName;
     // JMC - legacy resource - fileRenameInp->fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
 
@@ -716,7 +715,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status, status1;
     fileRenameInp_t fileRenameInp;
     rescInfo_t *rescInfo = 0;
-    int rescTypeInx;
     modDataObjMeta_t modDataObjMetaInp;
     keyValPair_t regParam;
     vaultPathPolicy_t vaultPathPolicy;
@@ -760,6 +758,7 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
     rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, MAX_NAME_LEN);
     rstrcpy (fileRenameInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+    rstrcpy(fileRenameInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
     if (dataObjInp == NULL) {
         dataObjInp_t myDdataObjInp;
         memset (&myDdataObjInp, 0, sizeof (myDdataObjInp));
@@ -776,8 +775,8 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rescInfo = dataObjInfo->rescInfo;
     /* see if the new file exist */
     if (getSizeInVault (rsComm, dataObjInfo) >= 0) {
-        if (chkAndHandleOrphanFile (rsComm, dataObjInfo->filePath,
-                                    rescInfo, OLD_COPY) <= 0) {
+        if (chkAndHandleOrphanFile (rsComm, dataObjInfo->objPath, dataObjInfo->rescHier,
+                                    dataObjInfo->filePath, rescInfo, OLD_COPY) <= 0) {
             rodsLog (LOG_ERROR,
                      "syncDataObjPhyPath:newFileName %s already in use",
                      dataObjInfo->filePath);
@@ -786,7 +785,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     /* rename it */
-    rescTypeInx = rescInfo->rescTypeInx;
     // JMC - legacy resource - fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileRenameInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
     rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,

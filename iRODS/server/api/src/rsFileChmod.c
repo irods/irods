@@ -12,6 +12,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
@@ -73,11 +74,26 @@ remoteFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
 // call chmod throught the resource plugin for a given file
 int _rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp ) {
 
+    if(fileChmodInp->objPath[0] == '\0') {
+
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Empty logical path.";
+        eirods::log(LOG_ERROR, msg.str());
+        return -1;
+    }
+    
     // =-=-=-=-=-=-=-
     // make the call to chmod via the resource plugin
     // NOTE :: this should be passed in as a first_class_object as both 
     //      :: a file and a collection could have this operation performed
-    eirods::file_object file_obj( rsComm, fileChmodInp->fileName, fileChmodInp->rescHier, 0, fileChmodInp->mode, 0 ); 
+    eirods::file_object file_obj( rsComm, fileChmodInp->objPath, fileChmodInp->fileName, fileChmodInp->rescHier, 0, fileChmodInp->mode, 0 ); 
     eirods::error chmod_err = fileChmod( rsComm, file_obj );
 
     // =-=-=-=-=-=-=-

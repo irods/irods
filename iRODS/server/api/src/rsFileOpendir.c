@@ -44,8 +44,8 @@ rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
 	    return (status);
     }
     
-    fileInx = allocAndFillFileDesc( rodsServerHost, fileOpendirInp->dirName, fileOpendirInp->resc_hier_, fileOpendirInp->fileType,
-				    status, 0);
+    fileInx = allocAndFillFileDesc( rodsServerHost, fileOpendirInp->objPath, fileOpendirInp->dirName, fileOpendirInp->resc_hier_,
+				    fileOpendirInp->fileType, status, 0);
     FileDesc[fileInx].driverDep = dirPtr;
 
     return (fileInx);
