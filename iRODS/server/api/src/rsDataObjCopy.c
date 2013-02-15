@@ -16,6 +16,10 @@
 #include "rcGlobalExtern.h"
 #include "getRemoteZoneResc.h"
 
+// =-=-=-=-=-=-=-
+// e-irods includes
+#include "eirods_resource_redirect.h"
+
 int
 rsDataObjCopy250 (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 transStat_t **transStat)
@@ -63,6 +67,41 @@ transferStat_t **transStat)
 	return status;
     }
 
+    // =-=-=-=-=-=-=-
+    // pre-determine hier strings for the source 
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    std::string       hier;
+    eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                   srcDataObjInp, hier, host, local );
+    if( !ret.ok() ) { 
+        std::stringstream msg;
+        msg << "rsDataObjCopy :: failed in eirods::resource_redirect for [";
+        msg << srcDataObjInp->objPath << "]";
+        eirods::log( PASSMSG( msg.str(), ret ) );
+        return ret.code();
+    }
+   
+    // =-=-=-=-=-=-=-
+    // we resolved the hier str for subsequent api calls, etc.
+    addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    // =-=-=-=-=-=-=-
+    // determine the hier string for the dest data obj inp
+    ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                     destDataObjInp, hier, host, local );
+    if( !ret.ok() ) { 
+        std::stringstream msg;
+        msg << "rsDataObjCopy :: failed in eirods::resource_redirect for [";
+        msg << destDataObjInp->objPath << "]";
+        eirods::log( PASSMSG( msg.str(), ret ) );
+        return ret.code();
+    }
+   
+    // =-=-=-=-=-=-=-
+    // we resolved the hier str for subsequent api calls, etc.
+    addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
 #if 0
     *transStat = malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));
@@ -77,8 +116,9 @@ transferStat_t **transStat)
 	
     addKeyVal (&srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
 
-
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjOpen" );
     srcL1descInx = rsDataObjOpen (rsComm, srcDataObjInp);
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjOpen. done." );
 
     if (srcL1descInx < 0) {
         return srcL1descInx;
@@ -100,7 +140,9 @@ transferStat_t **transStat)
         addKeyVal (&destDataObjInp->condInput, NO_OPEN_FLAG_KW, "");
     }
 
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjCreate" );
     destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjCreate. done." );
     if (destL1descInx == CAT_UNKNOWN_COLLECTION) {
         /* collection does not exist. make one */
         char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
@@ -134,7 +176,9 @@ transferStat_t **transStat)
 #if 0
     (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
 #endif
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling _rsDataObjCopy" );
     status = _rsDataObjCopy (rsComm, destL1descInx, existFlag, transStat);
+rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling _rsDataObjCopy. done." );
 
 #if 0
     if (status >= 0) {
@@ -182,20 +226,28 @@ transferStat_t **transStat)
 
     if (L1desc[srcL1descInx].l3descInx <= 2) {
         /* no physical file was opened */
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling l3DataCopySingleBuf" );
         status = l3DataCopySingleBuf (rsComm, destL1descInx);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling l3DataCopySingleBuf. done." );
 	
         /* has not been registered yet because of NO_OPEN_FLAG_KW */
         if( status    >= 0                    && 
             existFlag == 0                    && 
             destDataObjInfo->specColl == NULL &&
             L1desc[destL1descInx].remoteZoneHost == NULL) {
-                /* If the dest is in remote zone, register in _rsDataObjClose there */
-                status = svrRegDataObj (rsComm, destDataObjInfo);
-                if (status == CAT_UNKNOWN_COLLECTION) {
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: made it into the IF." );
+            /* If the dest is in remote zone, register in _rsDataObjClose there */
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling svrRegDataObj." );
+            status = svrRegDataObj (rsComm, destDataObjInfo);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling svrRegDataObj. done." );
+            if (status == CAT_UNKNOWN_COLLECTION) {
                 /* collection does not exist. make one */
                 char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
                 splitPathByKey (destDataObjInfo->objPath, parColl, child, '/');
+                status = svrRegDataObj (rsComm, destDataObjInfo);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsMkCollR." );
                 rsMkCollR (rsComm, "/", parColl);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsMkCollR. done." );
                 status = svrRegDataObj (rsComm, destDataObjInfo);
             }
             if (status < 0) {    
@@ -206,6 +258,7 @@ transferStat_t **transStat)
             }
         }
     } else {
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: made it into the ELSE." );
         if (destDataObjInfo != NULL && destDataObjInfo->rescInfo != NULL)
             destRescName = destDataObjInfo->rescInfo->rescName;
         else
@@ -230,7 +283,9 @@ transferStat_t **transStat)
         }
 #endif
 
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling dataObjCopy" );
         status = dataObjCopy (rsComm, destL1descInx);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling dataObjCopy. done." );
     }
 
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -243,7 +298,9 @@ transferStat_t **transStat)
         dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;
     }
 
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsDataObjClose" );
     status2 = rsDataObjClose (rsComm, &dataObjCloseInp);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsDataObjClose. Done." );
 
     if (status) return (status);
     return(status2);

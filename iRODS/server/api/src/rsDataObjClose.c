@@ -300,6 +300,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
     l3descInx = L1desc[l1descInx].l3descInx;
 
+
     if (l3descInx > 2) {
         /* it could be -ive for parallel I/O */
         status = l3Close (rsComm, l1descInx);

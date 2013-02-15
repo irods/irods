@@ -75,6 +75,7 @@ int _rsStructFileSync( rsComm_t*           _comm,
     struct_obj.flags( _struct_inp->flags );
     struct_obj.comm( _comm );
     struct_obj.opr_type( _struct_inp->oprType );
+    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
 	// cache data type for selection of tasty compression options

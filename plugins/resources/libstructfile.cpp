@@ -432,10 +432,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // local function to manage the open of a tar file 
-    eirods::error tar_struct_file_open( rsComm_t*    _comm, 
-                                        specColl_t*  _spec_coll, 
-                                        int&         _struct_desc_index,
-                                        std::string& _resc_host ) {
+    eirods::error tar_struct_file_open( 
+                      rsComm_t*          _comm, 
+                      specColl_t*        _spec_coll, 
+                      int&               _struct_desc_index,
+                      const std::string& _resc_hier,
+                      std::string&       _resc_host ) {
         int status                  = 0;
         specCollCache_t* spec_cache = 0;
 
@@ -497,7 +499,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // resolve resource by name
         eirods::resource_ptr resc;
-        eirods::error resc_err = resc_mgr.resolve( PluginStructFileDesc[ _struct_desc_index ].specColl->resource, resc );
+        eirods::error resc_err = resc_mgr.resolve( _resc_hier, resc );
         if( !resc_err.ok() ) {
             std::stringstream msg;
             msg << "tar_struct_file_open - error returned from resolveResc for resource [";
@@ -642,7 +644,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileCreatePlugin - tar_struct_file_open error for [";
@@ -746,7 +749,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileOpenPlugin - tar_struct_file_open error for [";
@@ -1016,7 +1020,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileUnlinkPlugin - tar_struct_file_open error for [";
@@ -1107,7 +1112,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileStatPlugin - tar_struct_file_open error for [";
@@ -1328,7 +1334,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileMkdirPlugin - tar_struct_file_open error for [";
@@ -1436,7 +1443,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileRmdirPlugin - tar_struct_file_open error for [";
@@ -1526,7 +1534,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileOpendirPlugin - tar_struct_file_open error for [";
@@ -1756,7 +1765,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileRenamePlugin - tar_struct_file_open error for [";
@@ -1856,7 +1866,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileTruncatePlugin - tar_struct_file_open error for [";
@@ -2427,7 +2438,8 @@ extern "C" {
         // open and stage the tar file, get its index
         int struct_file_index = 0;
         std::string resc_host;
-        eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, resc_host );
+        eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tarFileOpenPlugin - tar_struct_file_open error for [";

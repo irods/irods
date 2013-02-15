@@ -81,11 +81,14 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
     eirods::error stat_err = fileStat( _comm, struct_obj, &my_stat );
 
     if( !stat_err.ok() ) {
+        // errors are expected
+        #if 0
         std::stringstream msg;
         msg << "_rsSubStructFileStat - failed on call to fileStat for [";
         msg << struct_obj.physical_path();
         msg << "]";
         eirods::log( PASS( false, -1, msg.str(), stat_err ) );
+        #endif
         return stat_err.code();
 
     } else {
