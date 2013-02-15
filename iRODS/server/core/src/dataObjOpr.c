@@ -384,8 +384,6 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
     int topFlag;
     dataObjInfo_t *currentBundleInfo = NULL;
     dataObjInfo_t *oldBundleInfo = NULL;
-    dataObjInfo_t *currentCompInfo = NULL;
-    dataObjInfo_t *oldCompInfo = NULL;
 
     *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = NULL;
     *downCurrentInfo = *downOldInfo = NULL;
@@ -724,7 +722,7 @@ requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum)
 }
 
 dataObjInfo_t *
-chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo)
+chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
@@ -735,8 +733,10 @@ chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo)
         tmpRescGrpInfo = myRescGrpInfo;
         while (tmpRescGrpInfo != NULL) {
             tmpRescInfo = tmpRescGrpInfo->rescInfo;
-            if (strcmp (tmpDataObjInfo->rescInfo->rescName,
-                        tmpRescInfo->rescName) == 0) { 
+            // No longer good enough to check if the resource names are the same. We have to verify that the resource hiearchies
+            // match as well. - hcj
+            if (strcmp (tmpDataObjInfo->rescInfo->rescName, tmpRescInfo->rescName) == 0 &&
+                (destRescHier == NULL || strcmp(tmpDataObjInfo->rescHier, destRescHier) == 0)) { 
                 return (tmpDataObjInfo);
             }
             tmpRescGrpInfo = tmpRescGrpInfo->next;
@@ -1246,8 +1246,10 @@ resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead,
     if ((*destRescGrpInfo)->next == NULL ||
         strlen ((*destRescGrpInfo)->rescGroupName) == 0) {
         /* single target resource */
+        char* destRescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
         if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
-                                               *destRescGrpInfo)) != NULL) {
+                                               *destRescGrpInfo,
+                                               destRescHier)) != NULL) {
             /* have a good copy already */
             *destDataObjInfo = NULL; // JMC - backport 4594
             return (HAVE_GOOD_COPY);
@@ -1271,8 +1273,8 @@ resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead,
         *destDataObjInfo = *oldDataObjInfoHead;
         *oldDataObjInfoHead = trimmedDataObjInfo;
     } else {
-        *destDataObjInfo = chkCopyInResc (*oldDataObjInfoHead, 
-                                          *destRescGrpInfo);
+        char* destRescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
+        *destDataObjInfo = chkCopyInResc (*oldDataObjInfoHead, *destRescGrpInfo, destRescHier);
         if (*destDataObjInfo != NULL) {
             /* see if there is any resc that is not used */
             matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
@@ -1359,6 +1361,7 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     bool destHierCond = false;
     char *tmpStr, *rescName;
     char* rescHier = NULL;
+    char* destRescHier = NULL;
     dataObjInfo_t *prevDataObjInfo, *nextDataObjInfo, *tmpDataObjInfo;
 
     if (dataObjInfoHead == NULL || *dataObjInfoHead == NULL ||
@@ -1376,7 +1379,8 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
         replNumCond = 0;
     }
 
-    if((rescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW)) != NULL) {
+    if((rescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW)) != NULL &&
+       (destRescHier = getValByKey(condInput, RESC_HIER_STR_KW)) != NULL) {
         destHierCond = true;
     }
 
@@ -1406,7 +1410,8 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
             }
             queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         } else if(destHierCond &&
-                  strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
+                  (strcmp(rescHier, tmpDataObjInfo->rescHier) == 0 ||
+                   strcmp(destRescHier, tmpDataObjInfo->rescHier) == 0)) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
@@ -1441,7 +1446,8 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
             }
             queDataObjInfo (matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
         } else if(destHierCond &&
-                  strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
+                  (strcmp(rescHier, tmpDataObjInfo->rescHier) == 0 ||
+                   strcmp(destRescHier, tmpDataObjInfo->rescHier) == 0)) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
@@ -1485,8 +1491,6 @@ int
     char *tmpStr;
     int condFlag;
     int toTrim;
-    char* resc_name = getValByKey( condInput, RESC_NAME_KW );
-
 
     sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0);
     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,

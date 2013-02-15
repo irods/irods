@@ -98,7 +98,6 @@ replaceStarVar(char *action,  char *start, int size,   msParamArray_t *inMsParam
   /*  char *varMap;*/
   int i,nLen;
   char *t1;
-  char tmpVarValue[MAX_NAME_LEN];
   msParam_t *mP;
 
   t1 = start + 1 ;

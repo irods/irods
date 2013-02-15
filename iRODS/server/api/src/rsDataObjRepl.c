@@ -280,12 +280,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
           
         if (status == HAVE_GOOD_COPY) {
 
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Found a good copy.";
-                DEBUGMSG(msg.str());
-            }
-
             // =-=-=-=-=-=-=-
             // JMC - backport 4450
 #if 0 // JMC - legacy resource :: we no longer deal with the cache here
@@ -798,8 +792,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         rodsServerHost_t* host     =  0;
         char*             tmp_hier = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
         if( 0 == tmp_hier ) {
-            eirods::error ret = eirods::resource_redirect( op_name, rsComm, 
-                                                           &dest_inp, hier, host, local );
+            eirods::error ret = eirods::resource_redirect( op_name, rsComm, &dest_inp, hier, host, local );
             if( !ret.ok() ) { 
                 std::stringstream msg;
                 msg << "dataObjOpenForRepl :: failed in eirods::resource_redirect for [";
@@ -814,6 +807,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
 
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
+        rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
         addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
       

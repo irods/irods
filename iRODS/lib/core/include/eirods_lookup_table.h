@@ -129,7 +129,7 @@ namespace eirods {
                 _val = boost::any_cast< T >( table_[ _key ] );
                 return SUCCESS();
             } catch ( const boost::bad_any_cast & ) {
-                return ERROR( -1, "lookup_table::get - type and property key ["+_key+"] mistmatch" );
+                return ERROR( -1, "lookup_table::get - type and property key ["+_key+"] mismatch" );
             }
 		 
             return ERROR( -1, "lookup_table::get - shouldn't get here." );

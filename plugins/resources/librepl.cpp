@@ -1622,9 +1622,15 @@ extern "C" {
                 _flag = false;
                 bool need_pdmo;
                 eirods::error ret;
-                ret = properties_.get<bool>(need_pdmo_prop, need_pdmo);
+                // Make sure we actually have children to which we need to replicate and check the need_pdmo flag to see if we
+                // performed any operations which would warrant a replication.
+                child_list_t children;
+                ret = properties_.get<child_list_t>(child_list_prop, children);
                 if(ret.ok()) {
-                    _flag = need_pdmo;
+                    ret = properties_.get<bool>(need_pdmo_prop, need_pdmo);
+                    if(ret.ok()) {
+                        _flag = need_pdmo;
+                    }
                 }
                 return result;
 
