@@ -206,7 +206,7 @@
 
 
 #define EXCLUDE_FILE_KW         "excludeFile"
-
+#define DEST_RESC_HIER_STR_KW   "dest_resc_hier_string"
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-

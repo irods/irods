@@ -74,11 +74,10 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-
     int local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
     if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
-        rodsServerHost_t* host  =  0;
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
                                                        dataObjInp, hier, host, local );
         if( !ret.ok() ) { 
@@ -98,9 +97,7 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } // if keyword
 
     if( LOCAL_HOST != local ) {
-        rodsLog( LOG_NOTICE, "rsDataObjPhymv :: eirods::resource_redirect - Trying to Redirect to another server" );
-        return -1;
-
+        return _rcDataObjPhymv( host->conn, dataObjInp, transStat );
     }
 
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));

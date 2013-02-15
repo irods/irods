@@ -52,10 +52,10 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // working on the "home zone", determine if we need to redirect to a different
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
-        int local = LOCAL_HOST;
+        int               local = LOCAL_HOST;
+        rodsServerHost_t* host  =  0;
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            rodsServerHost_t* host  =  0;
             eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                                            dataObjInp, hier, host, local );
             if( !ret.ok() ) { 
@@ -87,8 +87,8 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
                                     portalOprOut );
         } else {
-            rodsLog( LOG_NOTICE, "%s :: eirods::resource_redirect - Trying to Redirect to another server", __FUNCTION__ );
-            return -1;
+            int l1descInx;
+            return  _rcDataObjPut ( host->conn, dataObjInp, dataObjInpBBuf, portalOprOut );
 
         } // else remote host
 

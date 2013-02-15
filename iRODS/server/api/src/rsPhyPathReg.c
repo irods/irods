@@ -85,10 +85,10 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    int          local = LOCAL_HOST;
-    std::string  hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    std::string       hier;
     if( getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        rodsServerHost_t* host  =  0;
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                                        phyPathRegInp, hier, host, local );
         if( !ret.ok() ) { 
@@ -155,7 +155,11 @@ rodsLog( LOG_NOTICE, "XXXX - rsPhyPathReg :: heir [%s], first [%s]", hier.c_str(
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
+        if( LOCAL_HOST == local ) {
+            status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
+        } else {
+            status = rcPhyPathReg ( host->conn, phyPathRegInp);
+        }
 	
     } else if (remoteFlag == REMOTE_HOST) {
         status = remotePhyPathReg (rsComm, phyPathRegInp, rodsServerHost);
