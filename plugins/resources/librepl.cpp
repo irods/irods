@@ -159,7 +159,7 @@ extern "C" {
     }
 
     /// @brief Returns true if the specified object is in the specified object list
-    bool replObjectNotInList(
+    bool replObjectInList(
         const object_list_t& _object_list,
         const eirods::first_class_object& _object)
     {
@@ -185,7 +185,7 @@ extern "C" {
         eirods::error ret;
         object_list_t object_list;
         ret = _prop_map->get<object_list_t>(object_list_prop, object_list);
-        if(!ret.ok() || replObjectNotInList(object_list, *_object)) {
+        if(!ret.ok() || !replObjectInList(object_list, *_object)) {
             object_oper_t object_oper;
             object_oper.object_ = *_object;
             object_oper.oper_ = _oper;
@@ -1565,6 +1565,7 @@ extern "C" {
                                         std::stringstream msg;
                                         msg << __FUNCTION__;
                                         msg << " - Failed to replicate the data object to child \"" << hierarchy_string << "\"";
+                                        eirods::log(LOG_ERROR, msg.str());
                                         result = ERROR(status, msg.str());
                                     }
                                 }

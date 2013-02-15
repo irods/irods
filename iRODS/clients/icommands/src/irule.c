@@ -326,8 +326,6 @@ main(int argc, char **argv) {
 		char buf[META_STR_LEN];
 		char *inpParamNames[1024];
 		char *outParamNames[1024];
-		int inpParamN = 0;
-		int outParamN = 0;
 
 		/* if the input file name starts with "i:", the get the file from iRODS server */
 		/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
@@ -453,7 +451,7 @@ main(int argc, char **argv) {
 						exit(10);
 					}
 				}
-				inpParamN = extractVarNames(inpParamNames, buf);
+				extractVarNames(inpParamNames, buf);
 				parseMsInputParam (argc, argv, optind, rulegen, myRodsArgs.string, &execMyRuleInp, buf);
 			} else if (gotRule == 2) {
 				if(rulegen) {
@@ -463,7 +461,7 @@ main(int argc, char **argv) {
 						exit(10);
 					}
 				}
-				outParamN = extractVarNames(outParamNames, buf);
+				extractVarNames(outParamNames, buf);
 				if (strcmp (buf, "null") != 0) {
 					rstrcpy (execMyRuleInp.outParamDesc, buf, LONG_NAME_LEN);
 				}

@@ -28,6 +28,7 @@
 // =-=-=-=-=-=-=-
 // eirods include
 #include "eirods_resource_backport.h"
+#include "eirods_log.h"
 
 int
 getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
@@ -379,7 +380,7 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
 {
 
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
-    int rescClassInx;
+    // int rescClassInx;
     int topFlag;
     dataObjInfo_t *currentBundleInfo = NULL;
     dataObjInfo_t *oldBundleInfo = NULL;
@@ -425,7 +426,7 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
 
         std::string class_type;
         eirods::error prop_err = eirods::get_resource_property<std::string>( tmpDataObjInfo->rescInfo->rescName, "class", class_type );
-        rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
+        // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
         if (tmpDataObjInfo->replStatus > 0) {
 #if 0 // JMC - legacy resource
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
@@ -1202,7 +1203,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
 
 /* resolveSingleReplCopy - given the dataObjInfoHead (up-to-date copies) 
  * and oldDataObjInfoHead (stale copies) and the destRescGrpInfo,
- * sort through the single copy reuirement for repl.
+ * sort through the single copy requirement for repl.
  * If there is a good copy in every resc in the rescGroup, return 
  * HAVE_GOOD_COPY. Otherwise, trim the resc in the rescGroup so only the one 
  * with no copies are left. The copies required to be overwritten are
@@ -1355,7 +1356,9 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     int replNumCond;
     int replNum;
     int rescCond;
+    bool destHierCond = false;
     char *tmpStr, *rescName;
+    char* rescHier = NULL;
     dataObjInfo_t *prevDataObjInfo, *nextDataObjInfo, *tmpDataObjInfo;
 
     if (dataObjInfoHead == NULL || *dataObjInfoHead == NULL ||
@@ -1373,13 +1376,18 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
         replNumCond = 0;
     }
 
-    if ((rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
+    if((rescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW)) != NULL) {
+        destHierCond = true;
+    }
+
+    // We only use the resource name if the resource hierarchy is not set
+    if (!destHierCond && (rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
         rescCond = 1;
     } else {
         rescCond = 0;
     }
 
-    if (replNumCond + rescCond == 0) {
+    if (replNumCond + rescCond == 0 && !destHierCond) {
         return (0);
     }
 
@@ -1391,6 +1399,14 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            } else {
+                *dataObjInfoHead = (*dataObjInfoHead)->next;
+            }
+            queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
+        } else if(destHierCond &&
+                  strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
@@ -1424,6 +1440,14 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
                 *oldDataObjInfoHead = (*oldDataObjInfoHead)->next;
             }
             queDataObjInfo (matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
+        } else if(destHierCond &&
+                  strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            } else {
+                *oldDataObjInfoHead = (*oldDataObjInfoHead)->next;
+            }
+            queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
         } else if (rescCond == 1 &&
                    (strcmp (rescName, tmpDataObjInfo->rescGroupName) == 0 ||
                     strcmp (rescName, tmpDataObjInfo->rescName)) == 0) {

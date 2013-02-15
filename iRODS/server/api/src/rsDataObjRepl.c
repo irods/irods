@@ -124,6 +124,7 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
     }
     // =-=-=-=-=-=-=-
+
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
      
     if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
@@ -234,8 +235,8 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
     if (status < 0) return status;
 
-
     if (multiCopyFlag == 0 ) { // JMC - backport 4594
+
         /* if one copy per resource, see if a good copy already exist, 
          * If it does, the copy is returned in destDataObjInfo. 
          * Otherwise, Resources in &myRescGrpInfo are trimmed. Only those
@@ -247,10 +248,13 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                         &dataObjInp->condInput );
           
         if (status == HAVE_GOOD_COPY) {
-            // =-=-=-=-=-=-=-
-            // JMC - backport 4450
-            dataObjInfo_t *cacheDataObjInfo = NULL;
-            dataObjInfo_t *compDataObjInfo  = NULL; // JMC - backport 4594
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Found a good copy.";
+                DEBUGMSG(msg.str());
+            }
+
 
 #if 0 // JMC - legacy resource :: we no longer deal with the cache here
 
@@ -350,6 +354,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (myRescGrpInfo != NULL) {
+
         /* new kreplication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         myRescGrpInfo, transStat, oldDataObjInfoHead, 
@@ -468,8 +473,11 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
     int status;
     int allFlag;
     int savedStatus = 0;
+#if 0
     rescInfo_t *compRescInfo = NULL; // JMC - backport 4593
     rescInfo_t *cacheRescInfo = NULL; // JMC - backport 4593
+#endif
+    
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
     } else {
@@ -1094,20 +1102,20 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     {
         dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
-        int rescTypeInx, cacheRescTypeInx;
+        // int rescTypeInx, cacheRescTypeInx;
         fileStageSyncInp_t fileSyncToArchInp;
         dataObjInp_t *dataObjInp;
         int status;
         char *outFileName = NULL;   /* for fileSyncToArch */
+        dataObjInfo_t tmpDataObjInfo;
 
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
         destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
 
+#if 0 // JMC legacy resource 
         rescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
         cacheRescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
 
-        dataObjInfo_t tmpDataObjInfo;
-#if 0 // JMC legacy resource 
         switch (RescTypeDef[rescTypeInx].rescCat) {
         case FILE_CAT:
             /* make sure the fileName is not already taken */
@@ -1188,15 +1196,15 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             _l3FileStage (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, // JMC - backport 4527
                           dataObjInfo_t *destDataObjInfo, int mode)
         {
-            int rescTypeInx, cacheRescTypeInx;
+            // int rescTypeInx, cacheRescTypeInx;
             fileStageSyncInp_t fileSyncToArchInp;
             int status;
 
+#if 0 // JMC legacy resource 
             rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
             cacheRescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
 
 
-#if 0 // JMC legacy resource 
             switch (RescTypeDef[rescTypeInx].rescCat) {
             case FILE_CAT:
 #endif // JMC legacy resource 
@@ -1481,7 +1489,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                                       rescInfo_t **outCacheResc, int rmBunCopyFlag)
         {
             int status;
-            rescInfo_t *cacheResc;
+            // rescInfo_t *cacheResc;
             dataObjInp_t dataObjInp;
 
             bzero (&dataObjInp, sizeof (dataObjInp));
