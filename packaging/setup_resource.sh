@@ -40,6 +40,8 @@ while [ "$STATUS" != "complete" ] ; do
   if [ "$ICATHOSTORIP" == "" ] ; then
     if [ "$LASTICATHOSTORIP" ] ; then ICATHOSTORIP=$LASTICATHOSTORIP; fi
   fi
+  # strip all forward slashes
+  ICATHOSTORIP=`echo "${ICATHOSTORIP}" | sed -e "s/\///g"`
   echo ""
 
   # get port
@@ -58,6 +60,8 @@ while [ "$STATUS" != "complete" ] ; do
       ICATPORT=1247
     fi
   fi
+  # strip all forward slashes
+  ICATPORT=`echo "${ICATPORT}" | sed -e "s/\///g"`
   echo ""
 
   # get zone
@@ -68,6 +72,8 @@ while [ "$STATUS" != "complete" ] ; do
   if [ "$ICATZONE" == "" ] ; then
     if [ "$LASTICATZONE" ] ; then ICATZONE=$LASTICATZONE; fi
   fi
+  # strip all forward slashes
+  ICATZONE=`echo "${ICATZONE}" | sed -e "s/\///g"`
   echo ""
 
   # get admin user
@@ -86,6 +92,8 @@ while [ "$STATUS" != "complete" ] ; do
       ADMINUSER=rods
     fi
   fi
+  # strip all forward slashes
+  ADMINUSER=`echo "${ADMINUSER}" | sed -e "s/\///g"`
   echo ""
 
   # confirm
