@@ -104,10 +104,10 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     } // if keyword
 
-    if( LOCAL_HOST != local ) {
-        return rcDataObjCreate( host->conn, dataObjInp );
-        
-    } // if remote host
+    //if( LOCAL_HOST != local ) {
+    //    return rcDataObjCreate( host->conn, dataObjInp );
+    //    
+    //} // if remote host
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4604

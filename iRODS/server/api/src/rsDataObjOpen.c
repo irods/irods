@@ -32,6 +32,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
 int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -42,7 +43,6 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
                                        REMOTE_OPEN);
-
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
@@ -55,7 +55,34 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (openStat != NULL) free (openStat);
         return (l1descInx);
     } else {
-        l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
+        // =-=-=-=-=-=-=-
+        // working on the "home zone", determine if we need to redirect to a different
+        // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+        // we know that the redirection decision has already been made
+        int               local = LOCAL_HOST;
+        rodsServerHost_t* host  =  0;
+        if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+            std::string       hier;
+            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                           dataObjInp, hier, host, local );
+            if( !ret.ok() ) { 
+                std::stringstream msg;
+                msg << "rsDataObjOpen :: failed in eirods::resource_redirect for [";
+                msg << dataObjInp->objPath << "]";
+                eirods::log( PASSMSG( msg.str(), ret ) );
+                return ret.code();
+            }
+           
+            // =-=-=-=-=-=-=-
+            // we resolved the redirect and have a host, set the hier str for subsequent
+            // api calls, etc.
+            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+        } // if keyword
+
+        l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
+                                    
+
     }
 
     return (l1descInx);
@@ -267,7 +294,6 @@ _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int replStatus;
     int status;
     int l1descInx;
-
     l1descInx = allocL1desc ();
 
     if (l1descInx < 0) return l1descInx;
@@ -340,10 +366,8 @@ l3Open (rsComm_t *rsComm, int l1descInx)
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-                 MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN);
+        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = getFileFlags (l1descInx);

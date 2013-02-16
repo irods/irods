@@ -73,7 +73,7 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         } // if keyword
 
-        if( LOCAL_HOST == local ) {
+//        if( LOCAL_HOST == local ) {
             /** since the object is written here, we apply pre procesing RAJA 
              * Dec 2 2010 **/
             status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, 
@@ -86,12 +86,17 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             dataObjInp->openFlags = O_RDWR;
             status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
                                     portalOprOut );
+#if 0
         } else {
-            int l1descInx;
-            return  _rcDataObjPut ( host->conn, dataObjInp, dataObjInpBBuf, portalOprOut );
+            int l1descInx = _rcDataObjPut ( host->conn, dataObjInp, dataObjInpBBuf, portalOprOut );
 
+            l1descInx = allocAndSetL1descForZoneOpr (
+                (*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
+            if (l1descInx < 0) return l1descInx;
+            (*portalOprOut)->l1descInx = l1descInx;
+            return status;
         } // else remote host
-
+#endif
     } else {
         int l1descInx;
         status = _rcDataObjPut (rodsServerHost->conn, dataObjInp, 
@@ -169,7 +174,6 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     /* get down here. will do parallel I/O */
     /* so that mmap will work */
     dataObjInp->openFlags |= O_RDWR;
-
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
  
     if (l1descInx < 0) 
@@ -203,7 +207,6 @@ _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         addKeyVal (&replDataObjInp.condInput, UPDATE_REPL_KW, "");
         addKeyVal (&replDataObjInp.condInput, ALL_KW, "");
     }
-
     /* return portalOprOut to the client and wait for the rcOprComplete
      * call. That is when the parallel I/O is done */
     retval = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, status,

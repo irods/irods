@@ -495,7 +495,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // cache pointer to comm struct
         PluginStructFileDesc[ _struct_desc_index ].rsComm = _comm;
-
+        
         // =-=-=-=-=-=-=-
         // resolve resource by name
         eirods::resource_ptr resc;
@@ -2434,7 +2434,7 @@ extern "C" {
         if( !comm ) {
             return ERROR( -1, "tarFileSyncPlugin - null comm pointer in structure_object" );
         }
-
+        
         // =-=-=-=-=-=-=-
         // open and stage the tar file, get its index
         int struct_file_index = 0;

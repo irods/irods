@@ -13,9 +13,12 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_redirect.h"
 
 int
 rsStructFileBundle (rsComm_t *rsComm,
@@ -27,9 +30,9 @@ rsStructFileBundle (rsComm_t *rsComm,
     int status;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
-    rodsHostAddr_t rescAddr;
+//    rodsHostAddr_t rescAddr;
     dataObjInp_t dataObjInp;
-    rescGrpInfo_t *rescGrpInfo = NULL;
+//    rescGrpInfo_t *rescGrpInfo = NULL;
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, structFileBundleInp->objPath,
@@ -63,11 +66,11 @@ rsStructFileBundle (rsComm_t *rsComm,
     }
 #else
     /* borrow conInput */
-    dataObjInp.condInput = structFileBundleInp->condInput;
-    status = getRescGrpForCreate (rsComm, &dataObjInp, &rescGrpInfo);
-    if (status < 0 || NULL == rescGrpInfo ) return status; // JMC cppcheck - nullptr
+    //dataObjInp.condInput = structFileBundleInp->condInput;
+    //status = getRescGrpForCreate (rsComm, &dataObjInp, &rescGrpInfo);
+    //if (status < 0 || NULL == rescGrpInfo ) return status; // JMC cppcheck - nullptr
 #endif
-
+#if 0
     bzero (&rescAddr, sizeof (rescAddr));
     rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
     remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
@@ -81,6 +84,45 @@ rsStructFileBundle (rsComm_t *rsComm,
         status = remoteFlag;
     }
     freeAllRescGrpInfo (rescGrpInfo);
+#endif
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    dataObjInp_t      data_inp;
+    bzero( &data_inp, sizeof( data_inp ) );
+    rstrcpy( data_inp.objPath, structFileBundleInp->objPath, NAME_LEN );
+    copyKeyValPairStruct( &structFileBundleInp->condInput, &data_inp.condInput );
+    if( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        std::string       hier;
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                       &data_inp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsStructFileBundle :: failed in eirods::resource_redirect for [";
+            msg << &data_inp.objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+    if( LOCAL_HOST == local ) {
+        status = _rsStructFileBundle( rsComm, structFileBundleInp );
+                                
+    } else {
+        status = rcStructFileBundle( host->conn, structFileBundleInp );
+
+    } // else remote host
+
+
     return status;
 }
 

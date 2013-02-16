@@ -116,9 +116,7 @@ transferStat_t **transStat)
 	
     addKeyVal (&srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
 
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjOpen" );
     srcL1descInx = rsDataObjOpen (rsComm, srcDataObjInp);
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjOpen. done." );
 
     if (srcL1descInx < 0) {
         return srcL1descInx;
@@ -140,9 +138,7 @@ rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjOpen. done." );
         addKeyVal (&destDataObjInp->condInput, NO_OPEN_FLAG_KW, "");
     }
 
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjCreate" );
     destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjCreate. done." );
     if (destL1descInx == CAT_UNKNOWN_COLLECTION) {
         /* collection does not exist. make one */
         char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
@@ -176,9 +172,7 @@ rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling rsDataObjCreate. done." );
 #if 0
     (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
 #endif
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling _rsDataObjCopy" );
     status = _rsDataObjCopy (rsComm, destL1descInx, existFlag, transStat);
-rodsLog( LOG_NOTICE, "XXXX - rsDataObjCopy :: calling _rsDataObjCopy. done." );
 
 #if 0
     if (status >= 0) {
@@ -226,28 +220,21 @@ transferStat_t **transStat)
 
     if (L1desc[srcL1descInx].l3descInx <= 2) {
         /* no physical file was opened */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling l3DataCopySingleBuf" );
         status = l3DataCopySingleBuf (rsComm, destL1descInx);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling l3DataCopySingleBuf. done." );
 	
         /* has not been registered yet because of NO_OPEN_FLAG_KW */
         if( status    >= 0                    && 
             existFlag == 0                    && 
             destDataObjInfo->specColl == NULL &&
             L1desc[destL1descInx].remoteZoneHost == NULL) {
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: made it into the IF." );
             /* If the dest is in remote zone, register in _rsDataObjClose there */
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling svrRegDataObj." );
             status = svrRegDataObj (rsComm, destDataObjInfo);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling svrRegDataObj. done." );
             if (status == CAT_UNKNOWN_COLLECTION) {
                 /* collection does not exist. make one */
                 char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
                 splitPathByKey (destDataObjInfo->objPath, parColl, child, '/');
                 status = svrRegDataObj (rsComm, destDataObjInfo);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsMkCollR." );
                 rsMkCollR (rsComm, "/", parColl);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsMkCollR. done." );
                 status = svrRegDataObj (rsComm, destDataObjInfo);
             }
             if (status < 0) {    
@@ -258,7 +245,6 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsMkCollR. done." );
             }
         }
     } else {
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: made it into the ELSE." );
         if (destDataObjInfo != NULL && destDataObjInfo->rescInfo != NULL)
             destRescName = destDataObjInfo->rescInfo->rescName;
         else
@@ -283,9 +269,7 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: made it into the ELSE." );
         }
 #endif
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling dataObjCopy" );
         status = dataObjCopy (rsComm, destL1descInx);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling dataObjCopy. done." );
     }
 
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -298,9 +282,7 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling dataObjCopy. done." );
         dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsDataObjClose" );
     status2 = rsDataObjClose (rsComm, &dataObjCloseInp);
-rodsLog( LOG_NOTICE, "XXXX - _rsDataObjCopy :: calling rsDataObjClose. Done." );
 
     if (status) return (status);
     return(status2);

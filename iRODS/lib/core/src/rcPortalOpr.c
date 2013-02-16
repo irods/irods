@@ -418,6 +418,13 @@ int
 putFile (rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 rodsLong_t dataSize)
 {
+
+
+    eirods::stacktrace st;
+    st.trace();
+    st.dump();
+rodsLog (LOG_ERROR,"putFile: START" );
+	    
     int in_fd, status;
     bytesBuf_t dataObjWriteInpBBuf;
     openedDataObjInp_t dataObjWriteInp;
@@ -1393,6 +1400,7 @@ lfRestartPutWithInfo (rcComm_t *conn, fileRestartInfo_t *info)
 	    } else {
 		lenToUpdate = &info->dataSeg[i - 1].len;
 	    }
+
 	    status = putSeg (conn, gap, localFd, &dataObjWriteInp, 
              &dataObjWriteInpBBuf, TRANS_BUF_SZ, &writtenSinceUpdated,
 	     info, lenToUpdate);

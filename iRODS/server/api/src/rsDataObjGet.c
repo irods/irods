@@ -65,13 +65,13 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         } // if keyword
 
-        if( LOCAL_HOST == local ) {
+        //if( LOCAL_HOST == local ) {
             status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
                                     dataObjOutBBuf, BRANCH_MSG);
-        } else {
-            return _rcDataObjGet( host->conn, dataObjInp, portalOprOut, dataObjOutBBuf );
+        //} else {
+        //    return _rcDataObjGet( host->conn, dataObjInp, portalOprOut, dataObjOutBBuf );
 
-        } // else remote host
+        //} // else remote host
 
     } else {
         int l1descInx;
