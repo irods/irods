@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* See dataObjTrim.h for a description of this API call.*/
@@ -38,9 +40,9 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int myAge;
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
-      &dataObjInp->condInput);
+                       &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
-      REMOTE_OPEN);
+                                       REMOTE_OPEN);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
@@ -59,42 +61,41 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
-      accessPerm, 1);
+                             accessPerm, 1);
 
     if (status < 0) {
-      rodsLog (LOG_ERROR,
-          "rsDataObjTrim: getDataObjInfo for %s", dataObjInp->objPath);
+        rodsLog (LOG_ERROR,
+                 "rsDataObjTrim: getDataObjInfo for %s", dataObjInp->objPath);
         return (status);
     }
     status = resolveInfoForTrim (&dataObjInfoHead, &dataObjInp->condInput);
 
     if (status < 0) {
-	return (status);
+        return (status);
     }
 
     if ((tmpStr = getValByKey (&dataObjInp->condInput, AGE_KW)) != NULL) {
         myAge = atoi (tmpStr);
-	/* age value is in minutes */
+        /* age value is in minutes */
         if (myAge > 0) myTime = time (0) - myAge * 60;
     }
 
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-    tmpDataObjInfo = dataObjInfoHead;
         if (myTime == 0 || atoi (tmpDataObjInfo->dataModify) <= myTime) {
-	    if (getValByKey (&dataObjInp->condInput, DRYRUN_KW) == NULL) {
+            if (getValByKey (&dataObjInp->condInput, DRYRUN_KW) == NULL) {
                 status = dataObjUnlinkS (rsComm, dataObjInp, tmpDataObjInfo);
                 if (status < 0) {
                     if (retVal == 0) {
                         retVal = status;
                     }
                 } else {
-	            retVal = 1;
-	        }
-	    } else {
-		retVal = 1;
-	    }
-	}
+                    retVal = 1;
+                }
+            } else {
+                retVal = 1;
+            }
+        }
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
@@ -116,12 +117,12 @@ trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) // JMC - backport
     snprintf (tmpStr, NAME_LEN, "1");
     addKeyVal (&dataObjInp.condInput, COPIES_KW, tmpStr);
     addKeyVal (&dataObjInp.condInput, RESC_NAME_KW,
-      dataObjInfo->rescInfo->rescName);
+               dataObjInfo->rescInfo->rescName);
     status = rsDataObjTrim (rsComm, &dataObjInp);
     clearKeyVal (&dataObjInp.condInput);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "trimDataObjInfo: rsDataObjTrim of %s error", dataObjInfo->objPath);
+                      "trimDataObjInfo: rsDataObjTrim of %s error", dataObjInfo->objPath);
     }
     return status;
 }
