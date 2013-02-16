@@ -68,6 +68,8 @@ while [ "$STATUS" != "complete" ] ; do
   if [ "$ICATZONE" == "" ] ; then
     if [ "$LASTICATZONE" ] ; then ICATZONE=$LASTICATZONE; fi
   fi
+  # strip all forward slashes
+  ICATZONE=`echo "${ICATZONE}" | sed -e "s/\///g"`
   echo ""
 
   # get admin user
