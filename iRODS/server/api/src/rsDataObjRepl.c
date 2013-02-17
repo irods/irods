@@ -130,10 +130,9 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // =-=-=-=-=-=-=-
     // redirect to the desired server
-    if( LOCAL_HOST != local ) {
-        return _rcDataObjRepl( host->conn, dataObjInp, transStat );
-
-    }
+    //if( LOCAL_HOST != local ) {
+    //    return _rcDataObjRepl( host->conn, dataObjInp, transStat );
+    //}
 
     // =-=-=-=-=-=-=-
     // performing a local replication
