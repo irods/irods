@@ -497,6 +497,9 @@ namespace eirods {
     // helper function to save on typing - get legacy data struct
     // for resource group given a resource name
     error get_resc_grp_info( std::string _name, rescGrpInfo_t& _info ) {
+        if( _name.empty() ) {
+            return ERROR( -1, "get_resc_grp_info :: empty key" ); 
+        }
         resource_ptr resc;
         error res_err = resc_mgr.resolve( _name, resc );
         if( res_err.ok() ) {

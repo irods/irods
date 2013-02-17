@@ -155,11 +155,11 @@ rodsLog( LOG_NOTICE, "XXXX - rsPhyPathReg :: heir [%s], first [%s]", hier.c_str(
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        if( LOCAL_HOST == local ) {
+        //if( LOCAL_HOST == local ) {
             status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
-        } else {
-            status = rcPhyPathReg ( host->conn, phyPathRegInp);
-        }
+        //} else {
+        //    status = rcPhyPathReg ( host->conn, phyPathRegInp);
+        //}
 	
     } else if (remoteFlag == REMOTE_HOST) {
         status = remotePhyPathReg (rsComm, phyPathRegInp, rodsServerHost);
