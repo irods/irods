@@ -241,7 +241,6 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
     if( rescHier ) {
         rstrcpy (dataObjInfo->rescHier, rescHier, MAX_NAME_LEN);
     } else {
-        rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoWithInp :: in kw else for resc hier" );
         rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN); // in kw else
     }
 
@@ -542,7 +541,6 @@ initDataObjInfoForRepl (
     rstrcpy (destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN);
 
     // initialize the destination resource hierarchy to the root resource
-    rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoForRepl :: using dest resc name as hier [%s]", destRescInfo->rescName );
     rstrcpy (destDataObjInfo->rescHier, destRescInfo->rescName, MAX_NAME_LEN); // orphan right now
 
 

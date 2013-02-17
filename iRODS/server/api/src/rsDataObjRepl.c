@@ -65,6 +65,7 @@ int
 rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                transferStat_t **transStat)
 {
+
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -232,6 +233,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
+        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0 );
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
       
@@ -256,9 +258,10 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) == NULL &&
         dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0') {
         /* replicate to all resc in the rescGroup if DEST_RESC is not specified */
-        addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW, 
-                   dataObjInfoHead->rescGroupName);
+        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, dataObjInfoHead->rescGroupName );
     }
+
+
 
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
@@ -291,21 +294,21 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 // JMC - backport 4494
 #if 0
                 getDataObjByClass (dataObjInfoHead, CACHE_CL, &cacheDataObjInfo)
-                >= 0 && cacheDataObjInfo != destDataObjInfo) {
+                >= 0 && cacheDataObjInfo != destDataObjInfo) [[
 #else
                 getDataObjByClass( dataObjInfoHead, COMPOUND_CL, &compDataObjInfo ) >= 0 &&
                     strlen (compDataObjInfo->rescGroupName) > 0                              &&
-                    getCacheDataInfoForRepl (rsComm, dataObjInfoHead, NULL,compDataObjInfo, &cacheDataObjInfo) >= 0 ) {
+                    getCacheDataInfoForRepl (rsComm, dataObjInfoHead, NULL,compDataObjInfo, &cacheDataObjInfo) >= 0 ) [[
 #endif
                 // =-=-=-=-=-=-=-
                 /* purge the cache */
                 int status1 = trimDataObjInfo (rsComm, cacheDataObjInfo);
-                if (status1 < 0) {
+                if (status1 < 0) [[
                     rodsLog (LOG_NOTICE,
                              "_rsDataObjRepl: trimDataObjInfo for %s", 
                              dataObjInp->objPath);
-                }
-            }
+                ]]
+            ]]
 #endif // JMC - legacy resource
             // =-=-=-=-=-=-=-
             if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
@@ -313,6 +316,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 *outDataObjInfo = *destDataObjInfo;
                 outDataObjInfo->next = NULL;
             }
+
             // =-=-=-=-=-=-=-
             // JMC - backport 4494
             if( backupFlag == 0 && myRescGrpInfo != NULL        && 
@@ -339,8 +343,10 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
             freeAllRescGrpInfo (myRescGrpInfo);
+            rodsLog( LOG_NOTICE, "_rsDataObjRepl :: have_good_copy return %d", status );
             return status;
         } else if (status < 0) {
+            rodsLog( LOG_NOTICE, "_rsDataObjRepl :: no good copy" );
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
@@ -348,7 +354,9 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             return status;
         }
         /* NO_GOOD_COPY drop through here */
-    }
+    
+    } // if mulitcopy flg
+
 
     status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
     if (status < 0) return status;
@@ -799,6 +807,8 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
             }
+
+            addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, hier.c_str() );
        
         } else {
             hier = tmp_hier;  
@@ -908,7 +918,6 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         }
 
         L1desc[destL1descInx].srcL1descInx = srcL1descInx;
-
         return (destL1descInx);
     }
 
@@ -1071,6 +1080,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             L1desc[l1descInx].dataSize = L1desc[l1descInx].dataObjInp->dataSize
                 = bytesRead;
         }
+
         bytesWritten = rsL3FilePutSingleBuf (rsComm, &l1descInx, &dataBBuf);
  
         L1desc[l1descInx].bytesWritten = bytesWritten;

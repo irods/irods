@@ -317,7 +317,6 @@ createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if( resc_hier ) {
         rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN );
     } else {
-        rodsLog( LOG_NOTICE, "XXXX - createBunDirForBulkPut :: in kw else using rescName as rescHier [%s]", rescInfo->rescName );
         rstrcpy (dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN); // in kw else
     }
 

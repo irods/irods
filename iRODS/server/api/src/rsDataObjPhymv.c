@@ -96,9 +96,9 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     } // if keyword
 
-    if( LOCAL_HOST != local ) {
-        return _rcDataObjPhymv( host->conn, dataObjInp, transStat );
-    }
+    //if( LOCAL_HOST != local ) {
+    //    return _rcDataObjPhymv( host->conn, dataObjInp, transStat );
+    //}
 
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));

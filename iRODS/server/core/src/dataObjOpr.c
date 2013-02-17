@@ -1381,7 +1381,7 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
 
     if((rescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW)) != NULL &&
        (destRescHier = getValByKey(condInput, RESC_HIER_STR_KW)) != NULL) {
-        destHierCond = true;
+//        destHierCond = true;
     }
 
     // We only use the resource name if the resource hierarchy is not set
@@ -1409,9 +1409,9 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
                 *dataObjInfoHead = (*dataObjInfoHead)->next;
             }
             queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
-        } else if(destHierCond &&
+        } else if( 0 /* destHierCond &&
                   (strcmp(rescHier, tmpDataObjInfo->rescHier) == 0 ||
-                   strcmp(destRescHier, tmpDataObjInfo->rescHier) == 0)) {
+                   strcmp(destRescHier, tmpDataObjInfo->rescHier) == 0)*/) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {

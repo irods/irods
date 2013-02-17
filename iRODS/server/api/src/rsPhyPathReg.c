@@ -133,8 +133,6 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     parser.set_string( hier );
     parser.first_resc( resc_name );
 
-rodsLog( LOG_NOTICE, "XXXX - rsPhyPathReg :: heir [%s], first [%s]", hier.c_str(), resc_name.c_str() );
-
     rescGrpInfo = new rescGrpInfo_t;
     rescGrpInfo->rescInfo = new rescInfo_t;
     eirods::error err = eirods::get_resc_grp_info( resc_name, *rescGrpInfo );
@@ -244,7 +242,6 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     if( resc_hier ) {
         rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
     } else {
-        rodsLog( LOG_NOTICE, "XXXX - _rsPhyPathReg :: in kw else for resc [%s]", rescGrpInfo->rescInfo->rescName );
         rstrcpy ( dataObjInfo.rescHier, rescGrpInfo->rescInfo->rescName, MAX_NAME_LEN); // in kw else
     }
      
@@ -367,7 +364,6 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     if( resc_hier ) {
         rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
     } else {
-        rodsLog( LOG_NOTICE, "XXXX - filePathReg :: in kw else for resc [%s]", rescInfo->rescName );
         rstrcpy ( dataObjInfo.rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
     }
 
@@ -506,7 +502,6 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         if( resc_hier ) {
             rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
         } else {
-            rodsLog( LOG_NOTICE, "XXXX - dirPathReg :: in kw else for resc [%s]", rescInfo->rescName );
             rstrcpy ( fileStatInp.rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
         }
 
@@ -604,7 +599,6 @@ int mountFileDir( rsComm_t*     rsComm,
     if( resc_hier ) {
         rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
     } else {
-        rodsLog( LOG_NOTICE, "XXXX - mountFileDir :: in kw else for resc [%s]", rescInfo->rescName );
         rstrcpy ( fileStatInp.rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
     }
 

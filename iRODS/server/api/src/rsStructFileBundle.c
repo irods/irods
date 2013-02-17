@@ -159,6 +159,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // capture the object path in the data obj struct
     rstrcpy( dataObjInp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
+
     // =-=-=-=-=-=-=-
     // replicate the condInput. may have resource input
     replKeyVal( &structFileBundleInp->condInput, &dataObjInp.condInput );

@@ -34,7 +34,6 @@ rsFilePut (rsComm_t *rsComm, fileOpenInp_t *filePutInp,
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
-
     remoteFlag = resolveHost (&filePutInp->addr, &rodsServerHost);
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFilePut (rsComm, filePutInp, filePutInpBBuf,
