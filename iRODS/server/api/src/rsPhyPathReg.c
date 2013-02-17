@@ -88,7 +88,8 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     int               local = LOCAL_HOST;
     rodsServerHost_t* host  =  0;
     std::string       hier;
-    if( getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+    char*             tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
+    if( NULL == tmp_hier ) {
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                                        phyPathRegInp, hier, host, local );
         if( !ret.ok() ) { 
@@ -104,7 +105,9 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         // api calls, etc.
         addKeyVal( &phyPathRegInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
-    } // if keyword
+    } else {
+        hier = tmp_hier; 
+    }
 
 
     if ((tmpStr = getValByKey (&phyPathRegInp->condInput,
