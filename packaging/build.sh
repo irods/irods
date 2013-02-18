@@ -906,7 +906,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         GCOVFILELIST="gcovfilelist.txt"
         GCOVFILENAME="gcovfiles.tgz"
         cd $BUILDDIR
-        find ./iRODS -name "*.h" -o -name "*.c" -o -name "*.gcno" > $GCOVFILELIST
+        find ./plugins ./iRODS -name "*.h" -o -name "*.c" -o -name "*.cpp" -o -name "*.gcno" > $GCOVFILELIST
         tar czf $GCOVFILENAME -T $GCOVFILELIST
         ls -al $GCOVFILELIST
         ls -al $GCOVFILENAME
