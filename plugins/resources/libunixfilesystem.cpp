@@ -1386,7 +1386,7 @@ extern "C" {
         // check to see if the replica is in this resource, if one is requested
         for( ; itr != objs.end(); ++itr ) {
             // =-=-=-=-=-=-=-
-            // run the heir string through the parser and get the last
+            // run the hier string through the parser and get the last
             // entry.
             std::string last_resc;
             _out_parser.last_resc( last_resc ); 
@@ -1445,7 +1445,7 @@ extern "C" {
             return ERROR( -1, "unixRedirectPlugin - null first_class_object" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "unixRedirectPlugin - null outgoing heir parser" );
+            return ERROR( -1, "unixRedirectPlugin - null outgoing hier parser" );
         }
         if( !_out_vote ) {
             return ERROR( -1, "unixRedirectPlugin - null outgoing vote" );

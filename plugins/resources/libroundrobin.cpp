@@ -377,7 +377,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -418,7 +418,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -461,7 +461,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -504,7 +504,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -545,7 +545,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -586,7 +586,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -628,7 +628,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -670,7 +670,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -713,7 +713,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -754,7 +754,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -795,7 +795,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -836,7 +836,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -877,7 +877,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -918,7 +918,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -959,7 +959,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1001,7 +1001,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1042,7 +1042,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1084,7 +1084,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1125,7 +1125,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1166,7 +1166,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1210,7 +1210,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1254,7 +1254,7 @@ idx++;
         }
       
         // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the heir string
+        // get the next child pointer given our name and the hier string
         eirods::resource_ptr resc; 
         err = get_next_child_in_hier( name, hier, *_cmap, resc );
         if( !err.ok() ) {
@@ -1298,7 +1298,7 @@ idx++;
             return ERROR( -1, "round_robin_redirect - null first_class_object" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "round_robin_redirect - null outgoing heir parser" );
+            return ERROR( -1, "round_robin_redirect - null outgoing hier parser" );
         }
         if( !_out_vote ) {
             return ERROR( -1, "round_robin_redirect - null outgoing vote" );
@@ -1324,7 +1324,7 @@ idx++;
         // test the operation to determine which choices to make
         if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
-            // get the next child pointer in the hierarchy, given our name and the heir string
+            // get the next child pointer in the hierarchy, given our name and the hier string
             eirods::resource_ptr resc; 
             err = get_next_child_in_hier( name, hier, *_cmap, resc );
             if( !err.ok() ) {

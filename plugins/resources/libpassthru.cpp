@@ -807,7 +807,7 @@ extern "C" {
             return ERROR( -1, "passthruRedirectPlugin - null first_class_object" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "passthruRedirectPlugin - null outgoing heir parser" );
+            return ERROR( -1, "passthruRedirectPlugin - null outgoing hier parser" );
         }
         if( !_out_vote ) {
             return ERROR( -1, "passthruRedirectPlugin - null outgoing vote" );
