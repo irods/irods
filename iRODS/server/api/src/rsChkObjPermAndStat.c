@@ -156,6 +156,8 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
                     	    freeCollEntForChkColl (curCollEnt);
                             return SYS_COPY_NOT_EXIST_IN_RESC;
 			}
+                    } else {
+
                     }
                     freeCollEntForChkColl (curCollEnt);
 		    curCopyGood = False;

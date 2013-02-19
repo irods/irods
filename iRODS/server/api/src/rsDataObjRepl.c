@@ -233,7 +233,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0 );
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
       
@@ -261,8 +260,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, dataObjInfoHead->rescGroupName );
     }
 
-
-
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
@@ -279,9 +276,8 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
                                         &myRescGrpInfo,   &destDataObjInfo, 
                                         &dataObjInp->condInput );
-          
+ 
         if (status == HAVE_GOOD_COPY) {
-
             // =-=-=-=-=-=-=-
             // JMC - backport 4450
 #if 0 // JMC - legacy resource :: we no longer deal with the cache here
@@ -343,10 +339,8 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
             freeAllRescGrpInfo (myRescGrpInfo);
-            rodsLog( LOG_NOTICE, "_rsDataObjRepl :: have_good_copy return %d", status );
             return status;
         } else if (status < 0) {
-            rodsLog( LOG_NOTICE, "_rsDataObjRepl :: no good copy" );
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
@@ -363,7 +357,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
      * replicate to myRescGrpInfo */ 
-
     if (destDataObjInfo != NULL) {
         status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
                                        destDataObjInfo, transStat, oldDataObjInfoHead);
@@ -390,7 +383,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (myRescGrpInfo != NULL) {
-
         /* new kreplication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         myRescGrpInfo, transStat, oldDataObjInfoHead, 
@@ -620,7 +612,6 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         int l1descInx;
         openedDataObjInp_t dataObjCloseInp;
         dataObjInfo_t *myDestDataObjInfo;
-
         l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo, destRescInfo, 
                                         rescGroupName, destDataObjInfo, updateFlag );
         if (l1descInx < 0) {
@@ -691,7 +682,6 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         // JMC - legacy resource int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
         dataObjInfo_t *cacheDataObjInfo = NULL;
         dataObjInp_t dest_inp, myDataObjInp, *l1DataObjInp = 0;
-
         if (destRescInfo == NULL) {
             myDestRescInfo = inpDestDataObjInfo->rescInfo;
         } else {
@@ -814,12 +804,13 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             hier = tmp_hier;  
         }
 
+rodsLog( LOG_NOTICE, "XXX - dataObjOpenForRepl :: dest resc hier [%s]", hier.c_str() );
+
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
         rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
         addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
-      
         l1DataObjInp = L1desc[destL1descInx].dataObjInp;
         if (l1DataObjInp->oprType == PHYMV_OPR) {
             L1desc[destL1descInx].oprType = PHYMV_DEST;
@@ -916,8 +907,9 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 return (status);
             }
         }
-
+        
         L1desc[destL1descInx].srcL1descInx = srcL1descInx;
+
         return (destL1descInx);
     }
 
@@ -1056,8 +1048,8 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         int srcL1descInx;
 
         memset (&dataBBuf, 0, sizeof (bytesBuf_t));
-
         srcL1descInx = L1desc[l1descInx].srcL1descInx;
+
         if (L1desc[srcL1descInx].dataSize < 0) {
             rodsLog (LOG_ERROR,
                      "l3DataCopySingleBuf: dataSize %lld for %s is negative",

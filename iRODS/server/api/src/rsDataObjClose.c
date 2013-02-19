@@ -41,6 +41,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_stacktrace.h"
 
 
 int
@@ -459,6 +460,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 
         if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
+
             /* repl to an existing copy */
             snprintf (tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus);
             addKeyVal (&regParam, REPL_STATUS_KW, tmpStr);
@@ -841,12 +843,14 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             srcDataObjInfo->replStatus > 0) {
             /* the source has chksum. Must verify chksum */
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
                          "procChksumForClose: _dataObjChksum error for %s, status = %d",
                          dataObjInfo->objPath, status);
                 return status;
             } else {
+                     srcDataObjInfo->rescHier, srcDataObjInfo->objPath, srcDataObjInfo->filePath, srcDataObjInfo->chksum, dataObjInfo->rescHier, dataObjInfo->objPath, dataObjInfo->filePath, *chksumStr );
                 rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
                     free (*chksumStr);

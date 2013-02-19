@@ -496,6 +496,8 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
             break;
         }
         rstrcpy (filePutInp.fileName, dataObjInfo->filePath,MAX_NAME_LEN);
+
+
         bytesWritten = rsFilePut (rsComm, &filePutInp, dataObjInpBBuf);
         // update the dataObjInfo with the potential changes made by the resource - hcj
         rstrcpy(dataObjInfo->rescHier, filePutInp.resc_hier_, MAX_NAME_LEN);
