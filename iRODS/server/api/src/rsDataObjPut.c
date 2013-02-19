@@ -462,10 +462,8 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     }
                 
     filePutInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
-                
     rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
     rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-                
     filePutInp.mode = getFileMode (dataObjInp);
     filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
                 

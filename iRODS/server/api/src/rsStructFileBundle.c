@@ -89,6 +89,7 @@ rsStructFileBundle (rsComm_t *rsComm,
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
+    std::string       hier;
     int               local = LOCAL_HOST;
     rodsServerHost_t* host  =  0;
     dataObjInp_t      data_inp;
@@ -96,7 +97,6 @@ rsStructFileBundle (rsComm_t *rsComm,
     rstrcpy( data_inp.objPath, structFileBundleInp->objPath, NAME_LEN );
     copyKeyValPairStruct( &structFileBundleInp->condInput, &data_inp.condInput );
     if( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        std::string       hier;
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                                        &data_inp, hier, host, local );
         if( !ret.ok() ) { 
@@ -116,10 +116,8 @@ rsStructFileBundle (rsComm_t *rsComm,
 
     if( LOCAL_HOST == local ) {
         status = _rsStructFileBundle( rsComm, structFileBundleInp );
-                                
     } else {
         status = rcStructFileBundle( host->conn, structFileBundleInp );
-
     } // else remote host
 
 
