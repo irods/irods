@@ -82,7 +82,6 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
         l1descInx = _rsDataObjOpen( rsComm, dataObjInp );
                                     
-
     }
 
     return (l1descInx);

@@ -183,6 +183,7 @@ extern "C" {
                 if(!ret.ok()) {
                     result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
                 } else {
+#if 0 // handled in redirect code now
                     // Update the hierarchy string
                     std::string child_name;
                     ret = resc->get_property<std::string>("name", child_name);
@@ -198,6 +199,7 @@ extern "C" {
                         hparse.str(new_resc_hier);
                         _object->resc_hier(new_resc_hier);
                     }
+#endif // handled in redirect code now
                 }
             }
         }
@@ -805,7 +807,7 @@ extern "C" {
             return ERROR( -1, "passthruRedirectPlugin - null first_class_object" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "passthruRedirectPlugin - null outgoing heir parser" );
+            return ERROR( -1, "passthruRedirectPlugin - null outgoing hier parser" );
         }
         if( !_out_vote ) {
             return ERROR( -1, "passthruRedirectPlugin - null outgoing vote" );

@@ -113,7 +113,7 @@ rsStructFileBundle (rsComm_t *rsComm,
         addKeyVal( &structFileBundleInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } // if keyword
-
+    
     if( LOCAL_HOST == local ) {
         status = _rsStructFileBundle( rsComm, structFileBundleInp );
     } else {
@@ -170,7 +170,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     } else {
         addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
         l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
-        // foo1.tar exists here exit(0);
 
     }
 
@@ -185,17 +184,16 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // =-=-=-=-=-=-=-
     // FIXME :: Why, when we replicate them above?
     clearKeyVal (&dataObjInp.condInput); // JMC - backport 4637
-    l3Close (rsComm, l1descInx);
-    // foo1.tar exists here exit( 0 );
+    // ???? l3Close (rsComm, l1descInx);
 
     // =-=-=-=-=-=-=-
     // zip does not like a zero length file as target
-    L1desc[ l1descInx ].l3descInx = 0;
-    if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
-        if( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0 ) { // JMC - backport 4643
-            l3Unlink( rsComm, L1desc[l1descInx].dataObjInfo );
-        }
-    }
+    //L1desc[ l1descInx ].l3descInx = 0;
+    //if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
+    //    if( ( structFileBundleInp->oprType & ADD_TO_TAR_OPR) == 0 ) { // JMC - backport 4643
+    //        l3Unlink( rsComm, L1desc[l1descInx].dataObjInfo );
+    //    }
+    //}
 
     // =-=-=-=-=-=-=-
     // check object permissions / stat
@@ -215,11 +213,11 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     }
 
     clearKeyVal( &chkObjPermAndStatInp.condInput );
-    // foo1.tar DOESNT exist here  exit( 0 );
     
     // =-=-=-=-=-=-=-
     // create the special hidden directory where the bundling happens
     createPhyBundleDir( rsComm, L1desc[ l1descInx ].dataObjInfo->filePath, phyBunDir );
+  
     // =-=-=-=-=-=-=-
     // build a collection open input structure
     collInp_t collInp;
@@ -286,7 +284,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 mkDirForFilePath( rsComm, phyBunDir, tmpPath, getDefDirMode() );
                   
             }
- 
+            
             // =-=-=-=-=-=-=-
             // add a link 
             status = link( collEnt->phyPath, tmpPath );

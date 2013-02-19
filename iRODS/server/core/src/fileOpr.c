@@ -16,6 +16,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
+#include "eirods_stacktrace.h"
 
 int
 initFileDesc ()

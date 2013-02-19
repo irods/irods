@@ -3,7 +3,12 @@ include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
 
 GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
-INC=-I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include \
+
+ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+GCC += -fprofile-arcs -ftest-coverage -lgcov
+endif
+
+INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include \
         -I../../iRODS/server/core/include/ -I../../iRODS/server/icat/include/ -I../../iRODS/server/re/include/ \
         -I../../iRODS/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR)
 all:
