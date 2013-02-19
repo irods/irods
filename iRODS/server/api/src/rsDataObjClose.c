@@ -850,7 +850,6 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
                          dataObjInfo->objPath, status);
                 return status;
             } else {
-                     srcDataObjInfo->rescHier, srcDataObjInfo->objPath, srcDataObjInfo->filePath, srcDataObjInfo->chksum, dataObjInfo->rescHier, dataObjInfo->objPath, dataObjInfo->filePath, *chksumStr );
                 rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
                     free (*chksumStr);
