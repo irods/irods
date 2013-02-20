@@ -239,6 +239,7 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
 
     char* rescHier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if( rescHier ) {
+rodsLog( LOG_NOTICE, "XXXX - initDataObjInfoWithInp :: obj [%s], resc hier [%s]", dataObjInp->objPath, rescHier );
         rstrcpy (dataObjInfo->rescHier, rescHier, MAX_NAME_LEN);
     } else {
         rstrcpy (dataObjInfo->rescHier, rescName, MAX_NAME_LEN); // in kw else

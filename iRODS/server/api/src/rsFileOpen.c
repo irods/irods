@@ -17,6 +17,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
@@ -25,7 +26,13 @@ rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
     int remoteFlag;
     int fileInx;
 
-    remoteFlag = resolveHost (&fileOpenInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileOpenInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileOpenInp->resc_hier_, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
+
 
     if (remoteFlag < 0) {
         return (remoteFlag);

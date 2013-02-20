@@ -24,6 +24,10 @@ namespace eirods {
     error get_host_status_by_host_info( rodsServerHost_t* );
     error get_resc_info( std::string, rescInfo_t& );
     error get_resc_grp_info( std::string, rescGrpInfo_t& );
+    error get_host_for_hier_string( 
+              const std::string&,   // hier string
+              int&,                 // local flag
+              rodsServerHost_t*& ); // server host
 
     template< typename T >
     error get_resource_property( std::string _name, std::string _prop_name, T& _prop ) {

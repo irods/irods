@@ -201,7 +201,15 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     memset( &chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
     rstrcpy( chkObjPermAndStatInp.objPath, structFileBundleInp->collection, MAX_NAME_LEN); 
     chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
-    addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW, L1desc[l1descInx].dataObjInfo->rescName );
+    addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW,     L1desc[l1descInx].dataObjInfo->rescName );
+
+    char* resc_hier = getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW );
+    if( !resc_hier ) {
+        rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is NULL" );
+    } else {
+        rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is [%s]", resc_hier );
+        addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier );
+    }
 
     status = rsChkObjPermAndStat( rsComm, &chkObjPermAndStatInp );
     if( status < 0 ) {

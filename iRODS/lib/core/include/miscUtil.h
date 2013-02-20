@@ -46,6 +46,7 @@ typedef struct DataObjSqlResult {
     sqlResult_t replStatus;
     sqlResult_t dataId;
     sqlResult_t resource;
+    sqlResult_t resc_hier;
     sqlResult_t phyPath;
     sqlResult_t ownerName;
     sqlResult_t replNum;
@@ -123,6 +124,7 @@ typedef struct CollEnt {
     char *modifyTime;
     char *chksum;
     char *resource;
+    char *resc_hier;
     char *rescGrp;
     char *phyPath;
     char *ownerName;    	 /* valid for dataObj and collection */

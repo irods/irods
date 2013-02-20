@@ -22,6 +22,8 @@
 #include "eirods_collection_object.h"
 #include "eirods_hierarchy_parser.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
+
 
 #include <string>
 
@@ -33,11 +35,18 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
     int fileInx;
     int fd;
 
-    remoteFlag = resolveHost (&fileCreateInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileCreateInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileCreateInp->resc_hier_, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
 
     if (remoteFlag == LOCAL_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: LOCAL" );
         fd = _rsFileCreate (rsComm, fileCreateInp, rodsServerHost);
     } else if (remoteFlag == REMOTE_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: REMOTE" );
         fd = remoteFileCreate (rsComm, fileCreateInp, rodsServerHost);
     } else {
         if (remoteFlag < 0) {

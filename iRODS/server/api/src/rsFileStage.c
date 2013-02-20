@@ -13,6 +13,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp)
@@ -21,7 +22,12 @@ rsFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp)
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileStageInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileStageInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileStageInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileStage - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileStage (rsComm, fileStageInp);
     } else if (remoteFlag == REMOTE_HOST) {

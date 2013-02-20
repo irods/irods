@@ -13,6 +13,7 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_collection_object.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
@@ -23,7 +24,12 @@ rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
     int status;
     void *dirPtr = NULL;
 
-    remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileOpendir - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
 
     if (remoteFlag == LOCAL_HOST) {
 	    status = _rsFileOpendir (rsComm, fileOpendirInp, &dirPtr);

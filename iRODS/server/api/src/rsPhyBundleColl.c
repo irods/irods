@@ -608,6 +608,7 @@ replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
 
     snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collName, dataName);
     addKeyVal (&dataObjInp.condInput, BACKUP_RESC_NAME_KW, rescName);
+    addKeyVal (&dataObjInp.condInput, RESC_HIER_STR_KW,    rescName);
     if (adminFlag > 0) 
         addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_KW, "");
 
