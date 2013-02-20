@@ -1,3 +1,0 @@
-purgeRule(*Condition,*MailTo)||acPurgeFiles(*Condition)##sendStdoutAsEmail(*MailTo,Purge Results)|nop##nop
-*Condition= COLL_NAME =  '/tempZone/home/rods/loopTest'%*MailTo=sekar@sdsc.edu
-*Condition%ruleExecOut

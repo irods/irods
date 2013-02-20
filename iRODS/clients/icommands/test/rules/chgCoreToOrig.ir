@@ -1,3 +1,0 @@
-myTest||msiAdmChangeCoreIRB(*A)|nop
-*A=core.irb.orig
-*A

@@ -1,3 +1,0 @@
-myTestRule||msiAdmReadRulesFromFileIntoStruct(*FileName,*CS)##msiAdmInsertRulesFromStructIntoDB(*BaseName,*CS)|nop
-*FileName=$core2%*BaseName=$alpha
-*FileName%*BaseName

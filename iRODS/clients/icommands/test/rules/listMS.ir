@@ -1,3 +1,0 @@
-ListAvailableMS||msiListEnabledMS(*KVPairs)##writeKeyValPairs("stdout", *KVPairs, ": ")|nop
-null
-ruleExecOut

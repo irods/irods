@@ -1,3 +1,0 @@
-myTest||msiAdmShowDVM(*A)##msiAdmAddAppRuleStruct(*B,*B,*B)##msiAdmShowDVM(*C)|nop
-*B=core2
-*A%*B%*C%ruleExecOut

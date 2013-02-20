@@ -1,4 +1,0 @@
-msiAddDataObjChksumsTimeStampsToAVU.ir||msiAddDataObjChksumsTimeStampsToAVU(*Source_Path,*B)##writeLine(stdout,*B)|nop
-*Source_Path=/tempZone/home/rods/loopTest/HELP.looptest/
-ruleExecOut
-
