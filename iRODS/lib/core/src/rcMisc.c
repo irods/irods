@@ -146,7 +146,7 @@ clearBBuf (bytesBuf_t *myBBuf)
  */
 
 int
-addRErrorMsg (rError_t *myError, int status, char *msg)
+addRErrorMsg (rError_t *myError, int status, const char *msg)
 {
     rErrMsg_t **newErrMsg;
     int newLen;

@@ -430,12 +430,13 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
        routine understands and colNames has the corresponding column
        names; one for one. */
     int dataTypeIndex=1; /* matches table below for quick check */
+    // Using the keyword defines so there is one point of truth - hcj
     char *regParamNames[]={
-        "replNum", "dataType", "dataSize",
-        "rescName","filePath", "dataOwner", "dataOwnerZone", 
-        "replStatus", "chksum", "dataExpiry",
-        "dataComments", "dataCreate", "dataModify",  "rescGroupName",
-        "dataMode", "rescHier", "END"
+        REPL_NUM_KW, DATA_TYPE_KW, DATA_SIZE_KW,
+        RESC_NAME_KW,FILE_PATH_KW, DATA_OWNER_KW, DATA_OWNER_ZONE_KW, 
+        REPL_STATUS_KW, CHKSUM_KW, DATA_EXPIRY_KW,
+        DATA_COMMENTS_KW, DATA_CREATE_KW, DATA_MODIFY_KW, RESC_GROUP_NAME_KW,
+        DATA_MODE_KW, RESC_HIER_STR_KW, "END"
     };
 
    /* If you update colNames, be sure to update DATA_EXPIRY_TS_IX if
@@ -507,6 +508,10 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                 status = cmlCheckNameToken("data_type", 
                                            theVal, &icss);
                 if (status !=0 ) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Invalid data type specified.";
+                    addRErrorMsg (&rsComm->rError, 0, msg.str().c_str());
                     return(CAT_INVALID_DATA_TYPE);
                 }
             }
@@ -527,7 +532,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     /* If dataExpiry is being updated, user needs to have 
        a greater access permission */
-    theVal = getValByKey(regParam, "dataExpiry");
+    theVal = getValByKey(regParam, DATA_EXPIRY_KW);
     if (theVal != NULL) {
         neededAccess = ACCESS_DELETE_OBJECT;
     }
@@ -542,11 +547,10 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             logicalDirName, 0, 0, 0, 0, &icss);
 
         if (status != 0) {
-            //int i; JMC unused
             char errMsg[105];
             snprintf(errMsg, 100, "collection '%s' is unknown", 
                      logicalDirName);
-            i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
             _rollback("chlModDataObjMeta");
             return(CAT_UNKNOWN_COLLECTION);
         }
@@ -557,6 +561,10 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             "select data_id from R_DATA_MAIN where coll_id=? and data_name=?",
             &iVal, objIdString, logicalFileName,  0, 0, 0, &icss);
         if (status != 0) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to find file in database by its logical path.";
+            addRErrorMsg (&rsComm->rError, 0, msg.str().c_str());
             _rollback("chlModDataObjMeta");
             return(CAT_UNKNOWN_FILE);
         }
@@ -629,7 +637,8 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     // If we are moving the data object from one resource to another resource, update the object counts for those resources
     // appropriately - hcj
-    if(getValByKey(regParam, "rescHier") != NULL) {
+    char* new_resc_hier = getValByKey(regParam, RESC_HIER_STR_KW);
+    if(new_resc_hier != NULL) {
         std::stringstream id_stream;
         id_stream << dataObjInfo->dataId;
         char resc_hier[MAX_NAME_LEN];
@@ -640,7 +649,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         // TODO - Address this in terms of resource hierarchies
         else if((status = _updateObjCountOfResources(resc_hier, rsComm->clientUser.rodsZone, -1)) != 0) {
             return status;
-        } else if((status = _updateObjCountOfResources(getValByKey(regParam, "rescHier"), rsComm->clientUser.rodsZone, +1)) != 0) {
+        } else if((status = _updateObjCountOfResources(new_resc_hier, rsComm->clientUser.rodsZone, +1)) != 0) {
             return status;
         }
     }
@@ -684,7 +693,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                 return(status2);
             }
 
-            // hcj;
         }
     }
     if (status != 0) {
@@ -2475,8 +2483,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
     if (strncmp(rsComm->clientUser.userName, userName2, sizeof(userName2))==0 &&
         strncmp(rsComm->clientUser.rodsZone, zoneToUse, sizeof(zoneToUse))==0) {
-       int i;
-       i = addRErrorMsg (&rsComm->rError, 0, "Cannot remove your own admin account, probably unintended");
+       addRErrorMsg (&rsComm->rError, 0, "Cannot remove your own admin account, probably unintended");
        return(CAT_INVALID_USER);
     }
    
@@ -5291,10 +5298,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 
    if (rescPath[0]!='\0') {
       /* if the path was gotten, return it */
-      int i;
-      snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
+
+       snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
               rescPath);
-      i = addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
+      addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
    }
 
     return(0);

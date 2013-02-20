@@ -11,6 +11,7 @@
 #include "reGlobalsExtern.h"
 #include "dataObjRepl.h"
 #include "dataObjUnlink.h"
+#include "rodsLog.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -221,7 +222,7 @@ extern "C" {
                     if(object_oper.oper_ != _oper) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
-                        msg << " - Existing object operation does not match passed in operation.";
+                        msg << " - Existing object operation \"" << object_oper.oper_ << "\" does not match passed in operation \"" << _oper << "\".";
                         result = ERROR(-1, msg.str());
                     }
                 }
@@ -1588,9 +1589,12 @@ extern "C" {
                                         addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, _root_resc.c_str());
                                         int status = rcDataObjRepl(_comm, &dataObjInp);
                                         if(status < 0) {
+                                            char* sys_error;
+                                            char* rods_error = rodsErrorName(status, &sys_error);
                                             std::stringstream msg;
                                             msg << __FUNCTION__;
-                                            msg << " - Failed to replicate the data object to child \"" << hierarchy_string << "\"";
+                                            msg << " - Failed to replicate the data object to child \"" << hierarchy_string << "\" - ";
+                                            msg << rods_error << " " << sys_error;
                                             eirods::log(LOG_ERROR, msg.str());
                                             result = ERROR(status, msg.str());
                                         }
