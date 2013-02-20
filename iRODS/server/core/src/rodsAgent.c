@@ -214,6 +214,7 @@ agentMain (rsComm_t *rsComm)
     status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
     if( status < 0 ) {
         eirods::log( ERROR( -1, "agentMain - getRcatHost failed." ) );
+        return status;
     }
     
     // =-=-=-=-=-=-=-
@@ -221,8 +222,23 @@ agentMain (rsComm_t *rsComm)
     status = svrToSvrConnect ( rsComm, rodsServerHost );
     if( status < 0 ) {
         eirods::log( ERROR( -1, "agentMain - svrToSvrConnect failed." ) );
+        return status;
     }
 
+#if COMMENT
+    // Commit changes to this point to the database since pdmo's may call rc level calls spawning other agents
+    status = chlCommit(rsComm);
+    if(status < 0) {
+        char* rods_error;
+        char* sys_error;
+        rods_error = rodsErrorName(status, &sys_error);
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - committing database changes failed. ";
+        msg << rods_error << " " << sys_error;
+        eirods::log(LOG_ERROR, msg.str());
+    }
+#endif
+    
     // =-=-=-=-=-=-=-
     // call post disconnect maintenance operations before exit
     resc_mgr.call_maintenance_operations( rodsServerHost->conn );
