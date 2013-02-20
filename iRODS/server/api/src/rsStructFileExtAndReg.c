@@ -19,7 +19,11 @@
 #include "reGlobalsExtern.h"
 #include "structFileExtAndReg.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_redirect.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,
@@ -72,6 +76,36 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
         return status;
     }
 
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    std::string       hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    if( getValByKey( &dataObjInp.condInput, RESC_HIER_STR_KW ) == NULL ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       &dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsStructFileExtAndReg :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp.objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+
+    rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: obj [%s], hier str [%s]", structFileExtAndRegInp->objPath, hier.c_str() );
+
+
+
     /* open the structured file */
     addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
@@ -85,11 +119,18 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
 
     rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
     rescGroupName = L1desc[l1descInx].dataObjInfo->rescGroupName;
-    remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
+    //remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( hier.c_str(), remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsStructFileExtAndReg - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
+
     bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
 
     if (remoteFlag == REMOTE_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: REMOTE" );
         addKeyVal (&structFileExtAndRegInp->condInput, RESC_NAME_KW,
                    rescInfo->rescName);
 
@@ -104,6 +145,7 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
 
         return status;
     }
+rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: LOCAL" );
 
     status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection, 
                                   NULL);

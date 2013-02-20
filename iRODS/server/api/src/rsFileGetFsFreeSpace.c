@@ -13,6 +13,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileGetFsFreeSpace (rsComm_t *rsComm, 
@@ -25,7 +26,12 @@ rsFileGetFsFreeSpace (rsComm_t *rsComm,
 
     *fileGetFsFreeSpaceOut = NULL;
 
-    remoteFlag = resolveHost (&fileGetFsFreeSpaceInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileGetFsFreeSpaceInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileGetFsFreeSpaceInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileGetFsFreeSpace (rsComm, fileGetFsFreeSpaceInp,
                                         fileGetFsFreeSpaceOut);

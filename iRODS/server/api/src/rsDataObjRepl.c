@@ -178,7 +178,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int backupFlag;
     int allFlag;
     int savedStatus = 0;
-
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: START" );
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
         accessPerm = NULL;
     } else if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
@@ -273,10 +273,12 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
          ( target resources remained are left in &myRescGrpInfo.
          * Also, the copies need to be overwritten is returned
          * in destDataObjInfo. */
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: call resolveSingleReplCopy" );
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
                                         &myRescGrpInfo,   &destDataObjInfo, 
                                         &dataObjInp->condInput );
  
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: call resolveSingleReplCopy. done. %d", status );
         if (status == HAVE_GOOD_COPY) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4450
@@ -383,6 +385,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (myRescGrpInfo != NULL) {
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: call _rsDataObjReplNewCopy" );
         /* new kreplication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         myRescGrpInfo, transStat, oldDataObjInfoHead, 

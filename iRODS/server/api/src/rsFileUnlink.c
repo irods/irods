@@ -13,6 +13,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
@@ -21,7 +22,12 @@ rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileUnlinkInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileUnlinkInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileUnlinkInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileUnlink - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileUnlink (rsComm, fileUnlinkInp);
     } else if (remoteFlag == REMOTE_HOST) {

@@ -434,6 +434,7 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
     if ((flags & LONG_METADATA_FG) != 0 || 
         (flags & VERY_LONG_METADATA_FG) != 0) {
         addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_RESC_HIER, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
         addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
@@ -957,7 +958,7 @@ genQueryOutToDataObjRes (genQueryOut_t **genQueryOut,
 {
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime, 
-        *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
+        *modifyTime, *chksum, *replStatus, *dataId, *resource, *resc_hier, *phyPath, 
         *ownerName, *replNum, *rescGrp, *dataType; // JMC - backport 4636
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
@@ -1045,6 +1046,14 @@ genQueryOutToDataObjRes (genQueryOut_t **genQueryOut,
                            "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->resource = *resource;
+    }
+
+    if ((resc_hier = getSqlResultByInx (myGenQueryOut, COL_D_RESC_HIER))
+        == NULL) {
+        setSqlResultValue (&dataObjSqlResult->resc_hier, COL_D_RESC_HIER,
+                           "", myGenQueryOut->rowCnt);
+    } else {
+        dataObjSqlResult->resc_hier = *resc_hier;
     }
 
     if ((rescGrp = getSqlResultByInx (myGenQueryOut, COL_D_RESC_GROUP_NAME))
@@ -1643,6 +1652,11 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;
         outCollEnt->resource = &value[len * selectedInx];
+
+        value = dataObjSqlResult->resc_hier.value;
+        len = dataObjSqlResult->resc_hier.len;
+        outCollEnt->resc_hier = &value[len * selectedInx];
+        
         value = dataObjSqlResult->ownerName.value;
         len = dataObjSqlResult->ownerName.len;
         outCollEnt->ownerName = &value[len * selectedInx];

@@ -516,8 +516,8 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier,           MAX_NAME_LEN );
     rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,            MAX_NAME_LEN );
     fileCreateInp.fileType = static_cast< fileDriverType_t >( -1 );// RescTypeDef[rescTypeInx].driverType;
-    rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
-             NAME_LEN);
+    rstrcpy( fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+             
     rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
     fileCreateInp.mode = getFileMode (dataObjInp);
     // =-=-=-=-=-=-=-
@@ -531,6 +531,7 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
     std::string prev_resc_hier = fileCreateInp.resc_hier_;
     l3descInx = rsFileCreate (rsComm, &fileCreateInp);
+
     // update the dataObjInfo with the potential changes made by the resource - hcj
     rstrcpy(dataObjInfo->rescHier, fileCreateInp.resc_hier_, MAX_NAME_LEN);
     rstrcpy(dataObjInfo->filePath, fileCreateInp.fileName, MAX_NAME_LEN);
