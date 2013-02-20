@@ -16,9 +16,7 @@ rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     dataObjInfo_t *dataObjInfo;
-    keyValPair_t *regParam;
 
-    regParam = modDataObjMetaInp->regParam;
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
@@ -91,8 +89,10 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
         status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,&dataObjInfoHead);
               
-        if (status < 0) 
+        if (status < 0)  {
+            rodsLog(LOG_NOTICE, "%s - Failed to get data objects.", __FUNCTION__);
             return status;
+        }
         tmpDataObjInfo = dataObjInfoHead;
         while (tmpDataObjInfo != NULL) {
             if (tmpDataObjInfo->specColl != NULL)
@@ -121,6 +121,9 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                      "_rsModDataObjMeta:acPostProcForModifyDataObjMeta error stat=%d",i);
             return i;
         }
+    } else {
+        rodsLog(LOG_NOTICE, "%s - Failed updating the database with object info.", __FUNCTION__);
+        return status;
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
