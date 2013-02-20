@@ -8,6 +8,8 @@
 #include "eirods_plugin_base.h"
 #include "eirods_operation_wrapper.h"
 
+#include <iostream>
+
 namespace eirods {
 
 

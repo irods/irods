@@ -133,8 +133,8 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // iterate over the _child_vector and find a hole to 
             // fill in with this resource name
-            bool filled_flg = false;
-        size_t idx = 0;
+            bool   filled_flg = false;
+            size_t idx        = 0;
             std::vector< std::string >::iterator vitr;
             for( vitr  = _child_vector.begin();
                  vitr != _child_vector.end();
@@ -146,16 +146,16 @@ extern "C" {
                     eirods::error ret = resc->get_property< std::string >( "name", name );
                     if( !ret.ok() ) {
                         eirods::log( ERROR( -1, "build_sorted_child_vector - get property for resource name failed." ));
-idx++;
+                        idx++;
                         continue;
                     }
-                    
+               
                     (*vitr) = name;
                     filled_flg = true;
                     break;
-idx++;
+                
                 } else {
-idx++;
+                    idx++;
                 }
 
             } // for vitr
@@ -167,6 +167,7 @@ idx++;
             }
 
         } // for itr
+
 
         return SUCCESS();
 
@@ -249,6 +250,11 @@ idx++;
     eirods::error round_robin_start_operation( 
                   eirods::resource_property_map& _prop_map,
                   eirods::resource_child_map&    _cmap ) {
+
+        if( _cmap.empty() ) {
+            return ERROR( -1, "round_robin_start_operation - no children specified" );
+        }
+
         // =-=-=-=-=-=-=-
         // build the initial list of children
         std::vector< std::string > child_vector;
@@ -353,10 +359,10 @@ idx++;
     /// @brief interface for POSIX create
     eirods::error round_robin_file_create( 
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map,
                       eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -394,10 +400,10 @@ idx++;
     // interface for POSIX Open
     eirods::error round_robin_file_open( 
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -435,10 +441,10 @@ idx++;
     /// @brief interface for POSIX Read
     eirods::error round_robin_file_read(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       void*                          _buf, 
                       int                            _len ) {
         // =-=-=-=-=-=-=-
@@ -470,7 +476,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call read on the child 
-        return resc->call( _comm, "read", _object, _buf, _len );
+        return resc->call< void*, int >( _comm, "read", _object, _buf, _len );
  
     } // round_robin_file_read
 
@@ -478,10 +484,10 @@ idx++;
     /// @brief interface for POSIX Write
     eirods::error round_robin_file_write( 
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       void*                          _buf, 
                       int                            _len ) {
         // =-=-=-=-=-=-=-
@@ -513,7 +519,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call write on the child 
-        return resc->call( _comm, "write", _object, _buf, _len );
+        return resc->call< void*, int >( _comm, "write", _object, _buf, _len );
  
     } // round_robin_file_write
 
@@ -521,10 +527,11 @@ idx++;
     /// @brief interface for POSIX Close
     eirods::error round_robin_file_close(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results  ) {
+                    
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -562,10 +569,10 @@ idx++;
     /// @brief interface for POSIX Unlink
     eirods::error round_robin_file_unlink(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results  ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -603,10 +610,10 @@ idx++;
     /// @brief interface for POSIX Stat
     eirods::error round_robin_file_stat(
                       rsComm_t* _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       struct stat*                   _statbuf ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
@@ -637,7 +644,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call stat on the child 
-        return resc->call( _comm, "stat", _object, _statbuf );
+        return resc->call< struct stat* >( _comm, "stat", _object, _statbuf );
  
     } // round_robin_file_stat
 
@@ -645,10 +652,10 @@ idx++;
     /// @brief interface for POSIX Fstat
     eirods::error round_robin_file_fstat(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       struct stat*                   _statbuf ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
@@ -679,7 +686,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call fstat on the child 
-        return resc->call( _comm, "fstat", _object, _statbuf );
+        return resc->call< struct stat* >( _comm, "fstat", _object, _statbuf );
  
     } // round_robin_file_fstat
 
@@ -687,10 +694,10 @@ idx++;
     /// @brief interface for POSIX lseek
     eirods::error round_robin_file_lseek(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       size_t                         _offset, 
                       int                            _whence ) {
         // =-=-=-=-=-=-=-
@@ -722,7 +729,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call( _comm, "lseek", _object, _offset, _whence );
+        return resc->call< size_t, int >( _comm, "lseek", _object, _offset, _whence );
  
     } // round_robin_file_lseek
 
@@ -730,10 +737,10 @@ idx++;
     /// @brief interface for POSIX fsync
     eirods::error round_robin_file_fsync(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results  ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -771,10 +778,10 @@ idx++;
     /// @brief interface for POSIX mkdir
     eirods::error round_robin_file_mkdir(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object, 
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -812,10 +819,11 @@ idx++;
     /// @brief interface for POSIX chmod
     eirods::error round_robin_file_chmod(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results  ) {
+                    
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -853,10 +861,10 @@ idx++;
     /// @brief interface for POSIX rmdir
     eirods::error round_robin_file_rmdir(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object, 
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -894,10 +902,10 @@ idx++;
     /// @brief interface for POSIX opendir
     eirods::error round_robin_file_opendir(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -935,10 +943,10 @@ idx++;
     /// @brief interface for POSIX closedir
     eirods::error round_robin_file_closedir(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -976,10 +984,10 @@ idx++;
     /// @brief interface for POSIX readdir
     eirods::error round_robin_file_readdir(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       struct rodsDirent**            _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
@@ -1010,7 +1018,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call readdir on the child 
-        return resc->call( _comm, "readdir", _object );
+        return resc->call< struct rodsDirent** >( _comm, "readdir", _object, _dirent_ptr );
 
     } // round_robin_file_readdir
 
@@ -1018,10 +1026,10 @@ idx++;
     /// @brief interface for POSIX file_stage
     eirods::error round_robin_file_stage(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) {
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -1059,10 +1067,10 @@ idx++;
     /// @brief interface for POSIX rename
     eirods::error round_robin_file_rename(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object, 
+                      std::string*                   _results,
                       const char*                    _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
@@ -1093,7 +1101,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call rename on the child 
-        return resc->call( _comm, "rename", _object );
+        return resc->call< const char* >( _comm, "rename", _object, _new_file_name );
 
     } // round_robin_file_rename
 
@@ -1101,10 +1109,10 @@ idx++;
     /// @brief interface for POSIX truncate
     eirods::error round_robin_file_truncate(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) { 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -1142,10 +1150,10 @@ idx++;
     /// @brief interface to determine free space on a device given a path
     eirods::error round_robin_file_getfs_freespace(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object ) { 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters 
         eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
@@ -1185,10 +1193,10 @@ idx++;
     ///        is not used.
     eirods::error round_robin_file_stage_to_cache(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       const char*                    _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters 
@@ -1219,7 +1227,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call stage on the child 
-        return resc->call( _comm, "stage", _object );
+        return resc->call< const char* >( _comm, "stage", _object, _cache_file_name );
 
     } // round_robin_file_stage_to_cache
 
@@ -1229,10 +1237,10 @@ idx++;
     ///        is not used.
     eirods::error round_robin_file_sync_to_arch(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object, 
+                      std::string*                   _results,
                       const char*                    _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters 
@@ -1263,7 +1271,7 @@ idx++;
 
         // =-=-=-=-=-=-=-
         // call synctoarch on the child 
-        return resc->call( _comm, "synctoarch", _object );
+        return resc->call< const char* >( _comm, "synctoarch", _object, _cache_file_name );
 
     } // round_robin_file_sync_to_arch
 
@@ -1272,10 +1280,10 @@ idx++;
     ///        should provide the requested operation
     eirods::error round_robin_redirect(
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      std::string*                   _results,
                       const std::string*             _opr,
                       const std::string*             _curr_host,
                       eirods::hierarchy_parser*      _out_parser,
@@ -1371,7 +1379,7 @@ idx++;
             }
             std::string new_hier;
             _out_parser->str( new_hier );
-
+rodsLog( LOG_NOTICE, "XXXX - roundrobin :: redireect for CREATE for obj [%s], hier str [%s]", _object->logical_path().c_str(), new_hier.c_str() );
             // =-=-=-=-=-=-=-
             // update the next_child appropriately as the above succeeded
             err = update_next_child_resource( *_prop_map );
@@ -1458,6 +1466,8 @@ idx++;
             // of the last used child in the vector
             properties_.set< std::string >( "next_child", context_ );
             rodsLog( LOG_NOTICE, "roundrobin_resource :: next_child [%s]", context_.c_str() );
+
+            set_start_operation( "round_robin_start_operation" );
         }
 
         // =-=-=-=-=-=-

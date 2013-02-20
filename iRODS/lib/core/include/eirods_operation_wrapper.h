@@ -27,6 +27,8 @@
 #include "reGlobalsExtern.h"
 #include "dataObjInpOut.h"
 
+#include <iostream>
+
 namespace eirods {
 
 	// =-=-=-=-=-=-=-
@@ -81,7 +83,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-		       error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj ); 
+		       error op_err = (*operation_)( _comm, _prop_map, _cmap, _obj, &pre_results ); 
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -117,7 +119,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-		       error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1 ); 
+		       error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1 ); 
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -153,7 +155,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2 ); 
+			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -190,7 +192,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-			   error op_err =  (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3 ); 
+			   error op_err =  (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -228,7 +230,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-               error op_err =  operation_( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4 ); 
+               error op_err =  operation_( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -268,7 +270,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err =  (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5 ); 
+			   error op_err =  (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4, _t5 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -308,7 +310,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5, _t6 );  
+			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4, _t5, _t6 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -349,7 +351,7 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
+			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
@@ -391,8 +393,8 @@ namespace eirods {
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
-			   error op_err = (*operation_)( _comm, pre_results, _prop_map, _cmap, _obj, 
-                                                _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
+			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, 
+                                                &pre_results, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;

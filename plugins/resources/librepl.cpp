@@ -237,12 +237,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error replFileCreate(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map,
-        eirods::resource_child_map* _cmap, 
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         eirods::file_object* file_object;
@@ -283,12 +283,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     eirods::error replFileOpen(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap, 
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -325,14 +325,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
     eirods::error replFileRead(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        void*               _buf, 
-        int                 _len )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results,
+                      void*                          _buf, 
+                      int                            _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -372,14 +371,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
     eirods::error replFileWrite(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        void*               _buf, 
-        int                 _len )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results,
+                      void*                          _buf, 
+                      int                            _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -426,12 +424,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
     eirods::error replFileClose(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -469,12 +467,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     eirods::error replFileUnlink(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -519,13 +517,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
     eirods::error replFileStat(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        struct stat*        _statbuf )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results, 
+                      struct stat*                   _statbuf ) { 
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -562,13 +560,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
     eirods::error replFileFstat(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        struct stat*        _statbuf )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results, 
+                      struct stat*                   _statbuf ) { 
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -605,14 +603,14 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error replFileLseek(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        size_t              _offset, 
-        int                 _whence )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results,
+                      size_t                         _offset, 
+                      int                            _whence ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -649,12 +647,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
     eirods::error replFileFsync(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -691,12 +689,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error replFileMkdir(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -733,12 +731,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error replFileChmod(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object)
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
 
@@ -775,12 +773,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error replFileRmdir(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -817,12 +814,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
     eirods::error replFileOpendir(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -859,12 +856,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
     eirods::error replFileClosedir(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -901,13 +897,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error replFileReaddir(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        struct rodsDirent** _dirent_ptr )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results,
+                      struct rodsDirent**            _dirent_ptr ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -944,12 +940,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error replFileStage(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -986,13 +982,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error replFileRename(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object, 
-        const char*         _new_file_name )
-    {
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results,
+                      const char*                    _new_file_name ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -1029,12 +1025,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
     eirods::error replFileTruncate(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    { 
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results  ) { 
+    
         // =-=-=-=-=-=-=-
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1073,12 +1069,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error replFileGetFsFreeSpace(
-        rsComm_t* _comm,
-        const std::string& _results,
-        eirods::resource_property_map* _prop_map, 
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object )
-    { 
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
+    
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -1118,10 +1114,10 @@ extern "C" {
     // is not used.
     eirods::error replStageToCache(
         rsComm_t*                      _comm,
-        const std::string&             _results,
         eirods::resource_property_map* _prop_map, 
         eirods::resource_child_map*    _cmap,
         eirods::first_class_object*    _object,
+        std::string*                   _results,
         const char*                    _cache_file_name )
     { 
         eirods::error result = SUCCESS();
@@ -1163,10 +1159,10 @@ extern "C" {
     // is not used.
     eirods::error replSyncToArch(
         rsComm_t*                      _comm,
-        const std::string&             _results,
         eirods::resource_property_map* _prop_map, 
         eirods::resource_child_map*    _cmap,
         eirods::first_class_object*    _object, 
+        std::string*                   _results,
         const char*                    _cache_file_name )
     { 
         eirods::error result = SUCCESS();
@@ -1244,15 +1240,15 @@ extern "C" {
 
     /// @brief Loop through the children and call redirect on each one to populate the hierarchy vector
     eirods::error replRedirectToChildren(
-        rsComm_t* _comm,
-        const std::string& _result,
+        rsComm_t*                      _comm,
         eirods::resource_property_map* _prop_map,
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        const std::string* _operation,
-        const std::string* _curr_host,
-        child_list_t& _parser_vector,
-        float* _out_vote)
+        eirods::resource_child_map*    _cmap,
+        eirods::first_class_object*    _object,
+        std::string*                   _result,
+        const std::string*             _operation,
+        const std::string*             _curr_host,
+        child_list_t&                  _parser_vector,
+        float*                         _out_vote)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1403,16 +1399,15 @@ extern "C" {
 
     /// @brief Determines which child should be used for the specified operation
     eirods::error replRedirect(
-        rsComm_t* _comm,
-        const std::string& _result,
+        rsComm_t*                      _comm,
         eirods::resource_property_map* _prop_map,
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object,
-        const std::string* _operation,
-        const std::string* _curr_host,
-        eirods::hierarchy_parser* _inout_parser,
-        float* _out_vote)
-    {
+        eirods::resource_child_map*    _cmap,
+        eirods::first_class_object*    _object,
+        std::string*                   _result,
+        const std::string*             _operation,
+        const std::string*             _curr_host,
+        eirods::hierarchy_parser*      _inout_parser,
+        float*                         _out_vote ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         child_list_t parser_vector;
@@ -1435,7 +1430,7 @@ extern "C" {
         }
 
         // call redirect on each child with the appropriate parser
-        else if(!(ret = replRedirectToChildren(_comm, _result, _prop_map, _cmap, _object, _operation, _curr_host,
+        else if(!(ret = replRedirectToChildren(_comm, _prop_map, _cmap, _object, _result, _operation, _curr_host,
                                                parser_vector, _out_vote)).ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;

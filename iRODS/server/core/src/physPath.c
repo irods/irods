@@ -788,7 +788,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy (fileRenameInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
     rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,
              MAX_NAME_LEN);
- 
     status = rsFileRename (rsComm, &fileRenameInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,

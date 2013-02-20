@@ -590,7 +590,7 @@ eirods::error fileRename( rsComm_t*                   _comm,
 
     // =-=-=-=-=-=-=-
     // make the call to the "rename" interface
-    ret_err = resc->call< const char* >( _comm, "rename",  &_object, _new_file_name.c_str() ); 
+    ret_err = resc->call<  const char* >( _comm, "rename",  &_object, _new_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
