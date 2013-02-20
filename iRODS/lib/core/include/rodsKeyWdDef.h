@@ -206,12 +206,11 @@
 
 
 #define EXCLUDE_FILE_KW         "excludeFile"
-#define DEST_RESC_HIER_STR_KW   "dest_resc_hier_string"
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
 // e-irods keywords definitions
-#define RESC_HIER_STR_KW             "resc_hier_string"
-#define DEST_RESC_HIER_STR_KW        "dest_resc_hier_string"
+#define RESC_HIER_STR_KW             "resc_hier"
+#define DEST_RESC_HIER_STR_KW        "dest_resc_hier"
 
 #endif	/* RODS_KEYWD_DEF */

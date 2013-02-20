@@ -27,7 +27,7 @@ int isPath (char *path);
 rodsLong_t
 getFileSize (char *path);
 int
-addRErrorMsg (rError_t *myError, int status, char *msg);
+addRErrorMsg (rError_t *myError, int status, const char *msg);
 int freeBBuf (bytesBuf_t *myBBuf);
 int
 clearBBuf (bytesBuf_t *myBBuf);

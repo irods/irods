@@ -216,8 +216,10 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: START" );
     
     if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
         status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0 );
-        if (status < 0) 
+        if (status < 0) {
+            rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
             return status;
+        }
 
         /* update old repl to new repl */
         status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat, NULL);
@@ -225,6 +227,8 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: START" );
         if (status >= 0 && outDataObjInfo != NULL) {
             *outDataObjInfo = *oldDataObjInfoHead;
             outDataObjInfo->next = NULL;
+        } else {
+            rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
         }
 
         freeAllDataObjInfo (dataObjInfoHead);
@@ -236,8 +240,10 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: START" );
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
       
-    if (status < 0) 
+    if (status < 0) {
+        rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
         return status;
+    }
 
     if (getValByKey (&dataObjInp->condInput, BACKUP_RESC_NAME_KW) != NULL) {
         /* backup to the DEST_RESC if one does not exist */
@@ -263,7 +269,10 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: START" );
     /* query rcat for resource info and sort it */
     dataObjInp->oprType = REPLICATE_OPR; // JMC - backport 4660
     status = getRescGrpForCreate( rsComm, dataObjInp, &myRescGrpInfo );
-    if (status < 0) return status;
+    if (status < 0) {
+        rodsLog(LOG_NOTICE, "%s - Failed to get a resource group for create.", __FUNCTION__);
+        return status;
+    }
 
     if (multiCopyFlag == 0 ) { // JMC - backport 4594
 
@@ -347,6 +356,7 @@ rodsLog( LOG_NOTICE, "XXXX - _rsDataObjRepl :: call resolveSingleReplCopy. done.
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
             freeAllRescGrpInfo (myRescGrpInfo);
+            rodsLog(LOG_NOTICE, "%s - Failed to resolve a single replication copy.", __FUNCTION__);
             return status;
         }
         /* NO_GOOD_COPY drop through here */
@@ -708,9 +718,9 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
 #if 0 // JMC - legacy resource
         if (srcRescClass == COMPOUND_CL) {
             rescGrpInfo_t *myRescGrpInfo;
-            if (destRescClass == CACHE_CL && isRescsInSameGrp (rsComm, 
-                                                               myDestRescInfo->rescName, inpSrcDataObjInfo->rescInfo->rescName,
-                                                               &myRescGrpInfo)) {
+            if (destRescClass == CACHE_CL &&
+                isRescsInSameGrp (rsComm, myDestRescInfo->rescName, inpSrcDataObjInfo->rescInfo->rescName,
+                                  &myRescGrpInfo)) {
                 /* src and dest in same resc group. no need to stage */
                 if (strlen (inpSrcDataObjInfo->rescGroupName) == 0) {
                     rstrcpy (inpSrcDataObjInfo->rescGroupName, 
@@ -878,7 +888,7 @@ rodsLog( LOG_NOTICE, "XXX - dataObjOpenForRepl :: dest resc hier [%s]", hier.c_s
         }
 
         /* open the src */
-
+        rstrcpy(srcDataObjInfo->rescHier, inpSrcDataObjInfo->rescHier, MAX_NAME_LEN);
         srcL1descInx = allocL1desc ();
         if (srcL1descInx < 0) return srcL1descInx;
         fillL1desc (srcL1descInx, &myDataObjInp, srcDataObjInfo, srcDataObjInfo->replStatus, srcDataObjInfo->dataSize);
