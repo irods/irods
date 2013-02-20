@@ -1,3 +1,0 @@
-myTestRule||msiConvertCurrency(*InCurr,*OutCurr,*Rate)|nop
-*InCurr=$USD%*OutCurr=$GBP
-*Rate

@@ -1,3 +1,0 @@
-myTestRule||assign(*A,$sysUidClient)##assign(*C, *D )##assign($sysUidClient, *D )##assign(*B,$sysUidClient)|nop##nop##nop
-*D=200 + 200
-*A%*B%*C%*D%*E

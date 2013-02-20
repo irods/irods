@@ -1,3 +1,0 @@
-myTestRule||readXMsg(1,,*D,*E,*F,*G,*H,*J)|nop
-*A=1
-*D%*E%*F%*G%*H%*J

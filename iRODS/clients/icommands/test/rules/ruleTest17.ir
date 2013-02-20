@@ -1,3 +1,0 @@
-myTest||msiAdmShowIRB(*A)##msiAdmAddAppRuleStruct(*B,,)##msiAdmShowIRB(*C)|nop
-*B=core2
-*A%*B%*C%ruleExecOut

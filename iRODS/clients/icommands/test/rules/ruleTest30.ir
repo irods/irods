@@ -1,3 +1,0 @@
-myTestRule||msiObjByName(*objName,*RA,*DEC,*TYPE)|nop
-*objName=$m100
-*objName%*RA%*DEC%*TYPE

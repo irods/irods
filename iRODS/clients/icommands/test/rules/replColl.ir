@@ -1,4 +1,0 @@
-myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiDataObjRepl(*B,tgReplResc,*Junk),nop)|nop##nop
-*Action=replicate%*Condition= COLL_NAME = '/tempZone/home/rods/loopTest'
-*Action%*Condition%ruleExecOut
-

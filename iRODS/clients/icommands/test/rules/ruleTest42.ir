@@ -1,3 +1,0 @@
-myTestRule||writeLine(stdout,alpha beta gamma)##msiSendStdoutAsEmail(sekar@sdsc.edu,irods test)##msiFreeBuffer(stdout)##writeLine(stdout,delta eta omega)##msiSendStdoutAsEmail(sekar@sdsc.edu,irods test2)|nop
-null
-ruleExecOut
