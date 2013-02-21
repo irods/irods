@@ -71,7 +71,7 @@ namespace eirods {
             // if this is a spec coll, we need to short circuit the create
             // as everything needs to be in the same resource for a spec coll
             file_obj.logical_path( _data_obj_inp->objPath );
-            if( spec_stat ) {
+            if( spec_stat >= 0 ) {
                 file_obj.resc_hier( data_obj_info->rescHier );
                 skip_redir_for_spec_coll = true; 
             
