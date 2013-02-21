@@ -6,6 +6,7 @@
 #include "eirods_resource_backport.h"
 #include "eirods_string_tokenize.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
 
 namespace eirods {
 
@@ -534,7 +535,6 @@ namespace eirods {
               const std::string& _hier_str,      // hier string
               int&               _local_flag,    // local flag
               rodsServerHost_t*& _server_host) { // server host
-
         // =-=-=-=-=-=-=-
         // check hier string
         if( _hier_str.empty() ) {
@@ -568,50 +568,12 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // set the outgoing variables
-        rodsLog( LOG_NOTICE, "XXXX - get_host_for_hier_string :: resc [%s], flag [%d], hier [%s]", resc_name.c_str(), host->localFlag, _hier_str.c_str() );
         _server_host = host;
         _local_flag  = host->localFlag;
 
         return SUCCESS();
 
     } // get_host_for_hier_string
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }; // namespace eirods
 

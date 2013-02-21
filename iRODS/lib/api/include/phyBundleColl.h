@@ -73,7 +73,7 @@ rsMkBundlePath (rsComm_t *rsComm, char *collection, char *outPath,
 int myRanNum);
 int
 replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
-char *rescName, int adminFlag, dataObjInfo_t *outCacheObjInfo);
+char *rescName, char* rescHier, char* destRescHier, int adminFlag, dataObjInfo_t *outCacheObjInfo);
 int
 isDataObjBundled (rsComm_t *rsComm, collEnt_t *collEnt);
 int

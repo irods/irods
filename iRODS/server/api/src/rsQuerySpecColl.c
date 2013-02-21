@@ -22,12 +22,16 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
+#include "eirods_stacktrace.h"
+#include "eirods_hierarchy_parser.h"
 
 
 int
 rsQuerySpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 genQueryOut_t **genQueryOut)
 {
+
     int specCollInx;
     int status;
     int continueFlag; 	/* continue query */ 
@@ -43,6 +47,32 @@ genQueryOut_t **genQueryOut)
 	  genQueryOut);
 	return status;
     }
+
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    std::string       hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    char* hier_kw;
+    if( ( hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) ) == NULL ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+						   dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+	    std::stringstream msg;
+	    msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
+	    msg << dataObjInp->objPath << "]";
+	    eirods::log( PASSMSG( msg.str(), ret ) );
+	    return ret.code();
+        }
+   
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } 
 
     if ((specCollInx = dataObjInp->openFlags) <= 0) {
 	specCollInx = openSpecColl (rsComm, dataObjInp, -1);
@@ -77,11 +107,8 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
     int l3descInx;
 
     status = resolvePathInSpecColl (rsComm, dataObjInp->objPath, 
-#if 0
-      READ_COLL_PERM, 0, &dataObjInfo);
-#else
+      //READ_COLL_PERM, 0, &dataObjInfo);
       UNKNOW_COLL_PERM, 0, &dataObjInfo);
-#endif
 
     if (status < 0 || NULL == dataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog (LOG_NOTICE,
@@ -96,6 +123,12 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
           dataObjInp->objPath);
         return SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
+
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( resc_hier ) {
+        strncpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN );
+    }
+
     l3descInx = l3Opendir (rsComm, dataObjInfo);
 
     if (l3descInx < 0) {
@@ -350,13 +383,27 @@ specCollReaddir (rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        return -1;
+    }
+
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileFdOprInp_t subStructFileReaddirInp;
         memset (&subStructFileReaddirInp, 0, sizeof (subStructFileReaddirInp));
         subStructFileReaddirInp.type = dataObjInfo->specColl->type;
         subStructFileReaddirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy (subStructFileReaddirInp.addr.hostAddr, 
-	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+	  location.c_str(), NAME_LEN);
         status = rsSubStructFileReaddir (rsComm, &subStructFileReaddirInp, 
 	  rodsDirent);
     } else if (specColl->collClass == MOUNTED_COLL) {
@@ -384,13 +431,27 @@ specCollClosedir (rsComm_t *rsComm, int specCollInx)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+    
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "specCollClosedir - failed in specColl open", ret ) );
+        return -1;
+    }
+
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileFdOprInp_t subStructFileClosedirInp;
         memset (&subStructFileClosedirInp, 0, sizeof (subStructFileClosedirInp));
         subStructFileClosedirInp.type = dataObjInfo->specColl->type;
         subStructFileClosedirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy (subStructFileClosedirInp.addr.hostAddr, 
-	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+	  location.c_str(), NAME_LEN);
         status = rsSubStructFileClosedir (rsComm, &subStructFileClosedirInp); 
     } else if (specColl->collClass == MOUNTED_COLL) {
         fileClosedirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
@@ -415,14 +476,26 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL) return (SYS_INTERNAL_NULL_INPUT_ERR);
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
-		subFile_t subStructFileOpendirInp;
-	    status = 0;
+        subFile_t subStructFileOpendirInp;
+	status = 0;
+
+        eirods::hierarchy_parser parser;
+        parser.set_string( dataObjInfo->rescHier );
+    
+        std::string last_resc;
+        parser.last_resc( last_resc );
+
+        std::string location;
+        eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "l3Opendir - failed in specColl open", ret ) );
+            return -1;
+        }
         
-        memset (&subStructFileOpendirInp, 0, sizeof (subStructFileOpendirInp));
-        rstrcpy (subStructFileOpendirInp.subFilePath, dataObjInfo->subPath,
-          MAX_NAME_LEN);
-        rstrcpy (subStructFileOpendirInp.addr.hostAddr,
-          dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+        memset ( &subStructFileOpendirInp, 0, sizeof (subStructFileOpendirInp));
+        rstrcpy( subStructFileOpendirInp.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
+        //rstrcpy( subStructFileOpendirInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+        rstrcpy( subStructFileOpendirInp.addr.hostAddr, location.c_str(), NAME_LEN );
         subStructFileOpendirInp.specColl = dataObjInfo->specColl;
         status = rsSubStructFileOpendir (rsComm, &subStructFileOpendirInp);
     } else {
@@ -438,6 +511,8 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             rstrcpy( fileOpendirInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
             fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileOpendirInp.addr.hostAddr,dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+
+
             status = rsFileOpendir (rsComm, &fileOpendirInp);
             if (status < 0) {
                rodsLog (LOG_ERROR,

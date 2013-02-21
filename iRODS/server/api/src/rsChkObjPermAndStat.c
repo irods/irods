@@ -16,7 +16,6 @@ int
 rsChkObjPermAndStat (rsComm_t *rsComm,
 chkObjPermAndStat_t *chkObjPermAndStatInp)
 {
-rodsLog( LOG_NOTICE, "XXXX rsChkObjPermAndStat - START" );
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
@@ -77,7 +76,6 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     rodsLong_t myId;
     char myPath[MAX_NAME_LEN];
 
-rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - START" );
     if ((resource = getValByKey (&chkObjPermAndStatInp->condInput, 
       RESC_NAME_KW)) == NULL) {
         rodsLog (LOG_ERROR,
@@ -105,10 +103,8 @@ rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - START" );
           openCollInp.collName, handleInx);
         return (handleInx);
     }
-rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - begin WHILE" );
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->specColl.collClass != NO_SPEC_COLL) {
-rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - collClass != SPEC_COLL" );
 	    if (strcmp (resource, collEnt->specColl.resource) != 0) {
                 rodsLog (LOG_ERROR,
                   "chkCollForBundleOpr: specColl resc %s does not match %s",
@@ -133,19 +129,15 @@ rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - collClass != SPEC_COLL" );
 	}
 
 	if (collEnt->objType == DATA_OBJ_T) {
-rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - objType == DATA_OBJ_T" ); 
             if (curCollEnt == NULL) {
-rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - objType == DATA_OBJ_T - curCollEnt == NULL" ); 
 	        curCollEnt = collEnt;
 		saveCollEntForChkColl (collEnt);
                 if (collEnt->replStatus > 0 &&
-                  strcmp (resource, collEnt->resource) == 0) {
+                  strcmp (resource,  collEnt->resource) == 0 &&
+                  strcmp (resc_hier, collEnt->resc_hier) == 0) {
                     curCopyGood = True;
                 }
 	    } else {
-rodsLog( LOG_NOTICE, "XXXX - chkCollForBundleOpr :: CURR ( name [%s], coll [%s], resc [%s], hier [%s] )", curCollEnt->dataName, curCollEnt->collName, resource, resc_hier );
-rodsLog( LOG_NOTICE, "XXXX - chkCollForBundleOpr :: DST  ( name [%s], coll [%s], repl [%d], resc [%s], hier [%s] )", collEnt->dataName, collEnt->collName, collEnt->replStatus, collEnt->resource, collEnt->resc_hier );
-            
 	        if( strcmp (curCollEnt->dataName, collEnt->dataName) == 0 &&
 		    strcmp (curCollEnt->collName, collEnt->collName) == 0 ) {
 		    if( collEnt->replStatus                     > 0 &&
@@ -163,11 +155,10 @@ rodsLog( LOG_NOTICE, "XXXX - chkCollForBundleOpr :: DST  ( name [%s], coll [%s],
                               curCollEnt->collName, curCollEnt->dataName );
                       
                     if( curCopyGood == False ) {
-rodsLog( LOG_NOTICE, "XXXX - chkCollForBundleOpr :: replicate data [%s], coll [%s], to resc hier [%s] from hier [%s]", curCollEnt->dataName, curCollEnt->collName, resc_hier, curCollEnt->resc_hier );
 			status = replDataObjForBundle (rsComm, 
 			  curCollEnt->collName, curCollEnt->dataName, 
-			  //resource, 0, NULL);
-			  resc_hier, 0, NULL);
+			  resource, curCollEnt->resc_hier, resc_hier, 0, NULL);
+			  
 			if (status < 0) {
                             rodsLog (LOG_ERROR,
                              "chkCollForBundleOpr: %s no good copy in %s",
@@ -200,7 +191,8 @@ rodsLog( LOG_NOTICE, "XXXX - chkCollForBundleOpr :: replicate data [%s], coll [%
 			saveCollEntForChkColl (collEnt);
 			collEnt = NULL;
                         if (curCollEnt->replStatus > 0 &&
-                          strcmp (resource, curCollEnt->resource) == 0) {
+                          strcmp (resource, curCollEnt->resource) == 0 &&
+                          strcmp (resc_hier, curCollEnt->resc_hier ) == 0) {
                             /* a good copy */
                             curCopyGood = True;
 			}
@@ -211,13 +203,12 @@ rodsLog( LOG_NOTICE, "XXXX - chkCollForBundleOpr :: replicate data [%s], coll [%
 	    free (collEnt);
 	}	
     }
-rodsLog( LOG_NOTICE, "XXXX chkCollForBundleOpr - done with WHILE" );
 
     /* handle what's left */
     if (curCollEnt != NULL) {
 	if (curCopyGood == False) {
             status = replDataObjForBundle (rsComm, curCollEnt->collName, 
-	      curCollEnt->dataName, resource, 0, NULL);
+	      curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, NULL);
 	    if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "chkCollForBundleOpr:%s does not have a good copy in %s",

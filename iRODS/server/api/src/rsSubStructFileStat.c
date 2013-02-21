@@ -16,7 +16,6 @@ rsSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile, rodsStat_t **subStruc
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
-
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {

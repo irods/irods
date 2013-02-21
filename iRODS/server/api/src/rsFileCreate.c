@@ -43,10 +43,8 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
     }
 
     if (remoteFlag == LOCAL_HOST) {
-rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: LOCAL" );
         fd = _rsFileCreate (rsComm, fileCreateInp, rodsServerHost);
     } else if (remoteFlag == REMOTE_HOST) {
-rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: REMOTE" );
         fd = remoteFileCreate (rsComm, fileCreateInp, rodsServerHost);
     } else {
         if (remoteFlag < 0) {

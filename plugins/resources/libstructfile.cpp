@@ -1541,6 +1541,7 @@ extern "C" {
         fileOpendirInp.fileType = UNIX_FILE_TYPE;       /* the only type for cache */
         strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileOpendirInp.objPath, struct_obj->logical_path().c_str(), MAX_NAME_LEN );
+        strncpy( fileOpendirInp.resc_hier_, struct_obj->resc_hier().c_str(), MAX_NAME_LEN );
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir

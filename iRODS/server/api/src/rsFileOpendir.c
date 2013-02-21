@@ -14,10 +14,14 @@
 #include "eirods_log.h"
 #include "eirods_collection_object.h"
 #include "eirods_resource_backport.h"
+#include "eirods_stacktrace.h"
 
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
 {
+eirods::stacktrace st;
+st.trace();
+st.dump();
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int fileInx;

@@ -455,8 +455,16 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
     fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileOpendirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
-    rstrcpy (fileOpendirInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
-    
+    rstrcpy (fileOpendirInp.objPath,   phyPathRegInp->objPath, MAX_NAME_LEN);
+
+
+    char* hier_str = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
+    if( 0 == hier_str ) {
+        rodsLog( LOG_ERROR, "dirPathReg - empty RESC_HIER_STR_KW" );
+    } else {
+        rstrcpy (fileOpendirInp.resc_hier_, hier_str, MAX_NAME_LEN);
+    }
+     
     dirFd = rsFileOpendir (rsComm, &fileOpendirInp);
     if (dirFd < 0) {
         rodsLog (LOG_ERROR,

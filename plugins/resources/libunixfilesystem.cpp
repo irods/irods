@@ -1407,7 +1407,6 @@ rodsLog( LOG_NOTICE, "XXXX - Rname obj [%s], hier [%s]", _object->logical_path()
                 if( !need_repl || ( need_repl && repl_us ) ) {
                     found = true;
                     _out_vote = 1.0;
-                    _out_parser.add_child( _resc_name );
                     break; 
                 }
 
