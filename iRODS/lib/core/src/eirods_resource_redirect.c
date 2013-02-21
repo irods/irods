@@ -111,10 +111,12 @@ namespace eirods {
                     return PASSMSG( "resource_redirect - failed in resc_mgr.resolve", err );
 
                 }
+                
+                file_obj.resc_hier( resc_name );
 
             }
         }
-        
+      
         // =-=-=-=-=-=-=-
         // get current hostname, which is also done by init local server host
         char host_name_char[ MAX_NAME_LEN ];
