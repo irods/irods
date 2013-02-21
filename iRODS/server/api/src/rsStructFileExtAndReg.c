@@ -102,10 +102,6 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     } // if keyword
 
 
-    rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: obj [%s], hier str [%s]", structFileExtAndRegInp->objPath, hier.c_str() );
-
-
-
     /* open the structured file */
     addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
@@ -130,7 +126,6 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     dataObjCloseInp.l1descInx = l1descInx;
 
     if (remoteFlag == REMOTE_HOST) {
-rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: REMOTE" );
         addKeyVal (&structFileExtAndRegInp->condInput, RESC_NAME_KW,
                    rescInfo->rescName);
 
@@ -145,7 +140,6 @@ rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: REMOTE" );
 
         return status;
     }
-rodsLog( LOG_NOTICE, "XXXX - rsStructFileExtAndReg :: LOCAL" );
 
     status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection, 
                                   NULL);

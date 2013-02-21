@@ -42,6 +42,7 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_stacktrace.h"
+#include "eirods_hierarchy_parser.h"
 
 
 int
@@ -778,14 +779,26 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
     int status;
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
+
+        eirods::hierarchy_parser parser;
+        parser.set_string( dataObjInfo->rescHier );
+    
+        std::string last_resc;
+        parser.last_resc( last_resc );
+
+        std::string location;
+        eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "l3Stat - failed in specColl open", ret ) );
+            return -1;
+        }
         subFile_t subFile;
-        memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-                 MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        memset( &subFile, 0, sizeof( subFile ) );
+        rstrcpy( subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN );
+        rstrcpy( subFile.addr.hostAddr, location.c_str(),NAME_LEN );
+                 
         subFile.specColl = dataObjInfo->specColl;
-        status = rsSubStructFileStat (rsComm, &subFile, myStat);
+        status = rsSubStructFileStat( rsComm, &subFile, myStat );
     } else {
 #if 0 // JMC - legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;

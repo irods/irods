@@ -144,7 +144,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     // get the data type of the structured file 
     dataType = getValByKey( &structFileBundleInp->condInput, DATA_TYPE_KW );
 
-
     // =-=-=-=-=-=-=-
     // ensure that the file name will end in .zip, if necessary
     if( dataType != NULL && strstr( dataType, ZIP_DT_STR ) != NULL ) {
@@ -203,12 +202,16 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
     addKeyVal( &chkObjPermAndStatInp.condInput, RESC_NAME_KW,     L1desc[l1descInx].dataObjInfo->rescName );
 
-    char* resc_hier = getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW );
-    if( !resc_hier ) {
+    // =-=-=-=-=-=-=-
+    // get the resc hier string
+    std::string resc_hier;
+    char* resc_hier_ptr = getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW );
+    if( !resc_hier_ptr ) {
         rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is NULL" );
     } else {
-        rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is [%s]", resc_hier );
-        addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier );
+        rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is [%s]", resc_hier_ptr );
+        addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier_ptr );
+        resc_hier = resc_hier_ptr;
     }
 
     status = rsChkObjPermAndStat( rsComm, &chkObjPermAndStatInp );
@@ -271,7 +274,7 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         collLen = strlen( collInp.collName );
 
     }
-
+    
     // =-=-=-=-=-=-=-
     // preserve the collection path?
     collEnt_t* collEnt = NULL;
@@ -292,18 +295,25 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                 mkDirForFilePath( rsComm, phyBunDir, tmpPath, getDefDirMode() );
                   
             }
-            
-            // =-=-=-=-=-=-=-
-            // add a link 
-            status = link( collEnt->phyPath, tmpPath );
-            if( status < 0 ) {
-                rodsLog( LOG_ERROR, "rsStructFileBundle: link error %s to %s. errno = %d",
-                         collEnt->phyPath, tmpPath, errno );
-                rmLinkedFilesInUnixDir( phyBunDir );
-                rmdir( phyBunDir );
-                return ( UNIX_FILE_LINK_ERR - errno );
-            }
 
+            // =-=-=-=-=-=-=-
+            // filter out any possible replicas that are not on this resource
+            if( resc_hier == collEnt->resc_hier ) {            
+                // =-=-=-=-=-=-=-
+                // add a link 
+                status = link( collEnt->phyPath, tmpPath );
+                if( status < 0 ) {
+                    rodsLog( LOG_ERROR, "rsStructFileBundle: link error %s to %s. errno = %d",
+                     collEnt->phyPath, tmpPath, errno );
+                    rmLinkedFilesInUnixDir( phyBunDir );
+                    rmdir( phyBunDir );
+                    return ( UNIX_FILE_LINK_ERR - errno );
+                } else {
+                     rodsLog( LOG_NOTICE, "_rsStructFileBundle - LINK  [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
+                }
+            } else {
+                rodsLog( LOG_NOTICE, "_rsStructFileBundle - skipping [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
+            }
         } else {
             // =-=-=-=-=-=-=-
             // entry is a collection

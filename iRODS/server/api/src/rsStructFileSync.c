@@ -7,6 +7,8 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
+#include "eirods_resource_backport.h"
+#include "eirods_stacktrace.h"
 
 int
 rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
@@ -14,8 +16,22 @@ rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
+   
+    char* resc_hier =  getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW );
+    if( resc_hier != NULL ) {
+        eirods::error ret = eirods::get_host_for_hier_string( resc_hier, remoteFlag, rodsServerHost );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "rsStructFileSync - failed in call to eirods::get_host_for_hier_string", ret ) );
+            return -1;
+        }
+    } else {
+        eirods::stacktrace st;
+        st.trace();
+        st.dump();
+        return -1;
+    }
 
-    remoteFlag = resolveHost (&structFileOprInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&structFileOprInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
         status = _rsStructFileSync (rsComm, structFileOprInp);
@@ -76,6 +92,7 @@ int _rsStructFileSync( rsComm_t*           _comm,
     struct_obj.comm( _comm );
     struct_obj.opr_type( _struct_inp->oprType );
     struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+
     // =-=-=-=-=-=-=-
 	// cache data type for selection of tasty compression options
     char* data_type = getValByKey( &_struct_inp->condInput, DATA_TYPE_KW );

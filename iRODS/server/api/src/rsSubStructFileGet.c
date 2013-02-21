@@ -8,6 +8,7 @@
 // eirods includes
 #include "eirods_structured_object.h"
 #include "eirods_error.h"
+#include "eirods_stacktrace.h"
 
 int
 rsSubStructFileGet (rsComm_t *rsComm, subFile_t *subFile,

@@ -7,6 +7,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
+#include "eirods_stacktrace.h"
 
 
 

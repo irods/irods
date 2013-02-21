@@ -22,6 +22,8 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_redirect.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_backport.h"
 
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -309,12 +311,26 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
 
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        eirods::hierarchy_parser parser;
+        parser.set_string( dataObjInfo->rescHier );
+
+        std::string last_resc;
+        parser.last_resc( last_resc );
+
+        std::string location;
+        eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+            return -1;
+        }
+
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
                  MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        //rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
+        rstrcpy (subFile.addr.hostAddr, location.c_str(),NAME_LEN);
+                 
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = O_RDONLY;

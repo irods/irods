@@ -568,50 +568,12 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // set the outgoing variables
-        rodsLog( LOG_NOTICE, "XXXX - get_host_for_hier_string :: resc [%s], flag [%d], hier [%s]", resc_name.c_str(), host->localFlag, _hier_str.c_str() );
         _server_host = host;
         _local_flag  = host->localFlag;
 
         return SUCCESS();
 
     } // get_host_for_hier_string
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }; // namespace eirods
 

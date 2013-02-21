@@ -11,6 +11,8 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 
+#include "eirods_stacktrace.h"
+
 /* VERIFY_DIV - contributed by g.soudlenkov@auckland.ac.nz */
 #define VERIFY_DIV(_v1_,_v2_) ((_v2_)? (float)(_v1_)/(_v2_):0.0)
 
@@ -140,6 +142,7 @@ mkdirR (char *startDir, char *destDir, int mode)
 #ifdef _WIN32
         status = iRODSNt_mkdir (tmpPath, mode);
 #else
+
         status = mkdir (tmpPath, mode);
 #endif
         if (status < 0) {
@@ -1118,7 +1121,6 @@ rclOpenCollection (rcComm_t *conn, char *collection, int flags,
         /* preserve collHandle->>dataObjInp.condInput if != 0 */
         memset (collHandle, 0, sizeof (collHandle_t));
     }
-
     rstrcpy (collHandle->dataObjInp.objPath, collection, MAX_NAME_LEN);
     status = rcObjStat (conn, &collHandle->dataObjInp, &rodsObjStatOut);
 
@@ -1645,7 +1647,6 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     }
     if (rodsObjStat->specColl != NULL && 
         rodsObjStat->specColl->collClass != LINKED_COLL) {
-rodsLog( LOG_NOTICE, "XXXX - **** getNextDataObjMetaInfo :: spec coll != NULL" );
         outCollEnt->resource = rodsObjStat->specColl->resource;
         outCollEnt->ownerName = rodsObjStat->ownerName;
         outCollEnt->replStatus = NEWLY_CREATED_COPY;
@@ -1654,11 +1655,9 @@ rodsLog( LOG_NOTICE, "XXXX - **** getNextDataObjMetaInfo :: spec coll != NULL" )
         len = dataObjSqlResult->resource.len;
         outCollEnt->resource = &value[len * selectedInx];
 
-rodsLog( LOG_NOTICE, "XXXX - **** getNextDataObjMetaInfo :: setting resc hier... " );
         value = dataObjSqlResult->resc_hier.value;
         len = dataObjSqlResult->resc_hier.len;
         outCollEnt->resc_hier = &value[len * selectedInx];
-rodsLog( LOG_NOTICE, "XXXX - **** getNextDataObjMetaInfo :: setting resc hier... Done. [%s]", outCollEnt->resc_hier );
         
         value = dataObjSqlResult->ownerName.value;
         len = dataObjSqlResult->ownerName.len;
