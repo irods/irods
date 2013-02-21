@@ -7,6 +7,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
+#include "eirods_stacktrace.h"
 #include "eirods_log.h"
 
 int
@@ -16,7 +17,6 @@ bytesBuf_t *subFilePutOutBBuf)
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
-
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
