@@ -1315,6 +1315,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the object's hier string
         std::string hier = _object->resc_hier( );
+rodsLog( LOG_NOTICE, "XXXX - roundrobin_redirect :: hier [%s]", hier.c_str() );
  
         // =-=-=-=-=-=-=-
         // get the object's hier string

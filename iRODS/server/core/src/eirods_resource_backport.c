@@ -6,6 +6,7 @@
 #include "eirods_resource_backport.h"
 #include "eirods_string_tokenize.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
 
 namespace eirods {
 

@@ -73,7 +73,7 @@ genQueryOut_t **genQueryOut)
         addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } 
-    
+
     if ((specCollInx = dataObjInp->openFlags) <= 0) {
 	specCollInx = openSpecColl (rsComm, dataObjInp, -1);
         if (specCollInx < 0) {

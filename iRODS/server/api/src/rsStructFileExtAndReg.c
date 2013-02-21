@@ -101,7 +101,6 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
 
     } // if keyword
 
-
     /* open the structured file */
     addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);

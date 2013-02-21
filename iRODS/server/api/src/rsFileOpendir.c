@@ -19,10 +19,6 @@
 int
 rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
 {
-    eirods::stacktrace st;
-    st.trace();
-    st.dump();
-
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int fileInx;

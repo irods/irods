@@ -307,7 +307,6 @@ statPathInSpecColl (rsComm_t *rsComm, char *objPath,
     dataObjInfo_t *dataObjInfo = NULL;
     specColl_t *specColl;
     specCollCache_t *specCollCache;
-
     if ((status = getSpecCollCache (rsComm, objPath, inCachOnly,
                                     &specCollCache)) < 0) {
         if (status != SYS_SPEC_COLL_NOT_IN_CACHE &&
