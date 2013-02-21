@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* This is script-generated code (for the most part).  */ 
+/* This is script-generated code (for the most part).  */
 /* See dataObjCopy.h for a description of this API call.*/
 
 #include "dataObjCopy.h"
@@ -17,7 +17,7 @@
 #include "getRemoteZoneResc.h"
 
 // =-=-=-=-=-=-=-
-// e-irods includes
+// eirods includes
 #include "eirods_resource_redirect.h"
 
 int
@@ -56,7 +56,7 @@ transferStat_t **transStat)
 
     resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache, &srcDataObjInp->condInput);
     resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
-      
+
     remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, &rodsServerHost);
 
     if (remoteFlag < 0) {

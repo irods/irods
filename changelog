@@ -1,7 +1,7 @@
-e-irods (3.0) precise; urgency=low
+eirods (3.0) precise; urgency=low
 
   * Initial Release - hardened for enterprise use and packaged
     for administrators.
   * Based on iRODS 3.0 Community code
 
- -- Terrell Russell <tgr@e-irods.org>  Fri, 08 Jun 2012 15:00:00 -0500
+ -- Terrell Russell <tgr@eirods.org>  Fri, 08 Jun 2012 15:00:00 -0500

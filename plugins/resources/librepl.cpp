@@ -1682,15 +1682,15 @@ extern "C" {
                 return result;
 
             }
-        
+
     }; // class repl_resource
-  
+
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the e-irods facing interface defined in 
+    //    as used by the eirods facing interface defined in
     //    server/drivers/src/fileDriver.c
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
@@ -1700,7 +1700,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
-        //     the symbols from the shared object in the delay_load stage of 
+        //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
         resc->add_operation( "create",       "replFileCreate" );
         resc->add_operation( "open",         "replFileOpen" );

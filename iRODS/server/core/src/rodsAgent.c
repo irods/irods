@@ -54,7 +54,7 @@ main(int argc, char *argv[])
     signal(SIGUSR1, signalExit);
     signal(SIGPIPE, rsPipSigalHandler);
 
-    // register e-irods signal handlers
+    // register eirods signal handlers
     register_handlers();
 #endif
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 ############################################################
 #
-#  uninstaller for e-irods-icommands package
+#  uninstaller for eirods-icommands package
 #
 ############################################################
 set -e

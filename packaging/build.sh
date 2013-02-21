@@ -8,7 +8,7 @@ FULLPATHSCRIPTNAME=$SCRIPTPATH/$SCRIPTNAME
 COVERAGE="0"
 RELEASE="0"
 BUILDEIRODS="1"
-COVERAGEBUILDDIR="/var/lib/e-irods"
+COVERAGEBUILDDIR="/var/lib/eirods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
@@ -134,7 +134,7 @@ if [ "$COVERAGE" == "1" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $COVERAGEBUILDDIR/ already exists" 1>&2
         echo "      :: Cannot build in place with coverage enabled" 1>&2
-        echo "      :: Try uninstalling the e-irods package" 1>&2
+        echo "      :: Try uninstalling the eirods package" 1>&2
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
@@ -171,7 +171,7 @@ if [ "$1" == "clean" ] ; then
     rm -f changelog.gz
     rm -rf $MANDIR
     rm -f manual.pdf
-    rm -f libe-irods.a
+    rm -f libeirods.a
     rm -f plugins/resources/*.so
     rm -f plugins/resources/Makefile
     set +e
@@ -744,7 +744,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # again to reset IRODS_HOME
     cp $TMPCONFIGFILE ./config/irods.config
 
-    # change password for database to be consistent with that within the e-irods.list file
+    # change password for database to be consistent with that within the eirods.list file
     # for installation
     sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
     mv /tmp/irods.config ./config/irods.config
@@ -854,27 +854,27 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     cd $BUILDDIR
     #   database name
     NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/e-irods.list.template > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/eirods.list.template > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
 #    #   database admin role
 #    NEW_DB_ADMIN_ROLE=`awk -F\' '/^\\$DB_ADMIN_NAME/ {print $2}' iRODS/config/irods.config`
-#    sed -e "s,TEMPLATE_DB_ADMIN_ROLE,$NEW_DB_ADMIN_ROLE," ./packaging/e-irods.list > /tmp/eirodslist.tmp
-#    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+#    sed -e "s,TEMPLATE_DB_ADMIN_ROLE,$NEW_DB_ADMIN_ROLE," ./packaging/eirods.list > /tmp/eirodslist.tmp
+#    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database type
     NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/e-irods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database host
     NEW_DB_HOST=`awk -F\' '/^\\$DATABASE_HOST/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_HOST,$NEW_DB_HOST," ./packaging/e-irods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    sed -e "s,TEMPLATE_DB_HOST,$NEW_DB_HOST," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database port
     NEW_DB_PORT=`awk -F\' '/^\\$DATABASE_PORT/ {print $2}' iRODS/config/irods.config`
-    sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/e-irods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database password
-    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/e-irods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/e-irods.list
+    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
 
 
     set +e
@@ -917,7 +917,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ "$RELEASE" == "1" ] ; then
         echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
         cd $BUILDDIR
-        ./packaging/make_e-irods_dev_archive.sh
+        ./packaging/make_eirods_dev_archive.sh
     fi
 
 
@@ -938,7 +938,7 @@ if [ "$H2MVERSION" \< "1.37" ] ; then
     echo "     :: (or, add --version capability to all iCommands)"
     echo "     :: (installed here: help2man version $H2MVERSION)"
 else
-    EIRODSMANVERSION=`grep "^%version" ./packaging/e-irods.list | awk '{print $2}'`
+    EIRODSMANVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
     ICMDDIR="iRODS/clients/icommands/bin"
     ICMDS=(
     genOSAuth     
@@ -1015,7 +1015,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     RENCIEPM="epm42-renci.tar.gz"
     rm -rf epm
     rm -f $RENCIEPM
-    wget ftp://ftp.renci.org/pub/e-irods/build/$RENCIEPM
+    wget ftp://ftp.renci.org/pub/eirods/build/$RENCIEPM
     tar -xf $RENCIEPM
     # configure
     echo "${text_green}${text_bold}Configuring EPM${text_reset}"
@@ -1060,42 +1060,42 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
     else
         epmosversion="NOTCENTOS6"
     fi
-    ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true $epmosversion=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true $epmosversion=true ./packaging/eirods.list
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-        ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
+        ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f rpm e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true ./packaging/eirods.list
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f rpm e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-        ./epm/epm $EPMOPTS -f rpm e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
+        ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -a $arch -f deb e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -a $arch -f deb eirods $epmvar=true ./packaging/eirods.list
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -a $arch -f deb e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-        ./epm/epm $EPMOPTS -a $arch -f deb e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
+        ./epm/epm $EPMOPTS -a $arch -f deb eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -a $arch -f deb eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f pkg e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f pkg eirods $epmvar=true ./packaging/eirods.list
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f pkg e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-        ./epm/epm $EPMOPTS -f pkg e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
+        ./epm/epm $EPMOPTS -f pkg eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f pkg eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
-    ./epm/epm $EPMOPTS -f osx e-irods $epmvar=true ./packaging/e-irods.list
+    ./epm/epm $EPMOPTS -f osx eirods $epmvar=true ./packaging/eirods.list
     if [ "$RELEASE" == "1" ] ; then
-        ./epm/epm $EPMOPTS -f osx e-irods-icommands $epmvar=true ./packaging/e-irods-icommands.list
-        ./epm/epm $EPMOPTS -f osx e-irods-dev $epmvar=true ./packaging/e-irods-dev.list
+        ./epm/epm $EPMOPTS -f osx eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
+        ./epm/epm $EPMOPTS -f osx eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 else
     echo "${text_red}#######################################################" 1>&2

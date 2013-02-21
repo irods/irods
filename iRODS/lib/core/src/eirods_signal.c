@@ -7,7 +7,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-// Define signal handlers for e-irods
+// Define signal handlers for eirods
 
 extern "C" {
 
@@ -20,7 +20,7 @@ extern "C" {
         st.dump();
         exit(signal);
     }
-    
+
 
     void register_handlers(void) {
         struct sigaction* action = (struct sigaction*)calloc(sizeof(struct sigaction), 0);

@@ -13,7 +13,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only
     const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE( "EIRODS_LOCAL_USE_ONLY_RESOURCE" );
-    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/e-irods/EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT" );
+    const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT( "/var/lib/eirods/EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT" );
     const std::string EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE( "unix file system" );
 
     class resource_manager {
@@ -22,11 +22,11 @@ namespace eirods {
         /// @brief constructors
         resource_manager();
         resource_manager( const resource_manager& );
-                
+
         // =-=-=-=-=-=-=-
         // @brief  destructor
         virtual ~resource_manager();
-        
+
         // =-=-=-=-=-=-=-
         /// @brief  resolve a resource from a first_class_object
         error resolve( const first_class_object&, // FCO to resolve against
@@ -34,34 +34,34 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // @brief  resolve a resource from a key into the resource table
-        error resolve( std::string,     // resource key 
+        error resolve( std::string,     // resource key
                        resource_ptr& ); // resource out variable
 
         // =-=-=-=-=-=-=-
-        // @brief  resolve a resource from a match with a given property 
+        // @brief  resolve a resource from a match with a given property
         error resolve_from_physical_path( std::string,     // physical path
                                           resource_ptr& ); // out variable
 
         // =-=-=-=-=-=-=-
         /// @brief  populate resource table from icat database
         error init_from_catalog( rsComm_t* );
-        
+
         // =-=-=-=-=-=-=-
         /// @brief call shutdown on resources before destruction
         error shut_down_resources(  );
- 
+
         // =-=-=-=-=-=-=-
         /// @brief  load a resource plugin given a resource type
         error init_from_type( std::string,     // resource type
                               std::string,     // resource name ( key )
                               std::string,     // instance name
-                              std::string,     // resource context 
+                              std::string,     // resource context
                               resource_ptr& ); // resource out variable
-        
+
         // =-=-=-=-=-=-=-
 		/// @brief print the list of local resources out to stderr
-        void print_local_resources(); 
-   
+        void print_local_resources();
+
         // =-=-=-=-=-=-=-
 		/// @brief determine if any pdmos need to run before doing a connection
         bool need_maintenance_operations(  );

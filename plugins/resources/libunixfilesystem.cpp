@@ -1601,7 +1601,7 @@ rodsLog( LOG_NOTICE, "XXXX - Rname obj [%s], hier [%s]", _object->logical_path()
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the e-irods facing interface defined in 
+    //    as used by the eirods facing interface defined in 
     //    server/drivers/src/fileDriver.c
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
