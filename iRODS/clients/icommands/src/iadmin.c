@@ -478,28 +478,6 @@ showUserOfZone(char *zone, char *user)
 }
 
 int
-showRescGroup(char *group)
-{
-    simpleQueryInp_t simpleQueryInp;
-
-    memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
-    simpleQueryInp.control = 0;
-    if (*group!='\0') {
-        simpleQueryInp.form = 2;
-        simpleQueryInp.sql = 
-            "select R_RESC_GROUP.resc_group_name, R_RESC_GROUP.resc_id, resc_name, R_RESC_GROUP.create_ts, R_RESC_GROUP.modify_ts from R_RESC_MAIN, R_RESC_GROUP where R_RESC_MAIN.resc_id = R_RESC_GROUP.resc_id and resc_group_name=?";
-        simpleQueryInp.arg1 = group;
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    else {
-        simpleQueryInp.form = 1;
-        simpleQueryInp.sql = "select distinct resc_group_name from R_RESC_GROUP";
-        simpleQueryInp.maxBufSize = 1024;
-    }
-    return (doSimpleQuery(simpleQueryInp));
-}
-
-int
 simpleQueryCheck()
 {
     int status;
@@ -849,7 +827,9 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return(0);
     }
     if (strcmp(cmdToken[0],"lrg") == 0) {
-        showRescGroup(cmdToken[1]);
+        printf("Resource groups are deprecated.\n");
+        printf("Please investigate the available coordinating resource plugins.\n");
+        printf("(e.g. random, replication, etc.)\n");
         return(0);
     }
     if (strcmp(cmdToken[0],"mkuser") == 0) {
@@ -975,20 +955,20 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
            
         generalAdmin(0, "add", "resource", cmdToken[1], cmdToken[2], 
                      cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
-        /* (add resource name type class host path zone) */
+        /* (add resource name type host path zone) */
         return(0);
     }
     if (strcmp(cmdToken[0],"addchildtoresc") ==0) {
            
         generalAdmin(0, "add", "childtoresc", cmdToken[1], cmdToken[2], 
-                     cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
+                     cmdToken[3], "", "", "", "", "" );
         /* (add childtoresc parent child context) */
         return(0);
     }
     if (strcmp(cmdToken[0],"rmchildfromresc") ==0) {
            
         generalAdmin(0, "rm", "childfromresc", cmdToken[1], cmdToken[2], 
-                     cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6], cmdToken[7], cmdToken[8] );
+                     "", "", "", "", "", "" );
         /* (rm childfromresc parent child) */
         return(0);
     }
@@ -998,11 +978,11 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
 
       printf(
     "Warning, this command, more than others, is relying on your direct\n"
-    "input to modify ICAT tables (potentially, many rows).  It will do a\n"
+    "input to modify iCAT tables (potentially, many rows).  It will do a\n"
     "string pattern find and replace operation on the main data-object\n"
     "table for the paths at which the physical files are stored. If you\n"
     "are not sure what you are doing, do not run this command.  You may\n"
-    "want to backup the ICAT database before running this.  See the help\n"
+    "want to backup the iCAT database before running this.  See the help\n"
     "text for more information.\n"
     "\n"
     "Are you sure you want to run this command? [y/N]:");
@@ -1118,14 +1098,16 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
     }
 
     if (strcmp(cmdToken[0],"atrg") == 0) {
-        generalAdmin(0, "modify", "resourcegroup", cmdToken[1], "add", cmdToken[2],
-                     "", "", "", "", "" );
+        printf("Resource groups are deprecated.\n");
+        printf("Please investigate the available coordinating resource plugins.\n");
+        printf("(e.g. random, replication, etc.)\n");
         return(0);
     }
 
     if (strcmp(cmdToken[0],"rfrg") == 0) {
-        generalAdmin(0, "modify", "resourcegroup", cmdToken[1], "remove", 
-                     cmdToken[2],  "", "", "", "", "" );
+        printf("Resource groups are deprecated.\n");
+        printf("Please investigate the available coordinating resource plugins.\n");
+        printf("(e.g. random, replication, etc.)\n");
         return(0);
     }
 
@@ -1447,7 +1429,6 @@ void usageMain()
         " lz [name] (list zone info)",
         " lg [name] (list group info (user member list))",
         " lgd name  (list group details)",
-        " lrg [name] (list resource group info)",
         " lf DataId (list file details; DataId is the number (from ls))",
         " mkuser Name[#Zone] Type (make user)",
         " moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
@@ -1456,9 +1437,8 @@ void usageMain()
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " mkdir Name [username] (make directory(collection))",
         " rmdir Name (remove directory) ",
-        " mkresc Name Type Class Host [Path] [ContextString] (make Resource)",
-        " modresc Name [name, type, class, host, path, status, comment, info, ",
-        "      freespace] Value (mod Resc)",
+        " mkresc Name Type Host [Path] [ContextString] (make Resource)",
+        " modresc Name [name, type, host, path, status, comment, info, freespace] Value (mod Resc)",
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
         "      sometimes needed after modresc path)",
         " rmresc Name (remove resource)",
@@ -1471,8 +1451,6 @@ void usageMain()
         " rmgroup Name (remove group)",
         " atg groupName userName[#Zone] (add to group - add a user to a group)",
         " rfg groupName userName[#Zone] (remove from group - remove a user from a group)",
-        " atrg resourceGroupName resourceName (add (resource) to resource group)",
-        " rfrg resourceGroupName resourceName (remove (resource) from resource group)",
         " at tokenNamespace Name [Value1] [Value2] [Value3] (add token) ",
         " rt tokenNamespace Name [Value1] (remove token) ",
         " spass Password Key (print a scrambled form of a password for DB)",
@@ -1571,12 +1549,6 @@ usage(char *subOpt)
         " lgd name (list group details)",
         "Lists some details about the user group.",
         ""};
-    char *lrgMsgs[]={
-        " lrg [name] (list resource group info)",
-        "Just 'lrg' briefly lists the defined resource groups.",
-        "If you include a resource group name, it will list resources that are",
-        "members of that resource group.",
-        ""};
     char *lfMsgs[]={
         " lf DataId (list file details; DataId is the number (from ls))",
         "This was a test function used before we had the ils command.",
@@ -1594,18 +1566,6 @@ usage(char *subOpt)
         " ",
         "Tip: Use moduser to set a password or other attributes, "
         "     use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)",
-        ""};
-
-    char *atrgMsgs[]={
-        " atrg resourceGroupName resourceName",
-        "Add a resource to a resourceGroup",
-        "If a resourceGroup by that name does not exist, it is created",
-        ""};
-
-    char *rfrgMsgs[]={
-        " rfrg resourceGroupName resourceName (remove (resource) from resource group)",
-        "Remove a resource to a resourceGroup",
-        "If this is the last resource in the group, the resourceGroup is removed",
         ""};
 
     char *spassMsgs[]={
@@ -1673,33 +1633,22 @@ usage(char *subOpt)
         ""};
 
     char *mkrescMsgs[]={
-        " mkresc Name Type Class Host [Path] [ContextString] (make Resource)",
+        " mkresc Name Type Host [Path] [ContextString] (make Resource)",
         "Create (register) a new storage or database resource.",
         " ",
         "Name is the name of the new resource.",
         "Type is the resource type (see 'lt resc_type' for a list).",
-        "Class is the usage class of the resource (see 'lt resc_class').",
         "Host is the DNS host name.",
         "Path is the defaultPath for the vault (not needed for resources of",
         "  type 'database' (DBRs)).",
         "ContextString is any contextual information relevant to this resource.",
         "  (semi-colon separated key=value pairs e.g. \"a=b;c=d\")",
         " ",
-        "Tip: Also see the lt command for Type and Class token information.",
+        "Tip: Also see the lt command for Type token information.",
         ""};
 
-    char* addchildtorescMsgs[]={
-        "addchildtoresc Parent Child [ContextString]",
-        "Register the resource, Child, as a child resource of the resource, Parent.",
-        " ",
-        "Parent is the name of the parent resource.",
-        "Child is the name of the child resource.",
-        "ContextString is any relevant information that parent may need in order to",
-        "    manage the child.",
-        ""};
-    
     char *modrescMsgs[]={
-        " modresc Name [name, type, class, host, path, status, comment, info, or freespace] Value",
+        " modresc Name [name, type, host, path, status, comment, info, or freespace] Value",
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
@@ -1715,6 +1664,7 @@ usage(char *subOpt)
         "The freespace value can be simply specified, or if it starts with + or -",
         "the freespace amount will be incremented or decremented by the value.",
         ""};
+
     char *modrescDataPathsMsgs[]={
         " modrescdatapaths Name oldpath newpath [user] (update data-object paths,",
         "      sometimes needed after modresc path)",
@@ -1759,6 +1709,26 @@ usage(char *subOpt)
         "Remove a storage resource.",
         ""};
 
+    char* addchildtorescMsgs[]={
+        " addchildtoresc Parent Child [ContextString] (add child to resource)",
+        "Add a child resource to a parent resource.  This creates an 'edge'",
+        "between two nodes in a resource tree.",
+        " ",
+        "Parent is the name of the parent resource.",
+        "Child is the name of the child resource.",
+        "ContextString is any relevant information that the parent may need in order",
+        "  to manage the child.",
+        ""};
+    
+    char* rmchildfromrescMsgs[]={
+        " rmchildfromresc Parent Child (remove child from resource)",
+        "Remove a child resource from a parent resource.  This removes an 'edge'",
+        "between two nodes in a resource tree.",
+        " ",
+        "Parent is the name of the parent resource.",
+        "Child is the name of the child resource.",
+        ""};
+    
     char *mkzoneMsgs[]={
         " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
         "Create a new zone definition.  Type must be 'remote' as the local zone",
@@ -1949,14 +1919,14 @@ usage(char *subOpt)
 
     char *subCmds[]={"lu", "lua", "luan", "luz", "lt", "lr",
                      "ls", "lz",
-                     "lg", "lgd", "lrg", "lf", "mkuser",
+                     "lg", "lgd", "lf", "mkuser",
                      "moduser", "aua", "rua",
                      "rmuser", "mkdir", "rmdir", "mkresc",
                      "modresc", "modrescdatapaths","rmresc", 
                      "addchildtoresc", "rmchildfromresc",
                      "mkzone", "modzone", "rmzone",
                      "mkgroup", "rmgroup", "atg",
-                     "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
+                     "rfg", "at", "rt", "spass", "dspass", 
                      "pv", "ctime", 
                      "suq", "sgq", "lq", "cu",
                      "rum", "asq", "rsq",
@@ -1965,13 +1935,14 @@ usage(char *subOpt)
 
     char **pMsgs[]={ luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs, 
                      lsMsgs, lzMsgs, 
-                     lgMsgs, lgdMsgs, lrgMsgs, lfMsgs, mkuserMsgs, 
+                     lgMsgs, lgdMsgs, lfMsgs, mkuserMsgs, 
                      moduserMsgs, auaMsgs, ruaMsgs,
                      rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
-                     modrescMsgs, modrescDataPathsMsgs,rmrescMsgs, 
-                     addchildtorescMsgs, mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
+                     modrescMsgs, modrescDataPathsMsgs, rmrescMsgs, 
+                     addchildtorescMsgs, rmchildfromrescMsgs,
+                     mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
                      mkgroupMsgs, rmgroupMsgs,atgMsgs, 
-                     rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
+                     rfgMsgs, atMsgs, rtMsgs, spassMsgs,
                      dspassMsgs, pvMsgs, ctimeMsgs, 
                      suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
                      rumMsgs, asqMsgs, rsqMsgs,
