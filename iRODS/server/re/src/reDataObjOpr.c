@@ -2339,8 +2339,14 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
 
         tmpSubColl = &subColl->value[subColl->len * i];
         tmpDataName = &dataObj->value[dataObj->len * i];
-        snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
-              tmpSubColl, tmpDataName);
+        snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",tmpSubColl, tmpDataName);
+    
+        // =-=-=-=-=-=-=-
+        // necessary to clear these as an incoming resc hier will be used
+        // rather than querying for a new one during the repl          
+        rmKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW );
+        rmKeyVal( &dataObjInp.condInput, DEST_RESC_HIER_STR_KW );
+
         rei->status = rsDataObjRepl (rsComm, &dataObjInp, &transStat);
         if (rei->status<0)
         {

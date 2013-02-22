@@ -129,6 +129,7 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         hier = tmp_hier;
     }
 
+
     // =-=-=-=-=-=-=-
     // redirect to the desired server
     //if( LOCAL_HOST != local ) {
@@ -238,7 +239,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
-      
+ 
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
         return status;

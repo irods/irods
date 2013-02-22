@@ -51,7 +51,7 @@ This manual attempts to provide standalone documentation for E-iRODS as packaged
 
     http://eirods.org
 
-    file:///var/lib/e-rods/iRODS/doc/html/index.html
+    file:///var/lib/eirods/iRODS/doc/html/index.html
 
 Additional documentation is available on the iRODS wiki and in the two books published by the iRODS team:
 
@@ -84,12 +84,14 @@ Installation
 Installation of the Postgres iCAT DEB::
 
  $ (sudo) dpkg -i eirods-3.0b3-64bit-icat-postgres.deb
+ $ (sudo) apt-get -f install
 
 Installation of the Resource RPM::
 
+ - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
  $ (sudo) rpm -i eirods-3.0b3-64bit-resource.rpm
 
-These packages install the dependencies necessary to run E-iRODS, a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
+These packages declare the dependencies necessary to run E-iRODS and if satisfied, they install a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
 For the iCAT-enabled server packages, the E-iRODS server and EICAT database are started automatically with default values::
 
@@ -103,12 +105,13 @@ For the iCAT-enabled server packages, the E-iRODS server and EICAT database are 
  NOTICE: irodsUserName=rods
  NOTICE: irodsZone=tempZone 
 
-For the resource-only packages, the server is not started automatically.  The administrator will need to run the ./packaging/setup_resource.sh script and provide the following three pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
+For the resource-only packages, the server is not started automatically.  The administrator will need to run the ./packaging/setup_resource.sh script and provide the following five pieces of information before E-iRODS can start and connect to its configured iCAT Zone:
 
 1) Hostname or IP
 2) iCAT Port
 3) iCAT Zone 
-
+4) E-iRODS administrator username
+5) E-iRODS administrator password
 
 ----------
 Quickstart
@@ -126,7 +129,7 @@ Changing the administrator account password
 
 The default installation of E-iRODS comes with a single account 'rods' that has rodsadmin privileges and password 'rods'.  You should change the password before letting anyone else onto the system::
 
- eirods@hostname:~ $ iadmin moduser rods password <newpassword>
+ eirods@hostname:~/ $ iadmin moduser rods password <newpassword>
 
 To make sure everything succeeded, you'll need to reauthenticate and check the new connection::
  
@@ -177,24 +180,25 @@ Now, the connection should be reset and you should be able to list your empty iR
 Add additional resource(s)
 --------------------------
 
-The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the /var/lib/eirods/iRODS/Vault directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
+The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/eirods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
 
- eirods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' cache <fully.qualified.domain.name> </full/path/to/new/vault>
+ eirods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' <fully.qualified.domain.name>:</full/path/to/new/vault>
  
 Additional information about creating resources can be found with::
 
  eirods@hostname:~/ $ iadmin help mkresc
-  mkresc Name Type Class Host [Path] (make Resource)
+  mkresc Name Type Host [Path] [ContextString] (make Resource)
  Create (register) a new storage or database resource.
 
  Name is the name of the new resource.
  Type is the resource type (see 'lt resc_type' for a list).
- Class is the usage class of the resource (see 'lt resc_class').
  Host is the DNS host name.
  And Path is the defaultPath for the vault (not needed for resources of
- type 'database' (DBRs)).
-
- Tip: Also see the lt command for Type and Class token information.
+   type 'database' (DBRs)).
+ ContextString is any contextual information relevant to this resource.
+   (semi-colon separated key=value pairs e.g. "a=b;c=d")
+ 
+ Tip: Also see the lt command for Type token information.
 
  eirods@hostname:~/ $ iadmin lt resc_type
  unix file system 
@@ -204,15 +208,6 @@ Additional information about creating resources can be found with::
  MSS universal driver 
  database 
  mso 
-
- eirods@hostname:~/ $ iadmin lt resc_class
- cache 
- archive 
- compound 
- bundle 
- postgresql 
- mysql 
- oracle 
   
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
 
@@ -260,7 +255,7 @@ Backing up E-iRODS consists of three major parts:  The data, the iRODS system an
 
 .. _msiServerBackup: file:///var/lib/eirods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
 
-3) The iCAT database itself can be backed up in a variety of ways.  A Postgres database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, Postgres 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of Postgres where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in Postgres 9.0+ and can keep two Postgres servers in sync with sub-second delay.
+3) The iCAT database itself can be backed up in a variety of ways.  A PostgreSQL database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, PostgreSQL 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of PostgreSQL where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in PostgreSQL 9.0+ and can keep two PostgreSQL servers in sync with sub-second delay.
 
 .. __: http://www.postgresql.org/docs/8.4/static/warm-standby.html#WARM-STANDBY-RECORD
 .. __: http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION
@@ -273,16 +268,37 @@ Assumptions
 
 .. E-iRODS enforces that the database in use (Postgres, MySQL, etc.) is configured for UTF-8 encoding.  For MySQL, this is enforced at the database level and the table level.  For Postgres, this is enforced at the database level and then the tables inherit this setting.  MySQL is not yet supported with a binary release.
 
-E-iRODS enforces that the database in use (Postgres) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
+E-iRODS enforces that the database in use (PostgreSQL) is configured for UTF-8 encoding.  This is enforced at the database level and then the tables inherit this setting.
 
 The iRODS setting 'StrictACL' is configured on by default in E-iRODS.  This is different from the community version of iRODS and behaves more like standard Unix permissions.  This setting can be found in the `server/config/reConfigs/core.re` file under acAclPolicy{}.
 
+------------
+Architecture
+------------
+
+E-iRODS represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of E-iRODS.
+
+The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Exposed by the core will be six or seven major interfaces which will allow extensibility and separation of functionality into plugins.  A few plugins will be included by default in E-iRODS to provide a set of base functionality.
+
+The planned plugin interfaces and their status are listed here:
+
+ ========================   ==========    ========
+ Plugin Interface           Status        Since
+ ========================   ==========    ========
+ Pluggable Microservices    Complete      3.0b2
+ Composable Resources       Complete      3.0b3
+ Pluggable Authentication   Planned
+ Pluggable Database         Planned
+ Pluggable Messaging        Planned
+ Pluggable RPC API          Planned
+ Pluggable Rule Engine      Requested
+ ========================   ==========    ========
 
 -----------------------
 Pluggable Microservices
 -----------------------
 
-E-iRODS is in the process of being modularized whereby existing community iRODS functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed is pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing E-iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://eirods.org/download, and explains how this works in more detail.
+E-iRODS is in the process of being modularized whereby existing community iRODS functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed was pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing E-iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://eirods.org/download, and explains how this works in more detail.
 
 --------------------
 Composable Resources
@@ -292,7 +308,7 @@ The second area of modularity to be added to E-iRODS consists of composable reso
 
 Composable resources are best modeled with a tree metaphor (and in computer science parlance, they are tree data structures).  An E-iRODS composable resource is a tree with one 'root' node.  Nodes that are at the bottom of the tree are 'leaf' nodes.  Nodes that are not leaf nodes are 'branch' nodes and have one more more 'child' nodes.  A child node can have one and only one 'parent' node.
 
-The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'logic' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a logic resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a logic resource or a storage resource.
+The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'coordinating' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a coordinating resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
 
 Storage resources represent storage interfaces and include the file driver information to talk with different types of storage. These include:
 
@@ -306,17 +322,16 @@ Storage resources represent storage interfaces and include the file driver infor
 - non-blocking
 - structured file type (tar, zip, gzip, bzip)
 
-Logic resources contain the flow control logic which determines how its child resources will be allocated copies of data.  These include:
+Logic resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
 
-- replicating
+- replication
 - random
 - round robin
 - load balanced
 - storage balanced (%-full)
 - storage balanced (bytes)
 - tiered
-
-
+- pass through (for testing)
 
 .. 
 .. ------
@@ -419,7 +434,7 @@ Logic resources contain the flow control logic which determines how its child re
 Configuration
 -------------
 
-There are a number of configuration files that control how an iRODS server behaves.  The following is a listing of the configuration files in a binary-only E-iRODS installation.
+There are a number of configuration files that control how an iRODS server behaves.  The following is a listing of the configuration files in an E-iRODS installation.
 
 This document is intended to explain how the various configuration files are connected, what their parameters are, and when to use them.
 
@@ -437,29 +452,6 @@ iRODS/server/config/server.config
 
 ~/.irods/.irodsEnv
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
-
-
-------------
-Architecture
-------------
-
-E-iRODS represents a major effort to analyze, harden, and package iRODS for sustainability, modularization, security, and testability.  This has led to a fairly significant refactorization of much of the underlying codebase.  The following descriptions are included to help explain the architecture of E-iRODS.
-
-The core is designed to be as immutable as possible and serve as a bus for handling the internal logic of the business of iRODS (data storage, policy enforcement, etc.).  Exposed by the core will be six or seven major interfaces which will allow extensibility and separation of functionality into plugins.  A few plugins will be included by default in E-iRODS to provide core functionality.
-
-The planned plugin interfaces and their status are listed here:
-
- ========================   ==========    ========
- Plugin Interface           Status        Since
- ========================   ==========    ========
- Pluggable Microservices    Complete      3.0b2
- Composable Resources       Complete      3.0b3
- Pluggable Authentication   Planned
- Pluggable Database         Planned
- Pluggable Messaging        Planned
- Pluggable RPC API          Planned
- Pluggable Rule Engine      Requested
- ========================   ==========    ========
 
 
 --------
@@ -581,7 +573,7 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2012-12-     3.0b3      Third Beta Release.
+2013-02-28   3.0b3      Third Beta Release.
                           This is the third release from RENCI.  It includes
                           a new package for CentOS 6+, support for composable
                           resources, and additional documentation.

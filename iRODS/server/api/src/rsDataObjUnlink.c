@@ -32,6 +32,7 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_resource_redirect.h"
+#include "eirods_hierarchy_parser.h"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
@@ -397,6 +398,18 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     }
     // =-=-=-=-=-=-=-
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        return -1;
+    }
 
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) 
         return SYS_RESC_IS_DOWN;
@@ -404,10 +417,8 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-                 MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        rstrcpy ( subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN);
+        rstrcpy ( subFile.addr.hostAddr, location.c_str(), NAME_LEN );
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileUnlink (rsComm, &subFile);
     } else {
@@ -420,7 +431,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             fileUnlinkInp.fileType = static_cast< fileDriverType_t >( -1 );//= (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileUnlinkInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileUnlinkInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileUnlinkInp.addr.hostAddr, location.c_str(), NAME_LEN);
             rstrcpy (fileUnlinkInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
 #if 0 // JMC - legacy resource 
