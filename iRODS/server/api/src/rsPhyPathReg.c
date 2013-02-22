@@ -245,7 +245,8 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     if( resc_hier ) {
         rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
     } else {
-        rstrcpy ( dataObjInfo.rescHier, rescGrpInfo->rescInfo->rescName, MAX_NAME_LEN); // in kw else
+        rodsLog( LOG_NOTICE, "_rsPhyPathReg :: RESC_HIER_STR_KW is NULL" );
+        return -1;     
     }
      
     if( getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
@@ -648,8 +649,8 @@ int mountFileDir( rsComm_t*     rsComm,
     addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, MOUNT_POINT_STR);
 
     addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW, filePath);
-    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO2_KW, 
-               rescInfo->rescName);
+    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO2_KW, resc_hier); 
+               //rescInfo->rescName);
 
     /* try to mod the coll first */
     status = rsModColl (rsComm, &collCreateInp);

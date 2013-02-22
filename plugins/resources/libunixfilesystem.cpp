@@ -1049,12 +1049,7 @@ extern "C" {
                                         eirods::first_class_object*    _object, 
                                         std::string*                   _results,
                                         const char*                    _new_file_name ) {
-rodsLog( LOG_NOTICE, "XXXX - unixFileRenamePlugin :: comm %d, prop %d, cmap %d, obj %d, fn %d", _comm, _prop_map, _cmap, _object, _new_file_name );
-rodsLog( LOG_NOTICE, "XXXX - unixFileRenamePlugin :: _new_file_name 1 [%s]", _new_file_name );
-
-rodsLog( LOG_NOTICE, "XXXX - Rname obj [%s], hier [%s]", _object->logical_path().c_str(), _object->resc_hier().c_str() );
-
-
+        // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
         if(!ret.ok()) {

@@ -17,7 +17,6 @@
 #include "rcGlobalExtern.h"
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"
-#include "eirods_stacktrace.h"
 #include "rsApiHandler.h"
 #include "dataObjPut.h"
 
@@ -33,6 +32,12 @@
 #include <cstdlib>
 #include <iostream>
 #endif
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
+
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -3363,8 +3368,15 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 }
 
                 len = (int) (tmpPtr2 - tmpPtr1);
-                strncpy (specColl->resource, tmpPtr1, len);
 
+                eirods::hierarchy_parser parse;
+                parse.set_string( tmpPtr1 );
+
+                std::string first_resc;
+                parse.first_resc( first_resc );
+
+                strncpy (specColl->resource, first_resc.c_str(), len);
+                strncpy (specColl->rescHier, tmpPtr1, len);
                 tmpPtr2 += 3;
 
                 specColl->cacheDirty = atoi (tmpPtr2);
@@ -3386,7 +3398,8 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 }
 
                 snprintf (collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
-                          specColl->cacheDir, specColl->resource, specColl->cacheDirty);
+                          //specColl->cacheDir, specColl->resource, specColl->cacheDirty);
+                          specColl->cacheDir, specColl->rescHier, specColl->cacheDirty);
 
                 return 0;
             }

@@ -792,6 +792,7 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
             eirods::log( PASSMSG( "l3Stat - failed in specColl open", ret ) );
             return -1;
         }
+        
         subFile_t subFile;
         memset( &subFile, 0, sizeof( subFile ) );
         rstrcpy( subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN );

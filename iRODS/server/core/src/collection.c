@@ -216,7 +216,6 @@ collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
     if (status >= 0) {
         *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
         memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));

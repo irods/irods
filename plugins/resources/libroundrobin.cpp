@@ -1315,7 +1315,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the object's hier string
         std::string hier = _object->resc_hier( );
-rodsLog( LOG_NOTICE, "XXXX - roundrobin_redirect :: hier [%s]", hier.c_str() );
  
         // =-=-=-=-=-=-=-
         // get the object's hier string
@@ -1380,7 +1379,7 @@ rodsLog( LOG_NOTICE, "XXXX - roundrobin_redirect :: hier [%s]", hier.c_str() );
             }
             std::string new_hier;
             _out_parser->str( new_hier );
-rodsLog( LOG_NOTICE, "XXXX - roundrobin :: redireect for CREATE for obj [%s], hier str [%s]", _object->logical_path().c_str(), new_hier.c_str() );
+            
             // =-=-=-=-=-=-=-
             // update the next_child appropriately as the above succeeded
             err = update_next_child_resource( *_prop_map );

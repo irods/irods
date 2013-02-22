@@ -7,6 +7,7 @@
 #include "objInfo.h"
 #include "dataObjCreate.h"
 #include "specColl.h"
+#include "collection.h"
 
 // =-=-=-=-=-=-=
 // eirods includes
@@ -63,18 +64,26 @@ namespace eirods {
             }
 
         } else {
-             
-            dataObjInfo_t* data_obj_info = 0;
-            int spec_stat = resolvePathInSpecColl( _comm, _data_obj_inp->objPath, WRITE_COLL_PERM,
-                                                   0, &data_obj_info ); 
+            std::string orig_path = _data_obj_inp->objPath;
+            std::string path = _data_obj_inp->objPath;
+            size_t pos = path.find_last_of( '/' );
+            if( pos != std::string::npos ) {
+                path = path.substr( 0, pos );
+            }
+            
+            strncpy( _data_obj_inp->objPath, path.c_str(), MAX_NAME_LEN );
+            rodsObjStat_t *rodsObjStatOut = NULL;
+            int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );
+            strncpy( _data_obj_inp->objPath, orig_path.c_str(), MAX_NAME_LEN );
+
             // =-=-=-=-=-=-=-
             // if this is a spec coll, we need to short circuit the create
             // as everything needs to be in the same resource for a spec coll
             file_obj.logical_path( _data_obj_inp->objPath );
-            if( spec_stat >= 0 ) {
-                file_obj.resc_hier( data_obj_info->rescHier );
+            if( spec_stat >= 0 && rodsObjStatOut->specColl != NULL ) {
+                std::string resc_hier = rodsObjStatOut->specColl->rescHier;
+                file_obj.resc_hier( resc_hier );
                 skip_redir_for_spec_coll = true; 
-            
             } else {
                 // =-=-=-=-=-=-=-
                 // check for incoming requested destination resource first
@@ -154,7 +163,7 @@ namespace eirods {
             _out_resc_hier = file_obj.resc_hier();
 
         }
-
+        
         std::string last_resc;
         parser.last_resc( last_resc );
         

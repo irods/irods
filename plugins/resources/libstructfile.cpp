@@ -1519,7 +1519,7 @@ extern "C" {
             eirods::log( ret );
             return ret;
         }
-rodsLog( LOG_NOTICE, "XXXX - tarFileOpendirPlugin :: struct_file_index %d", struct_file_index );
+
         // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
         spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
@@ -1533,7 +1533,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileOpendirPlugin :: struct_file_index %d", stru
         if( sub_index < 0 ) {
             return ERROR( sub_index, "tarFileOpenPlugin - alloc_tar_sub_file_desc failed." );
         }
-rodsLog( LOG_NOTICE, "XXXX - tarFileOpendirPlugin :: sub_index %d", sub_index );
 
         // =-=-=-=-=-=-=-
         // build a file open structure to pass off to the server api call
@@ -1565,7 +1564,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileOpendirPlugin :: sub_index %d", sub_index );
             eirods::log( ret );
             return ret;
         } else {
-rodsLog( LOG_NOTICE, "XXXX - tarFileOpendirPlugin :: fd %d", status );
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );
@@ -1590,7 +1588,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileOpendirPlugin :: fd %d", status );
             return PASS( false, -1, "tarFileClosedirPlugin", chk_err );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileClosedirPlugin :: struct_file_index %d", _object->file_descriptor() );
         // =-=-=-=-=-=-=-
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
@@ -1647,7 +1644,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileClosedirPlugin :: struct_file_index %d", _ob
             return PASS( false, -1, "tarFileReaddirPlugin", chk_err );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileReaddirPlugin :: struct_file_index %d", _object->file_descriptor() );
         // =-=-=-=-=-=-=-
         // check range on the sub file index
         if( _object->file_descriptor() < 1                      || 
@@ -2134,7 +2130,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileReaddirPlugin :: struct_file_index %d", _obj
     // create an archive from the cache directory 
     eirods::error bundle_cache_dir( int         _index, 
                                     std::string _data_type ) {
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: START" );
         // =-=-=-=-=-=-=-
         // namespace alias for brevity 
         namespace fs = boost::filesystem;
@@ -2149,7 +2144,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: START" );
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 1" );
         // =-=-=-=-=-=-=-
         // check struct desc table in use flag
         specColl_t* spec_coll = PluginStructFileDesc[ _index ].specColl;
@@ -2164,7 +2158,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 1" );
 
         }
   
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 2" );
         // =-=-=-=-=-=-=-
         // create a boost filesystem path for the cache directory
         fs::path full_path;//( fs::initial_path<fs::path>() );
@@ -2180,7 +2173,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 2" );
             return ERROR( -1, msg.str() );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 3" );
         // =-=-=-=-=-=-=-
         // make sure it is a directory, just in case
         if( !fs::is_directory( full_path ) ) {
@@ -2191,14 +2183,12 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 3" );
             return ERROR( -1, msg.str() );
         }
  
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 4" );
         // =-=-=-=-=-=-=-
         // build a listing of all of the files in all of the subdirs 
         // in the full_path
         std::vector< fs::path > listing;
         build_directory_listing( full_path, listing );
          
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 5" );
         // =-=-=-=-=-=-=-
         // create the archive
         struct archive* arch = archive_write_new();
@@ -2213,7 +2203,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 5" );
             
         }
    
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 6" );
         // =-=-=-=-=-=-=-
         // set the compression flags given data_type
         if( _data_type == ZIP_DT_STR ) {
@@ -2265,7 +2254,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 6" );
             }
         
         }
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 7" );
         
         // =-=-=-=-=-=-=-
         // set the format of the tar archive
@@ -2283,7 +2271,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 7" );
             return ERROR( -1, msg.str() );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 8" );
         // =-=-=-=-=-=-=-
         // iterate over the dir listing and archive the files
         std::string cache_dir( spec_coll->cacheDir );
@@ -2304,17 +2291,14 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 8" );
 
         } // for i
 
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 9" );
         // =-=-=-=-=-=-=-
         // close the archive and clean up
         archive_write_close( arch );
         archive_write_free( arch );
         
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 10" );
         // =-=-=-=-=-=-=-
         // handle errors
         if( !arch_err.ok() ) {
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 11 A" );
             std::stringstream msg;
             msg << "bundle_cache_dir - failed to archive [";
             msg << spec_coll->cacheDir;
@@ -2324,7 +2308,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 11 A" );
             return PASS( false, -1, msg.str(), arch_err );
 
         } else {
-rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 11 B" );
             return SUCCESS();
 
         }
@@ -2393,7 +2376,6 @@ rodsLog( LOG_NOTICE, "XXXX - bundle_cache_dir :: HERE 11 B" );
                       eirods::first_class_object*    _object,
                       std::string*                   _results ) {
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: START" );
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
@@ -2435,7 +2417,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: START" );
             return PASS( false, -1, msg.str(), open_err );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 1" );
         // =-=-=-=-=-=-=-
         // copy the data type requested by user for compression
         strncpy( PluginStructFileDesc[ struct_file_index ].dataType, struct_obj->data_type().c_str(), NAME_LEN );
@@ -2458,14 +2439,11 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 1" );
             return SUCCESS();
         }
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 2" );
         // =-=-=-=-=-=-=-
         // check if there is a specified cache directory,
         // if not then any other operation isn't possible
         if( strlen( spec_coll->cacheDir ) > 0 ) {
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 3" );
             if( spec_coll->cacheDirty > 0) {
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 4" );
                 // =-=-=-=-=-=-=-
                 // write the tar file and register no dirty 
                 eirods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index, 
@@ -2482,7 +2460,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 4" );
                     return PASS( false, -1, msg.str(), sync_err );
                 }
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 5" );
                 spec_coll->cacheDirty = 0;
                 if( ( struct_obj->opr_type() & NO_REG_COLL_INFO ) == 0 ) {
                     int status = modCollInfo2( comm,  spec_coll, 0 );
@@ -2496,7 +2473,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 5" );
 
             } // if cache is dirty
 
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 6" );
             // =-=-=-=-=-=-=-
             // remove cache dir if necessary
             if( ( struct_obj->opr_type() & PURGE_STRUCT_FILE_CACHE ) != 0 ) {
@@ -2526,7 +2502,6 @@ rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 6" );
             } // if purge file cache
         
         } // if we have a cache dir
-rodsLog( LOG_NOTICE, "XXXX - tarFileSyncPlugin :: HERE 7" );
 
         free_struct_file_desc( struct_file_index );
         
