@@ -391,7 +391,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
                       &conn->fileRestart.info);
                     if (status < 0) {
                         rodsLog (LOG_ERROR,
-                         "putFile: writeLfRestartFile for %s, status = %d",
+                         "rcPartialDataPut: writeLfRestartFile for %s, status = %d",
                          conn->fileRestart.info.fileName, status);
                     }
                     conn->fileRestart.writtenSinceUpdated = 0;
@@ -966,7 +966,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                       &conn->fileRestart.info);
                     if (status < 0) {
                         rodsLog (LOG_ERROR,
-                         "putFile: writeLfRestartFile for %s, status = %d",
+                         "rcPartialDataGet: writeLfRestartFile for %s, status = %d",
                          conn->fileRestart.info.fileName, status);
                     }
                     conn->fileRestart.writtenSinceUpdated = 0;

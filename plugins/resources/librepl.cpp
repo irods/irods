@@ -73,6 +73,7 @@ const std::string need_pdmo_prop = "Need PDMO";
 const std::string hierarchy_prop = "hierarchy";
 const std::string write_oper = "write";
 const std::string unlink_oper = "unlink";
+const std::string create_oper = "create";
 
 // define some types
 typedef struct object_oper_s {
@@ -219,7 +220,8 @@ extern "C" {
             for(it = object_list.begin(); result.ok() && it != object_list.end(); ++it) {
                 object_oper_t object_oper = *it;
                 if(object_oper.object_.logical_path() == _object->logical_path()) {
-                    if(object_oper.oper_ != _oper) {
+                    // operations should match. the exception is that it is okay for a write to happen after a create
+                    if(object_oper.oper_ != _oper && (object_oper.oper_ != create_oper || _oper != write_oper)) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
                         msg << " - Existing object operation \"" << object_oper.oper_ << "\" does not match passed in operation \"" << _oper << "\".";
@@ -268,7 +270,7 @@ extern "C" {
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = replUpdateObjectAndOperProperties(_prop_map, file_object, write_oper);
+                    ret = replUpdateObjectAndOperProperties(_prop_map, file_object, create_oper);
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -1581,19 +1583,23 @@ extern "C" {
                                     bzero(&dataObjInp, sizeof(dataObjInp));
                                     rstrcpy(dataObjInp.objPath, object_oper.object_.logical_path().c_str(), MAX_NAME_LEN);
                                     // do operation specific things
-                                    if(object_oper.oper_ == write_oper) {
+                                    if(object_oper.oper_ == write_oper || object_oper.oper_ == create_oper) {
                                         dataObjInp.createMode = object_oper.object_.mode();
                                         addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, _selected_hierarchy.c_str());
                                         addKeyVal(&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str());
                                         addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, _root_resc.c_str());
                                         addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, _root_resc.c_str());
+                                        if(object_oper.oper_ == write_oper) {
+                                            addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");
+                                        }
                                         int status = rcDataObjRepl(_comm, &dataObjInp);
                                         if(status < 0) {
                                             char* sys_error;
                                             char* rods_error = rodsErrorName(status, &sys_error);
                                             std::stringstream msg;
                                             msg << __FUNCTION__;
-                                            msg << " - Failed to replicate the data object to child \"" << hierarchy_string << "\" - ";
+                                            msg << " - Failed to replicate the data object \"" << _selected_hierarchy;
+                                            msg << " to sibling \"" << hierarchy_string << "\" - ";
                                             msg << rods_error << " " << sys_error;
                                             eirods::log(LOG_ERROR, msg.str());
                                             result = ERROR(status, msg.str());

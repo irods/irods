@@ -1373,11 +1373,6 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
         return (USER__NULL_INPUT_ERR);
     }
 
-    bool done = true;
-    while(!done) {
-        sleep(1);
-    }
-    
     if ((tmpStr = getValByKey (condInput, REPL_NUM_KW)) != NULL) {
         replNum = atoi (tmpStr);
         replNumCond = 1;
@@ -1385,9 +1380,10 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
         replNumCond = 0;
     }
 
-    if((rescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW)) != NULL &&
-       (destRescHier = getValByKey(condInput, RESC_HIER_STR_KW)) != NULL) {
-//        destHierCond = true;
+    destRescHier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
+    rescHier = getValByKey(condInput, RESC_HIER_STR_KW);
+    if(destRescHier != NULL && rescHier != NULL) {
+        destHierCond = true;
     }
 
     // We only use the resource name if the resource hierarchy is not set
@@ -1415,9 +1411,9 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
                 *dataObjInfoHead = (*dataObjInfoHead)->next;
             }
             queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
-        } else if( 0 /* destHierCond &&
+        } else if(destHierCond &&
                   (strcmp(rescHier, tmpDataObjInfo->rescHier) == 0 ||
-                   strcmp(destRescHier, tmpDataObjInfo->rescHier) == 0)*/) {
+                   strcmp(destRescHier, tmpDataObjInfo->rescHier) == 0)) {
             if (prevDataObjInfo != NULL) {
                 prevDataObjInfo->next = tmpDataObjInfo->next;
             } else {
@@ -1499,6 +1495,7 @@ int
     int toTrim;
 
     sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0);
+
     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
@@ -1509,6 +1506,7 @@ int
         if (status == CAT_NO_ROWS_FOUND) {
             return 0;
         } else {
+            rodsLog(LOG_NOTICE, "%s - Failed during matching of data objects.", __FUNCTION__);
             return status;
         }
     }
