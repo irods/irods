@@ -18,6 +18,11 @@
 #include "specColl.h"
 #include "physPath.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+#include "eirods_hierarchy_parser.h"
+
 int
 rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 {
@@ -118,14 +123,26 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileMkdirInp_t fileMkdirInp;
     int status;
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-                 MAX_NAME_LEN);
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN);
         subFile.mode = getDefDirMode ();
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        //rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+        rstrcpy (subFile.addr.hostAddr, location.c_str(), NAME_LEN );
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileMkdir (rsComm, &subFile);
     } else {
@@ -137,10 +154,9 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
        #endif // JMC legacy resource 
             memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
             fileMkdirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileMkdirInp.dirName, dataObjInfo->filePath,
-                     MAX_NAME_LEN);
-            rstrcpy (fileMkdirInp.addr.hostAddr,
-                     dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileMkdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
+            //rstrcpy (fileMkdirInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileMkdirInp.addr.hostAddr, location.c_str(), NAME_LEN);
             fileMkdirInp.mode = getDefDirMode ();
             status = rsFileMkdir (rsComm, &fileMkdirInp);
        #if 0 // JMC legacy resource 

@@ -423,7 +423,6 @@ rodsLong_t dataSize)
     eirods::stacktrace st;
     st.trace();
     st.dump();
-rodsLog (LOG_ERROR,"putFile: START" );
 	    
     int in_fd, status;
     bytesBuf_t dataObjWriteInpBBuf;

@@ -72,6 +72,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     int handleInx;
     int curCopyGood = False;
     char *resource;
+    char *resc_hier;
     rodsLong_t myId;
     char myPath[MAX_NAME_LEN];
 
@@ -82,7 +83,15 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 	    chkObjPermAndStatInp->objPath);
 	return SYS_INVALID_RESC_INPUT;
     }
-	  
+	
+    if ((resc_hier = getValByKey (&chkObjPermAndStatInp->condInput, 
+      RESC_HIER_STR_KW)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "chkCollForBundleOpr: RESC_HIER_STR_KW not specified for %s",
+	    chkObjPermAndStatInp->objPath);
+	return SYS_INVALID_RESC_INPUT;
+    }
+  
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, chkObjPermAndStatInp->objPath, MAX_NAME_LEN);
     openCollInp.flags = 
@@ -94,7 +103,6 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
           openCollInp.collName, handleInx);
         return (handleInx);
     }
-
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->specColl.collClass != NO_SPEC_COLL) {
 	    if (strcmp (resource, collEnt->specColl.resource) != 0) {
@@ -125,14 +133,16 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 	        curCollEnt = collEnt;
 		saveCollEntForChkColl (collEnt);
                 if (collEnt->replStatus > 0 &&
-                  strcmp (resource, collEnt->resource) == 0) {
+                  strcmp (resource,  collEnt->resource) == 0 &&
+                  strcmp (resc_hier, collEnt->resc_hier) == 0) {
                     curCopyGood = True;
                 }
 	    } else {
-	        if (strcmp (curCollEnt->dataName, collEnt->dataName) == 0 &&
-		  strcmp (curCollEnt->collName, collEnt->collName) == 0) {
-		    if (collEnt->replStatus > 0 &&
-		      strcmp (resource, collEnt->resource) == 0) {
+	        if( strcmp (curCollEnt->dataName, collEnt->dataName) == 0 &&
+		    strcmp (curCollEnt->collName, collEnt->collName) == 0 ) {
+		    if( collEnt->replStatus                     > 0 &&
+		        strcmp( resource,  collEnt->resource  ) == 0 &&
+                        strcmp( resc_hier, collEnt->resc_hier ) == 0 ) {
 			/* a good copy */
 			freeCollEntForChkColl (curCollEnt);
 			curCopyGood = True;
@@ -141,13 +151,14 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 		    }
 		} else {
 		    /* encounter a new data obj */
-                    snprintf (myPath, MAX_NAME_LEN, "%s/%s", 
-		      curCollEnt->collName,
-                      curCollEnt->dataName);
-                    if (curCopyGood == False) {
+                    snprintf( myPath, MAX_NAME_LEN, "%s/%s", 
+                              curCollEnt->collName, curCollEnt->dataName );
+                      
+                    if( curCopyGood == False ) {
 			status = replDataObjForBundle (rsComm, 
 			  curCollEnt->collName, curCollEnt->dataName, 
-			  resource, 0, NULL);
+			  resource, curCollEnt->resc_hier, resc_hier, 0, NULL);
+			  
 			if (status < 0) {
                             rodsLog (LOG_ERROR,
                              "chkCollForBundleOpr: %s no good copy in %s",
@@ -180,7 +191,8 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 			saveCollEntForChkColl (collEnt);
 			collEnt = NULL;
                         if (curCollEnt->replStatus > 0 &&
-                          strcmp (resource, curCollEnt->resource) == 0) {
+                          strcmp (resource, curCollEnt->resource) == 0 &&
+                          strcmp (resc_hier, curCollEnt->resc_hier ) == 0) {
                             /* a good copy */
                             curCopyGood = True;
 			}
@@ -196,7 +208,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     if (curCollEnt != NULL) {
 	if (curCopyGood == False) {
             status = replDataObjForBundle (rsComm, curCollEnt->collName, 
-	      curCollEnt->dataName, resource, 0, NULL);
+	      curCollEnt->dataName, resource, curCollEnt->resc_hier, resc_hier, 0, NULL);
 	    if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "chkCollForBundleOpr:%s does not have a good copy in %s",

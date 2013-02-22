@@ -178,7 +178,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int backupFlag;
     int allFlag;
     int savedStatus = 0;
-
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
         accessPerm = NULL;
     } else if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
@@ -813,8 +812,6 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         } else {
             hier = tmp_hier;  
         }
-
-rodsLog( LOG_NOTICE, "XXX - dataObjOpenForRepl :: dest resc hier [%s]", hier.c_str() );
 
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 

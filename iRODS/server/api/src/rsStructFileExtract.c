@@ -13,29 +13,60 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
+#include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
 
 int
 rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 {
-    rodsServerHost_t *rodsServerHost;
-    int remoteFlag;
+    //rodsServerHost_t *rodsServerHost;
+    //int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&structFileOprInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&structFileOprInp->addr, &rodsServerHost);
+    dataObjInp_t dataObjInp;
+    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    rstrcpy( dataObjInp.objPath, structFileOprInp->specColl->objPath, NAME_LEN );
 
-    if (remoteFlag == LOCAL_HOST) {
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    std::string       hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    if( getValByKey( &structFileOprInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       &dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp.objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &structFileOprInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+
+    if ( local == LOCAL_HOST) {
         status = _rsStructFileExtract (rsComm, structFileOprInp);
-    } else if (remoteFlag == REMOTE_HOST) {
-        status = 
-	  remoteStructFileExtract (rsComm, structFileOprInp, rodsServerHost);
+    } else if (local == REMOTE_HOST) {
+        //status = remoteStructFileExtract (rsComm, structFileOprInp, rodsServerHost);
+	    status = rcStructFileExtract( host->conn, structFileOprInp ); 
     } else {
-        if (remoteFlag < 0) {
-            return (remoteFlag);
+        if (local < 0) {
+            return (local);
         } else {
             rodsLog (LOG_NOTICE,
              "rsStructFileExtract: resolveHost returned unrecognized value %d",
-               remoteFlag);
+               local);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }

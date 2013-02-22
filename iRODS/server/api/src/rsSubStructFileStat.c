@@ -7,6 +7,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_structured_object.h"
+#include "eirods_stacktrace.h"
 
 
 
@@ -16,7 +17,6 @@ rsSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile, rodsStat_t **subStruc
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
-
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {

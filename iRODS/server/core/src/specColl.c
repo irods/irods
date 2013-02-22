@@ -307,7 +307,6 @@ statPathInSpecColl (rsComm_t *rsComm, char *objPath,
     dataObjInfo_t *dataObjInfo = NULL;
     specColl_t *specColl;
     specCollCache_t *specCollCache;
-
     if ((status = getSpecCollCache (rsComm, objPath, inCachOnly,
                                     &specCollCache)) < 0) {
         if (status != SYS_SPEC_COLL_NOT_IN_CACHE &&
@@ -398,8 +397,8 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
 
     if (dataObjInfo == NULL) return USER__NULL_INPUT_ERR;
     *dataObjInfo = NULL;
-    if (specColl->collClass == MOUNTED_COLL) {
 
+    if (specColl->collClass == MOUNTED_COLL) {
         /* a mount point */
         myDataObjInfo = *dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
           
@@ -431,7 +430,7 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         rstrcpy (myDataObjInfo->objPath, subPath, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->subPath, subPath, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->rescName, specColl->resource, NAME_LEN);
-        rstrcpy (myDataObjInfo->rescHier, specColl->resource, MAX_NAME_LEN);
+        rstrcpy (myDataObjInfo->rescHier, specColl->rescHier, MAX_NAME_LEN);
         rstrcpy (myDataObjInfo->dataType, "generic", NAME_LEN);
 
         status = getMountedSubPhyPath (specColl->collection,
@@ -481,14 +480,10 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
             replSpecColl (curSpecColl, &myDataObjInfo->specColl);
             rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
             myDataObjInfo->dataId = strtoll (rodsObjStatOut->dataId, 0, 0);
-            rstrcpy (myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName,
-                     NAME_LEN);
-            rstrcpy (myDataObjInfo->dataOwnerZone, rodsObjStatOut->ownerZone,
-                     NAME_LEN);
-            rstrcpy (myDataObjInfo->dataCreate, rodsObjStatOut->createTime,
-                     TIME_LEN);
-            rstrcpy (myDataObjInfo->dataModify, rodsObjStatOut->modifyTime,
-                     TIME_LEN);
+            rstrcpy (myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName, NAME_LEN);
+            rstrcpy (myDataObjInfo->dataOwnerZone, rodsObjStatOut->ownerZone, NAME_LEN);
+            rstrcpy (myDataObjInfo->dataCreate,    rodsObjStatOut->createTime,TIME_LEN);
+            rstrcpy (myDataObjInfo->dataModify,    rodsObjStatOut->modifyTime,TIME_LEN);
             freeRodsObjStat (rodsObjStatOut);
             return COLL_OBJ_T;
         }
@@ -577,11 +572,10 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         /* fill in DataObjInfo */
         tmpDataObjInfo = *dataObjInfo;
         replSpecColl (specColl, &tmpDataObjInfo->specColl);
-        rstrcpy (specColl->resource,
-                 tmpDataObjInfo->rescName, NAME_LEN);
-        rstrcpy (specColl->phyPath,
-                 tmpDataObjInfo->filePath, MAX_NAME_LEN);
-        rstrcpy (tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN);
+        rstrcpy( specColl->resource,tmpDataObjInfo->rescName, NAME_LEN );
+        rstrcpy( specColl->rescHier,tmpDataObjInfo->rescHier, NAME_LEN );
+        rstrcpy( specColl->phyPath,tmpDataObjInfo->filePath, MAX_NAME_LEN );
+        rstrcpy( tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN );
         specColl->replNum = tmpDataObjInfo->replNum;
 
         if (strcmp ((*dataObjInfo)->subPath, specColl->collection) == 0) {
@@ -637,9 +631,9 @@ resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
     if (objPath == NULL) {
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
-
     if ((status = getSpecCollCache (rsComm, objPath, inCachOnly,
                                     &specCollCache)) < 0) {
+
         return (status);
     } else {
         cachedSpecColl = &specCollCache->specColl;

@@ -18,6 +18,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h" 
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
@@ -26,7 +27,12 @@ rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileRenameInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileRename - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
 
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileRename (rsComm, fileRenameInp, rodsServerHost);

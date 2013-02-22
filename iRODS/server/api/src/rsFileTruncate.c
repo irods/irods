@@ -13,6 +13,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
@@ -21,7 +22,12 @@ rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileTruncateInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileTruncateInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileTruncateInp->resc_hier_, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileTruncate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileTruncate (rsComm, fileTruncateInp);
     } else if (remoteFlag == REMOTE_HOST) {

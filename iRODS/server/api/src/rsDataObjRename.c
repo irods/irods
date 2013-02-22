@@ -25,6 +25,7 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_stacktrace.h"
+#include "eirods_hierarchy_parser.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -400,13 +401,26 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN)
         return SYS_RESC_IS_DOWN;
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileRenameInp_t subStructFileRenameInp;
         memset (&subStructFileRenameInp, 0, sizeof (subStructFileRenameInp));
         rstrcpy (subStructFileRenameInp.subFile.subFilePath, dataObjInfo->subPath,
                  MAX_NAME_LEN);
         rstrcpy (subStructFileRenameInp.newSubFilePath, newFileName, MAX_NAME_LEN);
-        rstrcpy (subStructFileRenameInp.subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+        rstrcpy (subStructFileRenameInp.subFile.addr.hostAddr, location.c_str(), NAME_LEN);
         subStructFileRenameInp.subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRename (rsComm, &subStructFileRenameInp);
     } else {
@@ -418,11 +432,11 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
        #endif // JMC legacy resource 
             memset (&fileRenameInp, 0, sizeof (fileRenameInp));
             fileRenameInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-            rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,          MAX_NAME_LEN );
-            rstrcpy( fileRenameInp.newFileName,   newFileName,                    MAX_NAME_LEN );
-            rstrcpy (fileRenameInp.rescHier,      dataObjInfo->rescHier,          MAX_NAME_LEN);
-            rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,           MAX_NAME_LEN );
-            rstrcpy( fileRenameInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+            rstrcpy( fileRenameInp.oldFileName,   dataObjInfo->filePath,  MAX_NAME_LEN );
+            rstrcpy( fileRenameInp.newFileName,   newFileName,            MAX_NAME_LEN );
+            rstrcpy (fileRenameInp.rescHier,      dataObjInfo->rescHier,  MAX_NAME_LEN);
+            rstrcpy( fileRenameInp.objPath,       dataObjInfo->objPath,   MAX_NAME_LEN );
+            rstrcpy( fileRenameInp.addr.hostAddr, location.c_str(),       NAME_LEN );
             status = rsFileRename (rsComm, &fileRenameInp);
        #if 0 // JMC legacy resource 
             break;

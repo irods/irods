@@ -118,10 +118,10 @@
 // =-=-=-=-=-=-=-
 #define MAX_SUB_FILE_KW "maxSubFile" /* max number of files for tar file bundles */ // JMC - backport 4771
 
- /* OBJ_PATH_KW already defined */ 
+ /* OBJ_PATH_KW already defined */
 
-/* OBJ_PATH_KW already defined */ 
-/* COLL_NAME_KW already defined */ 
+/* OBJ_PATH_KW already defined */
+/* COLL_NAME_KW already defined */
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */
@@ -133,7 +133,7 @@
 #define RESC_VAULT_PATH_KW	"rescVaultPath" /* resc_def_path in DB */
 #define RESC_STATUS_KW	"rescStatus"
 #define PARA_OPR_KW	"paraOpr"
-#define GATEWAY_ADDR_KW	"gateWayAddr"   
+#define GATEWAY_ADDR_KW	"gateWayAddr"
 #define RESC_MAX_OBJ_SIZE_KW "rescMaxObjSize"
 #define FREE_SPACE_KW	"freeSpace"
 #define FREE_SPACE_TIME_KW	"freeSpaceTime"
@@ -177,7 +177,7 @@
 #define COLL_NAME_KW              "collName"
 #define COLL_PARENT_NAME_KW         "collParentName" /* parent_coll_name in DB  */
 #define COLL_OWNER_NAME_KW              "collOwnername"
-#define COLL_OWNER_ZONE_KW         "collOwnerZone" 
+#define COLL_OWNER_ZONE_KW         "collOwnerZone"
 #define COLL_MAP_ID_KW             "collMapId"
 #define COLL_INHERITANCE_KW         "collInheritance"
 #define COLL_COMMENTS_KW           "collComments"
@@ -188,7 +188,7 @@
 #define COLL_ACCESS_INX_KW         "collAccessInx"
 #define COLL_ID_KW               "collId"
 
-/* 
+/*
   The following are the keyWord definitions for the keyValPair_t input
   to chlModRuleExec.
 */
@@ -209,7 +209,7 @@
 #define AGE_KW                      "age"  /* age of the file for itrim */
 
 // =-=-=-=-=-=-=-
-// e-irods keywords definitions
+// eirods keywords definitions
 #define RESC_HIER_STR_KW             "resc_hier"
 #define DEST_RESC_HIER_STR_KW        "dest_resc_hier"
 

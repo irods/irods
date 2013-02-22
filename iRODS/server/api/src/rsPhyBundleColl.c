@@ -298,7 +298,8 @@ replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
     if (curSubFileCond->subPhyPath[0] == '\0') {
         /* don't have a good cache copy yet. make one */
         status = replDataObjForBundle (rsComm, curSubFileCond->collName,
-                                       curSubFileCond->dataName, myRescName, 1, &dataObjInfo);
+                                       curSubFileCond->dataName, myRescName, 
+                                       0, 0, 1, &dataObjInfo);
         if (status >= 0) {
             setSubPhyPath (phyBunDir, curSubFileCond->dataId, 
                            curSubFileCond->subPhyPath);
@@ -479,6 +480,8 @@ phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     int myOprType = oprType; // JMC - backport 4657
 
     dataType = dataObjInfo->dataType;
+#if 0 // this is now handled by libarchive which can add to existing archives without
+      // the need for unbundling
     if ((oprType & ADD_TO_TAR_OPR) != 0) { // JMC - backport 4657
         /* need to extract the content of the exsisting zipped file */
         if( dataType != NULL &&
@@ -494,26 +497,26 @@ phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
             myOprType = myOprType ^ ADD_TO_TAR_OPR;
         }
     }
-
+#endif
 
     bzero (&structFileOprInp, sizeof (structFileOprInp));
-
+    addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
+ 
     structFileOprInp.specColl = (specColl_t*)malloc (sizeof (specColl_t));
     memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
     structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
 
     /* collection and objPath are only important for reg CollInfo2 */
-    rstrcpy (structFileOprInp.specColl->collection,
-             collection, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp.specColl->objPath,
-             dataObjInfo->objPath, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->collection,collection, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->objPath,dataObjInfo->objPath, MAX_NAME_LEN);
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
-    rstrcpy (structFileOprInp.specColl->resource, dataObjInfo->rescName,
-             NAME_LEN);
-    rstrcpy (structFileOprInp.specColl->phyPath,
-             dataObjInfo->filePath, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-             NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->resource, dataObjInfo->rescName,NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->phyPath,dataObjInfo->filePath, MAX_NAME_LEN);
+    
+    
+    //rstrcpy (structFileOprInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
+    addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
+
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
     structFileOprInp.specColl->cacheDirty = 1;
     /* don't reg CollInfo2 */
@@ -595,7 +598,8 @@ isDataObjBundled (rsComm_t *rsComm, collEnt_t *collEnt)
 
 int
 replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
-                      char *rescName, int adminFlag, dataObjInfo_t *outCacheObjInfo)
+                      char *rescName, char* rescHier, char* dstRescHier, 
+                      int adminFlag, dataObjInfo_t *outCacheObjInfo)
 {
     transferStat_t transStat;
     dataObjInp_t dataObjInp;
@@ -607,7 +611,13 @@ replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
     memset (&transStat, 0, sizeof (transStat));
 
     snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collName, dataName);
-    addKeyVal (&dataObjInp.condInput, BACKUP_RESC_NAME_KW, rescName);
+    addKeyVal (&dataObjInp.condInput, BACKUP_RESC_NAME_KW,   rescName);
+    if( rescHier ) {
+        addKeyVal (&dataObjInp.condInput, RESC_HIER_STR_KW,      rescHier);  
+    }
+    if( dstRescHier ) { 
+        addKeyVal (&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, dstRescHier); 
+    }
     if (adminFlag > 0) 
         addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_KW, "");
 

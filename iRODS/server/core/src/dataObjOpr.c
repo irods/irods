@@ -1201,7 +1201,7 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                 }
 
 
-/* resolveSingleReplCopy, - given the dataObjInfoHead (up-to-date copies) 
+/* resolveSingleReplCopy - given the dataObjInfoHead (up-to-date copies) 
  * and oldDataObjInfoHead (stale copies) and the destRescGrpInfo,
  * sort through the single copy requirement for repl.
  * If there is a good copy in every resc in the rescGroup, return 
@@ -1229,7 +1229,6 @@ resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
     if (status < 0) {
-        rodsLog(LOG_NOTICE, "%s - Failed to find a data object based on conditional inputs.", __FUNCTION__);
         return status;
     }
 
@@ -1474,7 +1473,7 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     if (*matchedDataObjInfo == NULL && *matchedOldDataObjInfo == NULL) {
         return (CAT_NO_ROWS_FOUND);
     } else {
-        return ((replNumCond + rescCond) || destHierCond);
+        return (replNumCond + rescCond);
     }
 }
 

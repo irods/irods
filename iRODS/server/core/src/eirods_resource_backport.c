@@ -5,6 +5,9 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_string_tokenize.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-
@@ -528,6 +531,53 @@ namespace eirods {
 
     } // get_resc_grp_info
 
+    error get_host_for_hier_string( 
+              const std::string& _hier_str,      // hier string
+              int&               _local_flag,    // local flag
+              rodsServerHost_t*& _server_host) { // server host
+
+        // =-=-=-=-=-=-=-
+        // check hier string
+        if( _hier_str.empty() ) {
+eirods::stacktrace st;
+st.trace();
+st.dump();
+            return ERROR( -1, "get_host_for_hier_string - hier string is empty" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the last resource in the hierarchy
+        std::string resc_name;
+        hierarchy_parser parse;
+        parse.set_string( _hier_str );
+        parse.last_resc( resc_name );
+
+        // =-=-=-=-=-=-=-
+        // check hier string
+        if( resc_name.empty() ) {
+            return ERROR( -1, "get_host_for_hier_string - resc_name string is empty" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the rods server host info for the child resc
+        rodsServerHost_t* host;
+        error ret = get_resource_property< rodsServerHost_t* >( resc_name, "host", host );
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "get_host_for_hier_string - failed to get host property for [";
+            msg << resc_name;
+            msg << "]";
+            return PASSMSG( msg.str(), ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // set the outgoing variables
+        _server_host = host;
+        _local_flag  = host->localFlag;
+
+        return SUCCESS();
+
+    } // get_host_for_hier_string
 
 }; // namespace eirods
 

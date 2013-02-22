@@ -1049,12 +1049,7 @@ extern "C" {
                                         eirods::first_class_object*    _object, 
                                         std::string*                   _results,
                                         const char*                    _new_file_name ) {
-rodsLog( LOG_NOTICE, "XXXX - unixFileRenamePlugin :: comm %d, prop %d, cmap %d, obj %d, fn %d", _comm, _prop_map, _cmap, _object, _new_file_name );
-rodsLog( LOG_NOTICE, "XXXX - unixFileRenamePlugin :: _new_file_name 1 [%s]", _new_file_name );
-
-rodsLog( LOG_NOTICE, "XXXX - Rname obj [%s], hier [%s]", _object->logical_path().c_str(), _object->resc_hier().c_str() );
-
-
+        // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
         if(!ret.ok()) {
@@ -1407,7 +1402,6 @@ rodsLog( LOG_NOTICE, "XXXX - Rname obj [%s], hier [%s]", _object->logical_path()
                 if( !need_repl || ( need_repl && repl_us ) ) {
                     found = true;
                     _out_vote = 1.0;
-                    _out_parser.add_child( _resc_name );
                     break; 
                 }
 
@@ -1602,7 +1596,7 @@ rodsLog( LOG_NOTICE, "XXXX - Rname obj [%s], hier [%s]", _object->logical_path()
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the e-irods facing interface defined in 
+    //    as used by the eirods facing interface defined in 
     //    server/drivers/src/fileDriver.c
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 

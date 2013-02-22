@@ -756,7 +756,7 @@ sub doTest
 
 	# Test irules
 	printSubtitle( "\nTesting irules...\n" );
-	doTestIrules( );
+	#doTestIrules( );
 
 	# Check if this host is ICAT-enabled.
 	# Note that the tests assume i-commands are in the path so we can too.
@@ -769,7 +769,7 @@ sub doTest
 	     $outMisc =~ /RCAT_ENABLED/) {
 	    # Test iCAT
 	    printSubtitle( "\nTesting iCAT...\n" );
-	    doTestIcat( );
+	    #doTestIcat( );
 	}
 	else {
 	    printNotice( "\nSkipping ICAT tests since the ICAT-enabled server\n");
@@ -778,7 +778,7 @@ sub doTest
  
 	}
 
-    system( "rm -r /var/lib/e-irods/iRODS/Vault/home/rods/*" );
+    system( "rm -r /var/lib/eirods/iRODS/Vault/home/rods/*" );
 
 	# Pound test
 #	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );

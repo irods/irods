@@ -1541,6 +1541,7 @@ extern "C" {
         fileOpendirInp.fileType = UNIX_FILE_TYPE;       /* the only type for cache */
         strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileOpendirInp.objPath, struct_obj->logical_path().c_str(), MAX_NAME_LEN );
+        strncpy( fileOpendirInp.resc_hier_, struct_obj->resc_hier().c_str(), MAX_NAME_LEN );
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
@@ -2374,6 +2375,7 @@ extern "C" {
                       eirods::resource_child_map*    _cmap, 
                       eirods::first_class_object*    _object,
                       std::string*                   _results ) {
+
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );
@@ -2538,7 +2540,7 @@ extern "C" {
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the e-irods facing interface defined in 
+    //    as used by the eirods facing interface defined in 
     //    server/drivers/src/fileDriver.c
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 

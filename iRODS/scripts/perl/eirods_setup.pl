@@ -518,7 +518,7 @@ else
         print "\n";
         print "  iCAT server's admin username: $IRODS_ADMIN_NAME\n";
         print "  iCAT server's admin password: ";
-        $IRODS_ADMIN_PASSWORD = `/var/lib/e-irods/packaging/get_icat_server_password.sh`;
+        $IRODS_ADMIN_PASSWORD = `/var/lib/eirods/packaging/get_icat_server_password.sh`;
         print "\n";
         print "\n";
     }

@@ -13,6 +13,7 @@
 #include "eirods_log.h"
 #include "eirods_file_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
@@ -21,7 +22,12 @@ rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileChmodInp->addr, &rodsServerHost);
+    //remoteFlag = resolveHost (&fileChmodInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileChmodInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsFileChmod - failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileChmod (rsComm, fileChmodInp);
     } else if (remoteFlag == REMOTE_HOST) {

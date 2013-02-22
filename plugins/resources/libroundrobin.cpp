@@ -1379,7 +1379,7 @@ extern "C" {
             }
             std::string new_hier;
             _out_parser->str( new_hier );
-rodsLog( LOG_NOTICE, "XXXX - roundrobin :: redireect for CREATE for obj [%s], hier str [%s]", _object->logical_path().c_str(), new_hier.c_str() );
+            
             // =-=-=-=-=-=-=-
             // update the next_child appropriately as the above succeeded
             err = update_next_child_resource( *_prop_map );
@@ -1498,7 +1498,7 @@ rodsLog( LOG_NOTICE, "XXXX - roundrobin :: redireect for CREATE for obj [%s], hi
     //    instantiated object of the previously defined derived resource.  use
     //    the add_operation member to associate a 'call name' to the interfaces
     //    defined above.  for resource plugins these call names are standardized
-    //    as used by the e-irods facing interface defined in 
+    //    as used by the eirods facing interface defined in 
     //    server/drivers/src/fileDriver.c
     eirods::resource* plugin_factory( const std::string& _inst_name, 
                                       const std::string& _context  ) {

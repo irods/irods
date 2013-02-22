@@ -3,7 +3,7 @@
 # =-=-=-=-=-=-=-
 %product Enterprise iRODS
 %copyright 2005-2013, Regents of the University of California, the University of North Carolina at Chapel Hill, and the Data Intensive Cyberinfrastructure Foundation, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@e-irods.org>
+%vendor Renaissance Computing Institute <info@eirods.org>
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
@@ -94,7 +94,7 @@ $RESOURCE=true
 # =-=-=-=-=-=-=-
 # Install variables
 # =-=-=-=-=-=-=-
-$EIRODS_PACKAGENAME=e-irods
+$EIRODS_PACKAGENAME=eirods
 $EIRODS_DOC_DIR=/usr/share/doc/$EIRODS_PACKAGENAME
 $EIRODS_HOME_DIR=/var/lib/$EIRODS_PACKAGENAME
 $OS_EIRODS_ACCT=eirods
@@ -232,9 +232,9 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_irodsenv
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/packaging/user_resource.txt ./packaging/user_resource.txt
 
 %if DEB
-c 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
+c 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/eirods ./packaging/eirods
 %else
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/e-irods ./packaging/e-irods
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT /etc/init.d/eirods ./packaging/eirods
 %endif
 
 %if RESOURCE
