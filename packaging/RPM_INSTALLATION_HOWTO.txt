@@ -15,12 +15,12 @@
 
 2.  Start Postgres Server and Initialize Database Tables ::
 
-      sudo /sbin/service postgresql start
-      OR
-      sudo /sbin/service postgresql-9.0 initdb
-      sudo /sbin/service postgresql-9.0 start
-
-3.  Modify authd config file for xinet.d ::
+      CentOS 5.x :: sudo /sbin/service postgresql start
+      CentOS 6.x :: sudo /sbin/service postgresql initdb; sudo /sbin/service postgresql start
+      SUSE11     :: sudo /usr/sbin/rcpostgresql start
+      OpenSUSE12 :: sudo /usr/sbin/rcpostgresql start
+      
+3.  Modify authd config file for xinetd.d ::
 
       vim /etc/xinetd.d/auth
 
@@ -39,6 +39,18 @@
 
       sudo /etc/init.d/xinetd restart
 
-6.  Install the E-iRODS RPM ::
+6.  Open your firewall, if necessary, to let in iRODS ::
+
+      Add the following to your /etc/sysconfig/iptables:
+
+        -A INPUT -m state --state NEW -m tcp -p tcp --dport 1247 -j ACCEPT
+        -A INPUT -m state --state NEW -m tcp -p tcp --dport 20000:20199 -j ACCEPT
+        -A INPUT -m state --state NEW -m udp -p udp --dport 20000:20199 -j ACCEPT
+
+      Restart the firewall:
+
+        sudo service iptables restart
+
+7.  Install the E-iRODS RPM ::
 
       rpm -i eirods-XXX.rpm
