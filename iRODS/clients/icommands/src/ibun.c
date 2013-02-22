@@ -88,7 +88,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : ibun -x [-hb] [-R resource] structFilePath",
+"Usage : ibun -x [-hfb] [-R resource] structFilePath",
 "               irodsCollection",
 "Usage : ibun -c [-hf] [-R resource] [-D dataType] structFilePath",
 "               irodsCollection",
@@ -131,7 +131,7 @@ usage ()
 " ",
 "If a copy of a file to be bundled does not exist on the target resource,",
 "a replica will automatically be made on the target resource.",
-"Again, if the -D flag is not use, the bundling will be done using tar.",
+"Again, if the -D flag is not used, the bundling will be done using tar.",
 " ",
 "The -b option when used with the -x option, specifies bulk registration",
 "which does up to 50 rgistrations at a time to reduce overhead.",
@@ -140,17 +140,17 @@ usage ()
 " -b  bulk registration when used with -x to reduce overhead",
 " -R  resource - specifies the resource to store to. This is optional",
 "     in your environment",
-" -D  dataType - the struct file data type. Valid only for -c option for",
+" -D  dataType - the structFile data type. Valid only for -c option for",
 "     specifying the target data type. Valid dataTypes are - t|tar|'tar file'",
-"     for tar file. g|gzip|gzipTar for gziped tar file, b|bzip2|bzip2Tar for",
-"     bzip2 file, and z|zip|zipFile for archive using 'zip'.  If -D is not",
-"     specified, the default is a tar file type",
+"     for tar file. g|gzip|gzipTar for gzipped tar file, b|bzip2|bzip2Tar for",
+"     bzip2 file, and z|zip|zipFile for an archive using 'zip'.  If -D is not",
+"     specified, the default is the tar dataType",
 " -x  extract the structFile and register the extracted files and directories",
 "     under the input irodsCollection", 
 " -c  bundle the files and sub-collection underneath the input irodsCollection",
 "     and store it in the structFilePath",  
-" -f  force overwrite the struct file (-c) or the subfiles (-x).", 
-" --add  add or append to existing tar file. The tar file must not be compressed",
+" -f  force overwrite the structFile (-c) or the subfiles (-x).", 
+" --add  add or append to existing structFile.",
 " -h  this help",
 ""};
    int i;
