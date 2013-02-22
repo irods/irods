@@ -1362,10 +1362,82 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error redirect_get( eirods::file_object&      _file_obj,
-                                const std::string&        _resc_name, 
-                                eirods::hierarchy_parser& _out_parser,
-                                float&                    _out_vote ) {
+    eirods::error redirect_create( 
+                      eirods::resource_property_map* _prop_map,
+                      eirods::file_object&           _file_obj,
+                      const std::string&             _resc_name, 
+                      const std::string&             _curr_host, 
+                      float&                         _out_vote ) {
+        // =-=-=-=-=-=-=-
+        // determine if the resource is down 
+        int resc_status = 0;
+        eirods::error get_ret = _prop_map->get< int >( "status", resc_status );
+        if( !get_ret.ok() ) {
+            return PASSMSG( "redirect_open - failed to get 'status' property", get_ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // if the status is down, vote no.
+        if( INT_RESC_STATUS_DOWN == resc_status ) {
+            _out_vote = 0.0;
+            return SUCCESS(); 
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the resource host for comparison to curr host
+        std::string host_name;
+        get_ret = _prop_map->get< std::string >( "location", host_name );
+        if( !get_ret.ok() ) {
+            return PASSMSG( "redirect_open - failed to get 'location' property", get_ret );
+        }
+        
+        // =-=-=-=-=-=-=-
+        // vote higher if we are on the same host
+        if( _curr_host == host_name ) {
+            _out_vote = 1.0;
+        } else {
+            _out_vote = 0.5;
+        }
+
+        return SUCCESS();
+
+    } // redirect_create
+
+    // =-=-=-=-=-=-=-
+    // redirect_get - code to determine redirection for get operation
+    eirods::error redirect_open( 
+                      eirods::resource_property_map* _prop_map,
+                      eirods::file_object&           _file_obj,
+                      const std::string&             _resc_name, 
+                      const std::string&             _curr_host, 
+                      float&                         _out_vote ) {
+        // =-=-=-=-=-=-=-
+        // determine if the resource is down 
+        int resc_status = 0;
+        eirods::error get_ret = _prop_map->get< int >( "status", resc_status );
+        if( !get_ret.ok() ) {
+            return PASSMSG( "redirect_open - failed to get 'status' property", get_ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // if the status is down, vote no.
+        if( INT_RESC_STATUS_DOWN == resc_status ) {
+            _out_vote = 0.0;
+            return SUCCESS(); 
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the resource host for comparison to curr host
+        std::string host_name;
+        get_ret = _prop_map->get< std::string >( "location", host_name );
+        if( !get_ret.ok() ) {
+            return PASSMSG( "redirect_open - failed to get 'location' property", get_ret );
+        }
+        
+        // =-=-=-=-=-=-=-
+        // set a flag to test if were at the curr host, if so we vote higher
+        bool curr_host = ( _curr_host == host_name );
+
         // =-=-=-=-=-=-=-
         // make some flags to clairify decision making
         bool need_repl = ( _file_obj.repl_requested() > -1 );
@@ -1388,7 +1460,9 @@ extern "C" {
             // run the hier string through the parser and get the last
             // entry.
             std::string last_resc;
-            _out_parser.last_resc( last_resc ); 
+            eirods::hierarchy_parser parser;
+            parser.set_string( itr->resc_hier() );
+            parser.last_resc( last_resc ); 
           
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
@@ -1401,7 +1475,11 @@ extern "C" {
             if( resc_us ) {
                 if( !need_repl || ( need_repl && repl_us ) ) {
                     found = true;
-                    _out_vote = 1.0;
+                    if( curr_host ) {
+                        _out_vote = 1.0;
+                    } else {
+                        _out_vote = 0.5;
+                    }
                     break; 
                 }
 
@@ -1475,12 +1553,12 @@ extern "C" {
         if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return redirect_get( (*file_obj), resc_name, (*_out_parser), (*_out_vote)  );
+            return redirect_open( _prop_map, (*file_obj), resc_name, (*_curr_host), (*_out_vote)  );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
-            (*_out_vote) = 1.0;
-
-            return SUCCESS();
+            // =-=-=-=-=-=-=-
+            // call redirect determination for 'create' operation
+            return redirect_create( _prop_map, (*file_obj), resc_name, (*_curr_host), (*_out_vote)  );
         }
       
         // =-=-=-=-=-=-=-
