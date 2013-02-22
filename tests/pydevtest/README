@@ -26,18 +26,20 @@ ssh -Y -p 2222 trelvb@127.0.0.1
 ########################################
 
 
+#### Install VM Software
+sudo apt-get install git python-dev python-nose lcov apache2 python-setuptools
+sudo easy_install psutil
+
 #### On the VM, build E-iRODS with coverage enabled, and install:
 cd eirods
 sudo ./packaging/build.sh -c icat postgres
 sudo dpkg -i linux-2.6-amd64/eirods-3.0b2-linux-2.6-amd64.deb
+sudo apt-get -f install
 sudo su - eirods
 
-
-#### Install nose on VM
-sudo apt-get install python-dev python-nose lcov apache2
-sudo easy_install psutil
+#### Prep web directory on VM
 sudo mkdir /var/www/dev
-sudo chown -R eirods:eirods /var/www/dev
+sudo chmod 777 /var/www/dev
 
 #### Run the test suite as eirods:
 cd /var/lib/eirods/tests/pydevtest
