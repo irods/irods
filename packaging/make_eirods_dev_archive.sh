@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-ar_file="libe-irods.a"
+ar_file="libeirods.a"
 
 rm -f $ar_file
 
@@ -11,32 +11,32 @@ ar d  $ar_file dummy
 
 rm dummy
 
-for ff in `find iRODS/ -name "*.o"` 
+for ff in `find iRODS/ -name "*.o"`
 do
     ar r $ar_file $ff
 done
 
-#for ff in `find iRODS/lib -name "*.o"` 
+#for ff in `find iRODS/lib -name "*.o"`
 #do
 #    ar r $ar_file $ff
 #done
 #
-#for ff in `find iRODS/server/core -name "*.o"` 
+#for ff in `find iRODS/server/core -name "*.o"`
 #do
 #    ar r $ar_file $ff
 #done
 #
-#for ff in `find iRODS/server/re -name "*.o"` 
+#for ff in `find iRODS/server/re -name "*.o"`
 #do
 #    ar r $ar_file $ff
 #done
 #
-#for ff in `find iRODS/server/api -name "*.o"` 
+#for ff in `find iRODS/server/api -name "*.o"`
 #do
 #    ar r $ar_file $ff
 #done
 #
-#for ff in `find iRODS/server/icat -name "*.o"` 
+#for ff in `find iRODS/server/icat -name "*.o"`
 #do
 #    ar r $ar_file $ff
 #done

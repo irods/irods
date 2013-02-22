@@ -49,7 +49,7 @@ Overview
 
 This manual attempts to provide standalone documentation for E-iRODS as packaged by the Renaissance Computing Institute (RENCI).
 
-    http://e-irods.org
+    http://eirods.org
 
     file:///var/lib/e-rods/iRODS/doc/html/index.html
 
@@ -74,7 +74,7 @@ E-iRODS is released in binary form.  RPM and DEB formats are available for both 
 
 More combinations will be made available as our testing matrix increases.
 
-The latest files can be downloaded from http://e-irods.org/download.
+The latest files can be downloaded from http://eirods.org/download.
 
 
 ------------
@@ -83,11 +83,11 @@ Installation
 
 Installation of the Postgres iCAT DEB::
 
- $ (sudo) dpkg -i e-irods-3.0b3-64bit-icat-postgres.deb
+ $ (sudo) dpkg -i eirods-3.0b3-64bit-icat-postgres.deb
 
 Installation of the Resource RPM::
 
- $ (sudo) rpm -i e-irods-3.0b3-64bit-resource.rpm
+ $ (sudo) rpm -i eirods-3.0b3-64bit-resource.rpm
 
 These packages install the dependencies necessary to run E-iRODS, a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
@@ -177,7 +177,7 @@ Now, the connection should be reset and you should be able to list your empty iR
 Add additional resource(s)
 --------------------------
 
-The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the /var/lib/e-irods/iRODS/Vault directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
+The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the /var/lib/eirods/iRODS/Vault directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
 
  eirods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' cache <fully.qualified.domain.name> </full/path/to/new/vault>
  
@@ -258,7 +258,7 @@ Backing up E-iRODS consists of three major parts:  The data, the iRODS system an
 
 2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup`_ microservice.  When run on a regular schedule, the `msiServerBackup` microservice will gather and store all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
 
-.. _msiServerBackup: file:///var/lib/e-irods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
+.. _msiServerBackup: file:///var/lib/eirods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
 
 3) The iCAT database itself can be backed up in a variety of ways.  A Postgres database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, Postgres 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of Postgres where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in Postgres 9.0+ and can keep two Postgres servers in sync with sub-second delay.
 
@@ -282,7 +282,7 @@ The iRODS setting 'StrictACL' is configured on by default in E-iRODS.  This is d
 Pluggable Microservices
 -----------------------
 
-E-iRODS is in the process of being modularized whereby existing community iRODS functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed is pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing E-iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://e-irods.org/download, and explains how this works in more detail.
+E-iRODS is in the process of being modularized whereby existing community iRODS functionality will be replaced and provided by small, interoperable plugins.  The first plugin functionality to be completed is pluggable microservices.  Pluggable microservices allow users to add new microservices to an existing E-iRODS server without recompiling the server or even restarting any running processes.  A microservice plugin contains a single compiled microservice shared object file to be found by the server.  A separate development package, including an example, is available at http://eirods.org/download, and explains how this works in more detail.
 
 --------------------
 Composable Resources

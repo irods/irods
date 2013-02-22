@@ -184,11 +184,11 @@ chown $OS_EIRODS_ACCT:$OS_EIRODS_ACCT $EIRODS_HOME_DIR/.odbc.ini
 # =-=-=-=-=-=-=-
 # setup runlevels and aliases (use os-specific tools)
 if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-    update-rc.d e-irods defaults
+    update-rc.d eirods defaults
 elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    /sbin/chkconfig --add e-irods
+    /sbin/chkconfig --add eirods
 elif [ "$DETECTEDOS" == "SuSE" ] ; then
-    /sbin/chkconfig --add e-irods
+    /sbin/chkconfig --add eirods
 fi
 
 

@@ -40,7 +40,7 @@ irule -F ./run_eirods_missing_msvc_test.r &> /dev/null
 
 # =-=-=-=-=-=-=-
 # test to see that it failed properly
-miss_msvc=$(grep "load_microservice_plugin :: failed to load microservice plugin: /var/lib/e-irods/iRODS/server/bin//libmissing_micro_service.so" /var/lib/e-irods/iRODS/server/log/rodsLog* )
+miss_msvc=$(grep "load_microservice_plugin :: failed to load microservice plugin: /var/lib/eirods/iRODS/server/bin/libmissing_micro_service.so" /var/lib/eirods/iRODS/server/log/rodsLog* )
 #echo "miss_msvc - $miss_msvc"
 
 

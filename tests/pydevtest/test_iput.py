@@ -132,7 +132,7 @@ def test_local_iput_physicalpath():
     f.write("TESTFILE -- ["+datafilename+"]")
     f.close()
     # assertions
-    fullpath = "/var/lib/e-irods/newphysicalpath.txt"
+    fullpath = "/var/lib/eirods/newphysicalpath.txt"
     assertiCmd(s.adminsession,"iput -p "+fullpath+" "+datafilename) # should complete
     assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should be listed
     assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",fullpath) # should be listed

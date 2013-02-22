@@ -138,11 +138,11 @@ fi
 # =-=-=-=-=-=-=-
 # remove runlevels and aliases (use os-specific tools)
 if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-    update-rc.d -f e-irods remove
+    update-rc.d -f eirods remove
 elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-    /sbin/chkconfig --del e-irods
+    /sbin/chkconfig --del eirods
 elif [ "$DETECTEDOS" == "SuSE" ] ; then
-    /sbin/chkconfig --del e-irods
+    /sbin/chkconfig --del eirods
 fi
 
 # =-=-=-=-=-=-=-

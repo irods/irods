@@ -8,4 +8,4 @@ iRODS/config/platform.mk
 iRODS/server/config/server.config
 iRODS/server/re/include/eirods_ms_home.h
 iRODS/server/re/include/reAction.h
-packaging/e-irods.list
+packaging/eirods.list

@@ -113,7 +113,7 @@ $DATABASE_ADMIN_NAME = '';
 #  $GLOBUS_LOCATION is then the GLOBUS_LOCATION, and
 #  $GSI_INSTALL_TYPE is the Globus/GSI install type to use.
 #
-$IRODS_HOME = '/var/lib/e-irods/iRODS';
+$IRODS_HOME = '/var/lib/eirods/iRODS';
 $IRODS_PORT = '1247';
 $SVR_PORT_RANGE_START = '20000';
 $SVR_PORT_RANGE_END = '20199';
@@ -123,7 +123,7 @@ $IRODS_ICAT_HOST = '';
 
 $DB_NAME = 'EICAT';
 $RESOURCE_NAME = 'demoResc';
-$RESOURCE_DIR = '/var/lib/e-irods/iRODS/Vault';
+$RESOURCE_DIR = '/var/lib/eirods/iRODS/Vault';
 $ZONE_NAME = 'tempZone';
 $DB_KEY = '123';
 

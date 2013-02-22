@@ -26,11 +26,11 @@ echo "DETECTED: username[$USERNAME] timestamp[$D]"
 
 # sync
 echo "----- SYNCING TEST FILES -----"
-rsync -avz /home/$USERNAME/e-irods/tests/pydevtest/ ./
+rsync -avz /home/$USERNAME/eirods/tests/pydevtest/ ./
 
 # coverage baseline
 echo "----- GENERATING COVERAGE BASELINE -----"
-/var/lib/e-irods/tests/coverage-pre.sh 2>&1 | tail -n1
+/var/lib/eirods/tests/coverage-pre.sh 2>&1 | tail -n1
 
 # tests
 echo "----- RUNNING TESTS -----"
@@ -40,9 +40,9 @@ $NOSECMD
 # coverage report
 if [ "$?" == "0" ] ; then
   echo "----- GENERATING COVERAGE REPORT -----"
-  /var/lib/e-irods/tests/coverage-post.sh 2>&1 | tail -n4
+  /var/lib/eirods/tests/coverage-post.sh 2>&1 | tail -n4
   echo "--> coverageresults-$D"
-  mv /var/lib/e-irods/coverageresults coverageresults-$D
+  mv /var/lib/eirods/coverageresults coverageresults-$D
   echo "----- SYNCING COVERAGE REPORT TO WWW -----"
   rsync -az ./coverageresults-$D/ /var/www/dev
   echo "http://127.0.0.1:8080/dev"

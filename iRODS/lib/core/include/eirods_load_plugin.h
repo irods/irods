@@ -35,19 +35,19 @@ namespace eirods {
     template<typename T>
     struct class_has_delay_load {
         // =-=-=-=-=-=-=-
-        // tester to determine if delay load function exists - 
+        // tester to determine if delay load function exists -
         // bool (*)( void* ) signature.
-        template<error (T::*)(void*)> struct tester; 
+        template<error (T::*)(void*)> struct tester;
 
         // =-=-=-=-=-=-=-
         // matching specialization of the determination function
         template<typename U>
         static small_type has_matching_member( tester<&U::delay_load>* );
-		
+
         // =-=-=-=-=-=-=-
         // SFINAE fall through if it doesnt match
         template<typename U>
-        static large_type has_matching_member( ... ); 
+        static large_type has_matching_member( ... );
 
         // =-=-=-=-=-=-=-
         // flag variable for result on which to assert - small_type == yes
@@ -77,7 +77,7 @@ namespace eirods {
      *
      * \usage
      * ms_table_entry* tab_entry;\n
-     * tab_entry = load_plugin( "some_microservice_name", "/var/lib/e-irods/iRODS/server/bin" );
+     * tab_entry = load_plugin( "some_microservice_name", "/var/lib/eirods/iRODS/server/bin" );
      *
      * \param[in] _dir         - hard coded string which will house the shared object to be loaded
      * \param[in] _plugin_name - name of plugin you wish to load, which will have all nonalnum characters removed, as found in a file named "lib" + clean_plugin_name + ".so"
@@ -86,17 +86,17 @@ namespace eirods {
      * \retval non-null on success
      **/
     template< typename PluginType >
-    error load_plugin(  PluginType*&       _plugin, 
-                        const std::string& _plugin_name, 
-                        const std::string& _dir, 
+    error load_plugin(  PluginType*&       _plugin,
+                        const std::string& _plugin_name,
+                        const std::string& _dir,
                         const std::string& _instance_name,
-                        const std::string& _context  ) { 
-	
+                        const std::string& _context  ) {
+
         // =-=-=-=-=-=-=-
         // strip out all non alphanumeric characters like spaces or such
         std::string clean_plugin_name = _plugin_name;
-        clean_plugin_name.erase( std::remove_if( clean_plugin_name.begin(), 
-                                                 clean_plugin_name.end(), 
+        clean_plugin_name.erase( std::remove_if( clean_plugin_name.begin(),
+                                                 clean_plugin_name.end(),
                                                  not_allowed_char ),
                                  clean_plugin_name.end() );
 
@@ -109,7 +109,7 @@ namespace eirods {
         if( clean_plugin_name.empty() ) {
             return ERROR( -1, "load_plugin :: clean_plugin_name is empty" );
         }
-		
+
         // =-=-=-=-=-=-=-
         // try to open the shared object
         std::string so_name = _dir  + std::string("lib") + clean_plugin_name + std::string(".so");
@@ -117,7 +117,7 @@ namespace eirods {
         if( !handle ) {
             std::stringstream msg;
             std::string       err( dlerror() );
-            msg << "load_plugin :: failed to open shared object file: " << so_name 
+            msg << "load_plugin :: failed to open shared object file: " << so_name
                 << " :: dlerror is " << err;
             return ERROR( -1, msg.str() );
         }
@@ -133,14 +133,14 @@ namespace eirods {
         char* err = 0;
         if( !version_ptr || ( ( err = dlerror() ) != 0 ) ) {
             std::stringstream msg;
-            msg << "load_plugin :: failed to load sybol from shared object handle - " 
+            msg << "load_plugin :: failed to load sybol from shared object handle - "
                 << "EIRODS_PLUGIN_VERSION" << " :: dlerror is " << err;
             dlclose( handle );
             return ERROR( -1, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
-        // extract value from pointer to version 
+        // extract value from pointer to version
         double plugin_version = *version_ptr;
 
         // =-=-=-=-=-=-=-
@@ -160,7 +160,7 @@ namespace eirods {
             msg << "load_plugin :: failed to load sybol from shared object handle - plugin_factory"
                 << " :: dlerror is " << err;
             dlclose( handle );
-            return ERROR( -1, msg.str() );	
+            return ERROR( -1, msg.str() );
         }
 
         if( !factory ) {

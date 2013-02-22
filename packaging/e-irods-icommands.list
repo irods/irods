@@ -3,7 +3,7 @@
 # =-=-=-=-=-=-=-
 %product Enterprise iRODS - iCommands
 %copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
-%vendor Renaissance Computing Institute <info@e-irods.org>
+%vendor Renaissance Computing Institute <info@eirods.org>
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Storage system
