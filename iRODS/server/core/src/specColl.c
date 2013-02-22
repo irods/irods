@@ -480,14 +480,10 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
             replSpecColl (curSpecColl, &myDataObjInfo->specColl);
             rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
             myDataObjInfo->dataId = strtoll (rodsObjStatOut->dataId, 0, 0);
-            rstrcpy (myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName,
-                     NAME_LEN);
-            rstrcpy (myDataObjInfo->dataOwnerZone, rodsObjStatOut->ownerZone,
-                     NAME_LEN);
-            rstrcpy (myDataObjInfo->dataCreate, rodsObjStatOut->createTime,
-                     TIME_LEN);
-            rstrcpy (myDataObjInfo->dataModify, rodsObjStatOut->modifyTime,
-                     TIME_LEN);
+            rstrcpy (myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName, NAME_LEN);
+            rstrcpy (myDataObjInfo->dataOwnerZone, rodsObjStatOut->ownerZone, NAME_LEN);
+            rstrcpy (myDataObjInfo->dataCreate,    rodsObjStatOut->createTime,TIME_LEN);
+            rstrcpy (myDataObjInfo->dataModify,    rodsObjStatOut->modifyTime,TIME_LEN);
             freeRodsObjStat (rodsObjStatOut);
             return COLL_OBJ_T;
         }

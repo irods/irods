@@ -94,6 +94,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
             eirods::log( PASS( false, -1, msg.str(), err ) );
         }
 
+        addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, specColl->rescHier );
         rstrcpy (structFileOprInp.addr.hostAddr, rescInfo.rescLoc, NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;

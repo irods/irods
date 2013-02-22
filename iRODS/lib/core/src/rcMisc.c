@@ -3302,7 +3302,15 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 if (strcmp (type, MOUNT_POINT_STR) == 0) {
                     specColl->collClass = MOUNTED_COLL;
                     rstrcpy (specColl->phyPath, collInfo1, MAX_NAME_LEN);
-                    rstrcpy (specColl->resource, collInfo2, NAME_LEN);
+
+                    eirods::hierarchy_parser parse;
+                    parse.set_string( collInfo2 );
+
+                    std::string first_resc;
+                    parse.first_resc( first_resc );
+
+                    rstrcpy (specColl->resource, first_resc.c_str(), NAME_LEN);
+                    rstrcpy (specColl->rescHier, collInfo2, NAME_LEN);
 
                     return (0);
                 } else if (strcmp (type, LINK_POINT_STR) == 0) {
@@ -3375,7 +3383,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 std::string first_resc;
                 parse.first_resc( first_resc );
 
-                strncpy (specColl->resource, first_resc.c_str(), len);
+                strncpy (specColl->resource, first_resc.c_str(), NAME_LEN);
                 strncpy (specColl->rescHier, tmpPtr1, len);
                 tmpPtr2 += 3;
 

@@ -74,8 +74,6 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
     struct_obj.comm( _comm );
 
     struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
-rodsLog( LOG_NOTICE, "XXXX _rsSubStructFileStat :: file [%s], obj [%s]", struct_obj.sub_file_path().c_str(), struct_obj.logical_path().c_str() );
-
 
     // =-=-=-=-=-=-=-
     // call abstracted interface to stat
