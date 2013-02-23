@@ -1634,7 +1634,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // parse context string into property pairs assuming a ; as a separator
                 std::vector< std::string > props;
-                eirods::string_tokenize( _context, props, ";" );
+                eirods::string_tokenize( _context, ";", props );
                 
                 // =-=-=-=-=-=-=-
                 // parse key/property pairs using = as a separator and
@@ -1644,7 +1644,7 @@ extern "C" {
                     // =-=-=-=-=-=-=-
                     // break up key and value into two strings
                     std::vector< std::string > vals;
-                    eirods::string_tokenize( *itr, vals, "=" );
+                    eirods::string_tokenize( *itr, "=", vals );
                     
                     // =-=-=-=-=-=-=-
                     // break up key and value into two strings

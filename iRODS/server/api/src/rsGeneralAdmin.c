@@ -5,13 +5,22 @@
 /* This is script-generated code (for the most part).  */ 
 /* See generalAdmin.h for a description of this API call.*/
 
+// =-=-=-=-=-=-=-
+// irods includes
 #include "generalAdmin.h"
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
-#include "eirods_children_parser.h"
 
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 #include <string>
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_children_parser.h"
+#include "eirods_string_tokenize.h"
+
 
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
@@ -109,14 +118,43 @@ _addResource(
     rescInfo_t rescInfo;
     static const unsigned int argc = 7;
     char *args[argc];
+    
+    // =-=-=-=-=-=-=-
+    // pull location:path into string for parsing
+    std::string loc_path( _generalAdminInp->arg5 );
+rodsLog( LOG_NOTICE, "XXXX - _addResource :: loc:path [%s]", loc_path.c_str() );
+
+    if( !loc_path.empty() ) {
+        // =-=-=-=-=-=-=-
+        // separate the location:/vault/path pair
+        std::vector< std::string > tok;
+        eirods::string_tokenize( loc_path, ":", tok );
+
+        // =-=-=-=-=-=-=-
+        // if we have exactly 2 tokens, things are going well
+        if( 2 == tok.size()  ) {
+            // =-=-=-=-=-=-=-
+            // location is index 0, path is index 1
+rodsLog( LOG_NOTICE, "XXXX - _addResource :: tok0 [%s]", tok[0].c_str() );
+rodsLog( LOG_NOTICE, "XXXX - _addResource :: tok1 [%s]", tok[1].c_str() );
+            strncpy( rescInfo.rescLoc,       tok[0].c_str(), sizeof rescInfo.rescLoc );
+            strncpy( rescInfo.rescVaultPath, tok[1].c_str(), sizeof rescInfo.rescVaultPath );
+        } else {
+            rodsLog( LOG_ERROR, "_addResource - unexpected number of tokens for location:vault_path pair [%d]", tok.size() );
+            rodsLog( LOG_ERROR, "_addResource - location:path string [%s]", loc_path.c_str() );
+        }
+    }  else {
+        strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
+        strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
+
+    }
+
 
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
     strncpy(rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName);
     strncpy(rescInfo.rescType,      _generalAdminInp->arg3, sizeof rescInfo.rescType);
     strncpy(rescInfo.rescClass,     _generalAdminInp->arg4, sizeof rescInfo.rescClass);
-    strncpy(rescInfo.rescLoc,       _generalAdminInp->arg5, sizeof rescInfo.rescLoc);
-    strncpy(rescInfo.rescVaultPath, _generalAdminInp->arg6, sizeof rescInfo.rescVaultPath);
     strncpy(rescInfo.rescContext,   _generalAdminInp->arg7, sizeof rescInfo.rescContext);
     strncpy(rescInfo.zoneName,      _generalAdminInp->arg8, sizeof rescInfo.zoneName);
     strncpy(rescInfo.rescChildren,  "", 1);

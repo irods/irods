@@ -683,23 +683,26 @@ queAddr (rodsServerHost_t *rodsServerHost, char *myHostName)
     }
 
     /* gethostbyname could hang for some address */
-
-    beforeTime = time (0);
-    if ((hostEnt = gethostbyname (myHostName)) == NULL) {
-	status = SYS_GET_HOSTNAME_ERR - errno;
-        if (ProcessType == SERVER_PT) {
-	    rodsLog (LOG_NOTICE,
-              "queAddr: gethostbyname error for %s ,errno = %d\n",
-              myHostName, errno);
-	}
-        return (status);
-    }
-    afterTime = time (0);
-    if (afterTime - beforeTime >= 2) {
-        rodsLog (LOG_NOTICE,
-         "WARNING WARNING: gethostbyname of %s is taking %d sec. This could severely affect interactivity of your Rods system",
-         myHostName, afterTime - beforeTime);
-	/* XXXXXX may want to mark resource down later */
+    // =-=-=-=-=-=-=-
+    // JMC :: consider empty host for coordinating nodes
+    if( eirods::EMPTY_RESC_HOST != myHostName ) {
+        beforeTime = time (0);
+        if ((hostEnt = gethostbyname (myHostName)) == NULL) {
+        status = SYS_GET_HOSTNAME_ERR - errno;
+            if (ProcessType == SERVER_PT) {
+            rodsLog (LOG_NOTICE,
+                  "queAddr: gethostbyname error for %s ,errno = %d\n",
+                  myHostName, errno);
+        }
+            return (status);
+        }
+        afterTime = time (0);
+        if (afterTime - beforeTime >= 2) {
+            rodsLog (LOG_NOTICE,
+             "WARNING WARNING: gethostbyname of %s is taking %d sec. This could severely affect interactivity of your Rods system",
+             myHostName, afterTime - beforeTime);
+        /* XXXXXX may want to mark resource down later */
+        }
     }
 
     if (strcasecmp (myHostName, hostEnt->h_name) != 0) {

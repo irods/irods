@@ -22,6 +22,9 @@ int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
              bytesBuf_t *fileWriteInpBBuf)
 {
+eirods::stacktrace st;
+st.trace();
+st.dump();
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int retVal;
@@ -31,6 +34,7 @@ rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
                                          &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileWrite :: localhost" );
 	retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
         retVal = remoteFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf,
@@ -105,6 +109,8 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
         return -1;
     }
     
+rodsLog( LOG_NOTICE, "XXXX - rsFileWrite :: fd %d, fileInx %d", FileDesc[fileWriteInp->fileInx].fd, fileWriteInp->fileInx );
+
     // =-=-=-=-=-=-=-
     // make a call to the resource write
     eirods::file_object file_obj( rsComm,

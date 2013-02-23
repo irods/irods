@@ -33,6 +33,7 @@
 // eirods includes
 #include "eirods_resource_backport.h"
 #include "eirods_resource_redirect.h"
+#include "eirods_hierarchy_parser.h"
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -475,13 +476,25 @@ l3Create (rsComm_t *rsComm, int l1descInx)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Create - failed in specColl open", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-                 MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
+        rstrcpy (subFile.addr.hostAddr, location.c_str(), NAME_LEN );
+                 
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         l3descInx = rsSubStructFileCreate (rsComm, &subFile);

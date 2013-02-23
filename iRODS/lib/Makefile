@@ -69,6 +69,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
+		$(libCoreObjDir)/eirods_string_tokenize.o \
 		$(libCoreObjDir)/eirods_operation_rule_execution_manager.o \
 		$(libCoreObjDir)/eirods_plugin_base.o \
 		$(libCoreObjDir)/eirods_resource_plugin.o \

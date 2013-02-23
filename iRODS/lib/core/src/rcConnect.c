@@ -20,6 +20,8 @@
 #endif
 #endif
 
+#include "eirods_stacktrace.h"
+
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
 int reconnFlag, rErrMsg_t *errMsg)
@@ -244,6 +246,9 @@ setSockAddr (struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort)
     myHostent = gethostbyname (rodsHost);
 
     if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
+eirods::stacktrace st;
+st.trace();
+st.dump();
 	rodsLog (LOG_ERROR, "unknown hostname: %s", rodsHost);
 	return (USER_RODS_HOSTNAME_ERR - errno);
     }
@@ -411,6 +416,9 @@ cliReconnManager (rcComm_t *conn)
         myHostent = gethostbyname (conn->svrVersion->reconnAddr);
 
         if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
+eirods::stacktrace st;
+st.trace();
+st.dump();
             rodsLog (LOG_ERROR, "cliReconnManager: unknown hostname: %s",
               conn->svrVersion->reconnAddr);
             return;

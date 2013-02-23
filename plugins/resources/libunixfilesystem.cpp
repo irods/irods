@@ -288,7 +288,7 @@ extern "C" {
  
             return ERROR( fd, msg.str() );
         }
-                
+rodsLog( LOG_NOTICE, "XXXX - unix file plugin open fd %d", fd );                
         // =-=-=-=-=-=-=-
         // declare victory!
         return CODE( fd );
@@ -356,6 +356,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make the call to write
         int status = write( _object->file_descriptor(), _buf, _len );
+rodsLog( LOG_NOTICE, "XXXX - unix file plugin write fd %d, status %d",  _object->file_descriptor(), status );
 
         // =-=-=-=-=-=-=-
         // pass along an error if it was not successful
@@ -393,6 +394,7 @@ extern "C" {
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
             return PASSMSG(msg.str(), ret);
         }
+rodsLog( LOG_NOTICE, "XXXX - unix file plugin write fd %d",  _object->file_descriptor() );                
         
         // =-=-=-=-=-=-=-
         // make the call to close
@@ -1612,7 +1614,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // tokenize context string into key/val pairs assuming a ; as a separator
                 std::vector< std::string > key_vals;
-                eirods::string_tokenize( _context, key_vals, ";" );
+                eirods::string_tokenize( _context, ";", key_vals );
 
                 // =-=-=-=-=-=-=-
                 // tokenize each key/val pair using = as a separator and
@@ -1624,7 +1626,7 @@ extern "C" {
                         // =-=-=-=-=-=-=-
                         // break up key and value into two strings
                         std::vector< std::string > vals;
-                        eirods::string_tokenize( *itr, vals, "=" );
+                        eirods::string_tokenize( *itr, "=", vals );
                         
                         // =-=-=-=-=-=-=-
                         // break up key and value into two strings

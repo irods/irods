@@ -803,6 +803,7 @@ extern "C" {
             msg << status;
             return ERROR( status, msg.str() );
         } else {
+rodsLog( LOG_NOTICE, "XXXX - tarFileOpenPlugin :: fd %d, struct file index %d, sub index %d", status, struct_file_index, sub_index );
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
             _object->file_descriptor( sub_index );
@@ -867,6 +868,10 @@ extern "C" {
                       std::string*                   _results,
                       void*                          _buf, 
                       int                            _len ) {
+
+int sub_index = _object->file_descriptor();
+rodsLog( LOG_NOTICE, "XXXX - tarFileWritePlugin :: fd %d, struct file index %d, sub index %d", 
+PluginTarSubFileDesc[ sub_index ].fd, PluginTarSubFileDesc[ sub_index ].structFileInx, sub_index );
 
         // =-=-=-=-=-=-=-
         // check incoming parameters

@@ -24,6 +24,15 @@
 #include "rodsType.h"
 #include "rodsUser.h"
 
+#include <string>
+
+// =-=-=-=-=-=-=-
+// eirods constants
+namespace eirods {
+    const std::string EMPTY_RESC_HOST( "EMPTY_RESC_HOST" );
+    const std::string EMPTY_RESC_PATH( "EMPTY_RESC_PATH" );
+}; // namespace eirods
+
 /* this defines the "copies" condition */
 #define ALL_COPIES      -1      /* "all" */ 
 

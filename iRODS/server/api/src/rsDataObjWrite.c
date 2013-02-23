@@ -12,6 +12,12 @@
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
 #include "reGlobalsExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+#include "eirods_hierarchy_parser.h" 
+
+
 int
 applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf, char *objPath)
 {
@@ -108,16 +114,29 @@ bytesBuf_t *dataObjWriteInpBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Write - failed in specColl open", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileFdOprInp_t subStructFileWriteInp;
         memset (&subStructFileWriteInp, 0, sizeof (subStructFileWriteInp));
         subStructFileWriteInp.type = dataObjInfo->specColl->type;
         subStructFileWriteInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileWriteInp.len = len;
-        rstrcpy (subStructFileWriteInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
-        bytesWritten = rsSubStructFileWrite (rsComm, &subStructFileWriteInp, 
-	  dataObjWriteInpBBuf);
+        rstrcpy( subStructFileWriteInp.addr.hostAddr, location.c_str(), NAME_LEN );
+rodsLog( LOG_NOTICE, "XXXX - l3Write :: location [%s], l3descInx %d", location.c_str(), L1desc[l1descInx].l3descInx ); 
+        bytesWritten = rsSubStructFileWrite( rsComm, &subStructFileWriteInp, dataObjWriteInpBBuf );
+	  
     } else {
        #if 0 // JMC legacy resource 
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;

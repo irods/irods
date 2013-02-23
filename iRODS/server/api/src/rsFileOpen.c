@@ -22,6 +22,10 @@
 int
 rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
 {
+eirods::stacktrace st;
+st.trace();
+st.dump();
+
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int fileInx;
@@ -59,6 +63,7 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     remoteFlag = rodsServerHost->localFlag;
     
     if (remoteFlag == LOCAL_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: LOCALHOST" );
         fd = _rsFileOpen (rsComm, fileOpenInp);
     } else if (remoteFlag == REMOTE_HOST) {
         fd = remoteFileOpen (rsComm, fileOpenInp, rodsServerHost);
@@ -76,9 +81,9 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     if (fd < 0) {
         return (fd);
     }
-
     fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->objPath, fileOpenInp->fileName, fileOpenInp->resc_hier_,
                                     fileOpenInp->fileType, fd, fileOpenInp->mode);
+rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: fd %d, fileInx %d", fd, fileInx );
 
     return (fileInx);
 }

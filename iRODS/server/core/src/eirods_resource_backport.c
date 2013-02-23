@@ -309,7 +309,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // split the list into a vector of strings using a % delimiter
         std::vector< std::string > resources;
-        string_tokenize( _resc_list, resources, "%" );
+        string_tokenize( _resc_list, "%", resources );
 
         // =-=-=-=-=-=-=-
         // pick a good resource which is availabe out of the list,
