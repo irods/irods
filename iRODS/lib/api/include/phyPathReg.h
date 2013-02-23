@@ -51,7 +51,7 @@ int
 unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
 int
 structFileSupport (rsComm_t *rsComm, char *collection, char *collType, 
-rescInfo_t *rescInfo);
+char* );//rescInfo_t *rescInfo);
 int
 linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
 #else
