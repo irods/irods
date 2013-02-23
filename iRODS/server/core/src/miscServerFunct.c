@@ -32,6 +32,8 @@ char *__loc1;
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+#include "eirods_stacktrace.h"
+
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 {
@@ -1743,6 +1745,9 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
                   "svrPortalPutGetRbudp() - getpeername() failed: errno=%d", 
               errno);
                 recvClose (&rbudpReceiver);
+eirods::stacktrace st;
+st.trace();
+st.dump();
                 return (USER_RODS_HOSTNAME_ERR);
         }
 
@@ -1779,6 +1784,10 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
               "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
               errno);
             sendClose (&rbudpSender);
+
+eirods::stacktrace st;
+st.trace();
+st.dump();
             return (USER_RODS_HOSTNAME_ERR);
         }
         rbudpSender.rbudpBase.udpServerAddr.sin_port = 

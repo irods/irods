@@ -14,6 +14,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_hierarchy_parser.h" 
 
 int
 applyRuleForPostProcForRead(rsComm_t *rsComm, bytesBuf_t *dataObjReadOutBBuf, char *objPath)
@@ -117,14 +118,26 @@ bytesBuf_t *dataObjReadOutBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Read - failed in specColl open", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
 	subStructFileFdOprInp_t subStructFileReadInp;
         memset (&subStructFileReadInp, 0, sizeof (subStructFileReadInp));
         subStructFileReadInp.type = dataObjInfo->specColl->type;
         subStructFileReadInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileReadInp.len = len;
-        rstrcpy (subStructFileReadInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
+        rstrcpy (subStructFileReadInp.addr.hostAddr, location.c_str(), NAME_LEN );
         bytesRead = rsSubStructFileRead (rsComm, &subStructFileReadInp, dataObjReadOutBBuf);
     } else {
         fileReadInp_t fileReadInp;

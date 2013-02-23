@@ -707,13 +707,26 @@ l3Close (rsComm_t *rsComm, int l1descInx)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+
+    std::string last_resc;
+    parser.last_resc( last_resc );
+
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Close - failed in specColl open", ret ) );
+        return -1;
+    }
+
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileFdOprInp_t subStructFileCloseInp;
         memset (&subStructFileCloseInp, 0, sizeof (subStructFileCloseInp));
         subStructFileCloseInp.type = dataObjInfo->specColl->type;
         subStructFileCloseInp.fd = L1desc[l1descInx].l3descInx;
-        rstrcpy (subStructFileCloseInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        rstrcpy (subStructFileCloseInp.addr.hostAddr, location.c_str(), NAME_LEN);
         status = rsSubStructFileClose (rsComm, &subStructFileCloseInp);
     } else {
 
