@@ -1028,9 +1028,6 @@ setRemoteAddr (int sock, struct sockaddr_in *remoteAddr)
                     &laddrlen) < 0) {
         rodsLog (LOG_NOTICE,
                  "setLocalAddr() -- getpeername() failed: errno=%d", errno);
-eirods::stacktrace st;
-st.trace();
-st.dump();
         return (USER_RODS_HOSTNAME_ERR);
     }
 
@@ -1055,10 +1052,6 @@ setLocalAddr (int sock, struct sockaddr_in *localAddr)
         rodsLog (LOG_NOTICE,
                  "setLocalAddr() -- getsockname() failed: errno=%d",
                  errno);
-
-eirods::stacktrace st;
-st.trace();
-st.dump();
         return USER_RODS_HOSTNAME_ERR;
     }
     return ntohs (localAddr->sin_port);

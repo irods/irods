@@ -59,16 +59,9 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     remoteFlag = rodsServerHost->localFlag;
     
     if (remoteFlag == LOCAL_HOST) {
-
-rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: LOCAL host [%s]", 
-         rodsServerHost->hostName->name );
         fd = _rsFileOpen (rsComm, fileOpenInp);
-rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: LOCAL fd [%d]", fd );
     } else if (remoteFlag == REMOTE_HOST) {
-rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: REMOTE [%s]", 
-         rodsServerHost->hostName->name );
         fd = remoteFileOpen (rsComm, fileOpenInp, rodsServerHost);
-rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: REMOTE fd [%d]", fd );
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);

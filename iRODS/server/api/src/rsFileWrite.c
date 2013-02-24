@@ -31,11 +31,9 @@ rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
 
     if (remoteFlag == LOCAL_HOST) {
 
-rodsLog( LOG_NOTICE, "XXXX - rsFileWrite :: LOCAL fd [%d] host [%s]", 
          FileDesc[ fileWriteInp->fileInx ].fd, rodsServerHost->hostName->name );
 	retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
-rodsLog( LOG_NOTICE, "XXXX - rsFileWrite :: REMOTE fd [%d] host [%s]", 
          FileDesc[ fileWriteInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = remoteFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf,
                                   rodsServerHost);

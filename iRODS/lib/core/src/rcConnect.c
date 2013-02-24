@@ -413,9 +413,6 @@ cliReconnManager (rcComm_t *conn)
         myHostent = gethostbyname (conn->svrVersion->reconnAddr);
 
         if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
-eirods::stacktrace st;
-st.trace();
-st.dump();
             rodsLog (LOG_ERROR, "cliReconnManager: unknown hostname: %s",
               conn->svrVersion->reconnAddr);
             return;
