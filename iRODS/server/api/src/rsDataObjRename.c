@@ -153,6 +153,22 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 }
 
 int
+getMultiCopyPerResc ( rsComm_t *rsComm ) // JMC - backport 4556
+{
+    ruleExecInfo_t rei;
+
+    memset (&rei, 0, sizeof (rei));
+    rei.rsComm = rsComm; // JMC - backport 4556
+    applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
+    if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+int
 _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 {
 #ifdef RODS_CAT
