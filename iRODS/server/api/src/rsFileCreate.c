@@ -43,9 +43,13 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
     }
 
     if (remoteFlag == LOCAL_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: LOCAL host [%s]", rodsServerHost->hostName->name );
         fd = _rsFileCreate (rsComm, fileCreateInp, rodsServerHost);
+rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: LOCAL fd [%d]", fd );
     } else if (remoteFlag == REMOTE_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: REMOTE host [%s]", rodsServerHost->hostName->name );
         fd = remoteFileCreate (rsComm, fileCreateInp, rodsServerHost);
+rodsLog( LOG_NOTICE, "XXXX - rsFileCreate :: LOCAL fd [%d]", fd );
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);

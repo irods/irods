@@ -22,20 +22,21 @@ int
 rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
              bytesBuf_t *fileWriteInpBBuf)
 {
-eirods::stacktrace st;
-st.trace();
-st.dump();
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int retVal;
-
 
     remoteFlag = getServerHostByFileInx (fileWriteInp->fileInx, 
                                          &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
+
+rodsLog( LOG_NOTICE, "XXXX - rsFileWrite :: LOCAL fd [%d] host [%s]", 
+         FileDesc[ fileWriteInp->fileInx ].fd, rodsServerHost->hostName->name );
 	retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileWrite :: REMOTE fd [%d] host [%s]", 
+         FileDesc[ fileWriteInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = remoteFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf,
                                   rodsServerHost);
     } else {

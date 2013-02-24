@@ -37,8 +37,10 @@ rsFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
     }
  
     if (remoteFlag == LOCAL_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileRead :: LOCAL inx [%d] host [%s]", FileDesc[ fileReadInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = _rsFileRead (rsComm, fileReadInp, fileReadOutBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
+rodsLog( LOG_NOTICE, "XXXX - rsFileRead :: REMOTE inx [%d] host [%s]", FileDesc[ fileReadInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = remoteFileRead (rsComm, fileReadInp, fileReadOutBBuf,
                                  rodsServerHost);
     } else {

@@ -288,7 +288,7 @@ extern "C" {
  
             return ERROR( fd, msg.str() );
         }
-rodsLog( LOG_NOTICE, "XXXX - unix file plugin open fd %d", fd );                
+        
         // =-=-=-=-=-=-=-
         // declare victory!
         return CODE( fd );
@@ -356,7 +356,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix file plugin open fd %d", fd );
         // =-=-=-=-=-=-=-
         // make the call to write
         int status = write( _object->file_descriptor(), _buf, _len );
-rodsLog( LOG_NOTICE, "XXXX - unix file plugin write fd %d, status %d",  _object->file_descriptor(), status );
 
         // =-=-=-=-=-=-=-
         // pass along an error if it was not successful
@@ -394,7 +393,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix file plugin write fd %d, status %d",  _object-
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
             return PASSMSG(msg.str(), ret);
         }
-rodsLog( LOG_NOTICE, "XXXX - unix file plugin write fd %d",  _object->file_descriptor() );                
         
         // =-=-=-=-=-=-=-
         // make the call to close
