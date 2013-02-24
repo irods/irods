@@ -27,10 +27,8 @@ rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
                                          &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-         FileDesc[ fileCloseInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = _rsFileClose (rsComm, fileCloseInp);
     } else if (remoteFlag == REMOTE_HOST) {
-         FileDesc[ fileCloseInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = remoteFileClose (rsComm, fileCloseInp, rodsServerHost);
     } else {
         if (remoteFlag < 0) {

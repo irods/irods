@@ -30,11 +30,8 @@ rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
                                          &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-
-         FileDesc[ fileWriteInp->fileInx ].fd, rodsServerHost->hostName->name );
-	retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
+	    retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
-         FileDesc[ fileWriteInp->fileInx ].fd, rodsServerHost->hostName->name );
         retVal = remoteFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf,
                                   rodsServerHost);
     } else {
