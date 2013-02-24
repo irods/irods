@@ -222,11 +222,13 @@ preProcParaGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
     dataOprInp_t dataOprInp;
 
     initDataOprInp (&dataOprInp, l1descInx, GET_OPR);
-    /* add RESC_NAME_KW for getNumThreads */
+    /* add RESC_HIER_STR_KW for getNumThreads */
     if (L1desc[l1descInx].dataObjInfo != NULL && 
-        L1desc[l1descInx].dataObjInfo->rescInfo != NULL) {
-        addKeyVal (&dataOprInp.condInput, RESC_NAME_KW, 
-                   L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
+        L1desc[l1descInx].dataObjInfo->rescHier != NULL) {
+        //addKeyVal (&dataOprInp.condInput, RESC_NAME_KW, 
+        //           L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
+        addKeyVal (&dataOprInp.condInput, RESC_HIER_STR_KW, 
+                   L1desc[l1descInx].dataObjInfo->rescHier );
     } 
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         status =  remoteDataGet (rsComm, &dataOprInp, portalOprOut,

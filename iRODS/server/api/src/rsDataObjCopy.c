@@ -256,7 +256,8 @@ transferStat_t **transStat)
             srcRescName = NULL;
 
 		if( srcDataObjInfo != NULL ) {
-            destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,destRescName, srcRescName);
+            destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
+                                                        srcDataObjInfo->rescHier, destDataObjInfo->rescHier );//destRescName, srcRescName);
 
         }
         	

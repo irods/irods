@@ -309,10 +309,10 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
                     rmdir( phyBunDir );
                     return ( UNIX_FILE_LINK_ERR - errno );
                 } else {
-                     rodsLog( LOG_NOTICE, "_rsStructFileBundle - LINK  [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
+                     //rodsLog( LOG_NOTICE, "_rsStructFileBundle - LINK  [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
                 }
             } else {
-                rodsLog( LOG_NOTICE, "_rsStructFileBundle - skipping [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
+                //rodsLog( LOG_NOTICE, "_rsStructFileBundle - skipping [%s] on resc [%s]", collEnt->phyPath, collEnt->resc_hier );
             }
         } else {
             // =-=-=-=-=-=-=-

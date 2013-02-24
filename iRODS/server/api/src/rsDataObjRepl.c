@@ -797,8 +797,8 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         std::string       hier;
         int               local    = LOCAL_HOST;
         rodsServerHost_t* host     =  0;
-        char*             tmp_hier = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
-        if( 0 == tmp_hier ) {
+        char*             dst_hier_str = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+        if( 0 == dst_hier_str ) {
             eirods::error ret = eirods::resource_redirect( op_name, rsComm, &dest_inp, hier, host, local );
             if( !ret.ok() ) { 
                 std::stringstream msg;
@@ -811,7 +811,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, hier.c_str() );
        
         } else {
-            hier = tmp_hier;  
+            hier = dst_hier_str;  
         }
 
         // =-=-=-=-=-=-=- 
@@ -837,20 +837,28 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         }
 #endif // JMC - legacy resource
 
+
         if (destRescInfo != NULL)
             destRescName = destRescInfo->rescName;
         else
             destRescName = NULL;
 
 
-        if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL)
+        if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL) {
             srcRescName = srcDataObjInfo->rescInfo->rescName;
-        else
+        } else {
             srcRescName = NULL;
+        }
+            
+        char* src_hier_str = 0;
+        if (srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL) {
+            src_hier_str = srcDataObjInfo->rescHier;
+        } 
 
         l1DataObjInp->numThreads = dataObjInp->numThreads =
             getNumThreads( rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
-                           &dataObjInp->condInput, destRescName, srcRescName);
+                           //&dataObjInp->condInput, destRescName, srcRescName);
+                           &dataObjInp->condInput, dst_hier_str, src_hier_str );
 
         if( l1DataObjInp->numThreads > 0 && 
             L1desc[destL1descInx].stageFlag == NO_STAGING) {
