@@ -94,13 +94,22 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
             eirods::log( PASS( false, -1, msg.str(), err ) );
         }
 
+        // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        eirods::error ret = eirods::get_loc_for_hier_string( specColl->rescHier, location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "_rsSyncMountedColl - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
+
+
         addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, specColl->rescHier );
-        rstrcpy (structFileOprInp.addr.hostAddr, rescInfo.rescLoc, NAME_LEN);
+        rstrcpy (structFileOprInp.addr.hostAddr, location.c_str(), NAME_LEN);
         structFileOprInp.oprType = oprType;
         structFileOprInp.specColl = specColl;
-    rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync" );
         status = rsStructFileSync (rsComm, &structFileOprInp);
-    rodsLog( LOG_NOTICE, "_rsSyncMountedColl - calling rsStructFileSync. done." );
+   
 
     } else {			/* not a struct file */
         status = SYS_COLL_NOT_MOUNTED_ERR;

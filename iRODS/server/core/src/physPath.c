@@ -455,12 +455,22 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         eirods::log( PASS( false, -1, "_dataObjChksum - failed.", err ) );
     }
 
+    std::string location;
+    eirods::error ret;
     // JMC - legacy resource - switch ( RescTypeDef[rescTypeInx].rescCat) {
     switch( category ) {
     case FILE_CAT:
+        // =-=-=-=-=-=-=-
+        // get the resource location for the hier string leaf
+        ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "_dataObjChksum - failed in get_loc_for_hier_string", ret ) );
+            return -1;
+        }
+
         memset (&fileChksumInp, 0, sizeof (fileChksumInp));
         fileChksumInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,NAME_LEN);
+        rstrcpy (fileChksumInp.addr.hostAddr, location.c_str(),NAME_LEN);
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
@@ -644,8 +654,16 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
     char *oldPtr, *newPtr;
     char *filePath = fileRenameInp->oldFileName;
     // JMC - legacy resource - fileRenameInp->fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
+    // =-=-=-=-=-=-=-
+    // get the resource location for the hier string leaf
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( fileRenameInp->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "renameFilePathToNewDir - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
 
-    rstrcpy (fileRenameInp->addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+    rstrcpy (fileRenameInp->addr.hostAddr, location.c_str(), NAME_LEN);
 
     len = strlen (rescInfo->rescVaultPath);
 
@@ -752,6 +770,15 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN)
         return SYS_RESC_IS_DOWN;
+    
+    // =-=-=-=-=-=-=-
+    // get the resource location for the hier string leaf
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "syncDataObjPhyPathS - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
 
     /* Save the current objPath */
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
@@ -785,7 +812,7 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* rename it */
     // JMC - legacy resource - fileRenameInp.fileType = (fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-    rstrcpy (fileRenameInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+    rstrcpy (fileRenameInp.addr.hostAddr, location.c_str(), NAME_LEN);
     rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,
              MAX_NAME_LEN);
     status = rsFileRename (rsComm, &fileRenameInp);
@@ -1019,7 +1046,7 @@ initStructFileOprInp (rsComm_t *rsComm,
              NAME_LEN);
     rstrcpy (structFileOprInp->specColl->phyPath,
              dataObjInfo->filePath, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp->addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+    //rstrcpy (structFileOprInp->addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
              NAME_LEN);
     /* set the cacheDir */
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);

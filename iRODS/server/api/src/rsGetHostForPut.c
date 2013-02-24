@@ -22,10 +22,11 @@
 #include "eirods_resource_backport.h"
 
 
-int
-rsGetHostForPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                 char **outHost)
-{
+int rsGetHostForPut(
+        rsComm_t*     rsComm, 
+        dataObjInp_t* dataObjInp,
+        char **       outHost ) {
+
     int status = 0;
     rescGrpInfo_t *myRescGrpInfo;
     rescInfo_t *myRescInfo = 0;
@@ -102,6 +103,7 @@ rsGetHostForPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         myRescInfo = myRescGrpInfo->rescInfo;
         freeAllRescGrpInfo (myRescGrpInfo);
     }
+
     /* get down here when we got a valid myRescInfo */
     bzero (&addr, sizeof (addr));
     rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);

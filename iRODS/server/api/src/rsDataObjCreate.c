@@ -476,18 +476,15 @@ l3Create (rsComm_t *rsComm, int l1descInx)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Create - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "l3Create - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
+
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
@@ -523,13 +520,23 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int retryCnt = 0;
     int chkType = 0; // JMC - backport 4774
 
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3CreateByObjInfo - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+
     fileCreateInp_t fileCreateInp;
     memset (&fileCreateInp, 0, sizeof (fileCreateInp));
-    rstrcpy( fileCreateInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-    rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier,           MAX_NAME_LEN );
-    rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,            MAX_NAME_LEN );
+    rstrcpy( fileCreateInp.resc_name_, location.c_str(),      MAX_NAME_LEN );
+    rstrcpy( fileCreateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+    rstrcpy( fileCreateInp.objPath,    dataObjInfo->objPath,  MAX_NAME_LEN );
     fileCreateInp.fileType = static_cast< fileDriverType_t >( -1 );// RescTypeDef[rescTypeInx].driverType;
-    rstrcpy( fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc, NAME_LEN );
+    rstrcpy( fileCreateInp.addr.hostAddr, location.c_str(), NAME_LEN );
              
     rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
     fileCreateInp.mode = getFileMode (dataObjInp);

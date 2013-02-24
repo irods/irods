@@ -579,6 +579,34 @@ st.dump();
 
     } // get_host_for_hier_string
 
+    // =-=-=-=-=-=-=-
+    // function which returns the host name for a given hier string
+    error get_loc_for_hier_string( 
+               const std::string& _hier, 
+                     std::string& _loc ) {
+        // =-=-=-=-=-=-=-
+        // use the parser to get the leaf resc in the string 
+        hierarchy_parser parser;
+        parser.set_string( _hier );
+
+        std::string last_resc;
+        parser.last_resc( last_resc );
+
+        std::string location;
+        error ret = get_resource_property< std::string >( last_resc, "location", location );
+        if( !ret.ok() ) {
+            location = "";
+            return PASSMSG( "get_loc_for_hier_string - failed in get_resource_property", ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // set out variable and return
+        _loc = location;
+
+        return SUCCESS();
+
+    } // get_loc_for_hier_string
+
 }; // namespace eirods
 
 

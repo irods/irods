@@ -72,7 +72,7 @@ rsStructFileBundle (rsComm_t *rsComm,
 #endif
 #if 0
     bzero (&rescAddr, sizeof (rescAddr));
-    rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
+    //rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
     remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {

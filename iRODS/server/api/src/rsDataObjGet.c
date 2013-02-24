@@ -309,20 +309,18 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3FileGetSingleBuf - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
-        eirods::hierarchy_parser parser;
-        parser.set_string( dataObjInfo->rescHier );
 
-        std::string last_resc;
-        parser.last_resc( last_resc );
 
-        std::string location;
-        eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
-        if( !ret.ok() ) {
-            eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
-            return -1;
-        }
 
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
@@ -348,8 +346,7 @@ l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,
         memset (&fileGetInp, 0, sizeof (fileGetInp));
         dataObjInp = L1desc[l1descInx].dataObjInp;
         fileGetInp.fileType = static_cast< fileDriverType_t >( -1 );//(fileDriverType_t)RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileGetInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
-                 NAME_LEN);
+        rstrcpy (fileGetInp.addr.hostAddr,  location.c_str(), NAME_LEN);
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy( fileGetInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
         rstrcpy( fileGetInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );

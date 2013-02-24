@@ -44,7 +44,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/rsLog.o \
 		$(svrCoreObjDir)/rsRe.o	\
 		$(svrCoreObjDir)/xmsgLib.o \
-		$(svrCoreObjDir)/resource.o \
 		$(svrCoreObjDir)/collection.o	\
 		$(svrCoreObjDir)/objDesc.o	\
 		$(svrCoreObjDir)/specColl.o	\

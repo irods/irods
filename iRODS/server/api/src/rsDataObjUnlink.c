@@ -398,18 +398,15 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     }
     // =-=-=-=-=-=-=-
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "l3Unlink - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
+
 
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) 
         return SYS_RESC_IS_DOWN;

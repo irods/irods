@@ -246,9 +246,6 @@ setSockAddr (struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort)
     myHostent = gethostbyname (rodsHost);
 
     if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
-eirods::stacktrace st;
-st.trace();
-st.dump();
 	rodsLog (LOG_ERROR, "unknown hostname: %s", rodsHost);
 	return (USER_RODS_HOSTNAME_ERR - errno);
     }

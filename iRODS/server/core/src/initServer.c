@@ -107,7 +107,7 @@ rodsServerHost_t **rodsServerHost)
     }
 
     memset (&addr, 0, sizeof (addr));
-    rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+    //rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
 
     remoteFlag = resolveHost (&addr, rodsServerHost);
 

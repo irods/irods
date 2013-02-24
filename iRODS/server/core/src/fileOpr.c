@@ -17,6 +17,7 @@
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 initFileDesc ()
@@ -479,14 +480,22 @@ filePathTypeInResc (
     rodsStat_t *myStat = NULL;
     int status;
 
+    // =-=-=-=-=-=-=-
+    // get location of leaf in hier string
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "filePathTypeInResc - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
+    
     memset (&fileStatInp, 0, sizeof (fileStatInp));
-
     rstrcpy (fileStatInp.fileName, fileName, MAX_NAME_LEN);
     rstrcpy (fileStatInp.rescHier, rescHier, MAX_NAME_LEN);
     rstrcpy (fileStatInp.objPath,  objPath,  MAX_NAME_LEN);
     rescTypeInx = rescInfo->rescTypeInx;
     fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - RescTypeDef[rescTypeInx].driverType;
-    rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
+    rstrcpy (fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
     if (status < 0 || NULL == myStat ) return status; // JMC cppcheck - nullptr

@@ -707,16 +707,10 @@ l3Close (rsComm_t *rsComm, int l1descInx)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Close - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "l3Close - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -793,19 +787,13 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
 
-        eirods::hierarchy_parser parser;
-        parser.set_string( dataObjInfo->rescHier );
-    
-        std::string last_resc;
-        parser.last_resc( last_resc );
-
         std::string location;
-        eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+        eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "l3Stat - failed in specColl open", ret ) );
+            eirods::log( PASSMSG( "l3Stat - failed in get_loc_for_hier_string", ret ) );
             return -1;
         }
-        
+
         subFile_t subFile;
         memset( &subFile, 0, sizeof( subFile ) );
         rstrcpy( subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN );

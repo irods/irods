@@ -28,6 +28,8 @@
 // =-=-=-=-=-=-=-
 // eirods resource includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
+#include "eirods_stacktrace.h"
 
 
 static rodsLong_t OneGig = (1024*1024*1024);
@@ -65,7 +67,6 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     }
 #endif // JMC - legacy resource
 
-
     rescGrpInfo_t rescGrpInfo;
     rescGrpInfo.rescInfo = 0;
     eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
@@ -74,10 +75,53 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
         return -1;
     }
 
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    dataObjInp_t      data_inp;
+    bzero( &data_inp, sizeof( data_inp ) );
+    rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, NAME_LEN );
+    bzero( &data_inp.condInput, sizeof( data_inp.condInput ) );
+    addKeyVal( &data_inp.condInput, DEST_RESC_NAME_KW, destRescName );
+
+    std::string       hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    char* hier_kw = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
+    if( hier_kw == NULL ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+						   &data_inp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsPhyBundleColl - failed in eirods::resource_redirect for [";
+            msg << data_inp.objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+   
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &phyBundleCollInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsPhyBundleColl - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+
+
     rodsHostAddr_t rescAddr;
     bzero (&rescAddr, sizeof (rescAddr));
 
-    rstrcpy (rescAddr.hostAddr, rescGrpInfo.rescInfo->rescLoc, NAME_LEN);
+    rstrcpy (rescAddr.hostAddr, location.c_str(), NAME_LEN);
     rodsServerHost_t* rodsServerHost = 0;
     int remoteFlag = resolveHost (&rescAddr, &rodsServerHost);
 
@@ -512,9 +556,6 @@ phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
     structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
     rstrcpy (structFileOprInp.specColl->resource, dataObjInfo->rescName,NAME_LEN);
     rstrcpy (structFileOprInp.specColl->phyPath,dataObjInfo->filePath, MAX_NAME_LEN);
-    
-    
-    //rstrcpy (structFileOprInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,NAME_LEN);
     addKeyVal( &structFileOprInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);

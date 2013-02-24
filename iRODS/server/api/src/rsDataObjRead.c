@@ -118,18 +118,15 @@ bytesBuf_t *dataObjReadOutBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Read - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "l3Read - failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
+
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
 	subStructFileFdOprInp_t subStructFileReadInp;

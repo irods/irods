@@ -114,16 +114,10 @@ bytesBuf_t *dataObjWriteInpBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Write - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "l3Write - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -134,7 +128,6 @@ bytesBuf_t *dataObjWriteInpBBuf)
         subStructFileWriteInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileWriteInp.len = len;
         rstrcpy( subStructFileWriteInp.addr.hostAddr, location.c_str(), NAME_LEN );
-rodsLog( LOG_NOTICE, "XXXX - l3Write :: location [%s], l3descInx %d", location.c_str(), L1desc[l1descInx].l3descInx ); 
         bytesWritten = rsSubStructFileWrite( rsComm, &subStructFileWriteInp, dataObjWriteInpBBuf );
 	  
     } else {

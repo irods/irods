@@ -1189,8 +1189,17 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 fileSyncToArchInp.dataSize      = srcDataObjInfo->dataSize;
                 fileSyncToArchInp.fileType      = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
                 fileSyncToArchInp.cacheFileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[cacheRescTypeInx].driverType;
-        
-                rstrcpy( fileSyncToArchInp.addr.hostAddr,  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN );
+                
+                // =-=-=-=-=-=-=-
+                // extract the host location from the resource hierarchy
+                std::string location;
+                eirods::error ret = eirods::get_loc_for_hier_string( srcDataObjInfo->rescHier, location );
+                if( !ret.ok() ) {
+                    eirods::log( PASSMSG( "l3FileSycn - failed in get_loc_for_hier_String", ret ) );
+                    return -1;
+                }
+                
+                rstrcpy( fileSyncToArchInp.addr.hostAddr, location.c_str(), NAME_LEN );
 
                 /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
                 rstrcpy( fileSyncToArchInp.filename,      destDataObjInfo->filePath, MAX_NAME_LEN);
@@ -1538,8 +1547,11 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             dataObjInp_t dataObjInp;
 
             bzero (&dataObjInp, sizeof (dataObjInp));
+            bzero (&dataObjInp.condInput, sizeof (dataObjInp.condInput));
             rstrcpy (dataObjInp.objPath, (*bunfileObjInfoHead)->objPath, MAX_NAME_LEN);
             status = sortObjInfoForOpen (rsComm, bunfileObjInfoHead, NULL, 0);
+
+            addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, (*bunfileObjInfoHead)->rescHier );
             if (status < 0) return status;
 
 #if 0 // JMC - legacy resource

@@ -63,7 +63,6 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     remoteFlag = rodsServerHost->localFlag;
     
     if (remoteFlag == LOCAL_HOST) {
-rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: LOCALHOST" );
         fd = _rsFileOpen (rsComm, fileOpenInp);
     } else if (remoteFlag == REMOTE_HOST) {
         fd = remoteFileOpen (rsComm, fileOpenInp, rodsServerHost);
@@ -83,7 +82,6 @@ rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: LOCALHOST" );
     }
     fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->objPath, fileOpenInp->fileName, fileOpenInp->resc_hier_,
                                     fileOpenInp->fileType, fd, fileOpenInp->mode);
-rodsLog( LOG_NOTICE, "XXXX - rsFileOpen :: fd %d, fileInx %d", fd, fileInx );
 
     return (fileInx);
 }

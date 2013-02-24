@@ -122,7 +122,6 @@ _addResource(
     // =-=-=-=-=-=-=-
     // pull location:path into string for parsing
     std::string loc_path( _generalAdminInp->arg5 );
-rodsLog( LOG_NOTICE, "XXXX - _addResource :: loc:path [%s]", loc_path.c_str() );
 
     if( !loc_path.empty() ) {
         // =-=-=-=-=-=-=-
@@ -135,8 +134,6 @@ rodsLog( LOG_NOTICE, "XXXX - _addResource :: loc:path [%s]", loc_path.c_str() );
         if( 2 == tok.size()  ) {
             // =-=-=-=-=-=-=-
             // location is index 0, path is index 1
-rodsLog( LOG_NOTICE, "XXXX - _addResource :: tok0 [%s]", tok[0].c_str() );
-rodsLog( LOG_NOTICE, "XXXX - _addResource :: tok1 [%s]", tok[1].c_str() );
             strncpy( rescInfo.rescLoc,       tok[0].c_str(), sizeof rescInfo.rescLoc );
             strncpy( rescInfo.rescVaultPath, tok[1].c_str(), sizeof rescInfo.rescVaultPath );
         } else {

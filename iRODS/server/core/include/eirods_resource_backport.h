@@ -29,6 +29,11 @@ namespace eirods {
               int&,                 // local flag
               rodsServerHost_t*& ); // server host
 
+    // =-=-=-=-=-=-=-
+    /// @brief function which returns the host name for a given hier string
+    error get_loc_for_hier_string( 
+               const std::string& _hier, // hier string
+                     std::string& _loc );// location
     template< typename T >
     error get_resource_property( std::string _name, std::string _prop_name, T& _prop ) {
         // =-=-=-=-=-=-=-

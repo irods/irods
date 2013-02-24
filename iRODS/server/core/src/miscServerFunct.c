@@ -1745,9 +1745,6 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
                   "svrPortalPutGetRbudp() - getpeername() failed: errno=%d", 
               errno);
                 recvClose (&rbudpReceiver);
-eirods::stacktrace st;
-st.trace();
-st.dump();
                 return (USER_RODS_HOSTNAME_ERR);
         }
 
@@ -1784,10 +1781,6 @@ st.dump();
               "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
               errno);
             sendClose (&rbudpSender);
-
-eirods::stacktrace st;
-st.trace();
-st.dump();
             return (USER_RODS_HOSTNAME_ERR);
         }
         rbudpSender.rbudpBase.udpServerAddr.sin_port = 

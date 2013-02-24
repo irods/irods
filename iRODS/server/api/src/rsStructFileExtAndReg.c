@@ -151,7 +151,8 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     createPhyBundleDir (rsComm, dataObjInfo->filePath, phyBunDir);
 
     status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo, // JMC - backport 4657 
-                              dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0);  
+                              dataObjInfo->filePath, phyBunDir, dataObjInfo->dataType, 0, 
+                              rescHier.c_str() );  
 
     if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
         /* rename the phyBunDir */
@@ -159,7 +160,8 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
         strcpy( tmp, phyBunDir ); // JMC cppcheck - src & dst snprintf
         snprintf( phyBunDir, MAX_NAME_LEN, "%s.%-d", tmp, (int) random () ); // JMC cppcheck - src & dst snprintf
         status = unbunPhyBunFile( rsComm, dataObjInp.objPath, rescInfo,
-                                  dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0);
+                                  dataObjInfo->filePath, phyBunDir,  dataObjInfo->dataType, 0, 
+                                  rescHier.c_str() );
     }
 
     if (status < 0) {

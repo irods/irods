@@ -363,14 +363,8 @@ l3Open (rsComm_t *rsComm, int l1descInx)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "l3Open - failed in specColl open", ret ) );
         return -1;
@@ -385,7 +379,6 @@ l3Open (rsComm_t *rsComm, int l1descInx)
         subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = getFileFlags (l1descInx);
         l3descInx = rsSubStructFileOpen (rsComm, &subFile); 
-rodsLog( LOG_NOTICE, "XXXX - l3Open :: location [%s], l3descInx %d", location.c_str(), l3descInx ); 
     } else {
         mode = getFileMode (L1desc[l1descInx].dataObjInp);
         flags = getFileFlags (l1descInx);
@@ -406,12 +399,22 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     switch (RescTypeDef[rescTypeInx].rescCat) {
     case FILE_CAT:
 #endif // JMC legacy resource 
+
+        // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
+
         memset (&fileOpenInp, 0, sizeof (fileOpenInp));
         rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
         rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
         rstrcpy( fileOpenInp.objPath,    dataObjInfo->objPath, MAX_NAME_LEN );
         fileOpenInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileOpenInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,NAME_LEN);
+        rstrcpy (fileOpenInp.addr.hostAddr,  location.c_str(), NAME_LEN);
         rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         fileOpenInp.mode = mode;
         fileOpenInp.flags = flags;

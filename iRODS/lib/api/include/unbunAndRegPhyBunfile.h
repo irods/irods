@@ -32,7 +32,7 @@ rodsServerHost_t *rodsServerHost);
 int
 unbunPhyBunFile ( rsComm_t *rsComm, char *objPath,
                   rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir, char *dataType,
-                  int saveLinkedFles ); // JMC _ backport 4657, 4658
+                  int saveLinkedFles, const char* resc_hier ); // JMC _ backport 4657, 4658
 int
 regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
 int rmBunCopyFlag);
