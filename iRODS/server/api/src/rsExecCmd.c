@@ -17,6 +17,8 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+#include "eirods_resource_backport.h"
+
 #ifdef USE_BOOST
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
@@ -96,10 +98,19 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 	    snprintf (execCmdInp->cmdArgv, HUGE_NAME_LEN, "%s %s",
 	      dataObjInfoHead->filePath, tmpArgv);
 	}
-	rstrcpy (addr.zoneName, dataObjInfoHead->rescInfo->zoneName, 
-	  NAME_LEN);
-	rstrcpy (addr.hostAddr, dataObjInfoHead->rescInfo->rescLoc, 
-	  LONG_NAME_LEN);
+
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfoHead->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+	rstrcpy (addr.zoneName, dataObjInfoHead->rescInfo->zoneName, NAME_LEN);
+	rstrcpy (addr.hostAddr, location.c_str(), LONG_NAME_LEN );
+	  
 	/* just in case we have to do it remote */
 	*execCmdInp->hintPath = '\0';	/* no need for hint */
         rstrcpy (execCmdInp->execAddr, dataObjInfoHead->rescInfo->rescLoc,

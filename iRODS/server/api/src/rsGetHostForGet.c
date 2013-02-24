@@ -23,11 +23,55 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_backport.h"
+#include "eirods_resource_redirect.h"
 
-int
-rsGetHostForGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-char **outHost)
-{
+int rsGetHostForGet(
+        rsComm_t*     rsComm, 
+        dataObjInp_t* dataObjInp,
+        char**        outHost ) {
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    std::string       hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+    // =-=-=-=-=-=-=-
+    // set the out variable
+    *outHost = strdup( location.c_str() );
+    return 0;
+
+
+
+
+#if 0
     int status;
     rescInfo_t *myRescInfo;
     char *myResc;
@@ -121,7 +165,7 @@ char **outHost)
 #endif // JMC - legacy resource
 
     bzero (&addr, sizeof (addr));
-    rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
+    //rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
     status = resolveHost (&addr, &rodsServerHost);
     if (status < 0) return status;
     if (rodsServerHost->localFlag == LOCAL_HOST) {
@@ -137,6 +181,7 @@ char **outHost)
         *outHost = NULL;
 	return SYS_INVALID_SERVER_HOST;
     }
+#endif
 }
 
 int 
