@@ -157,6 +157,7 @@ namespace eirods {
     // public - connect to the catalog and query for all the 
     //          attached resources and instantiate them
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {
+        rodsLog( LOG_NOTICE, "XXXX - init from catalog :: START" );
         // =-=-=-=-=-=-=-
         // clear existing resource map and initialize
         resources_.clear();
@@ -273,6 +274,8 @@ namespace eirods {
         if( !start_err.ok() ) {
             return PASSMSG( "start_resource_plugins failed.", start_err );
         }
+        
+        rodsLog( LOG_NOTICE, "XXXX - init from catalog :: DONE" );
 
         // =-=-=-=-=-=-=-
         // win!
@@ -429,6 +432,8 @@ namespace eirods {
 
                 resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
 
+            } else {
+                resc->set_property< rodsServerHost_t* >( "host", 0 );
             }
 
             resc->set_property<long>( "id", strtoll( tmpRescId.c_str(), 0, 0 ) );

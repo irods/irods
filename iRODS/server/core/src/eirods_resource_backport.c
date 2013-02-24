@@ -324,14 +324,14 @@ namespace eirods {
             // convert the resource into a legacy group info
             error grp_err = get_resc_grp_info( *itr, _resc_grp ); 
             if( grp_err.ok() ) {
-                if( _resc_grp.rescInfo->rescStatus != INT_RESC_STATUS_DOWN ) {
+                if( INT_RESC_STATUS_DOWN != _resc_grp.rescInfo->rescStatus ) {
                     default_resc_name = *itr;
                     // =-=-=-=-=-=-=-
                     // we found a live one
                     break;
-                }
+                } 
 
-           } // if grp_err
+           } 
 
         } // for itr
 
@@ -503,6 +503,7 @@ namespace eirods {
         if( _name.empty() ) {
             return ERROR( -1, "get_resc_grp_info :: empty key" ); 
         }
+
         resource_ptr resc;
         error res_err = resc_mgr.resolve( _name, resc );
         if( res_err.ok() ) {
