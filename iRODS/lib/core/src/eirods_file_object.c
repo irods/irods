@@ -155,6 +155,13 @@ namespace eirods {
         _file_obj.comm( _comm );
         _file_obj.physical_path( _data_obj_inp->objPath );
         _file_obj.resc_hier( head_ptr->rescHier );
+        
+        // =-=-=-=-=-=-=-
+        // handle requested repl number
+        char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
+        if( repl_num ) {
+            _file_obj.repl_requested( atoi( repl_num ) );
+        }
 
         // =-=-=-=-=-=-=-
         // iterate over the linked list and populate 
