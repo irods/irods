@@ -3661,9 +3661,9 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
     if (i==11 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 12");
     if (i==12 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 13");
     if (i==13 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 14");
-    if (i==14 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 15");
-    //if (i==15 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 16");
-    //if (i==16 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 17");
+    //if (i==14 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery S Q L 15");
+    //if (i==15 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery S Q L 16");
+    //if (i==16 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery S Q L 17");
     if (i==17 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 18");
     if (i==18 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 19");
     if (i==19 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 20");
@@ -5558,7 +5558,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
         if (status != 0) {
             if (status==CAT_NO_ROWS_FOUND) {
                 /* Generate a new id */
-                if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group SQL 2b ");
+                if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 2b ");
                 seqNum = cmlGetNextSeqVal(&icss);
                 if (seqNum < 0) {
                     rodsLog(LOG_NOTICE, "chlModRescGroup cmlGetNextSeqVal failure %d",
