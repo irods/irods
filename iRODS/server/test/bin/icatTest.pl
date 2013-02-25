@@ -48,7 +48,7 @@ $Zone2="ATestZoneName";
 $Zone3="ADifTestZoneName";
 $Resc2Path="/tmp/Vault";
 $G1="group1";
-$RG1="Resource_group";
+#  $RG1="Resource_group";
 $IN_FILE="icatTest.infile.24085";
 
 # run a command
@@ -591,13 +591,13 @@ printf("hostName:%s\n",$hostName);
 runCmd(1, "iadmin rmresc $Resc2");
 runCmd(0, "echo yes | iadmin modresc $Resc name $Resc2");
 runCmd(0, "echo yes | iadmin modresc $Resc2 name $Resc");
-runCmd(2, "iadmin mkresc $Resc2");
-runCmd(2, "iadmin mkresc $Resc2 badType");
-runCmd(2, "iadmin mkresc $Resc2 'unix file system'");
-runCmd(2, "iadmin mkresc $Resc2 'unix file system' badClass");
-runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache");
+#runCmd(2, "iadmin mkresc $Resc2");
+#runCmd(2, "iadmin mkresc $Resc2 badType");
+#runCmd(2, "iadmin mkresc $Resc2 'unix file system'"); # JMC :: ok to not have a host or vault path
+#runCmd(2, "iadmin mkresc $Resc2 'unix file system' badClass");
+#runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache");# JMC :: ok to not have a host or vault path
 #runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache $hostName"); # Okay not to have a vault path now - hcj
-runCmd(0, "iadmin mkresc $Resc2 'unix file system' cache $hostName $Resc2Path");
+runCmd(0, "iadmin mkresc $Resc2 'unix file system' cache $hostName:$Resc2Path");
 runCmd(0, "iadmin modresc $Resc2 comment 'this is a comment'");
 runCmd(0, "iadmin modresc $Resc2 freespace 123456789");
 runCmd(0, "iadmin modresc $Resc2 info 'this is info field'");
@@ -635,17 +635,17 @@ runCmd(0, "irm -f -r $D1");
 
 # Resource Groups
 $Resc2A = $Resc2 . "a";
-runCmd(0, "iadmin atrg $RG1 $Resc");
-runCmd(0, "iadmin lrg $RG1");
-runCmd(0, "iadmin atrg $RG1 $Resc2");
-runCmd(2, "iadmin atrg $RG1 $Resc2A");
-runCmd(1, "iadmin rfrg $RG1 $Resc");
-runCmd(0, "imeta add -g $RG1 1111 2222");
-runCmd(0, "imeta cp -g $RG1 -r $Resc");
-runCmd(0, "imeta rm -g $RG1 1111 2222");
-runCmd(0, "imeta rm -r $Resc 1111 2222");
-runCmd(1, "iadmin rfrg $RG1 $Resc2");
-runCmd(0, "iadmin lrg $RG1");
+#runCmd(0, "iadmin atrg $RG1 $Resc");
+#runCmd(0, "iadmin lrg $RG1");
+#runCmd(0, "iadmin atrg $RG1 $Resc2");
+#runCmd(2, "iadmin atrg $RG1 $Resc2A");
+#runCmd(1, "iadmin rfrg $RG1 $Resc");
+#runCmd(0, "imeta add -g $RG1 1111 2222");
+#runCmd(0, "imeta cp -g $RG1 -r $Resc");
+#runCmd(0, "imeta rm -g $RG1 1111 2222");
+#runCmd(0, "imeta rm -r $Resc 1111 2222");
+#runCmd(1, "iadmin rfrg $RG1 $Resc2");
+#runCmd(0, "iadmin lrg $RG1");
 
 # Rules
 runCmd(0, "iadmin pv 2030-12-31");
