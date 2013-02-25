@@ -1995,6 +1995,8 @@ int chlRegResc(rsComm_t *rsComm,
 //    if (strlen(rescInfo->rescLoc)<1) {
 //        return(CAT_INVALID_RESOURCE_NET_ADDR);
 //    }
+    // =-=-=-=-=-=-=-
+    // if the resource is not the 'empty resource' test it
     if( eirods::EMPTY_RESC_HOST != rescInfo->rescLoc ) {
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
