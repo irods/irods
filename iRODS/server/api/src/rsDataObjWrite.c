@@ -12,6 +12,12 @@
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
 #include "reGlobalsExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+#include "eirods_hierarchy_parser.h" 
+
+
 int
 applyRuleForPostProcForWrite(rsComm_t *rsComm, bytesBuf_t *dataObjWriteInpBBuf, char *objPath)
 {
@@ -108,16 +114,22 @@ bytesBuf_t *dataObjWriteInpBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Write - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileFdOprInp_t subStructFileWriteInp;
         memset (&subStructFileWriteInp, 0, sizeof (subStructFileWriteInp));
         subStructFileWriteInp.type = dataObjInfo->specColl->type;
         subStructFileWriteInp.fd = L1desc[l1descInx].l3descInx;
         subStructFileWriteInp.len = len;
-        rstrcpy (subStructFileWriteInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
-        bytesWritten = rsSubStructFileWrite (rsComm, &subStructFileWriteInp, 
-	  dataObjWriteInpBBuf);
+        rstrcpy( subStructFileWriteInp.addr.hostAddr, location.c_str(), NAME_LEN );
+        bytesWritten = rsSubStructFileWrite( rsComm, &subStructFileWriteInp, dataObjWriteInpBBuf );
+	  
     } else {
        #if 0 // JMC legacy resource 
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;

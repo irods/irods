@@ -11,6 +11,9 @@
 #include "objMetaOpr.h"
 #include "subStructFileUnlink.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
 
 int
 rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, 
@@ -50,6 +53,16 @@ fileLseekOut_t **dataObjLseekOut)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "rsDataObjLseek - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileLseekInp_t subStructFileLseekInp;
         memset (&subStructFileLseekInp, 0, sizeof (subStructFileLseekInp));
@@ -57,7 +70,7 @@ fileLseekOut_t **dataObjLseekOut)
         subStructFileLseekInp.fd = L1desc[l1descInx].l3descInx;
 	subStructFileLseekInp.offset = dataObjLseekInp->offset;
 	subStructFileLseekInp.whence = dataObjLseekInp->whence;
-        rstrcpy (subStructFileLseekInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+        rstrcpy (subStructFileLseekInp.addr.hostAddr, location.c_str(),
           NAME_LEN);
         status = rsSubStructFileLseek (rsComm, &subStructFileLseekInp, dataObjLseekOut);
     } else {

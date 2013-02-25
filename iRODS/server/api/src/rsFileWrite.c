@@ -26,12 +26,11 @@ rsFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
     int remoteFlag;
     int retVal;
 
-
     remoteFlag = getServerHostByFileInx (fileWriteInp->fileInx, 
                                          &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-	retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
+	    retVal = _rsFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
         retVal = remoteFileWrite (rsComm, fileWriteInp, fileWriteInpBBuf,
                                   rodsServerHost);

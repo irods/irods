@@ -153,6 +153,22 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 }
 
 int
+getMultiCopyPerResc ( rsComm_t *rsComm ) // JMC - backport 4556
+{
+    ruleExecInfo_t rei;
+
+    memset (&rei, 0, sizeof (rei));
+    rei.rsComm = rsComm; // JMC - backport 4556
+    applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
+    if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+int
 _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 {
 #ifdef RODS_CAT
@@ -401,14 +417,8 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN)
         return SYS_RESC_IS_DOWN;
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
         return -1;

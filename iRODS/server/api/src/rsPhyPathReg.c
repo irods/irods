@@ -37,7 +37,7 @@ static pathnamePatterns_t *ExcludePatterns = NULL;
 
 /* function to read pattern file from a data server */
 pathnamePatterns_t *
-readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, rescInfo_t *rescInfo);
+readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, char* );//rescInfo_t *rescInfo);
 
 
 /* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with 
@@ -146,13 +146,18 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
          return -1;
     }
    
+    std::string last_resc; 
+    parser.last_resc( last_resc );
    
-   
-   
-    
+    std::string location;
+    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "irsPhyPathReg - failed in get_resource_property", ret ) );
+        return -1;
+    }
+ 
     memset (&addr, 0, sizeof (addr));
-    
-    rstrcpy (addr.hostAddr, rescGrpInfo->rescInfo->rescLoc, LONG_NAME_LEN);
+    rstrcpy (addr.hostAddr, location.c_str(), LONG_NAME_LEN);
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
@@ -256,9 +261,17 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 
         rstrcpy (chkNVPathPermInp.fileName, filePath, MAX_NAME_LEN);
         chkNVPathPermInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (chkNVPathPermInp.addr.hostAddr,  
-                 rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
 
+        // =-=-=-=-=-=-=-
+        // extract the host location from the resource hierarchy
+        std::string location;
+        eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "_rsPhyPathReg - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
+
+        rstrcpy (chkNVPathPermInp.addr.hostAddr, location.c_str(), NAME_LEN );
         status = chkFilePathPerm (rsComm, &chkNVPathPermInp, rodsServerHost,chkType); // JMC - backport 4774
     
         if (status < 0) {
@@ -276,7 +289,7 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         if (excludePatternFile != NULL) {
             ExcludePatterns = readPathnamePatternsFromFile(rsComm,
                                                            excludePatternFile,
-                                                           rescGrpInfo->rescInfo);
+                                                           resc_hier);//rescGrpInfo->rescInfo);
         }
 
 	    status = dirPathReg (rsComm, phyPathRegInp, filePath, rescGrpInfo->rescInfo); 
@@ -365,12 +378,12 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
-    if( resc_hier ) {
-        rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
-    } else {
-        rstrcpy ( dataObjInfo.rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
+    if( !resc_hier ) {
+        rodsLog( LOG_NOTICE, "filePathReg - RESC_HIER_STR_KW is NULL" );
+        return -1;
     }
 
+   rstrcpy (dataObjInfo.rescHier, resc_hier, MAX_NAME_LEN); 
 
     if (dataObjInfo.dataSize <= 0 && 
         (dataObjInfo.dataSize = getSizeInVault (rsComm, &dataObjInfo)) < 0 &&
@@ -417,7 +430,7 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
 int
 dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
-            rescInfo_t *rescInfo)
+            rescInfo_t *rescInfo )
 {
     collInp_t collCreateInp;
     fileOpendirInp_t fileOpendirInp;
@@ -429,6 +442,21 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     rodsDirent_t *rodsDirent = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
     int forceFlag;
+
+    char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
+    if( !resc_hier ) {
+        rodsLog( LOG_NOTICE, "dirPathReg - RESC_HIER_STR_KW is NULL" );
+        return -1;
+    }
+
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "dirPathReg - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
     if (status < 0 || NULL == rodsObjStatOut ) { // JMC cppcheck - nullptr
@@ -455,17 +483,10 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     rstrcpy (fileOpendirInp.dirName, filePath, MAX_NAME_LEN);
     fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-    rstrcpy (fileOpendirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
-    rstrcpy (fileOpendirInp.objPath,   phyPathRegInp->objPath, MAX_NAME_LEN);
+    rstrcpy (fileOpendirInp.addr.hostAddr, location.c_str(), NAME_LEN);
+    rstrcpy (fileOpendirInp.objPath,    phyPathRegInp->objPath, MAX_NAME_LEN);
+    rstrcpy (fileOpendirInp.resc_hier_, resc_hier,              MAX_NAME_LEN);
 
-
-    char* hier_str = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
-    if( 0 == hier_str ) {
-        rodsLog( LOG_ERROR, "dirPathReg - empty RESC_HIER_STR_KW" );
-    } else {
-        rstrcpy (fileOpendirInp.resc_hier_, hier_str, MAX_NAME_LEN);
-    }
-     
     dirFd = rsFileOpendir (rsComm, &fileOpendirInp);
     if (dirFd < 0) {
         rodsLog (LOG_ERROR,
@@ -509,15 +530,9 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rstrcpy(fileStatInp.objPath, subPhyPathRegInp.objPath, MAX_NAME_LEN);
         fileStatInp.fileType = fileOpendirInp.fileType; 
         fileStatInp.addr = fileOpendirInp.addr;
+        rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
 
-        char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
-        if( resc_hier ) {
-            rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
-        } else {
-            rstrcpy ( fileStatInp.rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
-        }
-
-
+        
         status = rsFileStat (rsComm, &fileStatInp, &myStat);
 
         if (status != 0) {
@@ -575,6 +590,21 @@ int mountFileDir( rsComm_t*     rsComm,
     rodsStat_t *myStat = NULL;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
+    char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
+    if( !resc_hier ) {
+        rodsLog( LOG_NOTICE, "mountFileDir - RESC_HIER_STR_KW is NULL" );
+        return -1;
+    }
+
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "mountFileDir - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
     if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ) {// JMC - backport 4832
        rodsLog( LOG_NOTICE, "mountFileDir - insufficient privilege" );
        return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
@@ -605,15 +635,8 @@ int mountFileDir( rsComm_t*     rsComm,
     rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
     rstrcpy (fileStatInp.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
     fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-    rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
-
-    char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
-    if( resc_hier ) {
-        rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
-    } else {
-        rstrcpy ( fileStatInp.rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
-    }
-
+    rstrcpy (fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN);
+    rstrcpy (fileStatInp.rescHier, resc_hier, MAX_NAME_LEN); 
 
 
     status = rsFileStat (rsComm, &fileStatInp, &myStat);
@@ -628,7 +651,7 @@ int mountFileDir( rsComm_t*     rsComm,
         rstrcpy (fileMkdirInp.dirName, filePath, MAX_NAME_LEN);
         fileMkdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
         fileMkdirInp.mode = getDefDirMode ();
-        rstrcpy (fileMkdirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
+        rstrcpy (fileMkdirInp.addr.hostAddr,  location.c_str(), NAME_LEN);
         status = rsFileMkdir (rsComm, &fileMkdirInp);
         if (status < 0) {
             return (status);
@@ -834,8 +857,14 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         rescInfo = dataObjInfo->rescInfo;
     }
 
+    char* tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );
+    if( !tmp_hier ) {
+        rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
+        return -1;
+    } 
+
     if (!structFileSupport (rsComm, phyPathRegInp->objPath, 
-                            collType, rescInfo)) {
+                            collType, tmp_hier)) {
         rodsLog (LOG_ERROR,
                  "structFileReg: structFileDriver type %s does not exist for %s",
                  collType, dataObjInp.objPath);
@@ -864,7 +893,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
 int
 structFileSupport (rsComm_t *rsComm, char *collection, char *collType, 
-                   rescInfo_t *rescInfo)
+                   char* resc_hier )//rescInfo_t *rescInfo)
 {
     rodsStat_t *myStat = NULL;
     int status;
@@ -872,7 +901,7 @@ structFileSupport (rsComm_t *rsComm, char *collection, char *collType,
     specColl_t specColl;
 
     if (rsComm == NULL || collection == NULL || collType == NULL || 
-        rescInfo == NULL) return 0;
+        resc_hier == NULL) return 0;
 
     memset (&subFile, 0, sizeof (subFile));
     memset (&specColl, 0, sizeof (specColl));
@@ -887,14 +916,27 @@ structFileSupport (rsComm_t *rsComm, char *collection, char *collType,
     } else {
         return (0);
     }
-    snprintf (specColl.objPath, MAX_NAME_LEN, "%s/myFakeFile",
-              collection);
-    rstrcpy (specColl.resource, rescInfo->rescName, NAME_LEN);
-    rstrcpy (specColl.phyPath, "/fakeDir1/fakeDir2/myFakeStructFile",
-             MAX_NAME_LEN);
-    rstrcpy (subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile",
-             MAX_NAME_LEN);
-    rstrcpy (subFile.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "structFileSupport - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+    eirods::hierarchy_parser parser;
+    parser.set_string( resc_hier );
+    std::string first_resc;
+    parser.first_resc( first_resc );
+
+    snprintf (specColl.objPath, MAX_NAME_LEN, "%s/myFakeFile",collection);
+    rstrcpy (specColl.resource, first_resc.c_str(), NAME_LEN);
+    rstrcpy (specColl.rescHier, resc_hier, NAME_LEN);
+    rstrcpy (specColl.phyPath, "/fakeDir1/fakeDir2/myFakeStructFile", MAX_NAME_LEN );
+    rstrcpy (subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile", MAX_NAME_LEN);
+    rstrcpy (subFile.addr.hostAddr, location.c_str(), NAME_LEN);
 
     status = rsSubStructFileStat (rsComm, &subFile, &myStat);
 
@@ -1021,7 +1063,7 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 }
 
 pathnamePatterns_t *
-readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, rescInfo_t *rescInfo)
+readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, char* resc_hier )//rescInfo_t *rescInfo)
 {
     int status;
     rodsStat_t *stbuf;
@@ -1033,14 +1075,24 @@ readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, rescInfo_t *rescI
     int buf_len, fd;
     pathnamePatterns_t *pp;
 
-    if (rsComm == NULL || filename == NULL || rescInfo == NULL) {
+    if (rsComm == NULL || filename == NULL || resc_hier == NULL) {
+        return NULL;
+    }
+
+    
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "readPathnamePatternsFromFile - failed in get_loc_for_hier_String", ret ) );
         return NULL;
     }
 
     memset(&fileStatInp, 0, sizeof(fileStatInp));
     rstrcpy(fileStatInp.fileName, filename, MAX_NAME_LEN);
     // JMC - legacy resource fileStatInp.fileType = (fileDriverType_t)RescTypeDef[rescInfo->rescTypeInx].driverType;
-    rstrcpy(fileStatInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+    rstrcpy(fileStatInp.addr.hostAddr, location.c_str(), NAME_LEN);
     status = rsFileStat(rsComm, &fileStatInp, &stbuf);
     if (status != 0) {
         if (status != UNIX_FILE_STAT_ERR - ENOENT) {
@@ -1055,7 +1107,7 @@ readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, rescInfo_t *rescI
     memset(&fileOpenInp, 0, sizeof(fileOpenInp));
     rstrcpy(fileOpenInp.fileName, filename, MAX_NAME_LEN);
     // JMC - legacy resource fileOpenInp.fileType = (fileDriverType_t)RescTypeDef[rescInfo->rescTypeInx].driverType;
-    rstrcpy(fileOpenInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+    rstrcpy(fileOpenInp.addr.hostAddr, location.c_str(), NAME_LEN);
     fileOpenInp.flags = O_RDONLY;
     fd = rsFileOpen(rsComm, &fileOpenInp);
     if (fd < 0) {

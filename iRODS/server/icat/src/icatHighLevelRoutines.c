@@ -1989,23 +1989,28 @@ int chlRegResc(rsComm_t *rsComm,
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 2");
 
-    if (strlen(rescInfo->rescLoc)<1) {
-        return(CAT_INVALID_RESOURCE_NET_ADDR);
-    }
-
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4597
-    myHostEnt = gethostbyname(rescInfo->rescLoc);
-    if (myHostEnt <= 0) {
-        char errMsg[155];
-        snprintf(errMsg, 150, 
-                 "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
-                 rescInfo->rescLoc);
-        addRErrorMsg (&rsComm->rError, 0, errMsg);
-    }
-    if (strcmp(rescInfo->rescLoc, "localhost") == 0) { // JMC - backport 4650
-        addRErrorMsg( &rsComm->rError, 0, 
-                      "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+// =-=-=-=-=-=-=-
+// JMC :: resources may now have an empty location if they
+//     :: are coordinating nodes
+//    if (strlen(rescInfo->rescLoc)<1) {
+//        return(CAT_INVALID_RESOURCE_NET_ADDR);
+//    }
+    if( strlen( rescInfo->rescLoc ) > 0 ) {
+        // =-=-=-=-=-=-=-
+        // JMC - backport 4597
+        myHostEnt = gethostbyname(rescInfo->rescLoc);
+        if (myHostEnt <= 0) {
+            char errMsg[155];
+            snprintf(errMsg, 150, 
+                     "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+                     rescInfo->rescLoc);
+            addRErrorMsg (&rsComm->rError, 0, errMsg);
+        }
+        if (strcmp(rescInfo->rescLoc, "localhost") == 0) { // JMC - backport 4650
+            addRErrorMsg( &rsComm->rError, 0, 
+                          "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+        }
+    
     }
 
     if (false &&                // hcj - disable checking for vault path. this needs to be checked from the plugins

@@ -70,7 +70,7 @@ namespace eirods {
             if( pos != std::string::npos ) {
                 path = path.substr( 0, pos );
             }
-            
+
             strncpy( _data_obj_inp->objPath, path.c_str(), MAX_NAME_LEN );
             rodsObjStat_t *rodsObjStatOut = NULL;
             int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );

@@ -20,6 +20,8 @@
 #include "genQuery.h"
 #include "dataObjUnlink.h"
 
+#include "eirods_resource_backport.h"
+
 int
 rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp)
 {
@@ -549,13 +551,20 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileRmdirInp_t fileRmdirInp;
     int status;
 
+    // =-=-=-=-=-=-=-
+    // get the resc location of the hier leaf
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Rmdir - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-          MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
+        rstrcpy (subFile.addr.hostAddr, location.c_str(), NAME_LEN );
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileRmdir (rsComm, &subFile);
     } else {
@@ -567,10 +576,8 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
        #endif // JMC legacy resource 
             memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
             fileRmdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileRmdirInp.dirName, dataObjInfo->filePath,
-              MAX_NAME_LEN);
-            rstrcpy (fileRmdirInp.addr.hostAddr,
-              dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileRmdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
+            rstrcpy (fileRmdirInp.addr.hostAddr, location.c_str(), NAME_LEN);
             status = rsFileRmdir (rsComm, &fileRmdirInp);
        #if 0 // JMC legacy resource 
             break;

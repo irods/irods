@@ -383,16 +383,12 @@ specCollReaddir (rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
+    // =-=-=-=-=-=-=-
+    // get the resc location of the hier leaf
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "specCollReaddir - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "specCollReaddir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -431,19 +427,14 @@ specCollClosedir (rsComm_t *rsComm, int specCollInx)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    eirods::hierarchy_parser parser;
-    parser.set_string( dataObjInfo->rescHier );
-    
-    std::string last_resc;
-    parser.last_resc( last_resc );
-
+    // =-=-=-=-=-=-=-
+    // get the resc location of the hier leaf
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "specCollClosedir - failed in specColl open", ret ) );
+        eirods::log( PASSMSG( "specCollClosedir - failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
-
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subStructFileFdOprInp_t subStructFileClosedirInp;
@@ -475,23 +466,20 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     if (dataObjInfo == NULL) return (SYS_INTERNAL_NULL_INPUT_ERR);
 
+    // =-=-=-=-=-=-=-
+    // get the resc location of the hier leaf
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Opendir - failed in get_loc_for_hier_string", ret ) );
+        return -1;
+    }
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subStructFileOpendirInp;
-	status = 0;
+    	status = 0;
 
-        eirods::hierarchy_parser parser;
-        parser.set_string( dataObjInfo->rescHier );
-    
-        std::string last_resc;
-        parser.last_resc( last_resc );
 
-        std::string location;
-        eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
-        if( !ret.ok() ) {
-            eirods::log( PASSMSG( "l3Opendir - failed in specColl open", ret ) );
-            return -1;
-        }
-        
         memset ( &subStructFileOpendirInp, 0, sizeof (subStructFileOpendirInp));
         rstrcpy( subStructFileOpendirInp.subFilePath, dataObjInfo->subPath, MAX_NAME_LEN );
         //rstrcpy( subStructFileOpendirInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN );
@@ -510,7 +498,7 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
             rstrcpy( fileOpendirInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
             fileOpendirInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileOpendirInp.addr.hostAddr,dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileOpendirInp.addr.hostAddr, location.c_str(), NAME_LEN);
 
             status = rsFileOpendir (rsComm, &fileOpendirInp);
             if (status < 0) {

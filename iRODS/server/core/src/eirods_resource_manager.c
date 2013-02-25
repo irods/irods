@@ -405,29 +405,34 @@ namespace eirods {
             std::string tmpRescContext   = &rescContext->value[ rescContext->len * i ];
             std::string tmpRescParent    = &rescParent->value[ rescParent->len * i ];
             std::string tmpRescObjCount  = &rescObjCount->value[ rescObjCount->len * i ];
-            
-            // =-=-=-=-=-=-=-
-            // resolve the host name into a rods server host structure
-            rodsHostAddr_t addr;
-            rstrcpy( addr.hostAddr, const_cast<char*>( tmpRescLoc.c_str()  ), LONG_NAME_LEN );
-            rstrcpy( addr.zoneName, const_cast<char*>( tmpZoneName.c_str() ), NAME_LEN );
-
-            rodsServerHost_t* tmpRodsServerHost = 0;
-            if( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
-                rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", 
-                         addr.hostAddr );
-            }
-
+  
             // =-=-=-=-=-=-=-
             // create the resource and add properties for column values
             resource_ptr resc;
             error ret = load_resource_plugin( resc, tmpRescType, tmpRescName, tmpRescContext );
             if( !ret.ok() ) {
                 return PASSMSG( "Failed to load Resource Plugin", ret );        
+            }            
+           
+            // =-=-=-=-=-=-=-
+            // resolve the host name into a rods server host structure
+            if( tmpRescLoc != eirods::EMPTY_RESC_HOST ) {
+                rodsHostAddr_t addr;
+                rstrcpy( addr.hostAddr, const_cast<char*>( tmpRescLoc.c_str()  ), LONG_NAME_LEN );
+                rstrcpy( addr.zoneName, const_cast<char*>( tmpZoneName.c_str() ), NAME_LEN );
+
+                rodsServerHost_t* tmpRodsServerHost = 0;
+                if( resolveHost( &addr, &tmpRodsServerHost ) < 0 ) {
+                    rodsLog( LOG_NOTICE, "procAndQueRescResult: resolveHost error for %s", 
+                             addr.hostAddr );
+                }
+
+                resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
+
+            } else {
+                resc->set_property< rodsServerHost_t* >( "host", 0 );
             }
 
-            resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
-                
             resc->set_property<long>( "id", strtoll( tmpRescId.c_str(), 0, 0 ) );
             resc->set_property<long>( "freespace", strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
             resc->set_property<long>( "quota", RESC_QUOTA_UNINIT );

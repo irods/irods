@@ -867,7 +867,6 @@ extern "C" {
                       std::string*                   _results,
                       void*                          _buf, 
                       int                            _len ) {
-
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = param_check( _prop_map, _cmap, _object );

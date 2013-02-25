@@ -228,7 +228,7 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         /* just take the top one */
         rescInfo = myRescGrpInfo->rescInfo;
     }
-
+#if 0 // JMC :: we did this above with the resc hier redirect
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
     if (remoteFlag == REMOTE_HOST) {
@@ -248,7 +248,7 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
         freeAllRescGrpInfo (myRescGrpInfo);
         return status;
     }
-
+#endif
     status = createBunDirForBulkPut(rsComm, &dataObjInp, rescInfo, myRodsObjStat->specColl, phyBunDir);
     if(status < 0) {
         std::stringstream msg;

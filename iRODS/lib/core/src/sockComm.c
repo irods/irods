@@ -40,6 +40,8 @@ connToutHandler (int sig)
 #endif // JMC - UNUSED
 #endif  /* _WIN32 */
 
+#include "eirods_stacktrace.h"
+
 #ifdef USE_BOOST_ASIO
 
 // =-=-=-=-=-=-=-
@@ -1026,7 +1028,6 @@ setRemoteAddr (int sock, struct sockaddr_in *remoteAddr)
                     &laddrlen) < 0) {
         rodsLog (LOG_NOTICE,
                  "setLocalAddr() -- getpeername() failed: errno=%d", errno);
-
         return (USER_RODS_HOSTNAME_ERR);
     }
 

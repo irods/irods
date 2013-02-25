@@ -32,6 +32,8 @@ char *__loc1;
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+#include "eirods_stacktrace.h"
+
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 {
@@ -126,7 +128,8 @@ int oprType, portalOprOut_t **portalOprOut)
         myDataObjPutOut->numThreads = getNumThreads (rsComm,
            dataOprInp->dataSize, dataOprInp->numThreads,
            &dataOprInp->condInput, 
-           getValByKey (&dataOprInp->condInput, RESC_NAME_KW), NULL);
+           //getValByKey (&dataOprInp->condInput, RESC_NAME_KW), NULL);
+           getValByKey (&dataOprInp->condInput,  RESC_HIER_STR_KW), NULL);
     }
 
     if (myDataObjPutOut->numThreads == 0) {

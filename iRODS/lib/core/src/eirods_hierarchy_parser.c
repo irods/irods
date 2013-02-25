@@ -30,7 +30,7 @@ namespace eirods {
         
         error result = SUCCESS();
         resc_list_.clear();
-        string_tokenize(_resc_hier, resc_list_, DELIM);
+        string_tokenize(_resc_hier, DELIM, resc_list_ );
         return result;
     }
     

@@ -76,7 +76,6 @@ rsFileOpenByHost (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
     if (fd < 0) {
         return (fd);
     }
-
     fileInx = allocAndFillFileDesc (rodsServerHost, fileOpenInp->objPath, fileOpenInp->fileName, fileOpenInp->resc_hier_,
                                     fileOpenInp->fileType, fd, fileOpenInp->mode);
 

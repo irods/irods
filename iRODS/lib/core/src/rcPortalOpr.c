@@ -418,12 +418,6 @@ int
 putFile (rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 rodsLong_t dataSize)
 {
-
-
-    eirods::stacktrace st;
-    st.trace();
-    st.dump();
-	    
     int in_fd, status;
     bytesBuf_t dataObjWriteInpBBuf;
     openedDataObjInp_t dataObjWriteInp;

@@ -20,6 +20,8 @@
 #endif
 #endif
 
+#include "eirods_stacktrace.h"
+
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
 int reconnFlag, rErrMsg_t *errMsg)

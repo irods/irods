@@ -20,6 +20,12 @@
 #include "getRemoteZoneResc.h"
 #include "phyBundleColl.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_backport.h"
+
+
+
 int
 rsDataObjTruncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp)
 {
@@ -134,15 +140,23 @@ dataObjInfo_t *dataObjInfo)
     fileOpenInp_t fileTruncateInp;
     int status;
 
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3Truncate - failed in get_loc_for_hier_String", ret ) );
+        return -1;
+    }
+
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
-        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
-          MAX_NAME_LEN);
-        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-          NAME_LEN);
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,MAX_NAME_LEN);
+        rstrcpy (subFile.addr.hostAddr, location.c_str(), NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-	subFile.offset = dataObjTruncateInp->dataSize;
+	    subFile.offset = dataObjTruncateInp->dataSize;
         status = rsSubStructFileTruncate (rsComm, &subFile);
     } else {
        #if 0 // JMC legacy resource 
@@ -155,7 +169,7 @@ dataObjInfo_t *dataObjInfo)
             fileTruncateInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileTruncateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy (fileTruncateInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+            rstrcpy (fileTruncateInp.addr.hostAddr, location.c_str(), NAME_LEN);
 	        fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
             status = rsFileTruncate (rsComm, &fileTruncateInp);
        #if 0 // JMC legacy resource 
