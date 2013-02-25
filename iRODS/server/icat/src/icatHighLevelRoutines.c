@@ -3662,8 +3662,8 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
     if (i==12 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 13");
     if (i==13 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 14");
     if (i==14 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 15");
-    if (i==15 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 16");
-    if (i==16 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 17");
+    //if (i==15 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 16");
+    //if (i==16 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 17");
     if (i==17 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 18");
     if (i==18 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 19");
     if (i==19 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 20");
@@ -5515,7 +5515,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
     char dataObjNumber[MAX_NAME_LEN];
     char commentStr[200];
 
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup");
+    if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group");
 
     if (rescGroupName == NULL || option==NULL || rescName==NULL) {
         return (CAT_INVALID_ARGUMENT);
@@ -5536,7 +5536,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
     if (status != 0) return(status);
 
     rescId[0]='\0';
-    if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 1 ");
+    if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 1 ");
     status = cmlGetStringValueFromSql(
         "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
         rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
@@ -5551,14 +5551,14 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
     if (strcmp(option, "add")==0) {
         /* First try to look for a resc_group id with the same rescGrpName */
         rescGroupId[0]='\0';
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 2a ");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 2a ");
         status = cmlGetStringValueFromSql(
             "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
             rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss);
         if (status != 0) {
             if (status==CAT_NO_ROWS_FOUND) {
                 /* Generate a new id */
-                if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 2b ");
+                if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group SQL 2b ");
                 seqNum = cmlGetNextSeqVal(&icss);
                 if (seqNum < 0) {
                     rodsLog(LOG_NOTICE, "chlModRescGroup cmlGetNextSeqVal failure %d",
@@ -5578,7 +5578,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=myTime;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 2");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 2");
         status =  cmlExecuteNoAnswerSql(
             "insert into R_RESC_GROUP (resc_group_name, resc_group_id, resc_id , create_ts, modify_ts) values (?, ?, ?, ?, ?)",
             &icss);
@@ -5595,7 +5595,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
     if (strcmp(option, "remove")==0) {
         /* Step 1 : get the resc_group_id as a dataObjNumber*/
         dataObjNumber[0]='\0';
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 3a ");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 3a ");
         status = cmlGetStringValueFromSql(
             "select distinct resc_group_id from R_RESC_GROUP where resc_id=? and resc_group_name=?",
             dataObjNumber, MAX_NAME_LEN, rescId, rescGroupName, 0, &icss);
@@ -5608,7 +5608,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
         /* Step 2 : remove the (resc_group,resc) couple */
         cllBindVars[cllBindVarCount++]=rescGroupName;
         cllBindVars[cllBindVarCount++]=rescId;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 3b");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 3b");
         status =  cmlExecuteNoAnswerSql(
             "delete from R_RESC_GROUP where resc_group_name=? and resc_id=?",
             &icss);
@@ -5622,7 +5622,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       
         /* Step 3 : look if the resc_group_name is still refered to */
         rescGroupId[0]='\0';
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModRescGroup SQL 3c ");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chl-Mod-Resc-Group S Q L 3c ");
         status = cmlGetStringValueFromSql(
             "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
             rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss);
@@ -6007,7 +6007,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
         if (status != 0) return(status);
 
         objId=0;
-        if (logSQL!=0) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 5");
+        if (logSQL!=0) rodsLog(LOG_SQL, "checkAndGetObjectId S Q L 5");
         status = cmlGetIntegerValueFromSql(
             "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
             &objId, name, 0, 0, 0, 0, &icss);
