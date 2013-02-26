@@ -79,13 +79,6 @@ int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
 
     if(FileDesc[fileFsyncInp->fileInx].objPath == NULL ||
        FileDesc[fileFsyncInp->fileInx].objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

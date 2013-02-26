@@ -1644,11 +1644,14 @@ extern "C" {
                                         addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, "");
                                         int status = rcDataObjUnlink(_comm, &dataObjInp);
                                         if(status < 0) {
+                                            char* sys_error;
+                                            char* rods_error = rodsErrorName(status, &sys_error);
                                             std::stringstream msg;
                                             msg << __FUNCTION__;
-                                            msg << " - Failed to unlink the data child \"" << hierarchy_string << "\"";
+                                            msg << " - Failed to unlink the data child \"" << hierarchy_string << "\" ";
+                                            msg << rods_error << " " << sys_error;
                                             eirods::log(LOG_ERROR, msg.str());
-                                            result = ERROR(-1, msg.str());
+                                            result = ERROR(status, msg.str());
                                         }
                                     } else {
                                         std::stringstream msg;

@@ -1,8 +1,10 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* 
  * iphymv - The irods physical move utility
-*/
+ */
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
@@ -31,8 +33,8 @@ main(int argc, char **argv) {
     }
 
     if (myRodsArgs.help==True) {
-       usage();
-       exit(0);
+        usage();
+        exit(0);
     }
 
     if (argc - optind <= 0) {
@@ -49,7 +51,7 @@ main(int argc, char **argv) {
     }
 
     status = parseCmdLinePath (argc, argv, optind, &myEnv,
-      UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp);
+                               UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status, "main: parseCmdLinePath error. ");
@@ -58,7 +60,7 @@ main(int argc, char **argv) {
     }
 
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 1, &errMsg);
+                      myEnv.rodsZone, 1, &errMsg);
 
     if (conn == NULL) {
         exit (2);
@@ -76,7 +78,7 @@ main(int argc, char **argv) {
     rcDisconnect(conn);
 
     if (status < 0) {
-	exit (3);
+        exit (3);
     } else {
         exit(0);
     }
@@ -87,33 +89,33 @@ void
 usage ()
 {
 
-   char *msgs[]={
-"Usage : iphymv [-hMrvV] [-n replNum] [-S srcResource]  [-R destResource] ",
-"dataObj|collection ... ",
-" ",
-"Note that if the source copy has a checksum value associated with it,",
-"a checksum will be computed for the replicated copy and compare with",
-"the source value for verification.",
-" ",
-"Physically move a file in iRODS to another storage resource.",
-"Options are:",
-" -r  recursive - phymove the whole subtree",
-" -M  admin - admin user uses this option to phymove other users files", 
-" -n  replNum  - the replica to be phymoved, typically not needed",
-" -S  srcResource - specifies the source resource for the move.", 
-"     If specified, only copies stored in this resource will be moved.",
-"     Otherwise, one of the copy will be moved",
-" -R  destResource - specifies the destination resource for the move.", 
-"     This can also be specified, in your environment or via a rule",
-"     set up by the administrator.",
-" -v  verbose",
-" -V  Very verbose",
-" -h  this help",
-""};
-   int i;
-   for (i=0;;i++) {
-      if (strlen(msgs[i])==0) break;
-      printf("%s\n",msgs[i]);
-   }
-   printReleaseInfo("iphymv");
+    char *msgs[]={
+        "Usage : iphymv [-hMrvV] [-n replNum] [-S srcResource]  [-R destResource] ",
+        "dataObj|collection ... ",
+        " ",
+        "Note that if the source copy has a checksum value associated with it,",
+        "a checksum will be computed for the replicated copy and compare with",
+        "the source value for verification.",
+        " ",
+        "Physically move a file in iRODS to another storage resource.",
+        "Options are:",
+        " -r  recursive - phymove the whole subtree",
+        " -M  admin - admin user uses this option to phymove other users files", 
+        " -n  replNum  - the replica to be phymoved, typically not needed",
+        " -S  srcResource - specifies the source resource for the move.", 
+        "     If specified, only copies stored in this resource will be moved.",
+        "     Otherwise, one of the copy will be moved",
+        " -R  destResource - specifies the destination resource for the move.", 
+        "     This can also be specified, in your environment or via a rule",
+        "     set up by the administrator.",
+        " -v  verbose",
+        " -V  Very verbose",
+        " -h  this help",
+        ""};
+    int i;
+    for (i=0;;i++) {
+        if (strlen(msgs[i])==0) break;
+        printf("%s\n",msgs[i]);
+    }
+    printReleaseInfo("iphymv");
 }

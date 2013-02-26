@@ -25,9 +25,6 @@ rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
             return -1;
         }
     } else {
-        eirods::stacktrace st;
-        st.trace();
-        st.dump();
         return -1;
     }
 

@@ -91,13 +91,6 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
                            fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
 
     if(fileGetFsFreeSpaceInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

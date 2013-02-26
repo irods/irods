@@ -112,13 +112,6 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
     mkDirForFilePath( rsComm, "/", fileStageToCacheInp->cacheFilename, getDefDirMode() );
 
     if(fileStageToCacheInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

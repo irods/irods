@@ -45,9 +45,6 @@ namespace eirods {
     error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
 
         if( _key.empty() ) {
-            stacktrace st;
-            st.trace();
-            st.dump();
             return ERROR( -1, "resource_manager::resolve - empty key" );
         }
 

@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -25,7 +27,7 @@
  *            EXEC_LOCALLY_KW - all operations except remote-remote copy
  *               have the keyword set.
  *               
- *   portalOprOut_t portalOprOut - the resource server portal info.	    
+ *   portalOprOut_t portalOprOut - the resource server portal info.         
  */
 int
 rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
@@ -39,36 +41,36 @@ rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
 
     if (getValByKey (&dataOprInp->condInput, EXEC_LOCALLY_KW) != NULL ||
-      dataCopyInp->portalOprOut.numThreads == 0) {
-	/* XXXXX do it locally if numThreads == 0 */
+        dataCopyInp->portalOprOut.numThreads == 0) {
+        /* XXXXX do it locally if numThreads == 0 */
         status = _rsDataCopy (rsComm, dataCopyInp);
     } else {
         if (dataOprInp->destL3descInx > 0) {
             l3descInx = dataOprInp->destL3descInx;
-	} else {
+        } else {
             l3descInx = dataOprInp->srcL3descInx;
         }
-	rodsServerHost = FileDesc[l3descInx].rodsServerHost;
-	if (rodsServerHost != NULL && rodsServerHost->localFlag != LOCAL_HOST) {
-	    addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
+        rodsServerHost = FileDesc[l3descInx].rodsServerHost;
+        if (rodsServerHost != NULL && rodsServerHost->localFlag != LOCAL_HOST) {
+            addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
             status = remoteDataCopy (rsComm, dataCopyInp, rodsServerHost);
             clearKeyVal (&dataOprInp->condInput);
-	} else {
+        } else {
             status = _rsDataCopy (rsComm, dataCopyInp);
-	}
+        }
     }
     return (status);
 }
 
 int
 remoteDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp,
-rodsServerHost_t *rodsServerHost)
+                rodsServerHost_t *rodsServerHost)
 {    
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteDataCopy: Invalid rodsServerHost");
+                 "remoteDataCopy: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -77,13 +79,13 @@ rodsServerHost_t *rodsServerHost)
     }
 
     dataCopyInp->dataOprInp.destL3descInx = 
-      convL3descInx (dataCopyInp->dataOprInp.destL3descInx);
+        convL3descInx (dataCopyInp->dataOprInp.destL3descInx);
 
     status = rcDataCopy (rodsServerHost->conn, dataCopyInp);
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteDataCopy: rcDataCopy failed");
+                 "remoteDataCopy: rcDataCopy failed");
     }
 
     return status;
@@ -97,21 +99,21 @@ _rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     if (dataCopyInp == NULL) {
         rodsLog (LOG_NOTICE,
-	  "_rsDataCopy: NULL dataCopyInp input");
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
+                 "_rsDataCopy: NULL dataCopyInp input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     } 
 
     dataOprInp = &dataCopyInp->dataOprInp;
     if (dataOprInp->oprType == SAME_HOST_COPY_OPR) {
-	/* src is on the same host */
-	retVal = sameHostCopy (rsComm, dataCopyInp);
+        /* src is on the same host */
+        retVal = sameHostCopy (rsComm, dataCopyInp);
     } else if (dataOprInp->oprType == COPY_TO_LOCAL_OPR || 
-      dataOprInp->oprType == COPY_TO_REM_OPR) {
-	retVal = remLocCopy (rsComm, dataCopyInp);
+               dataOprInp->oprType == COPY_TO_REM_OPR) {
+        retVal = remLocCopy (rsComm, dataCopyInp);
     } else {
-	rodsLog (LOG_NOTICE,
-          "_rsDataCopy: Invalid oprType %d", dataOprInp->oprType);
-	return (SYS_INVALID_OPR_TYPE);
+        rodsLog (LOG_NOTICE,
+                 "_rsDataCopy: Invalid oprType %d", dataOprInp->oprType);
+        return (SYS_INVALID_OPR_TYPE);
     }
 
     return (retVal);

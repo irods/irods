@@ -81,13 +81,6 @@ remoteFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp,
 int _rsFileStage( rsComm_t *rsComm, fileStageInp_t *fileStageInp ) {
 
     if(fileStageInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

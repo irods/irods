@@ -641,9 +641,19 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     if(new_resc_hier != NULL) {
         std::stringstream id_stream;
         id_stream << dataObjInfo->dataId;
+        std::stringstream repl_stream;
+        repl_stream << dataObjInfo->replNum;
         char resc_hier[MAX_NAME_LEN];
-        if((status = cmlGetStringValueFromSql("select resc_hier from R_DATA_MAIN where data_id=?",
-                                              resc_hier, MAX_NAME_LEN, id_stream.str().c_str(), 0, 0, &icss)) != 0) {
+        if((status = cmlGetStringValueFromSql("select resc_hier from R_DATA_MAIN where data_id=? and data_repl_num=?",
+                                              resc_hier, MAX_NAME_LEN, id_stream.str().c_str(), repl_stream.str().c_str(),
+                                              0, &icss)) != 0) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get the resc hierarchy from object with id: ";
+            msg << id_stream.str();
+            msg << " and replNum: ";
+            msg << repl_stream.str();
+            eirods::log(LOG_NOTICE, msg.str());
             return status;
         }
         // TODO - Address this in terms of resource hierarchies
