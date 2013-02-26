@@ -88,13 +88,6 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
     // mkDirForFilePath( rsComm, "/", fileRenameInp->newFileName, getDefDirMode () ); - The actual file path depends on the resource
 
     if(fileRenameInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

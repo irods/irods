@@ -207,18 +207,23 @@ _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     } // if strcmp
     // =-=-=-=-=-=-=-
 
+    char* rescHier = getValByKey(&dataObjUnlinkInp->condInput, RESC_HIER_STR_KW);
+    
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-        status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
-        if (status < 0) {
-            if (retVal == 0) {
-                retVal = status;
+        // Logic to match everything if the rescHier keyword is not specified.
+        if(rescHier == NULL || strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
+            status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
+            if (status < 0) {
+                if (retVal == 0) {
+                    retVal = status;
+                }
             }
+            if (dataObjUnlinkInp->specColl != NULL)         /* do only one */
+                break;
         }
-        if (dataObjUnlinkInp->specColl != NULL)         /* do only one */
-            break;
         tmpDataObjInfo = tmpDataObjInfo->next;
-    }
+     }
 
     if ((*dataObjInfoHead)->specColl == NULL)
         resolveDataObjReplStatus (rsComm, dataObjUnlinkInp);

@@ -895,7 +895,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             /* verify against the input value. */
             if (strcmp (L1desc[l1descInx].chksum, *chksumStr) != 0) {
                 rodsLog (LOG_NOTICE,
-                         "procChksumForClose: mismach chksum for %s.inp=%s,compute %s",
+                         "procChksumForClose: mismatch chksum for %s.inp=%s,compute %s",
                          dataObjInfo->objPath,
                          L1desc[l1descInx].chksum, *chksumStr);
                 free (*chksumStr);

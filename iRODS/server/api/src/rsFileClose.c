@@ -84,13 +84,6 @@ _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
 
     if(FileDesc[fileCloseInp->fileInx].objPath == NULL ||
        FileDesc[fileCloseInp->fileInx].objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

@@ -81,13 +81,6 @@ remoteFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp,
 int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
 
     if(fileTruncateInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

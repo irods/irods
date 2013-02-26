@@ -540,9 +540,6 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // check hier string
         if( _hier_str.empty() ) {
-eirods::stacktrace st;
-st.trace();
-st.dump();
             return ERROR( -1, "get_host_for_hier_string - hier string is empty" );
         }
 

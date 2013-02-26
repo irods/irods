@@ -78,17 +78,11 @@ remoteFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
 
 // =-=-=-=-=-=-=-
 // local function for calling unlink via resource plugin
-int _rsFileUnlink( rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp ) {
-    int status;
-
+int _rsFileUnlink(
+    rsComm_t *rsComm,
+    fileUnlinkInp_t *fileUnlinkInp )
+{
     if(fileUnlinkInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - empty logical path.";

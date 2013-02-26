@@ -90,13 +90,6 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
 
     if(FileDesc[fileWriteInp->fileInx].objPath == NULL ||
        FileDesc[fileWriteInp->fileInx].objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

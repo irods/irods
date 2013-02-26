@@ -81,13 +81,6 @@ remoteFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp,
 int _rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp ) {
 
     if(fileChmodInp->objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";

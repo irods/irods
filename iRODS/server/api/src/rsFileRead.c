@@ -94,13 +94,6 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
 
     if(FileDesc[fileReadInp->fileInx].objPath == NULL ||
        FileDesc[fileReadInp->fileInx].objPath[0] == '\0') {
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
