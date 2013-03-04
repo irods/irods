@@ -83,6 +83,18 @@ namespace eirods {
 
     }  // operator=
 
+    // public comparison operator
+    bool file_object::operator==(
+        const file_object& _rhs) const
+    {
+        bool result = true;
+        if(this->repl_requested() != _rhs.repl_requested() ||
+           this->logical_path() != _rhs.logical_path()) {
+            result = false;
+        }
+        return result;
+    }
+    
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
     error file_object::resolve(

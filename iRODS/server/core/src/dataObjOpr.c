@@ -29,6 +29,7 @@
 // eirods include
 #include "eirods_resource_backport.h"
 #include "eirods_log.h"
+#include "eirods_stacktrace.h"
 
 int
 getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
@@ -67,6 +68,14 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                  getValByKey (&dataObjInp->condInput, RESC_NAME_KW)) != NULL) {
         snprintf (condStr, NAME_LEN, "='%s'", tmpStr);
         addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_NAME, condStr);
+        qcondCnt++;
+    }
+
+    /* need to do RESC_HIER_STR_KW here because not all query need this */
+    if (false && ignoreCondInput == 0 &&
+        (tmpStr = getValByKey (&dataObjInp->condInput, RESC_HIER_STR_KW)) != NULL) {
+        snprintf (condStr, NAME_LEN, "='%s'", tmpStr);
+        addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_HIER, condStr);
         qcondCnt++;
     }
 

@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -331,7 +330,7 @@ namespace eirods {
                     break;
                 } 
 
-           } 
+            } 
 
         } // for itr
 
@@ -490,7 +489,7 @@ namespace eirods {
             }
 
         } else {
-                return PASS( false, -1, "get_resc_info - failed.", res_err );
+            return PASS( false, -1, "get_resc_info - failed.", res_err );
 
         }
 
@@ -525,7 +524,7 @@ namespace eirods {
             }
 
         } else {
-                return PASS( false, -1, "get_resc_grp_info - failed.", res_err );
+            return PASS( false, -1, "get_resc_grp_info - failed.", res_err );
 
         }
 
@@ -533,9 +532,9 @@ namespace eirods {
     } // get_resc_grp_info
 
     error get_host_for_hier_string( 
-              const std::string& _hier_str,      // hier string
-              int&               _local_flag,    // local flag
-              rodsServerHost_t*& _server_host) { // server host
+        const std::string& _hier_str,      // hier string
+        int&               _local_flag,    // local flag
+        rodsServerHost_t*& _server_host) { // server host
 
         // =-=-=-=-=-=-=-
         // check hier string
@@ -580,8 +579,8 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // function which returns the host name for a given hier string
     error get_loc_for_hier_string( 
-               const std::string& _hier, 
-                     std::string& _loc ) {
+        const std::string& _hier, 
+        std::string& _loc ) {
         // =-=-=-=-=-=-=-
         // use the parser to get the leaf resc in the string 
         hierarchy_parser parser;

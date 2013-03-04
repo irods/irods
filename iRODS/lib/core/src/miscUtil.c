@@ -1181,7 +1181,9 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
 
     memset (collEnt, 0, sizeof (collEnt_t));
 
-    if (collHandle->state == COLL_CLOSED) return (CAT_NO_ROWS_FOUND);
+    if (collHandle->state == COLL_CLOSED) {
+        return (CAT_NO_ROWS_FOUND);
+    }
 
     if ((collHandle->flags & DATA_QUERY_FIRST_FG) == 0) {
         /* recursive - coll first, dataObj second */
@@ -1594,7 +1596,10 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
                 }
             }
         }
-        if (selectedInx < 0) return CAT_NO_ROWS_FOUND;
+        if (selectedInx < 0) {
+            return CAT_NO_ROWS_FOUND;
+        }
+        
         collHandle->rowInx = i;
     } else {
         selectedInx = collHandle->rowInx;

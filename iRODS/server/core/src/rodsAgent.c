@@ -241,7 +241,7 @@ agentMain (rsComm_t *rsComm)
     
     // =-=-=-=-=-=-=-
     // call post disconnect maintenance operations before exit
-    resc_mgr.call_maintenance_operations( rodsServerHost->conn );
+    status = resc_mgr.call_maintenance_operations( rodsServerHost->conn );
 
 
     return (status);

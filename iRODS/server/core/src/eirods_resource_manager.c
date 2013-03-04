@@ -833,7 +833,9 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - exec the pdmos ( post disconnect maintenance operations ) in order
-    void resource_manager::call_maintenance_operations( rcComm_t* _comm ) {
+    int resource_manager::call_maintenance_operations( rcComm_t* _comm ) {
+        int result = 0;
+        
         // =-=-=-=-=-=-=-
         // iterate through op vectors
         std::vector< std::vector< pdmo_type > >::iterator vec_itr;
@@ -851,12 +853,14 @@ namespace eirods {
                 error ret = ((*op_itr))( _comm );
                 if( !ret.ok() ) {
                     log( PASSMSG( "resource_manager::call_maintenance_operations - op failed", ret ) );
+                    result = ret.code();
                 }
 
             } // for op_itr
 
         } // for vec_itr
-
+        
+        return result;
     } // call_maintenance_operations
 
 }; // namespace eirods

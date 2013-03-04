@@ -59,21 +59,21 @@ namespace eirods {
                               resource_ptr& ); // resource out variable
 
         // =-=-=-=-=-=-=-
-		/// @brief print the list of local resources out to stderr
+        /// @brief print the list of local resources out to stderr
         void print_local_resources();
 
         // =-=-=-=-=-=-=-
-		/// @brief determine if any pdmos need to run before doing a connection
+        /// @brief determine if any pdmos need to run before doing a connection
         bool need_maintenance_operations(  );
 
         // =-=-=-=-=-=-=-
-		/// @brief exec the pdmos ( post disconnect maintenance operations ) in order
-        void call_maintenance_operations( rcComm_t* ); 
+        /// @brief exec the pdmos ( post disconnect maintenance operations ) in order
+        int call_maintenance_operations( rcComm_t* ); 
 
         // =-=-=-=-=-=-=-
-		/// @brief resolve a resource from a match with a given property 
+        /// @brief resolve a resource from a match with a given property 
         template< typename value_type >
-		error resolve_from_property( std::string   _prop,    // property key
+        error resolve_from_property( std::string   _prop,    // property key
                                      value_type    _value,   // property value 
                                      resource_ptr& _resc ) { // outgoing resource variable
             // =-=-=-=-=-=-=-

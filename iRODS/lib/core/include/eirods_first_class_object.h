@@ -33,8 +33,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // Operators
-        first_class_object& operator=( const first_class_object& );
-        
+        virtual first_class_object& operator=( const first_class_object& );
+
         // =-=-=-=-=-=-=-
         // plugin resolution operators
         virtual error resolve( resource_manager&, resource_ptr& );

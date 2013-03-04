@@ -12,6 +12,7 @@
 #include "dataObjRepl.h"
 #include "dataObjUnlink.h"
 #include "rodsLog.h"
+#include "icatHighLevelRoutines.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -177,7 +178,7 @@ extern "C" {
         for(it = _object_list.begin(); !result && it != _object_list.end(); ++it) {
             object_oper_t object_oper = *it;
             // not the best way to compare objects but perhaps all we have at this point
-            if(object_oper.object_.logical_path() == _object.logical_path()) {
+            if(object_oper.object_ == _object) {
                 result = true;
             }
         }
@@ -193,6 +194,7 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         object_list_t object_list;
+
         ret = _prop_map->get<object_list_t>(object_list_prop, object_list);
         if(!ret.ok() || !replObjectInList(object_list, *_object)) {
             object_oper_t object_oper;
@@ -219,13 +221,12 @@ extern "C" {
             object_list_t::const_iterator it;
             for(it = object_list.begin(); result.ok() && it != object_list.end(); ++it) {
                 object_oper_t object_oper = *it;
-                if(object_oper.object_.logical_path() == _object->logical_path()) {
+                if(object_oper.object_ == *_object) {
                     // operations should match. the exception is that it is okay for a write to happen after a create
                     if(object_oper.oper_ != _oper && (object_oper.oper_ != create_oper || _oper != write_oper)) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
                         msg << " - Existing object operation \"" << object_oper.oper_ << "\" does not match passed in operation \"" << _oper << "\".";
-                        result = ERROR(-1, msg.str());
                     }
                 }
             }
@@ -1499,11 +1500,12 @@ extern "C" {
         class repl_pdmo {
         public:
             /// @brief ctor
-            repl_pdmo(eirods::resource_property_map& _prop_map) : properties_(_prop_map) {
+            repl_pdmo(eirods::resource_property_map& _prop_map, eirods::resource_child_map& _child_map) : \
+                properties_(_prop_map), children_(_child_map) {
             }
             
             /// @brief cctor
-            repl_pdmo(const repl_pdmo& _rhs) : properties_(_rhs.properties_) {
+            repl_pdmo(const repl_pdmo& _rhs) : properties_(_rhs.properties_), children_(_rhs.children_) {
             }
 
             /// @brief assignment operator
@@ -1536,6 +1538,46 @@ extern "C" {
                                 msg << " - Failed to replicate the selected object, \"" << selected_hierarchy << "\" to the other children";
                                 result = PASSMSG(msg.str(), ret);
                             }
+#if COMMENT
+                            else {
+                                // this is a debugging tool. check to make sure that all children have the same number of data
+                                // objects
+                                int num_objects = -1;
+                                eirods::resource_child_map::iterator it;
+                                for(it = children_.begin(); result.ok() && it != children_.end(); ++it) {
+                                    int child_num_objects;
+                                    eirods::resource_ptr child_resc = it->second.second;
+                                    std::string resc_name;
+                                    ret = child_resc->get_property<std::string>("name", resc_name);
+                                    if(!ret.ok()) {
+                                        std::stringstream msg;
+                                        msg << __FUNCTION__;
+                                        msg << " - Failed to get the name of the child property.";
+                                        result = PASSMSG(msg.str(), ret);
+                                    } else {
+                                        ret = chlRescObjCount(resc_name, child_num_objects);
+                                        if(!ret.ok()) {
+                                            std::stringstream msg;
+                                            msg << __FUNCTION__;
+                                            msg << " - Failed to get the object counts for the child resource from the database.";
+                                            result = PASSMSG(msg.str(), ret);
+                                        } else {
+                                            if(num_objects < 0) {
+                                                // first child so just set the num objects that we will compare later
+                                                num_objects = child_num_objects;
+                                            } else {
+                                                if(num_objects != child_num_objects) {
+                                                    std::stringstream msg;
+                                                    msg << __FUNCTION__;
+                                                    msg << " - Children of replicating resource: \"" << root_resource << "\" have different object counts.";
+                                                    result = ERROR(-1, msg.str());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+#endif
                         }
                     }
                     return result;
@@ -1667,6 +1709,7 @@ extern "C" {
                 }
             
             eirods::resource_property_map& properties_;
+            eirods::resource_child_map& children_;
         };
             
     public:
@@ -1702,7 +1745,7 @@ extern "C" {
             eirods::pdmo_type& _out_pdmo)
             {
                 eirods::error result = SUCCESS();
-                _out_pdmo = repl_pdmo(properties_);
+                _out_pdmo = repl_pdmo(properties_, children_);
                 return result;
             }
 

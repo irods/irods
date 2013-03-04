@@ -1833,6 +1833,29 @@ _updateChildParent(
     return result;
 }
 
+eirods::error chlRescObjCount(
+    const std::string& _resc_name,
+    int& _rtn_obj_count)
+{
+    eirods::error result = SUCCESS();
+    int obj_count = 0;
+    char obj_count_string[MAX_NAME_LEN];
+    int status;
+    
+    if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
+                                          obj_count_string, MAX_NAME_LEN, _resc_name.c_str(), 0, 0, &icss)) != 0) {
+        _rollback(__FUNCTION__);
+        std::stringstream msg;
+        msg << __FUNCTION__ << " - Failed to get object count for resource: \"" << _resc_name << "\"";
+        result = ERROR(status, msg.str());
+    } else {
+        obj_count = atoi(obj_count_string);
+    }
+
+    _rtn_obj_count = obj_count;
+    return result;
+}
+
 /**
  * @brief Returns true if the specified resource has associated data objects
  */
@@ -6304,7 +6327,9 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
         return(status);
     }
     numObjects = iVal;
-    if (numObjects == 0) return(CAT_NO_ROWS_FOUND);
+    if (numObjects == 0) {
+        return(CAT_NO_ROWS_FOUND);
+    }
 
 /* 
    Create a view with all the access permissions for this user, or

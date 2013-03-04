@@ -331,6 +331,7 @@ runCmd( "iput -bIvPKr $mysdir $irodshome/icmdtest" );
 # iput with a lot of options
 my $rsfile = $dir_w . "/rsfile";
 if ( -e $rsfile ) { unlink( $rsfile ); }
+#sleep(5);
 runCmd( "iput -PkITr -X $rsfile --retries 10  $mysdir $irodshome/icmdtestw" );
 runCmd( "imv $irodshome/icmdtestw $irodshome/icmdtestw1" );
 runCmd( "ils -lr $irodshome/icmdtestw1", "", "LIST", "sfile10" );
@@ -343,6 +344,7 @@ runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/te
 # my $phypath = $dir_w . '/' . 'testx.tar.' .  int(rand(10000000));
 runCmd( "iput $dir_w/testx.tar $irodshome/icmdtestx.tar", "", "", "", "irm -f $irodshome/icmdtestx.tar" );
 runCmd( "ibun -x $irodshome/icmdtestx.tar $irodshome/icmdtestx", "", "", "", "irm -rf $irodshome/icmdtestx" );
+# before here
 runCmd( "ils -lr $irodshome/icmdtestx", "", "LIST", "foo2,sfile10" );
 runCmd( "ibun -cDtar $irodshome/icmdtestx1.tar $irodshome/icmdtestx", "", "", "", "irm -f $irodshome/icmdtestx1.tar" );
 runCmd( "ils -l $irodshome/icmdtestx1.tar", "", "LIST", "testx1.tar" );
@@ -629,16 +631,15 @@ system ( "rm -r $myldir" );
 if ( $debug ) { print( "\nMAIN ########### Roll back ################\n" ); }
 
 for ( $i = $#returnref; $i >= 0; $i-- ) {
-	undef( @tmp_tab );
-	$line     = $returnref[$i];
-	@tmp_tab = @{$line};	
-	runCmd( $tmp_tab[0], $tmp_tab[1], $tmp_tab[2], $tmp_tab[3] );
+    undef( @tmp_tab );
+    $line     = $returnref[$i];
+    @tmp_tab = @{$line};	
+    #if ( $tmp_tab[0] eq "irmtrash" ) { last; }
+    runCmd( $tmp_tab[0], $tmp_tab[1], $tmp_tab[2], $tmp_tab[3] );
 }
-
+    
 #-- Execute last commands before leaving
-
 if ( $debug ) { print( "\nMAIN ########### Last ################\n" ); }
-
 runCmd( "iadmin lg", "negtest", "LIST", "testgroup" );
 #runCmd( "iadmin lg", "negtest", "LIST", "resgroup" );
 runCmd( "iadmin lr", "negtest", "LIST", "testresource" );
@@ -646,9 +647,11 @@ runCmd( "irmtrash" );
 if ( ! $noprompt_flag ) {
     runCmd( "iexit full" );
 }
+
 `/bin/rm -rf /tmp/foo`;# remove the vault for the testresource; needed in case
-                       # another unix login runs this test on this host
+# another unix login runs this test on this host
 `/bin/rm -rf /tmp/comp`;
+
 #-- print the result of the test into testSurvey.log
 
 $nsuccess = @successlist;
@@ -703,7 +706,7 @@ sub runCmd {
  	my $result     = 1; 		# used only in the case where the answer of the command has to be compared to an expected answer.
 
 #-- Check inputs
-
+	#sleep(1);
 	if ( ! $cmd ) {
 		print( "No command given to runCmd; Exit\n" );
 		exit;

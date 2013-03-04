@@ -14,6 +14,7 @@
 // =-=-=-=-=-=-=-
 // eirods include
 #include "eirods_resource_backport.h"
+#include "eirods_stacktrace.h"
 
 static int HaveFailedSpecCollPath = 0;
 static char FailedSpecCollPath[MAX_NAME_LEN];
@@ -31,8 +32,9 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
     int status;
     char condStr[MAX_NAME_LEN];
 
-    if (HaveFailedSpecCollPath && strcmp (objPath, FailedSpecCollPath) == 0)
+    if (HaveFailedSpecCollPath && strcmp (objPath, FailedSpecCollPath) == 0) {
         return CAT_NO_ROWS_FOUND;
+    }
 
     /* see if objPath is in the path of a spec collection */
     memset (&genQueryInp, 0, sizeof (genQueryInp));

@@ -40,6 +40,9 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Operators
         virtual file_object& operator=( const file_object& );
+
+        /// @brief Comparison operator
+        virtual bool operator==( const file_object& _rhs ) const;
         
         // =-=-=-=-=-=-=-
         // plugin resolution operation

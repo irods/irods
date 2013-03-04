@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsQuerySpecColl.c
@@ -29,23 +31,23 @@
 
 int
 rsQuerySpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-genQueryOut_t **genQueryOut)
+                 genQueryOut_t **genQueryOut)
 {
 
     int specCollInx;
     int status;
-    int continueFlag; 	/* continue query */ 
+    int continueFlag;   /* continue query */ 
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     remoteFlag = getAndConnRcatHost (rsComm, SLAVE_RCAT, dataObjInp->objPath,
-      &rodsServerHost);
+                                     &rodsServerHost);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
-	status = rcQuerySpecColl (rodsServerHost->conn, dataObjInp,
-	  genQueryOut);
-	return status;
+        status = rcQuerySpecColl (rodsServerHost->conn, dataObjInp,
+                                  genQueryOut);
+        return status;
     }
 
     // =-=-=-=-=-=-=-
@@ -58,13 +60,13 @@ genQueryOut_t **genQueryOut)
     char* hier_kw;
     if( ( hier_kw = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) ) == NULL ) {
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-						   dataObjInp, hier, host, local );
+                                                       dataObjInp, hier, host, local );
         if( !ret.ok() ) { 
-	    std::stringstream msg;
-	    msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
-	    msg << dataObjInp->objPath << "]";
-	    eirods::log( PASSMSG( msg.str(), ret ) );
-	    return ret.code();
+            std::stringstream msg;
+            msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
         }
    
         // =-=-=-=-=-=-=-
@@ -75,25 +77,25 @@ genQueryOut_t **genQueryOut)
     } 
 
     if ((specCollInx = dataObjInp->openFlags) <= 0) {
-	specCollInx = openSpecColl (rsComm, dataObjInp, -1);
+        specCollInx = openSpecColl (rsComm, dataObjInp, -1);
         if (specCollInx < 0) {
             rodsLog (LOG_NOTICE,
-              "rsQuerySpecColl: openSpecColl error for %s, status = %d",
-              dataObjInp->objPath, specCollInx);
+                     "rsQuerySpecColl: openSpecColl error for %s, status = %d",
+                     dataObjInp->objPath, specCollInx);
             return (specCollInx);
         }
-	continueFlag = 0;
+        continueFlag = 0;
     } else {
-	continueFlag = 1;
+        continueFlag = 1;
     }
-	
+        
     initOutForQuerySpecColl (genQueryOut);
 
     status = _rsQuerySpecColl (rsComm, specCollInx, dataObjInp,
-      *genQueryOut, continueFlag);
+                               *genQueryOut, continueFlag);
 
     if (status < 0) {
-	freeGenQueryOut (genQueryOut);
+        freeGenQueryOut (genQueryOut);
     }
     return (status);
 }
@@ -107,20 +109,20 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
     int l3descInx;
 
     status = resolvePathInSpecColl (rsComm, dataObjInp->objPath, 
-      //READ_COLL_PERM, 0, &dataObjInfo);
-      UNKNOW_COLL_PERM, 0, &dataObjInfo);
+                                    //READ_COLL_PERM, 0, &dataObjInfo);
+                                    UNKNOW_COLL_PERM, 0, &dataObjInfo);
 
     if (status < 0 || NULL == dataObjInfo ) { // JMC cppcheck - nullptr
         rodsLog (LOG_NOTICE,
-          "rsQuerySpecColl: resolveSpecColl error for %s, status = %d",
-          dataObjInp->objPath, status);
-	return (status);
+                 "rsQuerySpecColl: resolveSpecColl error for %s, status = %d",
+                 dataObjInp->objPath, status);
+        return (status);
     }
 
     if (dataObjInfo->specColl->collClass == LINKED_COLL) {
         rodsLog (LOG_ERROR,
-          "rsQuerySpecColl: %s is a linked collection",
-          dataObjInp->objPath);
+                 "rsQuerySpecColl: %s is a linked collection",
+                 dataObjInp->objPath);
         return SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
@@ -133,14 +135,14 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
 
     if (l3descInx < 0) {
         rodsLog (LOG_NOTICE,
-          "openSpecColl: specCollOpendir error for %s, status = %d",
-          dataObjInp->objPath, l3descInx);
+                 "openSpecColl: specCollOpendir error for %s, status = %d",
+                 dataObjInp->objPath, l3descInx);
         return (l3descInx);
     }
     specCollInx = allocSpecCollDesc ();
     if (specCollInx < 0) {
-	freeDataObjInfo (dataObjInfo);
-	return (specCollInx);
+        freeDataObjInfo (dataObjInfo);
+        return (specCollInx);
     }
     SpecCollDesc[specCollInx].l3descInx = l3descInx;
     SpecCollDesc[specCollInx].dataObjInfo = dataObjInfo; 
@@ -157,7 +159,7 @@ initOutForQuerySpecColl (genQueryOut_t **genQueryOut)
     /* will do collection, dataName, createTime, modifyTime, objSize */
 
     myGenQueryOut = *genQueryOut = 
-      (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
+        (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
 
     memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
 
@@ -166,33 +168,33 @@ initOutForQuerySpecColl (genQueryOut_t **genQueryOut)
     myGenQueryOut->sqlResult[0].attriInx = COL_COLL_NAME;
     myGenQueryOut->sqlResult[0].len = MAX_NAME_LEN;    
     myGenQueryOut->sqlResult[0].value = 
-      (char*)malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+        (char*)malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[0].value, 0, 
-      MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+            MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     myGenQueryOut->sqlResult[1].attriInx = COL_DATA_NAME;
     myGenQueryOut->sqlResult[1].len = MAX_NAME_LEN; 
     myGenQueryOut->sqlResult[1].value = 
-      (char*)malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+        (char*)malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[1].value, 0, 
-      MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+            MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     myGenQueryOut->sqlResult[2].attriInx = COL_D_CREATE_TIME;
     myGenQueryOut->sqlResult[2].len = NAME_LEN;
     myGenQueryOut->sqlResult[2].value =
-      (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
+        (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[2].value, 0,
-      NAME_LEN * MAX_SPEC_COLL_ROW); 
+            NAME_LEN * MAX_SPEC_COLL_ROW); 
     myGenQueryOut->sqlResult[3].attriInx = COL_D_MODIFY_TIME;
     myGenQueryOut->sqlResult[3].len = NAME_LEN;
     myGenQueryOut->sqlResult[3].value =
-      (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
+        (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[3].value, 0,
-      NAME_LEN * MAX_SPEC_COLL_ROW);     
+            NAME_LEN * MAX_SPEC_COLL_ROW);     
     myGenQueryOut->sqlResult[4].attriInx = COL_DATA_SIZE;
     myGenQueryOut->sqlResult[4].len = NAME_LEN;
     myGenQueryOut->sqlResult[4].value =
-      (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
+        (char*)malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[4].value, 0,
-      NAME_LEN * MAX_SPEC_COLL_ROW);
+            NAME_LEN * MAX_SPEC_COLL_ROW);
 
     myGenQueryOut->continueInx = -1;
 
@@ -201,7 +203,7 @@ initOutForQuerySpecColl (genQueryOut_t **genQueryOut)
 
 int
 _rsQuerySpecColl (rsComm_t *rsComm, int specCollInx, 
-dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
+                  dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 {
     int status;
     rodsDirent_t *rodsDirent = NULL;
@@ -215,25 +217,25 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 
     if (SpecCollDesc[specCollInx].inuseFlag != FD_INUSE) {
         rodsLog (LOG_ERROR,
-          "_rsQuerySpecColl: Input specCollInx %d not active", specCollInx);
-	    return (BAD_INPUT_DESC_INDEX);
+                 "_rsQuerySpecColl: Input specCollInx %d not active", specCollInx);
+        return (BAD_INPUT_DESC_INDEX);
     }
 
     if ((tmpStr = getValByKey (&dataObjInp->condInput, SEL_OBJ_TYPE_KW)) != 
-      NULL) {
-	if (strcmp (tmpStr, "dataObj") == 0) {
-	    selObjType = DATA_OBJ_T;
-	} else {
-	    selObjType = COLL_OBJ_T;
-	}
+        NULL) {
+        if (strcmp (tmpStr, "dataObj") == 0) {
+            selObjType = DATA_OBJ_T;
+        } else {
+            selObjType = COLL_OBJ_T;
+        }
     } else {
-	selObjType = UNKNOWN_OBJ_T;
+        selObjType = UNKNOWN_OBJ_T;
     }
 
     if (getValByKey (&dataObjInp->condInput, RECURSIVE_OPR__KW) != NULL) {
-	recurFlag = 1;
+        recurFlag = 1;
     } else {
-	recurFlag = 0;
+        recurFlag = 0;
     }
 
     dataObjInfo = SpecCollDesc[specCollInx].dataObjInfo;
@@ -252,7 +254,7 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
         free (rodsDirent);
 
         if (strcmp (myRodsDirent.d_name, ".") == 0 ||
-          strcmp (myRodsDirent.d_name, "..") == 0) {
+            strcmp (myRodsDirent.d_name, "..") == 0) {
             continue;
         } 
 
@@ -265,33 +267,33 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 
         status = l3Stat (rsComm, &myDataObjInfo, &fileStatOut);
         if (status < 0) {
-                rodsLog (LOG_ERROR,
-                 "_rsQuerySpecColl: l3Stat for %s error, status = %d",
-                 myDataObjInfo.filePath, status);
-               /* XXXXX need clean up */
-                return (status);
+            rodsLog (LOG_ERROR,
+                     "_rsQuerySpecColl: l3Stat for %s error, status = %d",
+                     myDataObjInfo.filePath, status);
+            /* XXXXX need clean up */
+            return (status);
         }
         
         if ((fileStatOut->st_mode & S_IFREG) != 0) {     /* a file */
             if (selObjType == COLL_OBJ_T) {
-            free (fileStatOut);
-            continue;
+                free (fileStatOut);
+                continue;
             }
             rowCnt = genQueryOut->rowCnt;
             rstrcpy (&genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt], 
-              dataObjInfo->subPath, MAX_NAME_LEN);
+                     dataObjInfo->subPath, MAX_NAME_LEN);
             rstrcpy (&genQueryOut->sqlResult[1].value[MAX_NAME_LEN * rowCnt], 
-              myRodsDirent.d_name, MAX_NAME_LEN);
-                snprintf (&genQueryOut->sqlResult[2].value[NAME_LEN * rowCnt],
-                  NAME_LEN, "%d", fileStatOut->st_ctim);
-                snprintf (&genQueryOut->sqlResult[3].value[NAME_LEN * rowCnt],
-                  NAME_LEN, "%d", fileStatOut->st_mtim);
-                snprintf (&genQueryOut->sqlResult[4].value[NAME_LEN * rowCnt],
-                  NAME_LEN, "%lld", fileStatOut->st_size);
+                     myRodsDirent.d_name, MAX_NAME_LEN);
+            snprintf (&genQueryOut->sqlResult[2].value[NAME_LEN * rowCnt],
+                      NAME_LEN, "%d", fileStatOut->st_ctim);
+            snprintf (&genQueryOut->sqlResult[3].value[NAME_LEN * rowCnt],
+                      NAME_LEN, "%d", fileStatOut->st_mtim);
+            snprintf (&genQueryOut->sqlResult[4].value[NAME_LEN * rowCnt],
+                      NAME_LEN, "%lld", fileStatOut->st_size);
 
-                free (fileStatOut);
+            free (fileStatOut);
 
-                genQueryOut->rowCnt++;
+            genQueryOut->rowCnt++;
 
         } else {
             if (selObjType != DATA_OBJ_T) {
@@ -301,9 +303,9 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
                 snprintf( &genQueryOut->sqlResult[2].value[NAME_LEN * rowCnt],
                           NAME_LEN, "%d", fileStatOut->st_ctim);
                 snprintf (&genQueryOut->sqlResult[3].value[NAME_LEN * rowCnt],
-                  NAME_LEN, "%d", fileStatOut->st_mtim);
+                          NAME_LEN, "%d", fileStatOut->st_mtim);
                 snprintf (&genQueryOut->sqlResult[4].value[NAME_LEN * rowCnt],
-                  NAME_LEN, "%lld", fileStatOut->st_size);
+                          NAME_LEN, "%lld", fileStatOut->st_size);
                 genQueryOut->rowCnt++;
             }
             
@@ -314,18 +316,18 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
                 int newSpecCollInx; 
                 newDataObjInp = *dataObjInp;
                 rstrcpy (newDataObjInp.objPath, dataObjInfo->subPath,
-                  MAX_NAME_LEN);
+                         MAX_NAME_LEN);
                 newSpecCollInx = 
-                  openSpecColl (rsComm, &newDataObjInp, specCollInx);
-                    if (newSpecCollInx < 0) {
-                            rodsLog (LOG_ERROR,
-                              "_rsQuerySpecColl: openSpecColl err for %s, stat = %d",
-                              newDataObjInp.objPath, newSpecCollInx);
+                    openSpecColl (rsComm, &newDataObjInp, specCollInx);
+                if (newSpecCollInx < 0) {
+                    rodsLog (LOG_ERROR,
+                             "_rsQuerySpecColl: openSpecColl err for %s, stat = %d",
+                             newDataObjInp.objPath, newSpecCollInx);
                     status = newSpecCollInx;
                     break;
                 }
                 status = _rsQuerySpecColl (rsComm, newSpecCollInx, 
-                  &newDataObjInp, genQueryOut, 0);
+                                           &newDataObjInp, genQueryOut, 0);
                 if (status < 0) {
                     break;
                 }
@@ -338,34 +340,34 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
     }
 
     if (genQueryOut->rowCnt < MAX_SPEC_COLL_ROW) {
-	int parentInx;
-	/* get to the end or error */
-	specCollClosedir (rsComm, specCollInx);
-	parentInx = SpecCollDesc[specCollInx].parentInx;
-	freeSpecCollDesc (specCollInx);
-	if (status >= 0 && recurFlag && continueFlag && parentInx > 0) {
+        int parentInx;
+        /* get to the end or error */
+        specCollClosedir (rsComm, specCollInx);
+        parentInx = SpecCollDesc[specCollInx].parentInx;
+        freeSpecCollDesc (specCollInx);
+        if (status >= 0 && recurFlag && continueFlag && parentInx > 0) {
             newDataObjInp = *dataObjInp; 
             rstrcpy (newDataObjInp.objPath, 
-	      SpecCollDesc[parentInx].dataObjInfo->objPath, MAX_NAME_LEN);
+                     SpecCollDesc[parentInx].dataObjInfo->objPath, MAX_NAME_LEN);
             status = _rsQuerySpecColl (rsComm, parentInx,
-              &newDataObjInp, genQueryOut, continueFlag);
-	} else {
-	    /* no more */
-	    genQueryOut->continueInx = -1;
-	}
+                                       &newDataObjInp, genQueryOut, continueFlag);
+        } else {
+            /* no more */
+            genQueryOut->continueInx = -1;
+        }
         if (status == EOF || status == CAT_NO_ROWS_FOUND) {
             status = 0;
         }
     } else {
-	/* more to come */
-	if (genQueryOut->continueInx < 0) {
-	    /* if one does not already exist */
-	    genQueryOut->continueInx = specCollInx;
-	}
+        /* more to come */
+        if (genQueryOut->continueInx < 0) {
+            /* if one does not already exist */
+            genQueryOut->continueInx = specCollInx;
+        }
     }
 
     if (status >= 0 && genQueryOut->rowCnt == 0) {
-	status = CAT_NO_ROWS_FOUND;
+        status = CAT_NO_ROWS_FOUND;
     }  
     
     return (status);
@@ -399,17 +401,17 @@ specCollReaddir (rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent)
         subStructFileReaddirInp.type = dataObjInfo->specColl->type;
         subStructFileReaddirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy (subStructFileReaddirInp.addr.hostAddr, 
-	  location.c_str(), NAME_LEN);
+                 location.c_str(), NAME_LEN);
         status = rsSubStructFileReaddir (rsComm, &subStructFileReaddirInp, 
-	  rodsDirent);
+                                         rodsDirent);
     } else if (specColl->collClass == MOUNTED_COLL) {
         fileReaddirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
         status = rsFileReaddir (rsComm, &fileReaddirInp, rodsDirent);
     } else {
-       rodsLog (LOG_ERROR,
-          "specCollReaddir: Unknown specColl collClass = %d",
-          specColl->collClass);
-	status = SYS_UNKNOWN_SPEC_COLL_CLASS;
+        rodsLog (LOG_ERROR,
+                 "specCollReaddir: Unknown specColl collClass = %d",
+                 specColl->collClass);
+        status = SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
     return (status);
@@ -442,16 +444,16 @@ specCollClosedir (rsComm_t *rsComm, int specCollInx)
         subStructFileClosedirInp.type = dataObjInfo->specColl->type;
         subStructFileClosedirInp.fd = SpecCollDesc[specCollInx].l3descInx;
         rstrcpy (subStructFileClosedirInp.addr.hostAddr, 
-	  location.c_str(), NAME_LEN);
+                 location.c_str(), NAME_LEN);
         status = rsSubStructFileClosedir (rsComm, &subStructFileClosedirInp); 
     } else if (specColl->collClass == MOUNTED_COLL) {
         fileClosedirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
         status = rsFileClosedir (rsComm, &fileClosedirInp);
     } else {
-       rodsLog (LOG_ERROR,
-          "specCollClosedir: Unknown specColl collClass = %d",
-          specColl->collClass);
-	status = SYS_UNKNOWN_SPEC_COLL_CLASS;
+        rodsLog (LOG_ERROR,
+                 "specCollClosedir: Unknown specColl collClass = %d",
+                 specColl->collClass);
+        status = SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
     return (status);
@@ -477,7 +479,7 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subStructFileOpendirInp;
-    	status = 0;
+        status = 0;
 
 
         memset ( &subStructFileOpendirInp, 0, sizeof (subStructFileOpendirInp));
@@ -487,12 +489,12 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         subStructFileOpendirInp.specColl = dataObjInfo->specColl;
         status = rsSubStructFileOpendir (rsComm, &subStructFileOpendirInp);
     } else {
-       #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
         switch (RescTypeDef[rescTypeInx].rescCat) {
-          case FILE_CAT:
-       #endif // JMC legacy resource 
+        case FILE_CAT:
+#endif // JMC legacy resource 
             memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
             rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy( fileOpendirInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
@@ -502,20 +504,20 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
             status = rsFileOpendir (rsComm, &fileOpendirInp);
             if (status < 0) {
-               rodsLog (LOG_ERROR,
-                  "l3Opendir: rsFileOpendir for %s error, status = %d",
-                  dataObjInfo->filePath, status);
+                rodsLog (LOG_ERROR,
+                         "l3Opendir: rsFileOpendir for %s error, status = %d",
+                         dataObjInfo->filePath, status);
             }
-       #if 0 // JMC legacy resource 
+#if 0 // JMC legacy resource 
             break;
-          default:
+        default:
             rodsLog (LOG_NOTICE,
-              "l3Opendir: rescCat type %d is not recognized",
-              RescTypeDef[rescTypeInx].rescCat);
+                     "l3Opendir: rescCat type %d is not recognized",
+                     RescTypeDef[rescTypeInx].rescCat);
             status = SYS_INVALID_RESC_TYPE;
             break;
         }
-       #endif // JMC legacy resource 
+#endif // JMC legacy resource 
     }
     return (status);
 }

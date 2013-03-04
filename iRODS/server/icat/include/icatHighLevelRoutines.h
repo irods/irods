@@ -168,5 +168,7 @@ int chlInsMsrvcTable(rsComm_t *rsComm,
 int chlVersionDvmBase(rsComm_t *rsComm,
                       char *baseName, char *myTime);
 int chlVersionFnmBase(rsComm_t *rsComm,
-                      char *baseName, char *myTime); 
+                      char *baseName, char *myTime);
+eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
+
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

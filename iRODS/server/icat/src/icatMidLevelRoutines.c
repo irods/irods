@@ -208,8 +208,9 @@ int cmlGetOneRowFromSqlV2 (char *sql,
         cllFreeStatement(icss,stmtNum);
         return(CAT_GET_ROW_ERR);
     }
-    if (icss->stmtPtr[stmtNum]->numOfCols == 0)
+    if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
         return(CAT_NO_ROWS_FOUND);
+    }
     for (j = 0; j < maxCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) 
         cVal[j] = icss->stmtPtr[stmtNum]->resultValue[j];
 

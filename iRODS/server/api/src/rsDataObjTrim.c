@@ -15,6 +15,9 @@
 #include "reSysDataObjOpr.h"
 #include "getRemoteZoneResc.h"
 
+// eirods includes
+#include "eirods_resource_redirect.h"
+
 /* rsDataObjTrim - The Api handler of the rcDataObjTrim call - trim down 
  * the number of replica of a file
  * Input -
@@ -50,6 +53,32 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         status = rcDataObjTrim (rodsServerHost->conn, dataObjInp);
         return status;
     }
+
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    std::string       hier;
+    int               local = LOCAL_HOST;
+    rodsServerHost_t* host  =  0;
+    char* hier_char = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( hier_char == NULL ) {
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                       dataObjInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in eirods::resource_redirect for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+        
+    } // if keyword
 
     if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {

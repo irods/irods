@@ -158,7 +158,10 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
 
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
-     
+    if(status < 0) {
+        rodsLog(LOG_NOTICE, "%s - Failed to replicated data object.", __FUNCTION__);
+    }
+    
     if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
 
     return (status);
@@ -228,7 +231,9 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             *outDataObjInfo = *oldDataObjInfoHead;
             outDataObjInfo->next = NULL;
         } else {
-            rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
+            if(status < 0) {
+                rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
+            }
         }
 
         freeAllDataObjInfo (dataObjInfoHead);
@@ -688,7 +693,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         int status = 0;
         int replStatus = 0;
         //int destRescClass;
-        char *destRescName = 0, *srcRescName = 0;
+
         // JMC - legacy resource int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
         dataObjInfo_t *cacheDataObjInfo = NULL;
         dataObjInp_t dest_inp, myDataObjInp, *l1DataObjInp = 0;
@@ -838,18 +843,6 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
 #endif // JMC - legacy resource
 
 
-        if (destRescInfo != NULL)
-            destRescName = destRescInfo->rescName;
-        else
-            destRescName = NULL;
-
-
-        if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL) {
-            srcRescName = srcDataObjInfo->rescInfo->rescName;
-        } else {
-            srcRescName = NULL;
-        }
-            
         char* src_hier_str = 0;
         if (srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL) {
             src_hier_str = srcDataObjInfo->rescHier;
