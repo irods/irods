@@ -132,7 +132,7 @@ create table R_RESC_MAIN
    resc_children        varchar(1000),
    resc_context         varchar(1000),
    resc_parent          varchar(1000),
-   resc_objcount        varchar(1000)
+   resc_objcount        INT64TYPE DEFAULT 0
  ) SETCHARACTERSET;
 
 create table R_COLL_MAIN

@@ -18,7 +18,7 @@ int cmlOpen(icatSessionStruct *icss);
 
 int cmlClose( icatSessionStruct *icss);
 
-int cmlExecuteNoAnswerSql( char *sql, 
+int cmlExecuteNoAnswerSql( const char *sql, 
                            icatSessionStruct *icss);
 
 int cmlGetRowFromSql (char *sql, 

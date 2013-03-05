@@ -15,6 +15,7 @@
 #include "eirods_error.h"
 
 #include <string>
+#include <iostream>
 
 namespace eirods {
 

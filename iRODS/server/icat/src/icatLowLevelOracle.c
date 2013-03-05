@@ -428,7 +428,7 @@ logTheBindVariables(int level)
   Bind variables from the global array.
 */
 int
-bindTheVariables(OCIStmt *p_statement, char *sql) {
+bindTheVariables(OCIStmt *p_statement, const char *sql) {
     int myBindVarCount;
     int stat;
     int i;
@@ -509,7 +509,7 @@ logExecuteStatus(int stat, char *sql, char *funcName) {
   insert, delete, update.
 */
 int
-cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
+cllExecSqlNoResult(icatSessionStruct *icss, const char *sqlInput)
 {
 
     int stat, stat2, stat3;

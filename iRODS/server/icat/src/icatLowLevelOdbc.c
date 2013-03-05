@@ -33,11 +33,12 @@
 #include "icatLowLevelOdbc.h"
 
 #include "eirods_tmp_string.h"
+#include "eirods_log.h"
 
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 
 int
-_cllExecSqlNoResult(icatSessionStruct *icss, char *sql, int option);
+_cllExecSqlNoResult(icatSessionStruct *icss, const char *sql, int option);
 
 
 int cllBindVarCount=0;
@@ -358,7 +359,7 @@ cllConnectDbr(icatSessionStruct *icss, char *odbcEntryName) {
 #define pendingRecordSize 30
 #define pBufferSize (maxPendingToRecord*pendingRecordSize)
 int
-cllCheckPending(char *sql, int option, int dbType) {
+cllCheckPending(const char *sql, int option, int dbType) {
     static int pendingCount=0;
     static int pendingIx=0;
     static int pendingAudits=0;
@@ -479,7 +480,7 @@ cllDisconnect(icatSessionStruct *icss) {
   Insert a 'begin' statement, if necessary.
 */
 int
-cllExecSqlNoResult(icatSessionStruct *icss, char *sql)
+cllExecSqlNoResult(icatSessionStruct *icss, const char *sql)
 {
     int status;
 
@@ -515,7 +516,7 @@ logTheBindVariables(int level)
   Bind variables from the global array.
 */
 int
-bindTheVariables(HSTMT myHstmt, char *sql) {
+bindTheVariables(HSTMT myHstmt, const char *sql) {
     int myBindVarCount;
     RETCODE stat;
     int i;
@@ -561,7 +562,7 @@ bindTheVariables(HSTMT myHstmt, char *sql) {
   no spaces.
 */
 #ifdef NEW_ODBC
-static int cmp_stmt (char *str1, char *str2)
+static int cmp_stmt (const char *str1, const char *str2)
 {
     /* skip leading spaces */
     while ( isspace(*str1) ) ++str1 ;
@@ -585,7 +586,7 @@ static int cmp_stmt (char *str1, char *str2)
   If option is 1, skip the bind variables.
 */
 int
-_cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
+_cllExecSqlNoResult(icatSessionStruct *icss, const char *sql,
                     int option) {
     RETCODE stat;
     HDBC myHdbc;

@@ -1324,7 +1324,7 @@ rodsLogSqlReq(int onOrOff) {
 }
 
 void
-rodsLogSql(char *sql) {
+rodsLogSql(const char *sql) {
    myPid = getpid();
    if (sqlVerbosityLevel) rodsLog(LOG_SQL, "pid: %d sql: %s", 
 				  myPid, sql);

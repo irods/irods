@@ -292,7 +292,6 @@ _updateRescObjCount(
     int result = 0;
     int status;
     char resc_id[MAX_NAME_LEN];
-    char obj_count_string[MAX_NAME_LEN];
     char myTime[50];
     eirods::sql_logger logger(__FUNCTION__, logSQL);
     eirods::hierarchy_parser hparse;
@@ -309,36 +308,24 @@ _updateRescObjCount(
             _rollback(__FUNCTION__);
             result = status;
         }
-    } else if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_id=?",
-                                                 obj_count_string, MAX_NAME_LEN, resc_id, 0, 0, &icss)) != 0) {
-        result = status;
-        
     } else {
-        int obj_count = atoi(obj_count_string);
-        obj_count += _amount;
-        if(obj_count < 0) {
+        std::stringstream ss;
+        ss << "update R_RESC_MAIN set resc_objcount=resc_objcount+";
+        ss << _amount;
+        ss << ", modify_ts=? where resc_id=?";
+        // eirods::tmp_string amount_string(ss.str().c_str());
+        getNowStr(myTime);
+        cllBindVarCount = 0;
+        // cllBindVars[cllBindVarCount++] = amount_string.str();
+        cllBindVars[cllBindVarCount++] = myTime;
+        cllBindVars[cllBindVarCount++] = resc_id;
+        // logger.log();
+        if((status = cmlExecuteNoAnswerSql(ss.str().c_str(), &icss)) != 0) {
             std::stringstream ss;
-            ss << __FUNCTION__ << " Invalid resource object count: " << obj_count << " for resource: \"" << _resc_name << "\"";
-            eirods::log(LOG_ERROR, ss.str());
-            result = CAT_INVALID_OBJ_COUNT;
-        } else {
-            std::stringstream ss;
-            ss << obj_count;
-            eirods::tmp_string count_string(ss.str().c_str());
-            getNowStr(myTime);
-            cllBindVarCount = 0;
-            cllBindVars[cllBindVarCount++] = count_string.str();
-            cllBindVars[cllBindVarCount++] = myTime;
-            cllBindVars[cllBindVarCount++] = resc_id;
-            // logger.log();
-            if((status = cmlExecuteNoAnswerSql("update R_RESC_MAIN set resc_objcount=?, modify_ts=? "
-                                               "where resc_id=?", &icss)) != 0) {
-                std::stringstream ss;
-                ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
-                eirods::log(LOG_NOTICE, ss.str());
-                _rollback(__FUNCTION__);
-                result = status;
-            }
+            ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
+            eirods::log(LOG_NOTICE, ss.str());
+            _rollback(__FUNCTION__);
+            result = status;
         }
     }
     return result;
@@ -1835,24 +1822,23 @@ _updateChildParent(
 
 eirods::error chlRescObjCount(
     const std::string& _resc_name,
-    int& _rtn_obj_count)
+    rodsLong_t & _rtn_obj_count)
 {
     eirods::error result = SUCCESS();
-    int obj_count = 0;
+    rodsLong_t obj_count = 0;
     char obj_count_string[MAX_NAME_LEN];
     int status;
     
-    if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
-                                          obj_count_string, MAX_NAME_LEN, _resc_name.c_str(), 0, 0, &icss)) != 0) {
+    if((status = cmlGetIntegerValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
+                                           &obj_count, _resc_name.c_str(), 0, 0, 0, 0, &icss)) != 0) {
         _rollback(__FUNCTION__);
         std::stringstream msg;
         msg << __FUNCTION__ << " - Failed to get object count for resource: \"" << _resc_name << "\"";
         result = ERROR(status, msg.str());
     } else {
-        obj_count = atoi(obj_count_string);
+        _rtn_obj_count = obj_count;
     }
 
-    _rtn_obj_count = obj_count;
     return result;
 }
 
@@ -1868,13 +1854,13 @@ _rescHasData(
     int status;
     char obj_count_string[MAX_NAME_LEN];
     static const char* func_name = "_rescHasData";
+    rodsLong_t obj_count;
     
     logger.log();
-    if((status = cmlGetStringValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
-                                          obj_count_string, MAX_NAME_LEN, _resc_name.c_str(), 0, 0, &icss)) != 0) {
+    if((status = cmlGetIntegerValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
+                                           &obj_count, _resc_name.c_str(), 0, 0, 0, 0, &icss)) != 0) {
         _rollback(func_name);
     } else {
-        int obj_count = atoi(obj_count_string);
         if(obj_count > 0) {
             result = true;
         }

@@ -90,8 +90,9 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
             freeDataObjInfo (dataObjInfo);
             return (status);
         } else {
-            if (isColl (rsComm, collCreateInp->collName, NULL) >= 0)
+            if (isColl (rsComm, collCreateInp->collName, NULL) >= 0) {
                 return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
+            }
             status = _rsRegColl (rsComm, collCreateInp);
         }
         rei.status = status;
