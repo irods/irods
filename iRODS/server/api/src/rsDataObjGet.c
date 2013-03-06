@@ -46,15 +46,13 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // working on the "home zone", determine if we need to redirect to a different
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
-        int               local = LOCAL_HOST;
-        rodsServerHost_t* host  =  0;
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                           dataObjInp, hier, host, local );
+            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                           dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
+                msg << "rsDataObjGet :: failed in eirods::resolve_resource_redirect for [";
                 msg << dataObjInp->objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
@@ -67,14 +65,8 @@ rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         } // if keyword
 
-        //if( LOCAL_HOST == local ) {
-            status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
-                                    dataObjOutBBuf, BRANCH_MSG);
-        //} else {
-        //    return _rcDataObjGet( host->conn, dataObjInp, portalOprOut, dataObjOutBBuf );
-
-        //} // else remote host
-
+        status = _rsDataObjGet( rsComm, dataObjInp, portalOprOut, dataObjOutBBuf, BRANCH_MSG );
+                                    
     } else {
         int l1descInx;
         status = _rcDataObjGet (rodsServerHost->conn, dataObjInp, portalOprOut,

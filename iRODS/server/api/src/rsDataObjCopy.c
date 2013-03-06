@@ -69,14 +69,12 @@ transferStat_t **transStat)
 
     // =-=-=-=-=-=-=-
     // pre-determine hier strings for the source 
-    int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
-    std::string       hier;
-    eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                   srcDataObjInp, hier, host, local );
+    std::string hier;
+    eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                   srcDataObjInp, hier );
     if( !ret.ok() ) { 
         std::stringstream msg;
-        msg << "rsDataObjCopy :: failed in eirods::resource_redirect for [";
+        msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
         msg << srcDataObjInp->objPath << "]";
         eirods::log( PASSMSG( msg.str(), ret ) );
         return ret.code();
@@ -88,11 +86,11 @@ transferStat_t **transStat)
 
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
-    ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                     destDataObjInp, hier, host, local );
+    ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                     destDataObjInp, hier );
     if( !ret.ok() ) { 
         std::stringstream msg;
-        msg << "rsDataObjCopy :: failed in eirods::resource_redirect for [";
+        msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
         msg << destDataObjInp->objPath << "]";
         eirods::log( PASSMSG( msg.str(), ret ) );
         return ret.code();

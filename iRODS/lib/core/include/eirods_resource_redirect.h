@@ -18,12 +18,19 @@ namespace eirods {
     const std::string EIRODS_OPEN_OPERATION( "OPEN" );
     const std::string EIRODS_CREATE_OPERATION( "CREATE" );
 
-    error resource_redirect( const std::string&, // requested operation to consider
-                             rsComm_t*,          // current agent connection
-                             dataObjInp_t*,      // data inp struct for data object in question 
-                             std::string&,       // out going selected resource hierarchy
-                             rodsServerHost_t*&, // selected host for redirection if necessary 
-                             int& );             // flag stating LOCAL_HOST or REMOTE_HOST
+    error resolve_resource_hierarchy( 
+              const std::string&, // requested operation to consider
+              rsComm_t*,          // current agent connection
+              dataObjInp_t*,      // data inp struct for data object in question 
+              std::string& );     // out going selected resource hierarchy
+ 
+    error resource_redirect( 
+              const std::string&, // requested operation to consider
+              rsComm_t*,          // current agent connection
+              dataObjInp_t*,      // data inp struct for data object in question 
+              std::string&,       // out going selected resource hierarchy
+              rodsServerHost_t*&, // selected host for redirection if necessary 
+              int& );             // flag stating LOCAL_HOST or REMOTE_HOST
  
 }; // namespace eirods
 
