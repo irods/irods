@@ -86,15 +86,13 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     addKeyVal( &data_inp.condInput, DEST_RESC_NAME_KW, destRescName );
 
     std::string       hier;
-    int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
     char* hier_kw = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
     if( hier_kw == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-						   &data_inp, hier, host, local );
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+						                                        &data_inp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsPhyBundleColl - failed in eirods::resource_redirect for [";
+            msg << "rsPhyBundleColl - failed in eirods::resolve_resource_hierarchy for [";
             msg << data_inp.objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();

@@ -57,18 +57,14 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return (l1descInx);
     } else {
         // =-=-=-=-=-=-=-
-        // working on the "home zone", determine if we need to redirect to a different
-        // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
-        // we know that the redirection decision has already been made
-        int               local = LOCAL_HOST;
-        rodsServerHost_t* host  =  0;
+        // determine the resource hierarchy if one is not provided
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
             std::string       hier;
-            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                           dataObjInp, hier, host, local );
+            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+                                                                    rsComm, dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "rsDataObjOpen :: failed in eirods::resource_redirect for [";
+                msg << "rsDataObjOpen :: failed in eirods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
