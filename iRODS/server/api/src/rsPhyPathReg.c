@@ -153,6 +153,8 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "irsPhyPathReg - failed in get_resource_property", ret ) );
+        delete rescGrpInfo->rescInfo;
+        delete rescGrpInfo;
         return -1;
     }
  

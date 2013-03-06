@@ -229,7 +229,7 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
 	char buf[LONG_NAME_LEN * 5];
 	char *rescName = NULL;
 	FILE *configFile;
-	int status;
+	int status = 0;
 
 
 	/* Open server configuration file */

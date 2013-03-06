@@ -902,23 +902,23 @@ int
 chkAndUpdateResc (rsComm_t *rsComm)
 {
     time_t curTime;
-    int status;
+    int status = 0;
 
     curTime = time (NULL);
 
     if (LastRescUpdateTime > curTime) {
-	LastRescUpdateTime = curTime;
-	return 0;
+        LastRescUpdateTime = curTime;
+        return 0;
     }
 
     if (curTime >= LastRescUpdateTime + RESC_UPDATE_TIME) {
-	//status = updateResc (rsComm);
-    resc_mgr.init_from_catalog( rsComm );
+        //status = updateResc (rsComm);
+        resc_mgr.init_from_catalog( rsComm );
 
-	LastRescUpdateTime = curTime;
-	return status;
+        LastRescUpdateTime = curTime;
+        return status;
     } else {
-	return 0;
+	    return 0;
     }
 }
 

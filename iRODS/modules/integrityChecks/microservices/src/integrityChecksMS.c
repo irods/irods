@@ -302,6 +302,9 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
 	/* just an exclusive OR - both of these variables, username & accessauth HAVE to be set */
 	else if (((username==NULL) && (accessauth!=NULL)) || ((username!=NULL) && (accessauth==NULL))) {
             free( collname ); // JMC cppcheck - leak 
+            free( username ); // JMC cppcheck - leak 
+            free( accessauth ); // JMC cppcheck - leak 
+            free( notflag ); // JMC cppcheck - leak 
 			return (USER__NULL_INPUT_ERR);
 	} else {
 		if (atoi(notflag)==0)
@@ -344,6 +347,8 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
 	} else {
 		appendToByteBuf (mybuf, "RAJA - what unknown error\n");
         free( collname ); // JMC cppcheck - leak 
+        free( username ); // JMC cppcheck - leak 
+        free( accessauth ); // JMC cppcheck - leak 
 		return (1);  /* what return value RAJA */
 	}
 
