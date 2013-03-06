@@ -622,7 +622,8 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
         if( !set_err.ok() ) {
             eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
-            status = SYS_INVALID_RESC_INPUT;
+            //status = SYS_INVALID_RESC_INPUT;
+            return SYS_INVALID_RESC_INPUT;
         }
 
     } else {
