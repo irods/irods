@@ -85,8 +85,9 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     }
 
     /* assume it is remote */
-    if (tmpRodsServerHost->localFlag == UNKNOWN_HOST_LOC)
+    if (tmpRodsServerHost->localFlag == UNKNOWN_HOST_LOC) {
         tmpRodsServerHost->localFlag = REMOTE_HOST;
+    }
 
     status = queRodsServerHost (&ServerHostHead, tmpRodsServerHost);
     *rodsServerHost = tmpRodsServerHost;

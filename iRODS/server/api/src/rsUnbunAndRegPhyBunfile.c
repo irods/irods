@@ -88,6 +88,7 @@ _rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     //remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
     rodsHostAddr_t addr;
+    memset (&addr, 0, sizeof (addr));
     rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
     remoteFlag = resolveHost( &addr, &rodsServerHost );
     if (remoteFlag == REMOTE_HOST) {
