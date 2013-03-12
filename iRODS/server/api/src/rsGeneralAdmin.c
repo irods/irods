@@ -120,8 +120,6 @@ _addResource(
 
     static const unsigned int argc = 7;
     char *args[argc];
-
-rodsLog( LOG_NOTICE, "XXXX - _addResource :: 2 [%s], 3[%s], 4 [%s], 5 [%s], 6 [%s], 7 [%s], 8 [%s]", _generalAdminInp->arg2, _generalAdminInp->arg3, _generalAdminInp->arg4, _generalAdminInp->arg5, _generalAdminInp->arg6, _generalAdminInp->arg7, _generalAdminInp->arg8 );
     
     // =-=-=-=-=-=-=-
     // pull location:path into string for parsing

@@ -1971,8 +1971,22 @@ int chlRegResc(rsComm_t *rsComm,
     int status;
     char myTime[50];
     struct hostent *myHostEnt; // JMC - backport 4597
-
+ 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc");
+ 
+    // =-=-=-=-=-=-=-
+    // error trap empty resc name 
+    if( strlen( rescInfo->rescName ) < 1 ) { 
+        addRErrorMsg( &rsComm->rError, 0, "resource name is empty" );
+        return CAT_INVALID_RESOURCE_NAME;
+    }
+
+    // =-=-=-=-=-=-=-
+    // error trap empty resc type 
+    if( strlen( rescInfo->rescType ) < 1 ) { 
+        addRErrorMsg( &rsComm->rError, 0, "resource type is empty" );
+        return CAT_INVALID_RESOURCE_TYPE;
+    }
 
     if (!icss.status) {
         return(CATALOG_NOT_CONNECTED);
@@ -2033,7 +2047,7 @@ int chlRegResc(rsComm_t *rsComm,
         }
     
     }
-
+    #if 0
     if (false &&                // hcj - disable checking for vault path. this needs to be checked from the plugins
         (strcmp(rescInfo->rescType, "database") !=0) &&
         (strcmp(rescInfo->rescType, "mso") !=0) ) {
@@ -2041,7 +2055,8 @@ int chlRegResc(rsComm_t *rsComm,
             return(CAT_INVALID_RESOURCE_VAULT_PATH);
         }
     }
-    
+    #endif
+      
     status = getLocalZone();
     if (status != 0) return(status);
 
