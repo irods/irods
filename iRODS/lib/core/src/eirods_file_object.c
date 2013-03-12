@@ -26,7 +26,9 @@ namespace eirods {
     file_object::file_object() :
         first_class_object(),
         size_(0),
-        repl_requested_( -1 ) {
+        repl_requested_( -1 ),
+        in_pdmo_(false)
+    {
     } // file_object
 
     // =-=-=-=-=-=-=-
@@ -37,6 +39,7 @@ namespace eirods {
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
+        in_pdmo_        = _rhs.in_pdmo_;
     } // cctor 
 
     // =-=-=-=-=-=-=-
@@ -50,7 +53,9 @@ namespace eirods {
         int _m,
         int _f ) :
         first_class_object(),
-        size_( -1 ) {
+        size_( -1 ),
+        in_pdmo_(false)
+    {
         logical_path(_logical_path);
         comm_            = _c;
         physical_path_   = _fn;
@@ -78,7 +83,7 @@ namespace eirods {
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
-
+        in_pdmo_        = _rhs.in_pdmo_;
         return *this;
 
     }  // operator=
@@ -175,6 +180,12 @@ namespace eirods {
             _file_obj.repl_requested( atoi( repl_num ) );
         }
 
+        // handle the case where we are being called as part of a pdmo
+        char* in_pdmo = getValByKey(&_data_obj_inp->condInput, IN_PDMO_KW);
+        if(in_pdmo) {
+            _file_obj.in_pdmo(true);
+        }
+        
         // =-=-=-=-=-=-=-
         // iterate over the linked list and populate 
         // the physical_object vector in the file_object

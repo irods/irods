@@ -201,6 +201,8 @@ agentMain (rsComm_t *rsComm)
         }
     }
 
+#if COMMENT
+
     // =-=-=-=-=-=-=-
     // determine if we even need to connect, break the
     // infinite reconnect loop.
@@ -225,7 +227,6 @@ agentMain (rsComm_t *rsComm)
         return status;
     }
 
-#if COMMENT
     // Commit changes to this point to the database since pdmo's may call rc level calls spawning other agents
     status = chlCommit(rsComm);
     if(status < 0) {
@@ -237,12 +238,12 @@ agentMain (rsComm_t *rsComm)
         msg << rods_error << " " << sys_error;
         eirods::log(LOG_ERROR, msg.str());
     }
-#endif
     
     // =-=-=-=-=-=-=-
     // call post disconnect maintenance operations before exit
     status = resc_mgr.call_maintenance_operations( rodsServerHost->conn );
 
+#endif
 
     return (status);
 }

@@ -32,7 +32,11 @@ namespace eirods {
 }; // namespace eirods
 
 #define DEBUGMSG(msg)                                           \
-    std::cerr << msg << " " << __FUNCTION__ << " " << __FILE__ << ":" << __LINE__ << std::endl;
+    {                                                           \
+    std::stringstream ss;                                       \
+    ss << msg << " " << __FUNCTION__ << " " << __FILE__ << ":" << __LINE__; \
+    eirods::log(LOG_NOTICE, ss.str());                                  \
+    }
     
 #endif // __EIRODS_LOG_H__
 

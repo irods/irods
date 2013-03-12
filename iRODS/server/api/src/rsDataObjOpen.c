@@ -418,6 +418,7 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
         rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         fileOpenInp.mode = mode;
         fileOpenInp.flags = flags;
+        fileOpenInp.in_pdmo = dataObjInfo->in_pdmo;
         l3descInx = rsFileOpen (rsComm, &fileOpenInp);
 #if 0 // JMC legacy resource 
         break;

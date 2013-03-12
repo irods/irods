@@ -68,7 +68,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief exec the pdmos ( post disconnect maintenance operations ) in order
-        int call_maintenance_operations( rcComm_t* ); 
+        int call_maintenance_operations( rsComm_t* ); 
 
         // =-=-=-=-=-=-=-
         /// @brief resolve a resource from a match with a given property 

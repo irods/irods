@@ -333,6 +333,8 @@ my $rsfile = $dir_w . "/rsfile";
 if ( -e $rsfile ) { unlink( $rsfile ); }
 #sleep(5);
 runCmd( "iput -PkITr -X $rsfile --retries 10  $mysdir $irodshome/icmdtestw" );
+#sleep(5);
+# This line causes errors!!!!
 runCmd( "imv $irodshome/icmdtestw $irodshome/icmdtestw1" );
 runCmd( "ils -lr $irodshome/icmdtestw1", "", "LIST", "sfile10" );
 runCmd( "ils -Ar $irodshome/icmdtestw1", "", "LIST", "sfile10" );

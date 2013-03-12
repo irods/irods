@@ -189,7 +189,13 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
 
 
     condInput = &dataObjInp->condInput;
-
+    char* in_pdmo = getValByKey(condInput, IN_PDMO_KW);
+    if(in_pdmo != NULL) {
+        dataObjInfo->in_pdmo = 1;
+    } else {
+        dataObjInfo->in_pdmo = 0;
+    }
+    
     if (dataObjInp != NULL) { 
         /* always repl the .dataObjInp */
         L1desc[l1descInx].dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));

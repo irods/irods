@@ -53,15 +53,17 @@ namespace eirods {
         inline size_t                         size()           const { return size_;           }
         inline int                            repl_requested() const { return repl_requested_; }
         inline std::vector< physical_object > replicas()       const { return replicas_;       }
-
+        inline bool                           in_pdmo()        const { return in_pdmo_;        }
+        
         // =-=-=-=-=-=-=-
         // Mutators
         inline void size( size_t _v )        { size_           = _v; }
         inline void repl_requested( int _v ) { repl_requested_ = _v; }
+        inline void in_pdmo( bool _v )       { in_pdmo_        = _v; }
         inline void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
-
+        
     protected:
         // =-=-=-=-=-=-=-
         // Attributes
@@ -70,8 +72,9 @@ namespace eirods {
         //      :: higher in the original design
         size_t                         size_;           // size of the file in bytes
         int                            repl_requested_; // requested replica number
-        std::vector< physical_object > replicas_;       // structures holding replica info
-                                                        // initialized by factory fcn from 
+        bool                           in_pdmo_;        // flag indicating the current operations are occurring from within a pdmo
+                                                        // call
+        std::vector< physical_object > replicas_;       // structures holding replica info initialized by factory fcn from
                                                         // dataObjInfoHead
     }; // class file_object
 

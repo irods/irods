@@ -31,6 +31,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <map>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -68,9 +69,9 @@
 #include <string.h>
 
 // define some constants
-const std::string child_list_prop = "child list";
-const std::string object_list_prop = "object list";
-const std::string need_pdmo_prop = "Need PDMO";
+const std::string child_list_prop = "child_list";
+const std::string object_list_prop = "object_list";
+const std::string need_pdmo_prop = "Need_PDMO";
 const std::string hierarchy_prop = "hierarchy";
 const std::string write_oper = "write";
 const std::string unlink_oper = "unlink";
@@ -83,6 +84,11 @@ typedef struct object_oper_s {
 } object_oper_t;
 typedef std::vector<eirods::hierarchy_parser> child_list_t;
 typedef std::vector<object_oper_t> object_list_t;
+// define this so we sort children from highest vote to lowest
+struct child_comp {
+    bool operator()(float _lhs, float _rhs) const { return _lhs > _rhs; }
+};
+typedef std::multimap<float, eirods::hierarchy_parser, child_comp> redirect_map_t;
 
 extern "C" {
 
@@ -207,14 +213,6 @@ extern "C" {
                 msg << __FUNCTION__;
                 msg << " - Failed to set the object list property on the resource.";
                 result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = _prop_map->set<bool>(need_pdmo_prop, true);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed to update need pdmo flag in properties.";
-                    result = PASSMSG(msg.str(), ret);
-                }
             }
         } else {
             // make sure the operation on the object in the list matches the passed in operation
@@ -232,6 +230,24 @@ extern "C" {
             }
         }
         
+        return result;
+    }
+
+    /// @brief 
+    eirods::error replSetPDMOFlag(
+        eirods::resource_property_map* _prop_map,
+        eirods::file_object* _object)
+    {
+        eirods::error result = SUCCESS();
+        if(!_object->in_pdmo()) {
+            eirods::error ret = _prop_map->set<bool>(need_pdmo_prop, true);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to update need pdmo flag in properties.";
+                result = PASSMSG(msg.str(), ret);
+            }
+        }
         return result;
     }
 
@@ -462,14 +478,22 @@ extern "C" {
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    result = CODE(ret.code());
+                    ret = replSetPDMOFlag(_prop_map, file_object);
+                    if(!ret.ok()) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__;
+                        msg << " - Failed to update the PDMO flag.";
+                        result = PASSMSG(msg.str(), ret);
+                    } else {
+                        result = CODE(ret.code());
+                    }
                 }
             }
         }
         return result;
-
+        
     } // replFileClose
-
+    
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     eirods::error replFileUnlink(
@@ -514,6 +538,14 @@ extern "C" {
                         msg << __FUNCTION__;
                         msg << " - Failed to update the object and operation properties.";
                         result = PASSMSG(msg.str(), ret);
+                    } else {
+                        ret = replSetPDMOFlag(_prop_map, file_object);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to update the PDMO flag.";
+                            result = PASSMSG(msg.str(), ret);
+                        }
                     }
                 }
             }
@@ -1263,20 +1295,6 @@ extern "C" {
         return result;
     }
 
-    /// @brief Creates a vector of hierarchy parsers, one per child
-    eirods::error replCreateParserVector(
-        eirods::resource_child_map* _cmap,
-        const eirods::hierarchy_parser& _parser,
-        child_list_t& _out_vector)
-    {
-        eirods::error result = SUCCESS();
-        int num_children = _cmap->size();
-        for(int i = 0; i < num_children; ++i) {
-            _out_vector.push_back(_parser);
-        }
-        return result;
-    }
-
     /// @brief Loop through the children and call redirect on each one to populate the hierarchy vector
     eirods::error replRedirectToChildren(
         rsComm_t*                      _comm,
@@ -1286,30 +1304,25 @@ extern "C" {
         std::string*                   _result,
         const std::string*             _operation,
         const std::string*             _curr_host,
-        child_list_t&                  _parser_vector,
-        float*                         _out_vote)
+        eirods::hierarchy_parser&      _parser,
+        redirect_map_t&                _redirect_map)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-
-        if(_cmap->size() != _parser_vector.size()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - child map and hierarchy vector sizes do not match.";
-            result = ERROR(-1, msg.str());
-        } else {
-            int index = 0;
-            eirods::resource_child_map::iterator it;
-            for(it = _cmap->begin(); result.ok() && it != _cmap->end(); ++it, ++index) {
-                eirods::resource_ptr child = it->second.second;
-                ret = child->call<const std::string*, const std::string*, eirods::hierarchy_parser*, float*>(
-                    _comm, "redirect", _object, _operation, _curr_host, &_parser_vector[index], _out_vote);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed calling redirect on the child \"" << it->first << "\"";
-                    result = PASSMSG(msg.str(), ret);
-                }
+        eirods::resource_child_map::iterator it;
+        float out_vote;
+        for(it = _cmap->begin(); result.ok() && it != _cmap->end(); ++it) {
+            eirods::hierarchy_parser parser(_parser);
+            eirods::resource_ptr child = it->second.second;
+            ret = child->call<const std::string*, const std::string*, eirods::hierarchy_parser*, float*>(
+                _comm, "redirect", _object, _operation, _curr_host, &parser, &out_vote);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed calling redirect on the child \"" << it->first << "\"";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                _redirect_map.insert(std::pair<float, eirods::hierarchy_parser>(out_vote, parser));
             }
         }
         return result;
@@ -1319,8 +1332,7 @@ extern "C" {
     /// operating.
     eirods::error replCreateChildReplList(
         eirods::resource_property_map* _prop_map,
-        const child_list_t& _parser_vector,
-        int selected)
+        const redirect_map_t& _redirect_map)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1331,12 +1343,11 @@ extern "C" {
         ret = _prop_map->get<child_list_t>(child_list_prop, repl_vector);
         if(!ret.ok()) {
             
-            // loop over the list of children adding all of those except the selected child to a new vector
-            const int num_children = _parser_vector.size();
-            for(int i = 0; i < num_children; ++i) {
-                if(i != selected) {
-                    repl_vector.push_back(_parser_vector[i]);
-                }
+            // loop over all of the children in the map except the first (selected) and add them to a vector
+            redirect_map_t::const_iterator it = _redirect_map.begin();
+            for(++it; it != _redirect_map.end(); ++it) {
+                eirods::hierarchy_parser parser = it->second;
+                repl_vector.push_back(parser);
             }
         
             // add the resulting vector as a property of the resource
@@ -1355,81 +1366,40 @@ extern "C" {
     eirods::error replSelectChild(
         eirods::resource_property_map* _prop_map,
         const std::string& _curr_host,
-        const child_list_t& _parser_vector,
+        const redirect_map_t& _redirect_map,
         eirods::hierarchy_parser* _out_parser,
         float* _out_vote)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        const int num_children = _parser_vector.size();
-        bool found = false;
-        
-        // loop over each child in the vector
-        for(int i = 0; result.ok() && !found && i < num_children; ++i) {
-            
-            // get the leaf resource from the child hierarchy
-            const eirods::hierarchy_parser parser = _parser_vector[i];
-            std::string leaf;
-            ret = parser.last_resc(leaf);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the child's leaf resource.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-            
-                // get the host info from the leaf
-                rodsServerHost_t* host;
-                ret = eirods::get_resource_property<rodsServerHost_t*>(leaf, "host", host);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed to get the host information for the leaf resource \"" << leaf << "\"";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                
-                    // if leaf host matches current host, we are done
-                    hostName_t* subhost = host->hostName;
-                    while(!found && subhost) {
-                        const std::string subhost_name(subhost->name);
-                        if(subhost_name.find(_curr_host) != std::string::npos) {
-                            *_out_parser = parser;
-                            *_out_vote = 1.0;
-                            found = true;
-                            ret = replCreateChildReplList(_prop_map, _parser_vector, i);
-                            if(!ret.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to add unselected children to the replication list.";
-                                result = PASSMSG(msg.str(), ret);
-                            } else {
-                                ret = _prop_map->set<eirods::hierarchy_parser>(hierarchy_prop, parser);
-                                if(!ret.ok()) {
-                                    std::stringstream msg;
-                                    msg << __FUNCTION__;
-                                    msg << " - Failed to add hierarchy property to resource.";
-                                    result = PASSMSG(msg.str(), ret);
-                                }
-                            }
-                        }
-                        subhost = subhost->next;
-                    }
-                }
-            }
-        }
-        
-        // if no matching host was found, return first child and only half a vote.
 
-        // TODO - having some way of measuring connection speed to remote hosts would be a big win here - hcj
-        if(result.ok() && !found) {
-            *_out_parser = _parser_vector[0];
-            *_out_vote = 0.5;
-            ret = replCreateChildReplList(_prop_map, _parser_vector, 0);
+        // pluck the first entry out of the map. if its vote is non-zero then ship it
+        redirect_map_t::const_iterator it;
+        it = _redirect_map.begin();
+        float vote = it->first;
+        eirods::hierarchy_parser parser = it->second;
+        if(vote == 0.0) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - No valid child resource found for file.";
+            result = ERROR(-1, msg.str());
+        } else {
+            *_out_parser = parser;
+            *_out_vote = vote;
+            ret = replCreateChildReplList(_prop_map, _redirect_map);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to add unselected children to the replication list.";
                 result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = _prop_map->set<eirods::hierarchy_parser>(hierarchy_prop, parser);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed to add hierarchy property to resource.";
+                    result = PASSMSG(msg.str(), ret);
+                }
             }
         }
         
@@ -1449,8 +1419,8 @@ extern "C" {
         float*                         _out_vote ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        child_list_t parser_vector;
         eirods::hierarchy_parser parser = *_inout_parser;
+        redirect_map_t redirect_map;
         
         // add ourselves to the hierarchy parser
         if(!(ret = replAddSelfToHierarchy(_prop_map, parser)).ok()) {
@@ -1460,17 +1430,9 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         }
 
-        // create a vector of parsers, one for each child.
-        else if(!(ret = replCreateParserVector(_cmap, parser, parser_vector)).ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Failed to generate the vector of hierarchies for the children.";
-            result = PASSMSG(msg.str(), ret);
-        }
-
         // call redirect on each child with the appropriate parser
         else if(!(ret = replRedirectToChildren(_comm, _prop_map, _cmap, _object, _result, _operation, _curr_host,
-                                               parser_vector, _out_vote)).ok()) {
+                                               parser, redirect_map)).ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to redirect to all children.";
@@ -1478,7 +1440,7 @@ extern "C" {
         }
         
         // foreach child parser determine the best to access based on host
-        else if(!(ret = replSelectChild(_prop_map, *_curr_host, parser_vector, _inout_parser, _out_vote)).ok()) {
+        else if(!(ret = replSelectChild(_prop_map, *_curr_host, redirect_map, _inout_parser, _out_vote)).ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to select an appropriate child.";
@@ -1517,7 +1479,7 @@ extern "C" {
             /// @brief ftor Replicates data object stored in the resource hierarchy selected by redirect to all other resource
             /// hierarchies.
             eirods::error operator()(
-                rcComm_t* _comm)
+                rsComm_t* _comm)
                 {
                     eirods::error result = SUCCESS();
                     eirods::error ret;
@@ -1630,7 +1592,7 @@ extern "C" {
                 }
 
             eirods::error replicate_children(
-                rcComm_t* _comm,
+                rsComm_t* _comm,
                 const std::string& _selected_hierarchy,
                 const std::string& _root_resc)
                 {
@@ -1653,9 +1615,9 @@ extern "C" {
                                 msg << " - Failed to get the resources object list.";
                                 result = PASSMSG(msg.str(), ret);
                             } else {
-                                object_list_t::const_iterator object_it;
-                                for(object_it = objects.begin(); result.ok() && object_it != objects.end(); ++object_it) {
-                                    object_oper_t object_oper = *object_it;
+                                while(objects.size() != 0) {
+                                    object_oper_t object_oper = objects.back();
+                                    objects.pop_back();
                                     dataObjInp_t dataObjInp;
                                     bzero(&dataObjInp, sizeof(dataObjInp));
                                     rstrcpy(dataObjInp.objPath, object_oper.object_.logical_path().c_str(), MAX_NAME_LEN);
@@ -1666,10 +1628,12 @@ extern "C" {
                                         addKeyVal(&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str());
                                         addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, _root_resc.c_str());
                                         addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, _root_resc.c_str());
+                                        addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, "");
                                         if(object_oper.oper_ == write_oper) {
                                             addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");
                                         }
-                                        int status = rcDataObjRepl(_comm, &dataObjInp);
+                                        transferStat_t* transfer_stat = NULL;
+                                        int status = rsDataObjRepl(_comm, &dataObjInp, &transfer_stat);
                                         if(status < 0) {
                                             char* sys_error;
                                             char* rods_error = rodsErrorName(status, &sys_error);
@@ -1681,10 +1645,13 @@ extern "C" {
                                             eirods::log(LOG_ERROR, msg.str());
                                             result = ERROR(status, msg.str());
                                         }
+                                        if(transfer_stat != NULL) {
+                                            free(transfer_stat);
+                                        }
                                     } else if(object_oper.oper_ == unlink_oper) {
                                         addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, hierarchy_string.c_str());
                                         addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, "");
-                                        int status = rcDataObjUnlink(_comm, &dataObjInp);
+                                        int status = rsDataObjUnlink(_comm, &dataObjInp);
                                         if(status < 0) {
                                             char* sys_error;
                                             char* rods_error = rodsErrorName(status, &sys_error);
@@ -1756,14 +1723,18 @@ extern "C" {
                 _flag = false;
                 bool need_pdmo;
                 eirods::error ret;
-                // Make sure we actually have children to which we need to replicate and check the need_pdmo flag to see if we
-                // performed any operations which would warrant a replication.
+                // Make sure we actually have children and objects to which we need to replicate and check the need_pdmo flag to see
+                // if we performed any operations which would warrant a replication.
                 child_list_t children;
                 ret = properties_.get<child_list_t>(child_list_prop, children);
                 if(ret.ok()) {
-                    ret = properties_.get<bool>(need_pdmo_prop, need_pdmo);
+                    object_list_t objects;
+                    ret = properties_.get<object_list_t>(object_list_prop, objects);
                     if(ret.ok()) {
-                        _flag = need_pdmo;
+                        ret = properties_.get<bool>(need_pdmo_prop, need_pdmo);
+                        if(ret.ok()) {
+                            _flag = need_pdmo;
+                        }
                     }
                 }
                 return result;

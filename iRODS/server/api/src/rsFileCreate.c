@@ -126,6 +126,9 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
     // dont capture the eirods results in the log here as there may be an issue with
     // needing to create a directory, etc.
     eirods::file_object file_obj( rsComm, fileCreateInp->objPath, fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, fileCreateInp->mode, fileCreateInp->flags );
+    if(fileCreateInp->in_pdmo) {
+        file_obj.in_pdmo(true);
+    }
     
     eirods::error create_err = fileCreate( rsComm, file_obj );
 

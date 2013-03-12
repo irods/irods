@@ -23,7 +23,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     /// @brief abstraction for post disconnect functor - plugins can bind
     //         functors, free functions or member functions as necessary
-    typedef boost::function< eirods::error( rcComm_t* ) > pdmo_type;
+    typedef boost::function< eirods::error( rsComm_t* ) > pdmo_type;
     
     /**
      * \class plugin_base - ABC for E-iRODS Plugins

@@ -474,6 +474,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+        fileChksumInp.in_pdmo = dataObjInfo->in_pdmo;
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
         break;
     default:
