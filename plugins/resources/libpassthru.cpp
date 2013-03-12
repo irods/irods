@@ -163,11 +163,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error passthruFileCreatePlugin( rsComm_t*          _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map,
-                                            eirods::resource_child_map* _cmap, 
-                                            eirods::first_class_object* _object ) {
+    eirods::error passthruFileCreatePlugin( 
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         ret = passthruCheckParams(_prop_map, _cmap, _object);
@@ -208,11 +209,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error passthruFileOpenPlugin( rsComm_t* _comm,
-                                          const std::string& _results,
-                                          eirods::resource_property_map* _prop_map, 
-                                          eirods::resource_child_map* _cmap, 
-                                          eirods::first_class_object* _object ) {
+    eirods::error passthruFileOpenPlugin( 
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -234,13 +236,14 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error passthruFileReadPlugin(  rsComm_t* _comm,
-                                           const std::string& _results,
-                                           eirods::resource_property_map* _prop_map, 
-                                           eirods::resource_child_map* _cmap,
-                                           eirods::first_class_object* _object,
-                                           void*               _buf, 
-                                           int                 _len ) {
+    eirods::error passthruFileReadPlugin(  
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results, 
+                      void*                          _buf, 
+                      int                            _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -262,13 +265,14 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error passthruFileWritePlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object,
-                                            void*               _buf, 
-                                            int                 _len ) {
+    eirods::error passthruFileWritePlugin( 
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results, 
+                      void*                          _buf, 
+                      int                            _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -290,11 +294,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error passthruFileClosePlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object ) {
+    eirods::error passthruFileClosePlugin(  
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -317,11 +322,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error passthruFileUnlinkPlugin(  rsComm_t* _comm,
-                                             const std::string& _results,
-                                             eirods::resource_property_map* _prop_map, 
-                                             eirods::resource_child_map* _cmap,
-                                             eirods::first_class_object* _object ) {
+    eirods::error passthruFileUnlinkPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -343,12 +349,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error passthruFileStatPlugin(  rsComm_t* _comm,
-                                           const std::string& _results,
-                                           eirods::resource_property_map* _prop_map, 
-                                           eirods::resource_child_map* _cmap,
-                                           eirods::first_class_object* _object,
-                                           struct stat*        _statbuf ) {
+    eirods::error passthruFileStatPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results, 
+                    struct stat*                   _statbuf ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -370,12 +377,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
-    eirods::error passthruFileFstatPlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object,
-                                            struct stat*        _statbuf ) {
+    eirods::error passthruFileFstatPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results, 
+                    struct stat*                   _statbuf ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -397,13 +405,14 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error passthruFileLseekPlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object,
-                                            size_t              _offset, 
-                                            int                 _whence ) {
+    eirods::error passthruFileLseekPlugin(
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results, 
+                    size_t                         _offset, 
+                    int                            _whence ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -425,11 +434,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
-    eirods::error passthruFileFsyncPlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object ) {
+    eirods::error passthruFileFsyncPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -451,11 +461,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileMkdirPlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object ) {
+    eirods::error passthruFileMkdirPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -477,11 +488,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileChmodPlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object) {
+    eirods::error passthruFileChmodPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
 
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -504,11 +516,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileRmdirPlugin( rsComm_t* _comm,
-                                           const std::string& _results,
-                                           eirods::resource_property_map* _prop_map, 
-                                           eirods::resource_child_map* _cmap,
-                                           eirods::first_class_object* _object ) {
+    eirods::error passthruFileRmdirPlugin( 
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -530,11 +543,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error passthruFileOpendirPlugin(  rsComm_t* _comm,
-                                              const std::string& _results,
-                                              eirods::resource_property_map* _prop_map, 
-                                              eirods::resource_child_map* _cmap,
-                                              eirods::first_class_object* _object ) {
+    eirods::error passthruFileOpendirPlugin( 
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -556,11 +570,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error passthruFileClosedirPlugin(  rsComm_t* _comm,
-                                               const std::string& _results,
-                                               eirods::resource_property_map* _prop_map, 
-                                               eirods::resource_child_map* _cmap,
-                                               eirods::first_class_object* _object ) {
+    eirods::error passthruFileClosedirPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -582,12 +597,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileReaddirPlugin(  rsComm_t* _comm,
-                                              const std::string& _results,
-                                              eirods::resource_property_map* _prop_map, 
-                                              eirods::resource_child_map* _cmap,
-                                              eirods::first_class_object* _object,
-                                              struct rodsDirent** _dirent_ptr ) {
+    eirods::error passthruFileReaddirPlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results,
+                    struct rodsDirent**            _dirent_ptr ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -609,11 +625,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileStagePlugin(  rsComm_t* _comm,
-                                            const std::string& _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map* _cmap,
-                                            eirods::first_class_object* _object ) {
+    eirods::error passthruFileStagePlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -635,12 +652,13 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileRenamePlugin(  rsComm_t* _comm,
-                                             const std::string& _results,
-                                             eirods::resource_property_map* _prop_map, 
-                                             eirods::resource_child_map* _cmap,
-                                             eirods::first_class_object* _object, 
-                                             const char*         _new_file_name ) {
+    eirods::error passthruFileRenamePlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results,
+                    const char*                    _new_file_name ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -662,11 +680,12 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error passthruFileTruncatePlugin(  rsComm_t* _comm,
-                                               const std::string& _results,
-                                               eirods::resource_property_map* _prop_map, 
-                                               eirods::resource_child_map* _cmap,
-                                               eirods::first_class_object* _object ) { 
+    eirods::error passthruFileTruncatePlugin(  
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) {
         // =-=-=-=-=-=-=-
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -690,11 +709,12 @@ extern "C" {
         
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error passthruFileGetFsFreeSpacePlugin(  rsComm_t* _comm,
-                                                     const std::string& _results,
-                                                     eirods::resource_property_map* _prop_map, 
-                                                     eirods::resource_child_map* _cmap,
-                                                     eirods::first_class_object* _object ) { 
+    eirods::error passthruFileGetFsFreeSpacePlugin( 
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -718,12 +738,13 @@ extern "C" {
     // passthruStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error passthruStageToCachePlugin( rsComm_t*                      _comm,
-                                              const std::string&             _results,
-                                              eirods::resource_property_map* _prop_map, 
-                                              eirods::resource_child_map*    _cmap,
-                                              eirods::first_class_object*    _object,
-                                              const char*                    _cache_file_name ) { 
+    eirods::error passthruStageToCachePlugin( 
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results,
+                    const char*                    _cache_file_name ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
 
@@ -748,12 +769,13 @@ extern "C" {
     // passthruSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error passthruSyncToArchPlugin( rsComm_t*                      _comm,
-                                            const std::string&             _results,
-                                            eirods::resource_property_map* _prop_map, 
-                                            eirods::resource_child_map*    _cmap,
-                                            eirods::first_class_object*    _object, 
-                                            const char*                    _cache_file_name ) { 
+    eirods::error passthruSyncToArchPlugin( 
+                    rsComm_t*                      _comm,
+                    eirods::resource_property_map* _prop_map,
+                    eirods::resource_child_map*    _cmap, 
+                    eirods::first_class_object*    _object,
+                    std::string*                   _results,
+                    const char*                    _cache_file_name ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -781,10 +803,10 @@ extern "C" {
     //                      should provide the requested operation
     eirods::error passthruRedirectPlugin( 
                       rsComm_t*                      _comm,
-                      const std::string&             _results,
                       eirods::resource_property_map* _prop_map, 
                       eirods::resource_child_map*    _cmap,
                       eirods::first_class_object*    _object,
+                      const std::string&             _results,
                       const std::string*             _opr,
                       const std::string*             _curr_host,
                       eirods::hierarchy_parser*      _out_parser,
