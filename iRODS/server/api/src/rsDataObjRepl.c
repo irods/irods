@@ -754,10 +754,10 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         // =-=-=-=-=-=-=-=-
         // use for redirect
         std::string op_name;
+        memset (&dest_inp, 0, sizeof (dest_inp));
+        memset (&dest_inp.condInput, 0, sizeof (dest_inp.condInput));
     
         strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-
-        memset (&dest_inp.condInput, 0, sizeof (dest_inp.condInput));
         addKeyVal( &(dest_inp.condInput), RESC_NAME_KW, myDestRescInfo->rescName );
 
         myDestDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));

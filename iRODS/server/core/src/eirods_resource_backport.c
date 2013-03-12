@@ -323,16 +323,22 @@ namespace eirods {
             // convert the resource into a legacy group info
             error grp_err = get_resc_grp_info( *itr, _resc_grp ); 
             if( grp_err.ok() ) {
-                if( INT_RESC_STATUS_DOWN != _resc_grp.rescInfo->rescStatus ) {
-                    default_resc_name = *itr;
-                    // =-=-=-=-=-=-=-
-                    // we found a live one
-                    break;
-                } 
+                default_resc_name = *itr;
+                // =-=-=-=-=-=-=-
+                // we found a live one
+                break;
 
-            } 
+            } else {
+                std::stringstream msg; 
+                msg << "failed to get group info for [";
+                msg << *itr;
+                msg << "]";
+                // JMC - resc is down -- eirods::log( PASSMSG( msg.str(), grp_err ) );    
+                
+            }
 
         } // for itr
+
 
         // =-=-=-=-=-=-=-
         // determine that we might need a 'preferred' resource

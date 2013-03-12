@@ -1659,7 +1659,6 @@ int
 {
     int status, writeFlag;
     specCollPerm_t specCollPerm;
-
     writeFlag = getWriteFlag (dataObjInp->openFlags);
     if (writeFlag > 0) {
         specCollPerm = WRITE_COLL_PERM;
