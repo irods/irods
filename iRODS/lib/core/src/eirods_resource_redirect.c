@@ -116,6 +116,17 @@ namespace eirods {
 
                 }
                 
+                // =-=-=-=-=-=-=-
+                // if the resource has a parent, bail as this is a grave, terrible error.
+                resource_ptr parent;
+                error p_err = resc->get_parent( parent );
+                if( p_err.ok() ) {
+                    return ERROR( -1, "resource_redirect - resource has a parent" );
+
+                }
+
+                // =-=-=-=-=-=-=-
+                // set the resc hier given the root resc name 
                 file_obj.resc_hier( resc_name );
 
             } // else
