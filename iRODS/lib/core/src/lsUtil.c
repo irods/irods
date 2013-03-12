@@ -175,7 +175,7 @@ printLsLong (rcComm_t *conn, rodsArguments_t *rodsArgs,
 genQueryOut_t *genQueryOut)
 {
     int i;
-    sqlResult_t *dataName, *replNum, *dataSize, *rescName, 
+    sqlResult_t *dataName, *replNum, *dataSize, *rescName, *rescHier, 
       *replStatus, *dataModify, *dataOwnerName, *dataId;
     sqlResult_t *chksumStr, *dataPath, *rescGrp, *dataType; // JMC - backport 4636
     char *tmpDataId;
@@ -247,6 +247,12 @@ genQueryOut_t *genQueryOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if ((rescHier = getSqlResultByInx (genQueryOut, COL_D_RESC_HIER)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "printLsLong: getSqlResultByInx for COL_D_RESC_HIER failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
     if ((replStatus = getSqlResultByInx (genQueryOut, COL_D_REPL_STATUS)) == 
      NULL) {
         rodsLog (LOG_ERROR,
@@ -277,6 +283,7 @@ genQueryOut_t *genQueryOut)
 	collEnt.replNum = atoi (&replNum->value[replNum->len * i]);
 	collEnt.dataSize = strtoll (&dataSize->value[dataSize->len * i], 0, 0);
 	collEnt.resource = &rescName->value[rescName->len * i];
+	collEnt.resc_hier = &rescHier->value[rescHier->len * i];
 	collEnt.ownerName = &dataOwnerName->value[dataOwnerName->len * i];
 	collEnt.replStatus = atoi (&replStatus->value[replStatus->len * i]);
 	collEnt.modifyTime = &dataModify->value[dataModify->len * i];
@@ -480,16 +487,15 @@ printDataCollEntLong (collEnt_t *collEnt, int flags)
     }
 
     getLocalTimeFromRodsTime (collEnt->modifyTime, localTimeModify);
-
     if (collEnt->specColl.collClass == NO_SPEC_COLL ||
       collEnt->specColl.collClass == LINKED_COLL) {
-        printf ("  %-12.12s %6d %-20.20s %12lld %16.16s %s %s\n",
-         collEnt->ownerName, collEnt->replNum, collEnt->resource, 
+        printf ("  %-12.12s %6d %s %12lld %16.16s %s %s\n",
+         collEnt->ownerName, collEnt->replNum, collEnt->resc_hier, 
          collEnt->dataSize, localTimeModify, tmpReplStatus, collEnt->dataName);
     } else {
         getSpecCollTypeStr (&collEnt->specColl, typeStr);
-        printf ("  %-12.12s %6.6s %-20.20s %12lld %16.16s %s %s\n",
-         collEnt->ownerName, typeStr, collEnt->resource,
+        printf ("  %-12.12s %6.6s %s %12lld %16.16s %s %s\n",
+         collEnt->ownerName, typeStr, collEnt->resc_hier,
          collEnt->dataSize, localTimeModify, tmpReplStatus, collEnt->dataName);
     }
 
@@ -521,12 +527,12 @@ printCollCollEnt (collEnt_t *collEnt, int flags)
                 printf ("  C- %s  %6.6s  %s  %s   %s\n",
                   collEnt->collName, typeStr,
                   collEnt->specColl.objPath, collEnt->specColl.phyPath,
-                  collEnt->specColl.resource);
+                  collEnt->specColl.rescHier);
 	    } else {
 	        printf ("  C- %s  %6.6s  %s  %s;;;%s;;;%d\n", 
 	          collEnt->collName, typeStr,
                   collEnt->specColl.objPath, collEnt->specColl.cacheDir,
-	          collEnt->specColl.resource, collEnt->specColl.cacheDirty);
+	          collEnt->specColl.rescHier, collEnt->specColl.cacheDirty);
 	    }
 	}
     } else {
@@ -551,6 +557,7 @@ char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs)
     collEnt.ownerName = ownerName;
     collEnt.dataSize = strtoll (objSize, 0, 0);
     collEnt.resource = specColl->resource;
+    collEnt.resc_hier = specColl->rescHier;
     collEnt.modifyTime = modifyTime;
     collEnt.specColl = *specColl;
     collEnt.objType = DATA_OBJ_T;
