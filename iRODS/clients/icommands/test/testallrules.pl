@@ -173,8 +173,8 @@ runCmd( "iinit $input" );
 
 # prep and cleanup
 runCmd( "iadmin mkuser devtestuser rodsuser","","","","iadmin rmuser devtestuser" );
-runCmd( "iadmin mkresc testResc 'unix file system' cache $irodshost:/tmp/$unixuser/testResc I_AM_A_CONTEXT_STRING", "", "", "", "iadmin rmresc testResc" );
-runCmd( "iadmin mkresc testallrulesResc 'unix file system' cache $irodshost:/tmp/$unixuser/testallrulesResc I_AM_ALSO_A_CONTEXT_STRING", "", "", "", "iadmin rmresc testallrulesResc" );
+runCmd( "iadmin mkresc testResc 'unix file system' $irodshost:/tmp/$unixuser/testResc I_AM_A_CONTEXT_STRING", "", "", "", "iadmin rmresc testResc" );
+runCmd( "iadmin mkresc testallrulesResc 'unix file system' $irodshost:/tmp/$unixuser/testallrulesResc I_AM_ALSO_A_CONTEXT_STRING", "", "", "", "iadmin rmresc testallrulesResc" );
 runCmd( "iadmin atrg testallrulesgroup testResc", "", "", "", "iadmin rfrg testallrulesgroup testResc");
 runCmd( "imkdir sub1", "", "", "", "irm -rf sub1" );
 runCmd( "imkdir forphymv", "", "", "", "irm -rf forphymv" );

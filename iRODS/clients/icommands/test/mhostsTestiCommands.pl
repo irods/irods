@@ -259,12 +259,12 @@ if ( ! $noprompt_flag ) {
 
 #-- Basic admin commands to make the needed resources.
 
-runCmd( "iadmin mkresc $resc1 \"unix file system\" cache $localHostAddr \"/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
-runCmd( "iadmin mkresc $resc2 \"unix file system\" cache $host2Addr \"/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
-runCmd( "iadmin mkresc $resc3 \"unix file system\" cache $host3Addr \"/tmp/myresc3\"", "", "", "", "iadmin rmresc $resc3" );
-runCmd( "iadmin mkresc compresource \"unix file system\" compound $host3Addr \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
-runCmd( "iadmin atrg resgroup $resc3", "", "", "", "iadmin rfrg resgroup $resc3" );
-runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
+runCmd( "iadmin mkresc $resc1 \"unix file system\" \"$localHostAddr:/tmp/myresc1\"", "", "", "", "iadmin rmresc $resc1" );
+runCmd( "iadmin mkresc $resc2 \"unix file system\" \"$host2Addr:/tmp/myresc2\"", "", "", "", "iadmin rmresc $resc2" );
+runCmd( "iadmin mkresc $resc3 \"unix file system\" \"$host3Addr:/tmp/myresc3\"", "", "", "", "iadmin rmresc $resc3" );
+#runCmd( "iadmin mkresc compresource \"unix file system\" compound $host3Addr \"/tmp/compresc\"", "", "", "", "iadmin rmresc compresource" );
+#runCmd( "iadmin atrg resgroup $resc3", "", "", "", "iadmin rfrg resgroup $resc3" );
+#runCmd( "iadmin atrg resgroup compresource", "", "", "", "iadmin rfrg resgroup compresource" );
 
 # transfer file test
 # make directory containing 20 small files and a directory with 2 large files

@@ -116,12 +116,16 @@ _addResource(
 {
     int result = 0;
     rescInfo_t rescInfo;
+    bzero( &rescInfo, sizeof( rescInfo ) );
+
     static const unsigned int argc = 7;
     char *args[argc];
+
+rodsLog( LOG_NOTICE, "XXXX - _addResource :: 2 [%s], 3[%s], 4 [%s], 5 [%s], 6 [%s], 7 [%s], 8 [%s]", _generalAdminInp->arg2, _generalAdminInp->arg3, _generalAdminInp->arg4, _generalAdminInp->arg5, _generalAdminInp->arg6, _generalAdminInp->arg7, _generalAdminInp->arg8 );
     
     // =-=-=-=-=-=-=-
     // pull location:path into string for parsing
-    std::string loc_path( _generalAdminInp->arg5 );
+    std::string loc_path( _generalAdminInp->arg4 );
 
     if( !loc_path.empty() ) {
         // =-=-=-=-=-=-=-
@@ -151,11 +155,11 @@ _addResource(
     // pull values out of api call args into rescInfo structure
     strncpy(rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName);
     strncpy(rescInfo.rescType,      _generalAdminInp->arg3, sizeof rescInfo.rescType);
-    strncpy(rescInfo.rescClass,     _generalAdminInp->arg4, sizeof rescInfo.rescClass);
-    strncpy(rescInfo.rescContext,   _generalAdminInp->arg7, sizeof rescInfo.rescContext);
-    strncpy(rescInfo.zoneName,      _generalAdminInp->arg8, sizeof rescInfo.zoneName);
+    strncpy(rescInfo.rescClass,     "cache",                sizeof rescInfo.rescClass );
+    strncpy(rescInfo.rescContext,   _generalAdminInp->arg5, sizeof rescInfo.rescContext);
+    strncpy(rescInfo.zoneName,      _generalAdminInp->arg6, sizeof rescInfo.zoneName);
     strncpy(rescInfo.rescChildren,  "", 1);
-    strncpy(rescInfo.rescParent, "", 1);
+    strncpy(rescInfo.rescParent,    "", 1);
     
     // =-=-=-=-=-=-=-
     // RAJA ADDED June 1 2009 for pre-post processing rule hooks 
@@ -168,7 +172,7 @@ _addResource(
     args[6] = rescInfo.zoneName;
 
     // =-=-=-=-=-=-=-
-    // apply preproc policy enforcement point for creating a resource, handle errors
+    // apply preproc policy enforcement point for creating a resourca, handle errors
     if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
         if (_rei2.status < 0) {
             result = _rei2.status;
@@ -274,8 +278,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
                         sizeof collInfo.collOwnerName);
                 status = chlRegCollByAdmin(rsComm, &collInfo);
                 if (status == 0) {
-                    int status2;
-                    status2 = chlCommit(rsComm);
+                    if( !chlCommit( rsComm ) ) {
+                        // JMC - ERROR?
+                    }
                 }
             }
             else {
