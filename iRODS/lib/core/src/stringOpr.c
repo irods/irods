@@ -8,6 +8,10 @@
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_assert.h"
+
 char *rmemmove (void *dest, void *src, int strLen, int maxLen)
 {
 
@@ -59,25 +63,27 @@ char *rstrcpy (char *dest, const char *src, int maxLen)
     int len;
 
     if (dest == NULL || src == NULL)
-	return NULL;
+	    return NULL;
 
     len = strlen (src);
 
-    if (len < 0 || len >= maxLen) {
-        rodsLog(LOG_ERROR, 
-	     "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
-	     len, maxLen);
+    if( len < 0 || len >= maxLen ) {
+        eirods::assert( false );
+        rodsLog( LOG_ERROR, 
+	        "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
+	        len, maxLen );
         return NULL;
     }
 
-    if (strncpy (dest, src, len) != NULL) {
-	dest[len] = '\0';
-	return dest;
+    if( strncpy( dest, src, len ) != NULL ){
+	    dest[len] = '\0';
+	    return dest;
     } else {
-        rodsLog(LOG_ERROR, 
-	     "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
-	     len, maxLen);
-	return NULL;
+        eirods::assert( false );
+        rodsLog( LOG_ERROR, 
+	        "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
+	        len, maxLen );
+	    return NULL;
     }
 }
 
