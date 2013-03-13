@@ -604,6 +604,42 @@ namespace eirods {
 
     } // get_loc_for_hier_string
 
+    /// @brief Returns the vault path of the leaf resource of the specified hierarchy string
+    error get_vault_path_for_hier_string(
+        const std::string& _hier_string,
+        std::string& _rtn_vault_path)
+    {
+        error result = SUCCESS();
+        error ret;
+        hierarchy_parser parser;
+        ret = parser.set_string(_hier_string);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to parse the hierarchy string \"" << _hier_string << "\"";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            std::string last_resc;
+            ret = parser.last_resc(last_resc);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the last resource in the hierarchy: \"" << _hier_string << "\"";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = get_resource_property<std::string>(last_resc, "path", _rtn_vault_path);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed to get the fault path property from the resource: \"" << last_resc << "\"";
+                    result = PASSMSG(msg.str(), ret);
+                }
+            }
+        }
+        
+        return result;
+    }
+
 }; // namespace eirods
 
 

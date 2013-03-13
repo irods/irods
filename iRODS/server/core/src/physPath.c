@@ -712,6 +712,13 @@ syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status;
     int savedStatus = 0;
 
+
+    if(true) {
+        std::stringstream msg;
+        msg << "qqq - Calling";
+        DEBUGMSG(msg.str());
+    }
+
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
@@ -737,6 +744,13 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     keyValPair_t regParam;
     vaultPathPolicy_t vaultPathPolicy;
 
+
+    if(true) {
+        std::stringstream msg;
+        msg << "qqq - Calling";
+        DEBUGMSG(msg.str());
+    }
+
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
         return 0;
 
@@ -749,6 +763,13 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     if( NO_CREATE_PATH == create_path ) {  
         /* no need to sync for path created by resource */
+
+        if(true) {
+            std::stringstream msg;
+            msg << "qqq - Returning here";
+            DEBUGMSG(msg.str());
+        }
+
         return 0;
     }
 
@@ -760,12 +781,26 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else {
         if (vaultPathPolicy.scheme != GRAFT_PATH_S) {
             /* no need to sync */
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Returning here";
+                DEBUGMSG(msg.str());
+            }
+
             return (0);
         }
     }
 
     if (isInVault (dataObjInfo) == 0) {
         /* not in vault. */
+
+        if(true) {
+            std::stringstream msg;
+            msg << "qqq - Returning here";
+            DEBUGMSG(msg.str());
+        }
+
         return (0);
     }
 
@@ -796,6 +831,13 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (strcmp (fileRenameInp.oldFileName, dataObjInfo->filePath) == 0) {
+
+        if(true) {
+            std::stringstream msg;
+            msg << "qqq - Returning here";
+            DEBUGMSG(msg.str());
+        }
+
         return (0);
     }
 
@@ -998,9 +1040,19 @@ isInVault (dataObjInfo_t *dataObjInfo)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    len = strlen (dataObjInfo->rescInfo->rescVaultPath);
+    std::string vault_path;
+    eirods::error ret = eirods::get_vault_path_for_hier_string(dataObjInfo->rescHier, vault_path);
+    if(!ret.ok()) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to get the vault path for the hierarchy: \"" << dataObjInfo->rescHier << "\"";
+        ret = PASSMSG(msg.str(), ret);
+        eirods::log(ret);
+        return ret.code();
+    }
+    len = vault_path.size();
 
-    if (strncmp (dataObjInfo->rescInfo->rescVaultPath, 
+    if (strncmp (vault_path.c_str(), 
                  dataObjInfo->filePath, len) == 0) {
         return (1);
     } else {
