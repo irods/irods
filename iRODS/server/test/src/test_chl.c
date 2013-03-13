@@ -433,10 +433,10 @@ int testModDataObjMeta(rsComm_t *rsComm, char *name,
       snprintf (tmpStr, LONG_NAME_LEN, "%d", replStatus);
       addKeyVal (&regParam, "replStatus", tmpStr);
     */
-    snprintf (tmpStr, sizeof tmpStr, "rightnow");
+    snprintf (tmpStr, sizeof tmpStr, "fake timestamp");
     addKeyVal (&regParam, "dataCreate", tmpStr);
 
-    snprintf (tmpStr2, sizeof tmpStr2, "testcomment");
+    snprintf (tmpStr2, sizeof tmpStr2, "test comment");
     addKeyVal (&regParam, "dataComments", tmpStr2);
 
     strcpy(dataObjInfo.objPath, name);
