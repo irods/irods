@@ -81,7 +81,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     // we know that the redirection decision has already been made
     dataObjInp_t      data_inp;
     bzero( &data_inp, sizeof( data_inp ) );
-    rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, NAME_LEN );
+    rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, MAX_NAME_LEN );
     bzero( &data_inp.condInput, sizeof( data_inp.condInput ) );
     addKeyVal( &data_inp.condInput, DEST_RESC_NAME_KW, destRescName );
 

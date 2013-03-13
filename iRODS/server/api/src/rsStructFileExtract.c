@@ -27,7 +27,7 @@ rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     //remoteFlag = resolveHost (&structFileOprInp->addr, &rodsServerHost);
     dataObjInp_t dataObjInp;
     bzero( &dataObjInp, sizeof( dataObjInp ) );
-    rstrcpy( dataObjInp.objPath, structFileOprInp->specColl->objPath, NAME_LEN );
+    rstrcpy( dataObjInp.objPath, structFileOprInp->specColl->objPath, MAX_NAME_LEN );
 
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
