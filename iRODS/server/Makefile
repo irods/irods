@@ -49,7 +49,6 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/specColl.o	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
-		$(svrCoreObjDir)/eirods_assert.o \
 		$(svrCoreObjDir)/eirods_resource_manager.o \
 		$(svrCoreObjDir)/eirods_resource_backport.o
 
