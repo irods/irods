@@ -68,6 +68,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/scanUtil.o \
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
+                $(libCoreObjDir)/eirods_assert.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
 		$(libCoreObjDir)/eirods_string_tokenize.o \
 		$(libCoreObjDir)/eirods_operation_rule_execution_manager.o \
