@@ -94,7 +94,7 @@ rsStructFileBundle (rsComm_t *rsComm,
     rodsServerHost_t* host  =  0;
     dataObjInp_t      data_inp;
     bzero( &data_inp, sizeof( data_inp ) );
-    rstrcpy( data_inp.objPath, structFileBundleInp->objPath, NAME_LEN );
+    rstrcpy( data_inp.objPath, structFileBundleInp->objPath, MAX_NAME_LEN );
     copyKeyValPairStruct( &structFileBundleInp->condInput, &data_inp.condInput );
     if( getValByKey( &structFileBundleInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
