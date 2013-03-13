@@ -63,6 +63,7 @@ namespace eirods {
 
     } // get_resource_property
 
+    error get_vault_path_for_hier_string(const std::string& _hier_string, std::string& _rtn_vault_path);
 }; // namespace eirods
 
 #endif // __EIRODS_RESOURCE_BACKPORT_H_

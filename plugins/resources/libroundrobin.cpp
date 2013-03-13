@@ -1427,7 +1427,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // public - ctor
-            eirods::error operator()( rcComm_t* _comm ) {
+            eirods::error operator()( rsComm_t* _comm ) {
                 std::string name;
                 properties_.get< std::string >( "name", name );
                 
@@ -1445,7 +1445,7 @@ extern "C" {
                 inp.arg8 = 0;
                 inp.arg9 = 0;
 
-                int status = rcGeneralAdmin( _comm, &inp ); 
+                int status = rsGeneralAdmin( _comm, &inp ); 
                 if( status < 0 ) {
                     return ERROR( status, "roundrobin_pdmo - rsGeneralAdmin failed." );
                 }

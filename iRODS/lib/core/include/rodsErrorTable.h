@@ -596,6 +596,8 @@
 #define DBO_WRITABLE_BY_TOO_MANY        -1717000
 #define DBO_WRITABLE_BY_NON_PRIVILEGED  -1718000
 
+// e-irods errors
+#define EIRODS_KEY_NOT_FOUND            -1800000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

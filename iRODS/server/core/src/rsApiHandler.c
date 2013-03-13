@@ -199,6 +199,18 @@ bytesBuf_t *bsBBuf)
 	 */
 	logAgentProc (rsComm);
     }
+
+    // do the maintenance operations here. Has to be before the reply is sent or the client will be in the dark.
+    if( resc_mgr.need_maintenance_operations() ) {
+        
+        // =-=-=-=-=-=-=-
+        // call post disconnect maintenance operations before exit
+        status = resc_mgr.call_maintenance_operations( rsComm );
+        if(status < 0) {
+            retVal = status;
+        }
+    }
+        
     if (retVal != SYS_NO_HANDLER_REPLY_MSG) {
         status = sendAndProcApiReply 
 	  (rsComm, apiInx, retVal, myOutStruct, &myOutBsBBuf);
@@ -580,6 +592,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         clearBBuf (&inputStructBBuf);
         clearBBuf (&bsBBuf);
         clearBBuf (&errorBBuf);
+
         if ((flags & RET_API_STATUS) != 0) {
             return (status);
         } else {
@@ -588,6 +601,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     } else if (strcmp (myHeader.type, RODS_DISCONNECT_T) == 0) {
         rodsLog (LOG_NOTICE,
           "readAndProcClientMsg: received disconnect msg from client");
+
         return (DISCONN_STATUS);
     } else if (strcmp (myHeader.type, RODS_RECONNECT_T) == 0) {
         rodsLog (LOG_NOTICE,

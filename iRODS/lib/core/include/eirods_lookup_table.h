@@ -13,6 +13,8 @@
 #include "eirods_hash.h"
 #include "eirods_error.h"
 
+#include "rodsLog.h"
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-
@@ -116,12 +118,19 @@ namespace eirods {
         error get( std::string _key, T& _val ) {
             // =-=-=-=-=-=-=-
             // check params
-#ifdef DEBUG
             if( _key.empty() ) {
                 return ERROR( -1, "empty key" );
             }
-#endif
-				
+
+            if(find(_key) == end()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to find key \"";
+                msg << _key;
+                msg << "\" in table.";
+                return ERROR(EIRODS_KEY_NOT_FOUND, msg.str());
+            }
+
             // =-=-=-=-=-=-=-
             // attempt to any_cast property value to given type.  catch exception and log
             // failure then exit

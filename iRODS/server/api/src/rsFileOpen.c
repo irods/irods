@@ -140,6 +140,10 @@ int _rsFileOpen( rsComm_t*      _comm,
     // =-=-=-=-=-=-=-
     // call file open on the resource plugin 
     eirods::file_object file_obj( _comm, _open_inp->objPath, _open_inp->fileName, _open_inp->resc_hier_, 0, _open_inp->mode, _open_inp->flags );
+    if(_open_inp->in_pdmo) {
+        file_obj.in_pdmo(true);
+    }
+    
     eirods::error ret_err = fileOpen( _comm, file_obj );
     
     // =-=-=-=-=-=-=-
