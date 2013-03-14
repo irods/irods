@@ -343,7 +343,7 @@ foreach $rulefile (@rules)
 
 
 # cleanup
-if ( 0 ) {
+if ( 1 ) {
     if ($ssb != 1 ) { runCmd( "irm -rf system_backups" ); }
     runCmd( "ichmod own rods ruletest/automove" );
     runCmd( "ichmod own rods sub1/foo3" );
