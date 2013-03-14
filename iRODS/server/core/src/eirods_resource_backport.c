@@ -333,7 +333,7 @@ namespace eirods {
                 msg << "failed to get group info for [";
                 msg << *itr;
                 msg << "]";
-                // JMC - resc is down -- eirods::log( PASSMSG( msg.str(), grp_err ) );    
+                eirods::log( PASSMSG( msg.str(), grp_err ) );    
                 
             }
 
@@ -386,7 +386,7 @@ namespace eirods {
                     msg << "] and option [";
                     msg << _option;
                     msg << "]";
-                    return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
+                    return PASSMSG( msg.str(), grp_err );
                 }
 
             } // else

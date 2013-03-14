@@ -197,6 +197,10 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
+        return status;
+    }
 
 #if 1 // JMC - legacy resource
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
