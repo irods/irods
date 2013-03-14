@@ -199,17 +199,6 @@ bytesBuf_t *bsBBuf)
 	 */
 	logAgentProc (rsComm);
     }
-
-    // do the maintenance operations here. Has to be before the reply is sent or the client will be in the dark.
-    if( resc_mgr.need_maintenance_operations() ) {
-        
-        // =-=-=-=-=-=-=-
-        // call post disconnect maintenance operations before exit
-        status = resc_mgr.call_maintenance_operations( rsComm );
-        if(status < 0) {
-            retVal = status;
-        }
-    }
         
     if (retVal != SYS_NO_HANDLER_REPLY_MSG) {
         status = sendAndProcApiReply 

@@ -833,7 +833,7 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - exec the pdmos ( post disconnect maintenance operations ) in order
-    int resource_manager::call_maintenance_operations( rsComm_t* _comm ) {
+    int resource_manager::call_maintenance_operations( rcComm_t* _comm ) {
         int result = 0;
         
         // =-=-=-=-=-=-=-

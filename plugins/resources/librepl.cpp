@@ -1479,7 +1479,7 @@ extern "C" {
             /// @brief ftor Replicates data object stored in the resource hierarchy selected by redirect to all other resource
             /// hierarchies.
             eirods::error operator()(
-                rsComm_t* _comm)
+                rcComm_t* _comm)
                 {
                     eirods::error result = SUCCESS();
                     eirods::error ret;
@@ -1592,7 +1592,7 @@ extern "C" {
                 }
 
             eirods::error replicate_children(
-                rsComm_t* _comm,
+                rcComm_t* _comm,
                 const std::string& _selected_hierarchy,
                 const std::string& _root_resc)
                 {
@@ -1633,7 +1633,7 @@ extern "C" {
                                             addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");
                                         }
                                         transferStat_t* transfer_stat = NULL;
-                                        int status = rsDataObjRepl(_comm, &dataObjInp, &transfer_stat);
+                                        int status = rcDataObjRepl(_comm, &dataObjInp);//, &transfer_stat);
                                         if(status < 0) {
                                             char* sys_error;
                                             char* rods_error = rodsErrorName(status, &sys_error);
@@ -1651,7 +1651,7 @@ extern "C" {
                                     } else if(object_oper.oper_ == unlink_oper) {
                                         addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, hierarchy_string.c_str());
                                         addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, "");
-                                        int status = rsDataObjUnlink(_comm, &dataObjInp);
+                                        int status = rcDataObjUnlink(_comm, &dataObjInp);
                                         if(status < 0) {
                                             char* sys_error;
                                             char* rods_error = rodsErrorName(status, &sys_error);
