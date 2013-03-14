@@ -758,8 +758,8 @@ sub doAllRescTests
                         "setup" => [
                                 "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc roundrobin",
-                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/tmp/eirods/unix1RescVault",
-                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/tmp/eirods/unix2RescVault",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
+                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/eirods/unix2RescVault",
                                 "iadmin addchildtoresc demoResc unix1Resc",
                                 "iadmin addchildtoresc demoResc unix2Resc",
                         ],
