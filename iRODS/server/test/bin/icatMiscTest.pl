@@ -152,6 +152,7 @@ runCmd(1, "iadmin rmresc $Resc2");
 runCmd(0, "iadmin lr $Resc | grep resc_net:");
 $ipIx=index($cmdStdout,"net:");
 $hostName=substr($cmdStdout, $ipIx+4);
+$hostName = `hostname`;
 chomp($hostName);
 printf("hostName:%s\n",$hostName);
 runCmd(0,"iadmin mkresc $Resc2 'unix file system' $hostName:$Resc2Path");

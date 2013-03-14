@@ -585,6 +585,7 @@ runCmd(0, "irm -f $F1");
 runCmd(0, "iadmin lr $Resc | grep resc_net:");
 $ipIx=index($cmdStdout,"net:");
 $hostName=substr($cmdStdout, $ipIx+4);
+$hostName = `hostname`;
 chomp($hostName);
 printf("hostName:%s\n",$hostName);
 
