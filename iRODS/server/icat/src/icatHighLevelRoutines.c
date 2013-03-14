@@ -1957,6 +1957,14 @@ chlAddChildResc(
                         result = status;
                     }
                 }                
+            } else {
+                char errMsg[105];
+                snprintf(errMsg, 100, 
+                         "resource '%s' is not a valid resource",
+                         rescInfo->rescName);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
+                result = CAT_INVALID_RESOURCE_NAME;
+
             }
         }
     }
