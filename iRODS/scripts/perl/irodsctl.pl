@@ -756,8 +756,9 @@ sub doAllRescTests
                 },
                 "roundrobin" => {
                         "setup" => [
-                                "yes | iadmin modresc demoResc name unix1Resc",
+                                "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc roundrobin",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/tmp/eirods/unix1RescVault",
                                 "iadmin mkresc unix2Resc 'unix file system' $hostname:/tmp/eirods/unix2RescVault",
                                 "iadmin addchildtoresc demoResc unix1Resc",
                                 "iadmin addchildtoresc demoResc unix2Resc",
@@ -766,8 +767,9 @@ sub doAllRescTests
                                 "iadmin rmchildfromresc demoResc unix2Resc",
                                 "iadmin rmchildfromresc demoResc unix1Resc",
                                 "iadmin rmresc unix2Resc",
-                                "iadmin rmresc demoResc",  
-                                "yes | iadmin modresc unix1Resc name demoResc",
+                                "iadmin rmresc unix1Resc",
+                                "iadmin rmresc demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
                         ],
                 },
 	);
