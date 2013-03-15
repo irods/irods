@@ -1,0 +1,46 @@
+Ticket Item:  [#1212] iadmin modrescdatapaths failing - psql 8.1 on cen58
+-------------------------------------------------------------------------
+
+iadmin modrescdatapath does not work on RHEL/CentOS 5.x since the yum-packaged PostgreSQL version is 8.1.
+
+PostgreSQL 8.1 does not allow the 'update' command to include a table alias (as used by modrescdatapath).
+This feature was not included in PostgreSQL until version 8.2.
+
+The modrescdatapath subcommand works as expected on RHEL/CentOS 6.x.
+
+
+Ticket Item:  [#1260] unixODBC on OpenSuSE 12.x fails when iRODS resource name contains a hyphen (aka "hpss-sdsc")
+------------------------------------------------------------------------------------------------------------------
+  
+unixODBC on OpenSuSE 12.x fails when iRODS resource name contains a hyphen (aka "hpss-sdsc").
+
+Also, 'moon landing' in rules3.0/rulewriteKeyValPairs.r.
+
+
+Other Operating Systems and versions do not exhibit this behavior.
+
+
+Mar  6 09:47:34 pid:21588 NOTICE: rsAuthCheck user rods#tempZone
+Mar  6 09:47:34 pid:21588 NOTICE: rsAuthResponse set proxy authFlag to 5, client authFlag to 5, user:rods#tempZone 
+proxy:rods client:rods
+Mar  6 09:47:34 pid:21588 NOTICE: bindVar[1]=RajaBase
+Mar  6 09:47:34 pid:21588 NOTICE: bindVar[2]=acRegisterData
+Mar  6 09:47:34 pid:21588 NOTICE: bindVar[3]=acRegisterData()
+Mar  6 09:47:34 pid:21588 NOTICE: bindVar[4]=($objPath like "/home/raja#sdsc/myImportantFiles\*" && $dataSize > 10000000)
+Mar  6 09:47:34 pid:21588 NOTICE: bindVar[5]={
+    msiRegisterData():::recover_msiRegisterData();
+    msiQueue("msiReplicateData(\'hpss-sdsc\') ::: recover_msiReplicateData;");
+}
+Mar  6 09:47:34 pid:21588 NOTICE: bindVar[6]=@REL
+Mar  6 09:47:34 pid:21588 NOTICE: cllExecSqlWithResult: SQLExecDirect error: -1, sql:select rule_id from R_RULE_MAIN 
+where  rule_base_name = ? and  rule_name = ? and rule_event = ? and rule_condition = ? and rule_body = ? and  
+rule_recovery = ?
+Mar  6 09:47:34 pid:21588 NOTICE: SQLSTATE: 01000
+Mar  6 09:47:34 pid:21588 NOTICE: SQLCODE: 4294967295
+Mar  6 09:47:34 pid:21588 NOTICE: SQL Error message: [unixODBC]Error while executing the query (non-fatal);
+ERROR:  syntax error at or near "hpss" at character 344
+Mar  6 09:47:34 pid:21588 NOTICE: chlInsRuleTable cmlGetIntegerValueFromSqlV3 find rule if any failure -806000
+Mar  6 09:47:34 pid:21588 NOTICE: rsGeneralRowInsert: rcGeneralRowInsert failed
+Mar  6 09:47:34 pid:21588 ERROR: executeRuleAction Failed for msiAdmInsertRulesFromStructIntoDB status = -806000 
+CAT_SQL_ERR
+
