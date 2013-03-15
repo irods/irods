@@ -253,6 +253,8 @@ f 644 root root /usr/share/man/man1 ./man/*.gz
 
 d 755 root root ${EIRODS_DOC_DIR} -
 f 644 root root ${EIRODS_DOC_DIR}/manual.pdf ./manual.pdf
+f 644 root root ${EIRODS_DOC_DIR}/KNOWN_ISSUES ./KNOWN_ISSUES
+f 644 root root ${EIRODS_DOC_DIR}/RELEASE_NOTES ./RELEASE_NOTES
 %if DEB
 f 644 root root ${EIRODS_DOC_DIR}/copyright ./LICENSE
 #f 644 root root ${EIRODS_DOC_DIR}/copyright ./iRODS/COPYRIGHT/Copyright.txt
