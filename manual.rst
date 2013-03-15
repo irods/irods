@@ -43,6 +43,18 @@ Enterprise iRODS (E-iRODS) Manual
 .. 
 ..    $ rst2pdf manual.rst -o manual.pdf
 
+-------------
+Release Notes
+-------------
+
+.. include:: RELEASE_NOTES
+
+-------
+License
+-------
+
+.. include:: LICENSE
+
 --------
 Overview
 --------
@@ -156,7 +168,7 @@ The Zone has been renamed, but now you will need to update your .irodsEnv file t
 
  eirods@hostname:~/ $ cat .irods/.irodsEnv
  # iRODS server host name:
- irodsHost 'ubuntu2'
+ irodsHost '<hostname>'
  # iRODS server port number:
  irodsPort 1247
  # Default storage resource name:
@@ -180,21 +192,20 @@ Now, the connection should be reset and you should be able to list your empty iR
 Add additional resource(s)
 --------------------------
 
-The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/eirods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'cache' resource at a designated host at the designated fullpath::
+The default installation of E-iRODS comes with a single resource named 'demoResc' which stores its files in the `/var/lib/eirods/iRODS/Vault` directory.  You will want to create additional resources at disk locations of your choosing.  The following command will create a basic 'unix file system' resource at a designated host at the designated fullpath::
 
  eirods@hostname:~/ $ iadmin mkresc <newrescname> 'unix file system' <fully.qualified.domain.name>:</full/path/to/new/vault>
  
 Additional information about creating resources can be found with::
 
  eirods@hostname:~/ $ iadmin help mkresc
-  mkresc Name Type Host [Path] [ContextString] (make Resource)
+  mkresc Name Type [Host:Path] [ContextString] (make Resource)
  Create (register) a new storage or database resource.
 
  Name is the name of the new resource.
  Type is the resource type (see 'lt resc_type' for a list).
  Host is the DNS host name.
- And Path is the defaultPath for the vault (not needed for resources of
-   type 'database' (DBRs)).
+ And Path is the defaultPath for the vault.
  ContextString is any contextual information relevant to this resource.
    (semi-colon separated key=value pairs e.g. "a=b;c=d")
  
@@ -242,6 +253,14 @@ Upgrading
 The beta releases of E-iRODS do not yet support upgrading.  Every install will be a clean install.
 
 This section will be updated when support is included.
+
+------------------------------
+Migration from Community iRODS
+------------------------------
+
+Support for migrating from Community iRODS is planned, but automated scripts and documentation have not yet been completed.
+
+This section will be updated with support is included and tested.
 
 ----------
 Backing Up
@@ -566,6 +585,13 @@ Zone
     An iRODS Zone is an independent iRODS system consisting of an iCAT-Enabled Server (IES), optional additional distributed iRODS Servers (which can reach hundreds, worldwide) and clients. Each Zone has a unique name. When two iRODS Zones are configured to interoperate with each other securely, it is called (Zone) Federation.
 
 
+------------
+Known Issues
+------------
+
+.. include:: KNOWN_ISSUES
+    :literal:
+
 -------------------
 History of Releases
 -------------------
@@ -573,7 +599,7 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
-2013-02-28   3.0b3      Third Beta Release.
+2013-03-15   3.0b3      Third Beta Release.
                           This is the third release from RENCI.  It includes
                           a new package for CentOS 6+, support for composable
                           resources, and additional documentation.
