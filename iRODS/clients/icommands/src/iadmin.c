@@ -1636,13 +1636,11 @@ usage(char *subOpt)
         "Create (register) a new coordinating or storage resource.",
         " ",
         "Name is the name of the new resource.",
-        "Type is the resource type (see 'lt resc_type' for a list).",
+        "Type is the resource type.",
         "Host is the DNS host name.",
         "Path is the defaultPath for the vault.",
         "ContextString is any contextual information relevant to this resource.",
         "  (semi-colon separated key=value pairs e.g. \"a=b;c=d\")",
-        " ",
-        "Tip: Also see the lt command for Type token information.",
         ""};
 
     char *modrescMsgs[]={
@@ -1690,11 +1688,11 @@ usage(char *subOpt)
         "user will be updated.",
         " ",
         "When the command runs, it will tell you how many data-object rows",
-        "has been updated.",
+        "have been updated.",
         " ",
         "The 'iadmin modresc Rescname path' command now returns the previous",
         "path of the resource which can be used as the oldPath for this",
-        "modrescdatapaths command.  It also refers to user to this command.",
+        "modrescdatapaths command.  It also refers the user to this command.",
         " ",
         "To see if you have any files under a given path, use iquest, for example:",
         "iquest \"select count(DATA_ID) where DATA_PATH like '/iRODS/Vault3/%'\" ",
