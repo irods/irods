@@ -37,7 +37,7 @@ def test_create_and_remove_new_resource():
     assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
     output = commands.getstatusoutput("hostname")
     hostname = output[1]
-    assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unix file system\" archive "+hostname+" /tmp/pydevtest_"+testresc1) # add basic archive
+    assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unix file system\" "+hostname+":/tmp/pydevtest_"+testresc1) # unix
     assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
     assertiCmdFail(s.adminsession,"iadmin rmresc notaresource") # bad remove
     assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove

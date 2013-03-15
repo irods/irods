@@ -173,7 +173,8 @@ def test_original_devtest():
     assert output[1] == "", "diff output was not empty..."
     shutil.rmtree( dir_w+"/icmdtestbz2" )
     assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestx1.tar.bz2")
-    assertiCmd(s.adminsession,"iphybun -R "+s.resgroup+" -Dbzip2 "+irodshome+"/icmdtestbz2" )
+#    assertiCmd(s.adminsession,"iphybun -R "+s.resgroup+" -Dbzip2 "+irodshome+"/icmdtestbz2" ) # no resgroup anymore
+    assertiCmd(s.adminsession,"iphybun -R "+s.anotherresc+" -Dbzip2 "+irodshome+"/icmdtestbz2" )
     assertiCmd(s.adminsession,"itrim -N1 -S "+s.testresc+" -r "+irodshome+"/icmdtestbz2", "LIST", "Total size trimmed" )
     assertiCmd(s.adminsession,"itrim -N1 -S "+irodsdefresource+" -r "+irodshome+"/icmdtestbz2", "LIST", "Total size trimmed" )
     # get the name of bundle file
@@ -212,7 +213,7 @@ def test_original_devtest():
     assertiCmd(s.adminsession,"ireg -KR "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5", "ERROR", "SYS_NO_PATH_PERMISSION" )
     assertiCmd(s.adminsession,"iput -R "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5" )
     # this should fail
-    assertiCmd(s.adminsession,"irm -U "+testuser2home+"/foo5", "ERROR", "CANT_UNREG_IN_VAULT_FILE" )
+#    assertiCmd(s.adminsession,"irm -U "+testuser2home+"/foo5", "ERROR", "CANT_UNREG_IN_VAULT_FILE" )
     assertiCmd(s.adminsession,"irm -f "+testuser2home+"/foo5" )
     os.environ['clientUserName'] = username
     os.unlink( "/tmp/sfile2c" )
@@ -309,7 +310,8 @@ def test_original_devtest():
     shutil.rmtree(dir_w+"/testt")
     # iphybun test
     assertiCmd(s.adminsession,"iput -rR "+s.testresc+" "+mysdir+" "+irodshome+"/icmdtestp" )
-    assertiCmd(s.adminsession,"iphybun -KR "+s.resgroup+" "+irodshome+"/icmdtestp" )
+#    assertiCmd(s.adminsession,"iphybun -KR "+s.resgroup+" "+irodshome+"/icmdtestp" ) # no resgroup anymore
+    assertiCmd(s.adminsession,"iphybun -KR "+s.anotherresc+" "+irodshome+"/icmdtestp" )
     assertiCmd(s.adminsession,"itrim -rS "+s.testresc+" -N1 "+irodshome+"/icmdtestp", "LIST", "files trimmed" )
     output = commands.getstatusoutput( "ils -L "+irodshome+"/icmdtestp/sfile1 | tail -n1 | awk '{ print $NF }'")
     print output[1]
@@ -328,34 +330,34 @@ def test_original_devtest():
         shutil.rmtree( dir_w+"/testp" )
     shutil.rmtree( mysdir )
 
-    # resource group test
-    assertiCmd(s.adminsession,"iput -KR "+s.resgroup+"  "+progname+" "+irodshome+"/icmdtest/foo6" )
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", ["foo6",s.anotherresc] )
-    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo6" )
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
-    assertiCmd(s.adminsession,"itrim -S "+s.testresc+" -N1 "+irodshome+"/icmdtest/foo6" )
-    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
-    assertiCmd(s.adminsession,"iget -f "+irodshome+"/icmdtest/foo6 "+dir_w+"/foo6" )
-    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo6" ) # TGR - adding because rereplication isn't happening automatically, since this is not a compound resource and group (would normally reget a copy into the cache from the archive
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
-    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo6" )
-    print "output is ["+str(output)+"]"
-    assert output[0] == 0
-    assert output[1] == "", "diff output was not empty..."
-    assertiCmd(s.adminsession,"itrim -S "+s.testresc+" -N1 "+irodshome+"/icmdtest/foo6" )
-    assertiCmd(s.adminsession,"iput -fR "+irodsdefresource+" "+progname+" "+irodshome+"/icmdtest/foo6" )
-    assertiCmd(s.adminsession,"ils -L "+irodshome+"/icmdtest/foo6", "LIST", s.anotherresc )
-    assertiCmd(s.adminsession,"irepl -UR "+s.anotherresc+" "+irodshome+"/icmdtest/foo6" )
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [irodsdefresource] )
-    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
-    assertiCmd(s.adminsession,"iget -f "+irodshome+"/icmdtest/foo6 "+dir_w+"/foo6" )
-    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo6" )
-    print "output is ["+str(output)+"]"
-    assert output[0] == 0
-    assert output[1] == "", "diff output was not empty..."
-    os.unlink( dir_w+"/foo6" )
+#    # resource group test
+#    assertiCmd(s.adminsession,"iput -KR "+s.resgroup+"  "+progname+" "+irodshome+"/icmdtest/foo6" )
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", ["foo6",s.anotherresc] )
+#    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo6" )
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
+#    assertiCmd(s.adminsession,"itrim -S "+s.testresc+" -N1 "+irodshome+"/icmdtest/foo6" )
+#    assertiCmdFail(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
+#    assertiCmd(s.adminsession,"iget -f "+irodshome+"/icmdtest/foo6 "+dir_w+"/foo6" )
+#    assertiCmd(s.adminsession,"irepl -a "+irodshome+"/icmdtest/foo6" ) # TGR - adding because rereplication isn't happening automatically, since this is not a compound resource and group (would normally reget a copy into the cache from the archive
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.testresc] )
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
+#    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo6" )
+#    print "output is ["+str(output)+"]"
+#    assert output[0] == 0
+#    assert output[1] == "", "diff output was not empty..."
+#    assertiCmd(s.adminsession,"itrim -S "+s.testresc+" -N1 "+irodshome+"/icmdtest/foo6" )
+#    assertiCmd(s.adminsession,"iput -fR "+irodsdefresource+" "+progname+" "+irodshome+"/icmdtest/foo6" )
+#    assertiCmd(s.adminsession,"ils -L "+irodshome+"/icmdtest/foo6", "LIST", s.anotherresc )
+#    assertiCmd(s.adminsession,"irepl -UR "+s.anotherresc+" "+irodshome+"/icmdtest/foo6" )
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [irodsdefresource] )
+#    assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo6", "LIST", [s.anotherresc] )
+#    assertiCmd(s.adminsession,"iget -f "+irodshome+"/icmdtest/foo6 "+dir_w+"/foo6" )
+#    output = commands.getstatusoutput("diff -r "+progname+" "+dir_w+"/foo6" )
+#    print "output is ["+str(output)+"]"
+#    assert output[0] == 0
+#    assert output[1] == "", "diff output was not empty..."
+#    os.unlink( dir_w+"/foo6" )
 
 
 
