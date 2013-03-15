@@ -2,8 +2,11 @@
 Enterprise iRODS (E-iRODS) Manual
 =================================
 
+.. |todaysdate| date::
+
 :Author: Renaissance Computing Institute (RENCI)
 :Version: 3.0beta3
+:Date: |todaysdate|
 
 .. contents:: Table of Contents
 .. section-numbering::
@@ -82,9 +85,11 @@ Additional documentation is available on the iRODS wiki and in the two books pub
 Download
 --------
 
-E-iRODS is released in binary form.  RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for combinations of platform, operating system, and database type.
+E-iRODS is currently released in binary form.  Full open source repositories and trackers will be available after the first major release.
 
-More combinations will be made available as our testing matrix increases.
+RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for combinations of platform and operating system.
+
+More combinations will be made available as our testing matrix continues to mature and increase in scope.
 
 The latest files can be downloaded from http://eirods.org/download.
 
@@ -129,7 +134,7 @@ For the resource-only packages, the server is not started automatically.  The ad
 Quickstart
 ----------
 
-Successful installation will complete and leave a running iRODS server.  If you installed an iCAT-enabled iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
+Successful installation will complete and leave a running E-iRODS server.  If you installed an iCAT-enabled E-iRODS server, a database of your choice will also have been created and running.  The iCommand ``ils`` will list your new iRODS administrator's empty home directory in the iRODS virtual filesystem::
 
  eirods@hostname:~/ $ ils
  /tempZone/home/rods:
@@ -203,22 +208,11 @@ Additional information about creating resources can be found with::
  Create (register) a new storage or database resource.
 
  Name is the name of the new resource.
- Type is the resource type (see 'lt resc_type' for a list).
+ Type is the resource type.
  Host is the DNS host name.
  And Path is the defaultPath for the vault.
  ContextString is any contextual information relevant to this resource.
    (semi-colon separated key=value pairs e.g. "a=b;c=d")
- 
- Tip: Also see the lt command for Type token information.
-
- eirods@hostname:~/ $ iadmin lt resc_type
- unix file system 
- hpss file system 
- windows file system 
- s3 
- MSS universal driver 
- database 
- mso 
   
 Creating new resources does not make them default for any existing or new users.  You will need to make sure that default resources are properly set for newly ingested files.
 
@@ -325,32 +319,122 @@ Composable Resources
 
 The second area of modularity to be added to E-iRODS consists of composable resources.  Composable resources replace the concept of resource groups from community iRODS.  There are no resource groups in E-iRODS. 
 
+Tree Metaphor
+-------------
+
 Composable resources are best modeled with a tree metaphor (and in computer science parlance, they are tree data structures).  An E-iRODS composable resource is a tree with one 'root' node.  Nodes that are at the bottom of the tree are 'leaf' nodes.  Nodes that are not leaf nodes are 'branch' nodes and have one more more 'child' nodes.  A child node can have one and only one 'parent' node.
 
 The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'coordinating' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a coordinating resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
 
+In computer science, a tree is a data structure with a hierarchical representation of linked nodes. These nodes can be named based on where they are in the
+hierarchy. The node at the top of a tree is the root node. Parent nodes and child nodes are on opposite ends of a connecting link, or edge. Leaf nodes are at
+the bottom of the tree, and any node that is not a leaf node is a branch node. These positional descriptors are helpful when describing the structure of a
+tree. Composable resources are best represented using this tree metaphor.
+
+Virtualization
+--------------
+
+In iRODS, files are stored as Data Objects on disk and have an associated physical path as well as a virtual path within the iRODS file system. iRODS collections only exist in the iCAT database and do not have an associated physical path (allowing them to exist across all resources, virtually).
+
+Composable resources introduce the same dichotomy between the virtual and physical. E-iRODS resources are defined to be either coordinating resources or storage resources. These two different classes of resource map directly to the branch nodes and leaf nodes of a generic tree data structure. A coordinating resource has built-in logic that defines how it determines, or coordinates, the flow of data to and from its children. Coordinating resources exist solely in the iCAT and virtually exist across all E-iRODS servers in a particular Zone. A storage resource has a Vault (physical) path and knows how to speak to a specific type of storage medium (disk, tape, etc.). The encapsulation of resources into a plugin architecture allows E-iRODS to have a consistent interface to all resources, whether they represent coordination or storage.
+
+This virtualization of the coordinating resources allows the logic of how to manage both the placement and the retrieval of Data Objects to exist independent of the types of resources that are connected as children resources. When E-iRODS tries to retrieve data, each child resource will “vote” by offering whether it can provide the requested data, and coordinating resources will decide which particular storage resource (e.g. physical location) the read should come from. The specific manner of this vote is specific to the logic of the coordinating resource. For instance, a coordinating resource could optimize for reducing the number of requests made against each storage resource within some time frame or it could optimize for reducing latency in expected data retrieval times. We expect a wide variety of useful optimizations to be developed by the community.
+
+An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in community iRODS could not be put into other resource groups. A specific limiting example was that of the compound resource where, by definition, it was a group and could not be placed into another group significantly limiting its functionality as a management tool. Groups in E-iRODS now only refer to user groups.
+
+
+
+Read more at `http://eirods.org/release/e-irods-composable-resources/`__:
+
+- `Paper (279kB, PDF)`__
+- `Slides (321kB, PDF)`__
+- `Poster (6.4MB, PDF)`__
+
+.. __: http://eirods.org/release/e-irods-composable-resources/
+.. __: http://eirods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources.pdf
+.. __: http://eirods.org/dev/wp-content/uploads/2013/02/eirods-cr-slides.pdf
+.. __: http://eirods.org/dev/wp-content/uploads/2013/02/eirods-composable-resources-poster.pdf
+
+Coordinating Resources
+----------------------
+
+Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
+
+- random
+- round robin
+- pass through (for testing)
+- replication (expected)
+- load balanced (expected)
+- storage balanced (%-full) (expected)
+- storage balanced (bytes) (expected)
+- tiered (expected)
+
+Storage Resources
+-----------------
+
 Storage resources represent storage interfaces and include the file driver information to talk with different types of storage. These include:
 
 - unix file system
-- MSSInterface
-- Fuse
-- proxy
-- HPSS
-- S3
-- WOS
-- non-blocking
 - structured file type (tar, zip, gzip, bzip)
+- Universal Mass Storage (expected)
+- HPSS (expected)
+- S3 (expected)
+- WOS (expected)
+- non-blocking (expected)
 
-Logic resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
+Managing Child Resources
+------------------------
 
-- replication
-- random
-- round robin
-- load balanced
-- storage balanced (%-full)
-- storage balanced (bytes)
-- tiered
-- pass through (for testing)
+There are two new ``iadmin`` subcommands introduced with this feature.
+
+``addchildtoresc``::
+
+ eirods@hostname:~$ iadmin h addchildtoresc
+  addchildtoresc Parent Child [ContextString] (add child to resource)
+ Add a child resource to a parent resource.  This creates an 'edge'
+ between two nodes in a resource tree.
+  
+ Parent is the name of the parent resource.
+ Child is the name of the child resource.
+ ContextString is any relevant information that the parent may need in order
+   to manage the child.
+
+``rmchildfromresc``::
+
+ eirods@hostname:~$ iadmin h rmchildfromresc
+  rmchildfromresc Parent Child (remove child from resource)
+ Remove a child resource from a parent resource.  This removes an 'edge'
+ between two nodes in a resource tree.
+  
+ Parent is the name of the parent resource.
+ Child is the name of the child resource.
+
+Example Usage
+-------------
+
+Creating a composite resource consists of creating the individual nodes of the desired tree structure and then connecting the parent and children nodes.
+
+Example 1
+*********
+
+.. figure:: ./images/example1-tree.jpg
+   :height: 1.5 in
+   :width: 3 in
+   :align: center
+
+   Example 1: Replicates Data Objects to three locations
+
+A replicating coordinating resource with three unix file system storage resources as children would be composed with seven (7) iadmin commands::
+
+ eirods@hostname:~/ $ iadmin mkresc example1 replication
+ eirods@hostname:~/ $ iadmin mkresc repl_resc1 "unix file system" renci.example.org:/Vault
+ eirods@hostname:~/ $ iadmin mkresc repl_resc2 "unix file system" maxplanck.example.org:/Vault
+ eirods@hostname:~/ $ iadmin mkresc repl_resc3 "unix file system" sdsc.example.org:/Vault
+ eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc1
+ eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc2
+ eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
+
+
 
 .. 
 .. ------
