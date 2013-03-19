@@ -233,7 +233,7 @@ if [ "$1" == "icat" ] ; then
     fi
 fi
 
-if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
     if [ "$(id -u)" != "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
@@ -251,7 +251,7 @@ set +e
 
 GPLUSPLUS=`which g++`
 if [[ "$?" != "0" || `echo $GPLUSPLUS | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT g++ make"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT gcc-c++ make"
@@ -268,7 +268,7 @@ fi
 if [ $1 == "icat" ] ; then
     UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
     if [ "$UNIXODBCDEV" == "" ] ; then
-        if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
             PREFLIGHT="$PREFLIGHT unixodbc-dev"
         elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
             PREFLIGHT="$PREFLIGHT unixODBC-devel"
@@ -289,7 +289,7 @@ fi
 # needed for boost, of all things...
 PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
 if [[ "$PYTHONDEV" == "" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT python-dev"
     fi
 else
@@ -318,7 +318,7 @@ fi
 
 WGET=`which wget`
 if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
@@ -338,7 +338,7 @@ fi
 
 DOXYGEN=`which doxygen`
 if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
@@ -358,7 +358,7 @@ fi
 
 HELP2MAN=`which help2man`
 if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
@@ -385,7 +385,7 @@ fi
 
 #BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
 #if [ "$BOOST" == "" ] ; then
-#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+#    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
 #        PREFLIGHT="$PREFLIGHT libboost-all-dev"
 #    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
 #        PREFLIGHT="$PREFLIGHT boost-devel"
@@ -408,7 +408,7 @@ fi
 
 BZIP2DEV=`find /usr -name bzlib.h 2> /dev/null`
 if [ "$BZIP2DEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libbz2-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT bzip2-devel"
@@ -425,7 +425,7 @@ fi
 
 ZLIBDEV=`find /usr/include -name zlib.h 2> /dev/null`
 if [ "$ZLIBDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT zlib1g-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT zlib-devel"
@@ -443,7 +443,7 @@ fi
 #FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
 #FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
 #if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
-#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+#    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
 #        if [ "$DETECTEDOSVERSION" \< "11" ]; then
 #            PREFLIGHT="$PREFLIGHT libarchive1 libarchive-dev"
 #        else
@@ -465,7 +465,7 @@ fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libssl-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT openssl-devel"
@@ -482,7 +482,7 @@ fi
 
 FINDPOSTGRESBIN=`../packaging/find_postgres_bin.sh 2> /dev/null`
 if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
@@ -501,7 +501,7 @@ fi
 
 EASYINSTALL=`which easy_install`
 if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT python-setuptools"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT python-setuptools python-devel"
@@ -523,7 +523,7 @@ fi
 # check python package prerequisites
 RST2PDF=`which rst2pdf`
 if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT rst2pdf"
     else
         PYPREFLIGHT="$PYPREFLIGHT rst2pdf"
@@ -537,7 +537,7 @@ fi
 if [ "$PREFLIGHT" != "" ] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         echo "      :: try: ${text_reset}sudo yum install$PREFLIGHT${text_red}" 1>&2
@@ -1075,7 +1075,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
         ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
         ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
-elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
+elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
     ./epm/epm $EPMOPTS -a $arch -f deb eirods $epmvar=true ./packaging/eirods.list
@@ -1120,7 +1120,7 @@ if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
 elif [ "$DETECTEDOS" == "SuSE" ] ; then
     EXTENSION="rpm"
     SUFFIX="-suse"
-elif [ "$DETECTEDOS" == "Ubuntu" ] ; then
+elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
     EXTENSION="deb"
 elif [ "$DETECTEDOS" == "Solaris" ] ; then
     EXTENSION="pkg"
