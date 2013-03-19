@@ -12,6 +12,7 @@ COVERAGEBUILDDIR="/var/lib/eirods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
+EIRODSPACKAGEDIR="./build"
 
 USAGE="
 
@@ -174,6 +175,7 @@ if [ "$1" == "clean" ] ; then
     rm -f libeirods.a
     rm -f plugins/resources/*.so
     rm -f plugins/resources/Makefile
+    rm -rf $EIRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
     cd $DETECTEDDIR/../
@@ -1105,15 +1107,80 @@ else
 fi
 
 
+# rename generated packages appropriately
+cd $BUILDDIR
+EIRODSVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
+SUFFIX=""
+if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+    EXTENSION="rpm"
+    SUFFIX="-redhat"
+    if [ "$epmosversion" == "CENTOS6" ] ; then
+        SUFFIX="-centos6"
+    fi
+elif [ "$DETECTEDOS" == "SuSE" ] ; then
+    EXTENSION="rpm"
+    SUFFIX="-suse"
+elif [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    EXTENSION="deb"
+elif [ "$DETECTEDOS" == "Solaris" ] ; then
+    EXTENSION="pkg"
+elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+    EXTENSION="dmg"
+fi
+RENAME_SOURCE="./linux*/eirods-*$EIRODSVERSION*.$EXTENSION"
+RENAME_SOURCE_DEV=${RENAME_SOURCE/eirods-/eirods-dev-}
+RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/eirods-/eirods-icommands-}
+SOURCELIST=`ls $RENAME_SOURCE`
+echo "EPM produced packages:"
+echo "$SOURCELIST"
+# prepare target build directory
+mkdir -p $EIRODSPACKAGEDIR
+# vanilla construct
+RENAME_DESTINATION="$EIRODSPACKAGEDIR/eirods-$EIRODSVERSION-64bit.$EXTENSION"
+# add OS-specific suffix
+if [ "$SUFFIX" != "" ] ; then
+    RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+fi
+# release build (also building icommands and dev)
+RENAME_DESTINATION_DEV=${RENAME_DESTINATION/eirods-/eirods-dev-}
+RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/eirods-/eirods-icommands-}
+# icat or resource
+if [ "$1" == "icat" ] ; then
+    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
+else
+    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
+fi
+# coverage build
+if [ "$COVERAGE" == "1" ] ; then
+    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+fi
+# show me the money
+echo ""
+echo "renaming    [$RENAME_SOURCE_DEV]"
+echo "         to [$RENAME_DESTINATION_DEV]"
+if [ "$RELEASE" == "1" ] ; then
+    echo ""
+    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
+    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
+    echo ""
+    echo "renaming    [$RENAME_SOURCE]"
+    echo "         to [$RENAME_DESTINATION]"
+fi
+# move into e-irods/build directory
+if [ "$RELEASE" == "1" ] ; then
+    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
+fi
+mv $RENAME_SOURCE $RENAME_DESTINATION
+# list new result set
+echo ""
+echo "Contents of $EIRODSPACKAGEDIR:"
+ls -l $EIRODSPACKAGEDIR
+
+# clean up coverage build
 if [ "$COVERAGE" == "1" ] ; then
     # copy important bits back up
     echo "${text_green}${text_bold}Copying generated packages back to original working directory...${text_reset}"
-    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then EXTENSION="rpm"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then EXTENSION="rpm"
-    elif [ "$DETECTEDOS" == "Ubuntu" ] ; then EXTENSION="deb"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then EXTENSION="pkg"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then EXTENSION="dmg"
-    fi
     # get packages
     for f in `find . -name "*.$EXTENSION"` ; do mkdir -p $GITDIR/`dirname $f`; cp $f $GITDIR/$f; done
     # delete target build directory, so a package install can go there
