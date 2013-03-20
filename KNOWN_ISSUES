@@ -1,14 +1,3 @@
-Ticket Item:  [#1212] iadmin modrescdatapaths failing - psql 8.1 on cen58
--------------------------------------------------------------------------
-
-iadmin modrescdatapath does not work on RHEL/CentOS 5.x since the yum-packaged PostgreSQL version is 8.1.
-
-PostgreSQL 8.1 does not allow the 'update' command to include a table alias (as used by modrescdatapath).
-This feature was not included in PostgreSQL until version 8.2.
-
-The modrescdatapath subcommand works as expected on RHEL/CentOS 6.x.
-
-
 Ticket Item:  [#1260] unixODBC on OpenSuSE 12.x fails when iRODS resource name contains a hyphen (aka "hpss-sdsc")
 ------------------------------------------------------------------------------------------------------------------
   
