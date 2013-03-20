@@ -1156,15 +1156,15 @@ if [ "$COVERAGE" == "1" ] ; then
 fi
 # show me the money
 echo ""
-echo "renaming    [$RENAME_SOURCE_DEV]"
-echo "         to [$RENAME_DESTINATION_DEV]"
+echo "renaming    [$RENAME_SOURCE]"
+echo "         to [$RENAME_DESTINATION]"
 if [ "$RELEASE" == "1" ] ; then
+    echo ""
+    echo "renaming    [$RENAME_SOURCE_DEV]"
+    echo "         to [$RENAME_DESTINATION_DEV]"
     echo ""
     echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
     echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
-    echo ""
-    echo "renaming    [$RENAME_SOURCE]"
-    echo "         to [$RENAME_DESTINATION]"
 fi
 # move into e-irods/build directory
 if [ "$RELEASE" == "1" ] ; then
