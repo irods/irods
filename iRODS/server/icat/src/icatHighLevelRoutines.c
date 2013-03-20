@@ -5432,7 +5432,7 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneToUse;
       status =  cmlExecuteNoAnswerSql(
-        "update R_DATA_MAIN DM set data_path = replace (DM.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
+        "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
         &icss);
    }
    else {
@@ -5442,7 +5442,7 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
       cllBindVars[cllBindVarCount++]=rescName;
       cllBindVars[cllBindVarCount++]=oldPath2;
       status =  cmlExecuteNoAnswerSql(
-        "update R_DATA_MAIN DM set data_path = replace (DM.data_path, ?, ?) where resc_name=? and data_path like ?",
+        "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ?",
         &icss);
    }
    if (status != 0) {
