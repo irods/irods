@@ -45,7 +45,7 @@ namespace eirods {
             error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
             if( !fac_err.ok() ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in file_object_factory";
+                msg << "resolve_resource_hierarchy :: failed in file_object_factory";
                 return PASSMSG( msg.str(), fac_err );
             }
 
@@ -54,7 +54,7 @@ namespace eirods {
             eirods::error err = file_obj.resolve( resc_mgr, resc );
             if( !err.ok() ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in file_object.resolve";
+                msg << "resolve_resource_hierarchy :: failed in file_object.resolve";
                 return PASSMSG( msg.str(), err );
             }
 
@@ -94,7 +94,7 @@ namespace eirods {
                     rescGrpInfo_t* grp_info = 0;
                     int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
                     if( status < 0 || !grp_info || !grp_info->rescInfo ) {
-                        return ERROR( status, "resource_redirect - failed in getRescGrpForCreate" );
+                        return ERROR( status, "resolve_resource_hierarchy - failed in getRescGrpForCreate" );
                     }
                         
                     resc_name = grp_info->rescInfo->rescName;
@@ -112,7 +112,7 @@ namespace eirods {
                 // request the resource by name
                 error err = resc_mgr.resolve( resc_name, resc );
                 if( !err.ok() ) {
-                    return PASSMSG( "resource_redirect - failed in resc_mgr.resolve", err );
+                    return PASSMSG( "resolve_resource_hierarchy - failed in resc_mgr.resolve", err );
 
                 }
                 
@@ -121,7 +121,7 @@ namespace eirods {
                 resource_ptr parent;
                 error p_err = resc->get_parent( parent );
                 if( p_err.ok() ) {
-                    return ERROR( -1, "resource_redirect - resource has a parent" );
+                    return ERROR( -1, "resolve_resource_hierarchy - resource has a parent" );
 
                 }
 
@@ -141,7 +141,7 @@ namespace eirods {
             char host_name_str[ MAX_NAME_LEN ];
             if( gethostname( host_name_str, MAX_NAME_LEN ) < 0 ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in gethostname";
+                msg << "resolve_resource_hierarchy :: failed in gethostname";
                 return ERROR( -1, msg.str() );
 
             }
@@ -160,7 +160,7 @@ namespace eirods {
             parser.str( _out_resc_hier ); 
             if( !err.ok() || 0.0 == vote ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in resc.call( redirect ) ";
+                msg << "resolve_resource_hierarchy :: failed in resc.call( redirect ) ";
                 msg << "host [" << host_name      << "] ";
                 msg << "hier [" << _out_resc_hier << "]";
                 return PASSMSG( msg.str(), err );

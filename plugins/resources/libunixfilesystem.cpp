@@ -1389,7 +1389,7 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error redirect_create( 
+    eirods::error unix_file_redirect_create( 
                       eirods::resource_property_map& _prop_map,
                       eirods::file_object&           _file_obj,
                       const std::string&             _resc_name, 
@@ -1400,7 +1400,7 @@ extern "C" {
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'status' property", get_ret );
+            return PASSMSG( "unix_file_redirect_create - failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1415,7 +1415,7 @@ extern "C" {
         std::string host_name;
         get_ret = _prop_map.get< std::string >( "location", host_name );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'location' property", get_ret );
+            return PASSMSG( "unix_file_redirect_create - failed to get 'location' property", get_ret );
         }
         
         // =-=-=-=-=-=-=-
@@ -1428,11 +1428,11 @@ extern "C" {
 
         return SUCCESS();
 
-    } // redirect_create
+    } // unix_file_redirect_create
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error redirect_open( 
+    eirods::error unix_file_redirect_open( 
                       eirods::resource_property_map& _prop_map,
                       eirods::file_object&           _file_obj,
                       const std::string&             _resc_name, 
@@ -1443,7 +1443,7 @@ extern "C" {
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'status' property", get_ret );
+            return PASSMSG( "unix_file_redirect_open - failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1458,7 +1458,7 @@ extern "C" {
         std::string host_name;
         get_ret = _prop_map.get< std::string >( "location", host_name );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'location' property", get_ret );
+            return PASSMSG( "unix_file_redirect_open - failed to get 'location' property", get_ret );
         }
         
         // =-=-=-=-=-=-=-
@@ -1519,8 +1519,8 @@ extern "C" {
     } // redirect_get
 
     // =-=-=-=-=-=-=-
-    // unix_redirerct_plugin - used to allow the resource to determine which host
-    //                         should provide the requested operation
+    // used to allow the resource to determine which host
+    // should provide the requested operation
     eirods::error unix_file_redirect_plugin( 
         eirods::resource_operation_context* _ctx,
         const std::string*                  _opr,
@@ -1581,12 +1581,12 @@ extern "C" {
         if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return unix_file_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return unix_file_redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
         }
       
         // =-=-=-=-=-=-=-
@@ -1622,7 +1622,8 @@ extern "C" {
             }
 
             eirods::error operator()( rcComm_t* ) {
-                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
+                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", 
+                name_.c_str() );
                 return SUCCESS();
             }
 
@@ -1681,7 +1682,7 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-#if 0
+            #if 0
             std::string name;
             eirods::error err = get_property< std::string >( "name", name );
             if( !err.ok() ) {
@@ -1690,9 +1691,9 @@ extern "C" {
 
             _op = maintenance_operation( name );
             return SUCCESS();
-#else
+            #else
             return ERROR( -1, "nop" );
-#endif
+            #endif
         }
 
     }; // class unixfilesystem_resource

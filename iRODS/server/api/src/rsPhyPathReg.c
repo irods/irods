@@ -864,7 +864,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
         return -1;
     } 
-
+#if 0 // JMC - no longer necessary
     if (!structFileSupport (rsComm, phyPathRegInp->objPath, 
                             collType, tmp_hier)) {
         rodsLog (LOG_ERROR,
@@ -872,6 +872,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
                  collType, dataObjInp.objPath);
         return (SYS_NOT_SUPPORTED);
     }
+#endif // JMC - no longer necessary
 
     /* mk the collection */
 
