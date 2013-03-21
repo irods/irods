@@ -252,37 +252,6 @@ namespace eirods {
         stop_opr_name_ = _op;
     } // resource::set_stop_operation
  
-    // =-=-=-=-=-=-=-
-    // private - helper function to check params for the operator() calls to reduce code duplication
-    error resource::check_operation_params( const std::string&  _op,
-                                            rsComm_t*           _comm,
-                                            first_class_object* _obj ) {
-        // =-=-=-=-=-=-=-
-        // check params
-        if( !_comm ) {
-            std::stringstream msg;
-            msg << "check_operation_params - operation [" << _op << "] null comm pointer";
-            return ERROR( -1, msg.str() );
-        }
-
-        if( !_obj ) {
-            std::stringstream msg;
-            msg << "check_operation_params - operation [" << _op << "] null fco pointer";
-            return ERROR( -1, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check if the operation exists
-        if( !operations_.has_entry( _op ) ) {
-            std::stringstream msg;
-            msg << "check_operation_params - operation [" << _op << "] doesn't exist.";
-            return ERROR( -1, msg.str() );
-        }
-                
-        return SUCCESS();
-
-    } // check_operation_params
-
     // END resource
     // =-=-=-=-=-=-=-
 

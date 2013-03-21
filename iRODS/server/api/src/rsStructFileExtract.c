@@ -154,7 +154,7 @@ int _rsStructFileExtract( rsComm_t*           _comm,
  
 	// =-=-=-=-=-=-=-
 	// make the call to the "extract" interface
-	ret_err = resc->call( _comm, "extract", &struct_obj );
+	ret_err = resc->call( _comm, "extract", struct_obj );
 
     // =-=-=-=-=-=-=-
 	// pass along an error from the interface or return SUCCESS
