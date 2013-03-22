@@ -15,7 +15,6 @@ all:
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libroundrobin.so      libroundrobin.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so        libpassthru.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libnonblocking.so     libnonblocking.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp \
 	$(LIBARCHIVE_DIR)/.libs/libarchive.a \
@@ -23,3 +22,4 @@ all:
 	$(BOOST_DIR)/stage/lib/libboost_system.a \
 	SYSTEM_LIBZ_SO \
 	SYSTEM_LIBBZ2_SO
+	#${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp 

@@ -137,14 +137,20 @@ eirods::error unix_check_params_and_path(
     // =-=-=-=-=-=-=-
     // check incoming parameters
     if( !_ctx ) {
-        result = ERROR( SYS_INVALID_INPUT_PARAM, "unix_check_params_and_path - null resource_property_map" );
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - null resource context";
+        result = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
     } 
   
     // =-=-=-=-=-=-=-
     // verify that the resc context is valid 
     ret = _ctx->valid< DEST_TYPE >(); 
     if( !ret.ok() ) { 
-        result = PASSMSG( "unix_check_params_and_path - resource context is invalid", ret );
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - resource context is invalid.";
+        result = PASSMSG( msg.str(), ret );
     } else {
         result = unix_check_path( _ctx );
     }
