@@ -28,7 +28,7 @@ rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
     //remoteFlag = resolveHost (&fileChksumInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileChksumInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileChksum - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -136,10 +136,9 @@ fileChksum (
     if( !ret.ok() ) {
         status = UNIX_FILE_OPEN_ERR - errno;
         std::stringstream msg;
-        msg << "fileChksum: fileOpen failed for [";
+        msg << "fileOpen failed for [";
         msg << fileName;
-        msg << "] with status of ";
-        msg << status;
+        msg << "]";
         eirods::log( PASSMSG( msg.str(), ret ) );
         return (status);
     }
@@ -164,7 +163,7 @@ fileChksum (
 
     ret = fileClose( rsComm, file_obj );
     if( !ret.ok() ) {
-        eirods::error err = PASS( false, ret.code(), "fileChksum - error on close", ret );
+        eirods::error err = PASSMSG( "error on close", ret );
         eirods::log( err );
     }
 

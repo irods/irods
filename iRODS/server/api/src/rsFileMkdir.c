@@ -81,11 +81,10 @@ int _rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
     if( !mkdir_err.ok() ) {
 	    if( getErrno( mkdir_err.code() ) != EEXIST ) {
 			std::stringstream msg;
-			msg << "_rsFileMkdir: fileMkdir for ";
+			msg << "fileMkdir failed for ";
 			msg << fileMkdirInp->dirName;
-			msg << ", status = ";
-			msg << mkdir_err.code();
-			eirods::error ret_err = PASS( false, mkdir_err.code(), msg.str(), mkdir_err );
+			msg << "]";
+			eirods::error ret_err = PASSMSG( msg.str(), mkdir_err );
 			eirods::log( ret_err );
 		}
     }

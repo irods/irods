@@ -363,10 +363,10 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         }
     } else {
         std::stringstream msg;
-        msg << "l3Unlink - failed to get proprty [class] for resource [";
+        msg << "failed to get proprty [class] for resource [";
         msg << dataObjInfo->rescInfo->rescName;
         msg << "]";
-        eirods::log( ERROR( -1, msg.str() ) );
+        eirods::log( PASSMSG( msg.str(), prop_err ) );
         return -1;
     }
     // =-=-=-=-=-=-=-
@@ -376,7 +376,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Unlink - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 

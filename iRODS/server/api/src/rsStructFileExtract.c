@@ -41,7 +41,7 @@ rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
                                                        &dataObjInp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsDataObjGet :: failed in eirods::resource_redirect for [";
+            msg << "failed in eirods::resource_redirect for [";
             msg << dataObjInp.objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -147,19 +147,19 @@ int _rsStructFileExtract( rsComm_t*           _comm,
 	eirods::resource_ptr resc;
     eirods::error ret_err = struct_obj.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
-		eirods::error err = PASS( false, -1, "_rsStructFileExtract - failed to resolve resource", ret_err );
+		eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
         eirods::log( err );
         return ret_err.code();
 	}
  
 	// =-=-=-=-=-=-=-
 	// make the call to the "extract" interface
-	ret_err = resc->call( _comm, "extract", &struct_obj );
+	ret_err = resc->call( _comm, "extract", struct_obj );
 
     // =-=-=-=-=-=-=-
 	// pass along an error from the interface or return SUCCESS
 	if( !ret_err.ok() ) {
-        eirods::error err = PASS( false, ret_err.code(), "_rsStructFileExtract - failed to call 'extract'", ret_err );
+        eirods::error err = PASSMSG( "failed to call 'extract'", ret_err );
         eirods::log( err );
         return ret_err.code();
 	} else {

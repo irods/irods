@@ -25,7 +25,7 @@ rsFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp)
     //remoteFlag = resolveHost (&fileUnlinkInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileUnlinkInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileUnlink - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -99,11 +99,11 @@ int _rsFileUnlink(
     // log potential error message
     if( unlink_err.code() < 0 ) {
         std::stringstream msg;
-        msg << "_rsFileUnlink: fileRead for ";
+        msg << "fileRead failed for [";
         msg << fileUnlinkInp->fileName;
-        msg << ", status = ";
+        msg << "]";
         msg << unlink_err.code();
-        eirods::error ret_err = PASS( false, unlink_err.code(), msg.str(), unlink_err );
+        eirods::error ret_err = PASSMSG( msg.str(), unlink_err );
         eirods::log( ret_err );
     }
 

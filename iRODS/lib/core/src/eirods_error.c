@@ -10,6 +10,43 @@
 #include <iostream>
 
 namespace eirods {
+    // =-=-=-=-=-=-=-
+    // private - helper fcn to build the result string
+    std::string error::build_result_string( 
+        std::string _file,
+        int         _line,
+        std::string _fcn ) {
+        // =-=-=-=-=-=-=-
+        // decorate message based on status
+        std::string result;
+        if( status_ ) {
+            result = "[+]\t";
+        } else {
+            result = "[-]\t";
+        }
+
+        // =-=-=-=-=-=-=-
+        // only keep the file name the path back to iRODS
+        std::string line_info = _file + ":" + boost::lexical_cast<std::string>( _line ) + ":" + _fcn;
+        size_t pos = line_info.find( "iRODS" );
+        if( std::string::npos != pos ) {
+            line_info = line_info.substr( pos );
+        }
+         
+        // =-=-=-=-=-=-=-
+        // get the rods error and errno string
+        char* errno_str = 0;
+        char* irods_err = rodsErrorName( code_, &errno_str );
+
+        // =-=-=-=-=-=-=-
+        // compose resulting message given all components
+        result += line_info + " : " + 
+               + " status [" + irods_err + "]  errno [" + errno_str + "]"
+               + " -- message [" + message_ + "]";
+
+        return result;
+         
+    } // build_result_string
 
     // =-=-=-=-=-=-=-
     // public - default constructor
@@ -18,61 +55,43 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - useful constructor
-    error::error( bool _status, int _code, std::string _msg, int _line, 
-                  std::string _file ) : status_(_status), code_(_code),
-                                        message_(_msg) { 
-        // =-=-=-=-=-=-=-
-        // decorate message based on status
-        std::string result;
-        if( status_ ) {
-            result = "[+]\t";
-        } else {
-            result = "[-]\t";
-        }
+    error::error( 
+        bool        _status, 
+        int         _code, 
+        std::string _msg,
+        std::string _file,
+        int         _line,
+        std::string _fcn ) : 
+        status_(_status), 
+        code_(_code),
+        message_(_msg) { 
 
         // =-=-=-=-=-=-=-
-        // compose resulting message given all components
-        result += _file 
-            + ":" 
-            + boost::lexical_cast<std::string>( _line ) 
-            + " -- message [" + message_ + "]  "  
-            + " status  (" + boost::lexical_cast<std::string>( code_ ) + ") ";
-	
-        // =-=-=-=-=-=-=-
         // cache message on message stack
-        result_stack_.push_back( result ); 
+        result_stack_.push_back( build_result_string( _file, _line, _fcn ) ); 
 
     } // ctor
 
     // =-=-=-=-=-=-=-
     // public - useful constructor
-    error::error( bool _status, int _code, std::string _msg, int _line, 
-                  std::string _file, const error& _rhs ) : 
-        status_(_status), code_(_code), message_(_msg) { 
+    error::error( 
+        bool         _status, 
+        int          _code, 
+        std::string  _msg, 
+        std::string  _file,
+        int          _line,
+        std::string  _fcn,
+        const error& _rhs ) : 
+        status_(_status), 
+        code_(_code), 
+        message_(_msg) { 
         // =-=-=-=-=-=-=-
         // cache RHS vector into our vector first
         result_stack_ = _rhs.result_stack_;
 
         // =-=-=-=-=-=-=-
-        // decorate message based on status
-        std::string result;
-        if( status_ ) {
-            result = "[+]\t";
-        } else {
-            result = "[-]\t";
-        }
-
-        // =-=-=-=-=-=-=-
-        // compose resulting message given all components
-        result += _file 
-            + ":" 
-            + boost::lexical_cast<std::string>( _line ) 
-            + " -- message [" + message_ + "]  "  
-            + " status  (" + boost::lexical_cast<std::string>( code_ ) + ") ";
-	
-        // =-=-=-=-=-=-=-
         // cache message on message stack
-        result_stack_.push_back( result ); 
+        result_stack_.push_back( build_result_string( _file, _line, _fcn ) ); 
 
     } // ctor
 
@@ -117,13 +136,12 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - return the composite result for logging, etc.
     std::string error::result(  ) {
-	
         // =-=-=-=-=-=-=-
         // tack on tabs based on stack depth
-        for( int i = 0; i < result_stack_.size(); ++i ) {
+        for( size_t i = 0; i < result_stack_.size(); ++i ) {
 			
             std::string tabs = "";
-            for( int j = i+1; j < result_stack_.size(); ++j ) {
+            for( size_t j = i+1; j < result_stack_.size(); ++j ) {
                 tabs += "\t";
 
             } // for j
@@ -134,7 +152,7 @@ namespace eirods {
 		
         // =-=-=-=-=-=-=-
         // tack on newlines
-        for( int i = 0; i < result_stack_.size(); ++i ) {
+        for( size_t i = 0; i < result_stack_.size(); ++i ) {
             result_stack_[i] = "\n" + result_stack_[i]; 
 		
         } // for i
@@ -142,7 +160,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // compose single string of the result stack for print out
         std::string result;
-        for( int i = result_stack_.size()-1; i >= 0; --i ) {
+        for( int i = static_cast<int>( result_stack_.size() )-1; i >= 0; --i ) {
             result += result_stack_[ i ];
 		
         } // for i

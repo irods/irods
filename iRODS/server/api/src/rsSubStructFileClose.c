@@ -80,10 +80,10 @@ _rsSubStructFileClose( rsComm_t*                _comm,
     eirods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileClose - failed on call to fileClose for fd [ ";
+        msg << "failed on call to fileClose for fd [ ";
         msg << struct_obj.file_descriptor();
         msg << " ]";
-        eirods::log( ERROR( -1, msg.str() ) );
+        eirods::log( PASSMSG( msg.str(), close_err ) );
         return close_err.code();
 
     } else {

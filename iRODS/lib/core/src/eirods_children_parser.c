@@ -45,8 +45,8 @@ namespace eirods {
         children_map_t::const_iterator itr = children_list_.find(child);
         if(itr != children_list_.end()) {
             std::stringstream msg;
-            msg << "eirods::eirods_children_parser::add_child child \"" << child << "\" already exists";
-            ret = ERROR(-1, msg.str());
+            msg << "child [" << child << "] already exists";
+            ret = ERROR( EIRODS_CHILD_EXISTS, msg.str() );
         } else {
             children_list_[child] = context;
         }
@@ -59,8 +59,8 @@ namespace eirods {
         children_map_t::iterator itr = children_list_.find(child);
         if(itr == children_list_.end()) {
             std::stringstream msg;
-            msg << "children_parser::remove_child: child \"" << child << "\" not found";
-            ret = ERROR(-1, msg.str());
+            msg << "child [" << child << "] not found";
+            ret = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
         } else {
             children_list_.erase(itr);
         }
@@ -100,9 +100,8 @@ namespace eirods {
                     std::size_t context_end = complete_child.find("}", context_start);
                     if(context_end == std::string::npos) {
                         std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Missing matching \"}\" in child context string \"" << str << "\"";
-                        result = ERROR(-1, msg.str());
+                        msg << "missing matching \"}\" in child context string \"" << str << "\"";
+                        result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
                     } else {
                         context = complete_child.substr(context_start, context_end - context_start);
                     }

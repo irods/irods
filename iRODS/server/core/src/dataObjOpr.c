@@ -340,9 +340,9 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         eirods::error err = eirods::get_resc_info( dataObjInfo->rescName, *dataObjInfo->rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "getDefaultLocalRescInfo - failed to get resource info";
-            msg << dataObjInfo->rescName;
-            eirods::log( PASS( false, -1, msg.str(), err ) );
+            msg << "failed to get resource info [";
+            msg << dataObjInfo->rescName << "]";
+            eirods::log( PASSMSG( msg.str(), err ) );
             return err.code();
         }
 

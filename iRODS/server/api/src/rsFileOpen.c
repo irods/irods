@@ -29,7 +29,7 @@ rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
     //remoteFlag = resolveHost (&fileOpenInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileOpenInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -152,9 +152,8 @@ int _rsFileOpen( rsComm_t*      _comm,
         std::stringstream msg;
         msg << "_rsFileOpen: fileOpen for [";
         msg << _open_inp->fileName;
-        msg << "], status = ";
-        msg << file_obj.file_descriptor();
-        eirods::error out_err = PASS( false, ret_err.code(), msg.str(), ret_err );
+        msg << "]";
+        eirods::error out_err = PASSMSG( msg.str(), ret_err );
         eirods::log( out_err );
     } // if
 

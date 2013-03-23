@@ -92,10 +92,10 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
     eirods::error fstat_err = fileFstat( _comm, struct_obj, &fs );
     if( !fstat_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileFstat - failed on call to fileFstat for [";
+        msg << "failed on call to fileFstat for [";
         msg << struct_obj.file_descriptor();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), fstat_err ) );
+        eirods::log( PASSMSG( msg.str(), fstat_err ) );
         return fstat_err.code();
 
     } else {

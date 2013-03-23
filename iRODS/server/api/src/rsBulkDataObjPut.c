@@ -54,8 +54,7 @@ rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
                                                            &dataObjInp, hier, host, local );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " :: failed in eirods::resource_redirect for [";
+                msg << "failed for [";
                 msg << dataObjInp.objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
@@ -211,9 +210,9 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
             delete myRescGrpInfo;
 
             std::stringstream msg;
-            msg << "_rsBulkDataObjPut - failed to get resource info";
-            msg << myRodsObjStat->specColl->resource;
-            eirods::log( PASS( false, -1, msg.str(), err ) );
+            msg << "failed to get resource info [";
+            msg << myRodsObjStat->specColl->resource << "]";
+            eirods::log( PASSMSG( msg.str(), err ) );
 	        freeRodsObjStat (myRodsObjStat);
             return err.code();
         }
@@ -886,9 +885,9 @@ genQueryOut_t *bulkDataObjRegOut)
     eirods::error err = eirods::get_resc_info( rescName->value, *dataObjInfo.rescInfo );
     if( !err.ok() ) {
         std::stringstream msg;
-        msg << "getDefaultLocalRescInfo - failed to get resource info";
-        msg << rescName->value;
-        eirods::log( PASS( false, -1, msg.str(), err ) );
+        msg << "failed to get resource info [";
+        msg << rescName->value << "]";
+        eirods::log( PASSMSG( msg.str(), err ) );
         return err.code();
     }
 

@@ -59,14 +59,14 @@ namespace eirods {
                 std::stringstream msg;
                 msg << _name;
                 msg << " comm pointer is null";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
             }
 
             // =-=-=-=-=-=-=-
             // determine if rule exists
             RuleIndexListNode* re_node = 0;
             if( findNextRule2( const_cast<char*>( _name.c_str() ), 0, &re_node ) < 0 ) {
-                return ERROR( -1, "no rule found" );
+                return ERROR( SYS_RULE_NOT_FOUND, "no rule found" );
             }
             
             // =-=-=-=-=-=-=-
@@ -90,7 +90,7 @@ namespace eirods {
             std::string arg_name = _name + "(*OUT)";
             int ret = applyRuleUpdateParams( const_cast<char*>( arg_name.c_str() ), &params, &rei, NO_SAVE_REI );
             if( 0 != ret ) {
-                return ERROR( ret, "exec_op - failed in call to applyRuleUpdateParams" );
+                return ERROR( ret, "failed in call to applyRuleUpdateParams" );
             }
 
             // =-=-=-=-=-=-=-
@@ -99,7 +99,7 @@ namespace eirods {
             if( out_ms_param ) {
                 _res = reinterpret_cast< char* >( out_ms_param->inOutStruct ); 
             } else {
-                return ERROR( -1, "exec_op - null out parameter" );    
+                return ERROR( SYS_INVALID_INPUT_PARAM, "null out parameter" );    
             }
 
             return SUCCESS();

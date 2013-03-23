@@ -25,7 +25,7 @@ rsFileTruncate (rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp)
     //remoteFlag = resolveHost (&fileTruncateInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileTruncateInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileTruncate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( " failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -98,11 +98,11 @@ int _rsFileTruncate( rsComm_t *rsComm, fileOpenInp_t *fileTruncateInp ) {
     // report errors if any
     if ( !trunc_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileTruncate: fileTruncate for ";
+        msg << "fileTruncate for [";
         msg << fileTruncateInp->fileName;
-        msg << ", status = ";
+        msg << "]";
         msg << trunc_err.code();
-        eirods::error err = PASS( false, trunc_err.code(), msg.str(), trunc_err );
+        eirods::error err = PASSMSG( msg.str(), trunc_err );
         eirods::log ( err );
     }
 

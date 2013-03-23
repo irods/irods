@@ -40,16 +40,16 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - default implementation
     error plugin_base::post_disconnect_maintenance_operation( pdmo_type& _op ) {
-       return ERROR( -1, "no defined operation" );
+       return ERROR( EIRODS_NO_PDMO_DEFINED, "no defined operation" );
 
     } // post_disconnect_maintenance_operation
 
     // =-=-=-=-=-=-=-
     // public - interface to determine if a PDMO is necessary
     error plugin_base::need_post_disconnect_maintenance_operation( bool& _b ) {
-        //rodsLog( LOG_NOTICE, "plugin_base::need_post_disconnect_maintenance_operation called [%s]", instance_name_.c_str() );
         _b = false;
         return SUCCESS();
+
     } // need_post_disconnect_maintenance_operation
 
 
@@ -62,15 +62,14 @@ namespace eirods {
         // check params
         if( _op.empty() ) {
             std::stringstream msg;
-            msg << "add_operation - empty operation [" << _op << "]";
-            return ERROR( -1, msg.str() );
+            msg << "empty operation [" << _op << "]";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
 
         if( _fcn_name.empty() ) {
             std::stringstream msg;
-            msg << "add_operation - empty function name [" 
-                << _fcn_name << "]";
-            return ERROR( -1, msg.str() );
+            msg << "empty function name [" << _fcn_name << "]";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
 
         // =-=-=-=-=-=-=-

@@ -49,9 +49,40 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // test to determine if contents are valid
-        bool valid() { 
-            return ( comm_ != 0 ); 
-        }
+        error valid() { 
+            error ret = SUCCESS();
+
+            // =-=-=-=-=-=-=
+            // trap case of bad comm pointer
+            bool comm_valid = ( comm_ != 0 ); 
+            if( !comm_valid ) {
+                ret = ERROR( SYS_INVALID_INPUT_PARAM, "bad comm pointer" );
+            }
+ 
+            return ret;
+
+        } // valid
+
+        // =-=-=-=-=-=-=-
+        // test to determine if contents are valid
+        template < typename OBJ_TYPE >
+        error valid() { 
+            // =-=-=-=-=-=-=
+            // trap case of non type related checks
+            error ret = valid();
+
+            // =-=-=-=-=-=-=
+            // trap case of incorrect type for first class object
+            bool cast_valid = false;
+            try {
+                OBJ_TYPE& ref = dynamic_cast< OBJ_TYPE& >( fco_ );
+            } catch( std::bad_cast exp ) {
+                ret = PASSMSG( "invalid type for fco cast", ret );
+            }
+
+            return ret;
+
+        } // valid
 
         // =-=-=-=-=-=-=-
         // accessors
@@ -59,7 +90,11 @@ namespace eirods {
         resource_property_map&  prop_map()     { return prop_map_;  }
         resource_child_map&     child_map()    { return child_map_; }
         first_class_object&     fco()          { return fco_;       }
-        const std::string&      rule_results() { return results_;   }  
+        const std::string       rule_results() { return results_;   }  
+        
+        // =-=-=-=-=-=-=-
+        // mutators
+        void rule_results( const std::string& _s ) { results_ = _s; }  
 
         private:
         // =-=-=-=-=-=-=-
@@ -68,15 +103,11 @@ namespace eirods {
         resource_property_map&  prop_map_;  // resource property map
         resource_child_map&     child_map_; // resource child map
         first_class_object&     fco_;       // first class object in question
-        const std::string&      results_;   // results from the pre op rule call
+        std::string             results_;   // results from the pre op rule call
 
     }; // class resource_operation_context
 
-    typedef error (*resource_operation)( rsComm_t*, 
-                                         resource_property_map*, 
-                                         resource_child_map*, 
-                                         first_class_object*,
-                                         std::string*, 
+    typedef error (*resource_operation)( resource_operation_context*, 
                                          ... );
     typedef error (*resource_maintenance_operation)( resource_property_map&, 
                                                      resource_child_map& );

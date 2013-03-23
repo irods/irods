@@ -108,11 +108,10 @@ int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t
     // handle error conditions and log
     if( !lseek_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileLseek: lseek for ";
+        msg << "lseek failed for [";
         msg << FileDesc[fileLseekInp->fileInx].fileName;
-        msg << ", status = ";
-        msg << lseek_err.code();
-        eirods::error ret_err = PASS( false, lseek_err.code(), msg.str(), lseek_err );
+        msg << "]"; 
+        eirods::error ret_err = PASSMSG( msg.str(), lseek_err );
         eirods::log( ret_err );
         return lseek_err.code();
 

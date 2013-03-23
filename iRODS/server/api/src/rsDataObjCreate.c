@@ -89,8 +89,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                                                        dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -627,8 +626,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
         if( !set_err.ok() ) {
-            eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
-            //status = SYS_INVALID_RESC_INPUT;
+            eirods::log( PASS( set_err ) );
             return SYS_INVALID_RESC_INPUT;
         }
 

@@ -153,6 +153,8 @@
 #define CANT_REG_IN_VAULT_FILE            -128000 // JMC - backport 4774
 #define PATH_REG_NOT_ALLOWED              -129000 // JMC - backport 4774
 #define SYS_INVALID_INPUT_PARAM           -130000 // JMC - backport 4774
+#define SYS_RULE_NOT_FOUND                -144000 // JMC
+#define SYS_NOT_IMPLEMENTED               -146000 // JMC
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR		-300000
@@ -525,8 +527,8 @@
 #define NO_COLUMN_NAME_FOUND                  -1107000
 #define BREAK_ACTION_ENCOUNTERED_ERR          -1108000
 #define CUT_ACTION_ON_SUCCESS_PROCESSED_ERR   -1109000
-#define MSI_OPERATION_NOT_ALLOWED 	      -1110000
-#define  MAX_NUM_OF_ACTION_IN_RULE_EXCEEDED   -1111000
+#define MSI_OPERATION_NOT_ALLOWED 	          -1110000
+#define MAX_NUM_OF_ACTION_IN_RULE_EXCEEDED    -1111000
 #define MSRVC_FILE_READ_ERROR                 -1112000
 #define MSRVC_VERSION_MISMATCH                -1113000
 #define MICRO_SERVICE_OBJECT_TYPE_UNDEFINED   -1114000
@@ -598,6 +600,15 @@
 
 // e-irods errors
 #define EIRODS_KEY_NOT_FOUND            -1800000
+#define EIRODS_KEY_TYPE_MISMATCH        -1810000
+#define EIRODS_CHILD_EXISTS             -1820000
+#define EIRODS_HIERARCHY_ERROR          -1830000
+#define EIRODS_CHILD_NOT_FOUND          -1840000
+#define EIRODS_NEXT_RESC_FOUND          -1850000
+#define EIRODS_NO_PDMO_DEFINED          -1860000
+#define EIRODS_INVALID_LOCATION         -1870000
+#define EIRODS_PLUGIN_ERROR             -1880000
+
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

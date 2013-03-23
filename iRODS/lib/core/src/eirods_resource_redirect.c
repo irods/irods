@@ -45,7 +45,7 @@ namespace eirods {
             error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
             if( !fac_err.ok() ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in file_object_factory";
+                msg << "resolve_resource_hierarchy :: failed in file_object_factory";
                 return PASSMSG( msg.str(), fac_err );
             }
 
@@ -54,7 +54,7 @@ namespace eirods {
             eirods::error err = file_obj.resolve( resc_mgr, resc );
             if( !err.ok() ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in file_object.resolve";
+                msg << "resolve_resource_hierarchy :: failed in file_object.resolve";
                 return PASSMSG( msg.str(), err );
             }
 
@@ -94,7 +94,7 @@ namespace eirods {
                     rescGrpInfo_t* grp_info = 0;
                     int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
                     if( status < 0 || !grp_info || !grp_info->rescInfo ) {
-                        return ERROR( status, "resource_redirect - failed in getRescGrpForCreate" );
+                        return ERROR( status, "failed in getRescGrpForCreate" );
                     }
                         
                     resc_name = grp_info->rescInfo->rescName;
@@ -112,7 +112,7 @@ namespace eirods {
                 // request the resource by name
                 error err = resc_mgr.resolve( resc_name, resc );
                 if( !err.ok() ) {
-                    return PASSMSG( "resource_redirect - failed in resc_mgr.resolve", err );
+                    return PASSMSG( "failed in resc_mgr.resolve", err );
 
                 }
                 
@@ -121,7 +121,7 @@ namespace eirods {
                 resource_ptr parent;
                 error p_err = resc->get_parent( parent );
                 if( p_err.ok() ) {
-                    return ERROR( -1, "resource_redirect - resource has a parent" );
+                    return PASSMSG( "resource has a parent", p_err );
 
                 }
 
@@ -140,9 +140,7 @@ namespace eirods {
             // get current hostname, which is also done by init local server host
             char host_name_str[ MAX_NAME_LEN ];
             if( gethostname( host_name_str, MAX_NAME_LEN ) < 0 ) {
-                std::stringstream msg;
-                msg << "resource_redirect :: failed in gethostname";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
 
             }
             std::string host_name( host_name_str );
@@ -153,14 +151,14 @@ namespace eirods {
             hierarchy_parser parser;
             float            vote = 0.0;
             error err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                              _comm, "redirect", &file_obj, &oper, &host_name, &parser, &vote );
+                              _comm, "redirect", file_obj, &oper, &host_name, &parser, &vote );
             
             // =-=-=-=-=-=-=-
             // extract the hier string from the parser, politely.
             parser.str( _out_resc_hier ); 
             if( !err.ok() || 0.0 == vote ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in resc.call( redirect ) ";
+                msg << "resolve_resource_hierarchy :: failed in resc.call( redirect ) ";
                 msg << "host [" << host_name      << "] ";
                 msg << "hier [" << _out_resc_hier << "]";
                 return PASSMSG( msg.str(), err );
@@ -225,9 +223,7 @@ namespace eirods {
         // get current hostname, which is also done by init local server host
         char host_name_char[ MAX_NAME_LEN ];
         if( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
-            std::stringstream msg;
-            msg << "resource_redirect :: failed in gethostname";
-            return ERROR( -1, msg.str() );
+            return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
 
         }
 
@@ -263,9 +259,7 @@ namespace eirods {
         // it was not a local resource so then do a svr to svr connection
         int conn_err = svrToSvrConnect( _comm, last_resc_host );
         if( conn_err < 0 ) {
-            std::stringstream msg;
-            msg << "resource_redirect :: failed in svrToSvrConnect";
-            return ERROR( conn_err, msg.str() );
+            return ERROR( conn_err, "failed in svrToSvrConnect" );
         }
         
 

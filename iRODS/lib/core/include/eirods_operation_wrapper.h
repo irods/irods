@@ -67,10 +67,9 @@ namespace eirods {
 		
 		// =-=-=-=-=-=-=-
 		// public - single parameter template, there will be more...
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-                    first_class_object*    _obj ) {
+		error call( 
+                  resource_operation_context& _ctx ) {
+                   
             if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -79,21 +78,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-		       error op_err = (*operation_)( _comm, _prop_map, _cmap, _obj, &pre_results ); 
+               _ctx.rule_results( pre_results );
+		       error op_err = (*operation_)( &_ctx );
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
               return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 		   
 		} // operator() - T1
@@ -102,11 +102,9 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - single parameter template, there will be more...
 		template< typename T1 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-                    first_class_object*    _obj, 
-                    T1 _t1 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1 ) {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -115,21 +113,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-		       error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1 ); 
+               _ctx.rule_results( pre_results );
+		       error op_err = (*operation_)( &_ctx, _t1 ); 
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
               return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 		   
 		} // operator() - T1
@@ -137,12 +136,10 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - two parameter template, there will be more...
 		template< typename T1, typename T2 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-                    first_class_object*    _obj, 
-                    T1                     _t1, 
-                    T2                     _t2 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -151,21 +148,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2 ); 
+               _ctx.rule_results( pre_results );
+			   error op_err = (*operation_)( &_ctx, _t1, _t2 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 		   
 		} // operator() - T1, T2
@@ -173,13 +171,11 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - three parameter template, there will be more...
 		template< typename T1, typename T2, typename T3 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-		            first_class_object*    _obj, 
-                    T1                     _t1, 
-                    T2                     _t2, 
-                    T3                     _t3 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2, 
+                  T3                          _t3 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -188,21 +184,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
-			   error op_err =  (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3 ); 
+               _ctx.rule_results( pre_results );
+			   error op_err =  (*operation_)( &_ctx, _t1, _t2, _t3 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3
@@ -210,14 +207,12 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - four parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-                    first_class_object*    _obj, 
-                    T1                     _t1, 
-                    T2                     _t2, 
-                    T3                     _t3, 
-                    T4                     _t4 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2, 
+                  T3                          _t3, 
+                  T4                          _t4 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -226,22 +221,23 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-               error op_err =  operation_( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4 ); 
+               _ctx.rule_results( pre_results );
+               error op_err =  operation_( &_ctx, _t1, _t2, _t3, _t4 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 		   
 		} // operator() - T1, T2, T3, T4
@@ -249,15 +245,13 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - five parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-		            first_class_object*    _obj, 
-                    T1                     _t1, 
-                    T2                     _t2, 
-                    T3                     _t3, 
-                    T4                     _t4, 
-                    T5                     _t5 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2, 
+                  T3                          _t3, 
+                  T4                          _t4, 
+                  T5                          _t5 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -266,21 +260,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err =  (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4, _t5 ); 
+               _ctx.rule_results( pre_results );
+			   error op_err =  (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5
@@ -288,16 +283,14 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - six parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-		            first_class_object*    _obj, 
-                    T1                     _t1, 
-                    T2                     _t2, 
-                    T3                     _t3, 
-                    T4                     _t4, 
-                    T5                     _t5, 
-                    T6                     _t6 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2, 
+                  T3                          _t3, 
+                  T4                          _t4, 
+                  T5                          _t5, 
+                  T6                          _t6 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -306,21 +299,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4, _t5, _t6 );  
+               _ctx.rule_results( pre_results );
+			   error op_err = (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5, _t6 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5, T6
@@ -328,17 +322,15 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - seven parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
-		error call( rsComm_t*              _comm, 
-                    resource_property_map* _prop_map, 
-                    resource_child_map*    _cmap, 
-		            first_class_object*    _obj, 
-                    T1                     _t1, 
-                    T2                     _t2, 
-                    T3                     _t3, 
-                    T4                     _t4, 
-                    T5                     _t5, 
-                    T6                     _t6, 
-                    T7                     _t7 ) {
+		error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2, 
+                  T3                          _t3, 
+                  T4                          _t4, 
+                  T5                          _t5, 
+                  T6                          _t6, 
+                  T7                          _t7 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -347,21 +339,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
-			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, &pre_results, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
+               _ctx.rule_results( pre_results );
+			   error op_err = (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5, T6, T7
@@ -369,18 +362,16 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - eight parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-        error call( rsComm_t*              _comm, 
-                        resource_property_map* _prop_map, 
-                        resource_child_map*    _cmap, 
-                        first_class_object*    _obj, 
-                        T1                     _t1, 
-                        T2                     _t2, 
-                        T3                     _t3, 
-                        T4                     _t4, 
-                        T5                     _t5, 
-                        T6                     _t6, 
-                        T7                     _t7,
-                        T8                     _t8 ) {
+        error call( 
+                  resource_operation_context& _ctx,
+                  T1                          _t1, 
+                  T2                          _t2, 
+                  T3                          _t3, 
+                  T4                          _t4, 
+                  T5                          _t5, 
+                  T6                          _t6, 
+                  T7                          _t7,
+                  T8                          _t8 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -389,21 +380,22 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _comm, pre_results );
+               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
-			   error op_err = (*operation_)( _comm,  _prop_map, _cmap, _obj, 
-                                                &pre_results, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
+               _ctx.rule_results( pre_results );
+			   error op_err = (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
+                                                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _comm, post_results );
+               rule_exec.exec_post_op( _ctx.comm(), post_results );
 
                return op_err;
 
 		   } else {
-			  return ERROR( -1, "operation_wrapper - null resource operation." );
+			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
 		   }
 
 		} // operator() - T1, T2, T3, T4, T5, T6, T7, T8

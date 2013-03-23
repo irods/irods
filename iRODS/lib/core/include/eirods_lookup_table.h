@@ -58,7 +58,7 @@ namespace eirods {
         // accessor function
         error get( std::string _key, ValueType& _val ) {
             if( !has_entry( _key ) ) {
-                return ERROR( -1, "key not found" );
+                return ERROR( EIRODS_KEY_NOT_FOUND, "key not found" );
             }
 
             _val = table_[ _key ];
@@ -119,15 +119,14 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check params
             if( _key.empty() ) {
-                return ERROR( -1, "empty key" );
+                return ERROR( EIRODS_KEY_NOT_FOUND, "empty key" );
             }
 
             if(find(_key) == end()) {
                 std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to find key \"";
+                msg << "failed to find key [";
                 msg << _key;
-                msg << "\" in table.";
+                msg << "] in table.";
                 return ERROR(EIRODS_KEY_NOT_FOUND, msg.str());
             }
 
@@ -138,10 +137,16 @@ namespace eirods {
                 _val = boost::any_cast< T >( table_[ _key ] );
                 return SUCCESS();
             } catch ( const boost::bad_any_cast & ) {
-                return ERROR( -1, "lookup_table::get - type and property key ["+_key+"] mismatch" );
+                std::stringstream msg;
+                msg << "type and property key [";
+                msg << _key;
+                msg << "] mismatch";
+                return ERROR( EIRODS_KEY_TYPE_MISMATCH, msg.str() );
             }
-		 
-            return ERROR( -1, "lookup_table::get - shouldn't get here." );
+		
+            // =-=-=-=-=-=-=-
+            // invalid locaiton in the code 
+            return ERROR( EIRODS_INVALID_LOCATION, "shouldn't get here." );
 
         } // get_property
 
@@ -151,17 +156,10 @@ namespace eirods {
         error set( std::string _key, const T& _val ) {
             // =-=-=-=-=-=-=-
             // check params	
-#ifdef DEBUG
             if( _key.empty() ) {
-                return ERROR( -1, "lookup_table::set - empty key" );
+                return ERROR( EIRODS_KEY_NOT_FOUND, "empty key" );
             }
                 
-            if( table_.has_entry( _key ) ) {
-                std::cout << "[!]\tlookup_table::set - overwriting entry for key [" 
-                          << key << "]" << std::endl;
-            }
-#endif	
-            
             // =-=-=-=-=-=-=-
             // add property to map
             table_[ _key ] = _val;

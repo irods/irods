@@ -114,7 +114,7 @@ namespace eirods {
     
         if(!ret.ok()) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - ERROR parsing resource hierarchy \"" << resc_hier() << "\"";
+            msg << "error parsing resource hierarchy \"" << resc_hier() << "\"";
             result = PASSMSG(msg.str(), ret);
         } else {
             std::string resc;
@@ -128,10 +128,11 @@ namespace eirods {
     
                 if(resc.empty() && resc_hier().empty()) {
                     //std::stringstream msg;
-                    //msg << __FUNCTION__ << " - there is no resource specified in the resource hierarchy.";
+                    //msg << __FUNCTION__ 
+                    //    << " - there is no resource specified in the resource hierarchy.";
                     //log(LOG_NOTICE, msg.str());
                 } else if(resc.empty()) {
-                    return ERROR(-1, "ERROR: Hierarchy string is not empty but first resource is!");
+                    return ERROR( EIRODS_HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
                 }
     
                 ret = _mgr.resolve(resc, _ptr);
@@ -160,7 +161,7 @@ namespace eirods {
         }
         if( 0 == head_ptr || status < 0 ) {
             std::stringstream msg;
-            msg << "file_object_factory :: failed in call to getDataObjInfoIncSpecColl";
+            msg << "failed in call to getDataObjInfoIncSpecColl";
             msg << " for [";
             msg << _data_obj_inp->objPath;
             msg << "]";

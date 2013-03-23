@@ -144,7 +144,6 @@ int mkFileDirR(
     const char *destDir,
     int mode ) {
 
-    int status;
     int startLen;
     int pathLen, tmpLen;
     char tmpPath[MAX_NAME_LEN];
@@ -189,10 +188,9 @@ int mkFileDirR(
         eirods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
         if ( !mkdir_err.ok() && (getErrno ( mkdir_err.code()) != EEXIST)) { // JMC - backport 4834
             std::stringstream msg;
-            msg << "mkFileDirR: fileMkdir for ";
+            msg << "fileMkdir for [";
             msg << tmpPath;
-            msg << ", status = ";
-            msg <<  mkdir_err.code();
+            msg << "]";
             eirods::error ret_err = PASSMSG( msg.str(), mkdir_err );
             eirods::log( ret_err );
 
@@ -281,11 +279,10 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
     eirods::error closedir_err = fileClosedir( rsComm, cacheDir_obj );
     if( !closedir_err.ok() ) {
         std::stringstream msg;
-        msg << "chkEmptyDir: fileClosedir for ";
+        msg << "fileClosedir failed for [";
         msg << cacheDir;
-        msg << ", status = ";
-        msg << closedir_err.code();
-        eirods::error log_err = PASS( false, closedir_err.code(), msg.str(), closedir_err );
+        msg << "]";
+        eirods::error log_err = PASSMSG( msg.str(), closedir_err );
         eirods::log( log_err ); 
     }
 
@@ -294,11 +291,10 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
         eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
         if( !rmdir_err.ok() ) {
             std::stringstream msg;
-            msg << "chkEmptyDir: fileRmdir for ";
+            msg << "fileRmdir failed for [";
             msg << cacheDir;
-            msg << ", status = ";
-            msg << rmdir_err.code();
-            eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
+            msg << "]";
+            eirods::error err = PASSMSG( msg.str(), rmdir_err );
             eirods::log ( err );
         }
         status = 0;
@@ -469,13 +465,11 @@ matchCliVaultPath (rsComm_t *rsComm, char *filePath,
  */ 
 int
 filePathTypeInResc (
-    rsComm_t *rsComm,
-    char* objPath,
-    char *fileName,
-    char *rescHier,
-    rescInfo_t *rescInfo)
-{
-    int rescTypeInx;
+    rsComm_t*   rsComm,
+    char*       objPath,
+    char*       fileName,
+    char*       rescHier,
+    rescInfo_t* rescInfo ) {
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
     int status;
@@ -485,7 +479,7 @@ filePathTypeInResc (
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "filePathTypeInResc - failed in get_loc_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
     
@@ -493,7 +487,6 @@ filePathTypeInResc (
     rstrcpy (fileStatInp.fileName, fileName, MAX_NAME_LEN);
     rstrcpy (fileStatInp.rescHier, rescHier, MAX_NAME_LEN);
     rstrcpy (fileStatInp.objPath,  objPath,  MAX_NAME_LEN);
-    rescTypeInx = rescInfo->rescTypeInx;
     fileStatInp.fileType = static_cast< fileDriverType_t >( -1 );// JMC - legacy resource - RescTypeDef[rescTypeInx].driverType;
     rstrcpy (fileStatInp.addr.hostAddr,  location.c_str(), NAME_LEN);
     status = rsFileStat (rsComm, &fileStatInp, &myStat);

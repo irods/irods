@@ -38,7 +38,7 @@ rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
     //remoteFlag = resolveHost (&fileCreateInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileCreateInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -157,11 +157,10 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
             // doesnt extend outside this function for now.
             if( !create_err.ok() ) {
                 std::stringstream msg;
-                msg << "_rsFileCreate: ENOENT fileCreate for ";
+                msg << "ENOENT fileCreate for [";
                 msg << fileCreateInp->fileName;
-                msg << ", status = ";
-                msg << file_obj.file_descriptor();
-                eirods::error ret_err = PASS( false, file_obj.file_descriptor(), msg.str(), create_err );
+                msg << "]";
+                eirods::error ret_err = PASSMSG( msg.str(), create_err );
                 eirods::log( ret_err );
 
             }
@@ -173,11 +172,10 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
-                msg << "_rsFileCreate: EEXIST 1 fileRmdir for ";
+                msg << "EEXIST 1 fileRmdir for [";
                 msg << fileCreateInp->fileName;
-                msg << ", status = ";
-                msg << rmdir_err.code();
-                eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
+                msg << "]";
+                eirods::error err = PASSMSG( msg.str(), rmdir_err );
                 eirods::log ( err );
             }
                          
@@ -188,21 +186,19 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
             // doesnt extend outside this function for now.
             if( !create_err.ok() ) {
                 std::stringstream msg;
-                msg << "_rsFileCreate: EEXIST 2 fileCreate for ";
+                msg << "EEXIST 2 fileCreate for [";
                 msg << fileCreateInp->fileName;
-                msg << ", status = ";
-                msg << file_obj.file_descriptor();
-                eirods::error ret_err = PASS( false, file_obj.file_descriptor(), msg.str(), create_err );
+                msg << "]";
+                eirods::error ret_err = PASSMSG( msg.str(), create_err );
                 eirods::log( ret_err );
             }
 
         } else {
             std::stringstream msg;
-            msg << "_rsFileCreate: UNHANDLED fileCreate for ";
+            msg << "UNHANDLED fileCreate for [";
             msg << fileCreateInp->fileName;
-            msg << ", status = ";
-            msg << create_err.code();
-            eirods::error ret_err = PASS( false, create_err.code(), msg.str(), create_err );
+            msg << "]";
+            eirods::error ret_err = PASSMSG( msg.str(), create_err );
             eirods::log( ret_err );
                 
         } // else

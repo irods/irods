@@ -25,7 +25,7 @@ rsFileStage (rsComm_t *rsComm, fileStageInp_t *fileStageInp)
     //remoteFlag = resolveHost (&fileStageInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileStageInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileStage - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -97,11 +97,10 @@ int _rsFileStage( rsComm_t *rsComm, fileStageInp_t *fileStageInp ) {
     // handle errors, if necessary
     if( !stage_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileStage: fileStage for ";
+        msg << "fileStage failed for [";
         msg << fileStageInp->fileName;
-        msg << ", status = ";
-        msg << stage_err.code();
-        eirods::error err = PASS( false, stage_err.code(), msg.str(), stage_err );
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), stage_err );
         eirods::log ( err );
     }
 

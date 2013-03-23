@@ -29,7 +29,7 @@ rsFileGetFsFreeSpace (rsComm_t *rsComm,
     //remoteFlag = resolveHost (&fileGetFsFreeSpaceInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileGetFsFreeSpaceInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -108,11 +108,10 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
     // handle errors if any
     if( !free_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileGetFsFreeSpace: fileGetFsFreeSpace for ";
+        msg << "fileGetFsFreeSpace failed for [";
         msg << fileGetFsFreeSpaceInp->fileName;
-        msg << ", status = ";
-        msg << free_err.code();
-        eirods::error err = PASS( false, free_err.code(), msg.str(), free_err );
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), free_err );
         eirods::log ( err );
         return ((int) free_err.code());
     }

@@ -116,7 +116,7 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                                        rsComm, dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsDataObjRepl :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -796,7 +796,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             eirods::error ret = eirods::resolve_resource_hierarchy( op_name, rsComm, &dest_inp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "dataObjOpenForRepl :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in eirods::resolve_resource_hierarchy for [";
                 msg << dest_inp.objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
@@ -1161,7 +1161,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 eirods::error err = eirods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName, 
                                                                           "create_path", dst_create_path );
                 if( !err.ok() ) {
-                    eirods::log( PASS( false, -1, "l3FileSync - failed.", err ) );
+                    eirods::log( PASS( err ) );
                 }
 
                 if( CREATE_PATH == dst_create_path ) {
@@ -1185,7 +1185,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 std::string location;
                 eirods::error ret = eirods::get_loc_for_hier_string( srcDataObjInfo->rescHier, location );
                 if( !ret.ok() ) {
-                    eirods::log( PASSMSG( "l3FileSycn - failed in get_loc_for_hier_String", ret ) );
+                    eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
                     return -1;
                 }
                 

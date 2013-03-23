@@ -213,7 +213,7 @@ agentMain (rsComm_t *rsComm)
     rodsServerHost_t *rodsServerHost = 0;
     status = getRcatHost( MASTER_RCAT, 0, &rodsServerHost );
     if( status < 0 ) {
-        eirods::log( ERROR( -1, "agentMain - getRcatHost failed." ) );
+        eirods::log( ERROR( status, "getRcatHost failed." ) );
         return status;
     }
     
@@ -221,7 +221,7 @@ agentMain (rsComm_t *rsComm)
     // connect to the icat host
     status = svrToSvrConnect ( rsComm, rodsServerHost );
     if( status < 0 ) {
-        eirods::log( ERROR( -1, "agentMain - svrToSvrConnect failed." ) );
+        eirods::log( ERROR( status, "svrToSvrConnect failed." ) );
         return status;
     }
 

@@ -89,9 +89,10 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
         eirods::error err = eirods::get_resc_info( specColl->resource, rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "_rsSyncMountedColl - failed to resolve resource ";
+            msg << "failed to resolve resource [";
             msg << specColl->resource;
-            eirods::log( PASS( false, -1, msg.str(), err ) );
+            msg << "]";
+            eirods::log( PASSMSG( msg.str(), err ) );
         }
 
         // =-=-=-=-=-=-=-
@@ -99,7 +100,7 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType)
         std::string location;
         eirods::error ret = eirods::get_loc_for_hier_string( specColl->rescHier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "_rsSyncMountedColl - failed in get_loc_for_hier_String", ret ) );
+            eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 

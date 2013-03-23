@@ -77,10 +77,10 @@ int _rsSubStructFileUnlink( rsComm_t*  _comm,
     eirods::error unlink_err = fileUnlink( _comm, struct_obj );
     if( !unlink_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileUnlink - failed on call to fileUnlink for [";
+        msg << "failed on call to fileUnlink for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), unlink_err ) );
+        eirods::log( PASSMSG( msg.str(), unlink_err ) );
         return unlink_err.code();
 
     } else {

@@ -31,7 +31,7 @@ rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
     //remoteFlag = resolveHost (&fileGetInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileGetInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileCreate - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -124,11 +124,10 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
 
         } else {
             std::stringstream msg;
-            msg << "_rsFileGet: fileRead for ";
+            msg << "fileRead failed for [";
             msg << fileGetInp->fileName;
-            msg << ", status = ";
-            msg << bytes_read;
-            eirods::error ret_err = PASS( false, bytes_read, msg.str(), read_err );
+            msg << "]";
+            eirods::error ret_err = PASSMSG( msg.str(), read_err );
             eirods::log( ret_err );
         }
     } else {
@@ -140,7 +139,7 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
     eirods::error close_err = fileClose( rsComm,
                                          file_obj );
     if( !close_err.ok() ) {
-        eirods::error err = PASS( false, close_err.code(), "_rsFileGet - error on close", close_err );
+        eirods::error err = PASSMSG( "error on close", close_err );
         eirods::log( err );
     }
 

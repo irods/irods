@@ -1,6 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #include "eirods_stacktrace.h"
+#include "rodsErrorTable.h"
 
 #include <iostream>
 
@@ -32,15 +33,15 @@ namespace eirods {
                     if(symbol) {
                         stack_.push_back(std::string(symbol));
                     } else {
-                        result = ERROR(-1, "Corrupt stack trace. Symbol is NULL.");
+                        result = ERROR( NULL_VALUE_ERR, "Corrupt stack trace. Symbol is NULL.");
                     }
                 }
                 free(symbols);
             } else {
-                result = ERROR(-1, "Cannot generate stack symbols");
+                result = ERROR( NULL_VALUE_ERR, "Cannot generate stack symbols");
             }
         } else {
-            result = ERROR(-1, "Stack trace is empty");
+            result = ERROR( NULL_VALUE_ERR, "Stack trace is empty");
         }
         delete [] buffer;
         return result;

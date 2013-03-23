@@ -271,9 +271,9 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
         eirods::error err = eirods::get_resc_info( rescName, **rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "getDefaultLocalRescInfo - failed to resolve resource ";
-            msg << rescName;
-            eirods::log( PASS( false, -1, msg.str(), err ) );
+            msg << "failed to resolve resource [";
+            msg << rescName << "]";
+            eirods::log( PASSMSG( msg.str(), err ) );
         }
     }
     else

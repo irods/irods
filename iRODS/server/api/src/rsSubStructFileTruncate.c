@@ -77,10 +77,10 @@ int _rsSubStructFileTruncate( rsComm_t*   _comm,
     eirods::error trunc_err = fileTruncate( _comm, struct_obj );
     if( !trunc_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileTruncate - failed on call to fileTruncate for [";
+        msg << "failed on call to fileTruncate for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), trunc_err ) );
+        eirods::log( PASSMSG( msg.str(), trunc_err ) );
         return trunc_err.code();
 
     } else {

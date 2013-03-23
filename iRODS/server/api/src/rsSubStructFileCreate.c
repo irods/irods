@@ -76,12 +76,11 @@ int _rsSubStructFileCreate( rsComm_t*  _comm,
     struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     eirods::error err = fileCreate( _comm, struct_obj );
- 
     if( !err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileCreate - failed on call to fileCreate for [";
+        msg << "failed on call to fileCreate for [";
         msg << struct_obj.sub_file_path();
-        eirods::log( ERROR( -1, msg.str() ) );
+        eirods::log( PASSMSG( msg.str(), err ) );
         return 0;
 
     } else {

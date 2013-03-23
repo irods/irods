@@ -87,10 +87,10 @@ int _rsSubStructFileReaddir( rsComm_t*                 _comm,
     eirods::error readdir_err = fileReaddir( _comm, struct_obj, _dirent );
     if( !readdir_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileReaddir - failed on call to fileReaddir for [";
+        msg << "failed on call to fileReaddir for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), readdir_err ) );
+        eirods::log( PASSMSG( msg.str(), readdir_err ) );
         return readdir_err.code();
 
     } else {

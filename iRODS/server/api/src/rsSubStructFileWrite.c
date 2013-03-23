@@ -83,10 +83,10 @@ int _rsSubStructFileWrite( rsComm_t*                _comm,
     eirods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );
     if( !write_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileWrite - failed on call to fileWrite for [";
+        msg << "failed on call to fileWrite for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), write_err ) );
+        eirods::log( PASSMSG( msg.str(), write_err ) );
         return write_err.code();
 
     } else {

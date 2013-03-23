@@ -91,10 +91,10 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
     eirods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _read_inp->len );
     if( !read_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileRead - failed on call to fileRead for [";
+        msg << "failed on call to fileRead for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), read_err ) );
+        eirods::log( PASSMSG( msg.str(), read_err ) );
         _out_buf->len = 0;
         return read_err.code();
 

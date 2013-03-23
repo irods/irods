@@ -45,7 +45,7 @@ namespace eirods {
     error resource_manager::resolve( std::string _key, resource_ptr& _value ) {
 
         if( _key.empty() ) {
-            return ERROR( -1, "resource_manager::resolve - empty key" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" );
         }
 
         if( resources_.has_entry( _key ) ) {
@@ -54,9 +54,9 @@ namespace eirods {
                 
         } else {
             std::stringstream msg;
-            msg << "resource_manager::resolve - no resource found for name ["
+            msg << "no resource found for name ["
                 << _key << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
                 
         }
 
@@ -73,13 +73,13 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // quick check on the resource table
         if( resources_.empty() ) {
-            return ERROR( -1, "resource_manager::resolve_from_physical_path - empty resource table" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
         }
        
         // =-=-=-=-=-=-=-
         // quick check on the path that it has something in it
         if( _physical_path.empty() ) {
-            return ERROR( -1, "resource_manager::resolve_from_physical_path - empty property" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty property" );
         }
 
         // =-=-=-=-=-=-=-
@@ -119,11 +119,10 @@ namespace eirods {
             return SUCCESS();
         } else {
             std::stringstream msg;
-            msg << "resource_manager::resolve_from_physical_path - ";
             msg << "failed to find resource for path [";
             msg << _physical_path;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
 
     } // resolve_from_physical_path
@@ -208,7 +207,7 @@ namespace eirods {
                 }
                 
                 clearGenQueryInp( &genQueryInp );
-                return ERROR( status, "init_from_catalog - genqery failed." );
+                return ERROR( status, "genqery failed." );
             
             } // if
                 
@@ -300,7 +299,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // extract results from query
         if ( !_result ) {
-            return ERROR( -1, "resource ctor :: _result parameter is null" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "_result parameter is null" );
         }
 
         // =-=-=-=-=-=-=-
@@ -313,71 +312,71 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // extract results from query
         if( ( rescId = getSqlResultByInx( _result, COL_R_RESC_ID ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX,"resource ctor :: getSqlResultByInx for COL_R_RESC_ID failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX,"getSqlResultByInx for COL_R_RESC_ID failed" );
         }
 
         if( ( rescName = getSqlResultByInx( _result, COL_R_RESC_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_NAME failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_NAME failed" );
         }
 
         if( ( zoneName = getSqlResultByInx( _result, COL_R_ZONE_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_ZONE_NAME failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_ZONE_NAME failed" );
         }
             
         if( ( rescType = getSqlResultByInx(_result, COL_R_TYPE_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_TYPE_NAME failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_TYPE_NAME failed" );
         }
 
         if( ( rescClass = getSqlResultByInx( _result, COL_R_CLASS_NAME ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_CLASS_NAME failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_CLASS_NAME failed" );
         }
             
         if( ( rescLoc = getSqlResultByInx( _result, COL_R_LOC ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_LOC failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_LOC failed" );
         }
 
         if( ( rescVaultPath = getSqlResultByInx( _result, COL_R_VAULT_PATH ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_VAULT_PATH failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_VAULT_PATH failed" );
         }
 
         if( ( freeSpace = getSqlResultByInx( _result, COL_R_FREE_SPACE ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_FREE_SPACE failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_FREE_SPACE failed" );
         }
 
         if( ( rescInfo = getSqlResultByInx( _result, COL_R_RESC_INFO ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_INFO failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_INFO failed" );
         }
 
         if( ( rescComments = getSqlResultByInx( _result, COL_R_RESC_COMMENT ) ) == NULL ) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_COMMENT failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_COMMENT failed" );
         }
 
         if( ( rescCreate = getSqlResultByInx( _result, COL_R_CREATE_TIME ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_CREATE_TIME failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_CREATE_TIME failed" );
         }
 
         if( ( rescModify = getSqlResultByInx( _result, COL_R_MODIFY_TIME ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_MODIFY_TIME failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_MODIFY_TIME failed" );
         }
 
         if( ( rescStatus = getSqlResultByInx( _result, COL_R_RESC_STATUS ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_STATUS failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_STATUS failed" );
         }
 
         if( ( rescChildren = getSqlResultByInx( _result, COL_R_RESC_CHILDREN ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CHILDREN failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_CHILDREN failed" );
         }
 
         if( ( rescContext = getSqlResultByInx( _result, COL_R_RESC_CONTEXT ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_CONTEXT failed" );
         }
 
         if( ( rescParent = getSqlResultByInx( _result, COL_R_RESC_PARENT ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_PARENT failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_PARENT failed" );
         }
 
         if( ( rescObjCount = getSqlResultByInx( _result, COL_R_RESC_OBJCOUNT ) ) == NULL) {
-            return ERROR( UNMATCHED_KEY_OR_INDEX, "resource ctor: getSqlResultByInx for COL_R_RESC_OBJCOUNT failed" );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, "getSqlResultByInx for COL_R_RESC_OBJCOUNT failed" );
         }
 
         // =-=-=-=-=-=-=-
@@ -596,8 +595,8 @@ namespace eirods {
                             lookup_table< boost::shared_ptr< resource > >::iterator child_itr = resources_.find(child);
                             if(child_itr == resources_.end()) {
                                 std::stringstream msg;
-                                msg << "init_child_map: Failed to find child \"" << child << "\" in resources.";
-                                result = ERROR(-1, msg.str());
+                                msg << "Failed to find child \"" << child << "\" in resources.";
+                                result = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
                             } else {
 
                                 // Add a reference to the child resource pointer and its context to the resource
@@ -744,10 +743,10 @@ namespace eirods {
 
             } else {
                 std::stringstream msg;
-                msg << "gather_operations_recursive - failed to get resource for key [";
+                msg << "failed to get resource for key [";
                 msg << child;
                 msg << "]";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
             }
 
         } // for itr
@@ -770,10 +769,10 @@ namespace eirods {
 
             } else {
                 std::stringstream msg;
-                msg << "gather_operations_recursive - failed to get resource for key [";
+                msg << "failed to get resource for key [";
                 msg << child;
                 msg << "]";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
             }
 
         } // for itr

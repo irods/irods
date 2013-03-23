@@ -17,6 +17,7 @@
 #include "eirods_collection_object.h"
 #include "eirods_string_tokenize.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_error.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -87,102 +88,69 @@ extern "C" {
     /////////////////
     // Utility functions
 
+    // =-=-=-=-=-=-=-
     /// @brief Returns the first child resource of the specified resource
-    eirods::error passthruGetFirstChildResc(
-        eirods::resource_child_map* _cmap,
+    eirods::error pass_thru_get_first_chid_resc(
+        eirods::resource_child_map& _cmap,
         eirods::resource_ptr& _resc) {
 
         eirods::error result = SUCCESS();
         std::pair<std::string, eirods::resource_ptr> child_pair;
-        if(_cmap->size() != 1) {
+        if(_cmap.size() != 1) {
             std::stringstream msg;
-            msg << "passthruGetFirstChildResc - Passthru resource can have 1 and only 1 child. This resource has " << _cmap->size();
+            msg << "pass_thru_get_first_chid_resc - Passthru resource can have 1 and only 1 child. This resource has " << _cmap.size();
             result = ERROR(-1, msg.str());
         } else {
-            child_pair = _cmap->begin()->second;
+            child_pair = _cmap.begin()->second;
             _resc = child_pair.second;
         }
         return result;
-    }
 
+    } // pass_thru_get_first_chid_resc
+
+    // =-=-=-=-=-=-=-
     /// @brief Check the general parameters passed in to most plugin functions
-    eirods::error passthruCheckParams(
-        eirods::resource_property_map* _prop_map,
-        eirods::resource_child_map* _cmap,
-        eirods::first_class_object* _object) {
-
-        eirods::error result = SUCCESS();
-
+    eirods::error pass_thru_check_params(
+        eirods::resource_operation_context* _ctx ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        if( !_prop_map ) {
-            result = ERROR( -1, "passthruCheckParams - null resource_property_map" );
-        } else if( !_cmap ) {
-            result = ERROR( -1, "passthruCheckParams - null resource_child_map" );
-        } else if( !_object ) {
-            result = ERROR( -1, "passthruCheckParams - null first_class_object" );
-        }
-        return result;
-    }
-
-    /**
-     * @brief Removes this resources vault path from the beginning of the specified string
-     */
-    eirods::error
-    passthruRemoveVaultPath(
-        const eirods::resource_ptr _resc,
-        const std::string _path,
-        std::string& _ret_string) {
-        
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        std::string name;
-        std::string type;
-        ret = _resc->get_property<std::string>("name", name);
-        if(!ret.ok()) {
+        if( !_ctx ) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - failed to get the name property for the resource.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            ret = _resc->get_property<std::string>("type", type);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__ << " - failed to get the type property from the resource.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                std::string dummy_path = name + "::" + type;
-                if( _path.compare(0, dummy_path.size(), dummy_path) == 0) {
-                    _ret_string = _path.substr(dummy_path.size(), _path.size());
-                } else {
-                    _ret_string = _path;
-                }
-            }
-        }
-        return result;
-    }
+            msg << " - null resource context";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+        } 
+  
+        // =-=-=-=-=-=-=-
+        // verify that the resc context is valid 
+        eirods::error ret = _ctx->valid(); 
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << " - resource context is invalid.";
+            return PASSMSG( msg.str(), ret );
+        }     
+
+        return SUCCESS();
+
+    } // pass_thru_check_params
 
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error passthruFileCreatePlugin( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+    eirods::error pass_thru_file_create_plugin( 
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileCreatePlugin - bad params.", ret);
+            result = PASSMSG("bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileCreatePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "create", _object);
+                ret = resc->call( _ctx->comm(), "create", _ctx->fco());
                 if(!ret.ok()) {
-                    result = PASSMSG("passthruFileCreatePlugin - failed calling child create.", ret);
+                    result = PASSMSG("failed calling child create.", ret);
                 } else {
 #if 0 // handled in redirect code now
                     // Update the hierarchy string
@@ -194,661 +162,560 @@ extern "C" {
                         result = PASSMSG(msg.str(), ret);
                     } else {
                         eirods::hierarchy_parser hparse;
-                        hparse.set_string(_object->resc_hier());
+                        hparse.set_string(_ctx->fco()->resc_hier());
                         hparse.add_child(child_name);
                         std::string new_resc_hier;
                         hparse.str(new_resc_hier);
-                        _object->resc_hier(new_resc_hier);
+                        _ctx->fco()->resc_hier(new_resc_hier);
                     }
 #endif // handled in redirect code now
                 }
             }
         }
         return result;
-    } // passthruFileCreatePlugin
+    } // pass_thru_file_create_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error passthruFileOpenPlugin( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+    eirods::error pass_thru_file_open_plugin( 
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileOpenPlugin - bad params.", ret);
+            result = PASSMSG( "bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileOpenPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "open", _object);
-                result = PASSMSG("passthruFileOpenPlugin - failed calling child open.", ret);
+                ret = resc->call( _ctx->comm(), "open", _ctx->fco());
+                result = PASSMSG("pass_thru_file_open_plugin - failed calling child open.", ret);
             }
         }
         return result;
-    } // passthruFileOpenPlugin
+    } // pass_thru_file_open_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error passthruFileReadPlugin(  
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results, 
-                      void*                          _buf, 
-                      int                            _len ) {
+    eirods::error pass_thru_file_read_plugin(  
+        eirods::resource_operation_context* _ctx,
+        void*                               _buf, 
+        int                                 _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileReadPlugin - bad params.", ret);
+            result = PASSMSG( "bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileReadPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<void*, int>( _comm, "read", _object, _buf, _len);
-                result = PASSMSG("passthruFileReadPlugin - failed calling child read.", ret);
+                ret = resc->call<void*, int>( _ctx->comm(), "read", _ctx->fco(), _buf, _len);
+                result = PASSMSG("pass_thru_file_read_plugin - failed calling child read.", ret);
             }
         }
         return result;
-    } // passthruFileReadPlugin
+    } // pass_thru_file_read_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error passthruFileWritePlugin( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results, 
-                      void*                          _buf, 
-                      int                            _len ) {
+    eirods::error pass_thru_file_write_plugin( 
+        eirods::resource_operation_context* _ctx,
+        void*                               _buf, 
+        int                                 _len ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileWritePlugin - bad params.", ret);
+            result = PASSMSG( "bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileWritePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<void*, int>( _comm, "write", _object, _buf, _len);
-                result = PASSMSG("passthruFileWritePlugin - failed calling child write.", ret);
+                ret = resc->call<void*, int>( _ctx->comm(), "write", _ctx->fco(), _buf, _len);
+                result = PASSMSG("pass_thru_file_write_plugin - failed calling child write.", ret);
             }
         }
         return result;
-    } // passthruFileWritePlugin
+    } // pass_thru_file_write_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error passthruFileClosePlugin(  
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) { 
+    eirods::error pass_thru_file_close_plugin(  
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileClosePlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_close_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileClosePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_close_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "close", _object);
-                result = PASSMSG("passthruFileClosePlugin - failed calling child close.", ret);
+                ret = resc->call( _ctx->comm(), "close", _ctx->fco());
+                result = PASSMSG("pass_thru_file_close_plugin - failed calling child close.", ret);
             }
         }
         return result;
 
-    } // passthruFileClosePlugin
+    } // pass_thru_file_close_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error passthruFileUnlinkPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    eirods::error pass_thru_file_unlink_plugin(  
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileUnlinkPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_unlink_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileUnlinkPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_unlink_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "unlink", _object);
-                result = PASSMSG("passthruFileUnlinkPlugin - failed calling child unlink.", ret);
+                ret = resc->call( _ctx->comm(), "unlink", _ctx->fco());
+                result = PASSMSG("pass_thru_file_unlink_plugin - failed calling child unlink.", ret);
             }
         }
         return result;
-    } // passthruFileUnlinkPlugin
+    } // pass_thru_file_unlink_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error passthruFileStatPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results, 
-                    struct stat*                   _statbuf ) {
+    eirods::error pass_thru_file_stat_plugin(  
+        eirods::resource_operation_context* _ctx,
+        struct stat*                        _statbuf ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileStatPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_stat_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileStatPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_stat_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<struct stat*>( _comm, "stat", _object, _statbuf);
-                result = PASSMSG("passthruFileStatPlugin - failed calling child stat.", ret);
+                ret = resc->call<struct stat*>( _ctx->comm(), "stat", _ctx->fco(), _statbuf);
+                result = PASSMSG("pass_thru_file_stat_plugin - failed calling child stat.", ret);
             }
         }
         return result;
-    } // passthruFileStatPlugin
+    } // pass_thru_file_stat_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
-    eirods::error passthruFileFstatPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results, 
-                    struct stat*                   _statbuf ) {
+    eirods::error pass_thru_file_fstat_plugin(  
+        eirods::resource_operation_context* _ctx,
+        struct stat*                        _statbuf ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileFstatPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_fstat_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileFstatPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_fstat_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<struct stat*>( _comm, "fstat", _object, _statbuf);
-                result = PASSMSG("passthruFileFstatPlugin - failed calling child fstat.", ret);
+                ret = resc->call<struct stat*>( _ctx->comm(), "fstat", _ctx->fco(), _statbuf);
+                result = PASSMSG("pass_thru_file_fstat_plugin - failed calling child fstat.", ret);
             }
         }
         return result;
-    } // passthruFileFstatPlugin
+    } // pass_thru_file_fstat_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error passthruFileLseekPlugin(
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results, 
-                    size_t                         _offset, 
-                    int                            _whence ) {
+    eirods::error pass_thru_file_lseek_plugin(
+        eirods::resource_operation_context* _ctx,
+        size_t                              _offset, 
+        int                                 _whence ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileLseekPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_lseek_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileLseekPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_lseek_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<size_t, int>( _comm, "lseek", _object, _offset, _whence);
-                result = PASSMSG("passthruFileLseekPlugin - failed calling child lseek.", ret);
+                ret = resc->call<size_t, int>( _ctx->comm(), "lseek", _ctx->fco(), _offset, _whence);
+                result = PASSMSG("pass_thru_file_lseek_plugin - failed calling child lseek.", ret);
             }
         }
         return result;
-    } // passthruFileLseekPlugin
+    } // pass_thru_file_lseek_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
-    eirods::error passthruFileFsyncPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    eirods::error pass_thru_file_fsync_plugin(  
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileFsyncPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_fsync_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileFsyncPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_fsync_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "fsync", _object);
-                result = PASSMSG("passthruFileFsyncPlugin - failed calling child fsync.", ret);
+                ret = resc->call( _ctx->comm(), "fsync", _ctx->fco());
+                result = PASSMSG("pass_thru_file_fsync_plugin - failed calling child fsync.", ret);
             }
         }
         return result;
-    } // passthruFileFsyncPlugin
+    } // pass_thru_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileMkdirPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    eirods::error pass_thru_file_mkdir_plugin(  
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileMkdirPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_mkdir_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileMkdirPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_mkdir_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "mkdir", _object);
-                result = PASSMSG("passthruFileMkdirPlugin - failed calling child mkdir.", ret);
+                ret = resc->call( _ctx->comm(), "mkdir", _ctx->fco());
+                result = PASSMSG("pass_thru_file_mkdir_plugin - failed calling child mkdir.", ret);
             }
         }
         return result;
-    } // passthruFileMkdirPlugin
+    } // pass_thru_file_mkdir_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX mkdir
-    eirods::error passthruFileChmodPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    // interface for POSIX chmod
+    eirods::error pass_thru_file_chmod_plugin(  
+        eirods::resource_operation_context* _ctx ) {
 
         eirods::error result = SUCCESS();
         eirods::error ret;
 
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileChmodPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_chmod_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileChmodPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_chmod_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "chmod", _object);
-                result = PASSMSG("passthruFileChmodPlugin - failed calling child chmod.", ret);
+                ret = resc->call( _ctx->comm(), "chmod", _ctx->fco());
+                result = PASSMSG("pass_thru_file_chmod_plugin - failed calling child chmod.", ret);
             }
         }
         return result;
-    } // passthruFileChmodPlugin
+    } // pass_thru_file_chmod_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error passthruFileRmdirPlugin( 
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    eirods::error pass_thru_file_rmdir_plugin( 
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileRmdirPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_rmdir_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileRmdirPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_rmdir_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "rmdir", _object);
-                result = PASSMSG("passthruFileRmdirPlugin - failed calling child rmdir.", ret);
+                ret = resc->call( _ctx->comm(), "rmdir", _ctx->fco());
+                result = PASSMSG("pass_thru_file_rmdir_plugin - failed calling child rmdir.", ret);
             }
         }
         return result;
-    } // passthruFileRmdirPlugin
+    } // pass_thru_file_rmdir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error passthruFileOpendirPlugin( 
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    eirods::error pass_thru_file_opendir_plugin( 
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileOpendirPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_opendir_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileOpendirPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_opendir_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "opendir", _object);
-                result = PASSMSG("passthruFileOpendirPlugin - failed calling child opendir.", ret);
+                ret = resc->call( _ctx->comm(), "opendir", _ctx->fco());
+                result = PASSMSG("pass_thru_file_opendir_plugin - failed calling child opendir.", ret);
             }
         }
         return result;
-    } // passthruFileOpendirPlugin
+    } // pass_thru_file_opendir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error passthruFileClosedirPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) { 
+    eirods::error pass_thru_file_closedir_plugin(  
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileClosedirPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_closedir_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileClosedirPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_closedir_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "closedir", _object);
-                result = PASSMSG("passthruFileClosedirPlugin - failed calling child closedir.", ret);
+                ret = resc->call( _ctx->comm(), "closedir", _ctx->fco());
+                result = PASSMSG("pass_thru_file_closedir_plugin - failed calling child closedir.", ret);
             }
         }
         return result;
-    } // passthruFileClosedirPlugin
+    } // pass_thru_file_closedir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileReaddirPlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results,
-                    struct rodsDirent**            _dirent_ptr ) {
+    eirods::error pass_thru_file_readdir_plugin(  
+        eirods::resource_operation_context* _ctx,
+        struct rodsDirent**                 _dirent_ptr ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileReaddirPlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_readdir_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileReaddirPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_readdir_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<struct rodsDirent**>( _comm, "readdir", _object, _dirent_ptr);
-                result = PASSMSG("passthruFileReaddirPlugin - failed calling child readdir.", ret);
+                ret = resc->call<struct rodsDirent**>( _ctx->comm(), "readdir", _ctx->fco(), _dirent_ptr);
+                result = PASSMSG("pass_thru_file_readdir_plugin - failed calling child readdir.", ret);
             }
         }
         return result;
-    } // passthruFileReaddirPlugin
+    } // pass_thru_file_readdir_plugin
+
+    // =-=-=-=-=-=-=-
+    // interface for stage operation
+    eirods::error pass_thru_file_stage_plugin(  
+        eirods::resource_operation_context* _ctx ) {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "pass_thru_file_stage_plugin - bad params.", ret);
+        } else {
+            eirods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
+            if(!ret.ok()) {
+                result = PASSMSG( "pass_thru_file_stage_plugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call( _ctx->comm(), "stage", _ctx->fco());
+                result = PASSMSG("pass_thru_file_stage_plugin - failed calling child stage.", ret);
+            }
+        }
+        return result;
+    } // pass_thru_file_stage_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error passthruFileStagePlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) {
+    eirods::error pass_thru_file_rename_plugin(  
+        eirods::resource_operation_context* _ctx,
+        const char*                         _new_file_name ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileStagePlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_rename_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileStagePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_rename_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "stage", _object);
-                result = PASSMSG("passthruFileStagePlugin - failed calling child stage.", ret);
+                ret = resc->call<const char*>( _ctx->comm(), "rename", _ctx->fco(), _new_file_name);
+                result = PASSMSG("pass_thru_file_rename_plugin - failed calling child rename.", ret);
             }
         }
         return result;
-    } // passthruFileStagePlugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
-    eirods::error passthruFileRenamePlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results,
-                    const char*                    _new_file_name ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
-        if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileRenamePlugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
-            if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileRenamePlugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<const char*>( _comm, "rename", _object, _new_file_name);
-                result = PASSMSG("passthruFileRenamePlugin - failed calling child rename.", ret);
-            }
-        }
-        return result;
-    } // passthruFileRenamePlugin
+    } // pass_thru_file_rename_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
-    eirods::error passthruFileTruncatePlugin(  
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) {
+    eirods::error pass_thru_file_truncate_plugin(  
+        eirods::resource_operation_context* _ctx ) {
         // =-=-=-=-=-=-=-
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileTruncatePlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_truncate_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileTruncatePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_truncate_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "truncate", _object);
-                result = PASSMSG("passthruFileTruncatePlugin - failed calling child truncate.", ret);
+                ret = resc->call( _ctx->comm(), "truncate", _ctx->fco());
+                result = PASSMSG("pass_thru_file_truncate_plugin - failed calling child truncate.", ret);
             }
         }
         return result;
-    } // passthruFileTruncatePlugin
+    } // pass_thru_file_truncate_plugin
 
         
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error passthruFileGetFsFreeSpacePlugin( 
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results ) {
+    eirods::error pass_thru_file_getfsfreespace_plugin( 
+        eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = passthruCheckParams(_prop_map, _cmap, _object);
+        ret = pass_thru_check_params( _ctx );
         if(!ret.ok()) {
-            result = PASS(false, -1, "passthruFileGetFsFreeSpacePlugin - bad params.", ret);
+            result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruFileGetFsFreeSpacePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_file_getfsfreespace_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call( _comm, "freespace", _object);
-                result = PASSMSG("passthruFileGetFsFreeSpacePlugin - failed calling child freespace.", ret);
+                ret = resc->call( _ctx->comm(), "freespace", _ctx->fco());
+                result = PASSMSG("pass_thru_file_getfsfreespace_plugin - failed calling child freespace.", ret);
             }
         }
         return result;
-    } // passthruFileGetFsFreeSpacePlugin
+    } // pass_thru_file_getfsfreespace_plugin
 
     // =-=-=-=-=-=-=-
     // passthruStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error passthruStageToCachePlugin( 
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results,
-                    const char*                    _cache_file_name ) { 
+    eirods::error pass_thru_stage_to_cache_plugin( 
+        eirods::resource_operation_context* _ctx,
+        const char*                         _cache_file_name ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
-
-        if(!_prop_map) {
-            result = ERROR(-1, "passthruStageToCachePlugin - Bad property map.");
-        } else if(!_cmap) {
-            result = ERROR(-1, "passthruStageToCachePlugin - Bad child map.");
-        } else {
+ 
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "pass_thru_stage_to_cache_plugin - bad params.", ret);
+        } else { 
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruStageToCachePlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_stage_to_cache_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<const char*>( _comm, "stagetocache", _object, _cache_file_name );
-                result = PASSMSG("passthruStageToCachePlugin - failed calling child stagetocache.", ret);
+                ret = resc->call<const char*>( _ctx->comm(), "stagetocache", _ctx->fco(), _cache_file_name );
+                result = PASSMSG("pass_thru_stage_to_cache_plugin - failed calling child stagetocache.", ret);
             }
         }
         return result;
-    } // passthruStageToCachePlugin
+    } // pass_thru_stage_to_cache_plugin
 
     // =-=-=-=-=-=-=-
     // passthruSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error passthruSyncToArchPlugin( 
-                    rsComm_t*                      _comm,
-                    eirods::resource_property_map* _prop_map,
-                    eirods::resource_child_map*    _cmap, 
-                    eirods::first_class_object*    _object,
-                    std::string*                   _results,
-                    const char*                    _cache_file_name ) { 
+    eirods::error pass_thru_sync_to_arch_plugin( 
+        eirods::resource_operation_context* _ctx,
+        const char*                         _cache_file_name ) { 
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        if(!_prop_map) {
-            result = ERROR(-1, "passthruSyncToArchPlugin - Bad property map.");
-        } else if(!_cmap) {
-            result = ERROR(-1, "passthruSyncToArchPlugin - Bad child map.");
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "pass_thru_sync_to_arch_plugin - bad params.", ret);
         } else {
             eirods::resource_ptr resc;
-            ret = passthruGetFirstChildResc(_cmap, resc);
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
             if(!ret.ok()) {
-                result = PASS(false, -1, "passthruSyncToArchPlugin - failed getting the first child resource pointer.", ret);
+                result = PASSMSG( "pass_thru_sync_to_arch_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<const char*>( _comm, "synctoarch", _object, _cache_file_name );
+                ret = resc->call<const char*>( _ctx->comm(), "synctoarch", _ctx->fco(), _cache_file_name );
                     
-                result = PASSMSG("passthruSyncToArchPlugin - failed calling child synctoarch.", ret);
+                result = PASSMSG("pass_thru_sync_to_arch_plugin - failed calling child synctoarch.", ret);
             }
         }
         return result;
-    } // passthruSyncToArchPlugin
+    } // pass_thru_sync_to_arch_plugin
 
 
     // =-=-=-=-=-=-=-
     // unixRedirectPlugin - used to allow the resource to determine which host
     //                      should provide the requested operation
-    eirods::error passthruRedirectPlugin( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      const std::string&             _results,
-                      const std::string*             _opr,
-                      const std::string*             _curr_host,
-                      eirods::hierarchy_parser*      _out_parser,
-                      float*                         _out_vote ) {
+    eirods::error pass_thru_redirect_plugin( 
+        eirods::resource_operation_context* _ctx,
+        const std::string*                  _opr,
+        const std::string*                  _curr_host,
+        eirods::hierarchy_parser*           _out_parser,
+        float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "passthruRedirectPlugin - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "passthruRedirectPlugin - null resource_child_map" );
+        eirods::error result = SUCCESS();
+        eirods::error ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "pass_thru_redirect_plugin - invalid resource context.", ret );
         }
         if( !_opr ) {
-            return ERROR( -1, "passthruRedirectPlugin - null operation" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null operation" );
         }
         if( !_curr_host ) {
-            return ERROR( -1, "passthruRedirectPlugin - null operation" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "passthruRedirectPlugin - null first_class_object" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null operation" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "passthruRedirectPlugin - null outgoing hier parser" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null outgoing hier parser" );
         }
         if( !_out_vote ) {
-            return ERROR( -1, "passthruRedirectPlugin - null outgoing vote" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "pass_thru_redirect_plugin - null outgoing vote" );
         }
         
         // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::file_object* file_obj = dynamic_cast< eirods::file_object* >( _object );
-        if( !file_obj ) {
-            return ERROR( -1, "failed to cast first_class_object to file_object" );
-        }
-
-        // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        eirods::error ret = _prop_map->get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
-            msg << "passthruRedirectPlugin - failed in get property for name";
+            msg << "pass_thru_redirect_plugin - failed in get property for name";
             return ERROR( -1, msg.str() );
         }
 
@@ -857,15 +724,15 @@ extern "C" {
         _out_parser->add_child( resc_name );
 
         eirods::resource_ptr resc; 
-        ret = passthruGetFirstChildResc(_cmap, resc);
+        ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
         if(!ret.ok()) {
-            return PASS(false, -1, "passthruSyncToArchPlugin - failed getting the first child resource pointer.", ret);
+            return PASSMSG( "pass_thru_redirect_plugin - failed getting the first child resource pointer.", ret);
         } 
 
         return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                         _comm, "redirect", _object, _opr, _curr_host, _out_parser, _out_vote );
+                         _ctx->comm(), "redirect", _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
 
-    } // passthruRedirectPlugin
+    } // pass_thru_redirect_plugin
 
 
 
@@ -925,30 +792,30 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "passthruFileCreatePlugin" );
-        resc->add_operation( "open",         "passthruFileOpenPlugin" );
-        resc->add_operation( "read",         "passthruFileReadPlugin" );
-        resc->add_operation( "write",        "passthruFileWritePlugin" );
-        resc->add_operation( "close",        "passthruFileClosePlugin" );
-        resc->add_operation( "unlink",       "passthruFileUnlinkPlugin" );
-        resc->add_operation( "stat",         "passthruFileStatPlugin" );
-        resc->add_operation( "fstat",        "passthruFileFstatPlugin" );
-        resc->add_operation( "fsync",        "passthruFileFsyncPlugin" );
-        resc->add_operation( "mkdir",        "passthruFileMkdirPlugin" );
-        resc->add_operation( "chmod",        "passthruFileChmodPlugin" );
-        resc->add_operation( "opendir",      "passthruFileOpendirPlugin" );
-        resc->add_operation( "readdir",      "passthruFileReaddirPlugin" );
-        resc->add_operation( "stage",        "passthruFileStagePlugin" );
-        resc->add_operation( "rename",       "passthruFileRenamePlugin" );
-        resc->add_operation( "freespace",    "passthruFileGetFsFreeSpacePlugin" );
-        resc->add_operation( "lseek",        "passthruFileLseekPlugin" );
-        resc->add_operation( "rmdir",        "passthruFileRmdirPlugin" );
-        resc->add_operation( "closedir",     "passthruFileClosedirPlugin" );
-        resc->add_operation( "truncate",     "passthruFileTruncatePlugin" );
-        resc->add_operation( "stagetocache", "passthruStageToCachePlugin" );
-        resc->add_operation( "synctoarch",   "passthruSyncToArchPlugin" );
+        resc->add_operation( "create",       "pass_thru_file_create_plugin" );
+        resc->add_operation( "open",         "pass_thru_file_open_plugin" );
+        resc->add_operation( "read",         "pass_thru_file_read_plugin" );
+        resc->add_operation( "write",        "pass_thru_file_write_plugin" );
+        resc->add_operation( "close",        "pass_thru_file_close_plugin" );
+        resc->add_operation( "unlink",       "pass_thru_file_unlink_plugin" );
+        resc->add_operation( "stat",         "pass_thru_file_stat_plugin" );
+        resc->add_operation( "fstat",        "pass_thru_file_fstat_plugin" );
+        resc->add_operation( "fsync",        "pass_thru_file_fsync_plugin" );
+        resc->add_operation( "mkdir",        "pass_thru_file_mkdir_plugin" );
+        resc->add_operation( "chmod",        "pass_thru_file_chmod_plugin" );
+        resc->add_operation( "opendir",      "pass_thru_file_opendir_plugin" );
+        resc->add_operation( "readdir",      "pass_thru_file_readdir_plugin" );
+        resc->add_operation( "stage",        "pass_thru_file_stage_plugin" );
+        resc->add_operation( "rename",       "pass_thru_file_rename_plugin" );
+        resc->add_operation( "freespace",    "pass_thru_file_getfsfreespace_plugin" );
+        resc->add_operation( "lseek",        "pass_thru_file_lseek_plugin" );
+        resc->add_operation( "rmdir",        "pass_thru_file_rmdir_plugin" );
+        resc->add_operation( "closedir",     "pass_thru_file_closedir_plugin" );
+        resc->add_operation( "truncate",     "pass_thru_file_truncate_plugin" );
+        resc->add_operation( "stagetocache", "pass_thru_stage_to_cache_plugin" );
+        resc->add_operation( "synctoarch",   "pass_thru_sync_to_arch_plugin" );
         
-        resc->add_operation( "redirect",     "passthruRedirectPlugin" );
+        resc->add_operation( "redirect",     "pass_thru_redirect_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -100,11 +100,10 @@ int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
     // log error if necessary
     if( !fsync_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileFsync: fsync for ";
+        msg << "fsync failed for [";
         msg << FileDesc[fileFsyncInp->fileInx].fileName;
-        msg << ", status = ";
-        msg << fsync_err.code();
-        eirods::error ret_err = PASS( false, fsync_err.code(), msg.str(), fsync_err );
+        msg << "]";
+        eirods::error ret_err = PASSMSG( msg.str(), fsync_err );
         eirods::log( ret_err );
     }
 

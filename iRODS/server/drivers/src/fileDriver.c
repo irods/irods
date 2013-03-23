@@ -20,7 +20,7 @@ eirods::error fileCreate( rsComm_t* _comm, eirods::first_class_object& _object )
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileCreate - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -31,17 +31,17 @@ eirods::error fileCreate( rsComm_t* _comm, eirods::first_class_object& _object )
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         eirods::log( ret_err );
-        return PASS( false, -1, "fileCreate - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
            
     // =-=-=-=-=-=-=-
     // make the call to the "create" interface
-    ret_err = resc->call( _comm, "create", &_object );
+    ret_err = resc->call( _comm, "create", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileCreate - failed to call 'create'", ret_err );
+        return PASSMSG( "failed to call 'create'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -55,7 +55,7 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileOpen - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -65,21 +65,21 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileOpen - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
     
     // =-=-=-=-=-=-=-
     // make the call to the "open" interface
-    ret_err = resc->call( _comm, "open", &_object );
+    ret_err = resc->call( _comm, "open", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        eirods::error foo = PASSMSG( "fileOpen - failed to call 'open'", ret_err );
-        eirods::log( foo );
-        return foo;
+        return PASSMSG( "failed to call 'open'", ret_err );
+    
     } else {
         return CODE( _object.file_descriptor() );
+
     }
 
 } // fileOpen
@@ -88,29 +88,21 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
 // Top Level Interface for Resource Plugin POSIX read
 eirods::error fileRead( rsComm_t* _comm, eirods::first_class_object& _object, void* _buf, int _len ) {
     // =-=-=-=-=-=-=-
-    // trap empty file name
-    //if( _object.physical_path().empty() ) {
-    //      eirods::error ret_err = ERROR( false, -1, "fileRead - File Name is Empty." );
-    //      eirods::log( ret_err );
-    //      return ret_err;
-    //}
-     
-    // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileRead - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = resc->call< void*, int >( _comm, "read", &_object, _buf, _len );
+    ret_err = resc->call< void*, int >( _comm, "read", _object, _buf, _len );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileRead - failed to call 'read'", ret_err );
+        return PASSMSG( "failed to call 'read'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -120,27 +112,25 @@ eirods::error fileRead( rsComm_t* _comm, eirods::first_class_object& _object, vo
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX write
 eirods::error fileWrite( rsComm_t* _comm, eirods::first_class_object& _object, void* _buf, int  _len ) {
-   
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileWrite - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
     
     // =-=-=-=-=-=-=-
     // make the call to the "write" interface
-    ret_err = resc->call< void*, int >( _comm, "write", &_object, _buf, _len );
+    ret_err = resc->call< void*, int >( _comm, "write", _object, _buf, _len );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileWrite - failed to call 'write'", ret_err );
+        return PASSMSG( "failed to call 'write'", ret_err );
     } else {
         std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Write successful.";
+        msg << "Write successful.";
         return PASSMSG(msg.str(), ret_err);
     }
 
@@ -152,7 +142,7 @@ eirods::error fileClose( rsComm_t* _comm, eirods::first_class_object& _object ) 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileClose - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -162,17 +152,17 @@ eirods::error fileClose( rsComm_t* _comm, eirods::first_class_object& _object ) 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileClose - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "close" interface
-    ret_err = resc->call( _comm, "close", &_object );
+    ret_err = resc->call( _comm, "close", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileClose - failed to call 'close'", ret_err );
+        return PASSMSG( "failed to call 'close'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -185,7 +175,7 @@ eirods::error fileUnlink( rsComm_t* _comm, eirods::first_class_object& _object )
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileUnlink - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -195,17 +185,17 @@ eirods::error fileUnlink( rsComm_t* _comm, eirods::first_class_object& _object )
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileUnlink - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "unlink" interface
-    ret_err = resc->call( _comm, "unlink", &_object );
+    ret_err = resc->call( _comm, "unlink", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileUnlink - failed to call 'unlink'", ret_err );
+        return PASSMSG( "failed to call 'unlink'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -218,7 +208,7 @@ eirods::error fileStat( rsComm_t* _comm, eirods::first_class_object& _object, st
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileStat - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -228,17 +218,17 @@ eirods::error fileStat( rsComm_t* _comm, eirods::first_class_object& _object, st
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileStat - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "stat" interface
-    ret_err = resc->call< struct stat* >( _comm, "stat", &_object, _statbuf );
+    ret_err = resc->call< struct stat* >( _comm, "stat", _object, _statbuf );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileStat - failed to call 'stat'", ret_err );
+        return PASSMSG( "failed to call 'stat'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -251,7 +241,7 @@ eirods::error fileFstat( rsComm_t* _comm, eirods::first_class_object& _object, s
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileFstat - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -261,17 +251,17 @@ eirods::error fileFstat( rsComm_t* _comm, eirods::first_class_object& _object, s
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileFstat - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "fstat" interface
-    ret_err = resc->call< struct stat* >( _comm, "fstat", &_object, _statbuf );
+    ret_err = resc->call< struct stat* >( _comm, "fstat", _object, _statbuf );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileFstat - failed to call 'fstat'", ret_err );
+        return PASSMSG( "failed to call 'fstat'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -284,7 +274,7 @@ eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, s
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileLseek - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -294,17 +284,17 @@ eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, s
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileLseek - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
-    ret_err = resc->call< size_t, int >( _comm, "lseek", &_object, _offset, _whence );
+    ret_err = resc->call< size_t, int >( _comm, "lseek", _object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileLseek - failed to call 'lseek'", ret_err );
+        return PASSMSG( "failed to call 'lseek'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -317,7 +307,7 @@ eirods::error fileFsync( rsComm_t* _comm, eirods::first_class_object& _object ) 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileFsync - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileFsync - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -327,17 +317,17 @@ eirods::error fileFsync( rsComm_t* _comm, eirods::first_class_object& _object ) 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileFsync - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "fsync" interface
-    ret_err = resc->call( _comm, "fsync", &_object );
+    ret_err = resc->call( _comm, "fsync", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileFsync - failed to call 'fsync'", ret_err );
+        return PASSMSG( "failed to call 'fsync'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -350,7 +340,7 @@ eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileMkdir - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileMkdir - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -360,17 +350,17 @@ eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileMkdir - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "mkdir" interface
-    ret_err = resc->call( _comm, "mkdir", &_object );
+    ret_err = resc->call( _comm, "mkdir", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileMkdir - failed to call 'mkdir'", ret_err );
+        return PASSMSG( "failed to call 'mkdir'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -383,7 +373,7 @@ eirods::error fileChmod( rsComm_t* _comm, eirods::first_class_object& _object ) 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileChmod - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileChmod - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -393,17 +383,17 @@ eirods::error fileChmod( rsComm_t* _comm, eirods::first_class_object& _object ) 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileChmod - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "chmod" interface
-    ret_err = resc->call( _comm, "chmod", &_object );
+    ret_err = resc->call( _comm, "chmod", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileChmod - failed to call 'chmod'", ret_err );
+        return PASSMSG( "failed to call 'chmod'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -416,7 +406,7 @@ eirods::error fileRmdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileRmdir - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileRmdir - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -426,17 +416,17 @@ eirods::error fileRmdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileRmdir - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "rmdir" interface
-    ret_err = resc->call( _comm, "rmdir", &_object );
+    ret_err = resc->call( _comm, "rmdir", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileRmdir - failed to call 'rmdir'", ret_err );
+        return PASSMSG( "failed to call 'rmdir'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -449,7 +439,7 @@ eirods::error fileOpendir( rsComm_t* _comm, eirods::first_class_object& _object 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileOpendir - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileOpendir - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -459,17 +449,17 @@ eirods::error fileOpendir( rsComm_t* _comm, eirods::first_class_object& _object 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileOpendir - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "opendir" interface
-    ret_err = resc->call( _comm, "opendir", &_object );
+    ret_err = resc->call( _comm, "opendir", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileOpendir - failed to call 'opendir'", ret_err );
+        return PASSMSG( "failed to call 'opendir'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -482,7 +472,7 @@ eirods::error fileClosedir( rsComm_t* _comm, eirods::first_class_object& _object
     // =-=-=-=-=-=-=-
     // trap empty file name
     //if( _object.physical_path().empty() ) {
-    //      eirods::error ret_err = ERROR( false, -1, "fileClosedir - File Name is Empty." );
+    //      eirods::error ret_err = ERROR( false, SYS_INVALID_INPUT_PARAM, "fileClosedir - File Name is Empty." );
     //      eirods::log( ret_err );
     //      return ret_err;
     //}
@@ -492,17 +482,17 @@ eirods::error fileClosedir( rsComm_t* _comm, eirods::first_class_object& _object
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileClosedir - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "closedir" interface
-    ret_err = resc->call( _comm, "closedir", &_object );
+    ret_err = resc->call( _comm, "closedir", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileClosedir - failed to call 'closedir'", ret_err );
+        return PASSMSG( "failed to call 'closedir'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -517,17 +507,17 @@ eirods::error fileReaddir( rsComm_t* _comm, eirods::first_class_object& _object,
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileReaddir - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "readdir" interface
-    ret_err = resc->call< struct rodsDirent** >( _comm, "readdir", &_object, _dirent_ptr );
+    ret_err = resc->call< struct rodsDirent** >( _comm, "readdir", _object, _dirent_ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileReaddir - failed to call 'readdir'", ret_err );
+        return PASSMSG( "failed to call 'readdir'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -540,7 +530,7 @@ eirods::error fileStage( rsComm_t* _comm, eirods::first_class_object& _object ) 
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileStage - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileStage - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -550,17 +540,17 @@ eirods::error fileStage( rsComm_t* _comm, eirods::first_class_object& _object ) 
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileStage - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "stage" interface
-    ret_err = resc->call( _comm, "stage", &_object );
+    ret_err = resc->call( _comm, "stage", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileStage - failed to call 'stage'", ret_err );
+        return PASSMSG( "failed to call 'stage'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -575,7 +565,7 @@ eirods::error fileRename( rsComm_t*                   _comm,
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() || _new_file_name.empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileRename - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileRename - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -585,17 +575,17 @@ eirods::error fileRename( rsComm_t*                   _comm,
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileRename - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "rename" interface
-    ret_err = resc->call<  const char* >( _comm, "rename",  &_object, _new_file_name.c_str() );
+    ret_err = resc->call<  const char* >( _comm, "rename",  _object, _new_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileRename - failed to call 'rename'", ret_err );
+        return PASSMSG( "failed to call 'rename'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -608,7 +598,7 @@ eirods::error fileGetFsFreeSpace( rsComm_t* _comm, eirods::first_class_object& _
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileGetFsFreeSpace - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileGetFsFreeSpace - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -618,17 +608,17 @@ eirods::error fileGetFsFreeSpace( rsComm_t* _comm, eirods::first_class_object& _
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileGetFsFreeSpace - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "freespace" interface
-    ret_err = resc->call( _comm, "freespace", &_object );
+    ret_err = resc->call( _comm, "freespace", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileGetFsFreeSpace - failed to call 'stage'", ret_err );
+        return PASSMSG( "failed to call 'stage'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -641,7 +631,7 @@ eirods::error fileTruncate( rsComm_t* _comm, eirods::first_class_object& _object
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileTruncate - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileTruncate - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -651,17 +641,17 @@ eirods::error fileTruncate( rsComm_t* _comm, eirods::first_class_object& _object
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileTruncate - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "truncate" interface
-    ret_err = resc->call( _comm, "truncate", &_object );
+    ret_err = resc->call( _comm, "truncate", _object );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileTruncate - failed to call 'truncate'", ret_err );
+        return PASSMSG( "failed to call 'truncate'", ret_err );
     } else {
         return CODE( ret_err.code() );
     }
@@ -676,7 +666,7 @@ eirods::error fileStageToCache( rsComm_t*                   _comm,
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _cache_file_name.empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileStageToCache - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileStageToCache - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -686,17 +676,17 @@ eirods::error fileStageToCache( rsComm_t*                   _comm,
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc );
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileStageToCache - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "stagetocache" interface
-    ret_err = resc->call< const char* >( _comm, "stagetocache", &_object, _cache_file_name.c_str() );
+    ret_err = resc->call< const char* >( _comm, "stagetocache", _object, _cache_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileStageToCache - failed to call 'stagetocache'", ret_err );
+        return PASSMSG( "failed to call 'stagetocache'", ret_err );
     } else {
         return SUCCESS();
     }
@@ -711,7 +701,7 @@ eirods::error fileSyncToArch( rsComm_t*                   _comm,
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _cache_file_name.empty() ) {
-        eirods::error ret_err = ERROR( -1, "fileSyncToArch - File Name is Empty." );
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileSyncToArch - File Name is Empty." );
         eirods::log( ret_err );
         return ret_err;
     }
@@ -721,17 +711,17 @@ eirods::error fileSyncToArch( rsComm_t*                   _comm,
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc );
     if( !ret_err.ok() ) {
-        return PASS( false, -1, "fileSyncToArch - failed to resolve resource", ret_err );
+        return PASSMSG( "failed to resolve resource", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "synctoarch" interface
-    ret_err = resc->call< const char* >( _comm, "synctoarch", &_object, _cache_file_name.c_str() );
+    ret_err = resc->call< const char* >( _comm, "synctoarch", _object, _cache_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
-        return PASS( false, ret_err.code(), "fileSyncToArch - failed to call 'synctoarch'", ret_err );
+        return PASSMSG( "failed to call 'synctoarch'", ret_err );
     } else {
         return SUCCESS();
     }

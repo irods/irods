@@ -28,7 +28,7 @@ rsFileOpendir (rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp)
     //remoteFlag = resolveHost (&fileOpendirInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileOpendirInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileOpendir - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -102,11 +102,10 @@ int _rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, void **d
 	// log an error, if any
     if( !opendir_err.ok() ) {
 		std::stringstream msg;
-		msg << "_rsFileOpendir: fileOpendir for ";
+		msg << "fileOpendir failed for [";
 		msg <<fileOpendirInp->dirName; 
-		msg << ", status = ";
-		msg << opendir_err.code();
-		eirods::error err = PASS( false, opendir_err.code(), msg.str(), opendir_err );
+		msg << "]";
+		eirods::error err = PASSMSG( msg.str(), opendir_err );
 		eirods::log ( err );
 	}
 
