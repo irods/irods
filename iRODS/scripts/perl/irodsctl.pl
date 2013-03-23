@@ -745,7 +745,7 @@ sub doAllRescTests
                 "nonblocking" => {
                         "setup" => [
                                 "yes | iadmin modresc demoResc name unixResc",
-                                "iadmin mkresc demoResc nonblocking $hostname/var/lib/eirods/nbVault",
+                                "iadmin mkresc demoResc nonblocking $hostname:/var/lib/eirods/nbVault",
                         ],
                         "teardown" => [
                                 "iadmin rmresc demoResc",
