@@ -784,13 +784,12 @@ sub doAllRescTests
                 },
 	);
 
-	# print it out!
-	use Data::Dumper;
-#	print Dumper %resctypes;
-
 	# loop through resource types and test them
+        my $resctypecounter = 0;
 	foreach my $resctype ( keys %resctypes ) {
-
+                $resctypecounter++;
+                print "\n==============================================================\n";
+		print "Resource Type $resctypecounter of ".keys( %resctypes )." : $resctype";
 		print "\n==============================================================\n";
 		my $teststatus = "SUCCESS";		
 		my $cmd;
@@ -802,12 +801,9 @@ sub doAllRescTests
 		# run setup
 		print "[$resctype] SETUP...\n";
 
-#		print Dumper $resctypes{$resctype}{"setup"};
-
 		foreach $cmd ( @{$resctypes{$resctype}{"setup"}} ) {
 			print "[$resctype] :: running command [$cmd]\n";
                         $cmdout = `$cmd 2>&1`;
-#                        print "$cmdout\n";
 		}
 		print "[$resctype] SETUP DONE\n";
 
@@ -835,7 +831,6 @@ sub doAllRescTests
                 foreach $cmd ( @{$resctypes{$resctype}{"teardown"}} ) {
 			print "[$resctype] :: running command [$cmd]\n";
 			$cmdout = `$cmd 2>&1`;
-#			print "$cmdout\n";
                 }
                 print "[$resctype] TEARDOWN DONE\n";
 
