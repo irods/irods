@@ -8,11 +8,24 @@ ifeq ($(EIRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
+DEPS = ""
+
+ifeq ($(EIRODS_BUILD_DEBUG), 0)
+DEPS += hpss
+endif
+
+.PHONY = hpss
+
 INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include \
       -I../../iRODS/server/core/include/ -I../../iRODS/server/icat/include/ -I../../iRODS/server/re/include/ \
       -I../../iRODS/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
       -I/opt/hpss/include  -L/opt/hpss/lib
-all:
+
+
+hpss:
+	${GCC} ${INC} -DHPSS -Dlinux_platform -fPIC -shared -o libhpss.so            libhpss.cpp      /opt/hpss/lib/libhpss.so /opt/hpss/lib/libhpsscs.so
+
+all: ${DEPS}
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libroundrobin.so      libroundrobin.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so        libpassthru.cpp 
@@ -23,5 +36,4 @@ all:
 	$(BOOST_DIR)/stage/lib/libboost_system.a \
 	SYSTEM_LIBZ_SO \
 	SYSTEM_LIBBZ2_SO
-	#${GCC} ${INC} -DHPSS -Dlinux_platform -fPIC -shared -o libhpss.so            libhpss.cpp      /opt/hpss/lib/hpss.a
 	#${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp 
