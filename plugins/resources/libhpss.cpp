@@ -246,58 +246,57 @@ extern "C" {
     /// @brief used for authentication to the hpss server
     ///        for this agent / session
     eirods::error hpss_start_operation( 
-                  eirods::resource_property_map& _prop_map,
-                  eirods::resource_child_map&    _cmap ) {
-printf( "TRYING TO AUTH\n" );
-	int rc;
-	char cwd_path[HPSS_MAX_PATH_NAME];
-	char keytab_file[HPSS_MAX_PATH_NAME] = "/var/hpss/etc/hpss.irods.keytab";
-	char* env, *keytab;
-	hpss_authn_mech_t mech = hpss_authn_mech_unix;
-	int i;
-#if 0
-	env = hpss_Getenv("HPSS_PRIMARY_AUTHN_MECH");
-	if(env != NULL) {
-		if(strcasecmp(env, "UNIX") == 0) {
-			mech=hpss_authn_mech_unix;
-			env = (char*)hpss_Getenv("HPSS_UNIX_KEYTAB_FILE");
-			strcpy(keytab_file, env);
-		}
-		else if(strcasecmp(env,"KRB5") == 0) {
-			mech=hpss_authn_mech_krb5;
-			env = (char*)hpss_Getenv("HPSS_KRB5_KEYTAB_FILE");
-			strcpy(keytab_file, env);
-		}
-		else {
-			printf("Unknown authentication mechanism. Defaulting to Unix.\n");
-			mech=hpss_authn_mech_unix;
-		}
-		/* remove auth_keytab prefix */
-		for(i = 0; i < strlen(keytab_file); i++)
-			if(keytab_file[i] == ':')
-			    break;
-		i++;
-		keytab=keytab_file+i;
-	}
-	else {
-	    printf("Primary authentication not defined.\n");
-	}
-#endif
-printf( "calling hpss_SetLoginCred\n" );
-	if((rc = hpss_SetLoginCred("eirods",
-				    mech,
-				    hpss_rpc_cred_client,
-				    hpss_rpc_auth_type_keytab,
-				    keytab_file)) < 0 ) {
-	    printf("could not authenticate.\n");
-	} else {
-            printf( "Authenticated.\n" );
+        eirods::resource_property_map& _prop_map,
+        eirods::resource_child_map&    _cmap ) {
+        // =-=-=-=-=-=-=-
+        // get the keytab property
+        std::string keytab;
+        eirods::error err = _prop_map.get< std::string >( "keytab", keytab );
+        if( !err.ok() ) {
+            return PASS( err );
         }
-printf( "calling hpss_SetLoginCred. done.\n" );
 
+        // =-=-=-=-=-=-=-
+        // get the user property
+        std::string user;
+        err = _prop_map.get< std::string >( "user", user );
+        if( !err.ok() ) {
+            return PASS( err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call the login
+	int status = hpss_SetLoginCred( const_cast<char*>( user.c_str() ),
+                                        hpss_authn_mech_unix,
+                                        hpss_rpc_cred_client,
+                                        hpss_rpc_auth_type_keytab,
+                                        const_cast<char*>( keytab.c_str() ) );
+        if( status < 0 ) {
+	    std::stringstream msg;
+            msg << "Could not authenticate [";
+            msg << user;
+            msg << "] using keytab [ ";
+            msg << keytab;
+            msg << "]";
+            return ERROR( status, msg.str() );
+	}
+
+        // =-=-=-=-=-=-=-
+        // win
         return SUCCESS();
 
     } // hpss_start_operation
+
+    // =-=-=-=-=-=-=-
+    /// @brief used for releasing authentication to the hpss server
+    ///        for this agent / session
+    eirods::error hpss_stop_operation( 
+                  eirods::resource_property_map& _prop_map,
+                  eirods::resource_child_map&    _cmap ) {
+        //hpss_PurgeLoginCred();
+        return SUCCESS();
+
+    } // hpss_stop_operation
 
     // =-=-=-=-=-=-=-
     // 3. Define operations which will be called by the file*
@@ -1518,6 +1517,7 @@ printf( "calling hpss_SetLoginCred. done.\n" );
             // =-=-=-=-=-=-=-
             // set the start op for authentication 
             set_start_operation( "hpss_start_operation" );
+            set_stop_operation( "hpss_stop_operation" );
 
             // =-=-=-=-=-=-=-
             // parse out key value pairs into the property list
