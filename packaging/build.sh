@@ -188,6 +188,7 @@ if [ "$1" == "clean" ] ; then
     cd $DETECTEDDIR/../external
     rm -rf boost*
     rm -rf libarchive*
+    rm -rf hpssclient/
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1
@@ -383,29 +384,6 @@ else
     GREPCMD="grep"
 fi
 
-#BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
-#if [ "$BOOST" == "" ] ; then
-#    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-#        PREFLIGHT="$PREFLIGHT libboost-all-dev"
-#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost-devel"
-#    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost-devel"
-#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
-#        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
-#        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
-#    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost"
-#    else
-#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
-#    fi
-#else
-#    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
-#    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
-#    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
-#fi
-
 BZIP2DEV=`find /usr -name bzlib.h 2> /dev/null`
 if [ "$BZIP2DEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -438,30 +416,6 @@ if [ "$ZLIBDEV" == "" ] ; then
 else
     echo "Detected zlib library [$ZLIBDEV]"
 fi
-
-
-#FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
-#FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
-#if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
-#    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
-#        if [ "$DETECTEDOSVERSION" \< "11" ]; then
-#            PREFLIGHT="$PREFLIGHT libarchive1 libarchive-dev"
-#        else
-#            PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
-#        fi
-#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-#        PREFLIGHT="$PREFLIGHT libarchive libarchive-devel"
-#    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-#        PREFLIGHT="$PREFLIGHT libarchive2 libarchive-devel"
-#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-#        PREFLIGHT="$PREFLIGHT libarchive2 libarchive_dev"
-#    # MacOSX is distributed with libarchive - in /usr/lib
-#    else
-#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://libarchive.github.com/"
-#    fi
-#else
-#    echo "Detected libarchive library [$FINDLIBARCHIVE]"
-#fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
@@ -498,6 +452,87 @@ if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
 else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
 fi
+
+# needed to build hpss client
+LEX=`which lex`
+if [[ "$?" != "0" || `echo $LEX | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT flex"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT flex"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected lex binary [$LEX]"
+fi
+
+# needed to build hpss client
+YACC=`which yacc`
+if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT bison"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT bison"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected yacc binary [$YACC]"
+fi
+
+# needed to build hpss client
+KSH=`which ksh`
+if [[ "$?" != "0" || `echo $KSH | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT ksh"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT ksh"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected ksh binary [$KSH]"
+fi
+
+# needed to build hpss client
+LIBEDIT=`find /usr/include -name readline.h 2> /dev/null`
+if [ "$LIBEDIT" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libedit-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT readline-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected readline.h [$LIBEDIT]"
+fi
+
 
 EASYINSTALL=`which easy_install`
 if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
@@ -654,6 +689,30 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
+
+    if [ "$RELEASE" == "1" ] ; then
+        cd $BUILDDIR/external/
+        # grab from git
+        echo "${text_green}${text_bold}Downloading HPSS client from RENCI${text_reset}"
+        rm -rf hpssclient
+#        git clone ssh://tgr@code.renci.org/gitroot/hpssclient
+        cp -r /projects/irods/hpssclient .
+        # copy to right place
+        cd hpssclient
+        gunzip 7.4_clnt_src.tar.gz
+        tar xf 7.4_clnt_src.tar
+        rm -rf /opt/hpss
+        mkdir -p /opt
+        cp -r 7.4_clnt_src /opt/hpss
+        # build it
+        echo "${text_green}${text_bold}Building the HPSS client${text_reset}"
+        cd /opt/hpss/
+        make clnt
+#        # create the .a here
+#        cd $BUILDDIR/external/
+#        for file in `find /opt/hpss -name *.o`; do ar cq hpss.a $file; done
+#        ar d hpss.a /opt/hpss/src/log/api/cs_LogInit_nothread.o
+    fi
 
 fi
 
