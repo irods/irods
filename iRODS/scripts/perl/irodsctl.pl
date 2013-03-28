@@ -784,16 +784,16 @@ sub doAllRescTests
                                 "yes | iadmin modresc origResc name demoResc",
                         ],
                 },
-                "hpss" => {
-                        "setup" => [
-                                "yes | iadmin modresc demoResc name origResc",
-                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab'",
-                        ],
-                        "teardown" => [
-                                "iadmin rmresc demoResc",
-                                "yes | iadmin modresc origResc name demoResc",
-                        ],
-                },
+#                "hpss" => {
+#                        "setup" => [
+#                                "yes | iadmin modresc demoResc name origResc",
+#                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab'",
+#                        ],
+#                        "teardown" => [
+#                                "iadmin rmresc demoResc",
+#                                "yes | iadmin modresc origResc name demoResc",
+#                        ],
+#                },
 	);
 
 	# loop through resource types and test them
