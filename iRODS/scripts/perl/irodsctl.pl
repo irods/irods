@@ -744,24 +744,26 @@ sub doAllRescTests
                 },    
                 "nonblocking" => {
                         "setup" => [
-                                "yes | iadmin modresc demoResc name unixResc",
+                                "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc nonblocking $hostname:/var/lib/eirods/nbVault",
                         ],
                         "teardown" => [
                                 "iadmin rmresc demoResc",
-                                "yes | iadmin modresc unixResc name demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
                         ],
                 },
                 "passthru" => {
                         "setup" => [
-                                "yes | iadmin modresc demoResc name unixResc",
+                                "yes | iadmin modresc demoResc name origResc",
                                 "iadmin mkresc demoResc passthru",
-                                "iadmin addchildtoresc demoResc unixResc",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
+                                "iadmin addchildtoresc demoResc unix1Resc",
                         ],
                         "teardown" => [
-                                "iadmin rmchildfromresc demoResc unixResc",
+                                "iadmin rmchildfromresc demoResc unix1Resc",
+                                "iadmin rmresc unix1Resc",
                                 "iadmin rmresc demoResc",
-                                "yes | iadmin modresc unixResc name demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
                         ],
                 },
                 "roundrobin" => {
@@ -778,6 +780,16 @@ sub doAllRescTests
                                 "iadmin rmchildfromresc demoResc unix1Resc",
                                 "iadmin rmresc unix2Resc",
                                 "iadmin rmresc unix1Resc",
+                                "iadmin rmresc demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
+                        ],
+                },
+                "hpss" => {
+                        "setup" => [
+                                "yes | iadmin modresc demoResc name origResc",
+                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab'",
+                        ],
+                        "teardown" => [
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
                         ],
@@ -905,8 +917,6 @@ sub doTest
 	    printNotice( "run locally.\n" );
  
 	}
-
-    system( "rm -r /var/lib/eirods/iRODS/Vault/home/rods/*" );
 
 	# Pound test
 #	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );
