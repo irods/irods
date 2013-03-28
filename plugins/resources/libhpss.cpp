@@ -74,6 +74,7 @@ extern "C" {
 #include <hpss_Getenv.h>
 #include <hpss_limits.h>
 }
+
 // =-=-=-=-=-=-=-
 // 2. Define utility functions that the operations might need
 
@@ -247,33 +248,52 @@ extern "C" {
     eirods::error hpss_start_operation( 
                   eirods::resource_property_map& _prop_map,
                   eirods::resource_child_map&    _cmap ) {
-
-        std::string keytab;
-        eirods::error err = _prop_map.get< std::string >("keytab", keytab );
-        if( !err.ok() ) {
-            return PASS( err );
-        }
-
-        std::string user;
-        err = _prop_map.get< std::string >( "user", user );
-        if( !err.ok() ) {
-            return PASS( err );
-        }
-
-	int status = hpss_SetLoginCred( const_cast<char*>( user.c_str() ),
-                                        hpss_authn_mech_unix,
-                                        hpss_rpc_cred_client,
-                                        hpss_rpc_auth_type_keytab,
-                                        const_cast<char*>( keytab.c_str() ) );
-        if( status < 0 ) {
-	    std::stringstream msg;
-            msg << "Could not authenticate [";
-            msg << user;
-            msg << "] using keytab [ ";
-            msg << keytab;
-            msg << "]";
-            return ERROR( status, msg.str() );
+printf( "TRYING TO AUTH\n" );
+	int rc;
+	char cwd_path[HPSS_MAX_PATH_NAME];
+	char keytab_file[HPSS_MAX_PATH_NAME] = "/var/hpss/etc/hpss.irods.keytab";
+	char* env, *keytab;
+	hpss_authn_mech_t mech = hpss_authn_mech_unix;
+	int i;
+#if 0
+	env = hpss_Getenv("HPSS_PRIMARY_AUTHN_MECH");
+	if(env != NULL) {
+		if(strcasecmp(env, "UNIX") == 0) {
+			mech=hpss_authn_mech_unix;
+			env = (char*)hpss_Getenv("HPSS_UNIX_KEYTAB_FILE");
+			strcpy(keytab_file, env);
+		}
+		else if(strcasecmp(env,"KRB5") == 0) {
+			mech=hpss_authn_mech_krb5;
+			env = (char*)hpss_Getenv("HPSS_KRB5_KEYTAB_FILE");
+			strcpy(keytab_file, env);
+		}
+		else {
+			printf("Unknown authentication mechanism. Defaulting to Unix.\n");
+			mech=hpss_authn_mech_unix;
+		}
+		/* remove auth_keytab prefix */
+		for(i = 0; i < strlen(keytab_file); i++)
+			if(keytab_file[i] == ':')
+			    break;
+		i++;
+		keytab=keytab_file+i;
 	}
+	else {
+	    printf("Primary authentication not defined.\n");
+	}
+#endif
+printf( "calling hpss_SetLoginCred\n" );
+	if((rc = hpss_SetLoginCred("eirods",
+				    mech,
+				    hpss_rpc_cred_client,
+				    hpss_rpc_auth_type_keytab,
+				    keytab_file)) < 0 ) {
+	    printf("could not authenticate.\n");
+	} else {
+            printf( "Authenticated.\n" );
+        }
+printf( "calling hpss_SetLoginCred. done.\n" );
 
         return SUCCESS();
 
@@ -311,10 +331,10 @@ extern "C" {
         hpss_cos_hints_t hints_in, hints_out;
         hpss_cos_priorities_t hints_pri;
 
-        memset(&hints_in, 0, sizeof(hints_in));
+        memset(&hints_in,  0, sizeof(hints_in));
         memset(&hints_out, 0, sizeof(hints_out));
         memset(&hints_pri, 0, sizeof(hints_pri));
-
+#if 0
         // =-=-=-=-=-=-=-
         // extract the rule results, this could possibly be a desired
         // Class Of Service for the HPSS system.
@@ -323,12 +343,15 @@ extern "C" {
 	    hints_in.COSId = boost::lexical_cast<unsigned int>( rule_results );
 	    rodsLog( LOG_NOTICE, "HPSS - COS Hint for Create :: [%d]", hints_in.COSId );
         }
-
+#endif
         // =-=-=-=-=-=-=-
         // make call to umask & open for create
         mode_t myMask = umask((mode_t) 0000);
-        int    fd     = hpss_Open( const_cast<char*>(fco.physical_path().c_str()), O_RDWR|O_CREAT|O_EXCL,
+        rodsLog( LOG_NOTICE, "XXXX - hpss_file_create_plugin :: A" );
+        char* phypath = strdup(fco.physical_path().c_str());
+        int    fd     = hpss_Open( phypath, O_RDWR|O_CREAT|O_EXCL,
                                    fco.mode(), &hints_in, &hints_pri, &hints_out );
+        rodsLog( LOG_NOTICE, "XXXX - hpss_file_create_plugin :: B" );
 
         // =-=-=-=-=-=-=-
         // reset the old mask 
