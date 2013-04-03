@@ -697,17 +697,30 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         rm -rf hpssclient
 #        git clone ssh://tgr@code.renci.org/gitroot/hpssclient
         cp -r /projects/irods/hpssclient .
-        # copy to right place
+        # copy down into /opt
         cd hpssclient
+        gunzip 7.3_clnt_src.tar.gz
+        tar xf 7.3_clnt_src.tar
         gunzip 7.4_clnt_src.tar.gz
         tar xf 7.4_clnt_src.tar
-        rm -rf /opt/hpss
         mkdir -p /opt
-        cp -r 7.4_clnt_src /opt/hpss
-        # build it
-        echo "${text_green}${text_bold}Building the HPSS client${text_reset}"
-        cd /opt/hpss/
+        rm -rf /opt/hpss7.3
+        rm -rf /opt/hpss7.4
+        cp -r 7.3_clnt_src /opt/hpss7.3
+        cp -r 7.4_clnt_src /opt/hpss7.4
+        # symlink and build 7.3
+        echo "${text_green}${text_bold}Building the HPSS 7.3 client${text_reset}"
+        rm -rf /opt/hpss
+        ln -s /opt/hpss7.3 /opt/hpss
+        cd /opt/hpss7.3
         make clnt
+        # symlink and build 7.4
+        echo "${text_green}${text_bold}Building the HPSS 7.4 client${text_reset}"
+        rm -rf /opt/hpss
+        ln -s /opt/hpss7.4 /opt/hpss
+        cd /opt/hpss7.4
+        make clnt
+# no longer building the .a - linking against the .so's directly
 #        # create the .a here
 #        cd $BUILDDIR/external/
 #        for file in `find /opt/hpss -name *.o`; do ar cq hpss.a $file; done
