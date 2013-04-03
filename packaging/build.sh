@@ -461,7 +461,7 @@ if [[ "$?" != "0" || `echo $LEX | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT flex"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT "
+        PREFLIGHT="$PREFLIGHT flex"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT "
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
@@ -481,7 +481,7 @@ if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT "
+        PREFLIGHT="$PREFLIGHT bison"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT "
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
@@ -501,7 +501,7 @@ if [[ "$?" != "0" || `echo $KSH | awk '{print $1}'` == "no" ]] ; then
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT ksh"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT "
+        PREFLIGHT="$PREFLIGHT ksh"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT "
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
@@ -521,7 +521,7 @@ if [ "$LIBEDIT" == "" ] ; then
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT readline-devel"
     elif [ "$DETECTEDOS" == "SuSE" ] ; then
-        PREFLIGHT="$PREFLIGHT "
+        PREFLIGHT="$PREFLIGHT readline-devel"
     elif [ "$DETECTEDOS" == "Solaris" ] ; then
         PREFLIGHT="$PREFLIGHT "
     elif [ "$DETECTEDOS" == "MacOSX" ] ; then
