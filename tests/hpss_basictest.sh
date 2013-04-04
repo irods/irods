@@ -19,7 +19,7 @@ set -e
 iadmin lr
 
 # create hpss resource
-RESCNAME="small_test_hpss"
+RESCNAME="basictest_hpss_resc"
 HOSTNAME=`hostname`
 iadmin mkresc $RESCNAME hpss $HOSTNAME:/VaultPath "user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab"
 
@@ -27,7 +27,7 @@ iadmin mkresc $RESCNAME hpss $HOSTNAME:/VaultPath "user=eirods;keytab=/var/hpss/
 iadmin lr $RESCNAME
 
 # iput
-TESTFILE="smallhpsstestfile"
+TESTFILE="basichpsstestfile"
 DATETIME=`date`
 DATETIME=${DATETIME//[[:space:]]} # remove spaces
 DATETIME=${DATETIME//:}           # remove colons
