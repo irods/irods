@@ -690,6 +690,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
 
+    # build HPSS clients
     if [ "$RELEASE" == "1" ] ; then
         cd $BUILDDIR/external/
         # grab from git
@@ -697,6 +698,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         rm -rf hpssclient
 #        git clone ssh://tgr@code.renci.org/gitroot/hpssclient
         cp -r /projects/irods/hpssclient .
+#        cp -r $BUILDDIR/../hpssclient .
         # copy down into /opt
         cd hpssclient
         gunzip 7.3_clnt_src.tar.gz
@@ -708,23 +710,34 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         rm -rf /opt/hpss7.4
         cp -r 7.3_clnt_src /opt/hpss7.3
         cp -r 7.4_clnt_src /opt/hpss7.4
-        # symlink and build 7.3
+        # copy and build 7.3
+        cd $BUILDDIR/external/hpssclient
         echo "${text_green}${text_bold}Building the HPSS 7.3 client${text_reset}"
         rm -rf /opt/hpss
-        ln -s /opt/hpss7.3 /opt/hpss
-        cd /opt/hpss7.3
+        cp -r /opt/hpss7.3 /opt/hpss
+        cd /opt/hpss
         make clnt
-        # symlink and build 7.4
+        # copy and build 7.4
+        cd $BUILDDIR/external/hpssclient
         echo "${text_green}${text_bold}Building the HPSS 7.4 client${text_reset}"
         rm -rf /opt/hpss
-        ln -s /opt/hpss7.4 /opt/hpss
-        cd /opt/hpss7.4
+        cp -r /opt/hpss7.4 /opt/hpss
+        cd /opt/hpss
         make clnt
-# no longer building the .a - linking against the .so's directly
-#        # create the .a here
-#        cd $BUILDDIR/external/
-#        for file in `find /opt/hpss -name *.o`; do ar cq hpss.a $file; done
-#        ar d hpss.a /opt/hpss/src/log/api/cs_LogInit_nothread.o
+        # copying the testing keytabs into place
+        cd $BUILDDIR/external/hpssclient
+        rm -rf /var/hpss
+        rm -rf /var/hpss7.3
+        rm -rf /var/hpss7.4
+        gunzip 7.3_var_hpss_etc.tar.gz
+        tar xf 7.3_var_hpss_etc.tar
+        gunzip 7.4_var_hpss_etc.tar.gz
+        tar xf 7.4_var_hpss_etc.tar
+        mkdir -p /var/hpss7.3
+        mkdir -p /var/hpss7.4
+        cp -r 7.3_var_hpss_etc /var/hpss7.3/etc
+        cp -r 7.4_var_hpss_etc /var/hpss7.4/etc
+        ln -s /var/hpss7.4 /var/hpss
     fi
 
 fi
