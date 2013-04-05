@@ -74,16 +74,16 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return status;
     }
 
-    int local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
+    // =-=-=-=-=-=-=-
+    // determine hierarchy string
     if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
         std::string       hier;
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                       dataObjInp, hier, host, local );
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg <<" :: failed in eirods::resource_redirect for [";
+            msg <<" :: failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -95,10 +95,6 @@ rsDataObjPhymv (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } // if keyword
-
-    //if( LOCAL_HOST != local ) {
-    //    return _rcDataObjPhymv( host->conn, dataObjInp, transStat );
-    //}
 
     *transStat = (transferStat_t*)malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));

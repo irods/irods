@@ -105,11 +105,10 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 		// log an error, if any
 		if( !opendir_err.ok() ) {
 			std::stringstream msg;
-			msg << "_rsFileRmdir: fileOpendir for ";
+			msg << "fileOpendir failed for [";
 			msg << fileRmdirInp->dirName; 
-			msg << ", status = ";
-			msg << status;
-			eirods::error err = PASS( false, status, msg.str(), opendir_err );
+			msg << "]";
+			eirods::error err = PASSMSG( msg.str(), opendir_err );
 			eirods::log ( err );
 			return (status);
 		}
@@ -139,11 +138,10 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 			eirods::error stat_err = fileStat( rsComm, myPath_obj, &statbuf );
 			if( !stat_err.ok() ) {
 				std::stringstream msg;
-				msg << "_rsFileRmdir: fileStat for ";
+				msg << "fileStat failed for [";
 				msg << myPath;
-				msg << ", status = ";
-				msg << stat_err.code();
-				eirods::error log_err = PASS( false, stat_err.code(), msg.str(), stat_err );
+				msg << "]";
+				eirods::error log_err = PASSMSG( msg.str(), stat_err );
 				eirods::log( log_err ); 
 
                 // =-=-=-=-=-=-=-
@@ -151,11 +149,10 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 				eirods::error closedir_err = fileClosedir( rsComm, myPath_obj );
 				if( !closedir_err.ok() ) {
 					std::stringstream msg;
-					msg << "_rsFileRmdir: fileClosedir for ";
+					msg << "fileClosedir for [";
 					msg << myPath;
-					msg << ", status = ";
-					msg << status;
-					eirods::error log_err = PASS( false, stat_err.code(), msg.str(), closedir_err );
+					msg << "]";
+					eirods::error log_err = PASSMSG( msg.str(), closedir_err );
 					eirods::log( log_err ); 
 				}
 
@@ -170,9 +167,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 				// handle case where file is found
 				eirods::error unlink_err = fileUnlink( rsComm, myPath_obj );
 				if( !unlink_err.ok() ) {
-					eirods::error log_err = PASS( false, unlink_err.code(), 
-					                        "_rsFileRmDir - error during unlink.", 
-											unlink_err );
+					eirods::error log_err = PASSMSG( "error during unlink.", unlink_err );
 					eirods::log( log_err );
 				}
 				
@@ -204,11 +199,10 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 				eirods::error closedir_err = fileClosedir( rsComm, myPath_obj );
 				if( !closedir_err.ok() ) {
 					std::stringstream msg;
-					msg << "_rsFileRmdir: fileClosedir for ";
+					msg << "fileClosedir failed for [";
 					msg << myPath;
-					msg << ", status = ";
-					msg << closedir_err.code();
-					eirods::error log_err = PASS( false, closedir_err.code(), msg.str(), closedir_err );
+					msg << "]";
+					eirods::error log_err = PASSMSG( msg.str(), closedir_err );
 					eirods::log( log_err ); 
 				}
 				
@@ -227,11 +221,10 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 		eirods::error closedir_err = fileClosedir( rsComm, coll_obj );
 		if( !closedir_err.ok() ) {
 			std::stringstream msg;
-			msg << "_rsFileRmdir: fileClosedir for ";
+			msg << "fileClosedir failed for [";
 			msg << fileRmdirInp->dirName;
-			msg << ", status = ";
-			msg << closedir_err.code();
-			eirods::error log_err = PASS( false, closedir_err.code(), msg.str(), closedir_err );
+			msg << "]";
+			eirods::error log_err = PASSMSG( msg.str(), closedir_err );
 			eirods::log( log_err ); 
 		}
 
@@ -246,11 +239,10 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 	eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
 	if( !rmdir_err.ok() ) {
 		std::stringstream msg;
-		msg << "_rsFileRmdir: fileRmdir for ";
+		msg << "fileRmdir failed for [";
 		msg << fileRmdirInp->dirName;
-		msg << ", status = ";
-		msg << rmdir_err.code();
-		eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
+		msg << "]";
+		eirods::error err = PASSMSG( msg.str(), rmdir_err );
 		eirods::log ( err );
 	}
 

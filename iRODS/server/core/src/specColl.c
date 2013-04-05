@@ -419,9 +419,10 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         eirods::error err = eirods::get_resc_info( specColl->resource, *myDataObjInfo->rescInfo );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "specCollSubStat - failed to get resource info";
+            msg << "failed to get resource info [";
             msg << specColl->resource;
-            eirods::log( PASS( false, -1, msg.str(), err ) );
+            msg << "]";
+            eirods::log( PASSMSG( msg.str(), err ) );
             freeDataObjInfo (myDataObjInfo);
             *dataObjInfo = NULL;
             return err.code();

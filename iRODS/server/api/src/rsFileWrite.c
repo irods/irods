@@ -114,11 +114,10 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
     // log error if necessary
     if( !write_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileWrite: fileWrite for ";
+        msg << "fileWrite for [";
         msg << file_obj.physical_path();
-        msg << ", status = ";
-        msg << write_err.code();
-        eirods::error err = PASS( false, write_err.code(), msg.str(), write_err );
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), write_err );
         eirods::log( err ); 
     }
 

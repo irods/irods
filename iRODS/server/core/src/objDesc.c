@@ -520,7 +520,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
             std::string type;
             eirods::error err = eirods::get_resource_property< std::string >( dataObjInfo->rescInfo->rescName, "type", type );
             if( !err.ok() ) {
-                eirods::log( PASS( false, -1, "initDataOprInp - failed.", err ) );
+                eirods::log( PASS( err ) );
             } else {
                 if( "unix file system" == type ) {
                     addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");

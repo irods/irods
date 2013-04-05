@@ -2,7 +2,7 @@
 # EPM Variables
 # =-=-=-=-=-=-=-
 %product Enterprise iRODS - Development Library
-%copyright 2012 by Renaissance Computing Institute, All Rights Reserved.
+%copyright 2012-2013 by Renaissance Computing Institute, All Rights Reserved.
 %vendor Renaissance Computing Institute <info@eirods.org>
 %license LICENSE
 %readme README

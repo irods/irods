@@ -585,19 +585,14 @@ runCmd(0, "irm -f $F1");
 runCmd(0, "iadmin lr $Resc | grep resc_net:");
 $ipIx=index($cmdStdout,"net:");
 $hostName=substr($cmdStdout, $ipIx+4);
+$hostName = `hostname`;
 chomp($hostName);
 printf("hostName:%s\n",$hostName);
 
 runCmd(1, "iadmin rmresc $Resc2");
 runCmd(0, "echo yes | iadmin modresc $Resc name $Resc2");
 runCmd(0, "echo yes | iadmin modresc $Resc2 name $Resc");
-#runCmd(2, "iadmin mkresc $Resc2");
-#runCmd(2, "iadmin mkresc $Resc2 badType");
-#runCmd(2, "iadmin mkresc $Resc2 'unix file system'"); # JMC :: ok to not have a host or vault path
-#runCmd(2, "iadmin mkresc $Resc2 'unix file system' badClass");
-#runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache");# JMC :: ok to not have a host or vault path
-#runCmd(2, "iadmin mkresc $Resc2 'unix file system' cache $hostName"); # Okay not to have a vault path now - hcj
-runCmd(0, "iadmin mkresc $Resc2 'unix file system' cache $hostName:$Resc2Path");
+runCmd(0, "iadmin mkresc  $Resc2 'unix file system' $hostName:$Resc2Path");
 runCmd(0, "iadmin modresc $Resc2 comment 'this is a comment'");
 runCmd(0, "iadmin modresc $Resc2 freespace 123456789");
 runCmd(0, "iadmin modresc $Resc2 info 'this is info field'");

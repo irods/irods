@@ -56,7 +56,7 @@ namespace eirods {
         template< typename T >
         error get_property( const std::string& _key, T& _val ) {
             error ret = properties_.get< T >( _key, _val );
-            return PASS( ret.status(), ret.code(), "resource::get_property", ret );
+            return PASSMSG( "resource::get_property", ret );
         } // get_property
 
         // =-=-=-=-=-=-=-
@@ -64,7 +64,7 @@ namespace eirods {
         template< typename T >
         error set_property( const std::string& _key, const T& _val ) {
             error ret = properties_.set< T >( _key, _val );
-            return PASS( ret.status(), ret.code(), "resource::set_property", ret );
+            return PASSMSG( "resource::set_property", ret );
         } // set_property
 
         // =-=-=-=-=-=-=-
@@ -103,110 +103,81 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {        
-                return operations_[ _op ].call( _comm, &properties_, &children_, _obj );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call( ctx );
+        
         } // call - 
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
         template< typename T1 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {        
-                return operations_[ _op ].call< T1 >( _comm, &properties_, &children_, _obj, _t1 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            } } // call - T1 
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call< T1 >( ctx, _t1 );
+        
+        } // call - T1
+        
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 2 params
         template< typename T1, typename T2 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2 >( _comm, &properties_, &children_, _obj, _t1, _t2 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+                return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
+        
         } // call - T1, T2
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 3 params
         template< typename T1, typename T2, typename T3 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2, T3 _t3 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3 >( _comm, &properties_, &children_, _obj, _t1, _t2, _t3 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call< T1, T2, T3 >( ctx, _t1, _t2, _t3 );
+            
         } // call - T1, T2, T3
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 4 params
         template< typename T1, typename T2, typename T3, typename T4 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return  operations_[ _op ].call< T1, T2, T3, T4 >( _comm, &properties_, &children_, _obj, _t1, _t2, _t3, _t4 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return  operations_[ _op ].call< T1, T2, T3, T4 >( ctx, _t1, _t2, _t3, _t4 );
+            
         } // call - T1, T2, T3, T4
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 5 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5 >( _comm, &properties_, &children_, _obj, _t1, _t2, _t3, _t4, _t5 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5 >( ctx, _t1, _t2, _t3, _t4, _t5 );
+            
         } // call - T1, T2, T3, T4, T5
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 6 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( _comm, &properties_, &children_, _obj, _t1, _t2, _t3, _t4, 
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( ctx, _t1, _t2, _t3, _t4, 
                                                                           _t5, _t6 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
         } // call - T1, T2, T3, T4, T5, T6
  
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 7 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( _comm, &properties_, &children_, _obj, _t1, _t2, _t3, 
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( ctx, _t1, _t2, _t3, 
                                                                               _t4, _t5, _t6, _t7 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
         } // call - T1, T2, T3, T4, T5, T6, T7
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 8 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object* _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
-            error ret = check_operation_params( _op, _comm, _obj );
-            if( ret.ok() ) {
-                return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( _comm, &properties_, &children_, _obj, _t1, _t2, 
-                                                                                  _t3, _t4, _t5, _t6, _t7, _t8 );
-            } else {
-                return PASS( false, -1, "check_operation_params failed.", ret );
-            }
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
+            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
         } // call - T1, T2, T3, T4, T5, T6, T7, T8
 
     protected:
@@ -232,14 +203,6 @@ namespace eirods {
         // =-=-=-=-=-=-=- 
         /// @brief operations to be loaded from the plugin
         lookup_table< operation_wrapper > operations_;    
-
-    private:
-
-        // =-=-=-=-=-=-=-
-        // function which checks incoming parameters for the operator() to reduce
-        // code duplication in the morass of template overloads
-        error check_operation_params( const std::string&, rsComm_t*, first_class_object* );
-
        
     }; // class resource
 

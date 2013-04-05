@@ -472,10 +472,10 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
             savedStatus = err.code();
             myRei->doi->rescInfo = NULL;
             std::stringstream msg;
-            msg << "touchupPackedRei - failed to resolve resource \"";
+            msg << "failed to resolve resource [";
             msg << rescName;
-            msg << "\"";
-            eirods::log( PASS( false, -1, msg.str(), err ) );
+            msg << "]";
+            eirods::log( PASSMSG( msg.str(), err ) );
         } else {
             myRei->doi->rescInfo = rescInfo;
         }
@@ -496,10 +496,10 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
                 savedStatus = err.code();
                 rescGrpInfo->rescInfo = NULL;
                 std::stringstream msg;
-                msg << "touchupPackedRei - failed to resolve resource \"";
+                msg << "failed to resolve resource [";
                 msg << rescName;
-                msg << "\"";
-                eirods::log( PASS( false, -1, msg.str(), err ) );
+                msg << "]";
+                eirods::log( PASSMSG( msg.str(), err ) );
             } else {
                 rescGrpInfo->rescInfo = rescInfo;
             }

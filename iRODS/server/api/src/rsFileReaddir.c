@@ -93,11 +93,10 @@ int _rsFileReaddir( rsComm_t*         _comm,
                                              _rods_dirent );
     if( !readdir_err.ok() ) {
 		std::stringstream msg;
-		msg << "_rsFileReaddir: fileReaddir for ";
+		msg << "fileReaddir failed for [";
 		msg << FileDesc[ _file_readdir_inp->fileInx].fileName;
-		msg << ", status = ";
-		msg << readdir_err.code();
-		eirods::error err = PASS( false, readdir_err.code(), msg.str(), readdir_err );
+		msg << "]";
+		eirods::error err = PASSMSG( msg.str(), readdir_err );
 		eirods::log ( err );
 
         return readdir_err.code();

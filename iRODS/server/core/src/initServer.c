@@ -38,7 +38,6 @@ static int BrokenPipeCnt = 0;
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
 {
-    int status;
     rodsServerHost_t *tmpRodsServerHost;
     char *myHostAddr;
     char *myZoneName;
@@ -85,10 +84,11 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     }
 
     /* assume it is remote */
-    if (tmpRodsServerHost->localFlag == UNKNOWN_HOST_LOC)
+    if (tmpRodsServerHost->localFlag == UNKNOWN_HOST_LOC) {
         tmpRodsServerHost->localFlag = REMOTE_HOST;
+    }
 
-    status = queRodsServerHost (&ServerHostHead, tmpRodsServerHost);
+    int status = queRodsServerHost (&ServerHostHead, tmpRodsServerHost);
     *rodsServerHost = tmpRodsServerHost;
 
     return (tmpRodsServerHost->localFlag);
@@ -238,7 +238,7 @@ initServerInfo (rsComm_t *rsComm)
 
     eirods::error ret = resc_mgr.init_from_catalog( rsComm );
     if( !ret.ok() ) {
-        eirods::error log_err = PASS( false, -1, "initServerInfo - init_from_catalog failed", ret );
+        eirods::error log_err = PASSMSG( "init_from_catalog failed", ret );
         eirods::log( log_err );
     }
 

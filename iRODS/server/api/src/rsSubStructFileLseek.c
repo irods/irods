@@ -88,11 +88,10 @@ int _rsSubStructFileLseek( rsComm_t*                _comm,
                                          _lseek_inp->whence ); 
     if( !lseek_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileLseek - fileLseek failed for fd [";
+        msg << "fileLseek failed for fd [";
         msg << struct_obj.file_descriptor();
-        msg << ", status = ";
-        msg << lseek_err.code();
-        eirods::log( PASS( false, -1, msg.str(), lseek_err ) );
+        msg << "]";
+        eirods::log( PASSMSG( msg.str(), lseek_err ) );
         return lseek_err.code();
 
     } else {

@@ -115,33 +115,30 @@ rsStructFileExtAndReg (rsComm_t *rsComm,
     rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
     rescGroupName = L1desc[l1descInx].dataObjInfo->rescGroupName;
     //remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
-    eirods::error ret = eirods::get_host_for_hier_string( hier.c_str(), remoteFlag, rodsServerHost );
-    if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsStructFileExtAndReg - failed in call to eirods::get_host_for_hier_string", ret ) );
-        return -1;
-    }
+    //eirods::error ret = eirods::get_host_for_hier_string( hier.c_str(), remoteFlag, rodsServerHost );
+    //if( !ret.ok() ) {
+    //    eirods::log( PASSMSG( "rsStructFileExtAndReg - failed in call to eirods::get_host_for_hier_string", ret ) );
+    //    return -1;
+    //}
 
     bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
 
-    if (remoteFlag == REMOTE_HOST) {
+    if( local == REMOTE_HOST ) {
         addKeyVal (&structFileExtAndRegInp->condInput, RESC_NAME_KW,
                    rescInfo->rescName);
 
-        if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
-            return status;
-        }
-        status = rcStructFileExtAndReg (rodsServerHost->conn,
-                                        structFileExtAndRegInp);
-
+        //if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+        //    return status;
+        //}
+        status = rcStructFileExtAndReg( host->conn, structFileExtAndRegInp );
         rsDataObjClose (rsComm, &dataObjCloseInp);
-
 
         return status;
     }
 
-    status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection, 
-                                  NULL);
+    status = chkCollForExtAndReg ( rsComm, structFileExtAndRegInp->collection, NULL );
+                                  
     if (status < 0) return status;
 
 

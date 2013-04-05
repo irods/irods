@@ -12,6 +12,7 @@ COVERAGEBUILDDIR="/var/lib/eirods"
 PREFLIGHT=""
 PREFLIGHTDOWNLOAD=""
 PYPREFLIGHT=""
+EIRODSPACKAGEDIR="./build"
 
 USAGE="
 
@@ -174,6 +175,7 @@ if [ "$1" == "clean" ] ; then
     rm -f libeirods.a
     rm -f plugins/resources/*.so
     rm -f plugins/resources/Makefile
+    rm -rf $EIRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
     cd $DETECTEDDIR/../
@@ -186,6 +188,7 @@ if [ "$1" == "clean" ] ; then
     cd $DETECTEDDIR/../external
     rm -rf boost*
     rm -rf libarchive*
+    rm -rf hpssclient/
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1
@@ -231,7 +234,7 @@ if [ "$1" == "icat" ] ; then
     fi
 fi
 
-if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
     if [ "$(id -u)" != "0" ] ; then
         echo "${text_red}#######################################################" 1>&2
         echo "ERROR :: $SCRIPTNAME must be run as root" 1>&2
@@ -249,7 +252,7 @@ set +e
 
 GPLUSPLUS=`which g++`
 if [[ "$?" != "0" || `echo $GPLUSPLUS | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT g++ make"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT gcc-c++ make"
@@ -266,7 +269,7 @@ fi
 if [ $1 == "icat" ] ; then
     UNIXODBCDEV=`find /opt/csw/include/ /usr/include /usr/local -name sql.h 2> /dev/null`
     if [ "$UNIXODBCDEV" == "" ] ; then
-        if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+        if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
             PREFLIGHT="$PREFLIGHT unixodbc-dev"
         elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
             PREFLIGHT="$PREFLIGHT unixODBC-devel"
@@ -287,7 +290,7 @@ fi
 # needed for boost, of all things...
 PYTHONDEV=`find /usr -name Python.h 2> /dev/null`
 if [[ "$PYTHONDEV" == "" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT python-dev"
     fi
 else
@@ -316,7 +319,7 @@ fi
 
 WGET=`which wget`
 if [[ "$?" != "0" || `echo $WGET | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT wget"
@@ -336,7 +339,7 @@ fi
 
 DOXYGEN=`which doxygen`
 if [[ "$?" != "0" || `echo $DOXYGEN | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT doxygen"
@@ -356,7 +359,7 @@ fi
 
 HELP2MAN=`which help2man`
 if [[ "$?" != "0" || `echo $HELP2MAN | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT help2man"
@@ -381,32 +384,9 @@ else
     GREPCMD="grep"
 fi
 
-#BOOST=`$GREPCMD -r "#define BOOST_VERSION " /usr/include/b* /usr/local/include/b* /opt/csw/gxx/include/b* 2> /dev/null`
-#if [ "$BOOST" == "" ] ; then
-#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-#        PREFLIGHT="$PREFLIGHT libboost-all-dev"
-#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost-devel"
-#    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost-devel"
-#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost_gcc_dev"
-#        echo "      :: NOTE: pkgutil must be using 'unstable' mirror" 1>&2
-#        echo "      ::       see /etc/opt/csw/pkgutil.conf" 1>&2
-#    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
-#        PREFLIGHT="$PREFLIGHT boost"
-#    else
-#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.boost.org/users/download/"
-#    fi
-#else
-#    BOOSTFILE=`echo $BOOST | awk -F: '{print $1}'`
-#    BOOSTVERSION=`echo $BOOST | awk '{print $3}'`
-#    echo "Detected BOOST libraries [$BOOSTFILE] v[$BOOSTVERSION]"
-#fi
-
 BZIP2DEV=`find /usr -name bzlib.h 2> /dev/null`
 if [ "$BZIP2DEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libbz2-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT bzip2-devel"
@@ -423,7 +403,7 @@ fi
 
 ZLIBDEV=`find /usr/include -name zlib.h 2> /dev/null`
 if [ "$ZLIBDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT zlib1g-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT zlib-devel"
@@ -437,33 +417,9 @@ else
     echo "Detected zlib library [$ZLIBDEV]"
 fi
 
-
-#FINDLIBARCHIVE=`../packaging/find_so.sh libarchive.so 2> /dev/null`
-#FINDLIBARCHIVEH=`find /usr -name archive.h 2> /dev/null`
-#if [[ "$FINDLIBARCHIVE" == "FAIL" || "$FINDLIBARCHIVEH" == "" ]] ; then
-#    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
-#        if [ "$DETECTEDOSVERSION" \< "11" ]; then
-#            PREFLIGHT="$PREFLIGHT libarchive1 libarchive-dev"
-#        else
-#            PREFLIGHT="$PREFLIGHT libarchive12 libarchive-dev"
-#        fi
-#    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
-#        PREFLIGHT="$PREFLIGHT libarchive libarchive-devel"
-#    elif [ "$DETECTEDOS" == "SuSE" ] ; then
-#        PREFLIGHT="$PREFLIGHT libarchive2 libarchive-devel"
-#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
-#        PREFLIGHT="$PREFLIGHT libarchive2 libarchive_dev"
-#    # MacOSX is distributed with libarchive - in /usr/lib
-#    else
-#        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://libarchive.github.com/"
-#    fi
-#else
-#    echo "Detected libarchive library [$FINDLIBARCHIVE]"
-#fi
-
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT libssl-dev"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT openssl-devel"
@@ -480,7 +436,7 @@ fi
 
 FINDPOSTGRESBIN=`../packaging/find_postgres_bin.sh 2> /dev/null`
 if [ "$FINDPOSTGRESBIN" == "FAIL" ] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT postgresql"
@@ -497,9 +453,90 @@ else
     echo "Detected PostgreSQL binary [$FINDPOSTGRESBIN]"
 fi
 
+# needed to build hpss client
+LEX=`which lex`
+if [[ "$?" != "0" || `echo $LEX | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT flex"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT flex"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT flex"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected lex binary [$LEX]"
+fi
+
+# needed to build hpss client
+YACC=`which yacc`
+if [[ "$?" != "0" || `echo $YACC | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT bison"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT bison"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT bison"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected yacc binary [$YACC]"
+fi
+
+# needed to build hpss client
+KSH=`which ksh`
+if [[ "$?" != "0" || `echo $KSH | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT ksh"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT ksh"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT ksh"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected ksh binary [$KSH]"
+fi
+
+# needed to build hpss client
+LIBEDIT=`find /usr/include -name readline.h 2> /dev/null`
+if [ "$LIBEDIT" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libedit-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT readline-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT readline-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT "
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: "
+    fi
+else
+    echo "Detected readline.h [$LIBEDIT]"
+fi
+
+
 EASYINSTALL=`which easy_install`
 if [[ "$?" != "0" || `echo $EASYINSTALL | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT python-setuptools"
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         PREFLIGHT="$PREFLIGHT python-setuptools python-devel"
@@ -521,7 +558,7 @@ fi
 # check python package prerequisites
 RST2PDF=`which rst2pdf`
 if [[ "$?" != "0" || `echo $RST2PDF | awk '{print $1}'` == "no" ]] ; then
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         PREFLIGHT="$PREFLIGHT rst2pdf"
     else
         PYPREFLIGHT="$PYPREFLIGHT rst2pdf"
@@ -535,7 +572,7 @@ fi
 if [ "$PREFLIGHT" != "" ] ; then
     echo "${text_red}#######################################################" 1>&2
     echo "ERROR :: $SCRIPTNAME requires some software to be installed" 1>&2
-    if [ "$DETECTEDOS" == "Ubuntu" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         echo "      :: try: ${text_reset}sudo apt-get install$PREFLIGHT${text_red}" 1>&2
     elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
         echo "      :: try: ${text_reset}sudo yum install$PREFLIGHT${text_red}" 1>&2
@@ -652,6 +689,56 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     cd $BUILDDIR/external/$EIRODS_BUILD_BOOSTVERSION
     ./bootstrap.sh --with-libraries=filesystem,system,thread,regex
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
+
+    # build HPSS clients
+    if [ "$RELEASE" == "1" ] ; then
+        cd $BUILDDIR/external/
+        # grab from git
+        echo "${text_green}${text_bold}Downloading HPSS client from RENCI${text_reset}"
+        rm -rf hpssclient
+#        git clone ssh://tgr@code.renci.org/gitroot/hpssclient
+        cp -r /projects/irods/hpssclient .
+#        cp -r $BUILDDIR/../hpssclient .
+        # copy down into /opt
+        cd hpssclient
+        gunzip 7.3_clnt_src.tar.gz
+        tar xf 7.3_clnt_src.tar
+        gunzip 7.4_clnt_src.tar.gz
+        tar xf 7.4_clnt_src.tar
+        mkdir -p /opt
+        rm -rf /opt/hpss7.3
+        rm -rf /opt/hpss7.4
+        cp -r 7.3_clnt_src /opt/hpss7.3
+        cp -r 7.4_clnt_src /opt/hpss7.4
+        # copy and build 7.3
+        cd $BUILDDIR/external/hpssclient
+        echo "${text_green}${text_bold}Building the HPSS 7.3 client${text_reset}"
+        rm -rf /opt/hpss
+        cp -r /opt/hpss7.3 /opt/hpss
+        cd /opt/hpss
+        make clnt
+        # copy and build 7.4
+        cd $BUILDDIR/external/hpssclient
+        echo "${text_green}${text_bold}Building the HPSS 7.4 client${text_reset}"
+        rm -rf /opt/hpss
+        cp -r /opt/hpss7.4 /opt/hpss
+        cd /opt/hpss
+        make clnt
+        # copying the testing keytabs into place
+        cd $BUILDDIR/external/hpssclient
+        rm -rf /var/hpss
+        rm -rf /var/hpss7.3
+        rm -rf /var/hpss7.4
+        gunzip 7.3_var_hpss_etc.tar.gz
+        tar xf 7.3_var_hpss_etc.tar
+        gunzip 7.4_var_hpss_etc.tar.gz
+        tar xf 7.4_var_hpss_etc.tar
+        mkdir -p /var/hpss7.3
+        mkdir -p /var/hpss7.4
+        cp -r 7.3_var_hpss_etc /var/hpss7.3/etc
+        cp -r 7.4_var_hpss_etc /var/hpss7.4/etc
+        ln -s /var/hpss7.4 /var/hpss
+    fi
 
 fi
 
@@ -1073,7 +1160,7 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
         ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
         ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
-elif [ "$DETECTEDOS" == "Ubuntu" ] ; then  # Ubuntu
+elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
     ./epm/epm $EPMOPTS -a $arch -f deb eirods $epmvar=true ./packaging/eirods.list
@@ -1105,15 +1192,80 @@ else
 fi
 
 
+# rename generated packages appropriately
+cd $BUILDDIR
+EIRODSVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
+SUFFIX=""
+if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+    EXTENSION="rpm"
+    SUFFIX="-redhat"
+    if [ "$epmosversion" == "CENTOS6" ] ; then
+        SUFFIX="-centos6"
+    fi
+elif [ "$DETECTEDOS" == "SuSE" ] ; then
+    EXTENSION="rpm"
+    SUFFIX="-suse"
+elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+    EXTENSION="deb"
+elif [ "$DETECTEDOS" == "Solaris" ] ; then
+    EXTENSION="pkg"
+elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+    EXTENSION="dmg"
+fi
+RENAME_SOURCE="./linux*/eirods-*$EIRODSVERSION*.$EXTENSION"
+RENAME_SOURCE_DEV=${RENAME_SOURCE/eirods-/eirods-dev-}
+RENAME_SOURCE_ICOMMANDS=${RENAME_SOURCE/eirods-/eirods-icommands-}
+SOURCELIST=`ls $RENAME_SOURCE`
+echo "EPM produced packages:"
+echo "$SOURCELIST"
+# prepare target build directory
+mkdir -p $EIRODSPACKAGEDIR
+# vanilla construct
+RENAME_DESTINATION="$EIRODSPACKAGEDIR/eirods-$EIRODSVERSION-64bit.$EXTENSION"
+# add OS-specific suffix
+if [ "$SUFFIX" != "" ] ; then
+    RENAME_DESTINATION=${RENAME_DESTINATION/.$EXTENSION/$SUFFIX.$EXTENSION}
+fi
+# release build (also building icommands and dev)
+RENAME_DESTINATION_DEV=${RENAME_DESTINATION/eirods-/eirods-dev-}
+RENAME_DESTINATION_ICOMMANDS=${RENAME_DESTINATION/eirods-/eirods-icommands-}
+# icat or resource
+if [ "$1" == "icat" ] ; then
+    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-icat-postgres}
+else
+    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-resource}
+fi
+# coverage build
+if [ "$COVERAGE" == "1" ] ; then
+    RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
+fi
+# show me the money
+echo ""
+echo "renaming    [$RENAME_SOURCE]"
+echo "         to [$RENAME_DESTINATION]"
+if [ "$RELEASE" == "1" ] ; then
+    echo ""
+    echo "renaming    [$RENAME_SOURCE_DEV]"
+    echo "         to [$RENAME_DESTINATION_DEV]"
+    echo ""
+    echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
+    echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
+fi
+# move into e-irods/build directory
+if [ "$RELEASE" == "1" ] ; then
+    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+    mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
+fi
+mv $RENAME_SOURCE $RENAME_DESTINATION
+# list new result set
+echo ""
+echo "Contents of $EIRODSPACKAGEDIR:"
+ls -l $EIRODSPACKAGEDIR
+
+# clean up coverage build
 if [ "$COVERAGE" == "1" ] ; then
     # copy important bits back up
     echo "${text_green}${text_bold}Copying generated packages back to original working directory...${text_reset}"
-    if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then EXTENSION="rpm"
-    elif [ "$DETECTEDOS" == "SuSE" ] ; then EXTENSION="rpm"
-    elif [ "$DETECTEDOS" == "Ubuntu" ] ; then EXTENSION="deb"
-    elif [ "$DETECTEDOS" == "Solaris" ] ; then EXTENSION="pkg"
-    elif [ "$DETECTEDOS" == "MacOSX" ] ; then EXTENSION="dmg"
-    fi
     # get packages
     for f in `find . -name "*.$EXTENSION"` ; do mkdir -p $GITDIR/`dirname $f`; cp $f $GITDIR/$f; done
     # delete target build directory, so a package install can go there

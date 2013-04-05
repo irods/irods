@@ -2,6 +2,7 @@
 
 #include "eirods_hierarchy_parser.h"
 #include "eirods_string_tokenize.h"
+#include "rodsErrorTable.h"
 
 #include <iostream>
 
@@ -100,16 +101,16 @@ namespace eirods {
                     _ret_resc = *next_itr;
                 } else {
                     std::stringstream msg;
-                    msg << __FUNCTION__ << " - There is no next resource. \"" << _current;
-                    msg << "\" is a leaf resource.";
-                    result = ERROR(-1, msg.str());
+                    msg << "there is no next resource. [" << _current;
+                    msg << "] is a leaf resource.";
+                    result = ERROR(EIRODS_NEXT_RESC_FOUND, msg.str());
                 }
             }
         }
         if(!found) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - Resource \"" << _current << "\" not in hierarchy.";
-            result = ERROR(-1, msg.str());
+            msg << "resource [" << _current << "] not in hierarchy.";
+            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
         }
         return result;
     }

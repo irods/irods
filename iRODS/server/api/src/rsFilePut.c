@@ -38,7 +38,7 @@ rsFilePut (rsComm_t *rsComm, fileOpenInp_t *filePutInp,
     //remoteFlag = resolveHost (&filePutInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( filePutInp->resc_hier_, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFilePut - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -155,22 +155,20 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
     if ( write_code != filePutInpBBuf->len ) {
         if( write_code >= 0 ) {
             std::stringstream msg;
-            msg << "_rsFilePut: fileWrite for ";
+            msg << "fileWrite failed for [";
             msg << filePutInp->fileName;
-            msg << ", towrite ";
+            msg << "] towrite [";
             msg << filePutInpBBuf->len;
-            msg << ", status = ";
-            msg << write_code;
-            eirods::error err = PASS( false, write_code, msg.str(), write_err );
+            msg << "]";
+            eirods::error err = PASSMSG( msg.str(), write_err );
             eirods::log ( err );
             write_code = SYS_COPY_LEN_ERR;
         } else {
             std::stringstream msg;
-            msg << "_rsFilePut: fileWrite for ";
+            msg << "fileWrite failed for [";
             msg << filePutInp->fileName;
-            msg << ", status = ";
-            msg << write_code;
-            eirods::error err = PASS( false, write_code, msg.str(), write_err );
+            msg << "]";
+            eirods::error err = PASSMSG( msg.str(), write_err );
             eirods::log ( err );
         }
     }
@@ -180,7 +178,7 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
     eirods::error close_err = fileClose( rsComm,
                                          file_obj );
     if( !close_err.ok() ) {
-        eirods::error err = PASS( false, close_err.code(), "_rsFilePut - error on close", close_err );
+        eirods::error err = PASSMSG( "error on close", close_err );
         eirods::log( err );
     }
    

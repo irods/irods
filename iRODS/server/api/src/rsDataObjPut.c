@@ -54,15 +54,14 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
         // we know that the redirection decision has already been made
         std::string       hier;
-        int               local = LOCAL_HOST;
-        rodsServerHost_t* host  =  0;
         if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-            eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                                           dataObjInp, hier, host, local );
+            eirods::error ret = eirods::resolve_resource_hierarchy( 
+                                            eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                            dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
                 msg << __FUNCTION__;
-                msg << " :: failed in eirods::resource_redirect for [";
+                msg << " :: failed in eirods::eirods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
@@ -74,30 +73,18 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
         } // if keyword
 
-//        if( LOCAL_HOST == local ) {
-            /** since the object is written here, we apply pre procesing RAJA 
-             * Dec 2 2010 **/
-            status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, 
-                                                   dataObjInp->objPath);
-            if (status2 < 0) 
-                return(status2); /* need to dealloc anything??? */
-            /** since the object is written here, we apply pre procesing RAJA 
-             * Dec 2 2010 **/
+        /** since the object is written here, we apply pre procesing RAJA 
+         * Dec 2 2010 **/
+        status2 = applyRuleForPostProcForWrite(rsComm, dataObjInpBBuf, 
+                                               dataObjInp->objPath);
+        if (status2 < 0) 
+            return(status2); /* need to dealloc anything??? */
+        /** since the object is written here, we apply pre procesing RAJA 
+         * Dec 2 2010 **/
 
-            dataObjInp->openFlags = O_RDWR;
-            status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
-                                    portalOprOut );
-#if 0
-        } else {
-            int l1descInx = _rcDataObjPut ( host->conn, dataObjInp, dataObjInpBBuf, portalOprOut );
-
-            l1descInx = allocAndSetL1descForZoneOpr (
-                (*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
-            if (l1descInx < 0) return l1descInx;
-            (*portalOprOut)->l1descInx = l1descInx;
-            return status;
-        } // else remote host
-#endif
+        dataObjInp->openFlags = O_RDWR;
+        status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
+                                portalOprOut );
     } else {
         int l1descInx;
         status = _rcDataObjPut (rodsServerHost->conn, dataObjInp, 

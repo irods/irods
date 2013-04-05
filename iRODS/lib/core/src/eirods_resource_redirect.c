@@ -21,19 +21,14 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // static function to query resource for chosen server to which to redirect
     // for a given operation
-    error resource_redirect( const std::string&   _oper,
-                             rsComm_t*            _comm,
-                             dataObjInp_t*        _data_obj_inp, 
-                             std::string&         _out_resc_hier,
-                             rodsServerHost_t*&   _out_host, 
-                             int&                 _out_flag ) {
+    error resolve_resource_hierarchy( 
+              const std::string&   _oper,
+              rsComm_t*            _comm,
+              dataObjInp_t*        _data_obj_inp, 
+              std::string&         _out_resc_hier ) {
         // =-=-=-=-=-=-=-
         // flag to skip redirect for spec coll
         bool skip_redir_for_spec_coll = false;
-
-        // =-=-=-=-=-=-=-
-        // default to local host if there is a failure
-        _out_flag = LOCAL_HOST;
 
         // =-=-=-=-=-=-=-
         // cache the operation, as we may need to modify it
@@ -50,7 +45,7 @@ namespace eirods {
             error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
             if( !fac_err.ok() ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in file_object_factory";
+                msg << "resolve_resource_hierarchy :: failed in file_object_factory";
                 return PASSMSG( msg.str(), fac_err );
             }
 
@@ -59,13 +54,13 @@ namespace eirods {
             eirods::error err = file_obj.resolve( resc_mgr, resc );
             if( !err.ok() ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in file_object.resolve";
+                msg << "resolve_resource_hierarchy :: failed in file_object.resolve";
                 return PASSMSG( msg.str(), err );
             }
 
         } else {
             std::string orig_path = _data_obj_inp->objPath;
-            std::string path = _data_obj_inp->objPath;
+            std::string path      = _data_obj_inp->objPath;
             size_t pos = path.find_last_of( '/' );
             if( pos != std::string::npos ) {
                 path = path.substr( 0, pos );
@@ -99,7 +94,7 @@ namespace eirods {
                     rescGrpInfo_t* grp_info = 0;
                     int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
                     if( status < 0 || !grp_info || !grp_info->rescInfo ) {
-                        return ERROR( status, "resource_redirect - failed in getRescGrpForCreate" );
+                        return ERROR( status, "failed in getRescGrpForCreate" );
                     }
                         
                     resc_name = grp_info->rescInfo->rescName;
@@ -117,54 +112,98 @@ namespace eirods {
                 // request the resource by name
                 error err = resc_mgr.resolve( resc_name, resc );
                 if( !err.ok() ) {
-                    return PASSMSG( "resource_redirect - failed in resc_mgr.resolve", err );
+                    return PASSMSG( "failed in resc_mgr.resolve", err );
 
                 }
                 
+                // =-=-=-=-=-=-=-
+                // if the resource has a parent, bail as this is a grave, terrible error.
+                resource_ptr parent;
+                error p_err = resc->get_parent( parent );
+                if( p_err.ok() ) {
+                    return PASSMSG( "resource has a parent", p_err );
+
+                }
+
+                // =-=-=-=-=-=-=-
+                // set the resc hier given the root resc name 
                 file_obj.resc_hier( resc_name );
 
-            }
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get current hostname, which is also done by init local server host
-        char host_name_char[ MAX_NAME_LEN ];
-        if( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
-            std::stringstream msg;
-            msg << "resource_redirect :: failed in gethostname";
-            return ERROR( -1, msg.str() );
+            } // else
 
-        }
-        std::string host_name( host_name_char );
+        } // else
 
         // =-=-=-=-=-=-=-
         // unholy special treatment of special collections, once again
-        hierarchy_parser parser;
         if( !skip_redir_for_spec_coll ) {
+            // =-=-=-=-=-=-=-
+            // get current hostname, which is also done by init local server host
+            char host_name_str[ MAX_NAME_LEN ];
+            if( gethostname( host_name_str, MAX_NAME_LEN ) < 0 ) {
+                return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
+
+            }
+            std::string host_name( host_name_str );
+
             // =-=-=-=-=-=-=-
             // query the resc given the operation for a hier string which 
             // will determine the host
+            hierarchy_parser parser;
             float            vote = 0.0;
             error err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                              _comm, "redirect", &file_obj, &oper, &host_name, &parser, &vote );
+                              _comm, "redirect", file_obj, &oper, &host_name, &parser, &vote );
+            
             // =-=-=-=-=-=-=-
             // extract the hier string from the parser, politely.
             parser.str( _out_resc_hier ); 
             if( !err.ok() || 0.0 == vote ) {
                 std::stringstream msg;
-                msg << "resource_redirect :: failed in resc.call( redirect ) ";
-                msg << "host [" << host_name << "] ";
-                msg << "hier [" << _out_resc_hier      << "]";
+                msg << "resolve_resource_hierarchy :: failed in resc.call( redirect ) ";
+                msg << "host [" << host_name      << "] ";
+                msg << "hier [" << _out_resc_hier << "]";
                 return PASSMSG( msg.str(), err );
             }
         
         } else {
-            parser.set_string( file_obj.resc_hier() );
             _out_resc_hier = file_obj.resc_hier();
 
         }
+
+        return SUCCESS();
+
+    } // resolve_resource_hierarchy
+     
+    // =-=-=-=-=-=-=-
+    // static function to query resource for chosen server to which to redirect
+    // for a given operation
+    error resource_redirect( const std::string&   _oper,
+                             rsComm_t*            _comm,
+                             dataObjInp_t*        _data_obj_inp, 
+                             std::string&         _out_resc_hier,
+                             rodsServerHost_t*&   _out_host, 
+                             int&                 _out_flag ) {
+        // =-=-=-=-=-=-=-
+        // default to local host if there is a failure
+        _out_flag = LOCAL_HOST;
+
+        // =-=-=-=-=-=-=-
+        // resolve the resource hierarchy for this given operation and dataobjinp
+        std::string resc_hier;
+        error res_err = resolve_resource_hierarchy( _oper, _comm, _data_obj_inp, resc_hier ); 
+        if( !res_err.ok() ) {
+            std::stringstream msg;
+            msg << "resource_redirect - failed to resolve resource hierarchy for [";
+            msg << _data_obj_inp->objPath;
+            msg << "]";
+            return PASSMSG( msg.str(), res_err );
         
+        }
+
+        // =-=-=-=-=-=-=-
+        // parse out the leaf resource for redirection
         std::string last_resc;
+        hierarchy_parser parser;
+        parser.set_string( resc_hier );
         parser.last_resc( last_resc );
         
         // =-=-=-=-=-=-=-
@@ -178,6 +217,17 @@ namespace eirods {
             msg << "for [" << last_resc << "]";
             return PASSMSG( msg.str(), err );
         }
+        
+
+        // =-=-=-=-=-=-=-
+        // get current hostname, which is also done by init local server host
+        char host_name_char[ MAX_NAME_LEN ];
+        if( gethostname( host_name_char, MAX_NAME_LEN ) < 0 ) {
+            return ERROR( SYS_GET_HOSTNAME_ERR, "failed in gethostname" );
+
+        }
+
+        std::string host_name( host_name_char );
 
         // =-=-=-=-=-=-=
         // iterate over the list of hostName_t* and see if any match our
@@ -199,9 +249,9 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // are we really, really local?
         if( match_flg ) {
-            _out_resc_hier = _out_resc_hier;
-            _out_flag = LOCAL_HOST;
-            _out_host = 0;
+            _out_resc_hier = resc_hier;
+            _out_flag      = LOCAL_HOST;
+            _out_host      = 0;
             return SUCCESS();
         }
 
@@ -209,15 +259,16 @@ namespace eirods {
         // it was not a local resource so then do a svr to svr connection
         int conn_err = svrToSvrConnect( _comm, last_resc_host );
         if( conn_err < 0 ) {
-            std::stringstream msg;
-            msg << "resource_redirect :: failed in svrToSvrConnect";
-            return ERROR( conn_err, msg.str() );
+            return ERROR( conn_err, "failed in svrToSvrConnect" );
         }
+        
 
         // =-=-=-=-=-=-=-
         // return with a hier string and new connection as remote host
+        _out_resc_hier = resc_hier;
         _out_host      = last_resc_host;
         _out_flag      = REMOTE_HOST;
+        
         return SUCCESS();
 
     } // resource_redirect

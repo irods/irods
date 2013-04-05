@@ -8,6 +8,8 @@ elif [ -f "/etc/SuSE-release" ]; then       # SuSE
     DETECTEDOS="SuSE"
 elif [ -f "/etc/lsb-release" ]; then        # Ubuntu
     DETECTEDOS="Ubuntu"
+elif [ -f "/etc/debian_version" ]; then     # Debian
+    DETECTEDOS="Debian"
 elif [ -f "/usr/bin/sw_vers" ]; then        # MacOSX
     DETECTEDOS="MacOSX"
 elif [ "$UNAMERESULTS" == "SunOS" ]; then   # Solaris

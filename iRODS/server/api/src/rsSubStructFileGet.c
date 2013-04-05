@@ -78,7 +78,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     if( _sub_file->offset <= 0 ) {
-        eirods::log( ERROR( -1, "_rsSubStructFileGet - invalid length" ) );
+        eirods::log( ERROR( SYS_INVALID_INPUT_PARAM, "invalid length" ) );
         return -1;    
     }
 
@@ -87,11 +87,11 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     eirods::error open_err = fileOpen( _comm, struct_obj );
     if( !open_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileGet: subStructFileOpen error for [";
+        msg << "fileOpen error for [";
         msg << struct_obj.sub_file_path();
         msg << "], status = ";
         msg << open_err.code();
-        eirods::log( PASS( false, -1, msg.str(), open_err ) );  
+        eirods::log( PASSMSG( msg.str(), open_err ) );  
         return open_err.code();
     }
 
@@ -109,22 +109,22 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     if( !read_err.ok() ) {
        if( status >= 0 ) {
             std::stringstream msg;
-            msg << "_rsSubStructFileGet - failed in fileRead for [";
+            msg << "failed in fileRead for [";
             msg << struct_obj.sub_file_path();
             msg << ", toread ";
             msg << _sub_file->offset;
             msg << ", read ";
             msg << read_err.code();
-            eirods::log( PASS( false, -1, msg.str(), read_err ) );
+            eirods::log( PASSMSG( msg.str(), read_err ) );
              
             status = SYS_COPY_LEN_ERR;
         } else {
             std::stringstream msg;
-            msg << "_rsSubStructFileGet - failed in fileRead for [";
+            msg << "failed in fileRead for [";
             msg << struct_obj.sub_file_path();
             msg << ", status = ";
             msg << read_err.code();
-            eirods::log( PASS( false, -1, msg.str(), read_err ) );
+            eirods::log( PASSMSG( msg.str(), read_err ) );
 
             status = read_err.code();
         }
@@ -138,11 +138,11 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     eirods::error close_err = fileClose( _comm, struct_obj );
     if( !close_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileGet - failed in fileClose for [";
+        msg << "failed in fileClose for [";
         msg << struct_obj.sub_file_path();
         msg << ", status = ";
         msg << close_err.code();
-        eirods::log( PASS( false, -1, msg.str(), read_err ) );
+        eirods::log( PASSMSG( msg.str(), read_err ) );
     }
     
     return (status);

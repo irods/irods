@@ -22,10 +22,10 @@ namespace eirods {
         err = _resc->get_property< rodsServerHost_t* >( prop_name, host );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -35,10 +35,10 @@ namespace eirods {
         err = _resc->get_property< long >( prop_name, id );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -48,10 +48,10 @@ namespace eirods {
         err = _resc->get_property< long >( prop_name, freespace );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -61,10 +61,10 @@ namespace eirods {
         err = _resc->get_property< long >( prop_name, quota );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -74,10 +74,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, zone );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -87,10 +87,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, name );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -100,10 +100,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, location );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -113,10 +113,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, type );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -126,10 +126,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, rclass );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "failed to get property";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -139,10 +139,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, path );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "failed to get property";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -152,10 +152,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, info );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "failed to get property";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -165,10 +165,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, comments );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property";
+            msg << "failed to get property";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -178,10 +178,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, create );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -191,10 +191,10 @@ namespace eirods {
         err = _resc->get_property< std::string >( prop_name, modify );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -204,10 +204,10 @@ namespace eirods {
         err = _resc->get_property< int >( prop_name, status );
         if( !err.ok() ) {
             std::stringstream msg;
-            msg << "resource_to_resc_info - failed to get property [";
+            msg << "failed to get property [";
             msg << prop_name;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( UNMATCHED_KEY_OR_INDEX, msg.str() );
         }
 
         _info.rodsServerHost = host;
@@ -251,7 +251,7 @@ namespace eirods {
         // call earlier helper function to fill in the rescInfo_t structure 
         error err = resource_to_resc_info( *_grp_info.rescInfo, _resc ); 
         if( !err.ok() ) {
-            return PASS( false, -1, "resource_to_resc_info - failed.", err );            
+            return PASS( err );            
             
         }
        
@@ -276,7 +276,7 @@ namespace eirods {
         // =-=-=-=-=-=-=
         // quick error check
         if( _resc_list.empty() && NULL == _cond_input ) {
-            return ERROR( USER_NO_RESC_INPUT_ERR, "set_default_resource - no user input" );
+            return ERROR( USER_NO_RESC_INPUT_ERR, "no user input" );
         }
         
         // =-=-=-=-=-=-=-
@@ -323,16 +323,22 @@ namespace eirods {
             // convert the resource into a legacy group info
             error grp_err = get_resc_grp_info( *itr, _resc_grp ); 
             if( grp_err.ok() ) {
-                if( INT_RESC_STATUS_DOWN != _resc_grp.rescInfo->rescStatus ) {
-                    default_resc_name = *itr;
-                    // =-=-=-=-=-=-=-
-                    // we found a live one
-                    break;
-                } 
+                default_resc_name = *itr;
+                // =-=-=-=-=-=-=-
+                // we found a live one
+                break;
 
-            } 
+            } else {
+                std::stringstream msg; 
+                msg << "failed to get group info for [";
+                msg << *itr;
+                msg << "]";
+                eirods::log( PASSMSG( msg.str(), grp_err ) );    
+                
+            }
 
         } // for itr
+
 
         // =-=-=-=-=-=-=-
         // determine that we might need a 'preferred' resource
@@ -380,7 +386,7 @@ namespace eirods {
                     msg << "] and option [";
                     msg << _option;
                     msg << "]";
-                    return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
+                    return PASSMSG( msg.str(), grp_err );
                 }
 
             } // else
@@ -391,7 +397,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // should not reach here
         std::stringstream msg;
-        msg << "set_default_resource - should not reach here for list [";
+        msg << "should not reach here for list [";
         msg << _resc_list;
         msg << "] and option [";
         msg << _option;
@@ -424,7 +430,7 @@ namespace eirods {
                 return SUCCESS();
             }   
                 
-            return ERROR( INT_RESC_STATUS_DOWN, "resolve_resource_name - failed to resolve resource name" );
+            return ERROR( INT_RESC_STATUS_DOWN, "failed to resolve resource name" );
             
         } else {
             _out = _resc_name;
@@ -440,7 +446,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // idiot check pointer
         if( !_info ) {
-            return ERROR( -1, "get_host_status_by_host_info - null pointer" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null pointer" );
         }
 
         // =-=-=-=-=-=-=-
@@ -448,7 +454,7 @@ namespace eirods {
         resource_ptr resc;
         error err = resc_mgr.resolve_from_property< rodsServerHost_t* >( "host", _info, resc );
         if( !err.ok() ) {
-            return ERROR( -1, "get_host_status_by_host_info - failed to resolve resource" );
+            return PASSMSG( "failed to resolve resource", err );
         }
 
         // =-=-=-=-=-=-=-
@@ -456,7 +462,7 @@ namespace eirods {
         int status = -1;
         err = resc->get_property< int >( "status", status );
         if( !err.ok() ) {
-            return ERROR( -1, "get_host_status_by_host_info - failed to get resource property" );
+            return PASSMSG( "failed to get resource property", err );
         }
 
         return CODE( status );
@@ -484,12 +490,12 @@ namespace eirods {
                 return SUCCESS();
 
             } else {
-                return PASS( false, -1, "get_resc_info - failed.", info_err );
+                return PASS( info_err );
 
             }
 
         } else {
-            return PASS( false, -1, "get_resc_info - failed.", res_err );
+            return PASS(  res_err );
 
         }
 
@@ -500,7 +506,7 @@ namespace eirods {
     // for resource group given a resource name
     error get_resc_grp_info( std::string _name, rescGrpInfo_t& _info ) {
         if( _name.empty() ) {
-            return ERROR( -1, "get_resc_grp_info :: empty key" ); 
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty key" ); 
         }
 
         resource_ptr resc;
@@ -519,12 +525,12 @@ namespace eirods {
                 return SUCCESS();
 
             } else {
-                return PASS( false, -1, "get_resc_grp_info - failed.", info_err );
+                return PASS( info_err );
 
             }
 
         } else {
-            return PASS( false, -1, "get_resc_grp_info - failed.", res_err );
+            return PASS( res_err );
 
         }
 
@@ -539,7 +545,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // check hier string
         if( _hier_str.empty() ) {
-            return ERROR( -1, "get_host_for_hier_string - hier string is empty" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "hier string is empty" );
         }
 
         // =-=-=-=-=-=-=-
@@ -552,7 +558,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // check hier string
         if( resc_name.empty() ) {
-            return ERROR( -1, "get_host_for_hier_string - resc_name string is empty" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "resc_name string is empty" );
         }
 
         // =-=-=-=-=-=-=-

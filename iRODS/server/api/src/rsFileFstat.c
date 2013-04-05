@@ -106,11 +106,10 @@ int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **f
     // log error if necessary
     if( !stat_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileFstat: fileFstat for ";
+        msg << "fileFstat for [";
         msg << FileDesc[fileFstatInp->fileInx].fileName;
-        msg << ", status = ";
-        msg << stat_err.code();
-        eirods::error ret_err = PASS( false, stat_err.code(), msg.str(), stat_err );
+        msg << "]";
+        eirods::error ret_err = PASSMSG( msg.str(), stat_err );
         eirods::log( ret_err );
 
         return ret_err.code();

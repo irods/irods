@@ -1957,6 +1957,14 @@ chlAddChildResc(
                         result = status;
                     }
                 }                
+            } else {
+                char errMsg[105];
+                snprintf(errMsg, 100, 
+                         "resource '%s' is not a valid resource",
+                         rescInfo->rescName);
+                addRErrorMsg (&rsComm->rError, 0, errMsg);
+                result = CAT_INVALID_RESOURCE_NAME;
+
             }
         }
     }
@@ -1971,8 +1979,22 @@ int chlRegResc(rsComm_t *rsComm,
     int status;
     char myTime[50];
     struct hostent *myHostEnt; // JMC - backport 4597
-
+ 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc");
+ 
+    // =-=-=-=-=-=-=-
+    // error trap empty resc name 
+    if( strlen( rescInfo->rescName ) < 1 ) { 
+        addRErrorMsg( &rsComm->rError, 0, "resource name is empty" );
+        return CAT_INVALID_RESOURCE_NAME;
+    }
+
+    // =-=-=-=-=-=-=-
+    // error trap empty resc type 
+    if( strlen( rescInfo->rescType ) < 1 ) { 
+        addRErrorMsg( &rsComm->rError, 0, "resource type is empty" );
+        return CAT_INVALID_RESOURCE_TYPE;
+    }
 
     if (!icss.status) {
         return(CATALOG_NOT_CONNECTED);
@@ -2033,7 +2055,7 @@ int chlRegResc(rsComm_t *rsComm,
         }
     
     }
-
+    #if 0
     if (false &&                // hcj - disable checking for vault path. this needs to be checked from the plugins
         (strcmp(rescInfo->rescType, "database") !=0) &&
         (strcmp(rescInfo->rescType, "mso") !=0) ) {
@@ -2041,7 +2063,8 @@ int chlRegResc(rsComm_t *rsComm,
             return(CAT_INVALID_RESOURCE_VAULT_PATH);
         }
     }
-    
+    #endif
+      
     status = getLocalZone();
     if (status != 0) return(status);
 
@@ -5109,6 +5132,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
     if (strcmp(option, "type")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 6");
+
         status = cmlCheckNameToken("resc_type", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
@@ -5409,7 +5433,7 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneToUse;
       status =  cmlExecuteNoAnswerSql(
-        "update R_DATA_MAIN DM set data_path = replace (DM.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
+        "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ? and data_owner_name=? and data_owner_zone=?",
         &icss);
    }
    else {
@@ -5419,7 +5443,7 @@ int chlModRescDataPaths(rsComm_t *rsComm, char *rescName, char *oldPath,
       cllBindVars[cllBindVarCount++]=rescName;
       cllBindVars[cllBindVarCount++]=oldPath2;
       status =  cmlExecuteNoAnswerSql(
-        "update R_DATA_MAIN DM set data_path = replace (DM.data_path, ?, ?) where resc_name=? and data_path like ?",
+        "update R_DATA_MAIN set data_path = replace (R_DATA_MAIN.data_path, ?, ?) where resc_name=? and data_path like ?",
         &icss);
    }
    if (status != 0) {

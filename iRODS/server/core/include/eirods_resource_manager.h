@@ -83,7 +83,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // quick check on the resource table
             if( resources_.empty() ) {
-                return ERROR( -1, "resource_manager::resolve_from_property - empty resource table" );
+                return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
             }
            
             // =-=-=-=-=-=-=-
@@ -113,7 +113,7 @@ namespace eirods {
                     std::stringstream msg;
                     msg << "resource_manager::resolve_from_property - ";
                     msg << "failed to get vault parameter from resource";
-                    eirods::error err = PASS( false, -1, msg.str(), ret ); 
+                    eirods::error err = PASSMSG( msg.str(), ret ); 
 
                 }
 
@@ -125,13 +125,12 @@ namespace eirods {
                 return SUCCESS();
             } else {
                 std::stringstream msg;
-                msg <<  "resource_manager::resolve_from_property - ";
                 msg << "failed to find resource for property [";
                 msg << _prop;
                 msg << "] and value [";
                 msg << _value; 
                 msg << "]";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_RESC_DOES_NOT_EXIST, msg.str() );
             }
 
         } // resolve_from_property 

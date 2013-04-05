@@ -94,8 +94,7 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
                                                        phyPathRegInp, hier, host, local );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in eirods::resource_redirect for [";
+            msg << "failed in eirods::resource_redirect for [";
             msg << phyPathRegInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -140,7 +139,7 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     rescGrpInfo->rescInfo = new rescInfo_t;
     eirods::error err = eirods::get_resc_grp_info( resc_name, *rescGrpInfo );
     if( !err.ok() ) {
-         eirods::log( PASS( false, -1, "irsPhyPathReg - failed", err ) );
+         eirods::log( PASS( err ) );
          delete rescGrpInfo->rescInfo;
          delete rescGrpInfo;
          return -1;
@@ -152,7 +151,9 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     std::string location;
     eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "irsPhyPathReg - failed in get_resource_property", ret ) );
+        eirods::log( PASSMSG( "failed in get_resource_property", ret ) );
+        delete rescGrpInfo->rescInfo;
+        delete rescGrpInfo;
         return -1;
     }
  
@@ -267,7 +268,7 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         std::string location;
         eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "_rsPhyPathReg - failed in get_loc_for_hier_String", ret ) );
+            eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
             return -1;
         }
 
@@ -454,7 +455,7 @@ dirPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "dirPathReg - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -601,7 +602,7 @@ int mountFileDir( rsComm_t*     rsComm,
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "mountFileDir - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -862,7 +863,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
         return -1;
     } 
-
+#if 0 // JMC - no longer necessary
     if (!structFileSupport (rsComm, phyPathRegInp->objPath, 
                             collType, tmp_hier)) {
         rodsLog (LOG_ERROR,
@@ -870,6 +871,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
                  collType, dataObjInp.objPath);
         return (SYS_NOT_SUPPORTED);
     }
+#endif // JMC - no longer necessary
 
     /* mk the collection */
 
@@ -922,7 +924,7 @@ structFileSupport (rsComm_t *rsComm, char *collection, char *collType,
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "structFileSupport - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -1085,7 +1087,7 @@ readPathnamePatternsFromFile(rsComm_t *rsComm, char *filename, char* resc_hier )
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "readPathnamePatternsFromFile - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return NULL;
     }
 

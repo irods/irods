@@ -471,6 +471,15 @@ foreach $arg (@ARGV)
 		doTest( );
 		next;
 	}
+        if ( $arg =~ /^-?-?devtestyall$/ ) # Run iRODS tests
+# Undocumented command that does not warn user or prompts;
+# used for batch-mode testing.
+# Also, this tests all known resource types
+        {
+                $numberCommands++;
+                doAllRescTests( );
+                next;
+        }
 	if ( $arg =~ /^-?-?devtest$/ )	# Run iRODS developer tests
 	{
 		$numberCommands++;
@@ -717,6 +726,137 @@ sub doDrop
 
 
 
+#
+# @brief        Test all resource types.
+#
+# Run the developer iRODS tests on all known resource types.
+#
+sub doAllRescTests
+{
+
+	my $hostname = getCurrentHostName( );
+
+	# define resource types and setup/teardown for each
+	my %resctypes = (
+                "unix file system" => {
+                        "setup" => [],
+                        "teardown" => [],
+                },    
+                "nonblocking" => {
+                        "setup" => [
+                                "yes | iadmin modresc demoResc name origResc",
+                                "iadmin mkresc demoResc nonblocking $hostname:/var/lib/eirods/nbVault",
+                        ],
+                        "teardown" => [
+                                "iadmin rmresc demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
+                        ],
+                },
+                "passthru" => {
+                        "setup" => [
+                                "yes | iadmin modresc demoResc name origResc",
+                                "iadmin mkresc demoResc passthru",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
+                                "iadmin addchildtoresc demoResc unix1Resc",
+                        ],
+                        "teardown" => [
+                                "iadmin rmchildfromresc demoResc unix1Resc",
+                                "iadmin rmresc unix1Resc",
+                                "iadmin rmresc demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
+                        ],
+                },
+                "roundrobin" => {
+                        "setup" => [
+                                "yes | iadmin modresc demoResc name origResc",
+                                "iadmin mkresc demoResc roundrobin",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
+                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/eirods/unix2RescVault",
+                                "iadmin addchildtoresc demoResc unix1Resc",
+                                "iadmin addchildtoresc demoResc unix2Resc",
+                        ],
+                        "teardown" => [
+                                "iadmin rmchildfromresc demoResc unix2Resc",
+                                "iadmin rmchildfromresc demoResc unix1Resc",
+                                "iadmin rmresc unix2Resc",
+                                "iadmin rmresc unix1Resc",
+                                "iadmin rmresc demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
+                        ],
+                },
+#                "hpss" => {
+#                        "setup" => [
+#                                "yes | iadmin modresc demoResc name origResc",
+#                                "iadmin mkresc demoResc hpss $hostname:/VaultPath 'user=eirods;keytab=/var/hpss/etc/hpss.eirods.keytab'",
+#                        ],
+#                        "teardown" => [
+#                                "iadmin rmresc demoResc",
+#                                "yes | iadmin modresc origResc name demoResc",
+#                        ],
+#                },
+	);
+
+	# loop through resource types and test them
+        my $resctypecounter = 0;
+	foreach my $resctype ( keys %resctypes ) {
+                $resctypecounter++;
+                print "\n==============================================================\n";
+		print "Resource Type $resctypecounter of ".keys( %resctypes )." : $resctype";
+		print "\n==============================================================\n";
+		my $teststatus = "SUCCESS";		
+		my $cmd;
+		my $cmdout;
+		my $testcmd;
+		my $testresult;
+		my $teststatus;		
+		
+		# run setup
+		print "[$resctype] SETUP...\n";
+
+		foreach $cmd ( @{$resctypes{$resctype}{"setup"}} ) {
+			print "[$resctype] :: running command [$cmd]\n";
+                        $cmdout = `$cmd 2>&1`;
+		}
+		print "[$resctype] SETUP DONE\n";
+
+		# run devtesty
+		print "[$resctype] TESTING...\n";
+		$testcmd = "$IRODS_HOME/irodsctl devtesty";
+#		$testcmd = "ls";
+		print "[$resctype] :: running command [$testcmd]...\n";
+		$testresult = `$testcmd 2>&1`;
+		if ( $? != 0 ){
+			print "\n\n\n********* TESTS FAILED ************\n\n\n";
+			$teststatus = "FAILED";
+		}
+		printStatus( "$testresult" );
+
+		# if failure occurred, then stop here and exit
+		if ( $teststatus eq "FAILED" ) {
+			print "Exiting without cleaning up...\n";
+			exit( 1 );
+		}
+                print "[$resctype] TESTING DONE\n";
+
+		# run teardown
+                print "[$resctype] TEARDOWN...\n";
+                foreach $cmd ( @{$resctypes{$resctype}{"teardown"}} ) {
+			print "[$resctype] :: running command [$cmd]\n";
+			$cmdout = `$cmd 2>&1`;
+                }
+                print "[$resctype] TEARDOWN DONE\n";
+
+	}
+
+	# summary reporting
+        print "\n==============================================================\n";
+	print "SUMMARY\n";
+        print "==============================================================\n\n";
+
+}
+
+
+
 
 #
 # @brief	Test installation.
@@ -777,8 +917,6 @@ sub doTest
 	    printNotice( "run locally.\n" );
  
 	}
-
-    system( "rm -r /var/lib/eirods/iRODS/Vault/home/rods/*" );
 
 	# Pound test
 #	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );

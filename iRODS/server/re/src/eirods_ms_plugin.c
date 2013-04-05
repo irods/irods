@@ -55,13 +55,13 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // check handle to open shared object
         if( !_h ) {
-            return ERROR( -1, "delay_load - null handle parameter" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null handle parameter" );
         }
     
         // =-=-=-=-=-=-=-
         // check to see if we actually have any ops
         if( 0 == ops_for_delay_load_.size() ) {
-            return ERROR( -1, "ms_table_entry::delay_load - no ops to load" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "no ops to load" );
         }
 
         // =-=-=-=-=-=-=-
@@ -74,10 +74,10 @@ namespace eirods {
         // check our fcn ptr
         if( !call_action_ ) {
             std::stringstream msg;
-            msg << "delay_load :: failed to load msvc function [";
+            msg << "failed to load msvc function [";
             msg << action;
             msg << "]";
-            return ERROR( -1, msg.str() );
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         } 
 
         return SUCCESS();
@@ -95,7 +95,7 @@ namespace eirods {
             _table[ _ms ] = entry;
             return SUCCESS();
         } else {
-            error ret = PASS( false, -1, "load_microservice_plugin - Failed to create ms plugin entry.", load_err );
+            error ret = PASSMSG( "Failed to create ms plugin entry.", load_err );
             // JMC :: spams the log - log( ret );
             return ret;
         }

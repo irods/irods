@@ -78,10 +78,10 @@ int _rsSubStructFileClosedir( rsComm_t*                _comm,
     eirods::error closedir_err = fileClosedir( _comm, struct_obj );
     if( !closedir_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileClosedir - failed on call to fileClosedir for [";
+        msg << "failed on call to fileClosedir for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), closedir_err ) );
+        eirods::log( PASSMSG( msg.str(), closedir_err ) );
         return closedir_err.code();
 
     } else {

@@ -71,7 +71,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     rescGrpInfo.rescInfo = 0;
     eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
     if( !err.ok() ) {
-        eirods::log( PASS( false, -1, "rsPhyBundleColl - failed.", err ) );
+        eirods::log( PASS( err ) );
         return -1;
     }
 
@@ -81,20 +81,18 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     // we know that the redirection decision has already been made
     dataObjInp_t      data_inp;
     bzero( &data_inp, sizeof( data_inp ) );
-    rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, NAME_LEN );
+    rstrcpy( data_inp.objPath, phyBundleCollInp->objPath, MAX_NAME_LEN );
     bzero( &data_inp.condInput, sizeof( data_inp.condInput ) );
     addKeyVal( &data_inp.condInput, DEST_RESC_NAME_KW, destRescName );
 
     std::string       hier;
-    int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
     char* hier_kw = getValByKey( &phyBundleCollInp->condInput, RESC_HIER_STR_KW );
     if( hier_kw == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-						   &data_inp, hier, host, local );
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+						                                        &data_inp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsPhyBundleColl - failed in eirods::resource_redirect for [";
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
             msg << data_inp.objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -112,7 +110,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsPhyBundleColl - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -692,7 +690,7 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     std::string type;
     eirods::error err = eirods::get_resource_property< std::string >( rescGrpInfo->rescInfo->rescName, "type", type );
     if( !err.ok() ) {
-        eirods::log( PASS( false, -1, "createPhyBundleDataObj failed.", err ) );    
+        eirods::log( PASS( err ) );    
     }
     // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
     if( "unix file system" != type ) { // JMC :: need a constant for this?

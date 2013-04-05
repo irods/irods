@@ -32,15 +32,13 @@ int rsGetHostForPut(
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
     std::string       hier;
-    int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
     if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                                       dataObjInp, hier, host, local );
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                       dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " :: failed in eirods::resource_redirect for [";
+            msg << " :: failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();

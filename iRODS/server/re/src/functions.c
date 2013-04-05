@@ -2186,6 +2186,7 @@ Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *re
 		char buf[ERR_MSG_LEN];
 		snprintf(buf, ERR_MSG_LEN, "msiCollectionSpider: rsOpenCollection of %s error. status = %d", collInp->collName, handleInx);
     	generateAndAddErrMsg(buf, node, handleInx, errmsg);
+        free( dataObjInp );
 		return newErrorRes(r, handleInx);
 	}
 

@@ -25,7 +25,7 @@ rsFileChmod (rsComm_t *rsComm, fileChmodInp_t *fileChmodInp)
     //remoteFlag = resolveHost (&fileChmodInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileChmodInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileChmod - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
     if (remoteFlag == LOCAL_HOST) {
@@ -99,11 +99,10 @@ int _rsFileChmod( rsComm_t *rsComm, fileChmodInp_t *fileChmodInp ) {
     // log an error, if any
     if( chmod_err.code() < 0 ) {
         std::stringstream msg;
-        msg << "_rsFileChmod: fileChmod for ";
+        msg << "fileChmod failed for [";
         msg << fileChmodInp->fileName;
-        msg << ", status = ";
-        msg << chmod_err.code();
-        eirods::error err = PASS( false, chmod_err.code(), msg.str(), chmod_err );
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), chmod_err );
         eirods::log ( err );
     }
 

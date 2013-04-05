@@ -11,7 +11,11 @@
 	#include <windows.h>
 	using namespace stdext;
 #else
-	#include <ext/hash_map>
+    #if __GNUC__ == 4 && __GNUC_MINOR__ > 2
+	    #include <backward/hash_map>
+    #else
+        #include <ext/hash_map>
+    #endif
 	using namespace __gnu_cxx;
 #endif
 

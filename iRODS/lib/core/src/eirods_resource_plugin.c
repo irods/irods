@@ -74,15 +74,14 @@ namespace eirods {
     // public - function which pulls all of the symbols out of the shared object and 
     //          associates them with their keys in the operations table
     error resource::delay_load( void* _handle ) {
-
         // =-=-=-=-=-=-=-
         // check params
         if( ! _handle ) {
-            return ERROR( -1, "delay_load - void handle pointer" );     
+            return ERROR( SYS_INVALID_INPUT_PARAM, "void handle pointer" );     
         }
 
         if( ops_for_delay_load_.empty() ) {
-            return ERROR( -1, "delay_load - empty operations list" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty operations list" );
         }
 
 
@@ -94,9 +93,9 @@ namespace eirods {
                 dlsym( _handle, start_opr_name_.c_str() ) );
             if( !start_op ) {
                 std::stringstream msg;
-                msg  << "delay_load - failed to load start function [" 
+                msg  << "failed to load start function [" 
                      << start_opr_name_ << "]";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
             } else {
                 start_operation_ = start_op; 
             }
@@ -111,9 +110,9 @@ namespace eirods {
                 dlsym( _handle, stop_opr_name_.c_str() ) );
             if( !stop_op ) {
                 std::stringstream msg;
-                msg << "delay_load - failed to load stop function [" 
+                msg << "failed to load stop function [" 
                     << stop_opr_name_ << "]";
-                return ERROR( -1, msg.str() );
+                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
             } else {
                 stop_operation_ = stop_op; 
             }
@@ -165,7 +164,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // see if we loaded anything at all
         if( operations_.size() < 0 ) {
-            return ERROR( -1, "delay_load - operations map is emtpy" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "operations map is emtpy" );
         }
 
 
@@ -180,11 +179,11 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // check params 
         if( _name.empty() ) {
-            return ERROR( -1, "add_child - empty name" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty name" );
         }
 
         if( 0 == _resc.get() ) {
-            return ERROR( -1, "add_child - null resource pointer" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null resource pointer" );
         }
 
         // =-=-=-=-=-=-=-
@@ -203,7 +202,7 @@ namespace eirods {
         // check params 
 #ifdef DEBUG
         if( _name.empty() ) {
-            return ERROR( false, -1, "remove_child - empty name" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty name" );
         }
 #endif
         
@@ -214,8 +213,8 @@ namespace eirods {
             return SUCCESS();
         } else {
             std::stringstream msg;
-            msg << "remove_child - resource has no child named [" << _name << "]";
-            return ERROR( -1, msg.str() );
+            msg << "resource has no child named [" << _name << "]";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
         
     } // remove_child 
@@ -235,7 +234,7 @@ namespace eirods {
         if( _resc.get() ) {
             return SUCCESS();
         } else {
-            return ERROR( -1, "resource::get_parent - null parent pointer" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null parent pointer" );
         }
 
     } // get_parent
@@ -252,37 +251,6 @@ namespace eirods {
         stop_opr_name_ = _op;
     } // resource::set_stop_operation
  
-    // =-=-=-=-=-=-=-
-    // private - helper function to check params for the operator() calls to reduce code duplication
-    error resource::check_operation_params( const std::string&  _op,
-                                            rsComm_t*           _comm,
-                                            first_class_object* _obj ) {
-        // =-=-=-=-=-=-=-
-        // check params
-        if( !_comm ) {
-            std::stringstream msg;
-            msg << "check_operation_params - operation [" << _op << "] null comm pointer";
-            return ERROR( -1, msg.str() );
-        }
-
-        if( !_obj ) {
-            std::stringstream msg;
-            msg << "check_operation_params - operation [" << _op << "] null fco pointer";
-            return ERROR( -1, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // check if the operation exists
-        if( !operations_.has_entry( _op ) ) {
-            std::stringstream msg;
-            msg << "check_operation_params - operation [" << _op << "] doesn't exist.";
-            return ERROR( -1, msg.str() );
-        }
-                
-        return SUCCESS();
-
-    } // check_operation_params
-
     // END resource
     // =-=-=-=-=-=-=-
 
@@ -300,13 +268,11 @@ namespace eirods {
             return SUCCESS();       
         
         } else {
-            return PASS( false, -1, "load_resource_plugin failed.", ret );
+            return PASS( ret );
         
         }
 
     } // load_resource_plugin
-
-
 
 }; // namespace eirods
 

@@ -250,7 +250,8 @@ extern "C" {
     eirods::error round_robin_start_operation( 
                   eirods::resource_property_map& _prop_map,
                   eirods::resource_child_map&    _cmap ) {
-
+        // =-=-=-=-=-=-=-
+        // trap case where no children are available
         if( _cmap.empty() ) {
             return ERROR( -1, "round_robin_start_operation - no children specified" );
         }
@@ -292,25 +293,24 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief Check the general parameters passed in to most plugin functions
-    eirods::error round_robin_check_params(
-        eirods::resource_property_map* _prop_map,
-        eirods::resource_child_map*    _cmap,
-        eirods::first_class_object*    _object ) {
-
-        eirods::error result = SUCCESS();
+    inline eirods::error round_robin_check_params(
+        eirods::resource_operation_context* _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // check the resource context
+        if( !_ctx ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "resource context is null" );
+        }
 
         // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_prop_map ) {
-            result = ERROR( -1, "round_robin_check_params - null resource_property_map" );
-        } else if( !_cmap ) {
-            result = ERROR( -1, "round_robin_check_params - null resource_child_map" );
-        } else if( !_object ) {
-            result = ERROR( -1, "round_robin_check_params - null first_class_object" );
-        }
-        
-        return result;
+        // ask the context if it is valid
+        eirods::error ret = _ctx->valid();
+        if( !ret.ok() ) {
+            return PASSMSG( "resource context is invalid", ret );
 
+        }
+       
+        return SUCCESS();
+ 
     } // round_robin_check_params
 
     /// =-=-=-=-=-=-=-
@@ -355,835 +355,470 @@ extern "C" {
 
     } // get_next_child_in_hier
 
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX create
-    eirods::error round_robin_file_create( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+    // =-=-=-=-=-=-=-
+    /// @brief get the resource for the child in the hierarchy
+    ///        to pass on the call
+    eirods::error round_robin_get_resc_for_call( 
+        eirods::resource_operation_context* _ctx,
+        eirods::resource_ptr&               _resc ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
+        eirods::error err = round_robin_check_params( _ctx );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_create - bad params.", err );
+            return PASSMSG( "round_robin_get_resc_for_call - bad resource context", err );
+        }
+ 
+        // =-=-=-=-=-=-=-
+        // get the object's name
+        std::string name;
+        err = _ctx->prop_map().get< std::string >( "name", name );
+        if( !err.ok() ) {
+            return PASSMSG( "round_robin_get_resc_for_call - failed to get property 'name'.", err );
         }
 
         // =-=-=-=-=-=-=-
         // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_create - failed to get property 'name'.", err );
-        }
+        std::string hier = _ctx->fco().resc_hier( );
       
         // =-=-=-=-=-=-=-
         // get the next child pointer given our name and the hier string
-        eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        err = get_next_child_in_hier( name, hier, _ctx->child_map(), _resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_create - get_next_child_in_hier failed.", err );
+            return PASSMSG( "round_robin_get_resc_for_call - get_next_child_in_hier failed.", err );
+        }
+
+        return SUCCESS();
+
+    } // round_robin_get_resc_for_call
+
+    /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX create
+    eirods::error round_robin_file_create( 
+        eirods::resource_operation_context* _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call create on the child 
-        return resc->call( _comm, "create", _object );
+        return resc->call( _ctx->comm(), "create", _ctx->fco() );
    
     } // round_robin_file_create
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     eirods::error round_robin_file_open( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_open - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_open - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_open - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call open operation on the child 
-        return resc->call( _comm, "open", _object );
+        return resc->call( _ctx->comm(), "open", _ctx->fco() );
  
     } // round_robin_file_open
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Read
     eirods::error round_robin_file_read(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      void*                          _buf, 
-                      int                            _len ) {
+        eirods::resource_operation_context* _ctx,
+        void*                               _buf, 
+        int                                 _len ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_read - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_read - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_read - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call read on the child 
-        return resc->call< void*, int >( _comm, "read", _object, _buf, _len );
+        return resc->call< void*, int >( _ctx->comm(), "read", _ctx->fco(), _buf, _len );
  
     } // round_robin_file_read
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Write
     eirods::error round_robin_file_write( 
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      void*                          _buf, 
-                      int                            _len ) {
+        eirods::resource_operation_context* _ctx,
+        void*                               _buf, 
+        int                                 _len ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_write - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_write - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_write - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call write on the child 
-        return resc->call< void*, int >( _comm, "write", _object, _buf, _len );
+        return resc->call< void*, int >( _ctx->comm(), "write", _ctx->fco(), _buf, _len );
  
     } // round_robin_file_write
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Close
     eirods::error round_robin_file_close(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results  ) {
-                    
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_close - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_close - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_close - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call close on the child 
-        return resc->call( _comm, "close", _object );
+        return resc->call( _ctx->comm(), "close", _ctx->fco() );
  
     } // round_robin_file_close
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Unlink
     eirods::error round_robin_file_unlink(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results  ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_unlink - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_unlink - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_unlink - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call unlink on the child 
-        return resc->call( _comm, "unlink", _object );
+        return resc->call( _ctx->comm(), "unlink", _ctx->fco() );
  
     } // round_robin_file_unlink
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Stat
     eirods::error round_robin_file_stat(
-                      rsComm_t* _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      struct stat*                   _statbuf ) {
+        eirods::resource_operation_context* _ctx,
+        struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stat - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stat - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stat - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call stat on the child 
-        return resc->call< struct stat* >( _comm, "stat", _object, _statbuf );
+        return resc->call< struct stat* >( _ctx->comm(), "stat", _ctx->fco(), _statbuf );
  
     } // round_robin_file_stat
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Fstat
     eirods::error round_robin_file_fstat(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      struct stat*                   _statbuf ) {
+        eirods::resource_operation_context* _ctx,
+        struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_fstat - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_fstat - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_fstat - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call fstat on the child 
-        return resc->call< struct stat* >( _comm, "fstat", _object, _statbuf );
+        return resc->call< struct stat* >( _ctx->comm(), "fstat", _ctx->fco(), _statbuf );
  
     } // round_robin_file_fstat
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error round_robin_file_lseek(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      size_t                         _offset, 
-                      int                            _whence ) {
+        eirods::resource_operation_context* _ctx,
+        size_t                              _offset, 
+        int                                 _whence ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_lseek - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_lseek - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_lseek - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call< size_t, int >( _comm, "lseek", _object, _offset, _whence );
+        return resc->call< size_t, int >( _ctx->comm(), "lseek", _ctx->fco(), _offset, _whence );
  
     } // round_robin_file_lseek
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX fsync
     eirods::error round_robin_file_fsync(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results  ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_fsync - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_fsync - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_fsync - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call fsync on the child 
-        return resc->call( _comm, "fsync", _object );
+        return resc->call( _ctx->comm(), "fsync", _ctx->fco() );
  
     } // round_robin_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
     eirods::error round_robin_file_mkdir(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object, 
-                      std::string*                   _results ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_mkdir - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_mkdir - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_mkdir - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call mkdir on the child 
-        return resc->call( _comm, "mkdir", _object );
+        return resc->call( _ctx->comm(), "mkdir", _ctx->fco() );
 
     } // round_robin_file_mkdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX chmod
     eirods::error round_robin_file_chmod(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results  ) {
-                    
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_chmod - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_chmod - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_chmod - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
+                   
 
         // =-=-=-=-=-=-=-
         // call chmod on the child 
-        return resc->call( _comm, "chmod", _object );
+        return resc->call( _ctx->comm(), "chmod", _ctx->fco() );
 
     } // round_robin_file_chmod
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
     eirods::error round_robin_file_rmdir(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object, 
-                      std::string*                   _results ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_rmdir - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_rmdir - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_rmdir - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call rmdir on the child 
-        return resc->call( _comm, "rmdir", _object );
+        return resc->call( _ctx->comm(), "rmdir", _ctx->fco() );
 
     } // round_robin_file_rmdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX opendir
     eirods::error round_robin_file_opendir(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_opendir - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_opendir - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_opendir - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call opendir on the child 
-        return resc->call( _comm, "opendir", _object );
+        return resc->call( _ctx->comm(), "opendir", _ctx->fco() );
 
     } // round_robin_file_opendir
 
     // =-=-=-=-=-=-=-
     /// @brief interface for POSIX closedir
     eirods::error round_robin_file_closedir(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_closedir - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_closedir - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_closedir - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call closedir on the child 
-        return resc->call( _comm, "closedir", _object );
+        return resc->call( _ctx->comm(), "closedir", _ctx->fco() );
 
     } // round_robin_file_closedir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX readdir
     eirods::error round_robin_file_readdir(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      struct rodsDirent**            _dirent_ptr ) {
+        eirods::resource_operation_context* _ctx,
+        struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_readdir - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_readdir - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_readdir - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call readdir on the child 
-        return resc->call< struct rodsDirent** >( _comm, "readdir", _object, _dirent_ptr );
+        return resc->call< struct rodsDirent** >( _ctx->comm(), "readdir", _ctx->fco(), _dirent_ptr );
 
     } // round_robin_file_readdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX file_stage
     eirods::error round_robin_file_stage(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stage - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stage - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stage - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call stage on the child 
-        return resc->call( _comm, "stage", _object );
+        return resc->call( _ctx->comm(), "stage", _ctx->fco() );
 
     } // round_robin_file_stage
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
     eirods::error round_robin_file_rename(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object, 
-                      std::string*                   _results,
-                      const char*                    _new_file_name ) {
+        eirods::resource_operation_context* _ctx,
+        const char*                         _new_file_name ) {
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_rename - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_rename - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_rename - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call rename on the child 
-        return resc->call< const char* >( _comm, "rename", _object, _new_file_name );
+        return resc->call< const char* >( _ctx->comm(), "rename", _ctx->fco(), _new_file_name );
 
     } // round_robin_file_rename
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
     eirods::error round_robin_file_truncate(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) { 
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_truncate - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_truncate - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_truncate - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call truncate on the child 
-        return resc->call( _comm, "truncate", _object );
+        return resc->call( _ctx->comm(), "truncate", _ctx->fco() );
 
     } // round_robin_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     eirods::error round_robin_file_getfs_freespace(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results ) { 
+        eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_getfs_freespace - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_getfs_freespace - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_getfs_freespace - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call freespace on the child 
-        return resc->call( _comm, "freespace", _object );
+        return resc->call( _ctx->comm(), "freespace", _ctx->fco() );
 
     } // round_robin_file_getfs_freespace
 
@@ -1192,42 +827,22 @@ extern "C" {
     ///        Just copy the file from filename to cacheFilename. optionalInfo info
     ///        is not used.
     eirods::error round_robin_file_stage_to_cache(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      const char*                    _cache_file_name ) { 
+        eirods::resource_operation_context* _ctx,
+        const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stage_to_cache - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stage_to_cache - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_stage_to_cache - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call stage on the child 
-        return resc->call< const char* >( _comm, "stage", _object, _cache_file_name );
+        return resc->call< const char* >( _ctx->comm(), "stage", _ctx->fco(), _cache_file_name );
 
     } // round_robin_file_stage_to_cache
 
@@ -1236,42 +851,22 @@ extern "C" {
     ///        Just copy the file from cacheFilename to filename. optionalInfo info
     ///        is not used.
     eirods::error round_robin_file_sync_to_arch(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object, 
-                      std::string*                   _results,
-                      const char*                    _cache_file_name ) { 
+        eirods::resource_operation_context* _ctx, 
+        const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = round_robin_check_params( _prop_map, _cmap, _object );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_sync_to_arch - bad params.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _object->resc_hier( );
- 
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string name;
-        err = _prop_map->get< std::string >( "name", name );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_sync_to_arch - failed to get property 'name'.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
+        // get the child resc to call
         eirods::resource_ptr resc; 
-        err = get_next_child_in_hier( name, hier, *_cmap, resc );
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_file_sync_to_arch - get_next_child_in_hier failed.", err );
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
         }
 
         // =-=-=-=-=-=-=-
         // call synctoarch on the child 
-        return resc->call< const char* >( _comm, "synctoarch", _object, _cache_file_name );
+        return resc->call< const char* >( _ctx->comm(), "synctoarch", _ctx->fco(), _cache_file_name );
 
     } // round_robin_file_sync_to_arch
 
@@ -1279,47 +874,38 @@ extern "C" {
     /// @brief used to allow the resource to determine which host
     ///        should provide the requested operation
     eirods::error round_robin_redirect(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map, 
-                      eirods::resource_child_map*    _cmap,
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      const std::string*             _opr,
-                      const std::string*             _curr_host,
-                      eirods::hierarchy_parser*      _out_parser,
-                      float*                         _out_vote ) {
+        eirods::resource_operation_context* _ctx, 
+        const std::string*                  _opr,
+        const std::string*                  _curr_host,
+        eirods::hierarchy_parser*           _out_parser,
+        float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        if( !_prop_map ) {
-            return ERROR( -1, "round_robin_redirect - null resource_property_map" );
-        }
-        if( !_cmap ) {
-            return ERROR( -1, "round_robin_redirect - null resource_child_map" );
+        eirods::error err = round_robin_check_params( _ctx );
+        if( !err.ok() ) {
+            return PASSMSG( "round_robin_redirect - bad resource context", err );
         }
         if( !_opr ) {
-            return ERROR( -1, "round_robin_redirect - null operation" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null operation" );
         }
         if( !_curr_host ) {
-            return ERROR( -1, "round_robin_redirect - null operation" );
-        }
-        if( !_object ) {
-            return ERROR( -1, "round_robin_redirect - null first_class_object" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null host" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "round_robin_redirect - null outgoing hier parser" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null outgoing hier parser" );
         }
         if( !_out_vote ) {
-            return ERROR( -1, "round_robin_redirect - null outgoing vote" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null outgoing vote" );
         }
         
         // =-=-=-=-=-=-=-
         // get the object's hier string
-        std::string hier = _object->resc_hier( );
+        std::string hier = _ctx->fco().resc_hier( );
  
         // =-=-=-=-=-=-=-
         // get the object's hier string
         std::string name;
-        eirods::error err = _prop_map->get< std::string >( "name", name );
+        err = _ctx->prop_map().get< std::string >( "name", name );
         if( !err.ok() ) {
             return PASSMSG( "round_robin_redirect - failed to get property 'name'.", err );
         }
@@ -1334,7 +920,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // get the next child pointer in the hierarchy, given our name and the hier string
             eirods::resource_ptr resc; 
-            err = get_next_child_in_hier( name, hier, *_cmap, resc );
+            err = get_next_child_in_hier( name, hier, _ctx->child_map(), resc );
             if( !err.ok() ) {
                 return PASSMSG( "round_robin_redirect - get_next_child_in_hier failed.", err );
             }
@@ -1343,13 +929,13 @@ extern "C" {
             // forward the redirect call to the child for assertion of the whole operation,
             // there may be more than a leaf beneath us
             return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _comm, "redirect", _object, _opr, _curr_host, _out_parser, _out_vote );
+                               _ctx->comm(), "redirect", _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // get the next_child property 
             std::string next_child;
-            eirods::error err = _prop_map->get< std::string >( "next_child", next_child ); 
+            eirods::error err = _ctx->prop_map().get< std::string >( "next_child", next_child ); 
             if( !err.ok() ) {
                 return PASSMSG( "round_robin_redirect - get property for 'next_child' failed.", err );
             
@@ -1357,7 +943,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // get the next_child resource 
-            if( !_cmap->has_entry( next_child ) ) {
+            if( !_ctx->child_map().has_entry( next_child ) ) {
                 std::stringstream msg;
                 msg << "round_robin_redirect - child map has no child by name [";
                 msg << next_child << "]";
@@ -1367,12 +953,12 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // request our child resource to redirect
-            eirods::resource_ptr resc = (*_cmap)[ next_child ].second;
+            eirods::resource_ptr resc = _ctx->child_map()[ next_child ].second;
 
             // =-=-=-=-=-=-=-
             // forward the 'put' redirect to the appropriate child
             err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _comm, "redirect", _object, _opr, _curr_host, _out_parser, _out_vote );
+                               _ctx->comm(), "redirect", _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
             if( !err.ok() ) {
                 return PASSMSG( "round_robin_redirect - forward of put redirect failed", err );
             
@@ -1382,7 +968,7 @@ extern "C" {
             
             // =-=-=-=-=-=-=-
             // update the next_child appropriately as the above succeeded
-            err = update_next_child_resource( *_prop_map );
+            err = update_next_child_resource( _ctx->prop_map() );
             if( !err.ok() ) {
                 return PASSMSG( "round_robin_redirect - update_next_child_resource failed", err );
 

@@ -143,20 +143,18 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
-                msg << "_rsFileStageToCache: fileRmdir for ";
+                msg << "fileRmdir failed for [";
                 msg << fileStageToCacheInp->cacheFilename;
-                msg << ", status = ";
-                msg << rmdir_err.code();
-                eirods::error err = PASS( false, rmdir_err.code(), msg.str(), rmdir_err );
+                msg << "]";
+                eirods::error err = PASSMSG( msg.str(), rmdir_err );
                 eirods::log ( err );
             }
         } else {
             std::stringstream msg;
-            msg << "_rsFileStageToCache: fileStageTocache for ";
+            msg << "fileStageTocache failed for [";
             msg << fileStageToCacheInp->filename;
-            msg << ", status = ";
-            msg << stage_err.code();
-            eirods::error err = PASS( false, stage_err.code(), msg.str(), stage_err );
+            msg << "]";
+            eirods::error err = PASSMSG( msg.str(), stage_err );
             eirods::log ( err );
         }
 
@@ -169,11 +167,11 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
         // handle errors if any
         if( !stage_err.ok() ) {
             std::stringstream msg;
-            msg << "_rsFileStageToCache: fileStageTocache for ";
+            msg << "fileStageTocache for [";
             msg << fileStageToCacheInp->filename;
-            msg << ", status = ";
+            msg << "]";
             msg << stage_err.code();
-            eirods::error err = PASS( false, stage_err.code(), msg.str(), stage_err );
+            eirods::error err = PASSMSG( msg.str(), stage_err );
             eirods::log ( err );
         }
 

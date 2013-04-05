@@ -89,17 +89,14 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    int local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
     char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if( NULL == resc_hier ) {
         std::string       hier;
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                                       dataObjInp, hier, host, local );
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                       dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in eirods::resource_redirect for [";
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -111,11 +108,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } // if keyword
-
-    //if( LOCAL_HOST != local ) {
-    //    return rcDataObjCreate( host->conn, dataObjInp );
-    //    
-    //} // if remote host
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4604
@@ -218,6 +210,10 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "_rsDataObjCreate : failed in call to getRescGrpForCreate. status = %d", status );
+        return status;
+    }
 
 #if 1 // JMC - legacy resource
     status = l1descInx = _rsDataObjCreateWithRescInfo( rsComm, dataObjInp, myRescGrpInfo->rescInfo, myRescGrpInfo->rescGroupName );
@@ -644,8 +640,8 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
 
         eirods::error set_err = eirods::set_default_resource( rsComm, "", "", &dataObjInp->condInput, *(*myRescGrpInfo) );
         if( !set_err.ok() ) {
-            eirods::log( PASS( false, -1, "getRescGrpForCreate - failed.", set_err ) );
-            status = SYS_INVALID_RESC_INPUT;
+            eirods::log( PASS( set_err ) );
+            return SYS_INVALID_RESC_INPUT;
         }
 
     } else {

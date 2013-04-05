@@ -109,16 +109,14 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     // =-=-=-=-=-=-=-
     // call redirect for our operation of choice to request the hier string appropriately 
-    std::string       hier;
-    int               local    = LOCAL_HOST;
-    rodsServerHost_t* host     =  0;
-    char*             tmp_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    std::string hier;
+    char*       tmp_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
     if( 0 == tmp_hier ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                       dataObjInp, hier, host, local );
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+                                                       rsComm, dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsDataObjRepl :: failed in eirods::resource_redirect for [";
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
@@ -128,13 +126,6 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else {
         hier = tmp_hier;
     }
-
-
-    // =-=-=-=-=-=-=-
-    // redirect to the desired server
-    //if( LOCAL_HOST != local ) {
-    //    return _rcDataObjRepl( host->conn, dataObjInp, transStat );
-    //}
 
     // =-=-=-=-=-=-=-
     // performing a local replication
@@ -763,10 +754,10 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         // =-=-=-=-=-=-=-=-
         // use for redirect
         std::string op_name;
+        memset (&dest_inp, 0, sizeof (dest_inp));
+        memset (&dest_inp.condInput, 0, sizeof (dest_inp.condInput));
     
         strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
-
-        memset (&dest_inp.condInput, 0, sizeof (dest_inp.condInput));
         addKeyVal( &(dest_inp.condInput), RESC_NAME_KW, myDestRescInfo->rescName );
 
         myDestDataObjInfo = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
@@ -799,15 +790,13 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
 
         // =-=-=-=-=-=-=-
         // call redirect for our operation of choice to request the hier string appropriately 
-        std::string       hier;
-        int               local    = LOCAL_HOST;
-        rodsServerHost_t* host     =  0;
-        char*             dst_hier_str = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+        std::string hier;
+        char*       dst_hier_str = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
         if( 0 == dst_hier_str ) {
-            eirods::error ret = eirods::resource_redirect( op_name, rsComm, &dest_inp, hier, host, local );
+            eirods::error ret = eirods::resolve_resource_hierarchy( op_name, rsComm, &dest_inp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "dataObjOpenForRepl :: failed in eirods::resource_redirect for [";
+                msg << "failed in eirods::resolve_resource_hierarchy for [";
                 msg << dest_inp.objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
@@ -1172,7 +1161,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 eirods::error err = eirods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName, 
                                                                           "create_path", dst_create_path );
                 if( !err.ok() ) {
-                    eirods::log( PASS( false, -1, "l3FileSync - failed.", err ) );
+                    eirods::log( PASS( err ) );
                 }
 
                 if( CREATE_PATH == dst_create_path ) {
@@ -1196,7 +1185,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 std::string location;
                 eirods::error ret = eirods::get_loc_for_hier_string( srcDataObjInfo->rescHier, location );
                 if( !ret.ok() ) {
-                    eirods::log( PASSMSG( "l3FileSycn - failed in get_loc_for_hier_String", ret ) );
+                    eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
                     return -1;
                 }
                 

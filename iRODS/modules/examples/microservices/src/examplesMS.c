@@ -89,10 +89,10 @@ msiGetRescAddr( msParam_t *rescName, msParam_t *outAddress,
     eirods::error err = resc_mgr.resolve( tmpPtr, resc );
     if( !err.ok() ) {
         std::stringstream msg;
-        msg << "msgiGetRescAddr - failed to resolve resource [";
+        msg << "failed to resolve resource [";
         msg << tmpPtr;
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), err ) );
+        eirods::log( PASSMSG( msg.str(), err ) );
         return err.code();
     } 
 
@@ -100,8 +100,8 @@ msiGetRescAddr( msParam_t *rescName, msParam_t *outAddress,
     err = resc->get_property< std::string >( "location", location );
     if( !err.ok() ) {
         std::stringstream msg;
-        msg << "msgiGetRescAddr - failed to get property [location]";
-        eirods::log( PASS( false, -1, msg.str(), err ) );
+        msg << "failed to get property [location]";
+        eirods::log( PASSMSG( msg.str(), err ) );
         return err.code();
     }
 

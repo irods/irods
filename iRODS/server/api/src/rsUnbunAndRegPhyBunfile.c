@@ -47,10 +47,10 @@ rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if( !err.ok() ) {
         delete rescInfo;
         std::stringstream msg;
-        msg << "rsUnbunAndRegPhyBunfile - failed for [";
+        msg << "failed for [";
         msg << rescName;
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), err ) );
+        eirods::log( PASSMSG( msg.str(), err ) );
         return -1;
     }
     status = _rsUnbunAndRegPhyBunfile( rsComm, dataObjInp, rescInfo );
@@ -82,12 +82,13 @@ _rsUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "_rsUnbunAndRegPhyBunfile - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASS( ret ) );
         return -1;
     }
 
     //remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
     rodsHostAddr_t addr;
+    memset (&addr, 0, sizeof (addr));
     rstrcpy( addr.hostAddr, location.c_str(), NAME_LEN );
     remoteFlag = resolveHost( &addr, &rodsServerHost );
     if (remoteFlag == REMOTE_HOST) {
@@ -367,7 +368,7 @@ int unbunPhyBunFile( rsComm_t *rsComm, char *objPath,
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( resc_hier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "unbunPhyBunFile - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASS( ret ) );
         return -1;
     }
 

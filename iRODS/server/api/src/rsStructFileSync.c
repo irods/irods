@@ -21,7 +21,7 @@ rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     if( resc_hier != NULL ) {
         eirods::error ret = eirods::get_host_for_hier_string( resc_hier, remoteFlag, rodsServerHost );
         if( !ret.ok() ) {
-            eirods::log( PASSMSG( "rsStructFileSync - failed in call to eirods::get_host_for_hier_string", ret ) );
+            eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
             return -1;
         }
     } else {
@@ -102,19 +102,19 @@ int _rsStructFileSync( rsComm_t*           _comm,
 	eirods::resource_ptr resc;
     eirods::error ret_err = struct_obj.resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
-		eirods::error err = PASS( false, -1, "_rsStructFileSync - failed to resolve resource", ret_err );
+		eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
         eirods::log( err );
         return ret_err.code();
 	}
  
 	// =-=-=-=-=-=-=-
 	// make the call to the "extract" interface
-	ret_err = resc->call( _comm, "sync", &struct_obj );
+	ret_err = resc->call( _comm, "sync", struct_obj );
 
     // =-=-=-=-=-=-=-
 	// pass along an error from the interface or return SUCCESS
 	if( !ret_err.ok() ) {
-        eirods::error err = PASS( false, ret_err.code(), "_rsStructFileSync - failed to call 'sync'", ret_err );
+        eirods::error err = PASSMSG( "failed to call 'sync'", ret_err );
         eirods::log( err );
         return ret_err.code();
 	} else {

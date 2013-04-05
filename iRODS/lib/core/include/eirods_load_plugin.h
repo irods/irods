@@ -107,7 +107,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // quick parameter check
         if( clean_plugin_name.empty() ) {
-            return ERROR( -1, "load_plugin :: clean_plugin_name is empty" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "load_plugin :: clean_plugin_name is empty" );
         }
 
         // =-=-=-=-=-=-=-
@@ -116,10 +116,9 @@ namespace eirods {
         void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
         if( !handle ) {
             std::stringstream msg;
-            std::string       err( dlerror() );
-            msg << "load_plugin :: failed to open shared object file: " << so_name
-                << " :: dlerror is " << err;
-            return ERROR( -1, msg.str() );
+            msg << "failed to open shared object file [" << so_name
+                << "] :: dlerror: is " << dlerror();
+            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -136,7 +135,7 @@ namespace eirods {
             msg << "load_plugin :: failed to load sybol from shared object handle - "
                 << "EIRODS_PLUGIN_VERSION" << " :: dlerror is " << err;
             dlclose( handle );
-            return ERROR( -1, msg.str() );
+            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
@@ -157,15 +156,15 @@ namespace eirods {
         factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
         if( ( err = dlerror() ) != 0 ) {
             std::stringstream msg;
-            msg << "load_plugin :: failed to load sybol from shared object handle - plugin_factory"
+            msg << "failed to load sybol from shared object handle - plugin_factory"
                 << " :: dlerror is " << err;
             dlclose( handle );
-            return ERROR( -1, msg.str() );
+            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
 
         if( !factory ) {
             dlclose( handle );
-            return ERROR(  -1, "load_plugin :: failed to cast plugin factory" );
+            return ERROR( EIRODS_PLUGIN_ERROR, "failed to cast plugin factory" );
         }
 
         // =-=-=-=-=-=-=-
@@ -175,33 +174,33 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // notify world of success
             // TODO :: add hash checking and provide hash value for log also
-#ifdef DEBUG
+            #ifdef DEBUG
             std::cout << "load_plugin :: loaded [" << clean_plugin_name << "]" << std::endl;
-#endif
+            #endif
 
             // =-=-=-=-=-=-=-
             // call the delayed loader to load any other symbols this plugin may need.
             error ret = _plugin->delay_load( handle );
             if( !ret.ok() ) {
                 std::stringstream msg;
-                msg << "load_plugin :: failed on delayed load for [" << clean_plugin_name << "]";
+                msg << "failed on delayed load for [" << clean_plugin_name << "]";
                 dlclose( handle );
-                return ERROR( -1, msg.str() );
+                return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
             }
 			
             return SUCCESS();;
 
         } else {
             std::stringstream msg;
-            msg << "load_plugin :: failed to create plugin object for [" << clean_plugin_name << "]";
+            msg << "failed to create plugin object for [" << clean_plugin_name << "]";
             dlclose( handle );
-            return ERROR( -1, msg.str() );
+            return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // the code should never get here
         dlclose( handle );
-        return ERROR( -1, "load_plugin - this shouldnt happen." );
+        return ERROR( EIRODS_INVALID_LOCATION, "this shouldnt happen." );
 
     } // load_plugin
 

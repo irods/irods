@@ -146,20 +146,18 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
-                msg << "_rsFileSyncToArch: fileRmdir for ";
+                msg << "fileRmdir failed for [";
                 msg << fileSyncToArchInp->filename;
-                msg << ", status = ";
-                msg << rmdir_err.code();
-                eirods::error err = PASS( false, rmdir_err.code(), msg.str(), sync_err );
+                msg << "]";
+                eirods::error err = PASSMSG( msg.str(), sync_err );
                 eirods::log ( err );
             }
         } else {
             std::stringstream msg;
-            msg << "_rsFileSyncToArch: fileSyncToArch for ";
+            msg << "fileSyncToArch failed for [";
             msg << myFileName;
-            msg << ", status = ";
-            msg << sync_err.code();
-            eirods::error err = PASS( false, sync_err.code(), msg.str(), sync_err );
+            msg << "]";
+            eirods::error err = PASSMSG( msg.str(), sync_err );
             eirods::log ( err );
             return sync_err.code();
         }
@@ -169,11 +167,11 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
         if( !sync_err.ok() ) {
             std::stringstream msg;
-            msg << "_rsFileSyncToArch: fileSyncToArch for ";
+            msg << "fileSyncToArch failed for [";
             msg << myFileName;
-            msg << ", status = ";
+            msg << "]";
             msg << sync_err.code();
-            eirods::error err = PASS( false, sync_err.code(), msg.str(), sync_err );
+            eirods::error err = PASSMSG( msg.str(), sync_err );
             eirods::log ( err );
         }
 

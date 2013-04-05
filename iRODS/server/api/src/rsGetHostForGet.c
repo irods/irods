@@ -26,50 +26,53 @@
 #include "eirods_resource_redirect.h"
 
 int rsGetHostForGet(
-        rsComm_t*     rsComm, 
-        dataObjInp_t* dataObjInp,
-        char**        outHost ) {
+    rsComm_t*     rsComm, 
+    dataObjInp_t* dataObjInp,
+    char**        outHost ) {
+    // =-=-=-=-=-=-=-
+    // default behavior
+    *outHost = strdup( THIS_ADDRESS );
+
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    std::string       hier;
-    int               local = LOCAL_HOST;
-    rodsServerHost_t* host  =  0;
-    if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                       dataObjInp, hier, host, local );
-        if( !ret.ok() ) { 
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " :: failed in eirods::resource_redirect for [";
-            msg << dataObjInp->objPath << "]";
-            eirods::log( PASSMSG( msg.str(), ret ) );
-            return ret.code();
-        }
+    if( isColl( rsComm, dataObjInp->objPath, NULL ) < 0 ) {
+        std::string       hier;
+        if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+            eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                           dataObjInp, hier );
+            if( !ret.ok() ) { 
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << dataObjInp->objPath << "]";
+                eirods::log( PASSMSG( msg.str(), ret ) );
+                return ret.code();
+            }
+            // =-=-=-=-=-=-=-
+            // we resolved the redirect and have a host, set the hier str for subsequent
+            // api calls, etc.
+            addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+        } // if keyword
+
         // =-=-=-=-=-=-=-
-        // we resolved the redirect and have a host, set the hier str for subsequent
-        // api calls, etc.
-        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+        // extract the host location from the resource hierarchy
+        std::string location;
+        eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
+        if( !ret.ok() ) {
+            eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
+            return -1;
+        }
 
-    } // if keyword
+        // =-=-=-=-=-=-=-
+        // set the out variable
+        *outHost = strdup( location.c_str() );
 
-    // =-=-=-=-=-=-=-
-    // extract the host location from the resource hierarchy
-    std::string location;
-    eirods::error ret = eirods::get_loc_for_hier_string( hier, location );
-    if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsGetHostForGet - failed in get_loc_for_hier_String", ret ) );
-        return -1;
-    }
-
-    // =-=-=-=-=-=-=-
-    // set the out variable
-    *outHost = strdup( location.c_str() );
+    } // if not a collection
+       
     return 0;
-
-
-
 
 #if 0
     int status;

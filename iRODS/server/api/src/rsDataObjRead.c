@@ -123,7 +123,7 @@ bytesBuf_t *dataObjReadOutBBuf)
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Read - failed in get_loc_for_hier_String", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_String", ret ) );
         return -1;
     }
 
@@ -144,7 +144,7 @@ bytesBuf_t *dataObjReadOutBBuf)
         int category = 0; 
         eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "category", category );
         if( !err.ok() ) {
-            eirods::log( PASS( false, -1, "l3Read - failed.", err ) );
+            eirods::log( PASS( err ) );
         }
 
         // JMC - legacy resource - switch (RescTypeDef[rescTypeInx].rescCat) {

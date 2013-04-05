@@ -78,10 +78,10 @@ int _rsSubStructFileMkdir( rsComm_t*  _comm,
     eirods::error mkdir_err = fileMkdir( _comm, struct_obj );
     if( !mkdir_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileMkdir - failed on call to fileMkdir for [";
+        msg << "failed on call to fileMkdir for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), mkdir_err ) );
+        eirods::log( PASSMSG( msg.str(), mkdir_err ) );
         return mkdir_err.code();
 
     } else {

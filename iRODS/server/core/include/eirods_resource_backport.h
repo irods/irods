@@ -42,10 +42,10 @@ namespace eirods {
         error res_err = resc_mgr.resolve( _name, resc );
         if( !res_err.ok() ) {
             std::stringstream msg;
-            msg << "get_resource_property - failed to resolve resource [";
+            msg << "failed to resolve resource [";
             msg << _prop_name;
             msg << "]";
-            return PASS( false, -1, msg.str(), res_err );
+            return PASSMSG( msg.str(), res_err );
         }
 
         // =-=-=-=-=-=-=-
@@ -53,10 +53,10 @@ namespace eirods {
         error get_err = resc->get_property< T >( _prop_name, _prop );
         if( !get_err.ok() ) {
             std::stringstream msg;
-            msg << "get_resource_property - failed to get property [";
+            msg << "failed to get property [";
             msg << _prop_name;
             msg << "]";
-            return PASS( false, -1, msg.str(), get_err );
+            return PASSMSG( msg.str(), get_err );
         }
 
         return SUCCESS();

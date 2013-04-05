@@ -119,11 +119,10 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
     // pass long read error
     if( !ret.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileRead: fileRead for ";
+        msg << "fileRead failed for ";
         msg << file_obj.physical_path();
-        msg << ", status = ";
-        msg << ret.code();
-        eirods::error err = PASS( false, ret.code(), msg.str(), ret );
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), ret );
         eirods::log( err );
     } else {
         fileReadOutBBuf->len = ret.code();

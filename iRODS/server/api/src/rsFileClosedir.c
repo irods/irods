@@ -83,11 +83,10 @@ int _rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp ) {
 
 	if( !closedir_err.ok() ) {
 		std::stringstream msg;
-		msg << "_rsFileRmdir: fileClosedir for ";
+		msg << "fileClosedir failed for [";
 		msg << FileDesc[fileClosedirInp->fileInx].fileName;
-		msg << ", status = ";
-		msg << closedir_err.code();
-		eirods::error log_err = PASS( false, closedir_err.code(), msg.str(), closedir_err );
+		msg << "]";
+		eirods::error log_err = PASSMSG( msg.str(), closedir_err );
 		eirods::log( log_err ); 
 	}
 

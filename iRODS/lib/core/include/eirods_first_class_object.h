@@ -55,6 +55,7 @@ namespace eirods {
         // Mutators
         inline void file_descriptor( int _fd )              { file_descriptor_ = _fd;   }
         inline void comm ( rsComm_t* _c )                   { comm_            = _c;    } 
+        inline void mode ( int _m )                         { mode_            = _m;    }
         inline void flags( int _f )                         { flags_           = _f;    }
         inline void physical_path(const std::string& _path) { physical_path_   = _path; }
         inline void resc_hier(const std::string& _hier)     { resc_hier_       = _hier; }

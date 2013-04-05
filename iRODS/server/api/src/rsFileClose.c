@@ -110,11 +110,10 @@ _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
     // log an error, if any
     if( !close_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileClose: fileClose failed for ";
+        msg << "fileClose failed for [";
         msg << fileCloseInp->fileInx;
-        msg << ", status = ";
-        msg << close_err.code();
-        eirods::error err = PASS( false, close_err.code(), msg.str(), close_err ); 
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), close_err ); 
     }
 
     return close_err.code();

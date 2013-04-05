@@ -98,7 +98,7 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     int chk_path = 0;
     eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "check_path_perm", chk_path );
     if( !err.ok() ) {
-        eirods::log( PASS( false, -1, "getFilePathName - failed.", err ) );
+        eirods::log( PASS( err ) );
     }
 
     if( NO_CREATE_PATH == chk_path ) {
@@ -319,7 +319,7 @@ getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             int chk_path = 0;
             eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "check_path_perm", chk_path );
             if( !err.ok() ) {
-                eirods::log( PASS( false, -1, "getchkPathPerm - failed.", err ) );
+                eirods::log( PASS( err ) );
             }
 
             if( err.ok() && ( rei.status == NO_CHK_PATH_PERM || NO_CHK_PATH_PERM == chk_path ) ) {
@@ -452,7 +452,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     int category = 0;
     eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
     if( !err.ok() ) {
-        eirods::log( PASS( false, -1, "_dataObjChksum - failed.", err ) );
+        eirods::log( PASS( err ) );
     }
 
     std::string location;
@@ -551,7 +551,7 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char* objPath, char* rescHier, char *f
     int category = 0;
     eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
     if( !err.ok() ) {
-        eirods::log( PASS( false, -1, "chkAndHandleOrphanFile - failed.", err ) );
+        eirods::log( PASS( err ) );
     }
 
     // JMC - legacy resource  - if (RescTypeDef[rescTypeInx].rescCat != FILE_CAT) {
@@ -743,7 +743,7 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int create_path = 0;
     eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "create_path", create_path );
     if( !err.ok() ) {
-        eirods::log( PASS( false, -1, "syncDataObjPhyPathS - failed.", err ) );
+        eirods::log( PASS( err ) );
     }
 
     // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
@@ -956,7 +956,7 @@ syncCollPhyPath (rsComm_t *rsComm, char *collection)
                 std::stringstream msg;
                 msg << "getDefaultLocalRescInfo - failed to get resource info";
                 msg << tmpRescName;
-                eirods::log( PASS( false, -1, msg.str(), err ) );
+                eirods::log( PASS( err ) );
             }
 
             rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);

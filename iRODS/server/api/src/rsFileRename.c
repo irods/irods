@@ -30,7 +30,7 @@ rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
     //remoteFlag = resolveHost (&fileRenameInp->addr, &rodsServerHost);
     eirods::error ret = eirods::get_host_for_hier_string( fileRenameInp->rescHier, remoteFlag, rodsServerHost );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "rsFileRename - failed in call to eirods::get_host_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
         return -1;
     }
 
@@ -104,13 +104,12 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
     // report errors if any
     if( !rename_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsFileRename: fileRename for ";
+        msg << "fileRename failed for [";
         msg << fileRenameInp->oldFileName;
-        msg << " to ";
+        msg << "] to [";
         msg << fileRenameInp->newFileName;
-        msg << ", status = ";
-        msg << rename_err.code();
-        eirods::error err = PASS( false, rename_err.code(), msg.str(), rename_err );
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), rename_err );
         eirods::log ( err );
     }
 

@@ -9,6 +9,11 @@
 #ifndef RODS_TYPE_H
 #define RODS_TYPE_H
 
+#ifdef HPSS
+typedef unsigned char uchar;
+#include "ns_ObjHandle.h"
+#endif
+
 #include <sys/types.h>
 #if defined(solaris_platform) || defined(aix_platform)
 #include <strings.h>
@@ -80,6 +85,9 @@ typedef struct rodsStat {
 #define DIR_LEN 	256
 
 typedef struct rodsDirent {
+#ifdef HPSS
+        ns_ObjHandle_t  d_handle;
+#endif
         unsigned int    d_offset;       /* offset after this entry */
         unsigned int    d_ino;          /* inode number */
         unsigned int    d_reclen;       /* length of this record */

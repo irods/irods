@@ -103,7 +103,7 @@ namespace eirods {
             // otherwise create a resource and add properties from this object
             error init_err = _mgr.init_from_type( "structfile", "struct file", "struct_file_inst", "empty context", _ptr );
             if( !init_err.ok() ) {
-                return PASS( false, -1, "structured_object::resolve - failed to load resource plugin", init_err );
+                return PASSMSG( "failed to load resource plugin", init_err );
             
             }
 
@@ -112,10 +112,12 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // found ourselves a plugin, fill in the properties
         rodsServerHost_t* tmpRodsServerHost = 0;
-        if( resolveHost( &addr_, &tmpRodsServerHost ) < 0 ) {
-            std::string msg(  "structured_object::resolve - resolveHost error for " );
-            msg += addr_.hostAddr;
-            return ERROR( -1, msg );
+        int status = resolveHost( &addr_, &tmpRodsServerHost );
+        if( status < 0 ) {
+            std::stringstream msg;
+            msg << "resolveHost error for [";
+            msg << addr_.hostAddr;
+            return ERROR( status, msg.str() );
         }
         
         _ptr->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );

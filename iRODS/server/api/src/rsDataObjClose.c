@@ -710,7 +710,7 @@ l3Close (rsComm_t *rsComm, int l1descInx)
     std::string location;
     eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
     if( !ret.ok() ) {
-        eirods::log( PASSMSG( "l3Close - failed in get_loc_for_hier_string", ret ) );
+        eirods::log( PASSMSG( "failed in get_loc_for_hier_string", ret ) );
         return -1;
     }
 
@@ -727,7 +727,7 @@ l3Close (rsComm_t *rsComm, int l1descInx)
         int category = 0; 
         eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "category", category );
         if( !err.ok() ) {
-            eirods::log( PASS( false, -1, "l3Read - failed.", err ) );
+            eirods::log( PASS( err ) );
         }
 #if 0 // JMC - legacy resource 
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;

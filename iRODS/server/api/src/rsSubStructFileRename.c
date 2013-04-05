@@ -76,10 +76,10 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
     eirods::error rename_err = fileRename( _comm, struct_obj, _rename_inp->newSubFilePath );
     if( !rename_err.ok() ) {
         std::stringstream msg;
-        msg << "_rsSubStructFileRename - failed on call to fileRename for [";
+        msg << "failed on call to fileRename for [";
         msg << struct_obj.physical_path();
         msg << "]";
-        eirods::log( PASS( false, -1, msg.str(), rename_err ) );
+        eirods::log( PASSMSG( msg.str(), rename_err ) );
         return rename_err.code();
 
     } else {

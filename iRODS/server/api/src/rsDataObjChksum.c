@@ -132,7 +132,7 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
         std::string resc_class;
         eirods::error err = eirods::get_resource_property< std::string >( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
         if( !err.ok() ) {
-            eirods::log( ERROR( -1, "_rsDataObjChksum - failed in get_resource_property [class]" ) );
+            eirods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
     }
 
     #if 0 // JMC - legacy resource 
