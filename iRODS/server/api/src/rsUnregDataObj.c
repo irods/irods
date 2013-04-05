@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* unregDataObj.c
@@ -5,6 +7,10 @@
 
 #include "unregDataObj.h"
 #include "icatHighLevelRoutines.h"
+#include "fileDriver.h"
+
+#include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
@@ -18,9 +24,9 @@ rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
     dataObjInfo = unregDataObjInp->dataObjInfo;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
-      &rodsServerHost);
+                                 &rodsServerHost);
     if (status < 0 || NULL == rodsServerHost) { // JMC cppcheck - nullptr
-       return(status);
+        return(status);
     }
     if (rodsServerHost->localFlag == LOCAL_HOST) {
 #ifdef RODS_CAT
@@ -42,11 +48,44 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *condInput;
     int status;
-
+    eirods::error ret;
+    
     condInput = unregDataObjInp->condInput;
     dataObjInfo = unregDataObjInp->dataObjInfo;
 
     status = chlUnregDataObj (rsComm, dataObjInfo, condInput);
+    if(status < 0) {
+        char* sys_error;
+        char* rods_error = rodsErrorName(status, &sys_error);
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to unregister the data object \"";
+        msg << dataObjInfo->objPath;
+        msg << "\" - ";
+        msg << rods_error << " " << sys_error;
+        ret = ERROR(status, msg.str());
+        eirods::log(ret);
+    } else {
+        eirods::file_object file_obj(rsComm, dataObjInfo);
+        ret = fileUnregistered(rsComm, file_obj);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to signal resource that the data object \"";
+            msg << dataObjInfo->objPath;
+            msg << "\" was unregistered";
+            ret = PASSMSG(msg.str(), ret);
+            eirods::log(ret);
+            status = ret.code();
+
+            if(true) {
+                eirods::stacktrace st;
+                st.trace();
+                st.dump();
+            }
+
+        }
+    }
     return (status);
 #else
     return (SYS_NO_RCAT_SERVER_ERR);

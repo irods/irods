@@ -9,8 +9,6 @@
 // irods includes
 #include "msParam.h"
 #include "reGlobalsExtern.h"
-#include "dataObjRepl.h"
-#include "dataObjUnlink.h"
 #include "rodsLog.h"
 #include "icatHighLevelRoutines.h"
 
@@ -24,6 +22,11 @@
 #include "eirods_resource_backport.h"
 #include "eirods_plugin_base.h"
 #include "eirods_stacktrace.h"
+#include "eirods_repl_types.h"
+#include "eirods_object_oper.h"
+#include "eirods_replicator.h"
+#include "eirods_create_write_replicator.h"
+#include "eirods_unlink_replicator.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -32,6 +35,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <list>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -68,28 +72,6 @@
 
 #include <string.h>
 
-// define some constants
-const std::string child_list_prop = "child_list";
-const std::string object_list_prop = "object_list";
-const std::string need_pdmo_prop = "Need_PDMO";
-const std::string hierarchy_prop = "hierarchy";
-const std::string write_oper = "write";
-const std::string unlink_oper = "unlink";
-const std::string create_oper = "create";
-
-// define some types
-typedef struct object_oper_s {
-    eirods::file_object object_;
-    std::string oper_;
-} object_oper_t;
-typedef std::vector<eirods::hierarchy_parser> child_list_t;
-typedef std::vector<object_oper_t> object_list_t;
-// define this so we sort children from highest vote to lowest
-struct child_comp {
-    bool operator()(float _lhs, float _rhs) const { return _lhs > _rhs; }
-};
-typedef std::multimap<float, eirods::hierarchy_parser, child_comp> redirect_map_t;
-
 extern "C" {
 
     // =-=-=-=-=-=-=-
@@ -113,8 +95,6 @@ extern "C" {
     //////////////////////////////////////////////////////////////////////
     // Utility functions
 
-    // TODO - do we need these for the repl? hcj
-    
     /// @brief Check the general parameters passed in to most plugin functions
     eirods::error replCheckParams(
         eirods::resource_property_map* _prop_map,
@@ -177,14 +157,15 @@ extern "C" {
     /// @brief Returns true if the specified object is in the specified object list
     bool replObjectInList(
         const object_list_t& _object_list,
-        const eirods::file_object& _object)
+        const eirods::file_object& _object,
+        eirods::object_oper& _rtn_oper)
     {
         bool result = false;
         object_list_t::const_iterator it;
         for(it = _object_list.begin(); !result && it != _object_list.end(); ++it) {
-            object_oper_t object_oper = *it;
-            // not the best way to compare objects but perhaps all we have at this point
-            if(object_oper.object_ == _object) {
+            eirods::object_oper oper = *it;
+            if(oper.object() == _object) {
+                _rtn_oper = oper;
                 result = true;
             }
         }
@@ -201,12 +182,43 @@ extern "C" {
         eirods::error ret;
         object_list_t object_list;
 
+        // The object list is now a queue of operations and their associated objects. Their corresponding replicating operations
+        // will be performed one at a time in the order in which they were put into the queue.
         ret = _prop_map->get<object_list_t>(object_list_prop, object_list);
-        if(!ret.ok() || !replObjectInList(object_list, *_object)) {
-            object_oper_t object_oper;
-            object_oper.object_ = *_object;
-            object_oper.oper_ = _oper;
-            object_list.push_back(object_oper);
+        eirods::object_oper oper;
+        if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get the object list from the resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else if(replObjectInList(object_list, *_object, oper)) {
+            // confirm the operations are compatible
+            bool mismatched = false;
+            if(_oper == create_oper) {
+                if(oper.operation() != create_oper) {
+                    mismatched = true;
+                }
+            } else if(_oper == write_oper) {
+                // write is allowed after create
+                if(oper.operation() != create_oper && oper.operation() != write_oper) {
+                    mismatched = true;
+                }
+            } else if(_oper == unlink_oper) {
+                if(oper.operation() != unlink_oper) {
+                    mismatched = true;
+                }
+            }
+            if(mismatched) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Existing object's operation \"" << oper.operation() << "\"";
+                msg << " does not match current operation \"" << _oper << "\"";
+                result = ERROR(-1, msg.str());
+            }
+        } else {
+            oper.object() = *_object;
+            oper.operation() = _oper;
+            object_list.push_back(oper);
             ret = _prop_map->set<object_list_t>(object_list_prop, object_list);
             if(!ret.ok()) {
                 std::stringstream msg;
@@ -214,46 +226,331 @@ extern "C" {
                 msg << " - Failed to set the object list property on the resource.";
                 result = PASSMSG(msg.str(), ret);
             }
-        } else {
-            // make sure the operation on the object in the list matches the passed in operation
-            object_list_t::const_iterator it;
-            for(it = object_list.begin(); result.ok() && it != object_list.end(); ++it) {
-                object_oper_t object_oper = *it;
-                if(object_oper.object_ == *_object) {
-                    // operations should match. the exception is that it is okay for a write to happen after a create
-                    if(object_oper.oper_ != _oper && (object_oper.oper_ != create_oper || _oper != write_oper)) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Existing object operation \"" << object_oper.oper_ << "\" does not match passed in operation \"" << _oper << "\".";
-                    }
-                }
-            }
         }
         
         return result;
     }
 
-    /// @brief 
-    eirods::error replSetPDMOFlag(
+    eirods::error get_selected_hierarchy(
         eirods::resource_property_map* _prop_map,
-        eirods::file_object* _object)
+        std::string& _hier_string,
+        std::string& _root_resc)
     {
         eirods::error result = SUCCESS();
-        if(!_object->in_pdmo()) {
-            eirods::error ret = _prop_map->set<bool>(need_pdmo_prop, true);
+        eirods::error ret;
+        eirods::hierarchy_parser selected_parser;
+        ret = _prop_map->get<eirods::hierarchy_parser>(hierarchy_prop, selected_parser);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get the parser for the selected resource hierarchy.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            ret = selected_parser.str(_hier_string);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
-                msg << " - Failed to update need pdmo flag in properties.";
+                msg << " - Failed to get the hierarchy string from the parser.";
                 result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = selected_parser.first_resc(_root_resc);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed to get the root resource from the parser.";
+                    result = PASSMSG(msg.str(), ret);
+                }
+            }
+        }
+        return result;
+    }
+    
+    eirods::error replReplicateCreateWrite(
+        rsComm_t* _comm,
+        eirods::resource_property_map* _prop_map)
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        // get the list of objects that need to be replicated
+        object_list_t object_list;
+        ret = _prop_map->get<object_list_t>(object_list_prop, object_list);
+        if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get object list for replication.";
+            result = PASSMSG(msg.str(), ret);
+        } else if(object_list.size() > 0) {
+            // get the child list
+            child_list_t child_list;
+            ret = _prop_map->get<child_list_t>(child_list_prop, child_list);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to retrieve child list from repl resource.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                // get the root resource name as well as the child hierarchy string
+                std::string root_resc;
+                std::string child;
+                ret = get_selected_hierarchy(_prop_map, child, root_resc);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed to determine the root resource and selected hierarchy.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    // create a create/write replicator
+                    eirods::create_write_replicator oper_repl(root_resc, child);
+                    
+                    // create a replicator
+                    eirods::replicator replicator(&oper_repl);
+                    
+                    // call replicate
+                    ret = replicator.replicate(_comm, child_list, object_list);
+                    if(!ret.ok()) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__;
+                        msg << " - Failed to replicate the create/write operation to the siblings.";
+                        result = PASSMSG(msg.str(), ret);
+                    } else {
+
+                        // update the object list in the properties
+                        ret = _prop_map->set<object_list_t>(object_list_prop, object_list);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to update the object list in the properties.";
+                            result = PASSMSG(msg.str(), ret);
+                        }
+                    }
+                }
             }
         }
         return result;
     }
 
+    eirods::error replReplicateUnlink(
+        rsComm_t*_comm,
+        eirods::resource_property_map*_prop_map)
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        // get the list of objects that need to be replicated
+        object_list_t object_list;
+        ret = _prop_map->get<object_list_t>(object_list_prop, object_list);
+        if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get object list for replication.";
+            result = PASSMSG(msg.str(), ret);
+        } else if(object_list.size() > 0) {
+            // get the child list
+            child_list_t child_list;
+            ret = _prop_map->get<child_list_t>(child_list_prop, child_list);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to retrieve child list from repl resource.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                // get the root resource name as well as the child hierarchy string
+                std::string root_resc;
+                std::string child;
+                ret = get_selected_hierarchy(_prop_map, child, root_resc);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed to determine the root resource and selected hierarchy.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    // create an unlink replicator
+                    eirods::unlink_replicator oper_repl;
+                    
+                    // create a replicator
+                    eirods::replicator replicator(&oper_repl);
+                    
+                    // call replicate
+                    ret = replicator.replicate(_comm, child_list, object_list);
+                    if(!ret.ok()) {
+                        std::stringstream msg;
+                        msg << __FUNCTION__;
+                        msg << " - Failed to replicate the unlink operation to the siblings.";
+                        result = PASSMSG(msg.str(), ret);
+                    } else {
+
+                        // update the object list in the properties
+                        ret = _prop_map->set<object_list_t>(object_list_prop, object_list);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to update the object list in the properties.";
+                            result = PASSMSG(msg.str(), ret);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
     //////////////////////////////////////////////////////////////////////
     // Actual operations
     
+    eirods::error replFileRegistered(
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results )
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        eirods::file_object* file_object;
+        ret = replCheckParams(_prop_map, _cmap, _object, file_object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Error found checking passed parameters.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_object->resc_hier());
+            eirods::resource_ptr child;
+            ret = replGetNextRescInHier(parser, _prop_map, _cmap, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_comm, "registered", file_object);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed while calling child operation.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    if(!file_object->in_pdmo()) {
+                        eirods::error ret1 = replReplicateCreateWrite(_comm, _prop_map);
+                        if(!ret1.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to replicate create/write operation for object \"";
+                            msg << file_object->logical_path();
+                            msg << "\"";
+                            eirods::log(LOG_NOTICE, msg.str());
+                            // result = PASSMSG(msg.str(), ret1);
+                            result = CODE(ret.code());
+                        } else {
+                            result = CODE(ret.code());
+                        }
+                    } else {
+                        result = CODE(ret.code());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    eirods::error replFileUnregistered(
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results )
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        eirods::file_object* file_object;
+        ret = replCheckParams(_prop_map, _cmap, _object, file_object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Error found checking passed parameters.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_object->resc_hier());
+            eirods::resource_ptr child;
+            ret = replGetNextRescInHier(parser, _prop_map, _cmap, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_comm, "unregistered", file_object);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed while calling child operation.";
+                    result = PASSMSG(msg.str(), ret);
+                }
+            }
+        }
+        return result;
+    }
+
+    eirods::error replFileModified(
+                      rsComm_t*                      _comm,
+                      eirods::resource_property_map* _prop_map,
+                      eirods::resource_child_map*    _cmap, 
+                      eirods::first_class_object*    _object,
+                      std::string*                   _results )
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        eirods::file_object* file_object;
+        ret = replCheckParams(_prop_map, _cmap, _object, file_object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Error found checking passed parameters.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_object->resc_hier());
+            eirods::resource_ptr child;
+            ret = replGetNextRescInHier(parser, _prop_map, _cmap, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_comm, "modified", file_object);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed while calling child operation.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    if(!file_object->in_pdmo()) {
+                        eirods::error ret1 = replReplicateCreateWrite(_comm, _prop_map);
+                        if(!ret1.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to replicate create/write operation for object \"";
+                            msg << file_object->logical_path();
+                            msg << "\"";
+                            eirods::log(LOG_NOTICE, msg.str());
+                            // result = PASSMSG(msg.str(), ret1);
+                            result = CODE(ret.code());
+                        } else {
+                            result = CODE(ret.code());
+                        }
+                    } else {
+                        result = CODE(ret.code());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error replFileCreate(
@@ -261,8 +558,8 @@ extern "C" {
                       eirods::resource_property_map* _prop_map,
                       eirods::resource_child_map*    _cmap, 
                       eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
-    
+                      std::string*                   _results )
+    {
         eirods::error result = SUCCESS();
         eirods::error ret;
         eirods::file_object* file_object;
@@ -448,8 +745,8 @@ extern "C" {
                       eirods::resource_property_map* _prop_map,
                       eirods::resource_child_map*    _cmap, 
                       eirods::first_class_object*    _object,
-                      std::string*                   _results ) {
-    
+                      std::string*                   _results )
+    {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -478,12 +775,20 @@ extern "C" {
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = replSetPDMOFlag(_prop_map, file_object);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to update the PDMO flag.";
-                        result = PASSMSG(msg.str(), ret);
+                    if(false && !file_object->in_pdmo()) {
+                        eirods::error ret1 = replReplicateCreateWrite(_comm, _prop_map);
+                        if(!ret1.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to replicate create/write operation for object \"";
+                            msg << file_object->logical_path();
+                            msg << "\"";
+                            eirods::log(LOG_NOTICE, msg.str());
+                            // result = PASSMSG(msg.str(), ret1);
+                            result = CODE(ret.code());
+                        } else {
+                            result = CODE(ret.code());
+                        }
                     } else {
                         result = CODE(ret.code());
                     }
@@ -532,19 +837,32 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     result = CODE(ret.code());
-                    ret = replUpdateObjectAndOperProperties(_prop_map, file_object, unlink_oper);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to update the object and operation properties.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        ret = replSetPDMOFlag(_prop_map, file_object);
+                    if(!file_object->in_pdmo()) {
+                        ret = replUpdateObjectAndOperProperties(_prop_map, file_object, unlink_oper);
                         if(!ret.ok()) {
                             std::stringstream msg;
                             msg << __FUNCTION__;
-                            msg << " - Failed to update the PDMO flag.";
+                            msg << " - Failed to update the object and operation properties.";
                             result = PASSMSG(msg.str(), ret);
+                        } else {
+                            if(!file_object->in_pdmo()) {
+                                ret = replReplicateUnlink(_comm, _prop_map);
+                                if(!ret.ok()) {
+                                    std::stringstream msg;
+                                    msg << __FUNCTION__;
+                                    msg << " - Failed to replicate the unlink operation for file \"";
+                                    msg << file_object->logical_path();
+                                    msg << "\"";
+                                    result = PASSMSG(msg.str(), ret);
+
+                                    if(true) {
+                                        eirods::stacktrace st;
+                                        st.trace();
+                                        st.dump();
+                                    }
+
+                                }
+                            }
                         }
                     }
                 }
@@ -1043,13 +1361,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error replFileRename(
-                      rsComm_t*                      _comm,
-                      eirods::resource_property_map* _prop_map,
-                      eirods::resource_child_map*    _cmap, 
-                      eirods::first_class_object*    _object,
-                      std::string*                   _results,
-                      const char*                    _new_file_name ) {
-    
+        rsComm_t*                      _comm,
+        eirods::resource_property_map* _prop_map,
+        eirods::resource_child_map*    _cmap, 
+        eirods::first_class_object*    _object,
+        std::string*                   _results,
+        const char*                    _new_file_name )
+    {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -1457,228 +1775,6 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class repl_resource : public eirods::resource {
 
-        // create a class for doing the post disconnect operations. For the repl resource the post disconnect operation will be to
-        // replicate the current file object to all children other than the currently selected child
-        class repl_pdmo {
-        public:
-            /// @brief ctor
-            repl_pdmo(eirods::resource_property_map& _prop_map, eirods::resource_child_map& _child_map) : \
-                properties_(_prop_map), children_(_child_map) {
-            }
-            
-            /// @brief cctor
-            repl_pdmo(const repl_pdmo& _rhs) : properties_(_rhs.properties_), children_(_rhs.children_) {
-            }
-
-            /// @brief assignment operator
-            repl_pdmo& operator=(const repl_pdmo& _rhs) {
-                properties_ = _rhs.properties_;
-                return *this;
-            }
-
-            /// @brief ftor Replicates data object stored in the resource hierarchy selected by redirect to all other resource
-            /// hierarchies.
-            eirods::error operator()(
-                rsComm_t* _comm)
-                {
-                    eirods::error result = SUCCESS();
-                    eirods::error ret;
-                    if(pdmo_needed()) {
-                        std::string selected_hierarchy;
-                        std::string root_resource;
-                        ret = get_selected_hierarchy(selected_hierarchy, root_resource);
-                        if(!ret.ok()) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to get the selected hierarchy information.";
-                            result = PASSMSG(msg.str(), ret);
-                        } else {
-                            ret = replicate_children(_comm, selected_hierarchy, root_resource);
-                            if(!ret.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to replicate the selected object, \"" << selected_hierarchy << "\" to the other children";
-                                result = PASSMSG(msg.str(), ret);
-                            }
-#if COMMENT
-                            else {
-                                // this is a debugging tool. check to make sure that all children have the same number of data
-                                // objects
-                                int num_objects = -1;
-                                eirods::resource_child_map::iterator it;
-                                for(it = children_.begin(); result.ok() && it != children_.end(); ++it) {
-                                    int child_num_objects;
-                                    eirods::resource_ptr child_resc = it->second.second;
-                                    std::string resc_name;
-                                    ret = child_resc->get_property<std::string>("name", resc_name);
-                                    if(!ret.ok()) {
-                                        std::stringstream msg;
-                                        msg << __FUNCTION__;
-                                        msg << " - Failed to get the name of the child property.";
-                                        result = PASSMSG(msg.str(), ret);
-                                    } else {
-                                        ret = chlRescObjCount(resc_name, child_num_objects);
-                                        if(!ret.ok()) {
-                                            std::stringstream msg;
-                                            msg << __FUNCTION__;
-                                            msg << " - Failed to get the object counts for the child resource from the database.";
-                                            result = PASSMSG(msg.str(), ret);
-                                        } else {
-                                            if(num_objects < 0) {
-                                                // first child so just set the num objects that we will compare later
-                                                num_objects = child_num_objects;
-                                            } else {
-                                                if(num_objects != child_num_objects) {
-                                                    std::stringstream msg;
-                                                    msg << __FUNCTION__;
-                                                    msg << " - Children of replicating resource: \"" << root_resource << "\" have different object counts.";
-                                                    result = ERROR(-1, msg.str());
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-#endif
-                        }
-                    }
-                    return result;
-                }
-            
-        private:
-            bool pdmo_needed(void)
-                {
-                    bool result = false;
-                    bool need_pdmo;
-                    eirods::error ret;
-                    ret = properties_.get<bool>(need_pdmo_prop, need_pdmo);
-                    if(ret.ok()) {
-                        result = need_pdmo;
-                    }
-                    return result;
-                }
-
-            eirods::error get_selected_hierarchy(
-                std::string& _hier_string,
-                std::string& _root_resc)
-                {
-                    eirods::error result = SUCCESS();
-                    eirods::error ret;
-                    eirods::hierarchy_parser selected_parser;
-                    ret = properties_.get<eirods::hierarchy_parser>(hierarchy_prop, selected_parser);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to get the parser for the selected resource hierarchy.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        ret = selected_parser.str(_hier_string);
-                        if(!ret.ok()) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to get the hierarchy string from the parser.";
-                            result = PASSMSG(msg.str(), ret);
-                        } else {
-                            ret = selected_parser.first_resc(_root_resc);
-                            if(!ret.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to get the root resource from the parser.";
-                                result = PASSMSG(msg.str(), ret);
-                            }
-                        }
-                    }
-                    return result;
-                }
-
-            eirods::error replicate_children(
-                rsComm_t* _comm,
-                const std::string& _selected_hierarchy,
-                const std::string& _root_resc)
-                {
-                    eirods::error result = SUCCESS();
-                    eirods::error ret;
-                    child_list_t children;
-                    ret = properties_.get<child_list_t>(child_list_prop, children);
-                    // its okay if there are no other children
-                    if(ret.ok()) {
-                        child_list_t::const_iterator child_it;
-                        for(child_it = children.begin(); result.ok() && child_it != children.end(); ++child_it) {
-                            eirods::hierarchy_parser parser = *child_it;
-                            std::string hierarchy_string;
-                            parser.str(hierarchy_string);
-                            object_list_t objects;
-                            ret = properties_.get<object_list_t>(object_list_prop, objects);
-                            if(!ret.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to get the resources object list.";
-                                result = PASSMSG(msg.str(), ret);
-                            } else {
-                                while(objects.size() != 0) {
-                                    object_oper_t object_oper = objects.back();
-                                    objects.pop_back();
-                                    dataObjInp_t dataObjInp;
-                                    bzero(&dataObjInp, sizeof(dataObjInp));
-                                    rstrcpy(dataObjInp.objPath, object_oper.object_.logical_path().c_str(), MAX_NAME_LEN);
-                                    // do operation specific things
-                                    if(object_oper.oper_ == write_oper || object_oper.oper_ == create_oper) {
-                                        dataObjInp.createMode = object_oper.object_.mode();
-                                        addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, _selected_hierarchy.c_str());
-                                        addKeyVal(&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str());
-                                        addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, _root_resc.c_str());
-                                        addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, _root_resc.c_str());
-                                        addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, "");
-                                        if(object_oper.oper_ == write_oper) {
-                                            addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");
-                                        }
-                                        transferStat_t* transfer_stat = NULL;
-                                        int status = rsDataObjRepl(_comm, &dataObjInp, &transfer_stat);
-                                        if(status < 0) {
-                                            char* sys_error;
-                                            char* rods_error = rodsErrorName(status, &sys_error);
-                                            std::stringstream msg;
-                                            msg << __FUNCTION__;
-                                            msg << " - Failed to replicate the data object \"" << _selected_hierarchy;
-                                            msg << " to sibling \"" << hierarchy_string << "\" - ";
-                                            msg << rods_error << " " << sys_error;
-                                            eirods::log(LOG_ERROR, msg.str());
-                                            result = ERROR(status, msg.str());
-                                        }
-                                        if(transfer_stat != NULL) {
-                                            free(transfer_stat);
-                                        }
-                                    } else if(object_oper.oper_ == unlink_oper) {
-                                        addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, hierarchy_string.c_str());
-                                        addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, "");
-                                        int status = rsDataObjUnlink(_comm, &dataObjInp);
-                                        if(status < 0) {
-                                            char* sys_error;
-                                            char* rods_error = rodsErrorName(status, &sys_error);
-                                            std::stringstream msg;
-                                            msg << __FUNCTION__;
-                                            msg << " - Failed to unlink the data child \"" << hierarchy_string << "\" ";
-                                            msg << rods_error << " " << sys_error;
-                                            eirods::log(LOG_ERROR, msg.str());
-                                            result = ERROR(status, msg.str());
-                                        }
-                                    } else {
-                                        std::stringstream msg;
-                                        msg << __FUNCTION__;
-                                        msg << " - Unknown replication operation: \"" << object_oper.oper_ << "\"";
-                                        result = ERROR(-1, msg.str());
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return result;
-                }
-            
-            eirods::resource_property_map& properties_;
-            eirods::resource_child_map& children_;
-        };
-            
     public:
         repl_resource(
             const std::string _inst_name,
@@ -1712,7 +1808,7 @@ extern "C" {
             eirods::pdmo_type& _out_pdmo)
             {
                 eirods::error result = SUCCESS();
-                _out_pdmo = repl_pdmo(properties_, children_);
+                // nothing to do
                 return result;
             }
 
@@ -1721,24 +1817,7 @@ extern "C" {
             {
                 eirods::error result = SUCCESS();
                 _flag = false;
-                bool need_pdmo;
-                eirods::error ret;
-                // Make sure we actually have children and objects to which we need to replicate and check the need_pdmo flag to see
-                // if we performed any operations which would warrant a replication.
-                child_list_t children;
-                ret = properties_.get<child_list_t>(child_list_prop, children);
-                if(ret.ok()) {
-                    object_list_t objects;
-                    ret = properties_.get<object_list_t>(object_list_prop, objects);
-                    if(ret.ok()) {
-                        ret = properties_.get<bool>(need_pdmo_prop, need_pdmo);
-                        if(ret.ok()) {
-                            _flag = need_pdmo;
-                        }
-                    }
-                }
                 return result;
-
             }
 
     }; // class repl_resource
@@ -1783,7 +1862,10 @@ extern "C" {
         resc->add_operation( "stagetocache", "replStageToCache" );
         resc->add_operation( "synctoarch",   "replSyncToArch" );
         resc->add_operation( "redirect",     "replRedirect" );
-
+        resc->add_operation( "registered",   "replFileRegistered" );
+        resc->add_operation( "unregistered", "replFileUnregistered" );
+        resc->add_operation( "modified",     "replFileModified" );
+        
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
         resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );

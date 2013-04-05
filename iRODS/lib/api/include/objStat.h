@@ -32,6 +32,7 @@ typedef struct rodsObjStat {
     char                createTime[TIME_LEN];
     char                modifyTime[TIME_LEN];
     specColl_t          *specColl;
+    char                rescHier[MAX_NAME_LEN];
 } rodsObjStat_t;
 
 #if defined(RODS_SERVER)

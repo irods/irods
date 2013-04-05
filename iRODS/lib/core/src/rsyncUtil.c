@@ -431,6 +431,21 @@ dataObjCopyInp_t *dataObjCopyInp)
 	/* only do the sync if no -l option specified */
 	if ( myRodsArgs->longOption != True ) {
 	    status = rcDataObjCopy (conn, dataObjCopyInp);
+
+	    if(status < 0) {
+		char* sys_error;
+		char* rods_error = rodsErrorName(status, &sys_error);
+		std::stringstream msg;
+		msg << __FUNCTION__;
+		msg << " - Failed to copy the object \"";
+		msg << srcPath->outPath;
+		msg << "\" to \"";
+		msg << targPath->outPath;
+		msg << "\" ";
+		msg << rods_error << " " << sys_error;
+		eirods::log(LOG_ERROR, msg.str());
+	    }
+
 	} else {
 	    status = 0;
 	    printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);

@@ -712,13 +712,6 @@ syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     int status;
     int savedStatus = 0;
 
-
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Calling";
-        DEBUGMSG(msg.str());
-    }
-
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         status = syncDataObjPhyPathS( rsComm, dataObjInp, tmpDataObjInfo, acLCollection );
@@ -744,13 +737,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     keyValPair_t regParam;
     vaultPathPolicy_t vaultPathPolicy;
 
-
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Calling";
-        DEBUGMSG(msg.str());
-    }
-
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
         return 0;
 
@@ -763,13 +749,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // JMC - legacy code - if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     if( NO_CREATE_PATH == create_path ) {  
         /* no need to sync for path created by resource */
-
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - Returning here";
-            DEBUGMSG(msg.str());
-        }
-
         return 0;
     }
 
@@ -781,26 +760,12 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else {
         if (vaultPathPolicy.scheme != GRAFT_PATH_S) {
             /* no need to sync */
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Returning here";
-                DEBUGMSG(msg.str());
-            }
-
             return (0);
         }
     }
 
     if (isInVault (dataObjInfo) == 0) {
         /* not in vault. */
-
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - Returning here";
-            DEBUGMSG(msg.str());
-        }
-
         return (0);
     }
 
@@ -831,13 +796,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     }
 
     if (strcmp (fileRenameInp.oldFileName, dataObjInfo->filePath) == 0) {
-
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - Returning here";
-            DEBUGMSG(msg.str());
-        }
-
         return (0);
     }
 

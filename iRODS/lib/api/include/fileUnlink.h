@@ -24,9 +24,10 @@ typedef struct {
     char fileName[MAX_NAME_LEN];
     char rescHier[MAX_NAME_LEN];
     char objPath[MAX_NAME_LEN];
+    int in_pdmo;
 } fileUnlinkInp_t;
     
-#define fileUnlinkInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN];"
+#define fileUnlinkInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int in_pdmo;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_UNLINK rsFileUnlink

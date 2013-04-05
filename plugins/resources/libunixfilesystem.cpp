@@ -159,6 +159,57 @@ extern "C" {
     //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 
+    eirods::error unixFileRegisteredPlugin( rsComm_t*                      _comm,
+                                            eirods::resource_property_map* _prop_map,
+                                            eirods::resource_child_map*    _cmap, 
+                                            eirods::first_class_object*    _object,
+                                            std::string*                   _results ) {
+        
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    eirods::error unixFileUnregisteredPlugin( rsComm_t*                      _comm,
+                                              eirods::resource_property_map* _prop_map,
+                                              eirods::resource_child_map*    _cmap, 
+                                              eirods::first_class_object*    _object,
+                                              std::string*                   _results ) {
+        
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    eirods::error unixFileModifiedPlugin( rsComm_t*                      _comm,
+                                          eirods::resource_property_map* _prop_map,
+                                          eirods::resource_child_map*    _cmap, 
+                                          eirods::first_class_object*    _object,
+                                          std::string*                   _results ) {
+        
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unixCheckParamsAndPath(_prop_map, _cmap, _object);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error unixFileCreatePlugin( rsComm_t*                      _comm,
@@ -1708,7 +1759,9 @@ extern "C" {
         resc->add_operation( "truncate",     "unixFileTruncatePlugin" );
         resc->add_operation( "stagetocache", "unixStageToCachePlugin" );
         resc->add_operation( "synctoarch",   "unixSyncToArchPlugin" );
-
+        resc->add_operation( "registered",   "unixFileRegisteredPlugin" );
+        resc->add_operation( "unregistered", "unixFileUnregisteredPlugin" );
+        resc->add_operation( "modified",     "unixFileModifiedPlugin" );
         resc->add_operation( "redirect",     "unixRedirectPlugin" );
 
         // =-=-=-=-=-=-=-

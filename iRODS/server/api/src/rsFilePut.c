@@ -139,6 +139,11 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
     // =-=-=-=-=-=-=-
     // call write for resource plugin
     eirods::file_object file_obj( rsComm, filePutInp->objPath, filePutInp->fileName, filePutInp->resc_hier_, fd, 0, 0 );
+    if(filePutInp->in_pdmo != 0) {
+        file_obj.in_pdmo(true);
+    } else {
+        file_obj.in_pdmo(false);
+    }
     eirods::error write_err = fileWrite( rsComm,
                                          file_obj, 
                                          filePutInpBBuf->buf, 
