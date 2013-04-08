@@ -86,6 +86,7 @@ transferStat_t **transStat)
 
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
+    hier = "";
     ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                      destDataObjInp, hier );
     if( !ret.ok() ) { 

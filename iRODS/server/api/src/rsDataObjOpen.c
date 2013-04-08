@@ -584,7 +584,7 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     /* put the copy with destResc on top */
     status = requeDataObjInfoByDestResc ( dataObjInfoHead, &dataObjInp->condInput, 1, 1 );
-      
+     
     /* status < 0 means there is no copy in the DEST_RESC */
     if (status < 0 &&  (*dataObjInfoHead)->specColl == NULL &&
         getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
