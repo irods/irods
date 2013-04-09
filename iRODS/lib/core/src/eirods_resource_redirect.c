@@ -38,11 +38,56 @@ namespace eirods {
         // if this is a put operation then we do not have a first class object
         resource_ptr resc;
         eirods::file_object file_obj;
-        
+
+        // =-=-=-=-=-=-=-
+        // call factory for given obj inp, get a file_object
+        error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
+        if( fac_err.ok() && 
+            eirods::EIRODS_CREATE_OPERATION == oper ) {
+            // =-=-=-=-=-=-=-
+            // if this is a create operation, and a data object
+            // already exists, then we should compare the resc
+            // kw to the existing resources, if any match then
+            // we open, otherwise it is a create in keeping with
+            // original irods semantics
+            char* tmp_name = 0;
+            if( ( tmp_name = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
+                ( tmp_name = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   ) ) == NULL &&
+                ( tmp_name = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    ) ) == NULL &&
+                ( tmp_name = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        ) ) == NULL ) {
+                oper = eirods::EIRODS_OPEN_OPERATION;
+
+            } else {
+                // =-=-=-=-=-=-=-
+                // we have a kw present, compare against all the repls for a match
+                std::vector< physical_object > repls = file_obj.replicas();
+                for( size_t i = 0; i < repls.size(); ++i ) {
+                    // =-=-=-=-=-=-=-
+                    // extract the root resource from the hierarchy
+                    eirods::hierarchy_parser parser;
+                    parser.set_string( repls[ i ].resc_hier() );
+                    std::string root_resc;
+                    parser.first_resc( root_resc );
+
+                    // =-=-=-=-=-=-=-
+                    // if we have a match then set open & break, otherwise continue
+                    if( root_resc == tmp_name ) {
+                        oper = eirods::EIRODS_OPEN_OPERATION;
+                        break; 
+                    }
+
+                } // for i
+
+            } // else
+
+        } // if fac_err ok && open op
+       
+        // =-=-=-=-=-=-=-
+        // perform an open operation if create is not specificied ( thats all we have for now ) 
         if( eirods::EIRODS_CREATE_OPERATION != oper ) {
             // =-=-=-=-=-=-=-
-            // call factory for given obj inp, get a file_object
-            error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
+            // factory has already been called, test for 
+            // success before proceeding
             if( !fac_err.ok() ) {
                 std::stringstream msg;
                 msg << "resolve_resource_hierarchy :: failed in file_object_factory";
@@ -197,6 +242,14 @@ namespace eirods {
             msg << "]";
             return PASSMSG( msg.str(), res_err );
         
+        }
+
+        // =-=-=-=-=-=-=-
+        // we may have an empty hier due to special collections and other
+        // unfortunate cases which we cannot control, check the hier string
+        // and if it is empty return success ( for now )
+        if( resc_hier.empty() ) {
+            return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-

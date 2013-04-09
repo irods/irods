@@ -167,9 +167,9 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
         /* dataObj exist */
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
+
         } else {
             l1descInx = OVERWRITE_WITHOUT_FORCE_FLAG;
         }
