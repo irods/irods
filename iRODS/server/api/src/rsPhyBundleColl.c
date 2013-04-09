@@ -435,6 +435,8 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
     rstrcpy (regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN);
     rstrcpy (regReplicaInp.destDataObjInfo->filePath, 
              L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
+    rstrcpy (regReplicaInp.destDataObjInfo->rescHier, 
+             L1desc[l1descInx].dataObjInfo->rescHier, MAX_NAME_LEN);
     // =-=-=-=-=-=-=-
     // JMC - backport 4528
     if (chksumFlag != 0) {
@@ -459,7 +461,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         // JMC - backport 4528
         if (chksumFlag != 0) {
             status = fileChksum (UNIX_FILE_TYPE, rsComm, regReplicaInp.destDataObjInfo->filePath,
-                                 subPhyPath, "", tmpBunReplCache->chksumStr);
+                                 subPhyPath, regReplicaInp.destDataObjInfo->rescHier, tmpBunReplCache->chksumStr);
             if (status < 0) {
                 savedStatus = status;
                 rodsLogError (LOG_ERROR, status,"bundlleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);
@@ -759,6 +761,9 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
         if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) // JMC - backport 4664
             l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
     }
+
+
+    rodsLog( LOG_NOTICE, "XXXX createPhyBundleDataObj :: index [%d], hier [%s]", l1descInx, L1desc[l1descInx].dataObjInfo->rescHier );
 
     return l1descInx;
 }

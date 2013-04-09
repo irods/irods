@@ -447,24 +447,24 @@ runCmd( "irm -rf $irodshome/icmdtestt" );
 system ( "rm -r $dir_w/testt" );
 
 # iphybun test
-#runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
+runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
 # jmc - resource groups are deprecated - runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
-#runCmd( "iphybun -KR demoResc $irodshome/icmdtestp" );
-#runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
-#my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
-#runCmd( "irepl --purgec -Rcompresource $bunfile" );
+runCmd( "iphybun -KR demoResc $irodshome/icmdtestp" );
+runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
+runCmd( "itrim -r -N1 $irodshome/icmdtestp" );
+my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
+# jmc - resource groups are deprecated - runCmd( "irepl --purgec -Rcompresource $bunfile" );
 # jmc - resource groups are deprecated - runCmd( "iget -r $irodshome/icmdtestp  $dir_w/testp" );
 # jmc - resource groups are deprecated - runCmd( "diff -r $mysdir $dir_w/testp", "", "NOANSWER" );
-#runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 # get the name of bundle file
-#if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
-#runCmd( "irm -f --empty $bunfile" );
+if ( $debug ) { print( "DEBUG: bunfile = $bunfile\n" ); }
+runCmd( "irm -f --empty $bunfile" );
 # should not be able to remove it because it is not empty
-#runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
-#runCmd( "irm -rvf $irodshome/icmdtestp" );
-#runCmd( "irm -f --empty $bunfile" );
-#system ( "rm -r $dir_w/testp" );
-#system ( "rm -r $mysdir" );
+runCmd( "ils $bunfile",  "", "LIST", "$bunfile" );
+runCmd( "irm -rvf $irodshome/icmdtestp" );
+runCmd( "irm -f --empty $bunfile" );
+system ( "rm -r $dir_w/testp" );
+system ( "rm -r $mysdir" );
 
 
 # resource group test
@@ -945,6 +945,12 @@ sub getBunpathOfSubfile ()
     my $numwords;
 
     system  ("ils -L $subfilepath > $tempFile" );
+
+system( "echo '============================' ");
+system( "cat $tempFile" );
+system( "echo '============================' ");
+
+
     @list      = dumpFileContent( $tempFile );
     unlink( $tempFile );
 # bundle path is in 2nd line
