@@ -225,7 +225,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                     bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
                     MAX_BUNDLE_SIZE * OneGig) {
                     /* bundle is full */
-                    status = bundlleAndRegSubFiles (rsComm, l1descInx,
+                    status = bundleAndRegSubFiles (rsComm, l1descInx,
                                                     phyBunDir, phyBundleCollInp->collection,
                                                     &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
                     if (status < 0) {
@@ -310,7 +310,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                  curSubFileCond.subPhyPath, status);
     }
 
-    status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
+    status = bundleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
                                     phyBundleCollInp->collection, &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -361,7 +361,7 @@ replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 }
 
 int
-bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
+bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
                        char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag) // JMC - backport 4528
 {
     int status;
@@ -392,7 +392,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
                         collection, CREATE_TAR_OPR); // JMC - backport 4643
     if (status < 0) {
         rodsLog (LOG_ERROR,
-                 "bundlleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
+                 "bundleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
                  L1desc[l1descInx].dataObjInfo->objPath, status);
         rmLinkedFilesInUnixDir (phyBunDir);
         rmdir (phyBunDir);
@@ -464,7 +464,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
                                  subPhyPath, regReplicaInp.destDataObjInfo->rescHier, tmpBunReplCache->chksumStr);
             if (status < 0) {
                 savedStatus = status;
-                rodsLogError (LOG_ERROR, status,"bundlleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);
+                rodsLogError (LOG_ERROR, status,"bundleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);
             }
         }
         // =-=-=-=-=-=-=-
@@ -480,7 +480,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         if (status < 0) {
             savedStatus = status;
             rodsLog (LOG_ERROR,
-                     "bundlleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
+                     "bundleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
                      tmpBunReplCache->objPath, status);
         }
         // =-=-=-=-=-=-=-
@@ -491,7 +491,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
             clearKeyVal (&regParam);
             if (status < 0) {
                 savedStatus = status;
-                rodsLogError (LOG_ERROR, status, "bundlleAndRegSubFiles: rsModDataObjMeta error for %s.", tmpBunReplCache->objPath);
+                rodsLogError (LOG_ERROR, status, "bundleAndRegSubFiles: rsModDataObjMeta error for %s.", tmpBunReplCache->objPath);
             }
         }
         // =-=-=-=-=-=-=-
@@ -692,22 +692,22 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     std::string type;
     eirods::error err = eirods::get_resource_property< std::string >( rescGrpInfo->rescInfo->rescName, "type", type );
     if( !err.ok() ) {
-        eirods::log( PASS( err ) );    
+        eirods::log( PASS( err ) );
     }
     // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
-    if( "unix file system" != type ) { // JMC :: need a constant for this?
+    if( std::string("unix file system") != type ) { // JMC :: need a constant for this?
         rodsLog (LOG_ERROR,
-                 "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
-                 rescGrpInfo->rescInfo->rescName);
+                 "createPhyBundleFile: resource %s appears to be of type %s rather than UNIX_FILE_TYPE",
+                 rescGrpInfo->rescInfo->rescName, type.c_str());
         return SYS_INVALID_RESC_TYPE;
-    } 
+    }
 #if 0 // JMC legacy resources
     else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
         return SYS_NO_CACHE_RESC_IN_GRP;
     }
 
 #endif // JMC legacy resources
-        
+
     do {
         int loopCnt = 0;
         bzero (dataObjInp, sizeof (dataObjInp_t));
