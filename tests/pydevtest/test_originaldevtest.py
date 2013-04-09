@@ -207,15 +207,13 @@ def test_original_devtest():
     shutil.rmtree( dir_w+"/testa" )
     # test ireg with normal user
     testuser2home = "/"+irodszone+"/home/"+s.sessions[2].getUserName()
-    os.environ['clientUserName'] = s.sessions[2].getUserName()
     commands.getstatusoutput( "cp /tmp/sfile2 /tmp/sfile2c" )
     # this should fail
-    assertiCmd(s.adminsession,"ireg -KR "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5", "ERROR", "SYS_NO_PATH_PERMISSION" )
-    assertiCmd(s.adminsession,"iput -R "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5" )
+    assertiCmd(s.sessions[2],"ireg -KR "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5", "ERROR", "SYS_NO_PATH_PERMISSION" )
+    assertiCmd(s.sessions[2],"iput -R "+s.testresc+" /tmp/sfile2c "+testuser2home+"/foo5" )
     # this should fail
-#    assertiCmd(s.adminsession,"irm -U "+testuser2home+"/foo5", "ERROR", "CANT_UNREG_IN_VAULT_FILE" )
-    assertiCmd(s.adminsession,"irm -f "+testuser2home+"/foo5" )
-    os.environ['clientUserName'] = username
+#    assertiCmd(s.sessions[2],"irm -U "+testuser2home+"/foo5", "ERROR", "CANT_UNREG_IN_VAULT_FILE" )
+    assertiCmd(s.sessions[2],"irm -f "+testuser2home+"/foo5" )
     os.unlink( "/tmp/sfile2c" )
 
 

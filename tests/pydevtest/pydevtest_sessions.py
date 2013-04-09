@@ -194,7 +194,7 @@ def user_up(user):
 def user_down(usersession):
     # tear down user session
     usersession.runCmd('icd')
-    usersession.runCmd('irm',['-r',usersession.sessionId])
+    usersession.runCmd('irm',['-rf',usersession.sessionId])
     print "user session exiting: user["+usersession.getUserName()+"] zone["+usersession.getZoneName()+"]"
     usersession.runCmd('iexit', ['full'])
     usersession.deleteEnvFiles()
