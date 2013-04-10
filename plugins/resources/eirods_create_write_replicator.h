@@ -17,7 +17,7 @@ namespace eirods {
         create_write_replicator(const std::string& _resource, const std::string& _child);
         virtual ~create_write_replicator(void);
 
-        error replicate(rsComm_t* _comm, const child_list_t& _siblings, const object_oper& _object_oper);
+        error replicate(resource_operation_context* _ctx, const child_list_t& _siblings, const object_oper& _object_oper);
 
     private:
         std::string resource_;

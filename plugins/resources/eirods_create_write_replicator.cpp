@@ -19,7 +19,7 @@ namespace eirods {
     }
 
     error create_write_replicator::replicate(
-        rsComm_t* _comm,
+        resource_operation_context* _ctx,
         const child_list_t& _siblings,
         const object_oper& _object_oper)
     {
@@ -57,7 +57,7 @@ namespace eirods {
                         addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");
                     }
                     transferStat_t* trans_stat = NULL;
-                    int status = rsDataObjRepl(_comm, &dataObjInp, &trans_stat);
+                    int status = rsDataObjRepl(_ctx->comm(), &dataObjInp, &trans_stat);
                     if(status < 0) {
                         char* sys_error;
                         char* rods_error = rodsErrorName(status, &sys_error);

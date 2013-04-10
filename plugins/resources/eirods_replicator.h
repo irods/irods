@@ -19,7 +19,7 @@ namespace eirods {
         virtual ~replicator(void);
 
         /// @brief The function that replicates the specifed operations to the siblings
-        error replicate(rsComm_t* _comm, const child_list_t& _siblings, object_list_t& _opers);
+        error replicate(resource_operation_context* _ctx, const child_list_t& _siblings, object_list_t& _opers);
         
     private:
         oper_replicator* oper_replicator_;

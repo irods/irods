@@ -82,15 +82,6 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         return ret.code();
     }
    
-
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Source resource hierarchy: \"";
-        msg << hier;
-        msg << "\"";
-        DEBUGMSG(msg.str());
-    }
-
     // =-=-=-=-=-=-=-
     // we resolved the hier str for subsequent api calls, etc.
     addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
@@ -108,15 +99,6 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         return ret.code();
     }
    
-
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Destination resource hierarchy: \"";
-        msg << hier;
-        msg << "\"";
-        DEBUGMSG(msg.str());
-    }
-
     // =-=-=-=-=-=-=-
     // we resolved the hier str for subsequent api calls, etc.
     addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
@@ -229,7 +211,6 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag,
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
     int srcL1descInx;
     int status = 0, status2;
-    char *destRescName, *srcRescName;
 
     destDataObjInp  = L1desc[destL1descInx].dataObjInp;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
@@ -284,16 +265,6 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag,
         }
 
     } else {
-        if (destDataObjInfo != NULL && destDataObjInfo->rescInfo != NULL)
-            destRescName = destDataObjInfo->rescInfo->rescName;
-        else
-            destRescName = NULL;
-
-        if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL)
-            srcRescName = srcDataObjInfo->rescInfo->rescName;
-        else
-            srcRescName = NULL;
-
         if( srcDataObjInfo != NULL ) {
             destDataObjInp->numThreads = getNumThreads( rsComm, srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
                                                         srcDataObjInfo->rescHier, destDataObjInfo->rescHier );//destRescName, srcRescName);

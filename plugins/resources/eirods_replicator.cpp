@@ -16,7 +16,7 @@ namespace eirods {
     }
 
     error replicator::replicate(
-        rsComm_t* _comm,
+        resource_operation_context* _ctx,
         const child_list_t& _siblings,
         object_list_t& _opers)
     {
@@ -24,7 +24,7 @@ namespace eirods {
         while(result.ok() && _opers.size()) {
             object_oper oper =  _opers.front();
             _opers.pop_front();
-            error ret = oper_replicator_->replicate(_comm,_siblings, oper);
+            error ret = oper_replicator_->replicate(_ctx, _siblings, oper);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;

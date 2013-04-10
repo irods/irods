@@ -16,7 +16,7 @@ namespace eirods {
  */
     class oper_replicator {
     public:
-        virtual error replicate(rsComm_t* _comm, const child_list_t& _siblings, const object_oper& _object_oper) = 0;
+        virtual error replicate(resource_operation_context* _ctx, const child_list_t& _siblings, const object_oper& _object_oper) = 0;
     };
 }; // namespace eirods
 

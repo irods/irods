@@ -57,6 +57,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         return status;
     }
 
+#ifdef COMMENT
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
@@ -87,6 +88,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         rodsLog( LOG_NOTICE, "%s - resource_redirect requested remote server for [%s], hier string [%s]", 
                  __FUNCTION__, dataObjUnlinkInp->objPath, hier.c_str() );
     }
+#endif
     
     if (getValByKey (
             &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
@@ -220,19 +222,16 @@ _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-        // Logic to match everything if the rescHier keyword is not specified.
-        if(rescHier == NULL || strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
-            status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
-            if (status < 0) {
-                if (retVal == 0) {
-                    retVal = status;
-                }
+        status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
+        if (status < 0) {
+            if (retVal == 0) {
+                retVal = status;
             }
-            if (dataObjUnlinkInp->specColl != NULL)         /* do only one */
-                break;
         }
+        if (dataObjUnlinkInp->specColl != NULL)         /* do only one */
+            break;
         tmpDataObjInfo = tmpDataObjInfo->next;
-     }
+    }
 
     if ((*dataObjInfoHead)->specColl == NULL)
         resolveDataObjReplStatus (rsComm, dataObjUnlinkInp);

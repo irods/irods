@@ -56,13 +56,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     char *lockType = NULL; // JMC - backport 4604
     int lockFd = -1; // JMC - backport 4604
 
-
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Calling";
-        DEBUGMSG(msg.str());
-    }
-
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
                        &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
@@ -93,7 +86,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if( NULL == resc_hier ) {
         std::string       hier;
         eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                                       dataObjInp, hier );
+                                                                dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << "failed in eirods::resolve_resource_hierarchy for [";
@@ -200,13 +193,6 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int status;
     rescGrpInfo_t* myRescGrpInfo  = 0;
     int l1descInx;
-
-
-    if(true) {
-        std::stringstream msg;
-        msg << "qqq - Calling";
-        DEBUGMSG(msg.str());
-    }
 
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo );
