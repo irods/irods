@@ -282,6 +282,8 @@ def test_ireg_from_devtest():
     shutil.rmtree( dir_w+"/testx" )
     if os.path.exists( myldir ):
         shutil.rmtree( myldir )
+    if os.path.exists( mysdir ):
+        shutil.rmtree( mysdir )
 
 
 
@@ -311,6 +313,15 @@ def test_mcoll_from_devtest():
     myldir = dir_w+"/ldir" 
     if os.path.exists( myldir ):
         shutil.rmtree( myldir )
+
+
+    # make a directory containing 20 small files
+    if not os.path.isdir(mysdir):
+        os.mkdir(mysdir)
+    for i in range(20):
+        mysfile = mysdir+"/sfile"+str(i)
+        shutil.copyfile( progname, mysfile )
+
 
     assertiCmd(s.adminsession,"imkdir icmdtest")
     # we put foo1 in $irodsdefresource and foo2 in testresource
@@ -376,10 +387,16 @@ def test_mcoll_from_devtest():
     assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestt/mydirtt/foo1mt" )
     assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestt/mydirtt/foo1mt "+irodshome+"/icmdtestt/mydirtt/foo1mtx" )
 
+    # unlink
+    assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
+
+
     # cleanup
     os.unlink( sfile2 )
     shutil.rmtree( dir_w+"/testt" )
     shutil.rmtree( dir_w+"/testx" )
+    if os.path.exists( mysdir ):
+        shutil.rmtree( mysdir )
 
 
 
@@ -439,7 +456,7 @@ def test_large_dir_and_mcoll_from_devtest():
     # test adding a large file to a mounted collection
     assertiCmd(s.adminsession,"iput "+myldir+"/lfile1 "+irodshome+"/icmdtestt/mydirtt" )
     assertiCmd(s.adminsession,"iget "+irodshome+"/icmdtestt/mydirtt/lfile1 "+dir_w+"/testt" )
-    assertiCmd(s.adminsession,"irm -r "+irodshome+"/icmdtestt/mydirtt" )
+    assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt/mydirtt" )
     assertiCmd(s.adminsession,"imcoll -s "+irodshome+"/icmdtestt" )
     assertiCmd(s.adminsession,"imcoll -p "+irodshome+"/icmdtestt" )
     assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
