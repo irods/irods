@@ -4,6 +4,7 @@ import commands
 import socket
 import pydevtest_common as c
 import icommands
+import time
 
 global users
 output = commands.getstatusoutput("hostname")
@@ -66,17 +67,12 @@ def admin_up():
     # resc
     global testresc
     global anotherresc
-    global resgroup
     testresc = "testResc"
     anotherresc = "anotherResc"
-    resgroup = "pydevtestResourceGroup"
     output = commands.getstatusoutput("hostname")
     hostname = output[1]
-    adminsession.runAdminCmd('iadmin',["mkresc",testresc,"unix file system","archive",hostname,"/tmp/pydevtest_"+testresc])
-    adminsession.runAdminCmd('iadmin',["mkresc",anotherresc,"unix file system","cache",hostname,"/tmp/pydevtest_"+anotherresc])
-    adminsession.runAdminCmd('iadmin',["mkgroup",resgroup])
-    adminsession.runAdminCmd('iadmin',["atrg",resgroup,testresc])
-    adminsession.runAdminCmd('iadmin',["atrg",resgroup,anotherresc])
+    adminsession.runAdminCmd('iadmin',["mkresc",testresc,"unix file system",hostname+":/tmp/pydevtest_"+testresc])
+    adminsession.runAdminCmd('iadmin',["mkresc",anotherresc,"unix file system",hostname+":/tmp/pydevtest_"+anotherresc])
     # users, passwords, and groups
     global testgroup
     testgroup = "pydevtestUserGroup"
@@ -94,9 +90,8 @@ def admin_up():
     rules30dir = "../../iRODS/clients/icommands/test/rules3.0/"
     dir_w = rules30dir+".."
     adminsession.runCmd('icd') # to get into the home directory (for testallrules assumption)
-    adminsession.runAdminCmd('iadmin mkuser devtestuser rodsuser' )
-    adminsession.runAdminCmd('iadmin',["atrg",resgroup,testresc])
-    adminsession.runAdminCmd('iadmin',["mkresc","testallrulesResc","'unix file system'","cache",hostname,"/tmp/pydevtest_testallrulesResc"] )
+    adminsession.runAdminCmd('iadmin',["mkuser","devtestuser","rodsuser"] )
+    adminsession.runAdminCmd('iadmin',["mkresc","testallrulesResc","unix file system",hostname+":/tmp/pydevtest_testallrulesResc"] )
     adminsession.runCmd('imkdir', ["sub1"] )
     adminsession.runCmd('imkdir', ["forphymv"] )
     adminsession.runCmd('imkdir', ["ruletest"] )
@@ -142,6 +137,7 @@ def admin_down():
     global testgroup
 
     # testallrules teardown
+    adminsession.runCmd('icd') # for home directory assumption
     adminsession.runCmd('ichmod',["-r","own","rods","."] )
     adminsession.runCmd('imcoll',["-U","/tempZone/home/rods/test/phypathreg"] )
     adminsession.runCmd('irm',["-rf","test","ruletest","forphymv","sub1","sub2","bagit","rules","bagit.tar","/tempZone/bundle/home/rods"] )
@@ -161,9 +157,6 @@ def admin_down():
     # groups
     adminsession.runAdminCmd('iadmin',['rmgroup',testgroup])    
     # resc
-    adminsession.runAdminCmd('iadmin',['rfrg',resgroup,testresc])
-    adminsession.runAdminCmd('iadmin',['rfrg',resgroup,anotherresc])
-    adminsession.runAdminCmd('iadmin',['rmgroup',resgroup])
     adminsession.runAdminCmd('iadmin',['rmresc',testresc])
     adminsession.runAdminCmd('iadmin',['rmresc',anotherresc])
     print "admin session exiting: user["+adminsession.getUserName()+"] zone["+adminsession.getZoneName()+"]"
@@ -201,7 +194,7 @@ def user_up(user):
 def user_down(usersession):
     # tear down user session
     usersession.runCmd('icd')
-    usersession.runCmd('irm',['-r',usersession.sessionId])
+    usersession.runCmd('irm',['-rf',usersession.sessionId])
     print "user session exiting: user["+usersession.getUserName()+"] zone["+usersession.getZoneName()+"]"
     usersession.runCmd('iexit', ['full'])
     usersession.deleteEnvFiles()

@@ -85,7 +85,7 @@ int
 replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader);
 int
-bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
+bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
 char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag); // JMC - backport 4528
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
