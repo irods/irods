@@ -819,16 +819,10 @@ eirods::error fileModified(
 {
     eirods::error result = SUCCESS();
     eirods::error ret;
-    
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - File name is empty.";
-        result = ERROR(-1, msg.str());
-    } else {
 
+    std::string resc_hier = _object.resc_hier();
+    if(!resc_hier.empty()) {
+        
         // =-=-=-=-=-=-=-
         // retrieve the resource name given the object
         eirods::resource_ptr resc;
@@ -850,6 +844,8 @@ eirods::error fileModified(
                 result = PASSMSG(msg.str(), ret);
             }
         }
+    } else {
+        // NOOP okay for struct file objects
     }
     return result;
 } // fileModified

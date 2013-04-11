@@ -11,6 +11,7 @@
 #include "dataObjOpr.h"
 
 #include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
 
 int
 rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
@@ -145,6 +146,13 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                 ret = PASSMSG(msg.str(), ret);
                 eirods::log(ret);
                 status = ret.code();
+
+                if(true) {
+                    eirods::stacktrace st;
+                    st.trace();
+                    st.dump();
+                }
+
             }
         }
     }

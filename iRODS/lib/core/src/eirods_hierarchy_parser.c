@@ -3,6 +3,7 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_string_tokenize.h"
 #include "rodsErrorTable.h"
+#include "eirods_log.h"
 
 #include <iostream>
 
