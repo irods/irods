@@ -168,10 +168,10 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 
     /* create the bundle file */ 
     char* dataType  = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
-    
+    char* rescHier = getValByKey (&phyBundleCollInp->condInput, RESC_HIER_STR_KW);
     dataObjInp_t dataObjInp;
     int   l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-                                              rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
+                                              rescGrpInfo, rescHier, &dataObjInp, dataType ); // JMC - backport 4658
 
     if (l1descInx < 0) {
         return l1descInx;
@@ -237,7 +237,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                         /* create a new bundle file */
                         l1descInx = createPhyBundleDataObj (rsComm,
                                                             phyBundleCollInp->collection, rescGrpInfo,
-                                                            &dataObjInp, dataType); // JMC - backport 4658
+                                                            rescHier, &dataObjInp, dataType); // JMC - backport 4658
 
                         if (l1descInx < 0) {
                             rodsLog (LOG_ERROR,
@@ -680,7 +680,8 @@ createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 
 int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection, 
-                        rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char* dataType ) // JMC - backport 4658
+                        rescGrpInfo_t *rescGrpInfo, const char* rescHier, dataObjInp_t *dataObjInp,
+                        char* dataType ) // JMC - backport 4658
 {
     int myRanNum;
     int l1descInx;
@@ -694,14 +695,14 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     if( !err.ok() ) {
         eirods::log( PASS( err ) );
     }
-    // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
+
+#if 0 // JMC legacy resources
     if( std::string("unix file system") != type ) { // JMC :: need a constant for this?
         rodsLog (LOG_ERROR,
                  "createPhyBundleFile: resource %s appears to be of type %s rather than UNIX_FILE_TYPE",
                  rescGrpInfo->rescInfo->rescName, type.c_str());
         return SYS_INVALID_RESC_TYPE;
     }
-#if 0 // JMC legacy resources
     else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
         return SYS_NO_CACHE_RESC_IN_GRP;
     }
@@ -741,6 +742,10 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
             addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_DT_STR);
         }
 
+        if(rescHier != NULL) {
+            addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, rescHier);
+        }
+        
         if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) { // JMC - backport 4664
             /* zipFile type. must end with .zip */
             int len = strlen (dataObjInp->objPath);

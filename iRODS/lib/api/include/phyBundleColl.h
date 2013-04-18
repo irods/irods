@@ -63,8 +63,8 @@ int
 _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
 rescGrpInfo_t *rescGrpInfo);
 int
-createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
-rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType); // JMC - backport 4658
+createPhyBundleDataObj (rsComm_t *rsComm, char *collection, rescGrpInfo_t *rescGrpInfo,
+			const char* rescHier, dataObjInp_t *dataObjInp, char *dataType); // JMC - backport 4658
 int
 createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 char *outPhyBundleDir);

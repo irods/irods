@@ -563,7 +563,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the rods server host info for the child resc
-        rodsServerHost_t* host;
+        rodsServerHost_t* host = NULL;
         error ret = get_resource_property< rodsServerHost_t* >( resc_name, "host", host );
         if( !ret.ok() ) {
             std::stringstream msg;
@@ -573,6 +573,23 @@ namespace eirods {
             return PASSMSG( msg.str(), ret );
         }
 
+        // Check for null host.
+        if(host == NULL) {
+
+            if(true) {
+                eirods::stacktrace st;
+                st.trace();
+                st.dump();
+            }
+
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Host from hierarchy string: \"";
+            msg << _hier_str;
+            msg << "\" is NULL";
+            return ERROR(EIRODS_INVALID_LOCATION, msg.str());
+        }
+        
         // =-=-=-=-=-=-=-
         // set the outgoing variables
         _server_host = host;
