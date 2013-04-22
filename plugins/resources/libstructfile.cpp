@@ -2392,6 +2392,30 @@ extern "C" {
 
     } // tar_file_getfsfreespace_plugin
 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file registration
+    eirods::error tar_file_registered_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // NOOP
+        return SUCCESS();
+    }
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file unregistration
+    eirods::error tar_file_unregistered_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // NOOP
+        return SUCCESS();
+    }
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file modification
+    eirods::error tar_file_modified_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // NOOP
+        return SUCCESS();
+    }
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle tar file system resources
     //    necessary to do custom parsing of the context string to place
@@ -2449,6 +2473,9 @@ extern "C" {
         resc->add_operation( "extract",      "tar_file_extract_plugin" );
         resc->add_operation( "sync",         "tar_file_sync_plugin" );
         resc->add_operation( "freespace",    "tar_file_getfsfreespace_plugin" );
+        resc->add_operation( "registered",   "tar_file_registered_plugin" );
+        resc->add_operation( "unregistered", "tar_file_unregistered_plugin" );
+        resc->add_operation( "modified",     "tar_file_modified_plugin" );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

@@ -254,42 +254,45 @@ extern "C" {
     //      :: eirods::error ret = _prop_map.get< double >( "my_key", my_var ); 
     // =-=-=-=-=-=-=-
 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file registration
     eirods::error unix_file_registered_plugin(
-        eirods::resource_operation_context* _ctx)
-    {
+        eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            msg << "Invalid parameters or physical path.";
             return PASSMSG(msg.str(), ret);
         }
         // NOOP
         return SUCCESS();
     }
     
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file unregistration
     eirods::error unix_file_unregistered_plugin(
-        eirods::resource_operation_context* _ctx)
-    {
+        eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            msg << "Invalid parameters or physical path.";
             return PASSMSG(msg.str(), ret);
         }
         // NOOP
         return SUCCESS();
     }
     
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file modification
     eirods::error unix_file_modified_plugin(
-        eirods::resource_operation_context* _ctx)
-    {
+        eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            msg << "Invalid parameters or physical path.";
             return PASSMSG(msg.str(), ret);
         }
         // NOOP

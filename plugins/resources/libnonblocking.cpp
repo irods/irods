@@ -128,7 +128,7 @@ eirods::error unix_check_path(
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 template< typename DEST_TYPE >
-eirods::error unix_check_params_and_path(
+eirods::error nonblocking_check_params_and_path(
     eirods::resource_operation_context* _ctx ) {
     
     eirods::error result = SUCCESS();
@@ -144,18 +144,18 @@ eirods::error unix_check_params_and_path(
     // verify that the resc context is valid 
     ret = _ctx->valid< DEST_TYPE >(); 
     if( !ret.ok() ) { 
-        result = PASSMSG( "unix_check_params_and_path - resource context is invalid", ret );
+        result = PASSMSG( "resource context is invalid", ret );
     } else {
         result = unix_check_path( _ctx );
     }
 
     return result;
 
-} // unix_check_params_and_path
+} // nonblocking_check_params_and_path
 
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
-eirods::error unix_check_params_and_path(
+eirods::error nonblocking_check_params_and_path(
     eirods::resource_operation_context* _ctx ) {
     
     eirods::error result = SUCCESS();
@@ -178,7 +178,7 @@ eirods::error unix_check_params_and_path(
 
     return result;
 
-} // unix_check_params_and_path
+} // nonblocking_check_params_and_path
 
 // =-=-=-=-=-=-=- 
 //@brief Recursively make all of the dirs in the path
@@ -248,7 +248,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -315,7 +315,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -387,7 +387,7 @@ extern "C" {
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -473,7 +473,7 @@ extern "C" {
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -543,7 +543,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-                               
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -582,7 +582,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -678,7 +678,7 @@ extern "C" {
         struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -729,7 +729,7 @@ extern "C" {
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -769,7 +769,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -810,7 +810,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -906,7 +906,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -947,7 +947,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::collection_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1006,7 +1006,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::collection_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1048,7 +1048,7 @@ extern "C" {
         struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::collection_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1128,7 +1128,7 @@ extern "C" {
         const char*                         _new_file_name ) {
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1198,7 +1198,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1243,7 +1243,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << " Invalid parameters or physical path.";
@@ -1395,7 +1395,7 @@ extern "C" {
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1423,7 +1423,7 @@ extern "C" {
         char*                               _cache_file_name ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1654,6 +1654,52 @@ extern "C" {
 
     } // nonblocking_file_redirect_plugin
 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file registration
+    eirods::error nonblocking_file_registered_plugin(
+        eirods::resource_operation_context* _ctx ) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = nonblocking_check_params_and_path(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file unregistration
+    eirods::error nonblocking_file_unregistered_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = nonblocking_check_params_and_path(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file modification
+    eirods::error nonblocking_file_modified_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = nonblocking_check_params_and_path(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
@@ -1792,6 +1838,9 @@ extern "C" {
         resc->add_operation( "freespace",    "nonblocking_file_get_fsfreespace_plugin" );
         resc->add_operation( "stagetocache", "nonblocking_file_stagetocache_plugin" );
         resc->add_operation( "synctoarch",   "nonblocking_file_synctoarch_plugin" );
+        resc->add_operation( "registered",   "nonblocking_file_registered_plugin" );
+        resc->add_operation( "unregistered", "nonblocking_file_unregistered_plugin" );
+        resc->add_operation( "modified",     "nonblocking_file_modified_plugin" );
 
         resc->add_operation( "redirect",     "nonblocking_file_redirect_plugin" );
 

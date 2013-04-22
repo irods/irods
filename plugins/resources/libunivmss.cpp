@@ -697,6 +697,51 @@ extern "C" {
 
     } // univ_mss_file_sync_to_arch
 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file registration
+    eirods::error univ_mss_file_registered_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = univ_mss_check_param(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file unregistration
+    eirods::error univ_mss_file_unregistered_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = univ_mss_check_param(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file modification
+    eirods::error univ_mss_file_modified_plugin(
+        eirods::resource_operation_context* _ctx) {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = univ_mss_check_param(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error univ_mss_file_redirect_create( 
@@ -975,6 +1020,9 @@ extern "C" {
         resc->add_operation( "truncate",     "univ_mss_file_truncate" );
         resc->add_operation( "stagetocache", "univ_mss_file_stage_to_cache" );
         resc->add_operation( "synctoarch",   "univ_mss_file_sync_to_arch" );
+        resc->add_operation( "registered",   "univ_mss_file_registered_plugin" );
+        resc->add_operation( "unregistered", "univ_mss_file_unregistered_plugin" );
+        resc->add_operation( "modified",     "univ_mss_file_modified_plugin" );
         
         resc->add_operation( "redirect",     "univ_mss_redirect" );
 

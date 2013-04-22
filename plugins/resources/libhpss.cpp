@@ -1475,6 +1475,47 @@ extern "C" {
 
     } // hpss_file_redirect_plugin
 
+    eirods::error hpss_file_registered_plugin(
+        eirods::resource_operation_context* _ctx)
+    {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = hpss_check_params_and_path(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    eirods::error hpss_file_unregistered_plugin(
+        eirods::resource_operation_context* _ctx)
+    {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
+    
+    eirods::error hpss_file_modified_plugin(
+        eirods::resource_operation_context* _ctx)
+    {
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        // NOOP
+        return SUCCESS();
+    }
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
@@ -1609,6 +1650,9 @@ extern "C" {
         resc->add_operation( "freespace",    "hpss_file_get_fsfreespace_plugin" );
         resc->add_operation( "stagetocache", "hpss_file_stagetocache_plugin" );
         resc->add_operation( "synctoarch",   "hpss_file_synctoarch_plugin" );
+        resc->add_operation( "registered",   "hpss_file_registered_plugin" );
+        resc->add_operation( "unregistered", "hpss_file_unregistered_plugin" );
+        resc->add_operation( "modified",     "hpss_file_modified_plugin" );
 
         resc->add_operation( "redirect",     "hpss_file_redirect_plugin" );
 
