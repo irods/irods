@@ -449,7 +449,7 @@ system ( "rm -r $dir_w/testt" );
 # iphybun test
 runCmd( "iput -rR testresource $mysdir $irodshome/icmdtestp" );
 # jmc - resource groups are deprecated - runCmd( "iphybun -KRresgroup $irodshome/icmdtestp" );
-runCmd( "iphybun -KR demoResc $irodshome/icmdtestp" );
+runCmd( "iphybun -KR testresource2 $irodshome/icmdtestp" );
 runCmd( "itrim -rStestresource -N1 $irodshome/icmdtestp" );
 runCmd( "itrim -r -N1 $irodshome/icmdtestp" );
 my $bunfile = getBunpathOfSubfile ( "$irodshome/icmdtestp/sfile1" );
