@@ -57,6 +57,39 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         return status;
     }
 
+#ifdef COMMENT
+    // =-=-=-=-=-=-=-
+    // working on the "home zone", determine if we need to redirect to a different
+    // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
+    // we know that the redirection decision has already been made
+    int         local = LOCAL_HOST;
+    std::string hier;
+    char* hier_keyword = getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW );
+    if( hier_keyword == NULL ) {
+        rodsServerHost_t* host  =  0;
+        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                       dataObjUnlinkInp, hier, host, local );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjUnlink :: failed in eirods::resource_redirect for [";
+            msg << dataObjUnlinkInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+       
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+    
+    if( LOCAL_HOST != local ) {
+        rodsLog( LOG_NOTICE, "%s - resource_redirect requested remote server for [%s], hier string [%s]", 
+                 __FUNCTION__, dataObjUnlinkInp->objPath, hier.c_str() );
+    }
+#endif
+    
     if (getValByKey (
             &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
         getValByKey (
@@ -71,7 +104,17 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp, 
                                         &dataObjInfoHead);
 
-    if (status < 0) return (status);
+    if (status < 0) {
+        char* sys_error;
+        char* rods_error = rodsErrorName(status, &sys_error);
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to get data objects.";
+        msg << " - " << rods_error << " " << sys_error;
+        eirods::error result = ERROR(status, msg.str());
+        eirods::log(result);
+        return (status);
+    }
 
     if (rmTrashFlag == 1) {
         char *tmpAge;
@@ -179,19 +222,16 @@ _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-        // Logic to match everything if the rescHier keyword is not specified.
-        if(rescHier == NULL || strcmp(rescHier, tmpDataObjInfo->rescHier) == 0) {
-            status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
-            if (status < 0) {
-                if (retVal == 0) {
-                    retVal = status;
-                }
+        status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
+        if (status < 0) {
+            if (retVal == 0) {
+                retVal = status;
             }
-            if (dataObjUnlinkInp->specColl != NULL)         /* do only one */
-                break;
         }
+        if (dataObjUnlinkInp->specColl != NULL)         /* do only one */
+            break;
         tmpDataObjInfo = tmpDataObjInfo->next;
-     }
+    }
 
     if ((*dataObjInfoHead)->specColl == NULL)
         resolveDataObjReplStatus (rsComm, dataObjUnlinkInp);
@@ -304,6 +344,15 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
     }
     
     if (dataObjUnlinkInp->oprType != UNREG_OPR) {
+
+        // Set the in_pdmo flag
+        char* in_pdmo = getValByKey(&dataObjUnlinkInp->condInput, IN_PDMO_KW);
+        if(in_pdmo != NULL) {
+            dataObjInfo->in_pdmo = 1;
+        } else {
+            dataObjInfo->in_pdmo = 0;
+        }
+        
         status = l3Unlink (rsComm, dataObjInfo);
         if (status < 0) {
             int myError = getErrno (status);
@@ -403,6 +452,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             rstrcpy (fileUnlinkInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             rstrcpy (fileUnlinkInp.addr.hostAddr, location.c_str(), NAME_LEN);
             rstrcpy (fileUnlinkInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+            fileUnlinkInp.in_pdmo = dataObjInfo->in_pdmo;
             status = rsFileUnlink (rsComm, &fileUnlinkInp);
 #if 0 // JMC - legacy resource 
             break;

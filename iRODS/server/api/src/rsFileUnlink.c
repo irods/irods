@@ -93,6 +93,12 @@ int _rsFileUnlink(
     // =-=-=-=-=-=-=-
     // call unlink via resource plugin
     eirods::file_object file_obj( rsComm, fileUnlinkInp->objPath, fileUnlinkInp->fileName, fileUnlinkInp->rescHier, 0, 0, 0 );
+    if(fileUnlinkInp->in_pdmo) {
+        file_obj.in_pdmo(true);
+    } else {
+        file_obj.in_pdmo(false);
+    }
+    
     eirods::error unlink_err = fileUnlink( rsComm, file_obj );
      
     // =-=-=-=-=-=-=-

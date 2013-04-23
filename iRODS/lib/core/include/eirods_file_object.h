@@ -32,7 +32,9 @@ namespace eirods {
                      int _fd,
                      int _mode,
                      int _flags);
-            
+        file_object( rsComm_t* _comm,
+                     const dataObjInfo_t* _dataObjInfo);
+        
         // =-=-=-=-=-=-=-
         // Destructor
         virtual ~file_object();
@@ -59,7 +61,9 @@ namespace eirods {
         // Mutators
         inline void size( size_t _v )        { size_           = _v; }
         inline void repl_requested( int _v ) { repl_requested_ = _v; }
-        inline void in_pdmo( bool _v )       { in_pdmo_        = _v; }
+        inline void in_pdmo( bool _v )       {
+            in_pdmo_        = _v;
+        }
         inline void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }

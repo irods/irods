@@ -77,9 +77,27 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     int remoteFlag;
     //int rescCnt;
     rodsHostAddr_t addr;
-    char *tmpStr = NULL;
     //char *rescGroupName = NULL;
     //rescInfo_t *tmpRescInfo = NULL;
+
+    // =-=-=-=-=-=-=-
+    // NOTE:: resource_redirect can wipe out the specColl due to a call to getDataObjIncSpecColl 
+    //        which nullifies the specColl in the case of certain special collections ( LINKED ).  
+    //        this block of code needs to be called before redirect to handle that case as it doesnt 
+    //        need the resource hierarchy anyway.  this is the sort of thing i'd like to avoid in 
+    //        the future
+
+    char* coll_type = getValByKey( &phyPathRegInp->condInput, COLLECTION_TYPE_KW );
+                               
+    if( coll_type && strcmp( coll_type, UNMOUNT_STR ) == 0) {
+        status = unmountFileDir (rsComm, phyPathRegInp);
+        return (status);
+    
+    } else  if ( coll_type != NULL && strcmp ( coll_type, LINK_POINT_STR) == 0) {
+        status = linkCollReg (rsComm, phyPathRegInp);
+        return (status);
+    
+    }
 
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
@@ -108,29 +126,18 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         hier = tmp_hier; 
     }
 
-
-    if ((tmpStr = getValByKey (&phyPathRegInp->condInput,
-                               COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, UNMOUNT_STR) == 0) {
-        status = unmountFileDir (rsComm, phyPathRegInp);
-        return (status);
-    } else if (tmpStr != NULL && (strcmp (tmpStr, HAAW_STRUCT_FILE_STR) == 0 ||
-                                  strcmp (tmpStr, TAR_STRUCT_FILE_STR) == 0)) {
+    // =-=-=-=-=-=-=-
+    // coll registration requires the resource hierarchy
+    if( coll_type && (strcmp( coll_type, HAAW_STRUCT_FILE_STR) == 0 ||
+                                  strcmp ( coll_type, TAR_STRUCT_FILE_STR) == 0)) {
         status = structFileReg (rsComm, phyPathRegInp);
         return (status);
-    } else if (tmpStr != NULL && strcmp (tmpStr, LINK_POINT_STR) == 0) {
-        status = linkCollReg (rsComm, phyPathRegInp);
-        return (status);
     }
-//        if( LOCAL_HOST == local ) {
- 
-
-
+     
     // =-=-=-=-=-=-=-
     // 
     // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
     std::string resc_name;
-    //eirods::resolve_resource_name( "", &phyPathRegInp->condInput, resc_name ); 
-
     eirods::hierarchy_parser parser;
     parser.set_string( hier );
     parser.first_resc( resc_name );
@@ -162,11 +169,7 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     remoteFlag = resolveHost (&addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        //if( LOCAL_HOST == local ) {
             status = _rsPhyPathReg (rsComm, phyPathRegInp, rescGrpInfo, rodsServerHost );
-        //} else {
-        //    status = rcPhyPathReg ( host->conn, phyPathRegInp);
-        //}
 	
     } else if (remoteFlag == REMOTE_HOST) {
         status = remotePhyPathReg (rsComm, phyPathRegInp, rodsServerHost);

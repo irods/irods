@@ -44,5 +44,7 @@ eirods::error fileTruncate( rsComm_t*, eirods::first_class_object& );
 eirods::error fileStage   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileStageToCache( rsComm_t*, eirods::first_class_object&, const std::string& );
 eirods::error fileSyncToArch  ( rsComm_t*, eirods::first_class_object&, const std::string& );
-
+eirods::error fileRegistered(rsComm_t* _comm, eirods::first_class_object& _object );
+eirods::error fileUnregistered(rsComm_t* _comm, eirods::first_class_object& _object );
+eirods::error fileModified(rsComm_t* _comm, eirods::first_class_object& _object );
 #endif	/* FILE_DRIVER_H */

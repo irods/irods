@@ -728,5 +728,124 @@ eirods::error fileSyncToArch( rsComm_t*                   _comm,
 
 } // fileSyncToArch
 
+// File registered with the database
+eirods::error fileRegistered(
+    rsComm_t* _comm,
+    eirods::first_class_object& _object )
+{
+    eirods::error result = SUCCESS();
+    eirods::error ret;
+    
+    // =-=-=-=-=-=-=-
+    // trap empty file name
+    if( _object.physical_path().empty() ) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - File name is empty.";
+        result = ERROR(-1, msg.str());
+    } else {
 
+        // =-=-=-=-=-=-=-
+        // retrieve the resource name given the object
+        eirods::resource_ptr resc;
+        ret = _object.resolve( resc_mgr, resc ); 
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to resolve resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+        
+            // =-=-=-=-=-=-=-
+            // make the call to the "open" interface
+            ret = resc->call( _comm, "registered", _object );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to call registered interface.";
+                result = PASSMSG(msg.str(), ret);
+            }
+        }
+    }
+    return result;
+} // fileRegistered
 
+// File unregistered with the database
+eirods::error fileUnregistered(
+    rsComm_t* _comm,
+    eirods::first_class_object& _object )
+{
+    eirods::error result = SUCCESS();
+    eirods::error ret;
+    
+    // =-=-=-=-=-=-=-
+    // trap empty file name
+    if( _object.physical_path().empty() ) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - File name is empty.";
+        result = ERROR(-1, msg.str());
+    } else {
+
+        // =-=-=-=-=-=-=-
+        // retrieve the resource name given the object
+        eirods::resource_ptr resc;
+        ret = _object.resolve( resc_mgr, resc ); 
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to resolve resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+        
+            // =-=-=-=-=-=-=-
+            // make the call to the "open" interface
+            ret = resc->call( _comm, "unregistered", _object );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to call unregistered interface.";
+                result = PASSMSG(msg.str(), ret);
+            }
+        }
+    }
+    return result;
+} // fileUnregistered
+
+// File modified with the database
+eirods::error fileModified(
+    rsComm_t* _comm,
+    eirods::first_class_object& _object )
+{
+    eirods::error result = SUCCESS();
+    eirods::error ret;
+
+    std::string resc_hier = _object.resc_hier();
+    if(!resc_hier.empty()) {
+        
+        // =-=-=-=-=-=-=-
+        // retrieve the resource name given the object
+        eirods::resource_ptr resc;
+        ret = _object.resolve( resc_mgr, resc ); 
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to resolve resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+        
+            // =-=-=-=-=-=-=-
+            // make the call to the "open" interface
+            ret = resc->call( _comm, "modified", _object );
+            if( !ret.ok() ) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to call modified interface.";
+                result = PASSMSG(msg.str(), ret);
+            }
+        }
+    } else {
+        // NOOP okay for struct file objects
+    }
+    return result;
+} // fileModified

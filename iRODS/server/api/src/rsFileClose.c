@@ -99,7 +99,12 @@ _rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
                                   FileDesc[fileCloseInp->fileInx].rescHier, 
                                   FileDesc[fileCloseInp->fileInx].fd,
                                   0, 0 );
-
+    if(fileCloseInp->in_pdmo != 0) {
+        file_obj.in_pdmo(true);
+    } else {
+        file_obj.in_pdmo(false);
+    }
+    
     eirods::error close_err = fileClose( rsComm, file_obj );
     // =-=-=-=-=-=-=-
     // log an error, if any

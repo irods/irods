@@ -143,7 +143,8 @@ rodsObjStat_t **rodsObjStatOut)
     sqlResult_t *ownerZone;
     sqlResult_t *createTime;
     sqlResult_t *modifyTime;
-
+    sqlResult_t *rescHier;
+    
     /* see if objPath is a dataObj */
 
     memset (myColl, 0, MAX_NAME_LEN);
@@ -170,7 +171,7 @@ rodsObjStat_t **rodsObjStatOut)
     addInxIval (&genQueryInp.selectInp, COL_D_OWNER_ZONE, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
-
+    addInxIval (&genQueryInp.selectInp, COL_D_RESC_HIER, 1);
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
@@ -223,6 +224,11 @@ rodsObjStat_t **rodsObjStatOut)
             rodsLog (LOG_ERROR,
              "_rsObjStat:getSqlResultByInx for COL_D_MODIFY_TIME failed");
             return (UNMATCHED_KEY_OR_INDEX);
+        } else if ((rescHier = getSqlResultByInx (genQueryOut,
+          COL_D_RESC_HIER)) == NULL) {
+            rodsLog (LOG_ERROR,
+             "_rsObjStat:getSqlResultByInx for COL_D_RESC_HIER failed");
+            return (UNMATCHED_KEY_OR_INDEX);
         } else {
             int i;
 
@@ -250,6 +256,8 @@ rodsObjStat_t **rodsObjStatOut)
                       &createTime->value[createTime->len * i], TIME_LEN);
                     rstrcpy ((*rodsObjStatOut)->modifyTime,
                       &modifyTime->value[modifyTime->len * i], TIME_LEN);
+                    rstrcpy ((*rodsObjStatOut)->rescHier,
+                      &rescHier->value[rescHier->len * i], MAX_NAME_LEN);
                     break;
                 }
             }
@@ -267,6 +275,8 @@ rodsObjStat_t **rodsObjStatOut)
 		  NAME_LEN);
                 rstrcpy ((*rodsObjStatOut)->modifyTime, modifyTime->value, 
 		  NAME_LEN);
+                rstrcpy ((*rodsObjStatOut)->rescHier, rescHier->value, 
+		  MAX_NAME_LEN);
             }
         }
         freeGenQueryOut (&genQueryOut);

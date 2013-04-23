@@ -764,6 +764,7 @@ sub doAllRescTests
                                 "iadmin rmresc unix1Resc",
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
+                                "rm -rf /var/lib/eirods/unix1RescVault",
                         ],
                 },
                 "roundrobin" => {
@@ -782,6 +783,8 @@ sub doAllRescTests
                                 "iadmin rmresc unix1Resc",
                                 "iadmin rmresc demoResc",
                                 "yes | iadmin modresc origResc name demoResc",
+                                "rm -rf /var/lib/eirods/unix1RescVault",
+                                "rm -rf /var/lib/eirods/unix2RescVault",
                         ],
                 },
 #                "hpss" => {

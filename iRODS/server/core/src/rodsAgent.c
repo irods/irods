@@ -159,6 +159,11 @@ main(int argc, char *argv[])
 
     logAgentProc (&rsComm);
     
+    bool done = true;
+    while(!done) {
+        sleep(1);
+    }
+    
     status = agentMain (&rsComm);
 
     cleanupAndExit (status);

@@ -679,7 +679,78 @@ extern "C" {
         return result;
     } // pass_thru_sync_to_arch_plugin
 
-
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file registration
+    eirods::error pass_thru_file_registered(
+        eirods::resource_operation_context* _ctx ) {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "bad params.", ret);
+        } else {
+            eirods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
+            if(!ret.ok()) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call( _ctx->comm(), "registered", _ctx->fco() );
+                    
+                result = PASSMSG("failed calling child registered.", ret);
+            }
+        }
+        return result;
+    } // pass_thru_file_registered
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file unregistration
+    eirods::error pass_thru_file_unregistered(
+        eirods::resource_operation_context* _ctx ) {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "bad params.", ret);
+        } else {
+            eirods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
+            if(!ret.ok()) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call( _ctx->comm(), "unregistered", _ctx->fco() );
+                    
+                result = PASSMSG("failed calling child unregistered.", ret);
+            }
+        }
+        return result;
+    } // pass_thru_file_unregistered
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file modification
+    eirods::error pass_thru_file_modified(
+        eirods::resource_operation_context* _ctx ) {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "bad params.", ret);
+        } else {
+            eirods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
+            if(!ret.ok()) {
+                result = PASSMSG( "failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call( _ctx->comm(), "modified", _ctx->fco() );
+                    
+                result = PASSMSG("failed calling child modified.", ret);
+            }
+        }
+        return result;
+    } // pass_thru_file_modified
+ 
     // =-=-=-=-=-=-=-
     // unixRedirectPlugin - used to allow the resource to determine which host
     //                      should provide the requested operation
@@ -814,6 +885,9 @@ extern "C" {
         resc->add_operation( "truncate",     "pass_thru_file_truncate_plugin" );
         resc->add_operation( "stagetocache", "pass_thru_stage_to_cache_plugin" );
         resc->add_operation( "synctoarch",   "pass_thru_sync_to_arch_plugin" );
+        resc->add_operation( "registered",   "pass_thru_file_registered" );
+        resc->add_operation( "unregistered", "pass_thru_file_unregistered" );
+        resc->add_operation( "modified",     "pass_thru_file_modified" );
         
         resc->add_operation( "redirect",     "pass_thru_redirect_plugin" );
 

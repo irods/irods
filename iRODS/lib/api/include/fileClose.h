@@ -20,9 +20,10 @@
 
 typedef struct {
     int fileInx;
+    int in_pdmo;
 } fileCloseInp_t;
     
-#define fileCloseInp_PI "int fileInx;"
+#define fileCloseInp_PI "int fileInx; int in_pdmo;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CLOSE rsFileClose

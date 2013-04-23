@@ -736,6 +736,7 @@ l3Close (rsComm_t *rsComm, int l1descInx)
 #endif // JMC - legacy resource 
             memset (&fileCloseInp, 0, sizeof (fileCloseInp));
             fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
+            fileCloseInp.in_pdmo = L1desc[l1descInx].in_pdmo;
             status = rsFileClose (rsComm, &fileCloseInp);
 #if 0 // JMC - legacy resource 
             break;

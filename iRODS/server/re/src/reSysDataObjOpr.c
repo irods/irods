@@ -1587,6 +1587,8 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
         }
     rsComm = rei->rsComm ;
 
+    memset (&dataObjInfo, 0, sizeof (dataObjInfo));
+
     /* parse inpParam1: data object ID */
     if ((dataIdStr = parseMspForStr(inpParam1)) != NULL)  {
         dataObjInfo.dataId = (rodsLong_t) atoll(dataIdStr);

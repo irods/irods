@@ -199,7 +199,7 @@ bytesBuf_t *bsBBuf)
 	 */
 	logAgentProc (rsComm);
     }
-        
+
     if (retVal != SYS_NO_HANDLER_REPLY_MSG) {
         status = sendAndProcApiReply 
 	  (rsComm, apiInx, retVal, myOutStruct, &myOutBsBBuf);

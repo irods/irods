@@ -63,8 +63,8 @@ int
 _rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp,
 rescGrpInfo_t *rescGrpInfo);
 int
-createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
-rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char *dataType); // JMC - backport 4658
+createPhyBundleDataObj (rsComm_t *rsComm, char *collection, rescGrpInfo_t *rescGrpInfo,
+			const char* rescHier, dataObjInp_t *dataObjInp, char *dataType); // JMC - backport 4658
 int
 createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 char *outPhyBundleDir);
@@ -85,7 +85,7 @@ int
 replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader);
 int
-bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
+bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
 char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag); // JMC - backport 4528
 int
 phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,

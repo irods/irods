@@ -150,7 +150,7 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
     if(status < 0) {
-        rodsLog(LOG_NOTICE, "%s - Failed to replicated data object.", __FUNCTION__);
+        rodsLog(LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__);
     }
     
     if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
@@ -204,7 +204,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-                 "rsDataObjRepl: getDataObjInfo for %s", dataObjInp->objPath);
+                 "%s: getDataObjInfo for %s failed", __FUNCTION__, dataObjInp->objPath);
         return (status);
     }
     

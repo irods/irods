@@ -467,7 +467,8 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
     filePutInp.mode = getFileMode (dataObjInp);
     filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
-                
+    filePutInp.in_pdmo = L1desc[l1descInx].in_pdmo;
+    
     // =-=-=-=-=-=-=-
     // JMC - backport 4774
     chkType = getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp,L1desc[l1descInx].dataObjInfo);

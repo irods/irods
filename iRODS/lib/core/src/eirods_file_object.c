@@ -67,6 +67,21 @@ namespace eirods {
         replicas_.empty();
     } // file_object
 
+    // from dataObjInfo
+    file_object::file_object(
+        rsComm_t* _rsComm,
+        const dataObjInfo_t* _dataObjInfo)
+    {
+        comm_ = _rsComm;
+        logical_path(_dataObjInfo->objPath);
+        physical_path_ = _dataObjInfo->filePath;
+        resc_hier_ = _dataObjInfo->rescHier;
+        flags_ = _dataObjInfo->flags;
+        repl_requested_ = _dataObjInfo->replNum;
+        replicas_.empty();
+        // should mode be set here? - hcj
+    }
+    
     // =-=-=-=-=-=-=-
     // public - dtor
     file_object::~file_object() {
@@ -160,11 +175,14 @@ namespace eirods {
             status = getDataObjInfo( _comm, _data_obj_inp, &head_ptr, 0, 0 );
         }
         if( 0 == head_ptr || status < 0 ) {
+            char* sys_error;
+            char* rods_error = rodsErrorName(status, &sys_error);
             std::stringstream msg;
             msg << "failed in call to getDataObjInfoIncSpecColl";
             msg << " for [";
             msg << _data_obj_inp->objPath;
-            msg << "]";
+            msg << "] ";
+            msg << rods_error << " " << sys_error;
             return ERROR( status, msg.str() );    
         }
 

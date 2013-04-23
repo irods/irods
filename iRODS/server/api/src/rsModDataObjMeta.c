@@ -10,6 +10,9 @@
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"
 
+#include "eirods_file_object.h"
+#include "eirods_stacktrace.h"
+
 int
 rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 {
@@ -102,12 +105,56 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                 rodsLog (LOG_ERROR,
                          "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
                          tmpDataObjInfo->objPath, status);
+            } else {
+                eirods::file_object file_obj(rsComm, tmpDataObjInfo);
+                eirods::error ret = fileModified(rsComm, file_obj);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed to signal resource that the data object \"";
+                    msg << tmpDataObjInfo->objPath;
+                    msg << " was modified.";
+                    ret = PASSMSG(msg.str(), ret);
+                    eirods::log(ret);
+                    status = ret.code();
+                }
             }
             tmpDataObjInfo = tmpDataObjInfo->next;
         }
         freeAllDataObjInfo (dataObjInfoHead);
     } else {
         status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
+        if(status < 0) {
+            char* sys_error;
+            char* rods_error = rodsErrorName(status, &sys_error);
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to modify the database for object \"";
+            msg << dataObjInfo->objPath;
+            msg << "\" - " << rods_error << " " << sys_error;
+            eirods::error ret = ERROR(status, msg.str());
+            eirods::log(ret);
+        } else {
+            eirods::file_object file_obj(rsComm, dataObjInfo);
+            eirods::error ret = fileModified(rsComm, file_obj);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to signal the resource that the data object \"";
+                msg << dataObjInfo->objPath;
+                msg << "\" was modified.";
+                ret = PASSMSG(msg.str(), ret);
+                eirods::log(ret);
+                status = ret.code();
+
+                if(true) {
+                    eirods::stacktrace st;
+                    st.trace();
+                    st.dump();
+                }
+
+            }
+        }
     }
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/

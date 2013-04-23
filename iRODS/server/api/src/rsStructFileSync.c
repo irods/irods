@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 #include "structFileSync.h" 
@@ -39,8 +41,8 @@ rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsStructFileSync: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsStructFileSync: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
@@ -50,13 +52,13 @@ rsStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 
 int
 remoteStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
-rodsServerHost_t *rodsServerHost)
+                      rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteStructFileSync: Invalid rodsServerHost");
+                 "remoteStructFileSync: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -68,8 +70,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteStructFileSync: rcStructFileSync failed for %s, status = %d",
-          structFileOprInp->specColl->collection, status);
+                 "remoteStructFileSync: rcStructFileSync failed for %s, status = %d",
+                 structFileOprInp->specColl->collection, status);
     }
 
     return status;
@@ -91,35 +93,35 @@ int _rsStructFileSync( rsComm_t*           _comm,
     struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
-	// cache data type for selection of tasty compression options
+    // cache data type for selection of tasty compression options
     char* data_type = getValByKey( &_struct_inp->condInput, DATA_TYPE_KW );
     if( data_type ) {
         struct_obj.data_type( data_type );
     }
 
     // =-=-=-=-=-=-=-
-	// retrieve the resource name given the object
-	eirods::resource_ptr resc;
+    // retrieve the resource name given the object
+    eirods::resource_ptr resc;
     eirods::error ret_err = struct_obj.resolve( resc_mgr, resc ); 
-	if( !ret_err.ok() ) {
-		eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
+    if( !ret_err.ok() ) {
+        eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
         eirods::log( err );
         return ret_err.code();
-	}
+    }
  
-	// =-=-=-=-=-=-=-
-	// make the call to the "extract" interface
-	ret_err = resc->call( _comm, "sync", struct_obj );
+    // =-=-=-=-=-=-=-
+    // make the call to the "extract" interface
+    ret_err = resc->call( _comm, "sync", struct_obj );
 
     // =-=-=-=-=-=-=-
-	// pass along an error from the interface or return SUCCESS
-	if( !ret_err.ok() ) {
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
         eirods::error err = PASSMSG( "failed to call 'sync'", ret_err );
         eirods::log( err );
         return ret_err.code();
-	} else {
+    } else {
         return ret_err.code();
-	}
+    }
     
 } // _rsStructFileSync
 

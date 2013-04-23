@@ -168,10 +168,10 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
 
     /* create the bundle file */ 
     char* dataType  = getValByKey (&phyBundleCollInp->condInput, DATA_TYPE_KW); // JMC - backport 4658
-    
+    char* rescHier = getValByKey (&phyBundleCollInp->condInput, RESC_HIER_STR_KW);
     dataObjInp_t dataObjInp;
     int   l1descInx = createPhyBundleDataObj (rsComm, phyBundleCollInp->collection,
-                                              rescGrpInfo, &dataObjInp, dataType ); // JMC - backport 4658
+                                              rescGrpInfo, rescHier, &dataObjInp, dataType ); // JMC - backport 4658
 
     if (l1descInx < 0) {
         return l1descInx;
@@ -225,7 +225,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                     bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
                     MAX_BUNDLE_SIZE * OneGig) {
                     /* bundle is full */
-                    status = bundlleAndRegSubFiles (rsComm, l1descInx,
+                    status = bundleAndRegSubFiles (rsComm, l1descInx,
                                                     phyBunDir, phyBundleCollInp->collection,
                                                     &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
                     if (status < 0) {
@@ -237,7 +237,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                         /* create a new bundle file */
                         l1descInx = createPhyBundleDataObj (rsComm,
                                                             phyBundleCollInp->collection, rescGrpInfo,
-                                                            &dataObjInp, dataType); // JMC - backport 4658
+                                                            rescHier, &dataObjInp, dataType); // JMC - backport 4658
 
                         if (l1descInx < 0) {
                             rodsLog (LOG_ERROR,
@@ -310,7 +310,7 @@ _rsPhyBundleColl( rsComm_t*                 rsComm,
                  curSubFileCond.subPhyPath, status);
     }
 
-    status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
+    status = bundleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
                                     phyBundleCollInp->collection, &bunReplCacheHeader, chksumFlag); // JMC - backport 4528
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -361,7 +361,7 @@ replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
 }
 
 int
-bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
+bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
                        char *collection, bunReplCacheHeader_t *bunReplCacheHeader, int chksumFlag) // JMC - backport 4528
 {
     int status;
@@ -392,7 +392,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
                         collection, CREATE_TAR_OPR); // JMC - backport 4643
     if (status < 0) {
         rodsLog (LOG_ERROR,
-                 "bundlleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
+                 "bundleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
                  L1desc[l1descInx].dataObjInfo->objPath, status);
         rmLinkedFilesInUnixDir (phyBunDir);
         rmdir (phyBunDir);
@@ -435,6 +435,8 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
     rstrcpy (regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN);
     rstrcpy (regReplicaInp.destDataObjInfo->filePath, 
              L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
+    rstrcpy (regReplicaInp.destDataObjInfo->rescHier, 
+             L1desc[l1descInx].dataObjInfo->rescHier, MAX_NAME_LEN);
     // =-=-=-=-=-=-=-
     // JMC - backport 4528
     if (chksumFlag != 0) {
@@ -459,10 +461,10 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         // JMC - backport 4528
         if (chksumFlag != 0) {
             status = fileChksum (UNIX_FILE_TYPE, rsComm, regReplicaInp.destDataObjInfo->filePath,
-                                 subPhyPath, "", tmpBunReplCache->chksumStr);
+                                 subPhyPath, regReplicaInp.destDataObjInfo->rescHier, tmpBunReplCache->chksumStr);
             if (status < 0) {
                 savedStatus = status;
-                rodsLogError (LOG_ERROR, status,"bundlleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);
+                rodsLogError (LOG_ERROR, status,"bundleAndRegSubFiles: fileChksum error for %s",tmpBunReplCache->objPath);
             }
         }
         // =-=-=-=-=-=-=-
@@ -478,7 +480,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         if (status < 0) {
             savedStatus = status;
             rodsLog (LOG_ERROR,
-                     "bundlleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
+                     "bundleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
                      tmpBunReplCache->objPath, status);
         }
         // =-=-=-=-=-=-=-
@@ -489,7 +491,7 @@ bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
             clearKeyVal (&regParam);
             if (status < 0) {
                 savedStatus = status;
-                rodsLogError (LOG_ERROR, status, "bundlleAndRegSubFiles: rsModDataObjMeta error for %s.", tmpBunReplCache->objPath);
+                rodsLogError (LOG_ERROR, status, "bundleAndRegSubFiles: rsModDataObjMeta error for %s.", tmpBunReplCache->objPath);
             }
         }
         // =-=-=-=-=-=-=-
@@ -678,7 +680,8 @@ createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 
 int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection, 
-                        rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp, char* dataType ) // JMC - backport 4658
+                        rescGrpInfo_t *rescGrpInfo, const char* rescHier, dataObjInp_t *dataObjInp,
+                        char* dataType ) // JMC - backport 4658
 {
     int myRanNum;
     int l1descInx;
@@ -690,22 +693,22 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     std::string type;
     eirods::error err = eirods::get_resource_property< std::string >( rescGrpInfo->rescInfo->rescName, "type", type );
     if( !err.ok() ) {
-        eirods::log( PASS( err ) );    
+        eirods::log( PASS( err ) );
     }
-    // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType != UNIX_FILE_TYPE) {
-    if( "unix file system" != type ) { // JMC :: need a constant for this?
-        rodsLog (LOG_ERROR,
-                 "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
-                 rescGrpInfo->rescInfo->rescName);
-        return SYS_INVALID_RESC_TYPE;
-    } 
+
 #if 0 // JMC legacy resources
+    if( std::string("unix file system") != type ) { // JMC :: need a constant for this?
+        rodsLog (LOG_ERROR,
+                 "createPhyBundleFile: resource %s appears to be of type %s rather than UNIX_FILE_TYPE",
+                 rescGrpInfo->rescInfo->rescName, type.c_str());
+        return SYS_INVALID_RESC_TYPE;
+    }
     else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
         return SYS_NO_CACHE_RESC_IN_GRP;
     }
 
 #endif // JMC legacy resources
-        
+
     do {
         int loopCnt = 0;
         bzero (dataObjInp, sizeof (dataObjInp_t));
@@ -739,6 +742,10 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
             addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_DT_STR);
         }
 
+        if(rescHier != NULL) {
+            addKeyVal(&dataObjInp->condInput, RESC_HIER_STR_KW, rescHier);
+        }
+        
         if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) { // JMC - backport 4664
             /* zipFile type. must end with .zip */
             int len = strlen (dataObjInp->objPath);
@@ -759,6 +766,9 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
         if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) // JMC - backport 4664
             l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
     }
+
+
+    rodsLog( LOG_NOTICE, "XXXX createPhyBundleDataObj :: index [%d], hier [%s]", l1descInx, L1desc[l1descInx].dataObjInfo->rescHier );
 
     return l1descInx;
 }

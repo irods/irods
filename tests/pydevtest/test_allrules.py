@@ -180,3 +180,5 @@ def test_allrules():
         print "running "+rulefile
         yield run_irule, rulefile
 
+    # cleanup
+    os.unlink( "foo1" )

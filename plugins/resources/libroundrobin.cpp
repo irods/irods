@@ -871,6 +871,69 @@ extern "C" {
     } // round_robin_file_sync_to_arch
 
     /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file registration
+    eirods::error round_robin_file_registered(
+        eirods::resource_operation_context* _ctx ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call rename on the child 
+        return resc->call( _ctx->comm(), "registered", _ctx->fco() );
+
+    } // round_robin_file_registered
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file unregistration
+    eirods::error round_robin_file_unregistered(
+        eirods::resource_operation_context* _ctx ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call rename on the child 
+        return resc->call( _ctx->comm(), "unregistered", _ctx->fco() );
+
+    } // round_robin_file_unregistered
+
+    /// =-=-=-=-=-=-=-
+    /// @brief interface to notify of a file modification
+    eirods::error round_robin_file_modified(
+        eirods::resource_operation_context* _ctx ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc; 
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call rename on the child 
+        return resc->call( _ctx->comm(), "modified", _ctx->fco() );
+
+    } // round_robin_file_modified
+
+    /// =-=-=-=-=-=-=-
     /// @brief used to allow the resource to determine which host
     ///        should provide the requested operation
     eirods::error round_robin_redirect(
@@ -1118,6 +1181,9 @@ extern "C" {
         resc->add_operation( "truncate",     "round_robin_file_truncate" );
         resc->add_operation( "stagetocache", "round_robin_file_stage_to_cache" );
         resc->add_operation( "synctoarch",   "round_robin_file_sync_to_arch" );
+        resc->add_operation( "registered",   "round_robin_file_registered" );
+        resc->add_operation( "unregistered", "round_robin_file_unregistered" );
+        resc->add_operation( "modified",     "round_robin_file_modified" );
         
         resc->add_operation( "redirect",     "round_robin_redirect" );
 

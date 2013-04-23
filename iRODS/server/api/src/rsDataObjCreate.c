@@ -86,7 +86,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if( NULL == resc_hier ) {
         std::string       hier;
         eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                                       dataObjInp, hier );
+                                                                dataObjInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
             msg << "failed in eirods::resolve_resource_hierarchy for [";
@@ -160,9 +160,9 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
         /* dataObj exist */
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
+
         } else {
             l1descInx = OVERWRITE_WITHOUT_FORCE_FLAG;
         }
