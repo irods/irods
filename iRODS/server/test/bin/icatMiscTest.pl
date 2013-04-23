@@ -49,7 +49,7 @@ $ACCESS_BAD="'bad access'";
 # if 2, should get a non-zero result, exit if not
 sub runCmd {
     my($option, $cmd) = @_;
-    chomp(my therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
+    chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
     `echo " $0 [$cmd] --- >> $therodslog"`;
     print "running: $cmd \n";
     $cmdStdout=`$cmd`;
