@@ -50,7 +50,7 @@ $ACCESS_BAD="'bad access'";
 sub runCmd {
     my($option, $cmd) = @_;
     chomp(my therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
-    `echo " $0 [$cmd] --- >> $therodslog";
+    `echo " $0 [$cmd] --- >> $therodslog"`;
     print "running: $cmd \n";
     $cmdStdout=`$cmd`;
     $cmdStat=$?;
