@@ -24,7 +24,11 @@ INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../i
 default: ${DEPS}
 
 hpss:
-	${GCC} ${INC} -DHPSS -Dlinux_platform -fPIC -shared -o libhpss.so            libhpss.cpp      /opt/hpss/lib/libhpss.so /opt/hpss/lib/libhpsscs.so
+	${GCC} ${INC} -DHPSS -Dlinux_platform -lcurl -fPIC -shared -o libhpss.so            libhpss.cpp      /opt/hpss/lib/libhpss.so /opt/hpss/lib/libhpsscs.so
+
+wos:
+	${GCC} ${INC} -DUSING_JSON -Dlinux_platform -fPIC -shared -o libwos.so libwos.cpp
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libwoscoordinator.so libwoscoordinator.cpp
 
 base:
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libroundrobin.so      libroundrobin.cpp 
