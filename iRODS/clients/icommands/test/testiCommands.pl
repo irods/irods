@@ -738,10 +738,12 @@ sub runCmd {
 	
 	if ( $debug ) { print( "\n" ); }
 	printf( "%3d - cmd executed: $cmd\n", $ntests );
+	use File::Basename;
+	my $thescriptname = basename($0);
 	chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
-        open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
-        print THERODSLOG " --- $0 [$cmd] --- \n";
-        close THERODSLOG;
+	open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
+	print THERODSLOG " --- $thescriptname [$cmd] --- \n";
+	close THERODSLOG;
 	if ( $debug ) { print( "DEBUG: input to runCMd: $cmd, $testtype, $stringToCheck, $expResult.\n" ); }
 
 #-- Push return command in list
