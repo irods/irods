@@ -16,8 +16,12 @@
 # if option is 0 (normal), check the exit code 
 sub runCmd {
     my($option, $cmd) = @_;
-    chomp(my therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
-    `echo " $0 [$cmd] --- >> $therodslog"`;
+    use File::Basename;
+    my $thescriptname = basename($0);    
+    chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
+    open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
+    print THERODSLOG " --- $thescriptname [$cmd] --- \n";
+    close THERODSLOG;
     print "running: $cmd \n";
     $cmdStdout=`$cmd`;
     $cmdStat=$?;

@@ -1493,7 +1493,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx)
     {
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path(_ctx);
+        eirods::error ret = hpss_check_params_and_path(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
@@ -1507,7 +1507,7 @@ extern "C" {
         eirods::resource_operation_context* _ctx)
     {
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path(_ctx);
+        eirods::error ret = hpss_check_params_and_path(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
