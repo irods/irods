@@ -6,6 +6,7 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_plugin_base.h"
+#include "eirods_resource_constants.h"
 #include "eirods_operation_wrapper.h"
 
 #include <iostream>
@@ -13,9 +14,6 @@
 namespace eirods {
 
 
-    // =-=-=-=-=-=-=-
-    /// @brief delimiter used for parsing resource context strings
-    const std::string RESOURCE_DELIMITER(";");
 
 
     // =-=-=-=-=-=-=-
