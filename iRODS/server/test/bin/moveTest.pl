@@ -18,7 +18,7 @@ sub runCmd {
     my($option, $cmd) = @_;
     chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
-    print THERODSLOG " $0 [$cmd] --- \n";
+    print THERODSLOG " --- $0 [$cmd] --- \n";
     close THERODSLOG;
     print "running: $cmd \n";
     $cmdStdout=`$cmd`;
