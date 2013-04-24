@@ -470,7 +470,9 @@ sub runCmd {
     if ( $debug ) { print( "\n" ); }
     printf( "%3d - cmd executed: $cmd\n", $ntests );
     chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
-    `echo " $0 [$cmd] --- >> $therodslog"`;
+    open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
+    print THERODSLOG " $0 [$cmd] --- \n";
+    close THERODSLOG;
     if ( $debug ) { print( "DEBUG: input to runCMd: $cmd, $testtype, $stringToCheck, $expResult.\n" ); }
 
 #-- Push return command in list
