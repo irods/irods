@@ -767,9 +767,6 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
             l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
     }
 
-
-    rodsLog( LOG_NOTICE, "XXXX createPhyBundleDataObj :: index [%d], hier [%s]", l1descInx, L1desc[l1descInx].dataObjInfo->rescHier );
-
     return l1descInx;
 }
 

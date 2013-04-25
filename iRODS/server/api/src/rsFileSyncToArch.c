@@ -19,6 +19,7 @@
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
 rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
@@ -28,7 +29,12 @@ rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
+//    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileSyncToArchInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
 
     if (remoteFlag < 0) {
         return (remoteFlag);
@@ -131,6 +137,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
                                   fileSyncToArchInp->filename, "", 0, 
                                   fileSyncToArchInp->mode, 
                                   fileSyncToArchInp->flags );
+    file_obj.resc_hier( fileSyncToArchInp->rescHier );
     eirods::error sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
 
     if( !sync_err.ok() ) {

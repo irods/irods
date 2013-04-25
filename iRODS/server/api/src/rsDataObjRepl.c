@@ -73,6 +73,10 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     char* lockType = NULL; // JMC - backport 4609
     int   lockFd   = -1;   // JMC - backport 4609
 
+char* stage_kw = getValByKey( &dataObjInp->condInput, STAGE_OBJ_KW );
+char* sync_kw  = getValByKey( &dataObjInp->condInput, SYNC_OBJ_KW );
+rodsLog( LOG_NOTICE, "XXXX - [%s] stage_kw [%s], sync_kw [%s]", __FUNCTION__, stage_kw, sync_kw );
+
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
         /* To SU, cannot be called by normal user directly */ 
         if (rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH) {
@@ -183,6 +187,10 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else {
         accessPerm = ACCESS_READ_OBJECT;
     }
+
+char* stage_kw = getValByKey( &dataObjInp->condInput, STAGE_OBJ_KW );
+char* sync_kw  = getValByKey( &dataObjInp->condInput, SYNC_OBJ_KW );
+rodsLog( LOG_NOTICE, "XXXX - [%s] stage_kw [%s], sync_kw [%s]", __FUNCTION__, stage_kw, sync_kw );
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
@@ -831,6 +839,25 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         }
 #endif // JMC - legacy resource
 
+        // =-=-=-=-=-=-=-
+        // reproduce the stage / sync behavior using keywords rather
+        // than the resource class for use in the compound resource plugin
+        char* stage_kw = getValByKey( &dataObjInp->condInput, STAGE_OBJ_KW );
+        char* sync_kw  = getValByKey( &dataObjInp->condInput, SYNC_OBJ_KW );
+        if( stage_kw ) {
+rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: STAGING!!!!!!" );
+            L1desc[destL1descInx].stageFlag = STAGE_SRC;
+        } else if( sync_kw ) {
+rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: SYNCING!!!!!!" );
+            L1desc[destL1descInx].stageFlag = SYNC_DEST;
+        } else {
+rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: NO KEYWORD SET" );
+
+
+        }
+
+
+
 
         char* src_hier_str = 0;
         if (srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL) {
@@ -1192,8 +1219,10 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                 rstrcpy( fileSyncToArchInp.addr.hostAddr, location.c_str(), NAME_LEN );
 
                 /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
-                rstrcpy( fileSyncToArchInp.filename,      destDataObjInfo->filePath, MAX_NAME_LEN);
-                rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN);
+                rstrcpy( fileSyncToArchInp.filename,      destDataObjInfo->filePath, MAX_NAME_LEN );
+                rstrcpy( fileSyncToArchInp.rescHier,      destDataObjInfo->rescHier,  MAX_NAME_LEN );
+                rstrcpy( fileSyncToArchInp.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
+                rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN );
 
                 fileSyncToArchInp.mode = getFileMode (dataObjInp);
                 status = rsFileSyncToArch (rsComm, &fileSyncToArchInp, &outFileName);
@@ -1241,7 +1270,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
                           dataObjInfo_t *destDataObjInfo, int mode)
         {
             // int rescTypeInx, cacheRescTypeInx;
-            fileStageSyncInp_t fileSyncToArchInp;
+            fileStageSyncInp_t file_stage;
             int status;
 
 #if 0 // JMC legacy resource 
@@ -1252,21 +1281,22 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
             switch (RescTypeDef[rescTypeInx].rescCat) {
             case FILE_CAT:
 #endif // JMC legacy resource 
-                memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
-                fileSyncToArchInp.dataSize      = srcDataObjInfo->dataSize;
-                fileSyncToArchInp.fileType      = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-                fileSyncToArchInp.cacheFileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[cacheRescTypeInx].driverType;
-         
-                rstrcpy (fileSyncToArchInp.addr.hostAddr,  
-                         destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+                memset (&file_stage, 0, sizeof (file_stage));
+                file_stage.dataSize      = srcDataObjInfo->dataSize;
+                file_stage.fileType      = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
+                file_stage.cacheFileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[cacheRescTypeInx].driverType;
+                rodsLog( LOG_NOTICE, "XXXX - _l3FileStage :: src hier [%s], dst hier [%s]",
+                srcDataObjInfo->rescHier, destDataObjInfo->rescHier );
+                 
+                rstrcpy( file_stage.addr.hostAddr,  
+                         destDataObjInfo->rescInfo->rescLoc, NAME_LEN );
                 /* use the cache addr srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);*/
-                rstrcpy( fileSyncToArchInp.cacheFilename, destDataObjInfo->filePath, 
-                         MAX_NAME_LEN);
-                rstrcpy( fileSyncToArchInp.filename, srcDataObjInfo->filePath, 
-                         MAX_NAME_LEN);
-                fileSyncToArchInp.mode = mode;
-                status = rsFileStageToCache (rsComm, &fileSyncToArchInp);
-       
+                rstrcpy( file_stage.cacheFilename, destDataObjInfo->filePath, MAX_NAME_LEN );
+                rstrcpy( file_stage.filename,      srcDataObjInfo->filePath,  MAX_NAME_LEN );
+                rstrcpy( file_stage.rescHier,      destDataObjInfo->rescHier,  MAX_NAME_LEN );
+                rstrcpy( file_stage.objPath,       srcDataObjInfo->objPath,   MAX_NAME_LEN );
+                file_stage.mode = mode;
+                status = rsFileStageToCache( rsComm, &file_stage );
 #if 0 // JMC legacy resource 
                 break;
             default:

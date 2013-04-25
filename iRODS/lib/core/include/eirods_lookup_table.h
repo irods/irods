@@ -122,7 +122,7 @@ namespace eirods {
                 return ERROR( EIRODS_KEY_NOT_FOUND, "empty key" );
             }
 
-            if(find(_key) == end()) {
+            if( !has_entry( _key ) ) {
                 std::stringstream msg;
                 msg << "failed to find key [";
                 msg << _key;

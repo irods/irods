@@ -27,6 +27,7 @@ hpss:
 	${GCC} ${INC} -DHPSS -Dlinux_platform -fPIC -shared -o libhpss.so            libhpss.cpp      /opt/hpss/lib/libhpss.so /opt/hpss/lib/libhpsscs.so
 
 base:
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libcompound.so        libcompound.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libroundrobin.so      libroundrobin.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so        libpassthru.cpp 

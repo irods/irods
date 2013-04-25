@@ -5132,7 +5132,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
     if (strcmp(option, "type")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 6");
-
+        #if 0 // JMC :: resource type is now dynamic
         status = cmlCheckNameToken("resc_type", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
@@ -5141,7 +5141,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_TYPE);
         }
-
+        #endif
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
