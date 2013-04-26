@@ -874,11 +874,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     # First copy all of them just to be generic - harry
     CWD=`pwd`
     cd ../plugins/resources
-    filelist=ls
+    filelist=`ls`
     for dir in $filelist
     do
 	if [ -d $dir -a -f $dir/Makefile.in ]
 	then
+	    echo "Copying $dir/Makefile.in $dir/Makefile"
 	    cp $dir/Makefile.in $dir/Makefile
 	fi
     done
