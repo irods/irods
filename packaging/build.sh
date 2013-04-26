@@ -175,7 +175,7 @@ if [ "$1" == "clean" ] ; then
     rm -f libeirods.a
     echo "Cleaning Resource plugins..."
     cd plugins/resources
-    make clean > /dev/null 2>&1
+    make clean
     cd ../..
     rm -rf $EIRODSPACKAGEDIR
     set +e
