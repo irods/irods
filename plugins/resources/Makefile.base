@@ -1,6 +1,7 @@
 IRODSDIR = ../../../iRODS
 SODIR = ../sos
 FULLTARGET = ${SODIR}/${TARGET}
+DEPS = .depends
 
 include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
@@ -22,7 +23,13 @@ default: ${FULLTARGET}
 
 clean:
 	-rm ${FULLTARGET}
+	-rm ${DEPS}
 
-${FULLTARGET} : ${SRCS} ${HEADERS}
-	-mkdir ${SODIR}
+${FULLTARGET} : ${SRCS} ${HEADERS} ${DEPS}
+	@-mkdir ${SODIR}
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o ${FULLTARGET} ${SRCS} ${EXTRALIBS}
+
+${DEPS}: ${SRCS} ${HEADERS}
+	${GCC} ${INC} -MM ${SRCS} > ${DEPS}
+
+include ${DEPS}

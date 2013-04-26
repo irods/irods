@@ -1,6 +1,7 @@
 *~
 *.pyc
 *.so
+.depends
 plugins/resources/Makefile
 iRODS/.client_cflags
 iRODS/.client_ldflags
@@ -13,3 +14,11 @@ iRODS/server/config/server.config
 iRODS/server/re/include/eirods_ms_home.h
 iRODS/server/re/include/reAction.h
 packaging/eirods.list
+plugins/resources/hpss/Makefile
+plugins/resources/nonblocking/Makefile
+plugins/resources/passthru/Makefile
+plugins/resources/replication/Makefile
+plugins/resources/roundrobin/Makefile
+plugins/resources/structfile/Makefile
+plugins/resources/univmss/Makefile
+plugins/resources/unixfilesystem/Makefile
