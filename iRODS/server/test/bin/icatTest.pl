@@ -605,7 +605,7 @@ runCmd(0, "iadmin modresc $Resc2 info 'this is info field'");
 runCmd(2, "iadmin modresc $Resc2 class 'badClass'");
 runCmd(0, "iadmin modresc $Resc2 class 'archive'");
 runCmd(0, "iadmin modresc $Resc2 class cache");
-runCmd(2, "iadmin modresc $Resc2 type 'badType'");
+#runCmd(2, "iadmin modresc $Resc2 type 'badType'"); # eirods no longer checks/cares
 runCmd(0, "iadmin modresc $Resc2 type 'unix file system'");
 runCmd(0, "iadmin modresc $Resc2 path /tmp/v1");
 runCmd(0, "iadmin modresc $Resc2 path $Resc2Path");
