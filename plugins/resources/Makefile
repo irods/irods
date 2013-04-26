@@ -39,7 +39,8 @@ ${SUBS}:
 	${MAKE} -C $@
 
 clean:
-	for dir in ${SUBS}; do \
-	${MAKE} -C $$dir clean; \
+	@-for dir in ${SUBS}; do \
+	rm $$dir/.depends > /dev/null 2>&1; \
 	done
+	@-rm sos/*.so > /dev/null 2>&1
 
