@@ -1,0 +1,40 @@
+TARGET = libstructfile.so
+
+SRCS = libstructfile.cpp
+
+HEADERS = 
+
+EXTRALIBS = $(LIBARCHIVE_DIR)/.libs/libarchive.a \
+            $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+            $(BOOST_DIR)/stage/lib/libboost_system.a \
+            SYSTEM_LIBZ_SO \
+            SYSTEM_LIBBZ2_SO
+
+######################################################################
+# Most configuration happens above this line
+
+IRODSDIR = ../../../iRODS
+
+include ${IRODSDIR}/config/platform.mk
+include ${IRODSDIR}/config/config.mk
+
+GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\"$(UNZIP_EXEC_PATH)\"
+
+ifeq ($(EIRODS_BUILD_COVERAGE), 1)
+GCC += -fprofile-arcs -ftest-coverage -lgcov
+endif
+
+INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
+      -I${IRODSDIR}/server/core/include/ -I${IRODSDIR}/server/icat/include/ -I${IRODSDIR}/server/re/include/ \
+      -I${IRODSDIR}/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
+      -I/opt/hpss/include  -L/opt/hpss/lib
+
+.PHONY: clean
+
+default: ${TARGET}
+
+clean:
+	-rm ${TARGET}
+
+${TARGET} : ${SRCS} ${HEADERS}
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o ${TARGET} ${SRCS} ${EXTRALIBS}

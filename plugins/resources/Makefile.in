@@ -1,3 +1,15 @@
+BASEDIRS = nonblocking \
+           passthru \
+           replication \
+           roundrobin \
+           structfile \
+           univmss \
+           unixfilesystem
+
+HPSSDIRS = hpss
+
+######################################################################
+# Configuration should occur above this line
 
 include ../../iRODS/config/platform.mk
 include ../../iRODS/config/config.mk
@@ -8,13 +20,13 @@ ifeq ($(EIRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
-DEPS = base
+DEPS = ${BASEDIRS}
 
 ifeq ($(EIRODS_BUILD_DEBUG), 0)
-DEPS += hpss
+DEPS += ${HPSSDIRS}
 endif
 
-.PHONY = base hpss
+.PHONY: ${DEPS} clean
 
 INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include \
       -I../../iRODS/server/core/include/ -I../../iRODS/server/icat/include/ -I../../iRODS/server/re/include/ \
@@ -23,18 +35,11 @@ INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../i
 
 default: ${DEPS}
 
-hpss:
-	${GCC} ${INC} -DHPSS -Dlinux_platform -fPIC -shared -o libhpss.so            libhpss.cpp      /opt/hpss/lib/libhpss.so /opt/hpss/lib/libhpsscs.so
+$${DEPS}:
+	${MAKE} -C $@
 
-base:
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libroundrobin.so      libroundrobin.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libunixfilesystem.so  libunixfilesystem.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libpassthru.so        libpassthru.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp eirods_replicator.cpp eirods_create_write_replicator.cpp eirods_unlink_replicator.cpp eirods_object_oper.cpp
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libnonblocking.so     libnonblocking.cpp 
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp \
-	$(LIBARCHIVE_DIR)/.libs/libarchive.a \
-	$(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-	$(BOOST_DIR)/stage/lib/libboost_system.a \
-	SYSTEM_LIBZ_SO \
-	SYSTEM_LIBBZ2_SO
+clean:
+	for dir in ${DEPS}; do \
+	${MAKE} -C $$dir clean; \
+	done
+

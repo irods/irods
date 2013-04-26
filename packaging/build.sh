@@ -173,8 +173,10 @@ if [ "$1" == "clean" ] ; then
     rm -rf $MANDIR
     rm -f manual.pdf
     rm -f libeirods.a
-    rm -f plugins/resources/*.so
-    rm -f plugins/resources/Makefile
+    echo "Cleaning Resource plugins..."
+    cd plugins/resources
+    make clean > /dev/null 2>&1
+    cd ../..
     rm -rf $EIRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
@@ -868,15 +870,27 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
 
-    # update resources Makefile to find system shared libraries
+    # update resources Makefiles to find system shared libraries
+    # First copy all of them just to be generic - harry
+    CWD=`pwd`
+    cd ../plugins/resources
+    filelist=ls
+    for dir in $filelist
+    do
+	if [ -d $dir -a -f $dir/Makefile.in ]
+	then
+	    cp $dir/Makefile.in $dir/Makefile
+	fi
+    done
+    cd $CWD
     # libz
     found_so=`../packaging/find_so.sh libz.so`
-    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/structfile/Makefile.in > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/structfile/Makefile
     # bzip2
     found_so=`../packaging/find_so.sh libbz2.so`
-    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/structfile/Makefile > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/structfile/Makefile
 #    # libarchive
 #    found_so=`../packaging/find_so.sh libarchive.so`
 #    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
