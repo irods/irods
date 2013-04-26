@@ -22,14 +22,14 @@ INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDI
 default: ${FULLTARGET}
 
 clean:
-	-rm ${FULLTARGET}
-	-rm ${DEPS}
+	@-rm ${FULLTARGET} > /dev/null 2>&1
+	@-rm ${DEPS} > /dev/null 2>&1
 
-${FULLTARGET} : ${SRCS} ${HEADERS} ${DEPS}
+${FULLTARGET}: ${SRCS} ${HEADERS} ${DEPS}
 	@-mkdir ${SODIR}
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o ${FULLTARGET} ${SRCS} ${EXTRALIBS}
 
 ${DEPS}: ${SRCS} ${HEADERS}
-	${GCC} ${INC} -MM ${SRCS} > ${DEPS}
+	@${GCC} ${INC} -MM ${SRCS} > ${DEPS}
 
 include ${DEPS}
