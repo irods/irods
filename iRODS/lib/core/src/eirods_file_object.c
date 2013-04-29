@@ -189,7 +189,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // start populating file_object
         _file_obj.comm( _comm );
-        _file_obj.physical_path( _data_obj_inp->objPath );
+        _file_obj.logical_path( _data_obj_inp->objPath );
         _file_obj.resc_hier( head_ptr->rescHier );
         
         // =-=-=-=-=-=-=-

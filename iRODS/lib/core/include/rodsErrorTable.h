@@ -599,16 +599,16 @@
 #define DBO_WRITABLE_BY_NON_PRIVILEGED  -1718000
 
 // e-irods errors
-#define EIRODS_KEY_NOT_FOUND            -1800000
-#define EIRODS_KEY_TYPE_MISMATCH        -1810000
-#define EIRODS_CHILD_EXISTS             -1820000
-#define EIRODS_HIERARCHY_ERROR          -1830000
-#define EIRODS_CHILD_NOT_FOUND          -1840000
-#define EIRODS_NEXT_RESC_FOUND          -1850000
-#define EIRODS_NO_PDMO_DEFINED          -1860000
-#define EIRODS_INVALID_LOCATION         -1870000
-#define EIRODS_PLUGIN_ERROR             -1880000
-
+#define EIRODS_KEY_NOT_FOUND              -1800000
+#define EIRODS_KEY_TYPE_MISMATCH          -1810000
+#define EIRODS_CHILD_EXISTS               -1820000
+#define EIRODS_HIERARCHY_ERROR            -1830000
+#define EIRODS_CHILD_NOT_FOUND            -1840000
+#define EIRODS_NEXT_RESC_FOUND            -1850000
+#define EIRODS_NO_PDMO_DEFINED            -1860000
+#define EIRODS_INVALID_LOCATION           -1870000
+#define EIRODS_PLUGIN_ERROR               -1880000
+#define EIRODS_INVALID_RESC_CHILD_CONTEXT -1890000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

@@ -1490,6 +1490,10 @@ extern "C" {
                       const std::string&             _curr_host, 
                       float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
+        // initially set a good default
+        _out_vote = 0.0;
+
+        // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
@@ -1500,7 +1504,6 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if the status is down, vote no.
         if( INT_RESC_STATUS_DOWN == resc_status ) {
-            _out_vote = 0.0;
             return SUCCESS(); 
         }
 
@@ -1527,10 +1530,6 @@ extern "C" {
         std::vector< eirods::physical_object > objs = _file_obj.replicas();
         std::vector< eirods::physical_object >::iterator itr = objs.begin();
         
-        // =-=-=-=-=-=-=-
-        // initially set vote to 0.0
-        _out_vote = 0.0;
-
         // =-=-=-=-=-=-=-
         // check to see if the replica is in this resource, if one is requested
         for( ; itr != objs.end(); ++itr ) {
@@ -1567,7 +1566,7 @@ extern "C" {
                              
         return SUCCESS();
 
-    } // redirect_get
+    } // unix_file_redirect_open
 
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
@@ -1632,7 +1631,7 @@ extern "C" {
         if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return unix_file_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return unix_file_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-

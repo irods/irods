@@ -213,5 +213,7 @@
 #define RESC_HIER_STR_KW             "resc_hier"
 #define DEST_RESC_HIER_STR_KW        "dest_resc_hier"
 #define IN_PDMO_KW                   "in_pdmo"
+#define STAGE_OBJ_KW                 "stage_object"
+#define SYNC_OBJ_KW                  "sync_object"
 
 #endif	/* RODS_KEYWD_DEF */
