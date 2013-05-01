@@ -408,7 +408,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call create on the child 
-        return resc->call( _ctx->comm(), "create", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco() );
    
     } // round_robin_file_create
 
@@ -429,7 +429,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call open operation on the child 
-        return resc->call( _ctx->comm(), "open", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco() );
  
     } // round_robin_file_open
 
@@ -452,7 +452,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call read on the child 
-        return resc->call< void*, int >( _ctx->comm(), "read", _ctx->fco(), _buf, _len );
+        return resc->call< void*, int >( _ctx->comm(), eirods::RESOURCE_OP_READ, _ctx->fco(), _buf, _len );
  
     } // round_robin_file_read
 
@@ -475,7 +475,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call write on the child 
-        return resc->call< void*, int >( _ctx->comm(), "write", _ctx->fco(), _buf, _len );
+        return resc->call< void*, int >( _ctx->comm(), eirods::RESOURCE_OP_WRITE, _ctx->fco(), _buf, _len );
  
     } // round_robin_file_write
 
@@ -496,7 +496,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call close on the child 
-        return resc->call( _ctx->comm(), "close", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CLOSE, _ctx->fco() );
  
     } // round_robin_file_close
 
@@ -517,7 +517,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call unlink on the child 
-        return resc->call( _ctx->comm(), "unlink", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_UNLINK, _ctx->fco() );
  
     } // round_robin_file_unlink
 
@@ -539,7 +539,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call stat on the child 
-        return resc->call< struct stat* >( _ctx->comm(), "stat", _ctx->fco(), _statbuf );
+        return resc->call< struct stat* >( _ctx->comm(), eirods::RESOURCE_OP_STAT, _ctx->fco(), _statbuf );
  
     } // round_robin_file_stat
 
@@ -561,7 +561,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call fstat on the child 
-        return resc->call< struct stat* >( _ctx->comm(), "fstat", _ctx->fco(), _statbuf );
+        return resc->call< struct stat* >( _ctx->comm(), eirods::RESOURCE_OP_FSTAT, _ctx->fco(), _statbuf );
  
     } // round_robin_file_fstat
 
@@ -584,7 +584,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call< size_t, int >( _ctx->comm(), "lseek", _ctx->fco(), _offset, _whence );
+        return resc->call< size_t, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
     } // round_robin_file_lseek
 
@@ -605,7 +605,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call fsync on the child 
-        return resc->call( _ctx->comm(), "fsync", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_FSYNC, _ctx->fco() );
  
     } // round_robin_file_fsync
 
@@ -626,7 +626,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call mkdir on the child 
-        return resc->call( _ctx->comm(), "mkdir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_MKDIR, _ctx->fco() );
 
     } // round_robin_file_mkdir
 
@@ -648,7 +648,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call chmod on the child 
-        return resc->call( _ctx->comm(), "chmod", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco() );
 
     } // round_robin_file_chmod
 
@@ -669,7 +669,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call rmdir on the child 
-        return resc->call( _ctx->comm(), "rmdir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_RMDIR, _ctx->fco() );
 
     } // round_robin_file_rmdir
 
@@ -690,7 +690,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call opendir on the child 
-        return resc->call( _ctx->comm(), "opendir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPENDIR, _ctx->fco() );
 
     } // round_robin_file_opendir
 
@@ -711,7 +711,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call closedir on the child 
-        return resc->call( _ctx->comm(), "closedir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx->fco() );
 
     } // round_robin_file_closedir
 
@@ -733,7 +733,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call readdir on the child 
-        return resc->call< struct rodsDirent** >( _ctx->comm(), "readdir", _ctx->fco(), _dirent_ptr );
+        return resc->call< struct rodsDirent** >( _ctx->comm(), eirods::RESOURCE_OP_READDIR, _ctx->fco(), _dirent_ptr );
 
     } // round_robin_file_readdir
 
@@ -754,7 +754,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call stage on the child 
-        return resc->call( _ctx->comm(), "stage", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco() );
 
     } // round_robin_file_stage
 
@@ -776,7 +776,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call rename on the child 
-        return resc->call< const char* >( _ctx->comm(), "rename", _ctx->fco(), _new_file_name );
+        return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
     } // round_robin_file_rename
 
@@ -797,7 +797,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call truncate on the child 
-        return resc->call( _ctx->comm(), "truncate", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
 
     } // round_robin_file_truncate
 
@@ -818,7 +818,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call freespace on the child 
-        return resc->call( _ctx->comm(), "freespace", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_FREESPACE, _ctx->fco() );
 
     } // round_robin_file_getfs_freespace
 
@@ -842,7 +842,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call stage on the child 
-        return resc->call< const char* >( _ctx->comm(), "stage", _ctx->fco(), _cache_file_name );
+        return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco(), _cache_file_name );
 
     } // round_robin_file_stage_to_cache
 
@@ -866,7 +866,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call synctoarch on the child 
-        return resc->call< const char* >( _ctx->comm(), "synctoarch", _ctx->fco(), _cache_file_name );
+        return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx->fco(), _cache_file_name );
 
     } // round_robin_file_sync_to_arch
 
@@ -887,7 +887,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call rename on the child 
-        return resc->call( _ctx->comm(), "registered", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_REGISTERED, _ctx->fco() );
 
     } // round_robin_file_registered
  
@@ -908,7 +908,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call rename on the child 
-        return resc->call( _ctx->comm(), "unregistered", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx->fco() );
 
     } // round_robin_file_unregistered
 
@@ -929,7 +929,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call rename on the child 
-        return resc->call( _ctx->comm(), "modified", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_MODIFIED, _ctx->fco() );
 
     } // round_robin_file_modified
 
@@ -992,7 +992,7 @@ extern "C" {
             // forward the redirect call to the child for assertion of the whole operation,
             // there may be more than a leaf beneath us
             return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _ctx->comm(), "redirect", _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
+                               _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
@@ -1021,7 +1021,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // forward the 'put' redirect to the appropriate child
             err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _ctx->comm(), "redirect", _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
+                               _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
             if( !err.ok() ) {
                 return PASSMSG( "round_robin_redirect - forward of put redirect failed", err );
             
@@ -1159,33 +1159,33 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "round_robin_file_create" );
-        resc->add_operation( "open",         "round_robin_file_open" );
-        resc->add_operation( "read",         "round_robin_file_read" );
-        resc->add_operation( "write",        "round_robin_file_write" );
-        resc->add_operation( "close",        "round_robin_file_close" );
-        resc->add_operation( "unlink",       "round_robin_file_unlink" );
-        resc->add_operation( "stat",         "round_robin_file_stat" );
-        resc->add_operation( "fstat",        "round_robin_file_fstat" );
-        resc->add_operation( "fsync",        "round_robin_file_fsync" );
-        resc->add_operation( "mkdir",        "round_robin_file_mkdir" );
-        resc->add_operation( "chmod",        "round_robin_file_chmod" );
-        resc->add_operation( "opendir",      "round_robin_file_opendir" );
-        resc->add_operation( "readdir",      "round_robin_file_readdir" );
-        resc->add_operation( "stage",        "round_robin_file_stage" );
-        resc->add_operation( "rename",       "round_robin_file_rename" );
-        resc->add_operation( "freespace",    "round_robin_file_getfs_freespace" );
-        resc->add_operation( "lseek",        "round_robin_file_lseek" );
-        resc->add_operation( "rmdir",        "round_robin_file_rmdir" );
-        resc->add_operation( "closedir",     "round_robin_file_closedir" );
-        resc->add_operation( "truncate",     "round_robin_file_truncate" );
-        resc->add_operation( "stagetocache", "round_robin_file_stage_to_cache" );
-        resc->add_operation( "synctoarch",   "round_robin_file_sync_to_arch" );
-        resc->add_operation( "registered",   "round_robin_file_registered" );
-        resc->add_operation( "unregistered", "round_robin_file_unregistered" );
-        resc->add_operation( "modified",     "round_robin_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "round_robin_file_create" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "round_robin_file_open" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "round_robin_file_read" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "round_robin_file_write" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "round_robin_file_close" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "round_robin_file_unlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "round_robin_file_stat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "round_robin_file_fstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "round_robin_file_fsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "round_robin_file_mkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "round_robin_file_chmod" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "round_robin_file_opendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "round_robin_file_readdir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "round_robin_file_stage" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "round_robin_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "round_robin_file_getfs_freespace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "round_robin_file_lseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "round_robin_file_rmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "round_robin_file_closedir" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "round_robin_file_truncate" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "round_robin_file_stage_to_cache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "round_robin_file_sync_to_arch" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "round_robin_file_registered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "round_robin_file_unregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "round_robin_file_modified" );
         
-        resc->add_operation( "redirect",     "round_robin_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "round_robin_redirect" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -426,7 +426,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), "registered", _ctx->fco());
+                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_REGISTERED, _ctx->fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -487,7 +487,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "unregistered", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -525,7 +525,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), "modified", _ctx->fco());
+                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_MODIFIED, _ctx->fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -584,7 +584,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "create", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -629,7 +629,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "open", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -668,7 +668,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<void*, int>(_ctx->comm(), "read", _ctx->fco(), _buf, _len);
+                ret = child->call<void*, int>(_ctx->comm(), eirods::RESOURCE_OP_READ, _ctx->fco(), _buf, _len);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -710,7 +710,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<void*, int>(_ctx->comm(), "write", _ctx->fco(), _buf, _len);
+                ret = child->call<void*, int>(_ctx->comm(), eirods::RESOURCE_OP_WRITE, _ctx->fco(), _buf, _len);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -760,7 +760,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), "close", _ctx->fco());
+                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CLOSE, _ctx->fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -826,7 +826,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), "unlink", _ctx->fco());
+                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_UNLINK, _ctx->fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -902,7 +902,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<struct stat*>(_ctx->comm(), "stat", _ctx->fco(), _statbuf);
+                ret = child->call<struct stat*>(_ctx->comm(), eirods::RESOURCE_OP_STAT, _ctx->fco(), _statbuf);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -942,7 +942,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<struct stat*>(_ctx->comm(), "fstat", _ctx->fco(), _statbuf);
+                ret = child->call<struct stat*>(_ctx->comm(), eirods::RESOURCE_OP_FSTAT, _ctx->fco(), _statbuf);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -983,7 +983,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<size_t, int>(_ctx->comm(), "lseek", _ctx->fco(), _offset, _whence);
+                ret = child->call<size_t, int>(_ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1022,7 +1022,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "fsync", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_FSYNC, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1061,7 +1061,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "mkdir", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_MKDIR, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1100,7 +1100,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "chmod", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1139,7 +1139,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "rmdir", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_RMDIR, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1178,7 +1178,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "opendir", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_OPENDIR, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1217,7 +1217,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "closedir", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1257,7 +1257,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<rodsDirent**>(_ctx->comm(), "readdir", _ctx->fco(), _dirent_ptr);
+                ret = child->call<rodsDirent**>(_ctx->comm(), eirods::RESOURCE_OP_READDIR, _ctx->fco(), _dirent_ptr);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1296,7 +1296,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "stage", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1336,7 +1336,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<const char*>(_ctx->comm(), "rename", _ctx->fco(), _new_file_name);
+                ret = child->call<const char*>(_ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1376,7 +1376,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "truncate", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1416,7 +1416,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "freespace", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_FREESPACE, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1458,7 +1458,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), "freespace", _ctx->fco());
+                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_FREESPACE, _ctx->fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1500,7 +1500,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<const char*>(_ctx->comm(), "synctoarch", _ctx->fco(), _cache_file_name);
+                ret = child->call<const char*>(_ctx->comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx->fco(), _cache_file_name);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1556,7 +1556,7 @@ extern "C" {
             eirods::hierarchy_parser parser(_parser);
             eirods::resource_ptr child = it->second.second;
             ret = child->call<const std::string*, const std::string*, eirods::hierarchy_parser*, float*>(
-                _ctx->comm(), "redirect", _ctx->fco(), _operation, _curr_host, &parser, &out_vote);
+                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), _operation, _curr_host, &parser, &out_vote);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -1758,32 +1758,32 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( "create",       "replFileCreate" );
-        resc->add_operation( "open",         "replFileOpen" );
-        resc->add_operation( "read",         "replFileRead" );
-        resc->add_operation( "write",        "replFileWrite" );
-        resc->add_operation( "close",        "replFileClose" );
-        resc->add_operation( "unlink",       "replFileUnlink" );
-        resc->add_operation( "stat",         "replFileStat" );
-        resc->add_operation( "fstat",        "replFileFstat" );
-        resc->add_operation( "fsync",        "replFileFsync" );
-        resc->add_operation( "mkdir",        "replFileMkdir" );
-        resc->add_operation( "chmod",        "replFileChmod" );
-        resc->add_operation( "opendir",      "replFileOpendir" );
-        resc->add_operation( "readdir",      "replFileReaddir" );
-        resc->add_operation( "stage",        "replFileStage" );
-        resc->add_operation( "rename",       "replFileRename" );
-        resc->add_operation( "freespace",    "replFileGetFsFreeSpace" );
-        resc->add_operation( "lseek",        "replFileLseek" );
-        resc->add_operation( "rmdir",        "replFileRmdir" );
-        resc->add_operation( "closedir",     "replFileClosedir" );
-        resc->add_operation( "truncate",     "replFileTruncate" );
-        resc->add_operation( "stagetocache", "replStageToCache" );
-        resc->add_operation( "synctoarch",   "replSyncToArch" );
-        resc->add_operation( "redirect",     "replRedirect" );
-        resc->add_operation( "registered",   "replFileRegistered" );
-        resc->add_operation( "unregistered", "replFileUnregistered" );
-        resc->add_operation( "modified",     "replFileModified" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "replFileCreate" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "replFileOpen" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "replFileRead" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "replFileWrite" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "replFileClose" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "replFileUnlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "replFileStat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "replFileFstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "replFileFsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "replFileMkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "replFileChmod" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "replFileOpendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "replFileReaddir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "replFileStage" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "replFileRename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "replFileGetFsFreeSpace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "replFileLseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "replFileRmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "replFileClosedir" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "replFileTruncate" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "replStageToCache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "replSyncToArch" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "replRedirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "replFileRegistered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "replFileUnregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "replFileModified" );
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -1765,33 +1765,33 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "unix_file_create_plugin" );
-        resc->add_operation( "open",         "unix_file_open_plugin" );
-        resc->add_operation( "read",         "unix_file_read_plugin" );
-        resc->add_operation( "write",        "unix_file_write_plugin" );
-        resc->add_operation( "close",        "unix_file_close_plugin" );
-        resc->add_operation( "unlink",       "unix_file_unlink_plugin" );
-        resc->add_operation( "stat",         "unix_file_stat_plugin" );
-        resc->add_operation( "fstat",        "unix_file_fstat_plugin" );
-        resc->add_operation( "lseek",        "unix_file_lseek_plugin" );
-        resc->add_operation( "fsync",        "unix_file_fsync_plugin" );
-        resc->add_operation( "chmod",        "unix_file_chmod_plugin" );
-        resc->add_operation( "mkdir",        "unix_file_mkdir_plugin" );
-        resc->add_operation( "rmdir",        "unix_file_rmdir_plugin" );
-        resc->add_operation( "opendir",      "unix_file_opendir_plugin" );
-        resc->add_operation( "closedir",     "unix_file_closedir_plugin" );
-        resc->add_operation( "readdir",      "unix_file_readdir_plugin" );
-        resc->add_operation( "stage",        "unix_file_stage_plugin" );
-        resc->add_operation( "rename",       "unix_file_rename_plugin" );
-        resc->add_operation( "truncate",     "unix_file_truncate_plugin" );
-        resc->add_operation( "freespace",    "unix_file_get_fsfreespace_plugin" );
-        resc->add_operation( "stagetocache", "unix_file_stagetocache_plugin" );
-        resc->add_operation( "synctoarch",   "unix_file_synctoarch_plugin" );
-        resc->add_operation( "registered",   "unix_file_registered_plugin" );
-        resc->add_operation( "unregistered", "unix_file_unregistered_plugin" );
-        resc->add_operation( "modified",     "unix_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "unix_file_create_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "unix_file_open_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "unix_file_read_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "unix_file_write_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "unix_file_close_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "unix_file_unlink_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "unix_file_stat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "unix_file_fstat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "unix_file_lseek_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "unix_file_fsync_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "unix_file_chmod_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "unix_file_mkdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "unix_file_rmdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "unix_file_opendir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "unix_file_closedir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "unix_file_readdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "unix_file_stage_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "unix_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "unix_file_truncate_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "unix_file_get_fsfreespace_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "unix_file_stagetocache_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "unix_file_synctoarch_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "unix_file_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "unix_file_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "unix_file_modified_plugin" );
         
-        resc->add_operation( "redirect",     "unix_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "unix_file_redirect_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

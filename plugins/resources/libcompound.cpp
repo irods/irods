@@ -400,7 +400,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "create", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco() );
 
     } // compound_file_create
 
@@ -425,7 +425,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "open", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco() );
 
     } // compound_file_open
 
@@ -452,7 +452,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< void*, int >( _ctx->comm(), "read", _ctx->fco(), _buf, _len );
+        return resc->call< void*, int >( _ctx->comm(), eirods::RESOURCE_OP_READ, _ctx->fco(), _buf, _len );
 
     } // compound_file_read
 
@@ -479,7 +479,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< void*, int >( _ctx->comm(), "write", _ctx->fco(), _buf, _len );
+        return resc->call< void*, int >( _ctx->comm(), eirods::RESOURCE_OP_WRITE, _ctx->fco(), _buf, _len );
  
     } // compound_file_write
 
@@ -504,7 +504,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        ret = resc->call( _ctx->comm(), "close", _ctx->fco() );
+        ret = resc->call( _ctx->comm(), eirods::RESOURCE_OP_CLOSE, _ctx->fco() );
         if( ret.ok() ) {
             // =-=-=-=-=-=-=-
             // if all went well check to see if we need to sync to arch
@@ -552,7 +552,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "unlink", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_UNLINK, _ctx->fco() );
 
     } // compound_file_unlink
 
@@ -578,7 +578,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< struct stat* >( _ctx->comm(), "stat", _ctx->fco(), _statbuf );
+        return resc->call< struct stat* >( _ctx->comm(), eirods::RESOURCE_OP_STAT, _ctx->fco(), _statbuf );
 
     } // compound_file_stat
 
@@ -604,7 +604,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< struct stat* >( _ctx->comm(), "fstat", _ctx->fco(), _statbuf );
+        return resc->call< struct stat* >( _ctx->comm(), eirods::RESOURCE_OP_FSTAT, _ctx->fco(), _statbuf );
  
     } // compound_file_fstat
 
@@ -631,7 +631,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< size_t, int >( _ctx->comm(), "lseek", _ctx->fco(), _offset, _whence );
+        return resc->call< size_t, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
     } // compound_file_lseek
 
@@ -656,7 +656,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "fsync", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_FSYNC, _ctx->fco() );
  
     } // compound_file_fsync
 
@@ -681,7 +681,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "chmod", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco() );
 
     } // compound_file_chmod
 
@@ -706,7 +706,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "mkdir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_MKDIR, _ctx->fco() );
 
     } // compound_file_mkdir
 
@@ -731,7 +731,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "rmdir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_RMDIR, _ctx->fco() );
 
     } // compound_file_rmdir
 
@@ -756,7 +756,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "opendir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPENDIR, _ctx->fco() );
 
     } // compound_file_opendir
 
@@ -781,7 +781,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "closedir", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx->fco() );
 
     } // compound_file_closedir
 
@@ -807,7 +807,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< struct rodsDirent** >( _ctx->comm(), "readdir", _ctx->fco(), _dirent_ptr );
+        return resc->call< struct rodsDirent** >( _ctx->comm(), eirods::RESOURCE_OP_READDIR, _ctx->fco(), _dirent_ptr );
 
     } // compound_file_readdir
 
@@ -841,7 +841,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call<const char*>( _ctx->comm(), "rename", _ctx->fco(), _new_file_name );
+        return resc->call<const char*>( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
     } // compound_file_rename
 
@@ -866,7 +866,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), "truncate", _ctx->fco() );
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
 
     } // compound_file_truncate
 
@@ -904,7 +904,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call to the archive
-        return resc->call< const char* >( _ctx->comm(), "stagetocache", _ctx->fco(), _cache_file_name );
+        return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx->fco(), _cache_file_name );
 
     } // compound_file_stage_to_cache
 
@@ -933,7 +933,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call to the archive
-        return resc->call< const char* >( _ctx->comm(), "synctoarch", _ctx->fco(), _cache_file_name );
+        return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx->fco(), _cache_file_name );
 
     } // compound_file_sync_to_arch
 
@@ -1034,7 +1034,7 @@ extern "C" {
         // ask the cache if it is willing to accept a new file, politely
         ret = resc->call< const std::string*, const std::string*, 
                           eirods::hierarchy_parser*, float* >( 
-                          _ctx->comm(), "redirect", _ctx->fco(), 
+                          _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
                           &eirods::EIRODS_CREATE_OPERATION, _curr_host, 
                           _out_parser, _out_vote );
         return ret;
@@ -1074,7 +1074,7 @@ extern "C" {
         eirods::hierarchy_parser cache_check_parser = (*_out_parser);
         ret = cache_resc->call< const std::string*, const std::string*, 
                                 eirods::hierarchy_parser*, float* >( 
-                                _ctx->comm(), "redirect", _ctx->fco(), 
+                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
                                 &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
                                 &cache_check_parser, &cache_check_vote );
         // =-=-=-=-=-=-=-
@@ -1091,7 +1091,7 @@ extern "C" {
         // from the resouce hierarchy
         ret = cache_resc->call< const std::string*, const std::string*, 
                                 eirods::hierarchy_parser*, float* >( 
-                                _ctx->comm(), "redirect", _ctx->fco(), 
+                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
                                 &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
                                 _out_parser, _out_vote );
         if( !ret.ok() ) {
@@ -1135,7 +1135,7 @@ extern "C" {
         eirods::hierarchy_parser cache_check_parser = (*_out_parser);
         ret = cache_resc->call< const std::string*, const std::string*, 
                                 eirods::hierarchy_parser*, float* >( 
-                                _ctx->comm(), "redirect", _ctx->fco(), 
+                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
                                 &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
                                 &cache_check_parser, &cache_check_vote );
         // =-=-=-=-=-=-=-
@@ -1151,7 +1151,7 @@ extern "C" {
             // from the resouce hierarchy
             ret = cache_resc->call< const std::string*, const std::string*, 
                                     eirods::hierarchy_parser*, float* >( 
-                                    _ctx->comm(), "redirect", _ctx->fco(), 
+                                    _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
                                     &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
                                     _out_parser, _out_vote );
             if( !ret.ok() ) {
@@ -1363,33 +1363,33 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "compound_file_create" );
-        resc->add_operation( "open",         "compound_file_open" );
-        resc->add_operation( "read",         "compound_file_read" );
-        resc->add_operation( "write",        "compound_file_write" );
-        resc->add_operation( "close",        "compound_file_close" );
-        resc->add_operation( "unlink",       "compound_file_unlink" );
-        resc->add_operation( "stat",         "compound_file_stat" );
-        resc->add_operation( "fstat",        "compound_file_fstat" );
-        resc->add_operation( "fsync",        "compound_file_fsync" );
-        resc->add_operation( "mkdir",        "compound_file_mkdir" );
-        resc->add_operation( "chmod",        "compound_file_chmod" );
-        resc->add_operation( "opendir",      "compound_file_opendir" );
-        resc->add_operation( "readdir",      "compound_file_readdir" );
-        resc->add_operation( "stage",        "compound_file_stage" );
-        resc->add_operation( "rename",       "compound_file_rename" );
-        resc->add_operation( "freespace",    "compound_file_getfs_freespace" );
-        resc->add_operation( "lseek",        "compound_file_lseek" );
-        resc->add_operation( "rmdir",        "compound_file_rmdir" );
-        resc->add_operation( "closedir",     "compound_file_closedir" );
-        resc->add_operation( "truncate",     "compound_file_truncate" );
-        resc->add_operation( "stagetocache", "compound_file_stage_to_cache" );
-        resc->add_operation( "synctoarch",   "compound_file_sync_to_arch" );
-        resc->add_operation( "registered",   "compound_file_registered" );
-        resc->add_operation( "unregistered", "compound_file_unregistered" );
-        resc->add_operation( "modified",     "compound_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "compound_file_create" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "compound_file_open" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "compound_file_read" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "compound_file_write" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "compound_file_close" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "compound_file_unlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "compound_file_stat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "compound_file_fstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "compound_file_fsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "compound_file_mkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "compound_file_chmod" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "compound_file_opendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "compound_file_readdir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "compound_file_stage" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "compound_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "compound_file_getfs_freespace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "compound_file_lseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "compound_file_rmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "compound_file_closedir" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "compound_file_stage_to_cache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "compound_file_sync_to_arch" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "compound_file_registered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "compound_file_unregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "compound_file_modified" );
 
-        resc->add_operation( "redirect",     "compound_file_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "compound_file_redirect" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

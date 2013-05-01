@@ -998,33 +998,33 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "univ_mss_file_create" );
-        resc->add_operation( "open",         "univ_mss_file_open" );
-        resc->add_operation( "read",         "univ_mss_file_read" );
-        resc->add_operation( "write",        "univ_mss_file_write" );
-        resc->add_operation( "close",        "univ_mss_file_close" );
-        resc->add_operation( "unlink",       "univ_mss_file_unlink" );
-        resc->add_operation( "stat",         "univ_mss_file_stat" );
-        resc->add_operation( "fstat",        "univ_mss_file_fstat" );
-        resc->add_operation( "fsync",        "univ_mss_file_fsync" );
-        resc->add_operation( "mkdir",        "univ_mss_file_mkdir" );
-        resc->add_operation( "chmod",        "univ_mss_file_chmod" );
-        resc->add_operation( "opendir",      "univ_mss_file_opendir" );
-        resc->add_operation( "readdir",      "univ_mss_file_readdir" );
-        resc->add_operation( "stage",        "univ_mss_file_stage" );
-        resc->add_operation( "rename",       "univ_mss_file_rename" );
-        resc->add_operation( "freespace",    "univ_mss_file_getfs_freespace" );
-        resc->add_operation( "lseek",        "univ_mss_file_lseek" );
-        resc->add_operation( "rmdir",        "univ_mss_file_rmdir" );
-        resc->add_operation( "closedir",     "univ_mss_file_closedir" );
-        resc->add_operation( "truncate",     "univ_mss_file_truncate" );
-        resc->add_operation( "stagetocache", "univ_mss_file_stage_to_cache" );
-        resc->add_operation( "synctoarch",   "univ_mss_file_sync_to_arch" );
-        resc->add_operation( "registered",   "univ_mss_file_registered_plugin" );
-        resc->add_operation( "unregistered", "univ_mss_file_unregistered_plugin" );
-        resc->add_operation( "modified",     "univ_mss_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "univ_mss_file_create" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "univ_mss_file_open" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "univ_mss_file_read" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "univ_mss_file_write" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "univ_mss_file_close" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "univ_mss_file_unlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "univ_mss_file_stat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "univ_mss_file_fstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "univ_mss_file_fsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "univ_mss_file_mkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "univ_mss_file_chmod" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "univ_mss_file_opendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "univ_mss_file_readdir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "univ_mss_file_stage" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "univ_mss_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "univ_mss_file_getfs_freespace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "univ_mss_file_lseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "univ_mss_file_rmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "univ_mss_file_closedir" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "univ_mss_file_truncate" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "univ_mss_file_stage_to_cache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "univ_mss_file_sync_to_arch" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "univ_mss_file_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "univ_mss_file_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "univ_mss_file_modified_plugin" );
         
-        resc->add_operation( "redirect",     "univ_mss_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "univ_mss_redirect" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

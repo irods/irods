@@ -196,7 +196,7 @@ namespace eirods {
             hierarchy_parser parser;
             float            vote = 0.0;
             error err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                              _comm, "redirect", file_obj, &oper, &host_name, &parser, &vote );
+                              _comm, eirods::RESOURCE_OP_RESOLVE_RESC_HIER, file_obj, &oper, &host_name, &parser, &vote );
             
             // =-=-=-=-=-=-=-
             // extract the hier string from the parser, politely.

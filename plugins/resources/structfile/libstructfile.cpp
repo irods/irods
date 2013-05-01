@@ -2451,31 +2451,31 @@ extern "C" {
         // 4b2. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "tar_file_create_plugin" );
-        resc->add_operation( "open",         "tar_file_open_plugin" );
-        resc->add_operation( "read",         "tar_file_read_plugin" );
-        resc->add_operation( "write",        "tar_file_write_plugin" );
-        resc->add_operation( "close",        "tar_file_close_plugin" );
-        resc->add_operation( "unlink",       "tar_file_unlink_plugin" );
-        resc->add_operation( "stat",         "tar_file_stat_plugin" );
-        resc->add_operation( "fstat",        "tar_file_fstat_plugin" );
-        resc->add_operation( "lseek",        "tar_file_lseek_plugin" );
-        resc->add_operation( "fsync",        "tar_file_fsync_plugin" );
-        resc->add_operation( "mkdir",        "tar_file_mkdir_plugin" );
-        resc->add_operation( "chmod",        "tar_file_chmod_plugin" );
-        resc->add_operation( "rmdir",        "tar_file_rmdir_plugin" );
-        resc->add_operation( "opendir",      "tar_file_opendir_plugin" );
-        resc->add_operation( "closedir",     "tar_file_closedir_plugin" );
-        resc->add_operation( "readdir",      "tar_file_readdir_plugin" );
-        resc->add_operation( "stage",        "tar_file_stage_plugin" );
-        resc->add_operation( "rename",       "tar_file_rename_plugin" );
-        resc->add_operation( "truncate",     "tar_file_truncate_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "tar_file_create_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "tar_file_open_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "tar_file_read_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "tar_file_write_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "tar_file_close_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "tar_file_unlink_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "tar_file_stat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "tar_file_fstat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "tar_file_lseek_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "tar_file_fsync_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "tar_file_mkdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "tar_file_chmod_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "tar_file_rmdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "tar_file_opendir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "tar_file_closedir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "tar_file_readdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "tar_file_stage_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "tar_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "tar_file_truncate_plugin" );
         resc->add_operation( "extract",      "tar_file_extract_plugin" );
         resc->add_operation( "sync",         "tar_file_sync_plugin" );
-        resc->add_operation( "freespace",    "tar_file_getfsfreespace_plugin" );
-        resc->add_operation( "registered",   "tar_file_registered_plugin" );
-        resc->add_operation( "unregistered", "tar_file_unregistered_plugin" );
-        resc->add_operation( "modified",     "tar_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "tar_file_getfsfreespace_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "tar_file_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "tar_file_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "tar_file_modified_plugin" );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an
