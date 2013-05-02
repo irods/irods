@@ -241,6 +241,58 @@ extern "C" {
     } // get_cache
 
     // =-=-=-=-=-=-=-
+    /// @brief helper function to get the next child in the hier string
+    ///        for use when forwarding an operation
+    eirods::error get_next_child( 
+        eirods::resource_operation_context* _ctx,
+        eirods::resource_ptr&               _resc ) {
+        // =-=-=-=-=-=-=-
+        // check the context for validity
+        eirods::error ret = compound_check_param(_ctx);
+        if(!ret.ok()) {
+            return PASSMSG( "invalid resource context", ret);
+        }
+        // =-=-=-=-=-=-=-
+        // get the resource name
+        std::string name;
+        ret = _ctx->prop_map().get< std::string >( "name", name );
+        if( !ret.ok() ) {
+            PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the resource after this resource
+        eirods::hierarchy_parser parser;
+        parser.set_string( _ctx->fco().resc_hier() );
+ 
+        std::string child;
+        ret = parser.next( name, child );
+        if( !ret.ok() ) {
+            PASS( ret );
+        }
+        
+        // =-=-=-=-=-=-=-
+        // extract the next resource from the child map
+        if( _ctx->child_map().has_entry( child ) ) {
+            std::pair< std::string, eirods::resource_ptr > resc_pair;
+            ret = _ctx->child_map().get( child, resc_pair );
+            if( !ret.ok() ) {
+                return PASS( ret ); 
+            } else {
+                _resc = resc_pair.second;
+                return SUCCESS();
+            }
+            
+        } else {
+            std::stringstream msg;
+            msg << "child not found [" << child << "]";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+
+        }
+
+    } // get_next_child
+
+    // =-=-=-=-=-=-=-
     /// @brief helper function to get the archive resource 
     eirods::error get_archive( 
         eirods::resource_operation_context* _ctx,
@@ -391,9 +443,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -416,7 +468,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the cache resource
         eirods::resource_ptr resc;
         ret = get_cache( _ctx, resc );
         if( !ret.ok() ) {
@@ -443,7 +495,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the cache resource
         eirods::resource_ptr resc;
         ret = get_cache( _ctx, resc );
         if( !ret.ok() ) {
@@ -470,7 +522,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the cache resource
         eirods::resource_ptr resc;
         ret = get_cache( _ctx, resc );
         if( !ret.ok() ) {
@@ -495,7 +547,7 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the cache resource
         eirods::resource_ptr resc;
         ret = get_cache( _ctx, resc );
         if( !ret.ok() ) {
@@ -543,9 +595,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -569,9 +621,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -595,9 +647,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -622,9 +674,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -647,9 +699,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -672,9 +724,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -697,9 +749,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -722,9 +774,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -747,9 +799,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -772,9 +824,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -798,9 +850,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -832,9 +884,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -857,9 +909,9 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // get the cache child resource
+        // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
+        ret = get_next_child( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -972,9 +1024,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     eirods::error compound_file_modified(
-        eirods::resource_operation_context* _ctx) {
+        eirods::resource_operation_context* _ctx ) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid resource context";
@@ -1138,6 +1190,7 @@ extern "C" {
                                 _ctx->comm(), "redirect", _ctx->fco(), 
                                 &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
                                 &cache_check_parser, &cache_check_vote );
+
         // =-=-=-=-=-=-=-
         // if the vote is 0 then the cache doesnt have it so it will need be staged
         if( 0.0 == cache_check_vote ) {

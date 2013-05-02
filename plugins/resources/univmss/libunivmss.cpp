@@ -496,8 +496,25 @@ extern "C" {
         eirods::first_class_object& fco = _ctx->fco();
         std::string filename = fco.physical_path();
 
+        // =-=-=-=-=-=-=-
+        // first create the directory name
+        char  dirname[MAX_NAME_LEN] = "";
+        const char* lastpart = strrchr( _new_file_name, '/');
+        int   lenDir   = strlen( _new_file_name ) - strlen( lastpart );
+        strncpy( dirname, _new_file_name, lenDir );
+        
+        // =-=-=-=-=-=-=-
+        // create a context to call the mkdir operation
+        eirods::collection_object coll_obj( dirname, fco.mode(), 0 );
+        eirods::resource_operation_context context( _ctx->comm(), 
+                                                    _ctx->prop_map(), 
+                                                    _ctx->child_map(), 
+                                                    coll_obj, "" );
+        // =-=-=-=-=-=-=-
+        // create the directory on the MSS
+        int status = 0;
+        err = univ_mss_file_mkdir( &context );
 
-        int status;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         execCmdOut_t *execCmdOut = NULL;
@@ -648,49 +665,52 @@ extern "C" {
         // create the directory on the MSS
         int status = 0;
         err = univ_mss_file_mkdir( &context );
-        if ( err.ok() ) {
-            execCmdOut_t* execCmdOut = NULL;
-            char  cmdArgv[HUGE_NAME_LEN] = "";
         
-            execCmd_t execCmdInp;
-            bzero (&execCmdInp, sizeof (execCmdInp));
+        execCmdOut_t* execCmdOut = NULL;
+        char  cmdArgv[HUGE_NAME_LEN] = "";
+    
+        execCmd_t execCmdInp;
+        bzero (&execCmdInp, sizeof (execCmdInp));
 
-            // =-=-=-=-=-=-=-
-            // get the script property
-            std::string script;
-            err = _ctx->prop_map().get< std::string >( "script", script );
+        // =-=-=-=-=-=-=-
+        // get the script property
+        std::string script;
+        err = _ctx->prop_map().get< std::string >( "script", script );
+        if( !err.ok() ) {
+            return PASSMSG( __FUNCTION__, err );
+        }
+
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat(cmdArgv, "syncToArch");
+        strcat(cmdArgv, " ");
+        strcat(cmdArgv, _cache_file_name);
+        strcat(cmdArgv, " ");
+        strcat(cmdArgv, filename.c_str() );
+        strcat(cmdArgv, "");
+
+        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
+        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+        status = _rsExecCmd( _ctx->comm(), &execCmdInp, &execCmdOut );
+        if ( status == 0 ) {
+            err = univ_mss_file_chmod( _ctx );
             if( !err.ok() ) {
-                return PASSMSG( __FUNCTION__, err );
-            }
-
-            rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-            strcat(cmdArgv, "syncToArch");
-            strcat(cmdArgv, " '");
-            strcat(cmdArgv, _cache_file_name);
-            strcat(cmdArgv, "' '");
-            strcat(cmdArgv, filename.c_str() );
-            strcat(cmdArgv, "'");
-            rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-            rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
-            status = _rsExecCmd( _ctx->comm(), &execCmdInp, &execCmdOut );
-            if ( status == 0 ) {
-                err = univ_mss_file_chmod( _ctx );
-                if( !err.ok() ) {
-                    PASSMSG( "univ_mss_file_sync_to_arch - failed.", err );
-                }
-            } else {
-                status = UNIV_MSS_SYNCTOARCH_ERR - errno;
-                std::stringstream msg;
-                msg << "univ_mss_file_sync_to_arch: copy of [";
-                msg << _cache_file_name;
-                msg << "] to [";
-                msg << filename;
-                msg << "] failed.";
-                return ERROR( status, msg.str() );       
+                PASSMSG( "univ_mss_file_sync_to_arch - failed.", err );
             }
         } else {
-            return PASSMSG( "sync to arch failed", err );
-
+            status = UNIV_MSS_SYNCTOARCH_ERR - errno;
+            std::stringstream msg;
+            msg << "univ_mss_file_sync_to_arch: copy of [";
+            msg << _cache_file_name;
+            msg << "] to [";
+            msg << filename;
+            msg << "] failed.";
+            msg << "   stdout buff [";
+            msg << execCmdOut->stdoutBuf.buf;
+            msg << "]   stderr buff [";
+            msg << execCmdOut->stderrBuf.buf;
+            msg << "]  status [";
+            msg << execCmdOut->status << "]";
+            return ERROR( status, msg.str() );       
         }
 
         return CODE( status );
@@ -959,8 +979,19 @@ extern "C" {
     class univ_mss_resource : public eirods::resource {
     public:
         univ_mss_resource( const std::string& _inst_name, 
-                             const std::string& _context ) : 
+                           const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
+            
+            // =-=-=-=-=-=-=-
+            // check the context string for inappropriate path behavior
+            if( context_.find( "/" ) != std::string::npos ) {
+                std::stringstream msg;
+                msg << "univmss resource :: the path [";
+                msg << context_;
+                msg << "] should be a single file name which should reside in iRODS/server/bin/cmd/";
+                rodsLog( LOG_ERROR, "[%s]", msg.str().c_str() );
+            }
+
             // =-=-=-=-=-=-=-
             // assign context string as the univ mss script to call
             properties_.set< std::string >( "script", context_ );
@@ -1024,7 +1055,7 @@ extern "C" {
         resc->add_operation( "unregistered", "univ_mss_file_unregistered_plugin" );
         resc->add_operation( "modified",     "univ_mss_file_modified_plugin" );
         
-        resc->add_operation( "redirect",     "univ_mss_redirect" );
+        resc->add_operation( "redirect",     "univ_mss_file_redirect_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -75,7 +75,6 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
 char* stage_kw = getValByKey( &dataObjInp->condInput, STAGE_OBJ_KW );
 char* sync_kw  = getValByKey( &dataObjInp->condInput, SYNC_OBJ_KW );
-rodsLog( LOG_NOTICE, "XXXX - [%s] stage_kw [%s], sync_kw [%s]", __FUNCTION__, stage_kw, sync_kw );
 
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
         /* To SU, cannot be called by normal user directly */ 
@@ -188,9 +187,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         accessPerm = ACCESS_READ_OBJECT;
     }
 
-char* stage_kw = getValByKey( &dataObjInp->condInput, STAGE_OBJ_KW );
-char* sync_kw  = getValByKey( &dataObjInp->condInput, SYNC_OBJ_KW );
-rodsLog( LOG_NOTICE, "XXXX - [%s] stage_kw [%s], sync_kw [%s]", __FUNCTION__, stage_kw, sync_kw );
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
@@ -818,6 +814,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
 
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
+//        rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
         addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
@@ -837,7 +834,7 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         else if (srcRescClass == COMPOUND_CL) {
             L1desc[destL1descInx].stageFlag = STAGE_SRC;
         }
-#endif // JMC - legacy resource
+#else // JMC - legacy resource
 
         // =-=-=-=-=-=-=-
         // reproduce the stage / sync behavior using keywords rather
@@ -845,17 +842,15 @@ _rsDataObjReplNewCopy (rsComm_t *rsComm,
         char* stage_kw = getValByKey( &dataObjInp->condInput, STAGE_OBJ_KW );
         char* sync_kw  = getValByKey( &dataObjInp->condInput, SYNC_OBJ_KW );
         if( stage_kw ) {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: STAGING!!!!!!" );
             L1desc[destL1descInx].stageFlag = STAGE_SRC;
         } else if( sync_kw ) {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: SYNCING!!!!!!" );
             L1desc[destL1descInx].stageFlag = SYNC_DEST;
         } else {
-rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: NO KEYWORD SET" );
 
 
         }
 
+#endif // JMC - legacy resource
 
 
 
@@ -874,7 +869,7 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: NO KEYWORD SET" );
             if (updateFlag > 0) {
                 status = dataOpen (rsComm, destL1descInx);
             } else {
-                status = getFilePathName (rsComm, myDestDataObjInfo,L1desc[destL1descInx].dataObjInp);
+                status = getFilePathName (rsComm, myDestDataObjInfo, L1desc[destL1descInx].dataObjInp);
                 if (status >= 0) 
                     status = dataCreate (rsComm, destL1descInx);
             }
@@ -1196,8 +1191,9 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: NO KEYWORD SET" );
                     status = chkOrphanFile ( rsComm, destDataObjInfo->filePath, destDataObjInfo->rescName, &tmpDataObjInfo );
                     if (status == 0 && tmpDataObjInfo.dataId != destDataObjInfo->dataId) {
                         /* someone is using it */
-                        snprintf (destDataObjInfo->filePath, MAX_NAME_LEN, 
-                                  "%s.%-d", destDataObjInfo->filePath, (int) random());
+                        char tmp_str[ MAX_NAME_LEN ];
+                        snprintf( tmp_str, MAX_NAME_LEN, "%s.%-d", destDataObjInfo->filePath, (int) random());
+                        strncpy( destDataObjInfo->filePath, tmp_str, MAX_NAME_LEN );
                     }
                 }
 
@@ -1285,8 +1281,6 @@ rodsLog( LOG_NOTICE, "XXXX - dataObjOpenForRepl :: NO KEYWORD SET" );
                 file_stage.dataSize      = srcDataObjInfo->dataSize;
                 file_stage.fileType      = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
                 file_stage.cacheFileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[cacheRescTypeInx].driverType;
-                rodsLog( LOG_NOTICE, "XXXX - _l3FileStage :: src hier [%s], dst hier [%s]",
-                srcDataObjInfo->rescHier, destDataObjInfo->rescHier );
                  
                 rstrcpy( file_stage.addr.hostAddr,  
                          destDataObjInfo->rescInfo->rescLoc, NAME_LEN );
