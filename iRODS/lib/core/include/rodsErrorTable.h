@@ -609,6 +609,8 @@
 #define EIRODS_INVALID_LOCATION           -1870000
 #define EIRODS_PLUGIN_ERROR               -1880000
 #define EIRODS_INVALID_RESC_CHILD_CONTEXT -1890000
+#define EIRODS_INVALID_FILE_OBJECT        -1900000
+#define EIRODS_INVALID_OPERATION          -1910000
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996

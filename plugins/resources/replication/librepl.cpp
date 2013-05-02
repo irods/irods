@@ -1647,6 +1647,33 @@ extern "C" {
         return result;
     }
 
+    /// @brief Make sure the requested operation on the requested file object is valid
+    eirods::error replValidOperation(
+        eirods::resource_operation_context* _ctx)
+    {
+        eirods::error result = SUCCESS();
+        eirods::first_class_object fco = _ctx->fco();
+
+        // cast the first class object to a file object
+        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+        if(object == NULL) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Invalid first class object.";
+            result = ERROR(EIRODS_INVALID_FILE_OBJECT, msg.str());
+        }
+
+        // if the file object has a requested replica then fail since that circumvents the coordinating nodes management.
+        else if(object->repl_requested() >= 0) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Requesting replica: " << object->repl_requested();
+            msg << "\tCannot request specific replicas from replicating resource.";
+            result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
+        }
+        return result;
+    }
+    
     /// @brief Determines which child should be used for the specified operation
     eirods::error replRedirect(
         eirods::resource_operation_context* _ctx,
@@ -1659,9 +1686,17 @@ extern "C" {
         eirods::error ret;
         eirods::hierarchy_parser parser = *_inout_parser;
         redirect_map_t redirect_map;
+
+        // Make sure this is a valid repl operation.
+        if(!(ret = replValidOperation(_ctx)).ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Invalid operation on replicating resource.";
+            result = PASSMSG(msg.str(), ret);
+        }
         
         // add ourselves to the hierarchy parser
-        if(!(ret = replAddSelfToHierarchy(_ctx, parser)).ok()) {
+        else if(!(ret = replAddSelfToHierarchy(_ctx, parser)).ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed to add ourselves to the resource hierarchy.";
