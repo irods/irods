@@ -473,7 +473,7 @@ sub runCmd {
     my $thescriptname = basename($0);
     chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
-    print THERODSLOG " --- $thescriptname [$cmd] --- \n";
+    print THERODSLOG " --- $thescriptname $ntests [$cmd] --- \n";
     close THERODSLOG;
 
     if ( $debug ) { print( "DEBUG: input to runCMd: $cmd, $testtype, $stringToCheck, $expResult.\n" ); }
