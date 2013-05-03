@@ -1628,33 +1628,33 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "hpss_file_create_plugin" );
-        resc->add_operation( "open",         "hpss_file_open_plugin" );
-        resc->add_operation( "read",         "hpss_file_read_plugin" );
-        resc->add_operation( "write",        "hpss_file_write_plugin" );
-        resc->add_operation( "close",        "hpss_file_close_plugin" );
-        resc->add_operation( "unlink",       "hpss_file_unlink_plugin" );
-        resc->add_operation( "stat",         "hpss_file_stat_plugin" );
-        resc->add_operation( "fstat",        "hpss_file_fstat_plugin" );
-        resc->add_operation( "lseek",        "hpss_file_lseek_plugin" );
-        resc->add_operation( "fsync",        "hpss_file_fsync_plugin" );
-        resc->add_operation( "chmod",        "hpss_file_chmod_plugin" );
-        resc->add_operation( "mkdir",        "hpss_file_mkdir_plugin" );
-        resc->add_operation( "rmdir",        "hpss_file_rmdir_plugin" );
-        resc->add_operation( "opendir",      "hpss_file_opendir_plugin" );
-        resc->add_operation( "closedir",     "hpss_file_closedir_plugin" );
-        resc->add_operation( "readdir",      "hpss_file_readdir_plugin" );
-        resc->add_operation( "stage",        "hpss_file_stage_plugin" );
-        resc->add_operation( "rename",       "hpss_file_rename_plugin" );
-        resc->add_operation( "truncate",     "hpss_file_truncate_plugin" );
-        resc->add_operation( "freespace",    "hpss_file_get_fsfreespace_plugin" );
-        resc->add_operation( "stagetocache", "hpss_file_stagetocache_plugin" );
-        resc->add_operation( "synctoarch",   "hpss_file_synctoarch_plugin" );
-        resc->add_operation( "registered",   "hpss_file_registered_plugin" );
-        resc->add_operation( "unregistered", "hpss_file_unregistered_plugin" );
-        resc->add_operation( "modified",     "hpss_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "hpss_file_create_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "hpss_file_open_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "hpss_file_read_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "hpss_file_write_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "hpss_file_close_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "hpss_file_unlink_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "hpss_file_stat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "hpss_file_fstat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "hpss_file_lseek_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "hpss_file_fsync_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "hpss_file_chmod_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "hpss_file_mkdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "hpss_file_rmdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "hpss_file_opendir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "hpss_file_closedir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "hpss_file_readdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "hpss_file_stage_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "hpss_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "hpss_file_truncate_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "hpss_file_get_fsfreespace_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "hpss_file_stagetocache_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "hpss_file_synctoarch_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "hpss_file_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "hpss_file_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "hpss_file_modified_plugin" );
 
-        resc->add_operation( "redirect",     "hpss_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "hpss_file_redirect_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

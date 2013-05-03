@@ -209,7 +209,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
     if( !resc_hier_ptr ) {
         rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is NULL" );
     } else {
-        rodsLog( LOG_NOTICE, "_rsStructFileBundle :: RESC_HIER_STR_KW is [%s]", resc_hier_ptr );
         addKeyVal( &chkObjPermAndStatInp.condInput, RESC_HIER_STR_KW, resc_hier_ptr );
         resc_hier = resc_hier_ptr;
     }

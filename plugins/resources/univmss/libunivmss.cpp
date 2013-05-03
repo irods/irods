@@ -496,8 +496,25 @@ extern "C" {
         eirods::first_class_object& fco = _ctx->fco();
         std::string filename = fco.physical_path();
 
+        // =-=-=-=-=-=-=-
+        // first create the directory name
+        char  dirname[MAX_NAME_LEN] = "";
+        const char* lastpart = strrchr( _new_file_name, '/');
+        int   lenDir   = strlen( _new_file_name ) - strlen( lastpart );
+        strncpy( dirname, _new_file_name, lenDir );
+        
+        // =-=-=-=-=-=-=-
+        // create a context to call the mkdir operation
+        eirods::collection_object coll_obj( dirname, fco.mode(), 0 );
+        eirods::resource_operation_context context( _ctx->comm(), 
+                                                    _ctx->prop_map(), 
+                                                    _ctx->child_map(), 
+                                                    coll_obj, "" );
+        // =-=-=-=-=-=-=-
+        // create the directory on the MSS
+        int status = 0;
+        err = univ_mss_file_mkdir( &context );
 
-        int status;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
         execCmdOut_t *execCmdOut = NULL;
@@ -648,49 +665,52 @@ extern "C" {
         // create the directory on the MSS
         int status = 0;
         err = univ_mss_file_mkdir( &context );
-        if ( err.ok() ) {
-            execCmdOut_t* execCmdOut = NULL;
-            char  cmdArgv[HUGE_NAME_LEN] = "";
         
-            execCmd_t execCmdInp;
-            bzero (&execCmdInp, sizeof (execCmdInp));
+        execCmdOut_t* execCmdOut = NULL;
+        char  cmdArgv[HUGE_NAME_LEN] = "";
+    
+        execCmd_t execCmdInp;
+        bzero (&execCmdInp, sizeof (execCmdInp));
 
-            // =-=-=-=-=-=-=-
-            // get the script property
-            std::string script;
-            err = _ctx->prop_map().get< std::string >( "script", script );
+        // =-=-=-=-=-=-=-
+        // get the script property
+        std::string script;
+        err = _ctx->prop_map().get< std::string >( "script", script );
+        if( !err.ok() ) {
+            return PASSMSG( __FUNCTION__, err );
+        }
+
+        rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
+        strcat(cmdArgv, "syncToArch");
+        strcat(cmdArgv, " ");
+        strcat(cmdArgv, _cache_file_name);
+        strcat(cmdArgv, " ");
+        strcat(cmdArgv, filename.c_str() );
+        strcat(cmdArgv, "");
+
+        rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
+        rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+        status = _rsExecCmd( _ctx->comm(), &execCmdInp, &execCmdOut );
+        if ( status == 0 ) {
+            err = univ_mss_file_chmod( _ctx );
             if( !err.ok() ) {
-                return PASSMSG( __FUNCTION__, err );
-            }
-
-            rstrcpy( execCmdInp.cmd, script.c_str(), LONG_NAME_LEN );
-            strcat(cmdArgv, "syncToArch");
-            strcat(cmdArgv, " '");
-            strcat(cmdArgv, _cache_file_name);
-            strcat(cmdArgv, "' '");
-            strcat(cmdArgv, filename.c_str() );
-            strcat(cmdArgv, "'");
-            rstrcpy(execCmdInp.cmdArgv, cmdArgv, HUGE_NAME_LEN);
-            rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
-            status = _rsExecCmd( _ctx->comm(), &execCmdInp, &execCmdOut );
-            if ( status == 0 ) {
-                err = univ_mss_file_chmod( _ctx );
-                if( !err.ok() ) {
-                    PASSMSG( "univ_mss_file_sync_to_arch - failed.", err );
-                }
-            } else {
-                status = UNIV_MSS_SYNCTOARCH_ERR - errno;
-                std::stringstream msg;
-                msg << "univ_mss_file_sync_to_arch: copy of [";
-                msg << _cache_file_name;
-                msg << "] to [";
-                msg << filename;
-                msg << "] failed.";
-                return ERROR( status, msg.str() );       
+                PASSMSG( "univ_mss_file_sync_to_arch - failed.", err );
             }
         } else {
-            return PASSMSG( "sync to arch failed", err );
-
+            status = UNIV_MSS_SYNCTOARCH_ERR - errno;
+            std::stringstream msg;
+            msg << "univ_mss_file_sync_to_arch: copy of [";
+            msg << _cache_file_name;
+            msg << "] to [";
+            msg << filename;
+            msg << "] failed.";
+            msg << "   stdout buff [";
+            msg << execCmdOut->stdoutBuf.buf;
+            msg << "]   stderr buff [";
+            msg << execCmdOut->stderrBuf.buf;
+            msg << "]  status [";
+            msg << execCmdOut->status << "]";
+            return ERROR( status, msg.str() );       
         }
 
         return CODE( status );
@@ -959,8 +979,19 @@ extern "C" {
     class univ_mss_resource : public eirods::resource {
     public:
         univ_mss_resource( const std::string& _inst_name, 
-                             const std::string& _context ) : 
+                           const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
+            
+            // =-=-=-=-=-=-=-
+            // check the context string for inappropriate path behavior
+            if( context_.find( "/" ) != std::string::npos ) {
+                std::stringstream msg;
+                msg << "univmss resource :: the path [";
+                msg << context_;
+                msg << "] should be a single file name which should reside in iRODS/server/bin/cmd/";
+                rodsLog( LOG_ERROR, "[%s]", msg.str().c_str() );
+            }
+
             // =-=-=-=-=-=-=-
             // assign context string as the univ mss script to call
             properties_.set< std::string >( "script", context_ );
@@ -998,33 +1029,32 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "univ_mss_file_create" );
-        resc->add_operation( "open",         "univ_mss_file_open" );
-        resc->add_operation( "read",         "univ_mss_file_read" );
-        resc->add_operation( "write",        "univ_mss_file_write" );
-        resc->add_operation( "close",        "univ_mss_file_close" );
-        resc->add_operation( "unlink",       "univ_mss_file_unlink" );
-        resc->add_operation( "stat",         "univ_mss_file_stat" );
-        resc->add_operation( "fstat",        "univ_mss_file_fstat" );
-        resc->add_operation( "fsync",        "univ_mss_file_fsync" );
-        resc->add_operation( "mkdir",        "univ_mss_file_mkdir" );
-        resc->add_operation( "chmod",        "univ_mss_file_chmod" );
-        resc->add_operation( "opendir",      "univ_mss_file_opendir" );
-        resc->add_operation( "readdir",      "univ_mss_file_readdir" );
-        resc->add_operation( "stage",        "univ_mss_file_stage" );
-        resc->add_operation( "rename",       "univ_mss_file_rename" );
-        resc->add_operation( "freespace",    "univ_mss_file_getfs_freespace" );
-        resc->add_operation( "lseek",        "univ_mss_file_lseek" );
-        resc->add_operation( "rmdir",        "univ_mss_file_rmdir" );
-        resc->add_operation( "closedir",     "univ_mss_file_closedir" );
-        resc->add_operation( "truncate",     "univ_mss_file_truncate" );
-        resc->add_operation( "stagetocache", "univ_mss_file_stage_to_cache" );
-        resc->add_operation( "synctoarch",   "univ_mss_file_sync_to_arch" );
-        resc->add_operation( "registered",   "univ_mss_file_registered_plugin" );
-        resc->add_operation( "unregistered", "univ_mss_file_unregistered_plugin" );
-        resc->add_operation( "modified",     "univ_mss_file_modified_plugin" );
-        
-        resc->add_operation( "redirect",     "univ_mss_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "univ_mss_file_create" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "univ_mss_file_open" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "univ_mss_file_read" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "univ_mss_file_write" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "univ_mss_file_close" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "univ_mss_file_unlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "univ_mss_file_stat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "univ_mss_file_fstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "univ_mss_file_fsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "univ_mss_file_mkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "univ_mss_file_chmod" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "univ_mss_file_opendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "univ_mss_file_readdir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "univ_mss_file_stage" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "univ_mss_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "univ_mss_file_getfs_freespace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "univ_mss_file_lseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "univ_mss_file_rmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "univ_mss_file_closedir" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "univ_mss_file_truncate" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "univ_mss_file_stage_to_cache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "univ_mss_file_sync_to_arch" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "univ_mss_file_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "univ_mss_file_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "univ_mss_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "univ_mss_redirect" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

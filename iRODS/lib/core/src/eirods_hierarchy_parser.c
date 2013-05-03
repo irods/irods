@@ -134,11 +134,7 @@ namespace eirods {
     hierarchy_parser& hierarchy_parser::operator=(
         const hierarchy_parser& rhs)
     {
-        hierarchy_parser::const_iterator it;
-        for(it = rhs.begin(); it != rhs.end(); ++it) {
-            add_child(*it);
-        }
-        return *this;
+        resc_list_ = rhs.resc_list_;
     }
 
 }; // namespace eirods

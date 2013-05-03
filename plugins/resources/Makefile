@@ -4,7 +4,8 @@ BASEDIRS = nonblocking \
            roundrobin \
            structfile \
            univmss \
-           unixfilesystem
+           unixfilesystem \
+           compound
 
 HPSSDIRS = hpss
 

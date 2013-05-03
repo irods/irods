@@ -42,258 +42,68 @@ extern "C" {
     //    creation when the factory function is called.
     //    -- currently only 1.0 is supported.
     double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
-    /// =-=-=-=-=-=-=-
-    /// @brief build a sorted list of children based on hints in the context
-    ///        string for them and their positoin in the child map
-    // NOTE :: this assumes the order in the icat dictates the order of the RR.
-    //         the user can override that behavior with applying an index to the
-    //         child.  should the resc id wrap, this should still work as it 
-    //         should behave like a circular queue. 
-    eirods::error build_sorted_child_vector( 
-            eirods::resource_child_map& _cmap, 
-            std::vector< std::string >& _child_vector ) {
-        // =-=-=-=-=-=-=-
-        // vector holding all of the children
-        size_t list_size = _cmap.size();
-        _child_vector.resize( list_size );
-
-        // =-=-=-=-=-=-=-
-        // iterate over the children and look for indicies on the
-        // childrens context strings.  use those to build the initial 
-        // list. 
-        eirods::resource_child_map::iterator itr;
-        for( itr  = _cmap.begin();
-             itr != _cmap.end();
-             ++itr ) {
-
-            std::string           ctx  = itr->second.first;
-            eirods::resource_ptr& resc = itr->second.second;
-            if( !ctx.empty() ) {
-                try {
-                    // =-=-=-=-=-=-=-
-                    // cast std::string to int index
-                    int idx = boost::lexical_cast<int>( ctx );
-                    if( idx < 0 || idx >= list_size ) {
-                        eirods::log( ERROR( -1, "build_sorted_child_vector - index < 0" ) );
-                        continue;
-                    }
-
-                    // =-=-=-=-=-=-=-
-                    // make sure the map at this spot is already empty, could have
-                    // duplicate indicies on children
-                    if( !_child_vector[ idx ].empty() ) {
-                        std::stringstream msg;
-                        msg << "build_sorted_child_vector - child map list is not empty ";
-                        msg << "for index " << idx << " colliding with [";
-                        msg << _child_vector[ idx ] << "]";
-                        eirods::log( ERROR( -1, msg.str() ) );
-                        continue;
-                    }
-
-                    // =-=-=-=-=-=-=-
-                    // snag child resource name
-                    std::string name;
-                    eirods::error ret = resc->get_property< std::string >( "name", name );
-                    if( !ret.ok() ) {
-                        eirods::log( ERROR( -1, "build_sorted_child_vector - get property for resource name failed." ));
-                        continue;
-                    }
-
-                    // =-=-=-=-=-=-=-
-                    // finally add child to the list
-                    _child_vector[ idx ] = name;
-
-                } catch (boost::bad_lexical_cast const&) {
-                    eirods::log( ERROR( -1, "build_sorted_child_vector - lexical cast failed" ));
-                }
-
-            } // if ctx != empty
-
-        } // for itr
  
-
-        // =-=-=-=-=-=-=-
-        // iterate over the children again and add in any in the holes 
-        // left from the first pass
-        for( itr  = _cmap.begin();
-             itr != _cmap.end();
-             ++itr ) {
-
-            std::string           ctx  = itr->second.first;
-            eirods::resource_ptr& resc = itr->second.second;
-
-            // =-=-=-=-=-=-=-
-            // skip any resource whose context is not empty
-            // as they should have places already
-            if( !ctx.empty() ) {
-                continue;
-            }
-
-            // =-=-=-=-=-=-=-
-            // iterate over the _child_vector and find a hole to 
-            // fill in with this resource name
-            bool   filled_flg = false;
-            size_t idx        = 0;
-            std::vector< std::string >::iterator vitr;
-            for( vitr  = _child_vector.begin();
-                 vitr != _child_vector.end();
-                 ++vitr ) {
-                if( vitr->empty() ) {
-                    // =-=-=-=-=-=-=-
-                    // snag child resource name
-                    std::string name;
-                    eirods::error ret = resc->get_property< std::string >( "name", name );
-                    if( !ret.ok() ) {
-                        eirods::log( ERROR( -1, "build_sorted_child_vector - get property for resource name failed." ));
-                        idx++;
-                        continue;
-                    }
-               
-                    (*vitr) = name;
-                    filled_flg = true;
-                    break;
-                
-                } else {
-                    idx++;
-                }
-
-            } // for vitr
-
-            // =-=-=-=-=-=-=-
-            // check to ensure that the resc found its way into the list
-            if( false == filled_flg ) {
-                eirods::log( ERROR( -1, "build_sorted_child_vector - failed to find an entry in the resc list" ));
-            }
-
-        } // for itr
-
-
+    // =-=-=-=-=-=-=-
+    /// @brief Start Up Operation - initialize the random number generator
+    eirods::error random_start_operation( 
+                  eirods::resource_property_map& _prop_map,
+                  eirods::resource_child_map&    _cmap ) {
+        srand( time( NULL) );
         return SUCCESS();
 
-    } // build_sorted_child_vector
+    } // random_start_operation
 
     /// =-=-=-=-=-=-=-
     /// @brief given the property map the properties next_child and child_vector,
     ///        select the next property in the vector to be tapped as the RR resc
-    eirods::error update_next_child_resource( 
-                      eirods::resource_property_map& _prop_map ) {
+    eirods::error random_get_next_child_resource( 
+                      eirods::resource_child_map& _cmap,
+                      std::string& _next_child ) {
         // =-=-=-=-=-=-=-
-        // extract next_child, may be empty for new RR node
-        std::string next_child; 
-        _prop_map.get< std::string >( "next_child", next_child );
-
-        // =-=-=-=-=-=-=-
-        // extract child_vector
-        std::vector< std::string > child_vector; 
-        eirods::error get_err = _prop_map.get( "child_vector", child_vector );
-        if( !get_err.ok() ) {
-            std::stringstream msg;
-            msg << "update_next_child_resource - failed to get child vector";
-            return ERROR( -1, msg.str() );
+        // if the child map is empty then just return
+        if( _cmap.size() <= 0 ) {
+            return SUCCESS();
         }
 
         // =-=-=-=-=-=-=-
-        // if the next_child string is empty then the next in the round robin
-        // selection is the first non empty resource in the vector
-        if( next_child.empty() ) {
-            // =-=-=-=-=-=-=-
-            // scan the child vector for the first non empty position
-            for( size_t i = 0; i < child_vector.size(); ++i ) {
-                if( child_vector[ i ].empty() ) {
-                    std::stringstream msg;
-                    msg << "update_next_child_resource - chlid vector at ";
-                    msg << " posittion " << i; 
-                    eirods::log( ERROR( -1, msg.str() ) );
+        // get the size of the map and randomly pick an index into it
+        double rand_number  = static_cast<double>( rand() );
+        rand_number /= static_cast<double>( RAND_MAX );
+        size_t target_index = round( ( _cmap.size() - 1 ) * rand_number );
 
-                } else {
-                    next_child = child_vector[ i ];
-                    break;
-                }
-
-            } // for i
-
-        } else {
-            // =-=-=-=-=-=-=-
-            // scan the child vector for the context string
-            // and select the next position in the series
-            for( size_t i = 0; i < child_vector.size(); ++i ) {
-                if( next_child == child_vector[ i ] ) {
-                    size_t idx = ( (i+1) >= child_vector.size() ) ? 0 : i+1;
-                    next_child = child_vector[ idx ];
-                    break;
-                }
-
-           } // for i
-
-        } // else
+rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: random number [%f]", rand_number );
 
         // =-=-=-=-=-=-=-
-        // if next_child is empty, something went terribly awry
-        if( next_child.empty() ) {
-            std::stringstream msg;
-            msg << "update_next_child_resource - next_child is empty.";
-            return ERROR( -1, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // assign the next_child to the property map
-        _prop_map.set< std::string >( "next_child", next_child );
-
-        return SUCCESS();
-
-    } // update_next_child_resource
-    
-    // =-=-=-=-=-=-=-
-    /// @brief Start Up Operation - iterate over children and map into the 
-    ///        list from which to pick the next resource for the creation operation
-    eirods::error round_robin_start_operation( 
-                  eirods::resource_property_map& _prop_map,
-                  eirods::resource_child_map&    _cmap ) {
-        // =-=-=-=-=-=-=-
-        // trap case where no children are available
-        if( _cmap.empty() ) {
-            return ERROR( -1, "round_robin_start_operation - no children specified" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // build the initial list of children
-        std::vector< std::string > child_vector;
-        eirods::error err = build_sorted_child_vector( _cmap, child_vector );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_start_operation - failed.", err );
-        }
-      
-        // =-=-=-=-=-=-=-
-        // report children to log 
-        for( size_t i = 0; i < child_vector.size(); ++i ) {
-            rodsLog( LOG_NOTICE, "round_robin_start_operation :: RR Child [%s] at [%d]", 
-                     child_vector[i].c_str(), i );    
-        }
-
-        // =-=-=-=-=-=-=-
-        // add the child list to the property map
-        err = _prop_map.set< std::vector< std::string > >( "child_vector", child_vector );
-        if( !err.ok() ) {
-            return PASSMSG( "round_robin_start_operation - failed.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // if the next_child property is empty then we need to populate it
-        // to the first resource in the child vector
+        // child map is keyed by resource name so we need to count out the index
+        // and then snag the child name from the key of the hash map
+        size_t counter = 0;
         std::string next_child;
-        err = _prop_map.get< std::string >( "next_child", next_child );
-        if( err.ok() && next_child.empty() && child_vector.size() > 0 ) {
-            _prop_map.set< std::string >( "next_child", child_vector[ 0 ] );
-        }
+        eirods::resource_child_map::iterator itr = _cmap.begin();
+        for( ; itr != _cmap.end(); ++itr ) {
+            if( counter == target_index ) {
+                next_child = itr->first;
+                break;
+
+            } else {
+                ++counter;
+            
+            }
+
+        } // for itr
+
+        // =-=-=-=-=-=-=-
+        // assign the next_child to the out variable
+        _next_child = next_child;
+
+rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: target_index [%d], next_child [%s]", target_index, next_child.c_str() );
 
         return SUCCESS();
 
-    } // round_robin_start_operation
-
+    } // random_get_next_child_resource
+    
     /// =-=-=-=-=-=-=-
     /// @brief Check the general parameters passed in to most plugin functions
-    inline eirods::error round_robin_check_params(
+    inline eirods::error random_check_params(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the resource context
@@ -311,7 +121,7 @@ extern "C" {
        
         return SUCCESS();
  
-    } // round_robin_check_params
+    } // random_check_params
 
     /// =-=-=-=-=-=-=-
     /// @brief get the next resource shared pointer given this resources name
@@ -358,14 +168,14 @@ extern "C" {
     // =-=-=-=-=-=-=-
     /// @brief get the resource for the child in the hierarchy
     ///        to pass on the call
-    eirods::error round_robin_get_resc_for_call( 
+    eirods::error random_get_resc_for_call( 
         eirods::resource_operation_context* _ctx,
         eirods::resource_ptr&               _resc ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters 
-        eirods::error err = round_robin_check_params( _ctx );
+        eirods::error err = random_check_params( _ctx );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_get_resc_for_call - bad resource context", err );
+            return PASSMSG( "random_get_resc_for_call - bad resource context", err );
         }
  
         // =-=-=-=-=-=-=-
@@ -373,7 +183,7 @@ extern "C" {
         std::string name;
         err = _ctx->prop_map().get< std::string >( "name", name );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_get_resc_for_call - failed to get property 'name'.", err );
+            return PASSMSG( "random_get_resc_for_call - failed to get property 'name'.", err );
         }
 
         // =-=-=-=-=-=-=-
@@ -384,21 +194,21 @@ extern "C" {
         // get the next child pointer given our name and the hier string
         err = get_next_child_in_hier( name, hier, _ctx->child_map(), _resc );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_get_resc_for_call - get_next_child_in_hier failed.", err );
+            return PASSMSG( "random_get_resc_for_call - get_next_child_in_hier failed.", err );
         }
 
         return SUCCESS();
 
-    } // round_robin_get_resc_for_call
+    } // random_get_resc_for_call
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
-    eirods::error round_robin_file_create( 
+    eirods::error random_file_create( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -410,16 +220,16 @@ extern "C" {
         // call create on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco() );
    
-    } // round_robin_file_create
+    } // random_file_create
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error round_robin_file_open( 
+    eirods::error random_file_open( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -431,18 +241,18 @@ extern "C" {
         // call open operation on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco() );
  
-    } // round_robin_file_open
+    } // random_file_open
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Read
-    eirods::error round_robin_file_read(
+    eirods::error random_file_read(
         eirods::resource_operation_context* _ctx,
         void*                               _buf, 
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -454,18 +264,18 @@ extern "C" {
         // call read on the child 
         return resc->call< void*, int >( _ctx->comm(), eirods::RESOURCE_OP_READ, _ctx->fco(), _buf, _len );
  
-    } // round_robin_file_read
+    } // random_file_read
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Write
-    eirods::error round_robin_file_write( 
+    eirods::error random_file_write( 
         eirods::resource_operation_context* _ctx,
         void*                               _buf, 
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -477,16 +287,16 @@ extern "C" {
         // call write on the child 
         return resc->call< void*, int >( _ctx->comm(), eirods::RESOURCE_OP_WRITE, _ctx->fco(), _buf, _len );
  
-    } // round_robin_file_write
+    } // random_file_write
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Close
-    eirods::error round_robin_file_close(
+    eirods::error random_file_close(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -498,16 +308,16 @@ extern "C" {
         // call close on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CLOSE, _ctx->fco() );
  
-    } // round_robin_file_close
+    } // random_file_close
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Unlink
-    eirods::error round_robin_file_unlink(
+    eirods::error random_file_unlink(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -519,17 +329,17 @@ extern "C" {
         // call unlink on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_UNLINK, _ctx->fco() );
  
-    } // round_robin_file_unlink
+    } // random_file_unlink
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Stat
-    eirods::error round_robin_file_stat(
+    eirods::error random_file_stat(
         eirods::resource_operation_context* _ctx,
         struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -541,17 +351,17 @@ extern "C" {
         // call stat on the child 
         return resc->call< struct stat* >( _ctx->comm(), eirods::RESOURCE_OP_STAT, _ctx->fco(), _statbuf );
  
-    } // round_robin_file_stat
+    } // random_file_stat
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX Fstat
-    eirods::error round_robin_file_fstat(
+    eirods::error random_file_fstat(
         eirods::resource_operation_context* _ctx,
         struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -563,18 +373,18 @@ extern "C" {
         // call fstat on the child 
         return resc->call< struct stat* >( _ctx->comm(), eirods::RESOURCE_OP_FSTAT, _ctx->fco(), _statbuf );
  
-    } // round_robin_file_fstat
+    } // random_file_fstat
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
-    eirods::error round_robin_file_lseek(
+    eirods::error random_file_lseek(
         eirods::resource_operation_context* _ctx,
         size_t                              _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -586,16 +396,16 @@ extern "C" {
         // call lseek on the child 
         return resc->call< size_t, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
-    } // round_robin_file_lseek
+    } // random_file_lseek
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX fsync
-    eirods::error round_robin_file_fsync(
+    eirods::error random_file_fsync(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -607,16 +417,16 @@ extern "C" {
         // call fsync on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_FSYNC, _ctx->fco() );
  
-    } // round_robin_file_fsync
+    } // random_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
-    eirods::error round_robin_file_mkdir(
+    eirods::error random_file_mkdir(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -628,16 +438,16 @@ extern "C" {
         // call mkdir on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_MKDIR, _ctx->fco() );
 
-    } // round_robin_file_mkdir
+    } // random_file_mkdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX chmod
-    eirods::error round_robin_file_chmod(
+    eirods::error random_file_chmod(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -650,16 +460,16 @@ extern "C" {
         // call chmod on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco() );
 
-    } // round_robin_file_chmod
+    } // random_file_chmod
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
-    eirods::error round_robin_file_rmdir(
+    eirods::error random_file_rmdir(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -671,16 +481,16 @@ extern "C" {
         // call rmdir on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_RMDIR, _ctx->fco() );
 
-    } // round_robin_file_rmdir
+    } // random_file_rmdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX opendir
-    eirods::error round_robin_file_opendir(
+    eirods::error random_file_opendir(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -692,16 +502,16 @@ extern "C" {
         // call opendir on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPENDIR, _ctx->fco() );
 
-    } // round_robin_file_opendir
+    } // random_file_opendir
 
     // =-=-=-=-=-=-=-
     /// @brief interface for POSIX closedir
-    eirods::error round_robin_file_closedir(
+    eirods::error random_file_closedir(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -713,17 +523,17 @@ extern "C" {
         // call closedir on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx->fco() );
 
-    } // round_robin_file_closedir
+    } // random_file_closedir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX readdir
-    eirods::error round_robin_file_readdir(
+    eirods::error random_file_readdir(
         eirods::resource_operation_context* _ctx,
         struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -735,16 +545,16 @@ extern "C" {
         // call readdir on the child 
         return resc->call< struct rodsDirent** >( _ctx->comm(), eirods::RESOURCE_OP_READDIR, _ctx->fco(), _dirent_ptr );
 
-    } // round_robin_file_readdir
+    } // random_file_readdir
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX file_stage
-    eirods::error round_robin_file_stage(
+    eirods::error random_file_stage(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -756,17 +566,17 @@ extern "C" {
         // call stage on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco() );
 
-    } // round_robin_file_stage
+    } // random_file_stage
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
-    eirods::error round_robin_file_rename(
+    eirods::error random_file_rename(
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -778,16 +588,16 @@ extern "C" {
         // call rename on the child 
         return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
-    } // round_robin_file_rename
+    } // random_file_rename
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
-    eirods::error round_robin_file_truncate(
+    eirods::error random_file_truncate(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -799,16 +609,16 @@ extern "C" {
         // call truncate on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
 
-    } // round_robin_file_truncate
+    } // random_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
-    eirods::error round_robin_file_getfs_freespace(
+    eirods::error random_file_getfs_freespace(
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -820,19 +630,19 @@ extern "C" {
         // call freespace on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_FREESPACE, _ctx->fco() );
 
-    } // round_robin_file_getfs_freespace
+    } // random_file_getfs_freespace
 
     /// =-=-=-=-=-=-=-
     /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
     ///        Just copy the file from filename to cacheFilename. optionalInfo info
     ///        is not used.
-    eirods::error round_robin_file_stage_to_cache(
+    eirods::error random_file_stage_to_cache(
         eirods::resource_operation_context* _ctx,
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -844,19 +654,19 @@ extern "C" {
         // call stage on the child 
         return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco(), _cache_file_name );
 
-    } // round_robin_file_stage_to_cache
+    } // random_file_stage_to_cache
 
     /// =-=-=-=-=-=-=-
     /// @brief This routine is for testing the TEST_STAGE_FILE_TYPE.
     ///        Just copy the file from cacheFilename to filename. optionalInfo info
     ///        is not used.
-    eirods::error round_robin_file_sync_to_arch(
+    eirods::error random_file_sync_to_arch(
         eirods::resource_operation_context* _ctx, 
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -868,16 +678,16 @@ extern "C" {
         // call synctoarch on the child 
         return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx->fco(), _cache_file_name );
 
-    } // round_robin_file_sync_to_arch
+    } // random_file_sync_to_arch
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    eirods::error round_robin_file_registered(
+    eirods::error random_file_registered(
         eirods::resource_operation_context* _ctx ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -889,16 +699,16 @@ extern "C" {
         // call rename on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_REGISTERED, _ctx->fco() );
 
-    } // round_robin_file_registered
+    } // random_file_registered
  
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    eirods::error round_robin_file_unregistered(
+    eirods::error random_file_unregistered(
         eirods::resource_operation_context* _ctx ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -910,16 +720,16 @@ extern "C" {
         // call rename on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx->fco() );
 
-    } // round_robin_file_unregistered
+    } // random_file_unregistered
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    eirods::error round_robin_file_modified(
+    eirods::error random_file_modified(
         eirods::resource_operation_context* _ctx ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -931,12 +741,12 @@ extern "C" {
         // call rename on the child 
         return resc->call( _ctx->comm(), eirods::RESOURCE_OP_MODIFIED, _ctx->fco() );
 
-    } // round_robin_file_modified
+    } // random_file_modified
 
     /// =-=-=-=-=-=-=-
     /// @brief used to allow the resource to determine which host
     ///        should provide the requested operation
-    eirods::error round_robin_redirect(
+    eirods::error random_redirect(
         eirods::resource_operation_context* _ctx, 
         const std::string*                  _opr,
         const std::string*                  _curr_host,
@@ -944,21 +754,21 @@ extern "C" {
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        eirods::error err = round_robin_check_params( _ctx );
+        eirods::error err = random_check_params( _ctx );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_redirect - bad resource context", err );
+            return PASSMSG( "random_redirect - bad resource context", err );
         }
         if( !_opr ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null operation" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "random_redirect - null operation" );
         }
         if( !_curr_host ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null host" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "random_redirect - null host" );
         }
         if( !_out_parser ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null outgoing hier parser" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "random_redirect - null outgoing hier parser" );
         }
         if( !_out_vote ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "round_robin_redirect - null outgoing vote" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "random_redirect - null outgoing vote" );
         }
         
         // =-=-=-=-=-=-=-
@@ -970,7 +780,7 @@ extern "C" {
         std::string name;
         err = _ctx->prop_map().get< std::string >( "name", name );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_redirect - failed to get property 'name'.", err );
+            return PASSMSG( "random_redirect - failed to get property 'name'.", err );
         }
 
         // =-=-=-=-=-=-=-
@@ -985,7 +795,7 @@ extern "C" {
             eirods::resource_ptr resc; 
             err = get_next_child_in_hier( name, hier, _ctx->child_map(), resc );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - get_next_child_in_hier failed.", err );
+                return PASSMSG( "random_redirect - get_next_child_in_hier failed.", err );
             }
 
             // =-=-=-=-=-=-=-
@@ -996,26 +806,26 @@ extern "C" {
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
-            // get the next_child property 
+            // get the next_child resource for create 
             std::string next_child;
-            eirods::error err = _ctx->prop_map().get< std::string >( "next_child", next_child ); 
+            err = random_get_next_child_resource( _ctx->child_map(), next_child );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - get property for 'next_child' failed.", err );
-            
+                return PASSMSG( "random_redirect - random_get_next_child_resource failed", err );
+
             }
 
             // =-=-=-=-=-=-=-
-            // get the next_child resource 
+            // determine if the next child exists
             if( !_ctx->child_map().has_entry( next_child ) ) {
                 std::stringstream msg;
-                msg << "round_robin_redirect - child map has no child by name [";
+                msg << "random_redirect - child map has no child by name [";
                 msg << next_child << "]";
                 return PASSMSG( msg.str(), err );
                     
             } 
 
             // =-=-=-=-=-=-=-
-            // request our child resource to redirect
+            // get the next_child resource 
             eirods::resource_ptr resc = _ctx->child_map()[ next_child ].second;
 
             // =-=-=-=-=-=-=-
@@ -1023,121 +833,51 @@ extern "C" {
             err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), _opr, _curr_host, _out_parser, _out_vote );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - forward of put redirect failed", err );
+                return PASSMSG( "random_redirect - forward of put redirect failed", err );
             
             }
+
             std::string new_hier;
             _out_parser->str( new_hier );
             
             // =-=-=-=-=-=-=-
             // update the next_child appropriately as the above succeeded
-            err = update_next_child_resource( _ctx->prop_map() );
-            if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - update_next_child_resource failed", err );
-
-            }
-
             return SUCCESS();
         }
       
         // =-=-=-=-=-=-=-
         // must have been passed a bad operation 
         std::stringstream msg;
-        msg << "round_robin_redirect - operation not supported [";
+        msg << "random_redirect - operation not supported [";
         msg << (*_opr) << "]";
         return ERROR( -1, msg.str() );
 
-    } // round_robin_redirect
+    } // random_redirect
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class roundrobin_resource : public eirods::resource {
-
-        class roundrobin_pdmo {
-             eirods::resource_property_map& properties_;
-            public:
-            // =-=-=-=-=-=-=-
-            // public - ctor
-            roundrobin_pdmo( eirods::resource_property_map& _prop_map ) : 
-                properties_( _prop_map ) {
-            }
-
-            roundrobin_pdmo( const roundrobin_pdmo& _rhs ) : 
-                properties_( _rhs.properties_ ) {
-            }
-
-            roundrobin_pdmo& operator=( const roundrobin_pdmo& _rhs ) {
-                properties_ = _rhs.properties_;
-                return *this;
-            }
-
-            // =-=-=-=-=-=-=-
-            // public - ctor
-            eirods::error operator()( rcComm_t* _comm ) {
-                std::string name;
-                properties_.get< std::string >( "name", name );
-                
-                std::string next_child;
-                properties_.get< std::string >( "next_child", next_child );
-                generalAdminInp_t inp;
-                inp.arg0 = const_cast<char*>( "modify" );
-                inp.arg1 = const_cast<char*>( "resource" ); 
-                inp.arg2 = const_cast<char*>( name.c_str() );
-                inp.arg3 = const_cast<char*>( "context" );
-                inp.arg4 = const_cast<char*>( next_child.c_str() );
-                inp.arg5 = 0;
-                inp.arg6 = 0;
-                inp.arg7 = 0;
-                inp.arg8 = 0;
-                inp.arg9 = 0;
-
-                int status = rcGeneralAdmin( _comm, &inp ); 
-                if( status < 0 ) {
-                    return ERROR( status, "roundrobin_pdmo - rsGeneralAdmin failed." );
-                }
-
-               return SUCCESS();
-
-           } // operator=
-
-        }; // class roundrobin_pdmo
-
+    class random_resource : public eirods::resource {
     public:
-        roundrobin_resource( const std::string& _inst_name, 
+        random_resource( const std::string& _inst_name, 
                              const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
-            // =-=-=-=-=-=-=-
-            // assign context string as the next_child string
-            // in the property map.  this is used to keep track
-            // of the last used child in the vector
-            properties_.set< std::string >( "next_child", context_ );
-            rodsLog( LOG_NOTICE, "roundrobin_resource :: next_child [%s]", context_.c_str() );
-
-            set_start_operation( "round_robin_start_operation" );
+            //set_start_operation( "random_start_operation" );
         }
 
         // =-=-=-=-=-=-
         // override from plugin_base
         eirods::error need_post_disconnect_maintenance_operation( bool& _flg ) {
-            std::string next_child;
-            properties_.get< std::string >( "next_child", next_child );
-            if( !next_child.empty() ) {
-                _flg = ( next_child != context_ );
-            } else {
-                _flg = false;
-            }
-
-            return SUCCESS();
+            _flg = false;
+            return ERROR( -1, "nop" );
         }
 
         // =-=-=-=-=-=-
         // override from plugin_base
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _pdmo ) {
-            _pdmo = roundrobin_pdmo( properties_ );
-            return SUCCESS();
+            return ERROR( -1, "nop" );
         }
 
     }; // class 
@@ -1153,39 +893,39 @@ extern "C" {
                                       const std::string& _context  ) {
         // =-=-=-=-=-=-=-
         // 4a. create unixfilesystem_resource
-        roundrobin_resource* resc = new roundrobin_resource( _inst_name, _context );
+        random_resource* resc = new random_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "round_robin_file_create" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "round_robin_file_open" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "round_robin_file_read" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "round_robin_file_write" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "round_robin_file_close" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "round_robin_file_unlink" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "round_robin_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "round_robin_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "round_robin_file_fsync" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "round_robin_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "round_robin_file_chmod" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "round_robin_file_opendir" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "round_robin_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "round_robin_file_stage" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "round_robin_file_rename" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "round_robin_file_getfs_freespace" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "round_robin_file_lseek" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "round_robin_file_rmdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "round_robin_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "round_robin_file_truncate" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "round_robin_file_stage_to_cache" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "round_robin_file_sync_to_arch" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "round_robin_file_registered" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "round_robin_file_unregistered" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "round_robin_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "random_file_create" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "random_file_open" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "random_file_read" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "random_file_write" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "random_file_close" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "random_file_unlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "random_file_stat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "random_file_fstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "random_file_fsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "random_file_mkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "random_file_chmod" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "random_file_opendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "random_file_readdir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "random_file_stage" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "random_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "random_file_getfs_freespace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "random_file_lseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "random_file_rmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "random_file_closedir" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "random_file_truncate" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "random_file_stage_to_cache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "random_file_sync_to_arch" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "random_file_registered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "random_file_unregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "random_file_modified" );
         
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "round_robin_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "random_redirect" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

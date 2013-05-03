@@ -124,6 +124,11 @@ _addResource(
     // =-=-=-=-=-=-=-
     // pull location:path into string for parsing
     std::string loc_path( _generalAdminInp->arg4 );
+    
+    // =-=-=-=-=-=-=-
+    // grab resource context.  this may be overwritted by the 'location' as that 
+    // could also hold the conext string if no host:path pair exists
+    strncpy(rescInfo.rescContext,   _generalAdminInp->arg5, sizeof rescInfo.rescContext);
 
     if( !loc_path.empty() ) {
         // =-=-=-=-=-=-=-
@@ -139,8 +144,11 @@ _addResource(
             strncpy( rescInfo.rescLoc,       tok[0].c_str(), sizeof rescInfo.rescLoc );
             strncpy( rescInfo.rescVaultPath, tok[1].c_str(), sizeof rescInfo.rescVaultPath );
         } else {
-            rodsLog( LOG_ERROR, "_addResource - unexpected number of tokens for location:vault_path pair [%d]", tok.size() );
-            rodsLog( LOG_ERROR, "_addResource - location:path string [%s]", loc_path.c_str() );
+            // =-=-=-=-=-=-=-
+            // a key:value was not found, so blatantly assume the string is a context string
+            strncpy(rescInfo.rescContext, loc_path.c_str(), sizeof rescInfo.rescContext);
+            strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
+            strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
         }
     }  else {
         strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
@@ -148,13 +156,11 @@ _addResource(
 
     }
 
-
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
     strncpy(rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName);
     strncpy(rescInfo.rescType,      _generalAdminInp->arg3, sizeof rescInfo.rescType);
     strncpy(rescInfo.rescClass,     "cache",                sizeof rescInfo.rescClass );
-    strncpy(rescInfo.rescContext,   _generalAdminInp->arg5, sizeof rescInfo.rescContext);
     strncpy(rescInfo.zoneName,      _generalAdminInp->arg6, sizeof rescInfo.zoneName);
     strncpy(rescInfo.rescChildren,  "", 1);
     strncpy(rescInfo.rescParent,    "", 1);

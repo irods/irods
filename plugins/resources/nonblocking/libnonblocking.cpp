@@ -1816,33 +1816,33 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( "create",       "nonblocking_file_create_plugin" );
-        resc->add_operation( "open",         "nonblocking_file_open_plugin" );
-        resc->add_operation( "read",         "nonblocking_file_read_plugin" );
-        resc->add_operation( "write",        "nonblocking_file_write_plugin" );
-        resc->add_operation( "close",        "nonblocking_file_close_plugin" );
-        resc->add_operation( "unlink",       "nonblocking_file_unlink_plugin" );
-        resc->add_operation( "stat",         "nonblocking_file_stat_plugin" );
-        resc->add_operation( "fstat",        "nonblocking_file_fstat_plugin" );
-        resc->add_operation( "lseek",        "nonblocking_file_lseek_plugin" );
-        resc->add_operation( "fsync",        "nonblocking_file_fsync_plugin" );
-        resc->add_operation( "chmod",        "nonblocking_file_chmod_plugin" );
-        resc->add_operation( "mkdir",        "nonblocking_file_mkdir_plugin" );
-        resc->add_operation( "rmdir",        "nonblocking_file_rmdir_plugin" );
-        resc->add_operation( "opendir",      "nonblocking_file_opendir_plugin" );
-        resc->add_operation( "closedir",     "nonblocking_file_closedir_plugin" );
-        resc->add_operation( "readdir",      "nonblocking_file_readdir_plugin" );
-        resc->add_operation( "stage",        "nonblocking_file_stage_plugin" );
-        resc->add_operation( "rename",       "nonblocking_file_rename_plugin" );
-        resc->add_operation( "truncate",     "nonblocking_file_truncate_plugin" );
-        resc->add_operation( "freespace",    "nonblocking_file_get_fsfreespace_plugin" );
-        resc->add_operation( "stagetocache", "nonblocking_file_stagetocache_plugin" );
-        resc->add_operation( "synctoarch",   "nonblocking_file_synctoarch_plugin" );
-        resc->add_operation( "registered",   "nonblocking_file_registered_plugin" );
-        resc->add_operation( "unregistered", "nonblocking_file_unregistered_plugin" );
-        resc->add_operation( "modified",     "nonblocking_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "nonblocking_file_create_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "nonblocking_file_open_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "nonblocking_file_read_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "nonblocking_file_write_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "nonblocking_file_close_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "nonblocking_file_unlink_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "nonblocking_file_stat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "nonblocking_file_fstat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "nonblocking_file_lseek_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "nonblocking_file_fsync_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "nonblocking_file_chmod_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "nonblocking_file_mkdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "nonblocking_file_rmdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "nonblocking_file_opendir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "nonblocking_file_closedir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "nonblocking_file_readdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "nonblocking_file_stage_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "nonblocking_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "nonblocking_file_truncate_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "nonblocking_file_get_fsfreespace_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "nonblocking_file_stagetocache_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "nonblocking_file_synctoarch_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "nonblocking_file_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "nonblocking_file_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "nonblocking_file_modified_plugin" );
 
-        resc->add_operation( "redirect",     "nonblocking_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "nonblocking_file_redirect_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

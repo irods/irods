@@ -3,6 +3,7 @@
 #ifndef _EIRODS_REPL_TYPES_H_
 #define _EIRODS_REPL_TYPES_H_
 
+#include "eirods_resource_constants.h"
 #include "eirods_object_oper.h"
 #include "eirods_hierarchy_parser.h"
 
@@ -26,9 +27,9 @@ const std::string object_list_prop = "object_list";
 const std::string need_pdmo_prop = "Need_PDMO";
 const std::string hierarchy_prop = "hierarchy";
 
-const std::string write_oper = "write";
-const std::string unlink_oper = "unlink";
-const std::string create_oper = "create";
-const std::string rename_oper = "rename";
+const std::string write_oper = eirods::RESOURCE_OP_WRITE;
+const std::string unlink_oper = eirods::RESOURCE_OP_UNLINK;
+const std::string create_oper = eirods::RESOURCE_OP_CREATE;
+const std::string rename_oper = eirods::RESOURCE_OP_RENAME;
 
 #endif // _EIRODS_REPL_TYPES_H_
