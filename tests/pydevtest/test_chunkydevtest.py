@@ -12,7 +12,7 @@ import random
 @with_setup(s.twousers_up,s.twousers_down)
 def test_beginning_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -97,7 +97,7 @@ def test_beginning_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_iput_ibun_gzip_bzip2_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -223,7 +223,7 @@ def test_iput_ibun_gzip_bzip2_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_ireg_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -299,7 +299,7 @@ def test_ireg_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_mcoll_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -409,7 +409,7 @@ def test_mcoll_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_large_dir_and_mcoll_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -485,7 +485,7 @@ def test_large_dir_and_mcoll_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_phybun_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -548,7 +548,7 @@ def test_phybun_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_irsync_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -590,7 +590,7 @@ def test_irsync_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_xml_protocol_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -671,7 +671,7 @@ def test_xml_protocol_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_large_files_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
@@ -773,7 +773,7 @@ def test_large_files_from_devtest():
 @with_setup(s.twousers_up,s.twousers_down)
 def test_large_files_with_RBUDP_from_devtest():
     # build expected variables with similar devtest names
-    progname = "README"
+    progname = __file__
     myssize = str(os.stat(progname).st_size)
     username = s.adminsession.getUserName()
     irodszone = s.adminsession.getZoneName()
