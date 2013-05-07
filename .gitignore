@@ -15,8 +15,10 @@ iRODS/server/re/include/eirods_ms_home.h
 iRODS/server/re/include/reAction.h
 packaging/eirods.list
 plugins/resources/hpss/Makefile
+plugins/resources/compound/Makefile
 plugins/resources/nonblocking/Makefile
 plugins/resources/passthru/Makefile
+plugins/resources/random/Makefile
 plugins/resources/replication/Makefile
 plugins/resources/roundrobin/Makefile
 plugins/resources/structfile/Makefile
