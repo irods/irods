@@ -29,6 +29,7 @@ namespace eirods {
         repl_requested_( -1 ),
         in_pdmo_(false)
     {
+        memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
     // =-=-=-=-=-=-=-
@@ -40,6 +41,7 @@ namespace eirods {
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
+        memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // cctor 
 
     // =-=-=-=-=-=-=-
@@ -65,6 +67,7 @@ namespace eirods {
         flags_           = _f;
         repl_requested_  = -1;
         replicas_.empty();
+        memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
     // from dataObjInfo
@@ -80,6 +83,7 @@ namespace eirods {
         repl_requested_ = _dataObjInfo->replNum;
         replicas_.empty();
         // should mode be set here? - hcj
+        memset(&cond_input_, 0, sizeof(keyValPair_t));
     }
     
     // =-=-=-=-=-=-=-
@@ -99,6 +103,8 @@ namespace eirods {
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
+        replKeyVal(&_rhs.cond_input_, &cond_input_);
+        
         return *this;
 
     }  // operator=
@@ -191,6 +197,7 @@ namespace eirods {
         _file_obj.comm( _comm );
         _file_obj.logical_path( _data_obj_inp->objPath );
         _file_obj.resc_hier( head_ptr->rescHier );
+        _file_obj.cond_input( _data_obj_inp->condInput );
         
         // =-=-=-=-=-=-=-
         // handle requested repl number

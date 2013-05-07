@@ -683,7 +683,7 @@ getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead)
 } 
     
 char *
-getValByKey (keyValPair_t *condInput, char *keyWord)
+getValByKey (const keyValPair_t *condInput, const char *keyWord)
 {
     int i;
 
@@ -768,7 +768,7 @@ rmKeyVal (keyValPair_t *condInput, char *keyWord)
 }
 
 int
-replKeyVal (keyValPair_t *srcCondInput, keyValPair_t *destCondInput)
+replKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput)
 {
     int i;
     memset (destCondInput, 0, sizeof (keyValPair_t));

@@ -1671,6 +1671,26 @@ extern "C" {
             msg << "\tCannot request specific replicas from replicating resource.";
             result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
         }
+
+        else {
+            // if the api commands involve replication we have to error out since managing replicas is our job
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Calling getvalbykey";
+                DEBUGMSG(msg.str());
+            }
+
+            char* in_repl = getValByKey(&object->cond_input(), IN_REPL_KW);
+            if(in_repl != NULL) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Using repl or trim commands on a replication resource is not allowed. ";
+                msg << "Managing replicas is the job of the replication resource.";
+                result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
+            }
+        }
+        
         return result;
     }
     
