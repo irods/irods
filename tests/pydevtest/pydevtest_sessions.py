@@ -83,12 +83,12 @@ def admin_up():
         adminsession.runAdminCmd('iadmin',["moduser",u['name'],"password",u['passwd']])
         adminsession.runAdminCmd('iadmin',["atg",testgroup,u['name']])
     # permissions
-    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    adminsession.runCmd('ichmod',["read",users[1]['name'],currentdir+"/../../public/"+testfile]) # read for user1 
-    adminsession.runCmd('ichmod',["write",users[2]['name'],currentdir+"/../../public/"+testfile]) # write for user2
+    adminsession.runCmd('ichmod',["read",users[1]['name'],"../../public/"+testfile]) # read for user1 
+    adminsession.runCmd('ichmod',["write",users[2]['name'],"../../public/"+testfile]) # write for user2
 
     # testallrules setup
     progname = __file__
+    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     rules30dir = currentdir+"/../../iRODS/clients/icommands/test/rules3.0/"
     dir_w = rules30dir+".."
     adminsession.runCmd('icd') # to get into the home directory (for testallrules assumption)
