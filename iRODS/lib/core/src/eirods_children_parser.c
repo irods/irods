@@ -69,9 +69,19 @@ namespace eirods {
     }
 
     error children_parser::first_child(
-        std::string& _child) {
-        _child = children_list_.begin()->first;
-        return SUCCESS();
+        std::string& _child)
+    {
+        error result = SUCCESS();
+        if(children_list_.begin() != children_list_.end()) {
+            _child = children_list_.begin()->first;
+        } else {
+            _child.clear();
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Trying to retrieve first child from children string but string appears to be empty.";
+            result = ERROR(EIRODS_CHILD_NOT_FOUND, msg.str());
+        }
+        return result;
     }
 
     error children_parser::set_string(
