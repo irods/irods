@@ -524,6 +524,7 @@ A replicating coordinating resource with three unix file system storage resource
 .. - iRODS
 .. - OSAuth
 .. - GSI
+.. - PAM
 .. 
 .. --------------
 .. Best Practices
