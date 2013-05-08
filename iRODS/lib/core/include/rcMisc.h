@@ -62,13 +62,13 @@ freeDataObjInfo(dataObjInfo_t *dataObjInfo);
 int
 freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead);
 char *
-getValByKey (keyValPair_t *condInput, char *keyWord);
+getValByKey (const keyValPair_t *condInput, const char *keyWord);
 int
 getIvalByInx (inxIvalPair_t *inxIvalPair, int inx, int *outValue);
 char *
 getValByInx (inxValPair_t *inxValPair, int inx);
 int
-replKeyVal (keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
+replKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
 int
 replDataObjInp (dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp);
 int

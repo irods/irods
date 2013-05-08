@@ -215,5 +215,6 @@
 #define IN_PDMO_KW                   "in_pdmo"
 #define STAGE_OBJ_KW                 "stage_object"
 #define SYNC_OBJ_KW                  "sync_object"
+#define IN_REPL_KW                   "in_repl"
 
 #endif	/* RODS_KEYWD_DEF */
