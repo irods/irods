@@ -1680,12 +1680,12 @@ _resolveHostName(
     return result;
 }
 
-bool
+int
 _childIsValid(
     const std::string& _new_child) {
 
     // Lookup the child resource and make sure its parent field is empty
-    bool result = true;
+    int result = 0;
     char parent[MAX_NAME_LEN];
     int status;
 
@@ -1708,14 +1708,14 @@ _childIsValid(
         } else {
             _rollback("_childIsValid");
         }
-        result = false;
+        result = status;
 
     } else if(strlen(parent) != 0) {
         // If the resource already has a parent it cannot be added as a child of another one
         std::stringstream ss;
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
         eirods::log(LOG_NOTICE, ss.str());
-        result = false;
+        result = EIRODS_CHILD_HAS_PARENT;
     }
     return result;
 }
@@ -1933,7 +1933,7 @@ chlAddChildResc(
                     _rollback(func_name);
                     result = status;
                 }
-            } else if(_childIsValid(new_child_string)) {
+            } else if((status =_childIsValid(new_child_string)) == 0) {
                 if((status = _updateRescChildren(resc_id, new_child_string)) != 0) {
                     result = status;
                 } else if((status = _updateChildParent(new_child_string, std::string(rescInfo->rescName))) != 0) {
@@ -1958,13 +1958,16 @@ chlAddChildResc(
                     }
                 }                
             } else {
-                char errMsg[105];
-                snprintf(errMsg, 100, 
-                         "resource '%s' is not a valid resource",
-                         rescInfo->rescName);
-                addRErrorMsg (&rsComm->rError, 0, errMsg);
-                result = CAT_INVALID_RESOURCE_NAME;
-
+                std::string resc_name;
+                eirods::children_parser parser;
+                parser.set_string(new_child_string);
+                parser.first_child(resc_name);
+                
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Resource '" << resc_name << "' already has a parent.";
+                addRErrorMsg(&rsComm->rError, 0, msg.str().c_str());
+                result = status;
             }
         }
     }
