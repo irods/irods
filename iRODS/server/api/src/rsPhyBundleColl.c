@@ -72,7 +72,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
     if( !err.ok() ) {
         eirods::log( PASS( err ) );
-        return -1;
+        return err.code();
     }
 
     // =-=-=-=-=-=-=-
