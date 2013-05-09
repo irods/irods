@@ -6330,7 +6330,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
 /* Get the count of the objects to compare with later */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 1");
     status = cmlGetIntegerValueFromSql(
-        "select count(DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+        "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
         &iVal, objectName, collection, 0, 0, 0, &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,
@@ -6474,7 +6474,17 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
             &iVal, 0, 0, 0, 0, 0, &icss);
         if (status==0) {
             nAccess = iVal;
-            if (numObjects > nAccess) status=CAT_NO_ACCESS_PERMISSION;
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Num Objects: " << numObjects;
+                msg << " Num Access: " << nAccess;
+                DEBUGMSG(msg.str());
+            }
+
+            if (numObjects > nAccess) {
+                status=CAT_NO_ACCESS_PERMISSION;
+            }
         }
     }
 
@@ -6527,7 +6537,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
     cllBindVars[cllBindVarCount++]=collection;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 8");
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+        "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? group by DM.data_id",
         &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,
