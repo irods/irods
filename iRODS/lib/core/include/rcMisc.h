@@ -123,7 +123,7 @@ parseMultiStr (char *strInput, strArray_t *strArray);
 void
 getNowStr(char *timeStr);
 int
-getLocalTimeFromRodsTime(char *timeStrIn, char *timeStrOut);
+getLocalTimeFromRodsTime(const char *timeStrIn, char *timeStrOut);
 int
 getLocalTimeStr (struct tm *mytm, char *timeStr);
 void

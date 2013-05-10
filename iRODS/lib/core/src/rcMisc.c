@@ -1675,24 +1675,29 @@ getNowStr(char *timeStr)
   time format.
 */
 int
-getLocalTimeFromRodsTime(char *timeStrIn, char *timeStr) {
+getLocalTimeFromRodsTime(const char *timeStrIn, char *timeStr) {
     time_t myTime;
     struct tm *mytm;
-    if (sizeof(time_t)==4) {
-        myTime = atol(timeStrIn);
-    }
-    else {
+
+    // This is 1 because they actually capture a leading space
+    if(strlen(timeStrIn) == 1) {
+        strcpy(timeStr, "Never");
+    } else {
+        if (sizeof(time_t)==4) {
+            myTime = atol(timeStrIn);
+        }
+        else {
 #ifdef _WIN32
-        myTime = _atoi64(timeStrIn);
+            myTime = _atoi64(timeStrIn);
 #else
-        myTime = atoll(timeStrIn);
+            myTime = atoll(timeStrIn);
 #endif
+        }
+
+        mytm = localtime (&myTime);
+
+        getLocalTimeStr (mytm, timeStr);
     }
-
-    mytm = localtime (&myTime);
-
-    getLocalTimeStr (mytm, timeStr);
-
     return 0;
 }
 
