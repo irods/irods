@@ -5,11 +5,11 @@ myTestRule {
 # Output parameter is:
 #    Status
 # Output from running the example is
-#   File /tempZone/home/rods/put_test.txt copied to /tempZone/home/rods/SaveVersions
+#   File /tempZone/home/rods/sub1/for_versioning.txt copied to /tempZone/home/rods/sub1/SaveVersions
   msiStoreVersionWithTS(*SourceFile,*DestPath,*Status);
   writeLine("stdout","File *SourceFile copied to *DestPath");
 }
-INPUT *SourceFile="/tempZone/home/rods/put_test.txt", *DestPath="/tempZone/home/rods/SaveVersions"
+INPUT *SourceFile="/tempZone/home/rods/sub1/for_versioning.txt", *DestPath="/tempZone/home/rods/sub1/SaveVersions"
 OUTPUT ruleExecOut
 
 

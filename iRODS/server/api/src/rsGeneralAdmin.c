@@ -20,7 +20,8 @@
 // eirods includes
 #include "eirods_children_parser.h"
 #include "eirods_string_tokenize.h"
-
+#include "eirods_plugin_name_generator.h"
+#include "eirods_ms_home.h"
 
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
@@ -175,9 +176,20 @@ _addResource(
     args[5] = rescInfo.rescContext;
     args[6] = rescInfo.zoneName;
 
+    // Check that there is a plugin matching the resource type
+    eirods::plugin_name_generator name_gen;
+    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_MS_HOME)) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - No plugin exists to provide resource type \"";
+        msg << rescInfo.rescType << "\".";
+        eirods::log(ERROR(SYS_INVALID_RESC_TYPE, msg.str()));
+        result = SYS_INVALID_RESC_TYPE;
+    }
+    
     // =-=-=-=-=-=-=-
     // apply preproc policy enforcement point for creating a resourca, handle errors
-    if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
+    else if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
         if (_rei2.status < 0) {
             result = _rei2.status;
         }

@@ -1,4 +1,4 @@
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=
 // irods includes
@@ -22,10 +22,10 @@ namespace eirods {
     // static function to query resource for chosen server to which to redirect
     // for a given operation
     error resolve_resource_hierarchy( 
-              const std::string&   _oper,
-              rsComm_t*            _comm,
-              dataObjInp_t*        _data_obj_inp, 
-              std::string&         _out_resc_hier ) {
+        const std::string&   _oper,
+        rsComm_t*            _comm,
+        dataObjInp_t*        _data_obj_inp, 
+        std::string&         _out_resc_hier ) {
         // =-=-=-=-=-=-=-
         // flag to skip redirect for spec coll
         bool skip_redir_for_spec_coll = false;
@@ -196,7 +196,7 @@ namespace eirods {
             hierarchy_parser parser;
             float            vote = 0.0;
             error err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                              _comm, eirods::RESOURCE_OP_RESOLVE_RESC_HIER, file_obj, &oper, &host_name, &parser, &vote );
+                _comm, eirods::RESOURCE_OP_RESOLVE_RESC_HIER, file_obj, &oper, &host_name, &parser, &vote );
             
             // =-=-=-=-=-=-=-
             // extract the hier string from the parser, politely.

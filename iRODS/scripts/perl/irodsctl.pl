@@ -738,6 +738,31 @@ sub doAllRescTests
 
 	# define resource types and setup/teardown for each
 	my %resctypes = (
+                "random" => {
+                        "setup" => [
+                                "yes | iadmin modresc demoResc name origResc",
+                                "iadmin mkresc demoResc random",
+                                "iadmin mkresc unix1Resc 'unix file system' $hostname:/var/lib/eirods/unix1RescVault",
+                                "iadmin mkresc unix2Resc 'unix file system' $hostname:/var/lib/eirods/unix2RescVault",
+                                "iadmin mkresc unix3Resc 'unix file system' $hostname:/var/lib/eirods/unix3RescVault",
+                                "iadmin addchildtoresc demoResc unix1Resc",
+                                "iadmin addchildtoresc demoResc unix2Resc",
+                                "iadmin addchildtoresc demoResc unix3Resc",
+                        ],
+                        "teardown" => [
+                                "iadmin rmchildfromresc demoResc unix3Resc",
+                                "iadmin rmchildfromresc demoResc unix2Resc",
+                                "iadmin rmchildfromresc demoResc unix1Resc",
+                                "iadmin rmresc unix3Resc",
+                                "iadmin rmresc unix2Resc",
+                                "iadmin rmresc unix1Resc",
+                                "iadmin rmresc demoResc",
+                                "yes | iadmin modresc origResc name demoResc",
+                                "rm -rf /var/lib/eirods/unix1RescVault",
+                                "rm -rf /var/lib/eirods/unix2RescVault",
+                                "rm -rf /var/lib/eirods/unix3RescVault",
+                        ],
+                },
                 "unix file system" => {
                         "setup" => [],
                         "teardown" => [],

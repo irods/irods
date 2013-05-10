@@ -5,7 +5,8 @@ BASEDIRS = nonblocking \
            structfile \
            univmss \
            unixfilesystem \
-           compound
+           compound \
+           random
 
 HPSSDIRS = hpss
 

@@ -7,5 +7,5 @@ myTestRule {
   msiGetDataObjPSmeta(*Path,*Buf);
   writeBytesBuf("stdout",*Buf);
 }
-INPUT *Path="/tempZone/home/rods/sub1/foo1"
+INPUT *Path="/tempZone/home/rods/sub1/dcmetadatatarget"
 OUTPUT ruleExecOut
