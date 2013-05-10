@@ -62,6 +62,7 @@ main(int argc, char **argv)
     char ttybuf[TTYBUF_LEN];
     int doingEnvFileUpdate=0;
     char updateText[UPDATE_TEXT_LEN]="";
+    int ttl=0;
 
     status = parseCmdLineOpt(argc, argv, "ehvVl", 0, &myRodsArgs);
     if (status != 0) {
@@ -77,22 +78,37 @@ main(int argc, char **argv)
        exit(0);
     }
 
-    if (myRodsArgs.longOption==True) {
-	rodsLogLevel(LOG_NOTICE);
-    }
- 
-    ix = myRodsArgs.optind;
-
-    password="";
-    if (ix < argc) {
-       password = argv[ix];
-    }
-
     status = getRodsEnv (&myEnv);
     if (status < 0) {
        rodsLog (LOG_ERROR, "main: getRodsEnv error. status = %d",
 		status);
        exit (1);
+    }
+
+    if (myRodsArgs.longOption==True) {
+	    rodsLogLevel(LOG_NOTICE);
+    }
+
+    if (myRodsArgs.ttl==True) {
+        ttl = myRodsArgs.ttlValue;
+        if (ttl < 1) {
+            printf("Time To Live value needs to be a positive integer\n");
+            exit(1);
+        }
+        if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
+            strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
+        }
+        else {
+            printf("Time-To-Live only applies when using PAM authentication\n");
+            exit(1);
+        }
+    }
+
+    ix = myRodsArgs.optind;
+
+    password="";
+    if (ix < argc) {
+       password = argv[ix];
     }
 
     if (myRodsArgs.longOption==True) {
@@ -184,6 +200,16 @@ main(int argc, char **argv)
        doPassword=0;
     }
 #endif
+    if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
+	strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
+#ifdef PAM_AUTH
+       doPassword=0;
+#else 
+       rodsLog (LOG_ERROR,
+	    "PAM_AUTH_NOT_BUILT_INTO_CLIENT, will try iRODS password",
+	     status);
+#endif
+    }
 
     if (strcmp(myEnv.rodsUserName, ANONYMOUS_USER)==0) {
        doPassword=0;
@@ -214,6 +240,16 @@ main(int argc, char **argv)
 	       myEnv.rodsHost);
        exit(2);
     }
+
+#ifdef PAM_AUTH
+    if (strncmp("PAM",myEnv.rodsAuthScheme,3)==0 ||
+	strncmp("pam",myEnv.rodsAuthScheme,3)==0) {
+       status = clientLoginPam(Conn, password, ttl);
+       if (status != 0) exit(8);
+       /* if this succeeded, do the regular login below to check that the
+	generated password works properly.  */
+    }
+#endif
 
     /* and check that the user/password is OK */
     status = clientLogin(Conn);

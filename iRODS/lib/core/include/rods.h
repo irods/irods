@@ -31,6 +31,10 @@
 #include "ikrb.h"
 #include "rodsQuota.h"
 #include "osauth.h"
+#ifdef USE_SSL
+#include "sslSockComm.h"
+#endif
+
 
 #ifdef _WIN32
 #include "IRodsLib3.h"

@@ -24,6 +24,7 @@ export svrIcatSrcDir	= $(buildDir)/server/icat/src
 export svrReSrcDir	= $(buildDir)/server/re/src
 export svrDriversSrcDir	= $(buildDir)/server/drivers/src
 export svrTestSrcDir	= $(buildDir)/server/test/src
+export svrAuthSrcDir	= $(buildDir)/server/auth/src
 
 export libCoreSrcDir	= $(buildDir)/lib/core/src
 export libMd5SrcDir	= $(buildDir)/lib/md5/src
@@ -64,6 +65,7 @@ export svrIcatObjDir	= $(buildDir)/server/icat/obj
 export svrReObjDir	= $(buildDir)/server/re/obj
 export svrDriversObjDir	= $(buildDir)/server/drivers/obj
 export svrTestObjDir	= $(buildDir)/server/test/obj
+export svrAuthObjDir = $(buildDir)/server/auth/obj
 
 export libCoreObjDir	= $(buildDir)/lib/core/obj
 export libMd5ObjDir	= $(buildDir)/lib/md5/obj
