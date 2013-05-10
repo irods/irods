@@ -160,6 +160,11 @@ apidef_t RcApiTable[] = {
        "endTransactionInp_PI", 0, NULL, 0, (funcPtr) RS_END_TRANSACTION},
     {SPECIFIC_QUERY_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
        "specificQueryInp_PI", 0, "GenQueryOut_PI", 0, (funcPtr) RS_SPECIFIC_QUERY},
+
+    {PAM_AUTH_REQUEST_AN, RODS_API_VERSION,
+       NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
+       "pamAuthRequestInp_PI", 0,  "pamAuthRequestOut_PI", 0, (funcPtr) RS_PAM_AUTH_REQUEST},
+
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201
@@ -374,6 +379,14 @@ apidef_t RcApiTable[] = {
       "RegReplica_PI", 0, NULL, 0, (funcPtr) RS_REG_REPLICA},
     {FILE_CHKSUM_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
        "fileChksumInp_PI", 0, "fileChksumOut_PI", 0, (funcPtr) RS_FILE_CHKSUM},
+
+    {SSL_START_AN, RODS_API_VERSION,
+       NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
+       "sslStartInp_PI", 0, NULL, 0, (funcPtr) RS_SSL_START},
+    {SSL_END_AN, RODS_API_VERSION,
+       NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO, 
+       "sslEndInp_PI", 0, NULL, 0, (funcPtr) RS_SSL_END},
+
 };
 
 #ifdef RODS_SERVER	/* depends on client lib for NumOfApi */

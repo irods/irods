@@ -192,6 +192,16 @@ agentMain (rsComm_t *rsComm)
             rsComm->gsiRequest=0; 
         }
 
+#ifdef USE_SSL
+        if (rsComm->ssl_do_accept) {
+            status = sslAccept(rsComm);
+            rsComm->ssl_do_accept = 0;
+        }
+        if (rsComm->ssl_do_shutdown) {
+            status = sslShutdown(rsComm);
+            rsComm->ssl_do_shutdown = 0;
+        }
+#endif
         status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
 
         if (status >= 0) {

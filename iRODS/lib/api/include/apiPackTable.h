@@ -97,7 +97,11 @@ packInstructArray_t ApiPackTable[] = {
         {"endTransactionInp_PI", endTransactionInp_PI},
         {"ProcStatInp_PI", ProcStatInp_PI},
         {"specificQueryInp_PI", specificQueryInp_PI},
-        {PACK_TABLE_END_PI, (char *) NULL},
+        {"pamAuthRequestInp_PI", pamAuthRequestInp_PI},
+        {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
+        {"sslStartInp_PI", sslStartInp_PI},
+        {"sslEndInp_PI", sslEndInp_PI},
+       {PACK_TABLE_END_PI, (char *) NULL},
 };
 
 //#ifdef  __cplusplus

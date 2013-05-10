@@ -153,6 +153,92 @@ int clientLoginKrb(rcComm_t *Conn)
 }
 #endif
 
+int clientLoginPam( rcComm_t* Conn, 
+                    char*     password, 
+                    int       ttl ) {
+#ifdef PAM_AUTH
+   int status;
+   pamAuthRequestInp_t pamAuthReqInp;
+   pamAuthRequestOut_t *pamAuthReqOut;
+   int doStty=0;
+   int len;
+   char myPassword[MAX_PASSWORD_LEN+2];
+   char userName[NAME_LEN*2];
+#ifndef USE_BOOST_FS
+   struct stat statbuf;
+#endif
+   strncpy(userName, Conn->proxyUser.userName, NAME_LEN);
+   if (password[0]!='\0') {
+      strncpy(myPassword, password, sizeof(myPassword));
+   }
+   else {
+#ifdef USE_BOOST_FS
+      path p ("/bin/stty");
+      if (exists(p)) {
+#else
+      if (stat ("/bin/stty", &statbuf) == 0) {
+#endif
+	 system("/bin/stty -echo 2> /dev/null");
+	 doStty=1;
+      }
+      printf("Enter your current PAM (system) password:");
+      fgets(myPassword, sizeof(myPassword), stdin);
+      if (doStty) {
+	 system("/bin/stty echo 2> /dev/null");
+	 printf("\n");
+      }
+   }
+   len = strlen(myPassword);
+   if (myPassword[len-1]=='\n') {
+      myPassword[len-1]='\0'; /* remove trailing \n */
+   }
+
+#ifdef USE_SSL
+   /* since PAM requires a plain text password to be sent
+      to the server, ask the server to encrypt the current 
+      communication socket. */
+   status = sslStart(Conn);
+   if (status) {
+       printError(Conn, status, "sslStart");
+       return(status);
+   }
+#else
+   rodsLog(LOG_ERROR, "iRODS doesn't include SSL support, required for PAM authentication.");
+   return SSL_NOT_BUILT_INTO_CLIENT;
+#endif /* USE_SSL */
+
+   memset (&pamAuthReqInp, 0, sizeof (pamAuthReqInp));
+   pamAuthReqInp.pamPassword = myPassword;
+   pamAuthReqInp.pamUser = userName;
+   pamAuthReqInp.timeToLive = ttl;
+   status = rcPamAuthRequest(Conn, &pamAuthReqInp, &pamAuthReqOut);
+   if (status) {
+      printError(Conn, status, "rcPamAuthRequest");
+#ifdef USE_SSL
+      sslEnd(Conn);
+#endif
+      return(status);
+   }
+   memset(myPassword, 0, sizeof(myPassword));
+   rodsLog(LOG_NOTICE, "iRODS password set up for i-command use: %s\n", 
+	   pamAuthReqOut->irodsPamPassword);
+
+#ifdef USE_SSL
+   /* can turn off SSL now. Have to request the server to do so. 
+      Will also ignore any error returns, as future socket ops
+      are probably unaffected. */
+   sslEnd(Conn);
+#endif /* USE_SSL */
+
+   status = obfSavePw(0, 0, 0,  pamAuthReqOut->irodsPamPassword);
+   return(status);
+#else
+   return(PAM_AUTH_NOT_BUILT_INTO_CLIENT);
+#endif
+
+}
+
+
 int 
 clientLogin(rcComm_t *Conn) 
 {   
@@ -199,6 +285,11 @@ clientLogin(rcComm_t *Conn)
 	 }
       }
    }
+#endif
+
+#ifdef PAM_AUTH
+   /* Even in PAM mode, we do the regular login here using the
+      generated iRODS password that has been set up */
 #endif
 
 #ifdef OS_AUTH

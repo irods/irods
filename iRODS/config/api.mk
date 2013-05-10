@@ -392,3 +392,13 @@ LIB_API_OBJS += $(libApiObjDir)/rcDataObjFsync.o
 SVR_API_OBJS += $(svrApiObjDir)/rsDataObjLock.o
 LIB_API_OBJS += $(libApiObjDir)/rcDataObjLock.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsPamAuthRequest.o
+LIB_API_OBJS += $(libApiObjDir)/rcPamAuthRequest.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSslStart.o
+LIB_API_OBJS += $(libApiObjDir)/rcSslStart.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSslEnd.o
+LIB_API_OBJS += $(libApiObjDir)/rcSslEnd.o
+
+

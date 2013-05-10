@@ -86,6 +86,8 @@ typedef struct {
    int test;
    int ticket;
    char *ticketString;
+   int ttl;
+   int ttlValue;
    int reconnect;
    int user;
    char *userString;
