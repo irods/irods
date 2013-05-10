@@ -18,6 +18,7 @@
 #include "eirods_collection_object.h"
 #include "eirods_stacktrace.h"
 #include "eirods_resource_backport.h"
+#include "eirods_resource_manager.h"
 
 int
 initFileDesc ()
@@ -157,7 +158,7 @@ int mkFileDirR(
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
-        eirods::collection_object tmp_coll_obj( tmpPath, 0, 0 );
+        eirods::collection_object tmp_coll_obj( tmpPath, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 );
         eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &statbuf );
         if ( stat_err.code() >= 0) {
             if (statbuf.st_mode & S_IFDIR) {
@@ -184,7 +185,7 @@ int mkFileDirR(
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
      
-        eirods::collection_object tmp_coll_obj( tmpPath, mode, 0 ); 
+        eirods::collection_object tmp_coll_obj( tmpPath, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, mode, 0 ); 
         eirods::error mkdir_err = fileMkdir( rsComm, tmp_coll_obj );
         if ( !mkdir_err.ok() && (getErrno ( mkdir_err.code()) != EEXIST)) { // JMC - backport 4834
             std::stringstream msg;
@@ -213,7 +214,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
 
     // =-=-=-=-=-=-=-
     // call opendir via resource plugin
-    eirods::collection_object cacheDir_obj( cacheDir, 0, 0 );
+    eirods::collection_object cacheDir_obj( cacheDir, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 );
     eirods::error opendir_err = fileOpendir( rsComm, cacheDir_obj );
 
     // =-=-=-=-=-=-=-
@@ -238,7 +239,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
         // =-=-=-=-=-=-=-
         // get status of path
         snprintf( childPath, MAX_NAME_LEN, "%s/%s", cacheDir, myFileDirent->d_name );
-        eirods::collection_object tmp_coll_obj( childPath, 0, 0 );
+        eirods::collection_object tmp_coll_obj( childPath, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 );
         eirods::error stat_err = fileStat( rsComm, tmp_coll_obj, &myFileStat );
 
         // =-=-=-=-=-=-=-
@@ -287,7 +288,7 @@ int chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir) {
     }
 
     if( status != SYS_DIR_IN_VAULT_NOT_EMPTY ) {
-        eirods::collection_object coll_obj( cacheDir, 0, 0 );
+        eirods::collection_object coll_obj( cacheDir, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE, 0, 0 );
         eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
         if( !rmdir_err.ok() ) {
             std::stringstream msg;

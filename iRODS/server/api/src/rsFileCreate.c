@@ -168,7 +168,7 @@ int _rsFileCreate( rsComm_t *rsComm, fileCreateInp_t *fileCreateInp,
         } else if( getErrno( create_err.code() ) == EEXIST ) {
             // =-=-=-=-=-=-=-
             // remove a potentially empty directoy which is already in place
-            eirods::collection_object coll_obj( fileCreateInp->fileName, 0, 0 );
+            eirods::collection_object coll_obj( fileCreateInp->fileName, fileCreateInp->resc_hier_, 0, 0 );
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;

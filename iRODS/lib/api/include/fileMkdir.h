@@ -20,10 +20,11 @@ typedef struct {
     fileDriverType_t fileType;
     rodsHostAddr_t addr;
     char dirName[MAX_NAME_LEN];
+    char rescHier[MAX_NAME_LEN];
     int mode;
 } fileMkdirInp_t;
     
-#define fileMkdirInp_PI "int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; int mode;"
+#define fileMkdirInp_PI "int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; int mode;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_MKDIR rsFileMkdir

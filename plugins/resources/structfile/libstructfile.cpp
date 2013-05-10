@@ -250,7 +250,8 @@ extern "C" {
         fileMkdirInp.fileType = UNIX_FILE_TYPE;   // the only type for cache
         fileMkdirInp.mode     = DEFAULT_DIR_MODE;
         strncpy( fileMkdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN ); 
-
+        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
+        
         // =-=-=-=-=-=-=-
         // loop over a series of indicies for the directory suffix and
         // try to make the directory until it succeeds
@@ -353,6 +354,7 @@ extern "C" {
                 memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
                 rstrcpy( fileRmdirInp.dirName,       spec_coll->cacheDir,                MAX_NAME_LEN );
                 rstrcpy( fileRmdirInp.addr.hostAddr, const_cast<char*>( _host.c_str() ), NAME_LEN );
+                rstrcpy( fileRmdirInp.rescHier,      spec_coll->rescHier,                MAX_NAME_LEN );
                 fileRmdirInp.flags = RMDIR_RECUR;
                 int status = rsFileRmdir( comm, &fileRmdirInp );
                 if (status < 0) {
@@ -1259,6 +1261,7 @@ extern "C" {
         fileMkdirInp_t fileMkdirInp;
         fileMkdirInp.fileType = UNIX_FILE_TYPE; /* the only type for cache */
         strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
+        strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
         fileMkdirInp.mode = struct_obj.mode();
 
         // =-=-=-=-=-=-=-
@@ -1355,7 +1358,8 @@ extern "C" {
         fileRmdirInp_t fileRmdirInp;
         fileRmdirInp.fileType = UNIX_FILE_TYPE; /* the only type for cache */
         strncpy( fileRmdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
-
+        strncpy( fileRmdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN );
+        
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileRmdirInp.dirName, 
@@ -1859,6 +1863,8 @@ extern "C" {
             memset( &fileRmdirInp, 0, sizeof( fileRmdirInp ) );
             rstrcpy( fileRmdirInp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
             rstrcpy( fileRmdirInp.addr.hostAddr, host_addr->hostAddr, NAME_LEN );
+            rstrcpy( fileRmdirInp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
+            
             fileRmdirInp.flags = RMDIR_RECUR;
             int status = rsFileRmdir( comm, &fileRmdirInp );
             if (status < 0) {
@@ -2367,7 +2373,17 @@ extern "C" {
                 rmdir_inp.fileType = UNIX_FILE_TYPE;  
                 rstrcpy( rmdir_inp.dirName,       spec_coll->cacheDir, MAX_NAME_LEN );
                 strncpy( rmdir_inp.addr.hostAddr, resc_host.c_str(),   NAME_LEN );
+                strncpy( rmdir_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
                 
+
+                if(true) {
+                    std::stringstream msg;
+                    msg << "qqq - Struct file resc hier: \"";
+                    msg << spec_coll->rescHier;
+                    msg << "\".";
+                    DEBUGMSG(msg.str());
+                }
+
                 status = rsFileRmdir( comm, &rmdir_inp );
                 if( status < 0 ) {
                     free_struct_file_desc( struct_file_index );
