@@ -6,6 +6,7 @@
 // =-=-=-=-=-=-=-
 // My Includes
 #include "eirods_log.h"
+#include "eirods_plugin_name_generator.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -55,12 +56,6 @@ namespace eirods {
 
     }; // class_has_delay_load
 
-    // =-=-=-=-=-=-=-
-    // predicate to determine if a char is not alphanumeric
-    static bool not_allowed_char( char _c ) {
-        return ( !std::isalnum( _c ) && !( '_' == _c ) );
-    } // not_allowed_char
-
     /**
      * \fn PluginType* load_plugin( const std::string _plugin_name, const std::string _dir );
      *
@@ -93,26 +88,23 @@ namespace eirods {
                         const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
-        // strip out all non alphanumeric characters like spaces or such
-        std::string clean_plugin_name = _plugin_name;
-        clean_plugin_name.erase( std::remove_if( clean_plugin_name.begin(),
-                                                 clean_plugin_name.end(),
-                                                 not_allowed_char ),
-                                 clean_plugin_name.end() );
-
-        // =-=-=-=-=-=-=-
         // static assertion to determine if the PluginType supports the delay_load interface properly
         BOOST_STATIC_ASSERT( class_has_delay_load< PluginType >::value );
 
-        // =-=-=-=-=-=-=-
-        // quick parameter check
-        if( clean_plugin_name.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "load_plugin :: clean_plugin_name is empty" );
+        // Generate the shared lib name
+        std::string so_name;
+        plugin_name_generator name_gen;
+        error ret = name_gen(_plugin_name, _dir, so_name);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to generate an appropriate shared library name for plugin: \"";
+            msg << _plugin_name << "\".";
+            return PASSMSG(msg.str(), ret);
         }
-
+        
         // =-=-=-=-=-=-=-
         // try to open the shared object
-        std::string so_name = _dir  + std::string("lib") + clean_plugin_name + std::string(".so");
         void*  handle  = dlopen( so_name.c_str(), RTLD_LAZY );
         if( !handle ) {
             std::stringstream msg;
@@ -183,7 +175,7 @@ namespace eirods {
             error ret = _plugin->delay_load( handle );
             if( !ret.ok() ) {
                 std::stringstream msg;
-                msg << "failed on delayed load for [" << clean_plugin_name << "]";
+                msg << "failed on delayed load for [" << _plugin_name << "]";
                 dlclose( handle );
                 return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
             }
@@ -192,7 +184,7 @@ namespace eirods {
 
         } else {
             std::stringstream msg;
-            msg << "failed to create plugin object for [" << clean_plugin_name << "]";
+            msg << "failed to create plugin object for [" << _plugin_name << "]";
             dlclose( handle );
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
