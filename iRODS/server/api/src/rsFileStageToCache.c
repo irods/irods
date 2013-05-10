@@ -145,7 +145,7 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
 
             // =-=-=-=-=-=-=-
             // make the call to rmdir via the resource plugin
-            eirods::collection_object coll_obj( fileStageToCacheInp->cacheFilename, 0, 0 );
+            eirods::collection_object coll_obj( fileStageToCacheInp->cacheFilename, fileStageToCacheInp->rescHier, 0, 0 );
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;

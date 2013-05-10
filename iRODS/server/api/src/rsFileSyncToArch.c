@@ -149,7 +149,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         } else if (getErrno (sync_err.code()) == EEXIST) {
             // =-=-=-=-=-=-=-
             // an empty dir may be there, make the call to rmdir via the resource plugin
-            eirods::collection_object coll_obj( fileSyncToArchInp->filename, 0, 0 );
+            eirods::collection_object coll_obj( fileSyncToArchInp->filename, fileSyncToArchInp->rescHier, 0, 0 );
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;

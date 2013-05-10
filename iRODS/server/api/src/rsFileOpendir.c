@@ -95,7 +95,7 @@ int _rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, void **d
      
     // =-=-=-=-=-=-=-
 	// make the call to opendir via resource plugin
-    eirods::collection_object coll_obj( fileOpendirInp->dirName, 0, 0 );
+    eirods::collection_object coll_obj( fileOpendirInp->dirName, fileOpendirInp->resc_hier_, 0, 0 );
     eirods::error opendir_err = fileOpendir( rsComm, coll_obj );
 
     // =-=-=-=-=-=-=-

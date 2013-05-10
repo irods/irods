@@ -23,7 +23,10 @@ namespace eirods {
         // Constructors
         collection_object();
         collection_object( const collection_object& );
-        collection_object( std::string, int, int );
+        collection_object( const std::string& _filename,
+                           const std::string& _resc_hier,
+                           int _mode,
+                           int _flags );
 
         // =-=-=-=-=-=-=-
         // Destructor

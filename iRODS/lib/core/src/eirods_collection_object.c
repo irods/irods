@@ -4,6 +4,8 @@
 // eirods includes
 #include "eirods_collection_object.h"
 #include "eirods_resource_manager.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
 
 namespace eirods {
 
@@ -24,12 +26,18 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - ctor
-    collection_object::collection_object( std::string _fn, int _m, int _f ) :
+    collection_object::collection_object(
+        const std::string& _fn,
+        const std::string& _resc_hier,
+        int _m,
+        int _f ) :
         first_class_object(),
-        directory_pointer_(0) {
+        directory_pointer_(0)
+    {
         physical_path_   = _fn;
         mode_            = _m;
         flags_           = _f;
+        resc_hier_       = _resc_hier;
     } // collection_object
 
     // =-=-=-=-=-=-=-
@@ -52,28 +60,70 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
-    error collection_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
-        _mgr.resolve( *this, _ptr ); 
+    error collection_object::resolve(
+        resource_manager& _mgr,
+        resource_ptr& _ptr )
+    {
+        error result = SUCCESS();
+        error ret;
+    
 
-        std::string type;
-        error ret = _ptr->get_property< std::string >( "type", type );
-        if( ret.ok() ) {
-            if( "unix file system" != type ) {
-                std::stringstream msg;
-                msg << "[+]\tcollection_object::resolve - warning :: ";
-                msg << " did not resolve a unix file system resource type [";
-                msg << type;
-                msg << "]";
-                eirods::log( LOG_NOTICE, msg.str() );
-            }
-        } else {
+        if(resc_hier().empty()) {
             std::stringstream msg;
-            msg << "collection_object::resolve - failed in call to get_property";
-            return PASSMSG( msg.str(), ret );
+            msg << "qqq - No resource hierarchy specified for collection object.";
+            DEBUGMSG(msg.str());
+
+            if(true) {
+                eirods::stacktrace st;
+                st.trace();
+                st.dump();
+            }
+
         }
 
-        return SUCCESS();
+        hierarchy_parser hparse;
+        ret = hparse.set_string(resc_hier());
+    
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - ";
+            msg << "error parsing resource hierarchy \"" << resc_hier() << "\"";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            std::string resc;
+    
+            ret = hparse.first_resc(resc);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__ << " - ERROR getting first resource from hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+    
+                if(resc.empty() && resc_hier().empty()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - No resource hierarchy or resource specified.";
+                    return ERROR(EIRODS_HIERARCHY_ERROR, msg.str());
+                } else if(resc.empty()) {
+                    return ERROR( EIRODS_HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
+                }
+    
+                ret = _mgr.resolve(resc, _ptr);
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
+                    result = PASSMSG(msg.str(), ret);
 
+                    if(true) {
+                        eirods::stacktrace st;
+                        st.trace();
+                        st.dump();
+                    }
+
+                } 
+            }
+        }
+        return result;
     } // resolve
 
 }; // namespace eirods

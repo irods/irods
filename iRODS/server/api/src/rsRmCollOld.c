@@ -578,6 +578,7 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
             fileRmdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
             rstrcpy (fileRmdirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
             rstrcpy (fileRmdirInp.addr.hostAddr, location.c_str(), NAME_LEN);
+	    rstrcpy (fileRmdirInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
             status = rsFileRmdir (rsComm, &fileRmdirInp);
        #if 0 // JMC legacy resource 
             break;
