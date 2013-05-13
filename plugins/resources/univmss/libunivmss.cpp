@@ -505,7 +505,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        eirods::collection_object coll_obj( dirname, fco.mode(), 0 );
+        eirods::collection_object coll_obj( dirname, fco.resc_hier(), fco.mode(), 0 );
         eirods::resource_operation_context context( _ctx->comm(), 
                                                     _ctx->prop_map(), 
                                                     _ctx->child_map(), 
@@ -656,7 +656,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        eirods::collection_object coll_obj( dirname, fco.mode(), 0 );
+        eirods::collection_object coll_obj( dirname, fco.resc_hier(), fco.mode(), 0 );
         eirods::resource_operation_context context( _ctx->comm(), 
                                                     _ctx->prop_map(), 
                                                     _ctx->child_map(), 

@@ -653,6 +653,7 @@ int mountFileDir( rsComm_t*     rsComm,
                  fileStatInp.fileName, status);
         memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
         rstrcpy (fileMkdirInp.dirName, filePath, MAX_NAME_LEN);
+        rstrcpy (fileMkdirInp.rescHier, resc_hier, MAX_NAME_LEN);
         fileMkdirInp.fileType = static_cast<fileDriverType_t>(-1);//RescTypeDef[rescTypeInx].driverType;
         fileMkdirInp.mode = getDefDirMode ();
         rstrcpy (fileMkdirInp.addr.hostAddr,  location.c_str(), NAME_LEN);

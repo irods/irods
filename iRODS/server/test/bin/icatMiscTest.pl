@@ -309,6 +309,23 @@ runCmd(0, "test_chl insfnmtable a b c d");
 runCmd(0, "test_chl insmsrvctable a b c d e f g h 1");
 runCmd(0, "test_chl insdvmtable a b c d");
 
+# check the iRODS-PAM password generation and expired deletion
+runCmd(0, "test_chl getpampw $User2 01335433300"); #create expired irods-pam pw
+$temp2=$cmdStdout;
+chomp($temp2);
+$ix2=index($temp2,"pw=");
+$str1=substr($temp2, $ix2+3);
+$ix3=index($str1," ");
+$ipamPw=substr($str1,0,$ix3);
+$ENV{'irodsUserName'}=$User2;
+$ENV{'irodsAuthFileName'}="/tmp/xfile1";
+runCmd(2, "echo $ipamPw | ils");  # should fail and should do SQL to rm pw
+delete $ENV{'irodsUserName'};
+delete $ENV{'irodsAuthFileName'};
+runCmd(0, "test_chl getpampw $User2"); # create a normal one
+runCmd(0, "test_chl getpampw $User2"); # do a second one to get an existing pw
+runCmd(0, "iadmin rpp $User2");   # exercise the remove irods-PAM pw SQL
+
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin rmuser $User2");

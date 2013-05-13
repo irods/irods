@@ -286,6 +286,20 @@ MY_CFLAG+= -DDDN_WOS -I$(WOS_DIR)/include
 LDADD+=-L$(WOS_DIR)/lib64 -lwos_cpp
 endif
 
+ifdef USE_SSL
+MY_CFLAG+= -DUSE_SSL
+LDADD+=-L/usr/lib/x86_64-linux-gnu/ -lssl
+CL_LDADD+=-L/usr/lib/x86_64-linux-gnu/ -lssl
+endif
+
+ifdef PAM_AUTH
+MY_CFLAG+= -DPAM_AUTH
+endif
+
+ifdef PAM_AUTH_CHECK_PROG
+MY_CFLAG+= -DPAM_AUTH_CHECK_PROG=\"$(PAM_AUTH_CHECK_PROG)\"
+endif
+
 ifdef RUN_SERVER_AS_ROOT
 MY_CFLAG+= -DRUN_SERVER_AS_ROOT
 endif

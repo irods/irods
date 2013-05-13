@@ -419,6 +419,22 @@ else
     echo "Detected zlib library [$ZLIBDEV]"
 fi
 
+PAMDEV=`find /usr/include -name pam_appl.h 2> /dev/null`
+if [ "$PAMDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libpam0g-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT pam-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT pam-devel"
+    # Solaris comes with SUNWhea which provides /usr/include/security/pam_appl.h
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://sourceforge.net/projects/openpam/files/openpam/"
+    fi
+else
+    echo "Detected pam library [$PAMDEV]"
+fi
+
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
 if [ "$OPENSSLDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then

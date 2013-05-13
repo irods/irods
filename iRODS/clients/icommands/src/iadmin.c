@@ -906,6 +906,11 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                      cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
         return(0);
     }
+    if (strcmp(cmdToken[0],"rpp") == 0) {
+        generalAdmin( 0, "modify", "user", cmdToken[1], "rmPamPw", 
+		              cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "");
+      return(0);
+    }
     if (strcmp(cmdToken[0],"lua") == 0) {
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
@@ -1433,6 +1438,7 @@ void usageMain()
         " moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
         " aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
         " rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
+        " rpp Name  (remove PAM-derived Password for user Name)",
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " mkdir Name [username] (make directory(collection))",
         " rmdir Name (remove directory) ",
@@ -1613,6 +1619,17 @@ usage(char *subOpt)
         "These are used with Kerberos and/or GSI authentication, if enabled.",
         "Also see 'aua', 'lua', and 'luan'.",
         ""};
+
+    char *rppMsgs[]={
+        " rpp Name (remove PAM-derived Password for user Name)",
+        "Remove irods short-term (ususally 2 weeks) passwords that are created",
+        "when users authenticate via the iRODS PAM authentication method.",
+        "For additional security, when using PAM (system passwords), 'iinit' will",
+        "create a separate iRODS password that is then used (a subsequent 'iinit'",
+        "extend its 'life').  If the user's system password is changed, you",
+        "may want to use this rpp command to require the user to re-authenticate.",
+        ""};
+
 
     char *rmuserMsgs[]={
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
@@ -1916,7 +1933,7 @@ usage(char *subOpt)
     char *subCmds[]={"lu", "lua", "luan", "luz", "lt", "lr",
                      "ls", "lz",
                      "lg", "lgd", "lf", "mkuser",
-                     "moduser", "aua", "rua",
+                     "moduser", "aua", "rua", "rpp",
                      "rmuser", "mkdir", "rmdir", "mkresc",
                      "modresc", "modrescdatapaths","rmresc",
                      "addchildtoresc", "rmchildfromresc",
@@ -1932,7 +1949,7 @@ usage(char *subOpt)
     char **pMsgs[]={ luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs,
                      lsMsgs, lzMsgs,
                      lgMsgs, lgdMsgs, lfMsgs, mkuserMsgs,
-                     moduserMsgs, auaMsgs, ruaMsgs,
+                     moduserMsgs, auaMsgs, ruaMsgs, rppMsgs,
                      rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs,
                      modrescMsgs, modrescDataPathsMsgs, rmrescMsgs,
                      addchildtorescMsgs, rmchildfromrescMsgs,
