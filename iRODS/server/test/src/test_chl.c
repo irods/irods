@@ -145,6 +145,35 @@ int testTempPwConvert(char *s1, char *s2) {
     return(0);
 }
 
+int
+testGetLocalZone(rsComm_t *rsComm, char *expectedZone) {
+    char *zone;
+    zone = chlGetLocalZone();
+    printf("Zone is %s\n",zone);
+    if (strcmp(zone, expectedZone)!=0) {
+        return(-1);
+    }
+    return(0);
+}
+
+int
+testGetPamPw(rsComm_t *rsComm, char *username, char *testTime) {
+    char *irodsPamPassword;
+    int status;
+
+    irodsPamPassword = (char*)malloc(100);
+    memset(irodsPamPassword,0,100);
+
+    status = chlUpdateIrodsPamPassword(rsComm, username, 0, testTime,
+    &irodsPamPassword);
+    if (status==0) {
+        printf("status=%d pw=%s \n",status,irodsPamPassword);
+    }
+    else {
+        printf("status=%d\n",status);
+    }
+    return(0);
+}
 
 int testTempPwCombined(rsComm_t *rsComm, char *s1) {
     int status;
@@ -1108,7 +1137,14 @@ main(int argc, char **argv) {
         }
         didOne=1;
     }
-
+    if (strcmp(argv[1],"getlocalzone")==0) {
+        status = testGetLocalZone(Comm, argv[2]);
+        didOne=1;
+    }
+    if (strcmp(argv[1],"getpampw")==0) {
+        status = testGetPamPw(Comm, argv[2], argv[3]);
+        didOne=1;
+    }
     if (status != 0) {
         /*
           if (Comm->rError) {

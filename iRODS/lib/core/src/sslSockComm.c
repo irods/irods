@@ -8,6 +8,20 @@
 #include "rodsClient.h"
 #include "sslSockComm.h"
 
+// =-=-=-=-=-=-=-
+// work around for SSL Macro version issues
+#ifdef sk_GENERAL_NAMES_num
+#define EIRODS_GENERAL_NAMES_NUM sk_GENERAL_NAMES_num
+#define EIRODS_GENERAL_NAMES_VALUE sk_GENERAL_NAMES_value
+#define EIRODS_GENERAL_NAMES_FREE sk_GENERAL_NAMES_free
+#else
+#define EIRODS_GENERAL_NAMES_NUM sk_GENERAL_NAME_num
+#define EIRODS_GENERAL_NAMES_VALUE sk_GENERAL_NAME_value
+#define EIRODS_GENERAL_NAMES_FREE sk_GENERAL_NAME_free
+#endif
+
+
+
 /* module internal functions */
 static SSL_CTX *sslInit(char *certfile, char *keyfile);
 static SSL *sslInitSocket(SSL_CTX *ctx, int sock);
@@ -820,9 +834,9 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
     /* check if the peer name matches any of the subjectAltNames 
        listed in the certificate */
     names = (STACK_OF(GENERAL_NAMES)*)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
-    num_names = sk_GENERAL_NAMES_num(names);
+    num_names = EIRODS_GENERAL_NAMES_NUM(names);
     for (i = 0; i < num_names; i++ ) {
-        name = (GENERAL_NAME*)sk_GENERAL_NAMES_value(names, i);
+        name = (GENERAL_NAME*)EIRODS_GENERAL_NAMES_VALUE(names, i);
         if (name->type == GEN_DNS) {
             namestr = (char*)ASN1_STRING_data(name->d.dNSName);
             if (!strcasecmp(namestr, peer)) {
@@ -831,7 +845,7 @@ sslPostConnectionCheck(SSL *ssl, char *peer)
             }
         }
     }
-    sk_GENERAL_NAMES_free(names);
+    EIRODS_GENERAL_NAMES_FREE(names);
 
     /* if no match above, check the common name in the certificate */
     if (!match &&

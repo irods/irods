@@ -6716,13 +6716,6 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
         if (status==0) {
             nAccess = iVal;
 
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Num Objects: " << numObjects;
-                msg << " Num Access: " << nAccess;
-                DEBUGMSG(msg.str());
-            }
-
             if (numObjects > nAccess) {
                 status=CAT_NO_ACCESS_PERMISSION;
             }
