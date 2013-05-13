@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version 3.0b3 300003
+%version 3.0rc1 300004
 
 
 
@@ -63,14 +63,19 @@ $RESOURCE=true
 
 %if CENTOS6
 %requires postgresql-odbc
+%requires openssl098e
 %endif
 
 
 
 %if DEB
 %requires libc6
+%requires libssl0.9.8
 %endif
 
+%if SUSE
+%requires libopenssl0_9_8
+%endif
 
 # =-=-=-=-=-=-=-
 # Required Packages for all systems
@@ -79,6 +84,7 @@ $RESOURCE=true
 
 %requires perl
 %requires python
+%requires openssl
 
 %format all
 
