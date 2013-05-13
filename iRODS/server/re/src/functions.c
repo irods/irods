@@ -2340,7 +2340,7 @@ Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int 
 
 	char *a = NULL;
 	putchar(*a);
-        return NULL;
+    return NULL;
 }
 
 

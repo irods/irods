@@ -498,7 +498,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the name of the host of the resource from the resource plugin
-        rodsServerHost_t* rods_host; 
+        rodsServerHost_t* rods_host = 0; 
         eirods::error get_err = resc->get_property< rodsServerHost_t* >( "host", rods_host );
         if( !get_err.ok() ) {
             return PASSMSG( "failed to call get_property", get_err );
