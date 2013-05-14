@@ -171,11 +171,13 @@ if [ "$1" == "clean" ] ; then
     echo "Cleaning $SCRIPTNAME residuals..."
     rm -f changelog.gz
     rm -rf $MANDIR
-    rm -f manual.pdf
+    rm -f eirods-manual*.pdf
     rm -f libeirods.a
     echo "Cleaning Resource plugins..."
     cd plugins/resources
+    set +e
     make clean > /dev/null 2>&1
+    set -e
     cd ../..
     rm -rf $EIRODSPACKAGEDIR
     set +e
@@ -709,7 +711,8 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
 
     # build HPSS clients
-    if [ "$RELEASE" == "1" ] ; then
+#    if [ "$RELEASE" == "1" ] ; then
+     if [ $FALSE ] ; then
         cd $BUILDDIR/external/
         # grab from git
         echo "${text_green}${text_bold}Downloading HPSS client from RENCI${text_reset}"
@@ -757,6 +760,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         cp -r 7.4_var_hpss_etc /var/hpss7.4/etc
         ln -s /var/hpss7.4 /var/hpss
     fi
+
 
 fi
 
@@ -1303,6 +1307,9 @@ if [ "$COVERAGE" == "1" ] ; then
     cd $GITDIR
     rm -rf $COVERAGEBUILDDIR
 fi
+
+# rename the manual to include the version name
+mv manual.pdf eirods-manual-$EIRODSVERSION.pdf
 
 # grant write permission to all, in case this was run via sudo
 cd $GITDIR

@@ -262,7 +262,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the host property from the last resc and get the
         // host name from that host
-        rodsServerHost_t* last_resc_host;
+        rodsServerHost_t* last_resc_host = 0;
         eirods::error err = get_resource_property< rodsServerHost_t* >( last_resc, "host", last_resc_host ); 
         if( !err.ok() ) {
             std::stringstream msg;

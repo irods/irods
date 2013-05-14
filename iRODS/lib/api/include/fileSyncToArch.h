@@ -20,24 +20,21 @@
 #define RS_FILE_SYNC_TO_ARCH rsFileSyncToArch
 /* prototype for the server handler */
 int
-rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
-char **outFileName);
+rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp);
 int
 rsFileSyncToArchByHost (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
-char **outFileName, rodsServerHost_t *rodsServerHost);
+rodsServerHost_t *rodsServerHost);
 int
-_rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
-char **outFileName);
+_rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp);
 int
 remoteFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
-char **outFileName, rodsServerHost_t *rodsServerHost);
+rodsServerHost_t *rodsServerHost);
 #else
 #define RS_FILE_SYNC_TO_ARCH NULL
 #endif
 
 /* prototype for the client call */
 int
-rcFileSyncToArch (rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp,
-char **outFileName);
+rcFileSyncToArch (rcComm_t *conn, fileStageSyncInp_t *fileSyncToArchInp);
 
 #endif	/* FILE_SYNC_TO_ARCH_H */
