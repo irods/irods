@@ -22,6 +22,9 @@ ifeq ($(EIRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
+OBJDIR = .objs
+DEPDIR = .deps
+
 SUBS = ${BASEDIRS}
 
 ifeq ($(EIRODS_BUILD_DEBUG), 0)
@@ -38,11 +41,13 @@ INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../i
 default: ${SUBS}
 
 ${SUBS}:
+	@-mkdir $@/${OBJDIR} > /dev/null 2>&1
+	@-mkdir $@/${DEPDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 
 clean:
 	@-for dir in ${SUBS}; do \
-	rm $$dir/.depends > /dev/null 2>&1; \
+	rm $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
 	done
 	@-rm sos/*.so > /dev/null 2>&1
 

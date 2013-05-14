@@ -1,7 +1,12 @@
 IRODSDIR = ../../../iRODS
 SODIR = ../sos
 FULLTARGET = ${SODIR}/${TARGET}
-DEPS = .depends
+DEPFILE = .depends
+OBJDIR = .objs
+DEPDIR = .deps
+
+OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
+DEPS = $(pastsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
 include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
@@ -23,13 +28,22 @@ default: ${FULLTARGET}
 
 clean:
 	@-rm ${FULLTARGET} > /dev/null 2>&1
-	@-rm ${DEPS} > /dev/null 2>&1
+	@-rm ${OBJS} > /dev/null 2>&1
 
-${FULLTARGET}: ${SRCS} ${HEADERS} ${DEPS}
-	@-mkdir ${SODIR}
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o ${FULLTARGET} ${SRCS} ${EXTRALIBS}
+${FULLTARGET}: ${OBJS} ${DEPFILE}
+	@-mkdir ${SODIR} > /dev/null 2>&1
+	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
+
+${DEPFILE}: ${DEPS}
+	@-rm ${DEPFILE} > /dev/null 2>&1
+	@for dep in ${DEPS}; do \
+	cat $$dep >> ${DEPFILE}; \
+	done
 
 ${DEPS}: ${SRCS} ${HEADERS}
-	@${GCC} ${INC} -MM ${SRCS} > ${DEPS}
+	${GCC} ${INC} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
 
-include ${DEPS}
+${OBJDIR}/%.o: %.cpp
+	${GCC} ${INC} -Dlinux_platform -fPIC -c -g -o $@ $<
+
+include ${DEPFILE}
