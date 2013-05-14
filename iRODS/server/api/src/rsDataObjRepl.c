@@ -1229,16 +1229,15 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     rstrcpy( fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath,  MAX_NAME_LEN );
 
                     fileSyncToArchInp.mode = getFileMode (dataObjInp);
-                    status = rsFileSyncToArch (rsComm, &fileSyncToArchInp, &outFileName);
+                    status = rsFileSyncToArch (rsComm, &fileSyncToArchInp);
 
                     if (status >= 0 && 
                         //RescTypeDef[rescTypeInx].createPathFlag == NO_CREATE_PATH &&
                         NO_CREATE_PATH == dst_create_path &&
                         outFileName != NULL) {
                         /* path name is created by the resource */
-                        rstrcpy (destDataObjInfo->filePath, outFileName, MAX_NAME_LEN);
+                        rstrcpy (destDataObjInfo->filePath, fileSyncToArchInp.filename, MAX_NAME_LEN);
                         L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
-                        free (outFileName);
                     }
 #if 0 // JMC legacy resource 
                     break;
