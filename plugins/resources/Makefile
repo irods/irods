@@ -25,7 +25,7 @@ endif
 SUBS = ${BASEDIRS}
 
 ifeq ($(EIRODS_BUILD_DEBUG), 0)
-SUBS += ${HPSSDIRS}
+#SUBS += ${HPSSDIRS}
 endif
 
 .PHONY: ${SUBS} clean
