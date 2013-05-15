@@ -1309,6 +1309,8 @@ if [ "$COVERAGE" == "1" ] ; then
 fi
 
 # rename the manual to include the version name
+pwd
+ls -al
 mv manual.pdf eirods-manual-$EIRODSVERSION.pdf
 
 # grant write permission to all, in case this was run via sudo
