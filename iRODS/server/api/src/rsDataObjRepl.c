@@ -1231,7 +1231,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     status = rsFileSyncToArch (rsComm, &fileSyncToArchInp);
 
                     if (status >= 0 && 
-                        CREATE_PATH == dst_create_path &&
+                        NO_CREATE_PATH == dst_create_path &&
                         fileSyncToArchInp.filename != NULL) {
 
                         /* path name is created by the resource */
