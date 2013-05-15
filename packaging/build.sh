@@ -171,6 +171,7 @@ if [ "$1" == "clean" ] ; then
     echo "Cleaning $SCRIPTNAME residuals..."
     rm -f changelog.gz
     rm -rf $MANDIR
+    rm -f manual.pdf
     rm -f eirods-manual*.pdf
     rm -f libeirods.a
     echo "Cleaning Resource plugins..."
@@ -1310,8 +1311,9 @@ if [ "$COVERAGE" == "1" ] ; then
     rm -rf $COVERAGEBUILDDIR
 fi
 
-# rename the manual to include the version name
-mv manual.pdf eirods-manual-$EIRODSVERSION.pdf
+# create a new copy of the manual which includes the version name
+# this is for ease of generating a release
+cp manual.pdf eirods-manual-$EIRODSVERSION.pdf
 
 # grant write permission to all, in case this was run via sudo
 cd $GITDIR
