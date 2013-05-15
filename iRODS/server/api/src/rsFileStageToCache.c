@@ -133,6 +133,7 @@ int _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheI
                                   fileStageToCacheInp->mode, 
                                   fileStageToCacheInp->flags );
     file_obj.resc_hier( fileStageToCacheInp->rescHier );
+    file_obj.size(fileStageToCacheInp->dataSize);
     eirods::error stage_err = fileStageToCache( rsComm,
                                                 file_obj,  
                                                 fileStageToCacheInp->cacheFilename );
