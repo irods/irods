@@ -1171,7 +1171,6 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             fileStageSyncInp_t fileSyncToArchInp;
             dataObjInp_t *dataObjInp;
             int status;
-            char *outFileName = NULL;   /* for fileSyncToArch */
             dataObjInfo_t tmpDataObjInfo;
 
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
@@ -1234,7 +1233,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     if (status >= 0 && 
                         //RescTypeDef[rescTypeInx].createPathFlag == NO_CREATE_PATH &&
                         NO_CREATE_PATH == dst_create_path &&
-                        outFileName != NULL) {
+                        fileSyncToArchInp.filename != NULL) {
                         /* path name is created by the resource */
                         rstrcpy (destDataObjInfo->filePath, fileSyncToArchInp.filename, MAX_NAME_LEN);
                         L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
