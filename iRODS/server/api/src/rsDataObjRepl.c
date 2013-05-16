@@ -1231,9 +1231,9 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     status = rsFileSyncToArch (rsComm, &fileSyncToArchInp);
 
                     if (status >= 0 && 
-                        //RescTypeDef[rescTypeInx].createPathFlag == NO_CREATE_PATH &&
                         NO_CREATE_PATH == dst_create_path &&
                         fileSyncToArchInp.filename != NULL) {
+
                         /* path name is created by the resource */
                         rstrcpy (destDataObjInfo->filePath, fileSyncToArchInp.filename, MAX_NAME_LEN);
                         L1desc[destL1descInx].replStatus |= FILE_PATH_HAS_CHG;
