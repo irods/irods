@@ -4,8 +4,12 @@
 #include "eirods_stacktrace.h"
 
 #include <signal.h>
-#include <malloc.h>
 #include <stdlib.h>
+#if defined(osx_platform)
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
 
 // Define signal handlers for eirods
 
