@@ -6,7 +6,7 @@ OBJDIR = .objs
 DEPDIR = .deps
 
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
-DEPS = $(pastsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
+DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
 include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
