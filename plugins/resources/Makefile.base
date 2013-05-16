@@ -6,7 +6,7 @@ OBJDIR = .objs
 DEPDIR = .deps
 
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
-DEPS = $(pastsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
+DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
 
 include ${IRODSDIR}/config/platform.mk
 include ${IRODSDIR}/config/config.mk
@@ -32,7 +32,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
+	${GCC} ${INC} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
 
 ${DEPFILE}: ${DEPS}
 	@-rm ${DEPFILE} > /dev/null 2>&1
@@ -44,6 +44,6 @@ ${DEPS}: ${SRCS} ${HEADERS}
 	${GCC} ${INC} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
 
 ${OBJDIR}/%.o: %.cpp
-	${GCC} ${INC} -Dlinux_platform -fPIC -c -g -o $@ $<
+	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
 
 include ${DEPFILE}

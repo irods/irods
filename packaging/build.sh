@@ -647,9 +647,9 @@ if [ "$DETECTEDOS" == "MacOSX" ] ; then
 elif [ "$DETECTEDOS" == "Solaris" ] ; then
     DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
 else
-    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
+    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l | tr -d ' '`
 fi
-if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
+if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
     DETECTEDCPUCOUNT=1
 fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
