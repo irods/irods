@@ -1,9 +1,9 @@
-IRODSDIR = ../../../iRODS
-SODIR = ../sos
+#From caller
+IRODSDIR = ../${IRODSTOPDIR}
+SODIR = ../${SOTOPDIR}
+
 FULLTARGET = ${SODIR}/${TARGET}
 DEPFILE = .depends
-OBJDIR = .objs
-DEPDIR = .deps
 
 OBJS = $(patsubst %.cpp, ${OBJDIR}/%.o, ${SRCS})
 DEPS = $(patsubst %.cpp, ${DEPDIR}/%.d, ${SRCS})
