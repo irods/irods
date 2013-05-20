@@ -364,9 +364,9 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjInfo->collId = strtoll (tmpCollId, 0, 0);
         dataObjInfo->dataMapId = atoi (tmpDataMapId);
         rstrcpy (dataObjInfo->dataComments, tmpDataComments, LONG_NAME_LEN);
-        rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, NAME_LEN);
-        rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
-        rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
+        rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, TIME_LEN);
+        rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, TIME_LEN);
+        rstrcpy (dataObjInfo->dataModify, tmpDataModify, TIME_LEN);
         rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
         dataObjInfo->writeFlag = writeFlag;
         

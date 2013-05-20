@@ -272,9 +272,9 @@ rodsObjStat_t **rodsObjStatOut)
                 rstrcpy ((*rodsObjStatOut)->ownerZone, ownerZone->value, 
 		  NAME_LEN);
                 rstrcpy ((*rodsObjStatOut)->createTime, createTime->value, 
-		  NAME_LEN);
+		  TIME_LEN);
                 rstrcpy ((*rodsObjStatOut)->modifyTime, modifyTime->value, 
-		  NAME_LEN);
+		  TIME_LEN);
                 rstrcpy ((*rodsObjStatOut)->rescHier, rescHier->value, 
 		  MAX_NAME_LEN);
             }
