@@ -1512,3 +1512,43 @@ static void rodsNtElog(char *msg)
 	_close(fd);
 }
 #endif
+
+/*
+ * This function will generate an ISO 8601 formatted 
+ * date/time stamp for use in log messages. The format
+ * will be 'YYYYMMDDThhmmss.uuuuuuZ' where:
+ *
+ * YYYY - is the year 
+ *   MM - is the month (01-12)
+ *   DD - is the day   (01-31)
+ *   hh - is the hour (00-24)
+ *   mm - is the minute (00-59)
+ *   ss - is the second (00-59)
+ *   u+ - are the number of microseconds.
+ *
+ * The date/time stamp is in UTC time.
+ */
+void 
+generateLogTimestamp(char *ts, int tsLen)
+{
+    struct timeval tv;
+    struct tm utc;
+    char timestamp[TIME_LEN];
+
+    if (ts == NULL) {
+        return;
+    }
+
+    gettimeofday(&tv, NULL);
+    gmtime_r(&tv.tv_sec, &utc);
+    strftime(timestamp, TIME_LEN, "%Y%m%dT%H%M%S", &utc);
+    
+    /* 8 characters of '.uuuuuuZ' + nul */
+    if (tsLen < (int)strlen(timestamp) + 9) {
+        return;
+    }
+
+    snprintf(ts, strlen(timestamp) + 9, "%s.%06dZ", timestamp, (int)tv.tv_usec);
+}
+
+

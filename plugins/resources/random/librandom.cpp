@@ -71,8 +71,6 @@ extern "C" {
         rand_number /= static_cast<double>( RAND_MAX );
         size_t target_index = round( ( _cmap.size() - 1 ) * rand_number );
 
-rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: random number [%f]", rand_number );
-
         // =-=-=-=-=-=-=-
         // child map is keyed by resource name so we need to count out the index
         // and then snag the child name from the key of the hash map
@@ -94,8 +92,6 @@ rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: random number [%f
         // =-=-=-=-=-=-=-
         // assign the next_child to the out variable
         _next_child = next_child;
-
-rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: target_index [%d], next_child [%s]", target_index, next_child.c_str() );
 
         return SUCCESS();
 
@@ -441,28 +437,6 @@ rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: target_index [%d]
     } // random_file_mkdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX chmod
-    eirods::error random_file_chmod(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-                   
-
-        // =-=-=-=-=-=-=-
-        // call chmod on the child 
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco() );
-
-    } // random_file_chmod
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
     eirods::error random_file_rmdir(
         eirods::resource_operation_context* _ctx ) { 
@@ -548,27 +522,6 @@ rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: target_index [%d]
     } // random_file_readdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX file_stage
-    eirods::error random_file_stage(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call stage on the child 
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco() );
-
-    } // random_file_stage
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
     eirods::error random_file_rename(
         eirods::resource_operation_context* _ctx,
@@ -589,27 +542,6 @@ rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: target_index [%d]
         return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
     } // random_file_rename
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX truncate
-    eirods::error random_file_truncate(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call truncate on the child 
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
-
-    } // random_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -909,16 +841,13 @@ rodsLog( LOG_NOTICE, "XXXX - random_get_next_child_resource :: target_index [%d]
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "random_file_fstat" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "random_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "random_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "random_file_chmod" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "random_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "random_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "random_file_stage" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "random_file_rename" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "random_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "random_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "random_file_rmdir" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "random_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "random_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "random_file_stage_to_cache" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "random_file_sync_to_arch" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "random_file_registered" );

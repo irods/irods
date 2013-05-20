@@ -27,9 +27,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcFileUnlink.o
 SVR_API_OBJS += $(svrApiObjDir)/rsFileMkdir.o
 LIB_API_OBJS += $(libApiObjDir)/rcFileMkdir.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsFileChmod.o
-LIB_API_OBJS += $(libApiObjDir)/rcFileChmod.o
-
 SVR_API_OBJS += $(svrApiObjDir)/rsFileRmdir.o
 LIB_API_OBJS += $(libApiObjDir)/rcFileRmdir.o
 
@@ -41,9 +38,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcFileFstat.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsFileFsync.o
 LIB_API_OBJS += $(libApiObjDir)/rcFileFsync.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsFileStage.o
-LIB_API_OBJS += $(libApiObjDir)/rcFileStage.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsFileGetFsFreeSpace.o
 LIB_API_OBJS += $(libApiObjDir)/rcFileGetFsFreeSpace.o
@@ -252,15 +246,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileReaddir.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileClosedir.o
 LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileClosedir.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsDataObjTruncate.o
-LIB_API_OBJS += $(libApiObjDir)/rcDataObjTruncate.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsFileTruncate.o
-LIB_API_OBJS += $(libApiObjDir)/rcFileTruncate.o
-
-SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileTruncate.o
-LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileTruncate.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGeneralUpdate.o
 LIB_API_OBJS += $(libApiObjDir)/rcGeneralUpdate.o

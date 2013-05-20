@@ -460,14 +460,6 @@ extern "C" {
     } // univ_mss_file_readdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX file_stage
-    eirods::error univ_mss_file_stage(
-        eirods::resource_operation_context* _ctx ) { 
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
-
-    } // univ_mss_file_stage
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
     eirods::error univ_mss_file_rename(
         eirods::resource_operation_context* _ctx,
@@ -544,14 +536,6 @@ extern "C" {
         return CODE(status);
 
     } // univ_mss_file_rename
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX truncate
-    eirods::error univ_mss_file_truncate(
-        eirods::resource_operation_context* _ctx ) { 
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
-
-    } // univ_mss_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -1039,7 +1023,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "univ_mss_file_fstat" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "univ_mss_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "univ_mss_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "univ_mss_file_chmod" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "univ_mss_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "univ_mss_file_readdir" );
         resc->add_operation( eirods::RESOURCE_OP_STAGE,        "univ_mss_file_stage" );
@@ -1048,7 +1031,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "univ_mss_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "univ_mss_file_rmdir" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "univ_mss_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "univ_mss_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "univ_mss_file_stage_to_cache" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "univ_mss_file_sync_to_arch" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "univ_mss_file_registered_plugin" );

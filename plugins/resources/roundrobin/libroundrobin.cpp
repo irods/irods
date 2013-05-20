@@ -631,28 +631,6 @@ extern "C" {
     } // round_robin_file_mkdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX chmod
-    eirods::error round_robin_file_chmod(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-                   
-
-        // =-=-=-=-=-=-=-
-        // call chmod on the child 
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco() );
-
-    } // round_robin_file_chmod
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rmdir
     eirods::error round_robin_file_rmdir(
         eirods::resource_operation_context* _ctx ) { 
@@ -738,27 +716,6 @@ extern "C" {
     } // round_robin_file_readdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX file_stage
-    eirods::error round_robin_file_stage(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call stage on the child 
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco() );
-
-    } // round_robin_file_stage
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
     eirods::error round_robin_file_rename(
         eirods::resource_operation_context* _ctx,
@@ -779,27 +736,6 @@ extern "C" {
         return resc->call< const char* >( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
     } // round_robin_file_rename
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX truncate
-    eirods::error round_robin_file_truncate(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call truncate on the child 
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
-
-    } // round_robin_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -1169,16 +1105,13 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "round_robin_file_fstat" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "round_robin_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "round_robin_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "round_robin_file_chmod" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "round_robin_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "round_robin_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "round_robin_file_stage" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "round_robin_file_rename" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "round_robin_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "round_robin_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "round_robin_file_rmdir" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "round_robin_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "round_robin_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "round_robin_file_stage_to_cache" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "round_robin_file_sync_to_arch" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "round_robin_file_registered" );
