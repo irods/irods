@@ -100,7 +100,6 @@ typedef struct bucket Bucket;
 typedef Bucket *BucketPtr;
 typedef msParam_t *msParam_tPtr;
 
-
 typedef enum node_type {
     TK_EOS = -1,
     N_ERROR = 0,
@@ -117,12 +116,15 @@ typedef enum node_type {
     TK_OP = 12,
     TK_MISC_OP = 14,
     TK_COL = 16,
-    N_ATTR = 17,
-    N_QUERY_COND = 18,
+    TK_PATH = 18,
     N_VAL = 20,
     N_TUPLE = 21,
     N_APPLICATION = 22,
     N_PARTIAL_APPLICATION = 23,
+    N_ATTR = 25,
+    N_QUERY_COND = 26,
+    N_QUERY_COND_JUNCTION = 27,
+    N_QUERY = 28,
     N_ACTIONS = 30,
     N_ACTIONS_RECOVERY = 31,
     N_RULE_NAME = 32,
@@ -156,6 +158,7 @@ typedef enum node_type {
     T_FIXD = 207,
     T_TUPLE = 208,
     T_CONS = 209,
+    T_PATH = 220,
     T_BREAK = 230,
     T_SUCCESS = 231,
     T_VAR = 300,
@@ -163,6 +166,24 @@ typedef enum node_type {
     T_TYPE = 500,
     TC_LT = 600,
     TC_SET = 660,
+    PI_BIN = 1002,
+    PI_CHAR = 1008,
+    PI_STR = 1009,
+    PI_PISTR = 1010,
+    PI_INT16 = 1016,
+    PI_INT = 1032,
+    PI_DOUBLE = 1064,
+    PI_POINTER = 2001,
+    PI_STRUCT = 2002,
+    PI_DEPENDENT = 2003,
+    PI_INT_DEPENDENT = 2004,
+    PI_DIM = 2006,
+    PI_MEMBER = 2007,
+    PI_INDEX = 2008,
+    PI_CASE = 2009,
+    PI_DEFAULT = 2010,
+    PI_TYPE = 2011,
+    PI_ARRAY_MEMBER = 2012
 } NodeType;
 
 typedef struct condIndexVal {

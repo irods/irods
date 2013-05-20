@@ -288,8 +288,12 @@ endif
 
 ifdef USE_SSL
 MY_CFLAG+= -DUSE_SSL
-LDADD+=-L/usr/lib/x86_64-linux-gnu/ -lssl
-CL_LDADD+=-L/usr/lib/x86_64-linux-gnu/ -lssl
+ifeq ($(OS_platform), linux_platform)
+LDADD+=-L/usr/lib/x86_64-linux-gnu/
+CL_LDADD+=-L/usr/lib/x86_64-linux-gnu/
+endif
+LDADD+=-lssl -lcrypto
+CL_LDADD+=-lssl -lcrypto
 endif
 
 ifdef PAM_AUTH
