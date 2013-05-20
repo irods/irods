@@ -605,45 +605,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error wosCoordFileChmod(
-        eirods::resource_operation_context* _ctx ) {
-    
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-
-        ret = wosCoordCheckParams(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
-            eirods::resource_ptr child;
-            ret = wosCoordGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx->comm(), "chmod", _ctx->fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // wosCoordFileChmod
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX mkdir
     eirods::error wosCoordFileRmdir(
         eirods::resource_operation_context* _ctx ) {
         eirods::error result = SUCCESS();
@@ -801,45 +762,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error wosCoordFileStage(
-        eirods::resource_operation_context* _ctx ) {
- 
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = wosCoordCheckParams(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
-            eirods::resource_ptr child;
-            ret = wosCoordGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx->comm(), "stage", _ctx->fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // wosCoordFileStage
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
     eirods::error wosCoordFileRename(
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
@@ -881,47 +803,6 @@ extern "C" {
         return result;
     } // wosCoordFileRename
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error wosCoordFileTruncate(
-        eirods::resource_operation_context* _ctx) {
-    
-        // =-=-=-=-=-=-=-
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = wosCoordCheckParams(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
-            eirods::resource_ptr child;
-            ret = wosCoordGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx->comm(), "truncate", _ctx->fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // wosCoordFileTruncate
-
-        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error wosCoordFileGetFsFreeSpace(
@@ -1301,10 +1182,8 @@ extern "C" {
         resc->add_operation( "fstat",        "wosCoordFileFstat" );
         resc->add_operation( "fsync",        "wosCoordFileFsync" );
         resc->add_operation( "mkdir",        "wosCoordFileMkdir" );
-        resc->add_operation( "chmod",        "wosCoordFileChmod" );
         resc->add_operation( "opendir",      "wosCoordFileOpendir" );
         resc->add_operation( "readdir",      "wosCoordFileReaddir" );
-        resc->add_operation( "stage",        "wosCoordFileStage" );
         resc->add_operation( "rename",       "wosCoordFileRename" );
         resc->add_operation( "freespace",    "wosCoordFileGetFsFreeSpace" );
         resc->add_operation( "lseek",        "wosCoordFileLseek" );

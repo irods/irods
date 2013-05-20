@@ -816,45 +816,6 @@ extern "C" {
     } // hpss_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX chmod
-    eirods::error hpss_file_chmod_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = hpss_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = hpss_Chmod( const_cast<char*>( fco.physical_path().c_str() ), fco.mode() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            std::stringstream msg;
-            msg << "hpss_file_chmod_plugin: chmod error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( -status );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        } // if
-
-        return CODE( status );
-
-    } // hpss_file_chmod_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error hpss_file_mkdir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
@@ -1113,14 +1074,6 @@ extern "C" {
     } // hpss_file_readdir_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for irods stage
-    eirods::error hpss_file_stage_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        return CODE( SYS_NOT_SUPPORTED );
-
-    } // hpss_file_stage_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX rename
     eirods::error hpss_file_rename_plugin( 
         eirods::resource_operation_context* _ctx,
@@ -1190,50 +1143,6 @@ extern "C" {
 
     } // hpss_file_rename_plugin
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error hpss_file_truncate_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = hpss_check_params_and_path< eirods::file_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to rename
-        u_signed64 big_size;
-        CONVERT_LONGLONG_TO_U64( file_obj.size(), big_size );
-        int status = hpss_Truncate( const_cast<char*>( file_obj.physical_path().c_str() ), big_size ); 
-
-        // =-=-=-=-=-=-=-
-        // handle any error cases
-        if( status < 0 ) {
-            // =-=-=-=-=-=-=-
-            // cache status in out variable
-            std::stringstream msg;
-            msg << "hpss_file_truncate_plugin: rename error for ";
-            msg << file_obj.physical_path();
-            msg << ", errno = '";
-            msg << strerror( -status );
-            msg << "', status = ";
-            msg << -status;
-                        
-            return ERROR( -status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // hpss_file_truncate_plugin
-
-        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error hpss_file_get_fsfreespace_plugin( 
@@ -1638,15 +1547,12 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "hpss_file_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "hpss_file_lseek_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "hpss_file_fsync_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "hpss_file_chmod_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "hpss_file_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "hpss_file_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "hpss_file_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "hpss_file_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "hpss_file_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "hpss_file_stage_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "hpss_file_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "hpss_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "hpss_file_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "hpss_file_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "hpss_file_synctoarch_plugin" );

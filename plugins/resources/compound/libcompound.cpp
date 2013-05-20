@@ -864,14 +864,6 @@ extern "C" {
     } // compound_file_readdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX file_stage
-    eirods::error compound_file_stage(
-        eirods::resource_operation_context* _ctx ) { 
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
-
-    } // compound_file_stage
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
     eirods::error compound_file_rename(
         eirods::resource_operation_context* _ctx,
@@ -896,31 +888,6 @@ extern "C" {
         return resc->call<const char*>( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
     } // compound_file_rename
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX truncate
-    eirods::error compound_file_truncate(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next child resource
-        eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // forward the call
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
-
-    } // compound_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -1426,16 +1393,13 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "compound_file_fstat" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "compound_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "compound_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "compound_file_chmod" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "compound_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "compound_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "compound_file_stage" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "compound_file_rename" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "compound_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "compound_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "compound_file_rmdir" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "compound_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "compound_file_stage_to_cache" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "compound_file_sync_to_arch" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "compound_file_registered" );

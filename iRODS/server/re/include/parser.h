@@ -11,6 +11,11 @@
 #include <string.h>
 #include "debug.h"
 
+#ifdef DEBUG
+#include "re.h"
+#endif
+
+
 #ifndef DEBUG
 #include "objInfo.h"
 #include "reHelpers1.h"
@@ -29,7 +34,7 @@ typedef struct op {
     int prec;
 } Op;
 
-#define num_ops 30
+#define num_ops 31
 extern Op new_ops[];
 
 typedef struct pointer {
@@ -70,10 +75,12 @@ typedef struct {
 
 #define PUSH(n) (context->nodeStack[(context->nodeStackTop)++] = n)
 #define POP (context->nodeStack[--(context->nodeStackTop)])
-#define NEXT_TOKEN \
+#define NEXT_TOKEN_BASIC NEXT_TOKEN(0)
+#define NEXT_TOKEN_EXT NEXT_TOKEN(1)
+#define NEXT_TOKEN(ext) \
 { \
     FPOS; \
-    token = nextTokenRuleGen(e, context, rulegen); \
+    token = nextTokenRuleGen(e, context, rulegen, ext); \
     if(token->type==N_ERROR) { \
         context->error=1; \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
@@ -165,21 +172,21 @@ PARSER_FUNC_PROTO2(l, p, q) { \
 }
 
 #define TTEXT(x) \
-    NEXT_TOKEN; \
+    NEXT_TOKEN(0); \
     if(!((TOKEN_TYPE(TK_TEXT)||TOKEN_TYPE(TK_OP)||TOKEN_TYPE(TK_MISC_OP)) && TOKEN_TEXT(x))) { \
         context->error = 1; \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
         break; \
     }
 #define TTEXT2(x,y) \
-    NEXT_TOKEN; \
+    NEXT_TOKEN(0); \
     if(!((TOKEN_TYPE(TK_TEXT)||TOKEN_TYPE(TK_OP)||TOKEN_TYPE(TK_MISC_OP)) && (TOKEN_TEXT(x)||TOKEN_TEXT(y)))) { \
         context->error = 1; \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
         break; \
     }
 #define TTEXT3(x,y,z) \
-    NEXT_TOKEN; \
+    NEXT_TOKEN(0); \
     if(!((TOKEN_TYPE(TK_TEXT)||TOKEN_TYPE(TK_OP)||TOKEN_TYPE(TK_MISC_OP)) && (TOKEN_TEXT(x)||TOKEN_TEXT(y)||TOKEN_TEXT(z)))) { \
         context->error = 1; \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
@@ -189,7 +196,7 @@ PARSER_FUNC_PROTO2(l, p, q) { \
     TTEXT(x); \
     PUSHBACK;
 #define TTYPE(x) \
-    NEXT_TOKEN; \
+    NEXT_TOKEN(x==TK_PATH); \
     if(!TOKEN_TYPE(x)) { \
         context->error = 1; \
         if(pos.exprloc > context->errloc.exprloc) context->errloc = pos; \
@@ -308,40 +315,39 @@ goto CONCAT(exit, l);
 #endif
 
 #define COUNTER(l) \
-               CONCAT(l, Counter)
+		CONCAT(l, Counter)
 
 #define REPEAT_BEGIN(l) \
 int COUNTER(l) = 0; \
 LOOP_BEGIN(l) \
-       TRY(l) \
+	TRY(l) \
 
 #define REPEAT_END(l) \
-               COUNTER(l)++; \
-       OR(l) \
-               DONE(l); \
-       END_TRY(l) \
+		COUNTER(l)++; \
+	OR(l) \
+		DONE(l); \
+	END_TRY(l) \
 LOOP_END(l)
 
 #define LIST_BEGIN(l) \
-       int COUNTER(l) = 0; \
-       LOOP_BEGIN(l) \
+	int COUNTER(l) = 0; \
+	LOOP_BEGIN(l) \
 
 #define LIST_DELIM(l) \
-       COUNTER(l)++; \
-       TRY(l) \
+	COUNTER(l)++; \
+	TRY(l) \
 
 #define LIST_END(l) \
-       OR(l) \
-               DONE(l); \
-       END_TRY(l) \
+	OR(l) \
+		DONE(l); \
+	END_TRY(l) \
 LOOP_END(l)
-
 
 /** utility functions */
 ParserContext *newParserContext(rError_t *errmsg, Region *r);
 void deleteParserContext(ParserContext *t);
 
-Token *nextTokenRuleGen(Pointer* expr, ParserContext* pc, int rulegen);
+Token *nextTokenRuleGen(Pointer* expr, ParserContext* pc, int rulegen, int ext);
 int nextString(Pointer *e, char *value, int vars[]);
 int nextString2(Pointer *e, char *value, int vars[]);
 int eol(char ch);
@@ -416,7 +422,7 @@ StringList *getVarNamesInExprNodeAux(Node *expr, StringList* varnames, Region *r
 int eqExprNodeSyntactic(Node *a, Node *b);
 int eqExprNodeSyntacticVarMapping(Node *a, Node *b, Hashtable *varMapping /* from a to b */);
 
-int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int vars[]);
+int nextStringBase(Pointer *e, char *value, char* delim, int consumeDelim, char escape, int cntOffset, int vars[]);
 int nextStringBase2(Pointer *e, char *value, char* delim);
 Node *convertStringToExpression(Token *token, char *base, Node **node, Region *r);
 Node *nextActionBackwardCompatible(Pointer *e, Node **node, rError_t *errmsg, Region *r);

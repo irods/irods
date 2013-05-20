@@ -486,47 +486,6 @@ extern "C" {
     } // mock_archive_fsync_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX chmod
-    eirods::error mock_archive_chmod_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = chmod( fco.physical_path().c_str(), fco.mode() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_CHMOD_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "mock_archive_chmod_plugin: chmod error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        } // if
-
-        return CODE( status );
-
-    } // mock_archive_chmod_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error mock_archive_mkdir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
@@ -624,16 +583,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error mock_archive_stage_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "stage not supported" );
-
-    } // mock_archive_stage_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
     eirods::error mock_archive_rename_plugin( 
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
@@ -703,17 +652,6 @@ extern "C" {
 
     } // mock_archive_rename_plugin
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error mock_archive_truncate_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "truncate not supported" );
-
-    } // mock_archive_truncate_plugin
-
-        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error mock_archive_get_fsfreespace_plugin( 
@@ -1227,15 +1165,12 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "mock_archive_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "mock_archive_lseek_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "mock_archive_fsync_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "mock_archive_chmod_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "mock_archive_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "mock_archive_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "mock_archive_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "mock_archive_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "mock_archive_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "mock_archive_stage_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "mock_archive_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "mock_archive_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
