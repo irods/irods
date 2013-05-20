@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit on error
+set -e
+
 # variables
 BASEINFOFILE="coverage-base.info"
 
