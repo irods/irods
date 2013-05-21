@@ -288,7 +288,7 @@ class ResourceSuite(object):
         assertiCmdFail(s.adminsession,"iput "+s.testfile) # fail, already exists
         assertiCmd(s.adminsession,"iput -f "+s.testfile) # iput again, force
 
-    def test_local_iput_recursive():
+    def test_local_iput_recursive(self):
         recursivedirname = "dir"
 
     def test_local_iput_checksum(self):
@@ -651,7 +651,7 @@ class ResourceSuite(object):
     # irmtrash
     ###################
 
-    def test_irmtrash_admin():
+    def test_irmtrash_admin(self):
         # assertions
         assertiCmd(s.adminsession,"irm "+s.testfile) # remove from grid
         assertiCmd(s.adminsession,"ils -rL /"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/","LIST",s.testfile) # should be listed
