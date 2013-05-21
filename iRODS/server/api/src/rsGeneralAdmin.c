@@ -129,7 +129,7 @@ _addResource(
     // =-=-=-=-=-=-=-
     // grab resource context.  this may be overwritted by the 'location' as that 
     // could also hold the conext string if no host:path pair exists
-    strncpy(rescInfo.rescContext,   _generalAdminInp->arg5, sizeof rescInfo.rescContext);
+    strncpy( rescInfo.rescContext, _generalAdminInp->arg5, sizeof rescInfo.rescContext );
 
     if( !loc_path.empty() ) {
         // =-=-=-=-=-=-=-
@@ -151,7 +151,9 @@ _addResource(
             strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
             strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
         }
+
     }  else {
+        addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
         strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
         strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
 
