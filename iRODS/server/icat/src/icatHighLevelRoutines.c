@@ -5403,8 +5403,9 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         OK=1;
     }
 
+#if 0 // JMC - no longer support resource classes
     if (strcmp(option, "class")==0) {
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 8");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 8");
         status = cmlCheckNameToken("resc_class", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
@@ -5417,7 +5418,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 9");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 9");
         status =  cmlExecuteNoAnswerSql(
             "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
             &icss);
@@ -5430,7 +5431,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         }
         OK=1;
     }
-
+#endif
     if (strcmp(option, "path")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 10");
       status = cmlGetStringValueFromSql(
