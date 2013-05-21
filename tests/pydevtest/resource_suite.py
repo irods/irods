@@ -1,7 +1,10 @@
 from nose.plugins.skip import SkipTest
-from pydevtest_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
+import os
+import datetime
+import time
 
 class ResourceSuite(object):
     '''Define the tests to be run for a resource type.
@@ -33,7 +36,7 @@ class ResourceSuite(object):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST","notaresource")
 
     def test_list_users(self):
-        assertiCmd(s.adminsession,"iadmin lu","LIST",s.adminsession.getUsername()+"#"+s.adminsession.getZoneName())
+        assertiCmd(s.adminsession,"iadmin lu","LIST",s.adminsession.getUserName()+"#"+s.adminsession.getZoneName())
         assertiCmdFail(s.adminsession,"iadmin lu","LIST","notauser")
 
     def test_list_groups(self):
@@ -551,7 +554,7 @@ class ResourceSuite(object):
     def test_ireg_as_rodsadmin(self):
         # local setup
         filename = "newfile.txt"
-        filepath = path.abspath(filename)
+        filepath = os.path.abspath(filename)
         f = open(filepath,'wb')
         f.write("TESTFILE -- ["+filepath+"]")
         f.close()
@@ -574,7 +577,7 @@ class ResourceSuite(object):
     def test_ireg_as_rodsuser(self):
         # local setup
         filename = "newfile.txt"
-        filepath = path.abspath(filename)
+        filepath = os.path.abspath(filename)
         f = open(filepath,'wb')
         f.write("TESTFILE -- ["+filepath+"]")
         f.close()
