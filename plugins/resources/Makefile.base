@@ -15,6 +15,7 @@ GCC = g++ -DRODS_SERVER -DZIP_EXEC_PATH=\"$(ZIP_EXEC_PATH)\" -DUNZIP_EXEC_PATH=\
 
 ifeq ($(EIRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
+OBJS = $(patsubst %.cpp, %.o, ${SRCS})
 endif
 
 INC = -I${IRODSDIR}/lib/core/include/ -I${IRODSDIR}/lib/api/include/ -I${IRODSDIR}/lib/md5/include \
@@ -29,6 +30,7 @@ default: ${FULLTARGET}
 clean:
 	@-rm ${FULLTARGET} > /dev/null 2>&1
 	@-rm ${OBJS} > /dev/null 2>&1
+	@-rm -f *.o > /dev/null 2>&1
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir ${SODIR} > /dev/null 2>&1
