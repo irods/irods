@@ -3,8 +3,28 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
 import os
+import shlex
 import datetime
 import time
+
+class ShortAndSuite(object):
+
+    def run_resource_setup(self):
+        print "run_resource_setup - BEGIN"
+        for i in self.my_test_resource["setup"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+        print "run_resource_setup - END"
+
+    def run_resource_teardown(self):
+        print "run_resource_teardown - BEGIN"
+        for i in self.my_test_resource["teardown"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+        print "run_resource_teardown - END"
+
+    def test_awesome(self):
+        print "AWESOME!"
 
 class ResourceSuite(object):
     '''Define the tests to be run for a resource type.
@@ -16,6 +36,16 @@ class ResourceSuite(object):
     any new tests for new functionality or replace any tests
     they need to modify.
     '''
+
+    def run_resource_setup(self):
+        for i in self.my_test_resource["setup"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+
+    def run_resource_teardown(self):
+        for i in self.my_test_resource["teardown"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
 
     # SKIP TEST
     def test_skip_me(self):
@@ -48,7 +78,7 @@ class ResourceSuite(object):
 
     # RESOURCES
 
-    def test_create_and_remove_new_resource(self):
+    def test_create_and_remove_unixfilesystem_resource(self):
         testresc1 = "testResc1"
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
@@ -56,6 +86,54 @@ class ResourceSuite(object):
         assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unix file system\" "+hostname+":/tmp/pydevtest_"+testresc1) # unix
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmdFail(s.adminsession,"iadmin rmresc notaresource") # bad remove
+        assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
+
+    def test_create_and_remove_unixfilesystem_resource_without_spaces(self):
+        testresc1 = "testResc1"
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unixfilesystem\" "+hostname+":/tmp/pydevtest_"+testresc1) # unix
+        assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
+        assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
+
+    def test_create_and_remove_coordinating_resource(self):
+        testresc1 = "testResc1"
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication") # replication
+        assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
+        assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
+
+    def test_create_and_remove_coordinating_resource_with_explicit_contextstring(self):
+        testresc1 = "testResc1"
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication '' Context:String") # replication
+        assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_context","Context:String"]) # should have contextstring
+        assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
+
+    def test_create_and_remove_coordinating_resource_with_detected_contextstring(self):
+        testresc1 = "testResc1"
+        assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication ContextString:Because:Colons") # replication
+        assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_context","ContextString:Because:Colons"]) # should have contextstring
         assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
 
