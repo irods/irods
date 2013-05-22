@@ -3180,6 +3180,32 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
     return(0);
 }
 
+// =-=-=-=-=-=-=-
+/// @brief function which determines if a char is allowed in a zone name
+static bool allowed_zone_char( const char _c ) {
+    return ( !std::isalnum( _c ) && 
+             !( '_' == _c )      && 
+             !( '-' == _c ) );
+} // allowed_zone_char
+
+// =-=-=-=-=-=-=-
+/// @brief function for validing the name of a zone
+eirods::error validate_zone_name( 
+    std::string _zone_name ) {
+    std::string::iterator itr = std::find_if( _zone_name.begin(),
+                                              _zone_name.end(),
+                                              allowed_zone_char );
+    if( itr != _zone_name.end() ) {
+        std::stringstream msg;
+        msg << "validate_zone_name failed for zone [";
+        msg << _zone_name;
+        msg << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_zone_name
 
 /* register a Zone */
 int chlRegZone(rsComm_t *rsComm, 
@@ -3189,6 +3215,10 @@ int chlRegZone(rsComm_t *rsComm,
     char tSQL[MAX_SQL_SIZE];
     int status;
     char myTime[50];
+
+    if( !rsComm || !zoneName || !zoneType || !zoneConnInfo || !zoneComment ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegZone");
 
@@ -3207,6 +3237,14 @@ int chlRegZone(rsComm_t *rsComm,
         addRErrorMsg (&rsComm->rError, 0, 
                       "Currently, only zones of type 'remote' are allowed");
         return(CAT_INVALID_ARGUMENT);
+    }
+
+    // =-=-=-=-=-=-=-
+    // validate the zone name does not include improper characters
+    eirods::error ret = validate_zone_name( zoneName );
+    if( !ret.ok() ) {
+        eirods::log( ret );
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     /* String to get next sequence item for objects */
