@@ -401,7 +401,6 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
     *dataObjInfo = NULL;
 
     if (specColl->collClass == MOUNTED_COLL) {
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: A" );
         /* a mount point */
         myDataObjInfo = *dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
           
@@ -446,7 +445,6 @@ rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: A" );
         }
         replSpecColl (specColl, &myDataObjInfo->specColl);
     } else if (specColl->collClass == LINKED_COLL) {
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: B" );
         
         /* a link point */
         specCollCache_t *specCollCache = NULL;
@@ -519,7 +517,6 @@ rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: B" );
             return DATA_OBJ_T;
         }
     } else if (getStructFileType (specColl) >= 0) {
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: C" );
 
         /* bundle */
         dataObjInp_t myDataObjInp;
@@ -594,19 +591,16 @@ rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: C" );
                  specColl->collClass);
         return (SYS_UNKNOWN_SPEC_COLL_CLASS);
     }
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: D" );
     status = l3Stat (rsComm, *dataObjInfo, &rodsStat);
     if (status < 0) {
         return status;
     }
 
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: E" );
     if (rodsStat->st_ctim != 0) {
         snprintf ((*dataObjInfo)->dataCreate, TIME_LEN, "%d", rodsStat->st_ctim);
         snprintf ((*dataObjInfo)->dataModify, TIME_LEN, "%d", rodsStat->st_mtim);
     }
 
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: F" );
     if (rodsStat->st_mode & S_IFDIR) {
         objType = COLL_OBJ_T;
     } else {
@@ -614,7 +608,6 @@ rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: F" );
         (*dataObjInfo)->dataSize = rodsStat->st_size;
     }
     free (rodsStat);
-rodsLog( LOG_NOTICE, "XXXX - specCollSubStat :: G" );
 
     return (objType);
 }

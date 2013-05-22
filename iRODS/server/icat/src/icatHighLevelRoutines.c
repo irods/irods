@@ -4684,6 +4684,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 	    selUserId, 
             IRODS_PAM_PASSWORD_MIN_TIME,
             IRODS_PAM_PASSWORD_MAX_TIME, &icss);
+
    if (status==0) {
 #ifndef PAM_AUTH_NO_EXTEND
       if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
@@ -4709,21 +4710,38 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
    }
 
 
-   j=0;
-   get64RandomBytes(rBuf);
-   for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
-      char c;
-      c = rBuf[i] &0x7f;
-      if (c < '0') c+='0';
-      if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
-           (c > '0' && c < '9') ){
-         randomPw[j++]=c;
-      }
-   }
-   randomPw[j]='\0';
+   // =-=-=-=-=-=-=-
+   // if the resultant scrambled password has a ' in the
+   // string, this can cause issues on some systems, notably
+   // Suse 12.  if this is the case we will just get another
+   // random password.
+   bool pw_good = false;
+   while( !pw_good ) {
 
-   strncpy(randomPwEncoded, randomPw, 50);
-   icatScramble(randomPwEncoded); 
+       j=0;
+       get64RandomBytes(rBuf);
+       for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+          char c;
+          c = rBuf[i] & 0x7f;
+          if (c < '0') c+='0';
+          if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+               (c > '0' && c < '9') ){
+             randomPw[j++]=c;
+          }
+       }
+       randomPw[j]='\0';
+
+       strncpy(randomPwEncoded, randomPw, 50);
+       icatScramble(randomPwEncoded); 
+       if( !strstr( randomPwEncoded, "\'" ) ) {
+           pw_good = true; 
+
+       } else {
+           rodsLog( LOG_ERROR, "XXXX - chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
+
+       }
+
+   } // while
 
    if (testTime!=NULL && strlen(testTime)>0) {
       strncpy(myTime, testTime, sizeof(myTime));
