@@ -3,8 +3,28 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
 import os
+import shlex
 import datetime
 import time
+
+class ShortAndSuite(object):
+
+    def run_resource_setup(self):
+        print "run_resource_setup - BEGIN"
+        for i in self.my_test_resource["setup"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+        print "run_resource_setup - END"
+
+    def run_resource_teardown(self):
+        print "run_resource_teardown - BEGIN"
+        for i in self.my_test_resource["teardown"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+        print "run_resource_teardown - END"
+
+    def test_awesome(self):
+        print "AWESOME!"
 
 class ResourceSuite(object):
     '''Define the tests to be run for a resource type.
@@ -16,6 +36,16 @@ class ResourceSuite(object):
     any new tests for new functionality or replace any tests
     they need to modify.
     '''
+
+    def run_resource_setup(self):
+        for i in self.my_test_resource["setup"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+
+    def run_resource_teardown(self):
+        for i in self.my_test_resource["teardown"]:
+            parameters = shlex.split(i) # preserves quoted substrings
+            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
 
     # SKIP TEST
     def test_skip_me(self):
