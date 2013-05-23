@@ -95,6 +95,7 @@ struct rescGrpInfo_t {
     int dummy;
     struct rescGrpInfo_t *cacheNext; 	/* this is for cached resource grp */
     struct rescGrpInfo_t *next; 
+    ~rescGrpInfo_t() { delete rescInfo; }
 };
 
 typedef struct RescCacheInfo
@@ -186,7 +187,7 @@ typedef struct RescCacheInfo
 /* definition for flags in dataObjInfo_t */
 #define NO_COMMIT_FLAG  0x1  /* used in chlModDataObjMeta and chlRegDataObj */
 
-    typedef struct DataObjInfo {
+    struct dataObjInfo_t {
         char objPath[MAX_NAME_LEN];
         char rescName[NAME_LEN];       /* This could be resource group */
         char rescHier[MAX_NAME_LEN];   // The hierarchy of resources within which the object resides
@@ -221,8 +222,9 @@ typedef struct RescCacheInfo
         int regUid;                /* the UNIX uid the registering user */
         int otherFlags;    /* not used for now */
         int in_pdmo;       // If this is set then we are currently in a pdmo call
-        struct DataObjInfo *next;
-    } dataObjInfo_t;
+        struct dataObjInfo_t *next;
+        ~dataObjInfo_t() { delete rescInfo; }
+    };
 
 /* collInfo_t definitions:
  * collInfo1:

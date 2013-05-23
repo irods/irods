@@ -76,6 +76,7 @@ main(int argc, char *argv[])
 
     if (status < 0) {
         sendVersion (rsComm.sock, status, 0, NULL, 0);
+        unregister_handlers();
         cleanupAndExit (status);
     }
 
@@ -109,6 +110,7 @@ main(int argc, char *argv[])
 
     if (status < 0) {
         sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        unregister_handlers();
         cleanupAndExit (status);
     }
 
@@ -126,6 +128,7 @@ main(int argc, char *argv[])
 
     if (status < 0) {
         sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        unregister_handlers();
         cleanupAndExit (status);
     }
 
@@ -139,6 +142,7 @@ main(int argc, char *argv[])
 
         if (status < 0) {
             sendVersion (rsComm.sock, status, 0, NULL, 0);
+            unregister_handlers();
             cleanupAndExit (status);
         }
     }
@@ -151,6 +155,7 @@ main(int argc, char *argv[])
 
     if (status < 0) {
         sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        unregister_handlers();
         cleanupAndExit (status);
     }
 #ifdef SYS_TIMING
@@ -166,6 +171,8 @@ main(int argc, char *argv[])
     
     status = agentMain (&rsComm);
 
+    
+    unregister_handlers();
     cleanupAndExit (status);
 
     return (status);

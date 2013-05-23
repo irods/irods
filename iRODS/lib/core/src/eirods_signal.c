@@ -3,6 +3,7 @@
 #include "eirods_signal.h"
 #include "eirods_stacktrace.h"
 
+#include <string.h>
 #include <signal.h>
 #include <stdlib.h>
 #if defined(osx_platform)
@@ -14,6 +15,8 @@
 // Define signal handlers for eirods
 
 extern "C" {
+
+    static struct sigaction* action = 0;
 
     /// @brief Signal handler for seg faults
     static void segv_handler(
@@ -27,10 +30,15 @@ extern "C" {
 
 
     void register_handlers(void) {
-        struct sigaction* action = (struct sigaction*)calloc(sizeof(struct sigaction), 0);
+        action = (struct sigaction*)malloc(sizeof(struct sigaction));
+        memset( action, 0, sizeof( action ) );
         action->sa_handler = segv_handler;
         sigaction(11, action, 0);
         sigaction(6, action, 0);
         sigaction(2, action, 0);
+    }
+
+    void unregister_handlers() {
+        free( action );
     }
 };
