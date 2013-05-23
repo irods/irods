@@ -153,7 +153,9 @@ _addResource(
         }
 
     }  else {
-        addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
+        if ( strlen( rescInfo.rescContext ) != 0 ) {
+            addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
+        }
         strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
         strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
 
