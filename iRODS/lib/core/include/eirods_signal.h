@@ -3,5 +3,6 @@
 
 extern "C" {
     extern void register_handlers(void);
+    extern void unregister_handlers(void);
 }
 #endif // _EIRODS_SIGNAL_H_

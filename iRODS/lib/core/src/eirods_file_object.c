@@ -189,6 +189,8 @@ namespace eirods {
             msg << _data_obj_inp->objPath;
             msg << "] ";
             msg << rods_error << " " << sys_error;
+            free( head_ptr->rescInfo );
+            free( head_ptr );
             return ERROR( status, msg.str() );    
         }
 
@@ -250,6 +252,8 @@ namespace eirods {
 
         _file_obj.replicas( objects );
 
+        free( head_ptr->rescInfo );
+        free( head_ptr );
         return SUCCESS();
 
     } // file_object_factory
