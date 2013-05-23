@@ -116,7 +116,7 @@ class ResourceSuite(object):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication '' Context:String") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication '' Context:String",LIST,"resource host:path string is empty") # replication
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
