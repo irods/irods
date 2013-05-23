@@ -52,26 +52,6 @@ class ResourceSuite(object):
         raise SkipTest
 
     ###################
-    # iexit
-    ###################
-
-    def test_iexit(self):
-        # assertions
-        assertiCmd(s.adminsession,"iexit") # just go home
-
-    def test_iexit_verbose(self):
-        # assertions
-        assertiCmd(s.adminsession,"iexit -v","LIST","Deleting (if it exists) session envFile:") # home, verbose
-
-    def test_iexit_with_bad_option(self):
-        # assertions
-        assertiCmdFail(s.adminsession,"iexit -z") # run iexit with bad option
-
-    def test_iexit_with_bad_parameter(self):
-        # assertions
-        assertiCmdFail(s.adminsession,"iexit badparameter") # run iexit with bad parameter
-
-    ###################
     # iget
     ###################
 
