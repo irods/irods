@@ -14,6 +14,8 @@ iRODS/server/config/server.config
 iRODS/server/re/include/eirods_ms_home.h
 iRODS/server/re/include/reAction.h
 packaging/eirods.list
+packaging/eirods-dev.list
+packaging/eirods-icommands.list
 plugins/resources/hpss/Makefile
 plugins/resources/compound/Makefile
 plugins/resources/nonblocking/Makefile
