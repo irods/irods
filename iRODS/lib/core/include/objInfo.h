@@ -223,7 +223,6 @@ typedef struct RescCacheInfo
         int otherFlags;    /* not used for now */
         int in_pdmo;       // If this is set then we are currently in a pdmo call
         struct dataObjInfo_t *next;
-        ~dataObjInfo_t() { delete rescInfo; }
     };
 
 /* collInfo_t definitions:

@@ -31,7 +31,7 @@ extern "C" {
 
     void register_handlers(void) {
         action = (struct sigaction*)malloc(sizeof(struct sigaction));
-        memset( action, 0, sizeof( action ) );
+        memset( action, 0, sizeof( struct sigaction ) );
         action->sa_handler = segv_handler;
         sigaction(11, action, 0);
         sigaction(6, action, 0);
