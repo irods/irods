@@ -4775,7 +4775,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
            pw_good = true; 
 
        } else {
-           rodsLog( LOG_ERROR, "XXXX - chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
+           rodsLog( LOG_STATUS, "chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
 
        }
 

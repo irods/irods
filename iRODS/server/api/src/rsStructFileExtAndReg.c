@@ -418,7 +418,8 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
                             rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
                             rstrcpy (dataObjInfo.rescHier, rescHier, MAX_NAME_LEN);
                             rstrcpy (dataObjInfo.dataType, "generic", NAME_LEN);
-                            dataObjInfo.rescInfo = rescInfo;
+                            dataObjInfo.rescInfo = new rescInfo_t;
+                            memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
                             rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
                             dataObjInfo.dataSize = dataSize;
 

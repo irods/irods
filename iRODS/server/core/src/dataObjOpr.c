@@ -907,14 +907,13 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
                     dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 {
 
-    dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
-                  *oldCacheInfo,    *downCurrentInfo,  *downOldInfo;
+    dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
+                  *oldCacheInfo = 0,    *downCurrentInfo = 0,  *downOldInfo = 0;
 
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
     
-
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
