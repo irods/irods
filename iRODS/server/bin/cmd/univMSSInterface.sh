@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## Copyright (c) 2009 Data Intensive Cyberinfrastructure Foundation. All rights reserved.
 ## For full copyright notice please refer to files in the COPYRIGHT directory
@@ -15,6 +15,9 @@
 syncToArch () {
 	# <your command or script to copy from cache to MSS> $1 $2 
 	# e.g: /usr/local/bin/rfcp $1 rfioServerFoo:$2
+        op=`which cp`
+        `$op $1 $2`
+        echo "UNIVMSS $op $1 $2"
 	return
 }
 
@@ -22,6 +25,9 @@ syncToArch () {
 stageToCache () {
 	# <your command to stage from MSS to cache> $1 $2	
 	# e.g: /usr/local/bin/rfcp rfioServerFoo:$1 $2
+        op=`which cp`
+        `$op $1 $2`
+        echo "UNIVMSS $op $1 $2"
 	return
 }
 
@@ -29,6 +35,8 @@ stageToCache () {
 mkdir () {
 	# <your command to make a directory in the MSS> $1
 	# e.g.: /usr/local/bin/rfmkdir -p rfioServerFoo:$1
+        op=`which mkdir`
+        `$op -p $1`
 	return
 }
 
@@ -36,6 +44,8 @@ mkdir () {
 chmod () {
 	# <your command to modify ACL> $1 $2
 	# e.g: /usr/local/bin/rfchmod $2 rfioServerFoo:$1
+        op=`which chmod`
+        `$op $1 $2`
 	return
 }
 
@@ -43,18 +53,24 @@ chmod () {
 rm () {
 	# <your command to remove a file from the MSS> $1
 	# e.g: /usr/local/bin/rfrm rfioServerFoo:$1
+    op=`which rm`
+	`$op $1`
 	return
 }
 
 # function to rename a file $1 into $2 in the MSS
 mv () {
-       # <your command to rename a file in the MSS> $1 $2
-       # e.g: /usr/local/bin/rfrename rfioServerFoo:$1 rfioServerFoo:$2
-       return
+    # <your command to rename a file in the MSS> $1 $2
+    # e.g: /usr/local/bin/rfrename rfioServerFoo:$1 rfioServerFoo:$2
+    op=`which mv`
+    `$op $1 $2`
+    return
 }
 
 # function to do a stat on a file $1 stored in the MSS
 stat () {
+        op=`which stat`
+	output=`$op $1`
 	# <your command to retrieve stats on the file> $1
 	# e.g: output=`/usr/local/bin/rfstat rfioServerFoo:$1`
 	error=$?
@@ -75,6 +91,20 @@ stat () {
 	# Note 2: the time should have this format: YYYY-MM-dd-hh.mm.ss with: 
 	#                                           YYYY = 1900 to 2xxxx, MM = 1 to 12, dd = 1 to 31,
 	#                                           hh = 0 to 24, mm = 0 to 59, ss = 0 to 59
+        device=`echo $output | awk '{print $13}'`
+        inode=`echo $output | awk '{print $15}'`
+        mode=`echo $output  | awk '{print $19}'`
+        mode=${mode//[^0-9]/}
+        nlink=`echo $output  | awk '{print $17}'`
+        uid="0"
+        gid="0"
+        devid="0"
+        size=`echo $output | awk '{print $4}'`
+        blksize=`echo $output | awk '{print $6}'`
+        blkcnt="0"
+        atime="0"
+        mtime="0"
+        ctime="0"
 	echo "$device:$inode:$mode:$nlink:$uid:$gid:$devid:$size:$blksize:$blkcnt:$atime:$mtime:$ctime"
 	return
 }

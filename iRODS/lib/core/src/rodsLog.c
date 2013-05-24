@@ -13,6 +13,7 @@
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
 #include <time.h>
+#include <sys/time.h>
 
 #ifndef windows_platform
 #include <unistd.h>
@@ -400,6 +401,10 @@
     KRB_QUERY_INTERNAL_ERROR, 
     OSAUTH_NOT_BUILT_INTO_CLIENT, 
     OSAUTH_NOT_BUILT_INTO_SERVER, 
+    PAM_AUTH_NOT_BUILT_INTO_CLIENT, 
+    PAM_AUTH_NOT_BUILT_INTO_SERVER, 
+    PAM_AUTH_PASSWORD_FAILED, 
+    PAM_AUTH_PASSWORD_INVALID_TTL, 
     OBJPATH_EMPTY_IN_STRUCT_ERR, 
     RESCNAME_EMPTY_IN_STRUCT_ERR, 
     DATATYPE_EMPTY_IN_STRUCT_ERR, 
@@ -564,21 +569,29 @@
     DBR_WRITABLE_BY_TOO_MANY, 
     DBO_WRITABLE_BY_TOO_MANY, 
     DBO_WRITABLE_BY_NON_PRIVILEGED, 
+    EIRODS_KEY_NOT_FOUND, 
+    EIRODS_KEY_TYPE_MISMATCH, 
+    EIRODS_CHILD_EXISTS, 
+    EIRODS_HIERARCHY_ERROR, 
+    EIRODS_CHILD_NOT_FOUND, 
+    EIRODS_NEXT_RESC_FOUND, 
+    EIRODS_NO_PDMO_DEFINED, 
+    EIRODS_INVALID_LOCATION, 
+    EIRODS_PLUGIN_ERROR, 
+    EIRODS_INVALID_RESC_CHILD_CONTEXT, 
+    EIRODS_INVALID_FILE_OBJECT, 
+    EIRODS_INVALID_OPERATION, 
+    EIRODS_CHILD_HAS_PARENT, 
+    SSL_NOT_BUILT_INTO_CLIENT, 
+    SSL_NOT_BUILT_INTO_SERVER, 
+    SSL_INIT_ERROR, 
+    SSL_HANDSHAKE_ERROR, 
+    SSL_SHUTDOWN_ERROR, 
+    SSL_CERT_ERROR, 
     SYS_NULL_INPUT, 
     SYS_HANDLER_DONE_WITH_ERROR, 
     SYS_HANDLER_DONE_NO_ERROR, 
     SYS_NO_HANDLER_REPLY_MSG, 
-    EIRODS_KEY_NOT_FOUND,    
-    EIRODS_KEY_TYPE_MISMATCH, 
-    EIRODS_CHILD_EXISTS,      
-    EIRODS_HIERARCHY_ERROR,    
-    EIRODS_CHILD_NOT_FOUND,     
-    EIRODS_NEXT_RESC_FOUND,      
-    EIRODS_NO_PDMO_DEFINED,       
-    EIRODS_INVALID_LOCATION,       
-    EIRODS_PLUGIN_ERROR,            
-
-
 };
    char *irodsErrorNames[]={ 
     "SYS_SOCK_OPEN_ERR", 
@@ -951,6 +964,10 @@
     "KRB_QUERY_INTERNAL_ERROR", 
     "OSAUTH_NOT_BUILT_INTO_CLIENT", 
     "OSAUTH_NOT_BUILT_INTO_SERVER", 
+    "PAM_AUTH_NOT_BUILT_INTO_CLIENT", 
+    "PAM_AUTH_NOT_BUILT_INTO_SERVER", 
+    "PAM_AUTH_PASSWORD_FAILED", 
+    "PAM_AUTH_PASSWORD_INVALID_TTL", 
     "OBJPATH_EMPTY_IN_STRUCT_ERR", 
     "RESCNAME_EMPTY_IN_STRUCT_ERR", 
     "DATATYPE_EMPTY_IN_STRUCT_ERR", 
@@ -1115,22 +1132,31 @@
     "DBR_WRITABLE_BY_TOO_MANY", 
     "DBO_WRITABLE_BY_TOO_MANY", 
     "DBO_WRITABLE_BY_NON_PRIVILEGED", 
+    "EIRODS_KEY_NOT_FOUND", 
+    "EIRODS_KEY_TYPE_MISMATCH", 
+    "EIRODS_CHILD_EXISTS", 
+    "EIRODS_HIERARCHY_ERROR", 
+    "EIRODS_CHILD_NOT_FOUND", 
+    "EIRODS_NEXT_RESC_FOUND", 
+    "EIRODS_NO_PDMO_DEFINED", 
+    "EIRODS_INVALID_LOCATION", 
+    "EIRODS_PLUGIN_ERROR", 
+    "EIRODS_INVALID_RESC_CHILD_CONTEXT", 
+    "EIRODS_INVALID_FILE_OBJECT", 
+    "EIRODS_INVALID_OPERATION", 
+    "EIRODS_CHILD_HAS_PARENT", 
+    "SSL_NOT_BUILT_INTO_CLIENT", 
+    "SSL_NOT_BUILT_INTO_SERVER", 
+    "SSL_INIT_ERROR", 
+    "SSL_HANDSHAKE_ERROR", 
+    "SSL_SHUTDOWN_ERROR", 
+    "SSL_CERT_ERROR", 
     "SYS_NULL_INPUT", 
     "SYS_HANDLER_DONE_WITH_ERROR", 
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
-    "EIRODS_KEY_NOT_FOUND",    
-    "EIRODS_KEY_TYPE_MISMATCH", 
-    "EIRODS_CHILD_EXISTS",      
-    "EIRODS_HIERARCHY_ERROR",    
-    "EIRODS_CHILD_NOT_FOUND",     
-    "EIRODS_NEXT_RESC_FOUND",      
-    "EIRODS_NO_PDMO_DEFINED",       
-    "EIRODS_INVALID_LOCATION",       
-    "EIRODS_PLUGIN_ERROR",            
-
 };
-int irodsErrorCount= 547;
+int irodsErrorCount= 561;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;
@@ -1487,3 +1513,43 @@ static void rodsNtElog(char *msg)
 	_close(fd);
 }
 #endif
+
+/*
+ * This function will generate an ISO 8601 formatted 
+ * date/time stamp for use in log messages. The format
+ * will be 'YYYYMMDDThhmmss.uuuuuuZ' where:
+ *
+ * YYYY - is the year 
+ *   MM - is the month (01-12)
+ *   DD - is the day   (01-31)
+ *   hh - is the hour (00-24)
+ *   mm - is the minute (00-59)
+ *   ss - is the second (00-59)
+ *   u+ - are the number of microseconds.
+ *
+ * The date/time stamp is in UTC time.
+ */
+void 
+generateLogTimestamp(char *ts, int tsLen)
+{
+    struct timeval tv;
+    struct tm utc;
+    char timestamp[TIME_LEN];
+
+    if (ts == NULL) {
+        return;
+    }
+
+    gettimeofday(&tv, NULL);
+    gmtime_r(&tv.tv_sec, &utc);
+    strftime(timestamp, TIME_LEN, "%Y%m%dT%H%M%S", &utc);
+    
+    /* 8 characters of '.uuuuuuZ' + nul */
+    if (tsLen < (int)strlen(timestamp) + 9) {
+        return;
+    }
+
+    snprintf(ts, strlen(timestamp) + 9, "%s.%06dZ", timestamp, (int)tv.tv_usec);
+}
+
+

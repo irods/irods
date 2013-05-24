@@ -40,7 +40,6 @@ packInstructArray_t ApiPackTable[] = {
         {"fileStatInp_PI", fileStatInp_PI},
         {"fileUnlinkInp_PI", fileUnlinkInp_PI},
         {"fileReadInp_PI", fileReadInp_PI},
-        {"fileChmodInp_PI", fileChmodInp_PI},
         {"fileCloseInp_PI", fileCloseInp_PI},
         {"fileFstatInp_PI", fileFstatInp_PI},
         {"fileFsyncInp_PI", fileFsyncInp_PI},
@@ -51,7 +50,6 @@ packInstructArray_t ApiPackTable[] = {
         {"fileReaddirInp_PI", fileReaddirInp_PI},
         {"fileRenameInp_PI", fileRenameInp_PI},
         {"fileRmdirInp_PI", fileRmdirInp_PI},
-        {"fileStageInp_PI", fileStageInp_PI},
         {"fileWriteInp_PI", fileWriteInp_PI},
         {"fileClosedirInp_PI", fileClosedirInp_PI},
         {"MiscSvrInfo_PI", MiscSvrInfo_PI},
@@ -64,7 +62,7 @@ packInstructArray_t ApiPackTable[] = {
         {"generalAdminInp_PI", generalAdminInp_PI},
         {"authCheckInp_PI", authCheckInp_PI},
         {"authCheckOut_PI", authCheckOut_PI},
-	{"modAccessControlInp_PI", modAccessControlInp_PI},
+	    {"modAccessControlInp_PI", modAccessControlInp_PI},
         {"ModAVUMetadataInp_PI", ModAVUMetadataInp_PI},
         {"RULE_EXEC_MOD_INP_PI", RULE_EXEC_MOD_INP_PI},
         {"RULE_EXEC_DEL_INP_PI", RULE_EXEC_DEL_INP_PI},
@@ -97,7 +95,11 @@ packInstructArray_t ApiPackTable[] = {
         {"endTransactionInp_PI", endTransactionInp_PI},
         {"ProcStatInp_PI", ProcStatInp_PI},
         {"specificQueryInp_PI", specificQueryInp_PI},
-        {PACK_TABLE_END_PI, (char *) NULL},
+        {"pamAuthRequestInp_PI", pamAuthRequestInp_PI},
+        {"pamAuthRequestOut_PI", pamAuthRequestOut_PI},
+        {"sslStartInp_PI", sslStartInp_PI},
+        {"sslEndInp_PI", sslEndInp_PI},
+       {PACK_TABLE_END_PI, (char *) NULL},
 };
 
 //#ifdef  __cplusplus

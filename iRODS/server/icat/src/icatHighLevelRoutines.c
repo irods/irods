@@ -82,10 +82,34 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
    startup sequence.  iDrop and iDrop-lite disconnect when idle to
    reduce the number of open connections and active agents.  */
 #define TEMP_PASSWORD_TIME 120
+#define TEMP_PASSWORD_MAX_TIME 1000
 
+/* IRODS_PAM_PASSWORD_DEFAULT_TIME (the default iRODS-PAM password
+   lifetime) IRODS_PAM_PASSWORD_MIN_TIME must be greater than
+   TEMP_PASSWORD_TIME to avoid the possibility that the logic for
+   temporary passwords would be applied.  This should be fine as
+   IRODS-PAM passwords will typically be valid on the order of a
+   couple weeks compared to a couple minutes for temporary one-time
+   passwords.
+ */
+#define IRODS_PAM_PASSWORD_LEN 20
+
+/* The IRODS_PAM_PASSWORD_MIN_TIME must be greater than
+   TEMP_PASSWORD_TIME so the logic can deal with each password type
+   differently.  If they overlap, SQL errors can result */
+#define IRODS_PAM_PASSWORD_MIN_TIME "121"  /* must be > TEMP_PASSWORD_TIME */
+#define IRODS_PAM_PASSWORD_MAX_TIME "1209600"    /* two weeks in seconds */
+#ifdef PAM_AUTH_NO_EXTEND
+#define IRODS_PAM_PASSWORD_DEFAULT_TIME "28800"  /* 8 hours in seconds */
+#else
+#define IRODS_PAM_PASSWORD_DEFAULT_TIME "1209600" /* two weeks in seconds */
+#endif
+ 
 #define PASSWORD_SCRAMBLE_PREFIX ".E_"
 #define PASSWORD_KEY_ENV_VAR "irodsPKey"
 #define PASSWORD_DEFAULT_KEY "a9_3fker"
+
+#define MAX_HOST_STR 2700
 
 int logSQL=0;
 
@@ -1680,12 +1704,12 @@ _resolveHostName(
     return result;
 }
 
-bool
+int
 _childIsValid(
     const std::string& _new_child) {
 
     // Lookup the child resource and make sure its parent field is empty
-    bool result = true;
+    int result = 0;
     char parent[MAX_NAME_LEN];
     int status;
 
@@ -1708,14 +1732,14 @@ _childIsValid(
         } else {
             _rollback("_childIsValid");
         }
-        result = false;
+        result = status;
 
     } else if(strlen(parent) != 0) {
         // If the resource already has a parent it cannot be added as a child of another one
         std::stringstream ss;
         ss << "Child resource \"" << resc_name << "\" already has a parent \"" << parent << "\"";
         eirods::log(LOG_NOTICE, ss.str());
-        result = false;
+        result = EIRODS_CHILD_HAS_PARENT;
     }
     return result;
 }
@@ -1933,7 +1957,7 @@ chlAddChildResc(
                     _rollback(func_name);
                     result = status;
                 }
-            } else if(_childIsValid(new_child_string)) {
+            } else if((status =_childIsValid(new_child_string)) == 0) {
                 if((status = _updateRescChildren(resc_id, new_child_string)) != 0) {
                     result = status;
                 } else if((status = _updateChildParent(new_child_string, std::string(rescInfo->rescName))) != 0) {
@@ -1958,13 +1982,16 @@ chlAddChildResc(
                     }
                 }                
             } else {
-                char errMsg[105];
-                snprintf(errMsg, 100, 
-                         "resource '%s' is not a valid resource",
-                         rescInfo->rescName);
-                addRErrorMsg (&rsComm->rError, 0, errMsg);
-                result = CAT_INVALID_RESOURCE_NAME;
-
+                std::string resc_name;
+                eirods::children_parser parser;
+                parser.set_string(new_child_string);
+                parser.first_child(resc_name);
+                
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Resource '" << resc_name << "' already has a parent.";
+                addRErrorMsg(&rsComm->rError, 0, msg.str().c_str());
+                result = status;
             }
         }
     }
@@ -3153,6 +3180,32 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
     return(0);
 }
 
+// =-=-=-=-=-=-=-
+/// @brief function which determines if a char is allowed in a zone name
+static bool allowed_zone_char( const char _c ) {
+    return ( !std::isalnum( _c ) && 
+             !( '_' == _c )      && 
+             !( '-' == _c ) );
+} // allowed_zone_char
+
+// =-=-=-=-=-=-=-
+/// @brief function for validing the name of a zone
+eirods::error validate_zone_name( 
+    std::string _zone_name ) {
+    std::string::iterator itr = std::find_if( _zone_name.begin(),
+                                              _zone_name.end(),
+                                              allowed_zone_char );
+    if( itr != _zone_name.end() ) {
+        std::stringstream msg;
+        msg << "validate_zone_name failed for zone [";
+        msg << _zone_name;
+        msg << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_zone_name
 
 /* register a Zone */
 int chlRegZone(rsComm_t *rsComm, 
@@ -3162,6 +3215,10 @@ int chlRegZone(rsComm_t *rsComm,
     char tSQL[MAX_SQL_SIZE];
     int status;
     char myTime[50];
+
+    if( !rsComm || !zoneName || !zoneType || !zoneConnInfo || !zoneComment ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegZone");
 
@@ -3180,6 +3237,14 @@ int chlRegZone(rsComm_t *rsComm,
         addRErrorMsg (&rsComm->rError, 0, 
                       "Currently, only zones of type 'remote' are allowed");
         return(CAT_INVALID_ARGUMENT);
+    }
+
+    // =-=-=-=-=-=-=-
+    // validate the zone name does not include improper characters
+    eirods::error ret = validate_zone_name( zoneName );
+    if( !ret.ok() ) {
+        eirods::log( ret );
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     /* String to get next sequence item for objects */
@@ -4076,8 +4141,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     static int prevFailure=0;
     char pwInfoArray[MAX_PASSWORD_LEN*MAX_PASSWORDS*3];
     char goodPw[MAX_PASSWORD_LEN+10];
+    char lastPw[MAX_PASSWORD_LEN+10];
     char goodPwExpiry[MAX_PASSWORD_LEN+10];
     char goodPwTs[MAX_PASSWORD_LEN+10];
+    char goodPwModTs[MAX_PASSWORD_LEN+10];
     rodsLong_t expireTime;
     char *cpw;
     int nPasswords;
@@ -4089,6 +4156,9 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     char myUserZone[MAX_NAME_LEN];
     char userName2[NAME_LEN+2];
     char userZone[NAME_LEN+2];
+   rodsLong_t pamMinTime;
+   rodsLong_t pamMaxTime;
+
 #if defined(OS_AUTH)
     int doOsAuthentication = 0;
     char *os_auth_flag;
@@ -4149,13 +4219,14 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 #endif
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
-
+    
     status = cmlGetMultiRowStringValuesFromSql(
-        "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
-        pwInfoArray, MAX_PASSWORD_LEN,
-        MAX_PASSWORDS*3,  /* three strings per password returned */
-        userName2, myUserZone, &icss);
-    if (status < 3) {
+           "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts, R_USER_PASSWORD.modify_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
+           pwInfoArray, MAX_PASSWORD_LEN,
+           MAX_PASSWORDS*4,  /* four strings per password returned */
+           userName2, myUserZone, &icss);
+        
+    if (status < 4) {
         if (status == CAT_NO_ROWS_FOUND) {
             status = CAT_INVALID_USER; /* Be a little more specific */
             if (strncmp(ANONYMOUS_USER, userName2, NAME_LEN)==0) {
@@ -4166,9 +4237,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
         return(status);
     }
 
-    nPasswords=status/3;    /* three strings per password returned */
+    nPasswords=status/4;    /* three strings per password returned */
     goodPwExpiry[0]='\0';
     goodPwTs[0]='\0';
+    goodPwModTs[0]='\0';
 
     cpw=pwInfoArray;
     for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
@@ -4199,9 +4271,11 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
             rstrcpy(goodPwExpiry, cpw, MAX_PASSWORD_LEN);
             cpw+=MAX_PASSWORD_LEN;
             rstrcpy(goodPwTs, cpw, MAX_PASSWORD_LEN);
+            cpw+=MAX_PASSWORD_LEN;
+            rstrcpy(goodPwModTs, cpw, MAX_PASSWORD_LEN);
             break;
         }
-        cpw+=MAX_PASSWORD_LEN*3;
+        cpw+=MAX_PASSWORD_LEN*4;
     }
     memset(pwInfoArray, 0, sizeof(pwInfoArray));
 
@@ -4213,7 +4287,50 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
     expireTime=atoll(goodPwExpiry);
     getNowStr(myTime);
     nowTime=atoll(myTime);
-    if (expireTime < 1000) {
+
+    /* Check for PAM_AUTH type passwords */
+    pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+    pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+
+    if( ( strncmp(goodPwExpiry, "9999",4)!=0) &&
+        expireTime >=  pamMinTime &&
+        expireTime <= pamMaxTime) {
+        time_t modTime;
+        /* The used pw is an iRODS-PAM type, so now check if it's expired */
+        getNowStr(myTime);
+        nowTime=atoll(myTime);
+        modTime=atoll(goodPwModTs);
+
+        if (modTime+expireTime < nowTime) {
+            /* it is expired, so return the error below and first remove it */
+            cllBindVars[cllBindVarCount++]=lastPw;
+            cllBindVars[cllBindVarCount++]=goodPwTs;
+            cllBindVars[cllBindVarCount++]=userName2;
+            cllBindVars[cllBindVarCount++]=myUserZone;
+            if (logSQL!=0) 
+                rodsLog(LOG_SQL, "chlCheckAuth SQL 2");
+            status = cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where rcat_password=? and create_ts=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)", &icss);
+            memset(goodPw, 0, sizeof(goodPw));
+            memset(lastPw, 0, sizeof(lastPw));
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                "chlCheckAuth cmlExecuteNoAnswerSql delete expired password failure %d",
+                status);
+                return(status);
+            }
+            status =  cmlExecuteNoAnswerSql("commit", &icss);
+            if (status != 0) {
+                rodsLog(LOG_NOTICE,
+                "chlCheckAuth cmlExecuteNoAnswerSql commit failure %d",
+                status);
+                return(status);
+            }
+            return(CAT_PASSWORD_EXPIRED);
+        }
+    }
+
+
+    if (expireTime < TEMP_PASSWORD_MAX_TIME) {
 
         /* in the form used by temporary, one-time passwords */
 
@@ -4524,6 +4641,172 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 }
 
 
+/*
+ Add or update passwords for use in the PAM authentication mode.
+ User has been PAM-authenticated when this is called.
+ This function adds a irods password valid for a few days and returns that.
+ If one already exists, the expire time is updated, and it's value is returned.
+ Passwords created are pseudo-random strings, unrelated to the PAM password.
+ If testTime is non-null, use that as the create-time, as a testing aid.
+ */
+int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
+			      char *username, int timeToLive,
+			      char *testTime,
+			      char **irodsPassword) {
+   char myTime[50];
+   char rBuf[200];
+   int i, j;
+   char randomPw[50];
+   char randomPwEncoded[50];
+   int status;
+   char passwordInIcat[MAX_PASSWORD_LEN+2];
+   char passwordModifyTime[50];
+   char *cVal[3];
+   int iVal[3];
+   char selUserId[MAX_NAME_LEN];
+   char expTime[50];
+
+   status = getLocalZone();
+   if (status != 0) return(status);
+
+   getNowStr(myTime);
+
+   /* if ttl is unset, use the default */
+   if (timeToLive == 0) {
+     rstrcpy(expTime, IRODS_PAM_PASSWORD_DEFAULT_TIME, sizeof expTime);
+   }
+   else {
+     /* convert ttl to seconds and make sure ttl is within the limits */
+     rodsLong_t pamMinTime, pamMaxTime;
+     pamMinTime=atoll(IRODS_PAM_PASSWORD_MIN_TIME);
+     pamMaxTime=atoll(IRODS_PAM_PASSWORD_MAX_TIME);
+     timeToLive = timeToLive * 3600;
+     if (timeToLive < pamMinTime || 
+	 timeToLive > pamMaxTime) {
+       return PAM_AUTH_PASSWORD_INVALID_TTL;
+     }
+     snprintf(expTime, sizeof expTime, "%d", timeToLive);
+   }
+
+   /* get user id */
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 1");
+   status = cmlGetStringValueFromSql(
+      "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name!='rodsgroup'",
+      selUserId, MAX_NAME_LEN, username, localZone, 0, &icss);
+   if (status==CAT_NO_ROWS_FOUND) return (CAT_INVALID_USER);
+   if (status) return(status);
+
+   /* first delete any that are expired */
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 2");
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+   cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+   cllBindVars[cllBindVarCount++]=myTime;
+#if MY_ICAT
+   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and (cast(pass_expiry_ts as signed integer) + cast(modify_ts as signed integer) < ?)",
+#else
+   status =  cmlExecuteNoAnswerSql("delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and (cast(pass_expiry_ts as integer) + cast(modify_ts as integer) < ?)",
+#endif
+				   &icss);
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 3");
+   cVal[0]=passwordInIcat;
+   iVal[0]=MAX_PASSWORD_LEN;
+   cVal[1]=passwordModifyTime;
+   iVal[1]=sizeof(passwordModifyTime);
+   status = cmlGetStringValuesFromSql(
+#if MY_ICAT
+	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer) >= ? and cast (pass_expiry_ts as signed integer) <= ?",
+#else
+	    "select rcat_password, modify_ts from R_USER_PASSWORD where user_id=? and pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer) >= ? and cast (pass_expiry_ts as integer) <= ?",
+#endif
+	    cVal, iVal, 2,
+	    selUserId, 
+            IRODS_PAM_PASSWORD_MIN_TIME,
+            IRODS_PAM_PASSWORD_MAX_TIME, &icss);
+
+   if (status==0) {
+#ifndef PAM_AUTH_NO_EXTEND
+      if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=expTime;
+      cllBindVars[cllBindVarCount++]=selUserId;
+      cllBindVars[cllBindVarCount++]=passwordInIcat;
+      status =  cmlExecuteNoAnswerSql("update R_USER_PASSWORD set modify_ts=?, pass_expiry_ts=? where user_id = ? and rcat_password = ?",
+				      &icss);
+      if (status) return(status);
+
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+		 status);
+	 return(status);
+      }
+#endif
+      icatDescramble(passwordInIcat);
+      strncpy(*irodsPassword, passwordInIcat, IRODS_PAM_PASSWORD_LEN);
+      return(0);
+   }
+
+
+   // =-=-=-=-=-=-=-
+   // if the resultant scrambled password has a ' in the
+   // string, this can cause issues on some systems, notably
+   // Suse 12.  if this is the case we will just get another
+   // random password.
+   bool pw_good = false;
+   while( !pw_good ) {
+
+       j=0;
+       get64RandomBytes(rBuf);
+       for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+          char c;
+          c = rBuf[i] & 0x7f;
+          if (c < '0') c+='0';
+          if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+               (c > '0' && c < '9') ){
+             randomPw[j++]=c;
+          }
+       }
+       randomPw[j]='\0';
+
+       strncpy(randomPwEncoded, randomPw, 50);
+       icatScramble(randomPwEncoded); 
+       if( !strstr( randomPwEncoded, "\'" ) ) {
+           pw_good = true; 
+
+       } else {
+           rodsLog( LOG_ERROR, "XXXX - chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
+
+       }
+
+   } // while
+
+   if (testTime!=NULL && strlen(testTime)>0) {
+      strncpy(myTime, testTime, sizeof(myTime));
+   }
+
+   if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 5");
+   cllBindVars[cllBindVarCount++]=selUserId;
+   cllBindVars[cllBindVarCount++]=randomPwEncoded;
+   cllBindVars[cllBindVarCount++]=expTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   status =  cmlExecuteNoAnswerSql("insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values (?, ?, ?, ?, ?)", 
+				   &icss);
+   if (status) return(status);
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	  "chlUpdateIrodsPamPassword cmlExecuteNoAnswerSql commit failure %d",
+	  status);
+      return(status);
+   }
+
+   strncpy(*irodsPassword, randomPw, IRODS_PAM_PASSWORD_LEN);
+   return(0);
+}
+
 /* Modify an existing user.
    Admin only.
    Called from rsGeneralAdmin which is used by iadmin */
@@ -4539,6 +4822,12 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
     char form4[]="insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
     char form5[]="insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
     char form6[]="delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
+#if MY_ICAT
+   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as signed integer)>=? and cast(pass_expiry_ts as signed integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+#else
+   char form7[]="delete from R_USER_PASSWORD where pass_expiry_ts not like '9999%' and cast(pass_expiry_ts as integer)>=? and cast(pass_expiry_ts as integer)<=? and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)";
+#endif
+
     char myTime[50];
     rodsLong_t iVal;
 
@@ -4676,6 +4965,17 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
         auditId = AU_DELETE_USER_AUTH_NAME;
         strncpy(auditComment, newValue, 100);
 
+    }
+
+    if (strncmp(option, "rmPamPw", 9)==0) {
+        rstrcpy(tSQL, form7, MAX_SQL_SIZE);
+        cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MIN_TIME;
+        cllBindVars[cllBindVarCount++]=IRODS_PAM_PASSWORD_MAX_TIME;
+        cllBindVars[cllBindVarCount++]=userName2;
+        cllBindVars[cllBindVarCount++]=zoneName;
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModUser SQL 6");
+        auditId = AU_MOD_USER_PASSWORD;
+        strncpy(auditComment, "Deleted user iRODS-PAM password (if any)", 100);
     }
 
     if (strcmp(option,"info")==0 ||
@@ -5132,7 +5432,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
     if (strcmp(option, "type")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 6");
-
+        #if 0 // JMC :: resource type is now dynamic
         status = cmlCheckNameToken("resc_type", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
@@ -5141,7 +5441,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_TYPE);
         }
-
+        #endif
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
@@ -5159,8 +5459,9 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         OK=1;
     }
 
+#if 0 // JMC - no longer support resource classes
     if (strcmp(option, "class")==0) {
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 8");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 8");
         status = cmlCheckNameToken("resc_class", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
@@ -5173,7 +5474,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 9");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 9");
         status =  cmlExecuteNoAnswerSql(
             "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
             &icss);
@@ -5186,7 +5487,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         }
         OK=1;
     }
-
+#endif
     if (strcmp(option, "path")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 10");
       status = cmlGetStringValueFromSql(
@@ -6327,7 +6628,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
 /* Get the count of the objects to compare with later */
     if (logSQL!=0) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 1");
     status = cmlGetIntegerValueFromSql(
-        "select count(DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+        "select count(DISTINCT DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
         &iVal, objectName, collection, 0, 0, 0, &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,
@@ -6471,7 +6772,10 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
             &iVal, 0, 0, 0, 0, 0, &icss);
         if (status==0) {
             nAccess = iVal;
-            if (numObjects > nAccess) status=CAT_NO_ACCESS_PERMISSION;
+
+            if (numObjects > nAccess) {
+                status=CAT_NO_ACCESS_PERMISSION;
+            }
         }
     }
 
@@ -6524,7 +6828,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
     cllBindVars[cllBindVarCount++]=collection;
     if (logSQL!=0) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 8");
     status =  cmlExecuteNoAnswerSql(
-        "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+        "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? group by DM.data_id",
         &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,

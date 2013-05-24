@@ -369,7 +369,7 @@
 #define REMOTE_SERVER_AUTH_EMPTY         -912000
 #define REMOTE_SERVER_SID_NOT_DEFINED    -913000
 
-/* 921,000 to 999,000 - GSI, KRB and OSAUTH errors  */
+/* 921,000 to 999,000 - GSI, KRB and OSAUTH errors, and PAM-AUTH errors  */
 #define GSI_NOT_COMPILED_IN              -921000
 #define GSI_NOT_BUILT_INTO_CLIENT        -922000
 #define GSI_NOT_BUILT_INTO_SERVER        -923000
@@ -417,6 +417,11 @@
 
 #define OSAUTH_NOT_BUILT_INTO_CLIENT     -981000
 #define OSAUTH_NOT_BUILT_INTO_SERVER     -982000
+
+#define PAM_AUTH_NOT_BUILT_INTO_CLIENT   -991000
+#define PAM_AUTH_NOT_BUILT_INTO_SERVER   -992000
+#define PAM_AUTH_PASSWORD_FAILED         -993000
+#define PAM_AUTH_PASSWORD_INVALID_TTL    -994000
 
 /* 1,000,000 to 1,500,000  - Rule Engine errors */
 #define  OBJPATH_EMPTY_IN_STRUCT_ERR          -1000000
@@ -599,15 +604,28 @@
 #define DBO_WRITABLE_BY_NON_PRIVILEGED  -1718000
 
 // e-irods errors
-#define EIRODS_KEY_NOT_FOUND            -1800000
-#define EIRODS_KEY_TYPE_MISMATCH        -1810000
-#define EIRODS_CHILD_EXISTS             -1820000
-#define EIRODS_HIERARCHY_ERROR          -1830000
-#define EIRODS_CHILD_NOT_FOUND          -1840000
-#define EIRODS_NEXT_RESC_FOUND          -1850000
-#define EIRODS_NO_PDMO_DEFINED          -1860000
-#define EIRODS_INVALID_LOCATION         -1870000
-#define EIRODS_PLUGIN_ERROR             -1880000
+#define EIRODS_KEY_NOT_FOUND              -1800000
+#define EIRODS_KEY_TYPE_MISMATCH          -1801000
+#define EIRODS_CHILD_EXISTS               -1802000
+#define EIRODS_HIERARCHY_ERROR            -1803000
+#define EIRODS_CHILD_NOT_FOUND            -1804000
+#define EIRODS_NEXT_RESC_FOUND            -1805000
+#define EIRODS_NO_PDMO_DEFINED            -1806000
+#define EIRODS_INVALID_LOCATION           -1807000
+#define EIRODS_PLUGIN_ERROR               -1808000
+#define EIRODS_INVALID_RESC_CHILD_CONTEXT -1809000
+#define EIRODS_INVALID_FILE_OBJECT        -1810000
+#define EIRODS_INVALID_OPERATION          -1811000
+#define EIRODS_CHILD_HAS_PARENT           -1812000
+
+/* SSL protocol error codes */
+
+#define SSL_NOT_BUILT_INTO_CLIENT       -2100000
+#define SSL_NOT_BUILT_INTO_SERVER       -2101000
+#define SSL_INIT_ERROR                  -2102000
+#define SSL_HANDSHAKE_ERROR             -2103000
+#define SSL_SHUTDOWN_ERROR              -2104000
+#define SSL_CERT_ERROR                  -2105000
 
 
 /* The following are handler protocol type msg. These are not real error */

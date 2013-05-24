@@ -24,6 +24,7 @@
 
 namespace eirods
 {
+
 	struct eirods_char_str_hash
 	{
 		enum

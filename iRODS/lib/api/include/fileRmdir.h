@@ -24,9 +24,10 @@ typedef struct {
     int flags;
     rodsHostAddr_t addr;
     char dirName[MAX_NAME_LEN];
+    char rescHier[MAX_NAME_LEN];
 } fileRmdirInp_t;
     
-#define fileRmdirInp_PI "int fileType; int flag; struct RHostAddr_PI; str dirName[MAX_NAME_LEN];"
+#define fileRmdirInp_PI "int fileType; int flag; struct RHostAddr_PI; str dirName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_RMDIR rsFileRmdir

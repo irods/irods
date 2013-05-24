@@ -8,8 +8,10 @@ import datetime
 import time
 import shutil
 import random
+import inspect
 
-rules30dir = "../../iRODS/clients/icommands/test/rules3.0/"
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+rules30dir = currentdir+"/../../iRODS/clients/icommands/test/rules3.0/"
 
 def run_irule(rulefile):
     assertiCmd(s.adminsession, "icd" )

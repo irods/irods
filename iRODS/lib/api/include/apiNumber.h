@@ -151,6 +151,7 @@
 #define DATABASE_OBJ_CONTROL_AN		720
 #define DATABASE_RESC_CLOSE_AN 		721
 #define SPECIFIC_QUERY_AN 			722
+#define PAM_AUTH_REQUEST_AN 			725
 
 #define EXEC_CMD241_AN 			634
 #ifdef COMPAT_201
@@ -166,5 +167,9 @@
 #define RM_COLL201_AN                   663
 #define OPEN_COLLECTION201_AN           712
 #endif
+
+/* 1100 - 1200 - SSL API calls */
+#define SSL_START_AN 			1100
+#define SSL_END_AN 			1101
 
 #endif	/* API_NUMBER_H */

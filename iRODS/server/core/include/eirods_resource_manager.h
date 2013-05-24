@@ -28,19 +28,9 @@ namespace eirods {
         virtual ~resource_manager();
 
         // =-=-=-=-=-=-=-
-        /// @brief  resolve a resource from a first_class_object
-        error resolve( const first_class_object&, // FCO to resolve against
-                       resource_ptr& );           // resource out variable
-
-        // =-=-=-=-=-=-=-
         // @brief  resolve a resource from a key into the resource table
         error resolve( std::string,     // resource key
                        resource_ptr& ); // resource out variable
-
-        // =-=-=-=-=-=-=-
-        // @brief  resolve a resource from a match with a given property
-        error resolve_from_physical_path( std::string,     // physical path
-                                          resource_ptr& ); // out variable
 
         // =-=-=-=-=-=-=-
         /// @brief  populate resource table from icat database

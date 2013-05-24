@@ -232,13 +232,11 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/cache.o \
 		$(svrReObjDir)/reIn2p3SysRule.o \
 		$(svrReObjDir)/nre.reLib1.o	\
-		$(svrReObjDir)/nre.reLib2.o \
 		$(svrReObjDir)/reNaraMetaData.o \
 		$(svrReObjDir)/reStruct.o \
 		$(svrReObjDir)/reSysDataObjOpr.o \
 		$(svrReObjDir)/reVariableMap.o \
-		$(svrReObjDir)/regExpMatch.o \
-		$(svrReObjDir)/ruleAdminMS.o \
+		$(svrReObjDir)/nre.ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/reRDA.o \
@@ -251,6 +249,15 @@ SVR_RE_OBJS =	\
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
+
+# authentication support
+ifdef PAM_AUTH
+SERVER_BINS += $(serverBinDir)/PamAuthCheck
+SERVER_OBJS += $(svrAuthObjDir)/PamAuthCheck.o
+AUTH_CFLAGS +=
+AUTH_LDFLAGS += -lpam
+endif
+
 
 # icat Tests
 ifdef RODS_CAT
@@ -297,7 +304,7 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # is a list of the object files for modules plus the flags (-L -l
 # options) and MODULE_OBJS is just the object files from the
 # MODULE_LDFLAGS string.
-LDFLAGS +=	$(LDADD) $(LIBRARY)
+LDFLAGS +=	$(LIBRARY) $(LDADD) 
 
 #LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
 #LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
@@ -482,7 +489,7 @@ $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 
-LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a
+LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a $(BOOST_DIR)/stage/lib/libboost_filesystem.a
 
 #
 # Servers
@@ -523,6 +530,18 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $
 $(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
 	@echo "Link xmsg server `basename $@`..."
 	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS) $(LDFLAGS)
+
+
+#
+# Authentication support
+#
+$(svrAuthObjDir)/PamAuthCheck.o: $(svrAuthSrcDir)/PamAuthCheck.c
+	@echo "Compile PamAuthCheck utility `basename $@`..."
+	@$(CC) -c $(AUTH_CFLAGS) -o $@ $<
+
+$(serverBinDir)/PamAuthCheck: $(svrAuthObjDir)/PamAuthCheck.o
+	@echo "Link PamAuthCheck utility `basename $@`..."
+	@$(CC) -o $@ $(svrAuthObjDir)/PamAuthCheck.o $(AUTH_LDFLAGS)
 
 #
 # Tests

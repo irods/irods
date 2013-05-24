@@ -19,30 +19,32 @@
 #include "eirods_file_object.h"
 #include "eirods_collection_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_resource_backport.h"
 
 int
-rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp,
-                  char **outFileName)
+rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
+//    remoteFlag = resolveHost (&fileSyncToArchInp->addr, &rodsServerHost);
+    eirods::error ret = eirods::get_host_for_hier_string( fileSyncToArchInp->rescHier, remoteFlag, rodsServerHost );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "failed in call to eirods::get_host_for_hier_string", ret ) );
+        return -1;
+    }
 
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else {
-        status = rsFileSyncToArchByHost (rsComm, fileSyncToArchInp, 
-                                         outFileName, rodsServerHost);
+        status = rsFileSyncToArchByHost (rsComm, fileSyncToArchInp, rodsServerHost);
         return (status);
     }
 }
 
 int 
-rsFileSyncToArchByHost (rsComm_t *rsComm, 
-                        fileStageSyncInp_t *fileSyncToArchInp, char **outFileName,
-                        rodsServerHost_t *rodsServerHost)
+rsFileSyncToArchByHost (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
 {
     int status;
     int remoteFlag;
@@ -56,10 +58,9 @@ rsFileSyncToArchByHost (rsComm_t *rsComm,
     remoteFlag = rodsServerHost->localFlag;
     
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsFileSyncToArch (rsComm, fileSyncToArchInp, outFileName);
+        status = _rsFileSyncToArch (rsComm, fileSyncToArchInp);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteFileSyncToArch (rsComm, fileSyncToArchInp, 
-                                       outFileName, rodsServerHost);
+        status = remoteFileSyncToArch (rsComm, fileSyncToArchInp, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
@@ -75,9 +76,7 @@ rsFileSyncToArchByHost (rsComm_t *rsComm,
 }
 
 int
-remoteFileSyncToArch (rsComm_t *rsComm, 
-                      fileStageSyncInp_t *fileSyncToArchInp, char **outFileName,
-                      rodsServerHost_t *rodsServerHost)
+remoteFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
@@ -91,8 +90,7 @@ remoteFileSyncToArch (rsComm_t *rsComm,
         return status;
     }
 
-    status = rcFileSyncToArch (rodsServerHost->conn, fileSyncToArchInp,
-                               outFileName);
+    status = rcFileSyncToArch (rodsServerHost->conn, fileSyncToArchInp);
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
@@ -105,17 +103,13 @@ remoteFileSyncToArch (rsComm_t *rsComm,
 
 // =-=-=-=-=-=-=-=
 // _rsFileSyncToArch - this the local version of rsFileSyncToArch.
-int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, char **outFileName ) {
+int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp) {
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission
     // when RCAT is available 
-    char myFileName[MAX_NAME_LEN];
     
     // =-=-=-=-=-=-=-
     // prep 
-    *outFileName = NULL; // mem leak?
-    rstrcpy( myFileName, fileSyncToArchInp->filename, MAX_NAME_LEN );
-
     if(fileSyncToArchInp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
@@ -131,6 +125,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
                                   fileSyncToArchInp->filename, "", 0, 
                                   fileSyncToArchInp->mode, 
                                   fileSyncToArchInp->flags );
+    file_obj.resc_hier( fileSyncToArchInp->rescHier );
     eirods::error sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
 
     if( !sync_err.ok() ) {
@@ -142,7 +137,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         } else if (getErrno (sync_err.code()) == EEXIST) {
             // =-=-=-=-=-=-=-
             // an empty dir may be there, make the call to rmdir via the resource plugin
-            eirods::collection_object coll_obj( fileSyncToArchInp->filename, 0, 0 );
+            eirods::collection_object coll_obj( fileSyncToArchInp->filename, fileSyncToArchInp->rescHier, 0, 0 );
             eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
@@ -155,7 +150,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         } else {
             std::stringstream msg;
             msg << "fileSyncToArch failed for [";
-            msg << myFileName;
+            msg << fileSyncToArchInp->filename;
             msg << "]";
             eirods::error err = PASSMSG( msg.str(), sync_err );
             eirods::log ( err );
@@ -168,7 +163,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
         if( !sync_err.ok() ) {
             std::stringstream msg;
             msg << "fileSyncToArch failed for [";
-            msg << myFileName;
+            msg << fileSyncToArchInp->filename;
             msg << "]";
             msg << sync_err.code();
             eirods::error err = PASSMSG( msg.str(), sync_err );
@@ -179,9 +174,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, 
 
     // =-=-=-=-=-=-=-
     // has the file name has changed?
-    if( strcmp( myFileName, fileSyncToArchInp->filename ) != 0 ) {
-        *outFileName = strdup (myFileName);
-    }
+    rstrcpy(fileSyncToArchInp->filename, file_obj.physical_path().c_str(), MAX_NAME_LEN);
 
     return (sync_err.code());
 

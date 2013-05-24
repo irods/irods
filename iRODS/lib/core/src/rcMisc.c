@@ -561,7 +561,7 @@ freeDataObjInfo(dataObjInfo_t *dataObjInfo)
 
     /* separate specColl */
     if (dataObjInfo->specColl != NULL) free (dataObjInfo->specColl);
-
+    if( dataObjInfo->rescInfo != NULL) delete dataObjInfo->rescInfo;
     free (dataObjInfo);
 
     return (0);
@@ -683,7 +683,7 @@ getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead)
 } 
     
 char *
-getValByKey (keyValPair_t *condInput, char *keyWord)
+getValByKey (const keyValPair_t *condInput, const char *keyWord)
 {
     int i;
 
@@ -768,7 +768,7 @@ rmKeyVal (keyValPair_t *condInput, char *keyWord)
 }
 
 int
-replKeyVal (keyValPair_t *srcCondInput, keyValPair_t *destCondInput)
+replKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput)
 {
     int i;
     memset (destCondInput, 0, sizeof (keyValPair_t));
@@ -1675,24 +1675,29 @@ getNowStr(char *timeStr)
   time format.
 */
 int
-getLocalTimeFromRodsTime(char *timeStrIn, char *timeStr) {
+getLocalTimeFromRodsTime(const char *timeStrIn, char *timeStr) {
     time_t myTime;
     struct tm *mytm;
-    if (sizeof(time_t)==4) {
-        myTime = atol(timeStrIn);
-    }
-    else {
+
+    // This is 1 because they actually capture a leading space
+    if(strlen(timeStrIn) == 1) {
+        strcpy(timeStr, "Never");
+    } else {
+        if (sizeof(time_t)==4) {
+            myTime = atol(timeStrIn);
+        }
+        else {
 #ifdef _WIN32
-        myTime = _atoi64(timeStrIn);
+            myTime = _atoi64(timeStrIn);
 #else
-        myTime = atoll(timeStrIn);
+            myTime = atoll(timeStrIn);
 #endif
+        }
+
+        mytm = localtime (&myTime);
+
+        getLocalTimeStr (mytm, timeStr);
     }
-
-    mytm = localtime (&myTime);
-
-    getLocalTimeStr (mytm, timeStr);
-
     return 0;
 }
 

@@ -5,6 +5,7 @@ import socket
 import pydevtest_common as c
 import icommands
 import time
+import inspect
 
 global users
 output = commands.getstatusoutput("hostname")
@@ -86,8 +87,9 @@ def admin_up():
     adminsession.runCmd('ichmod',["write",users[2]['name'],"../../public/"+testfile]) # write for user2
 
     # testallrules setup
-    progname = "README"
-    rules30dir = "../../iRODS/clients/icommands/test/rules3.0/"
+    progname = __file__
+    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    rules30dir = currentdir+"/../../iRODS/clients/icommands/test/rules3.0/"
     dir_w = rules30dir+".."
     adminsession.runCmd('icd') # to get into the home directory (for testallrules assumption)
     adminsession.runAdminCmd('iadmin',["mkuser","devtestuser","rodsuser"] )
@@ -99,6 +101,9 @@ def admin_up():
     adminsession.runCmd('imkdir', ["test/phypathreg"] )
     adminsession.runCmd('imkdir', ["ruletest/subforrmcoll"] )
     adminsession.runCmd('iput', [progname,"test/foo1"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/dcmetadatatarget"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/mdcopysource"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/mdcopydest"] )
     adminsession.runCmd('icp', ["test/foo1","sub1/foo1"] )
     adminsession.runCmd('icp', ["test/foo1","sub1/foo2"] )
     adminsession.runCmd('icp', ["test/foo1","sub1/foo3"] )
@@ -114,6 +119,7 @@ def admin_up():
     adminsession.runCmd('icp', ["test/foo1","test/ERAtestfile.txt"] )
     adminsession.runCmd('ichmod', ["read devtestuser","test/ERAtestfile.txt"] )
     adminsession.runCmd('imeta', ["add","-d","test/ERAtestfile.txt","Fun","99","Balloons"] )
+    adminsession.runCmd('icp', ["test/foo1","sub1/for_versioning.txt"] )
     adminsession.runCmd('imkdir', ["sub1/SaveVersions"] )
     adminsession.runCmd('iput', [dir_w+"/misc/devtestuser-account-ACL.txt","test"] )
     adminsession.runCmd('iput', [dir_w+"/misc/load-metadata.txt","test"] )

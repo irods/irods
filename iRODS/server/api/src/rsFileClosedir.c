@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -20,7 +22,7 @@ rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp)
     int retVal;
 
     remoteFlag = getServerHostByFileInx (fileClosedirInp->fileInx, 
-      &rodsServerHost);
+                                         &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
         retVal = _rsFileClosedir (rsComm, fileClosedirInp);
@@ -31,13 +33,13 @@ rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp)
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileClosedir: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileClosedir: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
 
-   /* Manually insert call-specific code here */
+    /* Manually insert call-specific code here */
 
     freeFileDesc (fileClosedirInp->fileInx);
 
@@ -46,13 +48,13 @@ rsFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp)
 
 int
 remoteFileClosedir (rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp,
-rodsServerHost_t *rodsServerHost)
+                    rodsServerHost_t *rodsServerHost)
 {    
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileClosedir: Invalid rodsServerHost");
+                 "remoteFileClosedir: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -65,8 +67,8 @@ rodsServerHost_t *rodsServerHost)
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
-         "remoteFileClosedir: rcFileClosedir failed for %d, status = %d",
-          fileClosedirInp->fileInx, status);
+                 "remoteFileClosedir: rcFileClosedir failed for %d, status = %d",
+                 fileClosedirInp->fileInx, status);
     }
 
     return status;
@@ -75,20 +77,20 @@ rodsServerHost_t *rodsServerHost)
 // =-=-=-=-=-=-=-
 // local function for handling call to closedir via resource plugin
 int _rsFileClosedir( rsComm_t *rsComm, fileClosedirInp_t *fileClosedirInp ) {
-	// =-=-=-=-=-=-=-
-	// call closedir via resource plugin, handle errors
-    eirods::collection_object coll_obj( FileDesc[fileClosedirInp->fileInx].fileName, 0, 0 );
-	coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[fileClosedirInp->fileInx].driverDep ) );
-	eirods::error closedir_err = fileClosedir( rsComm, coll_obj );
+    // =-=-=-=-=-=-=-
+    // call closedir via resource plugin, handle errors
+    eirods::collection_object coll_obj( FileDesc[fileClosedirInp->fileInx].fileName, FileDesc[fileClosedirInp->fileInx].rescHier, 0, 0 );
+    coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[fileClosedirInp->fileInx].driverDep ) );
+    eirods::error closedir_err = fileClosedir( rsComm, coll_obj );
 
-	if( !closedir_err.ok() ) {
-		std::stringstream msg;
-		msg << "fileClosedir failed for [";
-		msg << FileDesc[fileClosedirInp->fileInx].fileName;
-		msg << "]";
-		eirods::error log_err = PASSMSG( msg.str(), closedir_err );
-		eirods::log( log_err ); 
-	}
+    if( !closedir_err.ok() ) {
+        std::stringstream msg;
+        msg << "fileClosedir failed for [";
+        msg << FileDesc[fileClosedirInp->fileInx].fileName;
+        msg << "]";
+        eirods::error log_err = PASSMSG( msg.str(), closedir_err );
+        eirods::log( log_err ); 
+    }
 
     return closedir_err.code();
 

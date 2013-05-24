@@ -1,0 +1,9 @@
+TARGET = libwos.so
+
+SRCS = libwos.cpp
+
+HEADERS = 
+
+EXTRALIBS =
+
+include ../Makefile.base

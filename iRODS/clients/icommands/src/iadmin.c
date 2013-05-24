@@ -9,6 +9,8 @@
 
 #include "rodsClient.h"
 #include "parseCommandLine.h"
+#include "eirods_string_tokenize.h"
+#include <iostream>
 
 #define MAX_SQL 300
 #define BIG_STR 3000
@@ -36,46 +38,43 @@ void usage(char *subOpt);
 */
 int
 printSimpleQuery(char *buf) {
-    char *cpTime, *endOfLine;
-    char localTime[20];
-    int fieldLen=10;
-    cpTime = strstr(buf, "data_expiry_ts");
-    if (cpTime!=NULL) {
-        fieldLen=15;
-    }
-    else {
-        cpTime = strstr(buf, "free_space_ts");
-        if (cpTime!=NULL) {
-            fieldLen=14;
-        }
-        else {
-            cpTime = strstr(buf, "create_ts");
-            if (cpTime!=NULL) {
-                fieldLen=10;
-            }
-            else {
-                cpTime = strstr(buf, "modify_ts");
-                if (cpTime!=NULL) {
-                    fieldLen=10;
+
+    std::vector< std::string > tokens;
+    eirods::string_tokenize( buf, "\n", tokens ); 
+    std::vector< std::string >::iterator itr = tokens.begin();
+    for( ; itr != tokens.end(); ++itr ) {
+        // =-=-=-=-=-=-=-
+        // explicitly filter out the resource class
+        if( std::string::npos == itr->find( "resc_class" ) ) {
+            // =-=-=-=-=-=-=-
+            // determine if the token is of a time that needs
+            // converted from unix time to a human readable form
+            if( std::string::npos != itr->find( "_ts" ) ) {
+                // =-=-=-=-=-=-=-
+                // tokenize based on the ':' delimiter this time
+                // to convert the time
+                std::vector< std::string > time_tokens;
+                eirods::string_tokenize( *itr, ":", time_tokens ); 
+                if( time_tokens.size() != 2 ) {
+                    std::cout << "printSimpleQuery - incorrect number of tokens "
+                              << "for case of time conversion" << std::endl;
+                    return -1;
+                } else {
+                    char local_time[20];
+                    getLocalTimeFromRodsTime( time_tokens[1].c_str(), local_time );
+                    std::cout << time_tokens[0] << " " << local_time << std::endl; 
                 }
+
+            } else {
+                // =-=-=-=-=-=-=-
+                // simply print out the token
+                std::cout << *itr << std::endl;
             }
-        }
-    }
-    if (cpTime==NULL) {
-        printf("%s", buf);
-        return(0);
-    }
-    endOfLine=strstr(cpTime,"\n");
-    if (endOfLine-cpTime > 30) {
-        printf("%s",buf);
-    }
-    else {
-        *endOfLine='\0';
-        printf("%s",buf);
-        getLocalTimeFromRodsTime(cpTime+fieldLen, localTime);
-        printf(" : %s\n", localTime);
-        printSimpleQuery(endOfLine+1);
-    }
+
+        } // if not resc_class
+
+    } // for itr
+
     return(0);
 }
 
@@ -85,7 +84,6 @@ doSimpleQuery(simpleQueryInp_t simpleQueryInp) {
     simpleQueryOut_t *simpleQueryOut;
     char *mySubName;
     char *myName;
-
     status = rcSimpleQuery(Conn, &simpleQueryInp, &simpleQueryOut);
     lastCommandStatus = status;
 
@@ -111,6 +109,7 @@ doSimpleQuery(simpleQueryInp_t simpleQueryInp) {
                  status, myName, mySubName);
         return(status);
     }
+
     printSimpleQuery(simpleQueryOut->outBuf);
     if (debug) printf("control=%d\n",simpleQueryOut->control);
     if (simpleQueryOut->control > 0) {
@@ -381,6 +380,9 @@ showDir(char *dir)
 
     printf("Files (data objects) (name, data_id, repl_num):\n");
     status = doSimpleQuery(simpleQueryInp);
+    if( status < 0 ) {
+        // error case 
+    }
 
     simpleQueryInp.form = 1;
     simpleQueryInp.sql =
@@ -781,6 +783,10 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         char zoneName[NAME_LEN];
         int status;
         status = parseUserName(cmdToken[1], userName, zoneName);
+        if( status < 0 ) {
+            // error case
+        }
+
         if (zoneName[0]!='\0') {
             showUserOfZone(zoneName, userName);
         }
@@ -906,11 +912,20 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
                      cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "" );
         return(0);
     }
+    if (strcmp(cmdToken[0],"rpp") == 0) {
+        generalAdmin( 0, "modify", "user", cmdToken[1], "rmPamPw", 
+		              cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], "", "");
+      return(0);
+    }
     if (strcmp(cmdToken[0],"lua") == 0) {
         char userName[NAME_LEN];
         char zoneName[NAME_LEN];
         int status;
         status = parseUserName(cmdToken[1], userName, zoneName);
+        if( status < 0 ) {
+            // error case
+        }
+
         if (zoneName[0]!='\0') {
             showUserAuth(userName, zoneName);
         }
@@ -1227,13 +1242,13 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         int status;
         status = generalAdmin(0, "add", "specificQuery", cmdToken[1],
                               cmdToken[2], "", "", "", "", "", "" );
-        return(0);
+        return status;
     }
     if (strcmp(cmdToken[0],"rsq") == 0) {
         int status;
         status = generalAdmin(0, "rm", "specificQuery", cmdToken[1],
                               "", "", "", "", "", "", "" );
-        return(0);
+        return( status );
     }
 
     /* test is only used for testing so is not included in the help */
@@ -1433,6 +1448,7 @@ void usageMain()
         " moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
         " aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
         " rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
+        " rpp Name  (remove PAM-derived Password for user Name)",
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
         " mkdir Name [username] (make directory(collection))",
         " rmdir Name (remove directory) ",
@@ -1613,6 +1629,17 @@ usage(char *subOpt)
         "These are used with Kerberos and/or GSI authentication, if enabled.",
         "Also see 'aua', 'lua', and 'luan'.",
         ""};
+
+    char *rppMsgs[]={
+        " rpp Name (remove PAM-derived Password for user Name)",
+        "Remove irods short-term (ususally 2 weeks) passwords that are created",
+        "when users authenticate via the iRODS PAM authentication method.",
+        "For additional security, when using PAM (system passwords), 'iinit' will",
+        "create a separate iRODS password that is then used (a subsequent 'iinit'",
+        "extend its 'life').  If the user's system password is changed, you",
+        "may want to use this rpp command to require the user to re-authenticate.",
+        ""};
+
 
     char *rmuserMsgs[]={
         " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
@@ -1916,7 +1943,7 @@ usage(char *subOpt)
     char *subCmds[]={"lu", "lua", "luan", "luz", "lt", "lr",
                      "ls", "lz",
                      "lg", "lgd", "lf", "mkuser",
-                     "moduser", "aua", "rua",
+                     "moduser", "aua", "rua", "rpp",
                      "rmuser", "mkdir", "rmdir", "mkresc",
                      "modresc", "modrescdatapaths","rmresc",
                      "addchildtoresc", "rmchildfromresc",
@@ -1932,7 +1959,7 @@ usage(char *subOpt)
     char **pMsgs[]={ luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs,
                      lsMsgs, lzMsgs,
                      lgMsgs, lgdMsgs, lfMsgs, mkuserMsgs,
-                     moduserMsgs, auaMsgs, ruaMsgs,
+                     moduserMsgs, auaMsgs, ruaMsgs, rppMsgs,
                      rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs,
                      modrescMsgs, modrescDataPathsMsgs, rmrescMsgs,
                      addchildtorescMsgs, rmchildfromrescMsgs,

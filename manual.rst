@@ -2,10 +2,13 @@
 Enterprise iRODS (E-iRODS) Manual
 =================================
 
+.. header:: E-iRODS Manual
+.. footer:: page ###Page###
+
 .. |todaysdate| date::
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0beta3
+:Version: 3.0rc1
 :Date: |todaysdate|
 
 .. contents:: Table of Contents
@@ -100,13 +103,13 @@ Installation
 
 Installation of the Postgres iCAT DEB::
 
- $ (sudo) dpkg -i eirods-3.0b3-64bit-icat-postgres.deb
+ $ (sudo) dpkg -i eirods-3.0rc1-64bit-icat-postgres.deb
  $ (sudo) apt-get -f install
 
 Installation of the Resource RPM::
 
  - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
- $ (sudo) rpm -i eirods-3.0b3-64bit-resource.rpm
+ $ (sudo) rpm -i eirods-3.0rc1-64bit-resource.rpm
 
 These packages declare the dependencies necessary to run E-iRODS and if satisfied, they install a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
@@ -244,7 +247,7 @@ Best practice suggests changing your Zone name before adding new users as any ex
 Upgrading
 ---------
 
-The beta releases of E-iRODS do not yet support upgrading.  Every install will be a clean install.
+The first release of E-iRODS does not yet support upgrading.  Every install will be a clean install.
 
 This section will be updated when support is included.
 
@@ -494,7 +497,9 @@ The following commands may be used to troubleshoot queues that are backed up.
 .. - why
 .. - errors
 .. - queue management
-.. 
+.. - file locking
+..
+.. - PAM
 .. 
 .. ----------
 .. Monitoring
@@ -778,6 +783,11 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
+2013-05-14   3.0rc1     First Release Candidate.
+                          This is the first release candidate from RENCI.  It
+                          includes PAM support, additional resources
+                          (compound, universalMSS, replication, random,
+                          and nonblocking), and additional documentation.
 2013-03-15   3.0b3      Third Beta Release.
                           This is the third release from RENCI.  It includes
                           a new package for CentOS 6+, support for composable

@@ -210,6 +210,8 @@ freeRescGrpInfo( rescGrpInfo_t *rs)
 {
     if (rs->next != NULL) 
         freeRescGrpInfo(rs->next);
+    if( rs->rescInfo )
+        delete rs->rescInfo;
     free(rs);
     return(0);
 }

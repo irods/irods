@@ -183,6 +183,9 @@ runCmd( "imkdir test", "", "", "", "irm -rf test" );
 runCmd( "imkdir test/phypathreg" );
 runCmd( "imkdir ruletest/subforrmcoll" );
 runCmd( "iput $progname test/foo1");
+runCmd( "icp test/foo1 sub1/mdcopysource");
+runCmd( "icp test/foo1 sub1/mdcopydest");
+runCmd( "icp test/foo1 sub1/dcmetadatatarget");
 runCmd( "icp test/foo1 sub1/foo1");
 runCmd( "icp test/foo1 sub1/foo2");
 runCmd( "icp test/foo1 sub1/foo3");
@@ -473,7 +476,7 @@ sub runCmd {
     my $thescriptname = basename($0);
     chomp(my $therodslog = `ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1`);
     open THERODSLOG, ">>$therodslog" or die "could not open [$therodslog]";
-    print THERODSLOG " --- $thescriptname [$cmd] --- \n";
+    print THERODSLOG " --- $thescriptname $ntests [$cmd] --- \n";
     close THERODSLOG;
 
     if ( $debug ) { print( "DEBUG: input to runCMd: $cmd, $testtype, $stringToCheck, $expResult.\n" ); }

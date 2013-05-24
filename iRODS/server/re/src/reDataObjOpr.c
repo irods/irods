@@ -633,7 +633,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     execCmdOut_t *myExecCmdOut;
     msParam_t *mP;
 
-
     RE_TEST_MACRO ("    Calling msiDataObjWrite")
 
     if (rei == NULL || rei->rsComm == NULL) {
@@ -650,11 +649,16 @@ msParam_t *outParam, ruleExecInfo_t *rei)
       myExecCmdOut = (execCmdOut_t*)mP->inOutStruct;
       if (strcmp((char *) inpParam2->inOutStruct,"stdout") == 0){
         free(inpParam2->inOutStruct);
-        inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stdoutBuf.buf);
+        inpParam2->inOutStruct = 0;
+        if( myExecCmdOut->stdoutBuf.len > 0 ) {
+            inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stdoutBuf.buf);
+        }
       }
       else {
         free(inpParam2->inOutStruct);
-        inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stderrBuf.buf);
+        if( myExecCmdOut->stdoutBuf.len > 0 ) {
+            inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stderrBuf.buf);
+        }
       }
       inpParam2->type = strdup(STR_MS_T);
     }

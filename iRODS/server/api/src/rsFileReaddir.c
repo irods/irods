@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code (for the most part).  */ 
@@ -14,7 +16,7 @@
 
 int
 rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp, 
-rodsDirent_t **fileReaddirOut)
+               rodsDirent_t **fileReaddirOut)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -23,20 +25,20 @@ rodsDirent_t **fileReaddirOut)
     *fileReaddirOut = NULL;
 
     remoteFlag = getServerHostByFileInx (fileReaddirInp->fileInx,
-      &rodsServerHost);
+                                         &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
         status = _rsFileReaddir (rsComm, fileReaddirInp, fileReaddirOut);
     } else if (remoteFlag == REMOTE_HOST) {
         status = remoteFileReaddir (rsComm, fileReaddirInp, fileReaddirOut,
-	 rodsServerHost);
+                                    rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsFileReaddir: resolveHost returned unrecognized value %d",
-               remoteFlag);
+                     "rsFileReaddir: resolveHost returned unrecognized value %d",
+                     remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
     }
@@ -48,13 +50,13 @@ rodsDirent_t **fileReaddirOut)
 
 int
 remoteFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
-rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
+                   rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
 {   
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteFileReaddir: Invalid rodsServerHost");
+                 "remoteFileReaddir: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -68,9 +70,9 @@ rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
     if (status < 0) { 
         if (status != -1) {     /* eof */
             rodsLog (LOG_NOTICE,
-             "remoteFileReaddir: rcFileReaddir failed for %s",
-              FileDesc[fileReaddirInp->fileInx].fileName);
-	}
+                     "remoteFileReaddir: rcFileReaddir failed for %s",
+                     FileDesc[fileReaddirInp->fileInx].fileName);
+        }
     }
 
     return status;
@@ -81,32 +83,32 @@ rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
 int _rsFileReaddir( rsComm_t*         _comm, 
                     fileReaddirInp_t* _file_readdir_inp, 
                     rodsDirent_t**    _rods_dirent ) {
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // create a collection_object, and extract dir ptr from the file desc table
-	eirods::collection_object coll_obj( FileDesc[ _file_readdir_inp->fileInx].fileName, 0, 0 );
-	coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[ _file_readdir_inp->fileInx].driverDep ) ); 
+    eirods::collection_object coll_obj( FileDesc[ _file_readdir_inp->fileInx].fileName, FileDesc[ _file_readdir_inp->fileInx].rescHier, 0, 0 );
+    coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[ _file_readdir_inp->fileInx].driverDep ) ); 
 
-	// =-=-=-=-=-=-=-
+    // =-=-=-=-=-=-=-
     // make call to readdir via resource plugin and handle errors, if necessary
     eirods::error readdir_err = fileReaddir( _comm,
                                              coll_obj, 
                                              _rods_dirent );
     if( !readdir_err.ok() ) {
-		std::stringstream msg;
-		msg << "fileReaddir failed for [";
-		msg << FileDesc[ _file_readdir_inp->fileInx].fileName;
-		msg << "]";
-		eirods::error err = PASSMSG( msg.str(), readdir_err );
-		eirods::log ( err );
+        std::stringstream msg;
+        msg << "fileReaddir failed for [";
+        msg << FileDesc[ _file_readdir_inp->fileInx].fileName;
+        msg << "]";
+        eirods::error err = PASSMSG( msg.str(), readdir_err );
+        eirods::log ( err );
 
         return readdir_err.code();
     } else {
-		// =-=-=-=-=-=-=-
-		// case for handle end of file 
+        // =-=-=-=-=-=-=-
+        // case for handle end of file 
         if( -1 == readdir_err.code() ) {
-			return readdir_err.code();
-		}
-	}
+            return readdir_err.code();
+        }
+    }
 
     // =-=-=-=-=-=-=-
     // error code holds 'status' of api call

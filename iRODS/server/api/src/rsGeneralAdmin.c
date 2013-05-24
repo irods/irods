@@ -20,7 +20,8 @@
 // eirods includes
 #include "eirods_children_parser.h"
 #include "eirods_string_tokenize.h"
-
+#include "eirods_plugin_name_generator.h"
+#include "eirods_ms_home.h"
 
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
@@ -124,6 +125,11 @@ _addResource(
     // =-=-=-=-=-=-=-
     // pull location:path into string for parsing
     std::string loc_path( _generalAdminInp->arg4 );
+    
+    // =-=-=-=-=-=-=-
+    // grab resource context.  this may be overwritted by the 'location' as that 
+    // could also hold the conext string if no host:path pair exists
+    strncpy( rescInfo.rescContext, _generalAdminInp->arg5, sizeof rescInfo.rescContext );
 
     if( !loc_path.empty() ) {
         // =-=-=-=-=-=-=-
@@ -139,22 +145,27 @@ _addResource(
             strncpy( rescInfo.rescLoc,       tok[0].c_str(), sizeof rescInfo.rescLoc );
             strncpy( rescInfo.rescVaultPath, tok[1].c_str(), sizeof rescInfo.rescVaultPath );
         } else {
-            rodsLog( LOG_ERROR, "_addResource - unexpected number of tokens for location:vault_path pair [%d]", tok.size() );
-            rodsLog( LOG_ERROR, "_addResource - location:path string [%s]", loc_path.c_str() );
+            // =-=-=-=-=-=-=-
+            // a key:value was not found, so blatantly assume the string is a context string
+            strncpy(rescInfo.rescContext, loc_path.c_str(), sizeof rescInfo.rescContext);
+            strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
+            strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
         }
+
     }  else {
+        if ( strlen( rescInfo.rescContext ) != 0 ) {
+            addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
+        }
         strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
         strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
 
     }
-
 
     // =-=-=-=-=-=-=-
     // pull values out of api call args into rescInfo structure
     strncpy(rescInfo.rescName,      _generalAdminInp->arg2, sizeof rescInfo.rescName);
     strncpy(rescInfo.rescType,      _generalAdminInp->arg3, sizeof rescInfo.rescType);
     strncpy(rescInfo.rescClass,     "cache",                sizeof rescInfo.rescClass );
-    strncpy(rescInfo.rescContext,   _generalAdminInp->arg5, sizeof rescInfo.rescContext);
     strncpy(rescInfo.zoneName,      _generalAdminInp->arg6, sizeof rescInfo.zoneName);
     strncpy(rescInfo.rescChildren,  "", 1);
     strncpy(rescInfo.rescParent,    "", 1);
@@ -169,9 +180,20 @@ _addResource(
     args[5] = rescInfo.rescContext;
     args[6] = rescInfo.zoneName;
 
+    // Check that there is a plugin matching the resource type
+    eirods::plugin_name_generator name_gen;
+    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_MS_HOME)) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - No plugin exists to provide resource type \"";
+        msg << rescInfo.rescType << "\".";
+        eirods::log(ERROR(SYS_INVALID_RESC_TYPE, msg.str()));
+        result = SYS_INVALID_RESC_TYPE;
+    }
+    
     // =-=-=-=-=-=-=-
     // apply preproc policy enforcement point for creating a resourca, handle errors
-    if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
+    else if((result =  applyRuleArg("acPreProcForCreateResource", args, argc, &_rei2, NO_SAVE_REI)) < 0) {
         if (_rei2.status < 0) {
             result = _rei2.status;
         }

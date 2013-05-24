@@ -47,6 +47,10 @@ clearCoreRule ()
     return(i);
   i = clearFuncMapStruct(&coreRuleFuncMapDef);
   bzero (ruleSetInitialized, sizeof (ruleSetInitialized));
+
+  if( i < 0 ) 
+      return i;
+
   return(i);
 
 }

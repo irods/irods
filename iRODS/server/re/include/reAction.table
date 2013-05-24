@@ -62,7 +62,7 @@ int msiDeleteUser(ruleExecInfo_t *rei);
 int msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei);
 int msiSendMail(msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei);
 int msiAdmChangeCoreIRB(msParam_t *newF, ruleExecInfo_t *rei);
-int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
+//int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowDVM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmShowFNM(msParam_t *bufP, ruleExecInfo_t *rei);
 int msiAdmAppendToTopOfCoreIRB(msParam_t *bufP, ruleExecInfo_t *rei);
@@ -259,7 +259,7 @@ int msiString2StrArray(msParam_t *inBufferP, msParam_t* outStrArrayP, ruleExecIn
 			table_[ "msiExtractNaraMetadata" ] = new eirods::ms_table_entry( "msiExtractNaraMetadata",0,(funcPtr) msiExtractNaraMetadata );
 			table_[ "msiSetMultiReplPerResc" ] = new eirods::ms_table_entry( "msiSetMultiReplPerResc",0,(funcPtr) msiSetMultiReplPerResc );
 			table_[ "msiAdmChangeCoreIRB" ] = new eirods::ms_table_entry( "msiAdmChangeCoreIRB",1,(funcPtr) msiAdmChangeCoreIRB );
-			table_[ "msiAdmShowIRB" ] = new eirods::ms_table_entry( "msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB );
+			//table_[ "msiAdmShowIRB" ] = new eirods::ms_table_entry( "msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB );
 			table_[ "msiAdmShowDVM" ] = new eirods::ms_table_entry( "msiAdmShowDVM",1,(funcPtr) msiAdmShowDVM );
 			table_[ "msiAdmShowFNM" ] = new eirods::ms_table_entry( "msiAdmShowFNM",1,(funcPtr) msiAdmShowFNM );
 			table_[ "msiAdmAppendToTopOfCoreIRB" ] = new eirods::ms_table_entry( "msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB );
@@ -435,7 +435,7 @@ microsdef_t MicrosTable[] = {
   {"msiExtractNaraMetadata",0,(funcPtr) msiExtractNaraMetadata},
   {"msiSetMultiReplPerResc",0,(funcPtr) msiSetMultiReplPerResc},
   {"msiAdmChangeCoreIRB",1,(funcPtr) msiAdmChangeCoreIRB},
-  {"msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB},
+  //{"msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB},
   {"msiAdmShowDVM",1,(funcPtr) msiAdmShowDVM},
   {"msiAdmShowFNM",1,(funcPtr) msiAdmShowFNM},
   {"msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB},

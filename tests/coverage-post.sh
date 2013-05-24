@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# exit on error
+set -e
+
 # variables
 OUTDIR="coverageresults"
 BASEINFOFILE="coverage-base.info"

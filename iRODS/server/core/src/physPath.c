@@ -111,7 +111,7 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     if(status != 0) {
         return status;
     }
-    
+
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {
         return (status);
@@ -127,6 +127,7 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                                          vault_path.c_str(), rsComm->clientUser.userName,
                                          dataObjInfo->filePath);
     }
+
     if (status < 0) {
         return (status);
     }

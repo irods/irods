@@ -72,7 +72,7 @@ rsPhyBundleColl( rsComm_t*                 rsComm,
     eirods::error err = eirods::get_resc_grp_info( destRescName, rescGrpInfo );
     if( !err.ok() ) {
         eirods::log( PASS( err ) );
-        return -1;
+        return err.code();
     }
 
     // =-=-=-=-=-=-=-
@@ -766,9 +766,6 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
         if (dataType != NULL && strstr (dataType, ZIP_DT_STR) != NULL) // JMC - backport 4664
             l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
     }
-
-
-    rodsLog( LOG_NOTICE, "XXXX createPhyBundleDataObj :: index [%d], hier [%s]", l1descInx, L1desc[l1descInx].dataObjInfo->rescHier );
 
     return l1descInx;
 }

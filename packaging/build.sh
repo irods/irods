@@ -172,9 +172,14 @@ if [ "$1" == "clean" ] ; then
     rm -f changelog.gz
     rm -rf $MANDIR
     rm -f manual.pdf
+    rm -f eirods-manual*.pdf
     rm -f libeirods.a
-    rm -f plugins/resources/*.so
-    rm -f plugins/resources/Makefile
+    echo "Cleaning Resource plugins..."
+    cd plugins/resources
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
+    cd ../..
     rm -rf $EIRODSPACKAGEDIR
     set +e
     echo "Cleaning EPM residuals..."
@@ -204,11 +209,15 @@ fi
 
 
 echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
+echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
-echo "Detected Packaging Directory [$DETECTEDDIR]"
 echo "Build Directory set to [$BUILDDIR]"
+# read E-iRODS Version from file
+source ../packaging/VERSION
+echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
+echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
@@ -415,6 +424,22 @@ if [ "$ZLIBDEV" == "" ] ; then
     fi
 else
     echo "Detected zlib library [$ZLIBDEV]"
+fi
+
+PAMDEV=`find /usr/include -name pam_appl.h 2> /dev/null`
+if [ "$PAMDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libpam0g-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT pam-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT pam-devel"
+    # Solaris comes with SUNWhea which provides /usr/include/security/pam_appl.h
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://sourceforge.net/projects/openpam/files/openpam/"
+    fi
+else
+    echo "Detected pam library [$PAMDEV]"
 fi
 
 OPENSSLDEV=`find /usr/include/openssl /opt/csw/include/openssl -name sha.h 2> /dev/null`
@@ -626,9 +651,9 @@ if [ "$DETECTEDOS" == "MacOSX" ] ; then
 elif [ "$DETECTEDOS" == "Solaris" ] ; then
     DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
 else
-    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
+    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l | tr -d ' '`
 fi
-if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
+if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
     DETECTEDCPUCOUNT=1
 fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
@@ -691,7 +716,8 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     ./bjam link=static threading=multi cxxflags="-fPIC" -j$CPUCOUNT
 
     # build HPSS clients
-    if [ "$RELEASE" == "1" ] ; then
+#    if [ "$RELEASE" == "1" ] ; then
+     if [ $FALSE ] ; then
         cd $BUILDDIR/external/
         # grab from git
         echo "${text_green}${text_bold}Downloading HPSS client from RENCI${text_reset}"
@@ -739,6 +765,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         cp -r 7.4_var_hpss_etc /var/hpss7.4/etc
         ln -s /var/hpss7.4 /var/hpss
     fi
+
 
 fi
 
@@ -868,15 +895,28 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         mv /tmp/eirods-platform.mk ./config/platform.mk
     fi
 
-    # update resources Makefile to find system shared libraries
+    # update resources Makefiles to find system shared libraries
+    # First copy all of them just to be generic - harry
+    CWD=`pwd`
+    cd ../plugins/resources
+    filelist=`ls`
+    for dir in $filelist
+    do
+	if [ -d $dir -a -f $dir/Makefile.in ]
+	then
+	    echo "Copying $dir/Makefile.in $dir/Makefile"
+	    cp $dir/Makefile.in $dir/Makefile
+	fi
+    done
+    cd $CWD
     # libz
     found_so=`../packaging/find_so.sh libz.so`
-    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/Makefile.in > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+    sed -e s,SYSTEM_LIBZ_SO,$found_so, ../plugins/resources/structfile/Makefile.in > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/structfile/Makefile
     # bzip2
     found_so=`../packaging/find_so.sh libbz2.so`
-    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
-    mv /tmp/eirods_p_r_Makefile ../plugins/resources/Makefile
+    sed -e s,SYSTEM_LIBBZ2_SO,$found_so, ../plugins/resources/structfile/Makefile > /tmp/eirods_p_r_Makefile
+    mv /tmp/eirods_p_r_Makefile ../plugins/resources/structfile/Makefile
 #    # libarchive
 #    found_so=`../packaging/find_so.sh libarchive.so`
 #    sed -e s,SYSTEM_LIBARCHIVE_SO,$found_so, ../plugins/resources/Makefile > /tmp/eirods_p_r_Makefile
@@ -943,10 +983,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/eirods.list.template > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
-#    #   database admin role
-#    NEW_DB_ADMIN_ROLE=`awk -F\' '/^\\$DB_ADMIN_NAME/ {print $2}' iRODS/config/irods.config`
-#    sed -e "s,TEMPLATE_DB_ADMIN_ROLE,$NEW_DB_ADMIN_ROLE," ./packaging/eirods.list > /tmp/eirodslist.tmp
-#    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database type
     NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/eirods.list > /tmp/eirodslist.tmp
@@ -962,6 +998,26 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     #   database password
     sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
+
+
+    # =-=-=-=-=-=-=-
+    # populate EPMEIRODSVERSION and EIRODSVERSION in all EPM list files
+
+    # eirods main package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    # eirods-dev package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
+    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-dev.list > /tmp/eirodsdevlist.tmp
+    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
+    # eirods-icommands package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
+    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-icommands.list > /tmp/eirodsicommandslist.tmp
+    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
 
 
     set +e
@@ -1095,6 +1151,8 @@ fi
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
+# prepare epm list files from templates
+
 if [ "$BUILDEIRODS" == "1" ] ; then
     # get RENCI updates to EPM from repository
     echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
@@ -1194,7 +1252,6 @@ fi
 
 # rename generated packages appropriately
 cd $BUILDDIR
-EIRODSVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
 SUFFIX=""
 if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
     EXTENSION="rpm"
@@ -1268,10 +1325,16 @@ if [ "$COVERAGE" == "1" ] ; then
     echo "${text_green}${text_bold}Copying generated packages back to original working directory...${text_reset}"
     # get packages
     for f in `find . -name "*.$EXTENSION"` ; do mkdir -p $GITDIR/`dirname $f`; cp $f $GITDIR/$f; done
+    # get generated manual
+    cp manual.pdf $GITDIR/
     # delete target build directory, so a package install can go there
     cd $GITDIR
     rm -rf $COVERAGEBUILDDIR
 fi
+
+# create a new copy of the manual which includes the version name
+# this is for ease of generating a release
+cp manual.pdf eirods-manual-$EIRODSVERSION.pdf
 
 # grant write permission to all, in case this was run via sudo
 cd $GITDIR

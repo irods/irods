@@ -1,42 +1,48 @@
-import pydevtest_sessions as s
-from nose.tools import with_setup
 from nose.plugins.skip import SkipTest
-from pydevtest_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
+import pydevtest_sessions as s
 import commands
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_empty_icd():
-    # assertions
-    assertiCmd(s.adminsession,"icd "+s.testdir) # get into subdir
-    assertiCmd(s.adminsession,"icd") # just go home
-    assertiCmd(s.adminsession,"ils","LIST","/tempZone/home/rods:") # listing
+class Test_icd(object):
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_empty_icd_verbose():
-    # assertions
-    assertiCmd(s.adminsession,"icd "+s.testdir) # get into subdir
-    assertiCmd(s.adminsession,"icd -v","LIST","Deleting (if it exists) session envFile:") # home, verbose
-    assertiCmd(s.adminsession,"ils","LIST","/tempZone/home/rods:") # listing
+    def setUp(self):
+        s.twousers_up()
+    def tearDown(self):
+        s.twousers_down()
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_icd_to_subdir():
-    # assertions
-    assertiCmd(s.adminsession,"icd "+s.testdir) # get into subdir
-    assertiCmd(s.adminsession,"ils","LIST","/tempZone/home/rods/"+s.adminsession.sessionId+"/"+s.testdir+":") # listing
+    ###################
+    # icd
+    ###################
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_icd_to_parentdir():
-    # assertions
-    assertiCmd(s.adminsession,"icd ..") # go to parent
-    assertiCmd(s.adminsession,"ils","LIST","/tempZone/home/rods:") # listing
+    def test_empty_icd(self):
+        # assertions
+        assertiCmd(s.adminsession,"icd "+s.testdir) # get into subdir
+        assertiCmd(s.adminsession,"icd") # just go home
+        assertiCmd(s.adminsession,"ils","LIST","/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+":") # listing
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_icd_to_root():
-    # assertions
-    assertiCmd(s.adminsession,"icd /") # go to root
-    assertiCmd(s.adminsession,"ils","LIST","/:") # listing
+    def test_empty_icd_verbose(self):
+        # assertions
+        assertiCmd(s.adminsession,"icd "+s.testdir) # get into subdir
+        assertiCmd(s.adminsession,"icd -v","LIST","Deleting (if it exists) session envFile:") # home, verbose
+        assertiCmd(s.adminsession,"ils","LIST","/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+":") # listing
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_icd_to_root_with_badpath():
-    # assertions
-    assertiCmd(s.adminsession,"icd /doesnotexist","LIST","No such directory (collection):") # go to root with bad path
+    def test_icd_to_subdir(self):
+        # assertions
+        assertiCmd(s.adminsession,"icd "+s.testdir) # get into subdir
+        assertiCmd(s.adminsession,"ils","LIST","/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId+"/"+s.testdir+":") # listing
+
+    def test_icd_to_parentdir(self):
+        # assertions
+        assertiCmd(s.adminsession,"icd ..") # go to parent
+        assertiCmd(s.adminsession,"ils","LIST","/"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+":") # listing
+
+    def test_icd_to_root(self):
+        # assertions
+        assertiCmd(s.adminsession,"icd /") # go to root
+        assertiCmd(s.adminsession,"ils","LIST","/:") # listing
+
+    def test_icd_to_root_with_badpath(self):
+        # assertions
+        assertiCmd(s.adminsession,"icd /doesnotexist","LIST","No such directory (collection):") # go to root with bad path
+
+

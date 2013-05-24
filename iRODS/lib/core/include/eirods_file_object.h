@@ -56,6 +56,7 @@ namespace eirods {
         inline int                            repl_requested() const { return repl_requested_; }
         inline std::vector< physical_object > replicas()       const { return replicas_;       }
         inline bool                           in_pdmo()        const { return in_pdmo_;        }
+        inline const keyValPair_t&            cond_input()     const { return cond_input_;     }
         
         // =-=-=-=-=-=-=-
         // Mutators
@@ -67,6 +68,7 @@ namespace eirods {
         inline void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
+        inline void cond_input( const keyValPair_t& _cond_input ) { replKeyVal(&_cond_input, &cond_input_); }
         
     protected:
         // =-=-=-=-=-=-=-
@@ -80,6 +82,8 @@ namespace eirods {
                                                         // call
         std::vector< physical_object > replicas_;       // structures holding replica info initialized by factory fcn from
                                                         // dataObjInfoHead
+        keyValPair_t                  cond_input_;      // input keywords
+        
     }; // class file_object
 
     // =-=-=-=-=-=-=-

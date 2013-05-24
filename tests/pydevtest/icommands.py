@@ -272,7 +272,7 @@ class RodsSession(object):
         proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
-           myrodslog.write(" icommand ["+' '.join(argList)+"] --- \n")
+           myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
 
         if delay > 0:
             print "  runCmd: sleeping ["+str(delay)+"] seconds"
@@ -307,7 +307,7 @@ class RodsSession(object):
         proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
-           myrodslog.write(" iadmin ["+' '.join(argList)+"] --- \n")
+           myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")
 
         return subprocess.Popen(argList, stdin = subprocess.PIPE, \
             stdout = subprocess.PIPE, stderr = subprocess.PIPE, \
