@@ -3,9 +3,10 @@ from nose.plugins.skip import SkipTest
 from pydevtest_common import assertiCmd, assertiCmdFail
 import pydevtest_sessions as s
 from resource_suite import ResourceSuite
+from test_chunkydevtest import ChunkyDevTest
 import socket
 
-class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite):
+class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     my_test_resource = {
         "setup"    : [  
@@ -22,7 +23,7 @@ class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite):
         self.run_resource_teardown()
         s.twousers_down()
 
-class Test_Passthru_Resource(unittest.TestCase, ResourceSuite):
+class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -49,7 +50,7 @@ class Test_Passthru_Resource(unittest.TestCase, ResourceSuite):
         self.run_resource_teardown()
         s.twousers_down()
 
-class Test_Random_Resource(unittest.TestCase, ResourceSuite):
+class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
                                 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -86,7 +87,7 @@ class Test_Random_Resource(unittest.TestCase, ResourceSuite):
         self.run_resource_teardown()
         s.twousers_down()
 
-class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite):
+class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -108,7 +109,7 @@ class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite):
         self.run_resource_teardown()
         s.twousers_down()
 
-class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite):
+class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -140,7 +141,7 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite):
         self.run_resource_teardown()
         s.twousers_down()
 
-class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite):
+class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
