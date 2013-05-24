@@ -1487,6 +1487,10 @@ writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 int
 finalzeRuleEngine(rsComm_t *rsComm)
 {
+  clearDVarStruct( &coreRuleVarDef );
+  clearFuncMapStruct( &coreRuleFuncMapDef );
+  clearRuleStruct( &coreRuleStrct );
+
   if ( GlobalREDebugFlag > 5 ) {
     _writeXMsg(GlobalREDebugFlag, "idbug", "PROCESS END");
   }

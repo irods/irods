@@ -1428,6 +1428,18 @@ cleanupAndExit (int status)
         disconnectAllSvrToSvrConn ();
     }
 
+    // =-=-=-=-=-=-=-
+    // clean up server host list
+    if( ServerHostHead ) {
+        rodsServerHost_t* tmp_host = ServerHostHead;
+        while( tmp_host ) {
+            rodsServerHost_t* free_me = tmp_host;
+            tmp_host = tmp_host->next;
+            free( free_me->hostName );
+            free( free_me->zoneInfo );
+            free( free_me );
+        }
+    }
 
     if (status >= 0) {
         exit (0);

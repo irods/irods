@@ -95,7 +95,6 @@ struct rescGrpInfo_t {
     int dummy;
     struct rescGrpInfo_t *cacheNext; 	/* this is for cached resource grp */
     struct rescGrpInfo_t *next; 
-    ~rescGrpInfo_t() { delete rescInfo; }
 };
 
 typedef struct RescCacheInfo
