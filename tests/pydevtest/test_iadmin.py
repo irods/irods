@@ -5,6 +5,11 @@ import commands
 
 class Test_iadmin(object):
 
+    def setUp(self):
+        s.twousers_up()
+    def tearDown(self):
+        s.twousers_down()
+
     ###################
     # iadmin
     ###################

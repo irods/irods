@@ -5,6 +5,11 @@ import commands
 
 class Test_imkdir(object):
 
+    def setUp(self):
+        s.twousers_up()
+    def tearDown(self):
+        s.twousers_down()
+
     ###################
     # imkdir
     ###################
