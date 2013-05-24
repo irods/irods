@@ -67,20 +67,6 @@ namespace eirods {
         error result = SUCCESS();
         error ret;
     
-
-        if(resc_hier().empty()) {
-            std::stringstream msg;
-            msg << "qqq - No resource hierarchy specified for collection object.";
-            DEBUGMSG(msg.str());
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
-        }
-
         hierarchy_parser hparse;
         ret = hparse.set_string(resc_hier());
     

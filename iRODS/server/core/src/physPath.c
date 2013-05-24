@@ -799,7 +799,6 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     if (strcmp (fileRenameInp.oldFileName, dataObjInfo->filePath) == 0) {
         return (0);
     }
-
     rescInfo = dataObjInfo->rescInfo;
     /* see if the new file exist */
     if (getSizeInVault (rsComm, dataObjInfo) >= 0) {
@@ -808,6 +807,13 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rodsLog (LOG_ERROR,
                      "syncDataObjPhyPath:newFileName %s already in use",
                      dataObjInfo->filePath);
+
+            if(true) {
+                eirods::stacktrace st;
+                st.trace();
+                st.dump();
+            }
+
             return (SYS_PHY_PATH_INUSE);
         }
     }
@@ -817,6 +823,7 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     rstrcpy (fileRenameInp.addr.hostAddr, location.c_str(), NAME_LEN);
     rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,
              MAX_NAME_LEN);
+
     status = rsFileRename (rsComm, &fileRenameInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,

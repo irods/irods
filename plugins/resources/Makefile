@@ -46,6 +46,7 @@ ${SUBS}:
 clean:
 	@-for dir in ${SUBS}; do \
 	rm $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
+	rm $$dir/*.o > /dev/null 2>&1; \
 	done
 	@-rm ${SOTOPDIR}/*.so > /dev/null 2>&1
 

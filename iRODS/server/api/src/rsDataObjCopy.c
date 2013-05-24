@@ -71,38 +71,42 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 
     // =-=-=-=-=-=-=-
     // pre-determine hier strings for the source 
-    std::string hier;
-    eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                   srcDataObjInp, hier );
-    if( !ret.ok() ) { 
-        std::stringstream msg;
-        msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
-        msg << srcDataObjInp->objPath << "]";
-        eirods::log( PASSMSG( msg.str(), ret ) );
-        return ret.code();
-    }
+    if(getValByKey(&srcDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
+        std::string hier;
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                                srcDataObjInp, hier );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << srcDataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
    
-    // =-=-=-=-=-=-=-
-    // we resolved the hier str for subsequent api calls, etc.
-    addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
+        // =-=-=-=-=-=-=-
+        // we resolved the hier str for subsequent api calls, etc.
+        addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+    }
+    
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
-    hier = "";
-    ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
-                                     destDataObjInp, hier );
-    if( !ret.ok() ) { 
-        std::stringstream msg;
-        msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
-        msg << destDataObjInp->objPath << "]";
-        eirods::log( PASSMSG( msg.str(), ret ) );
-        return ret.code();
-    }
+    if(getValByKey(&destDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
+        std::string hier;
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_CREATE_OPERATION, rsComm, 
+                                                                destDataObjInp, hier );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "rsDataObjCopy :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << destDataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
    
-    // =-=-=-=-=-=-=-
-    // we resolved the hier str for subsequent api calls, etc.
-    addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
+        // =-=-=-=-=-=-=-
+        // we resolved the hier str for subsequent api calls, etc.
+        addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+    }
+    
 #if 0
     *transStat = malloc (sizeof (transferStat_t));
     memset (*transStat, 0, sizeof (transferStat_t));

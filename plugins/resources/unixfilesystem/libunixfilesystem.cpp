@@ -92,6 +92,7 @@ eirods::error unix_generate_full_path(
         if(_phy_path.compare(0, 1, "/") != 0 &&
            _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
             _ret_string  = vault_path;
+            _ret_string += "/";
             _ret_string += _phy_path;
         } else {
             // The physical path already contains the vault path

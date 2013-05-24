@@ -23,6 +23,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <iomanip>
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -92,6 +93,7 @@ eirods::error unix_generate_full_path(
         if(_phy_path.compare(0, 1, "/") != 0 &&
            _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
             _ret_string  = vault_path;
+            _ret_string += "/";
             _ret_string += _phy_path;
         } else {
             // The physical path already contains the vault path
@@ -424,14 +426,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if the file can't be accessed due to permission denied 
         // try again using root credentials.
-        #ifdef RUN_SERVER_AS_ROOT
+#ifdef RUN_SERVER_AS_ROOT
         if( status < 0 && errno == EACCES && isServiceUserSet() ) {
             if (changeToRootUser() == 0) {
                 status = stat (filename, statbuf);
                 changeToServiceUser();
             }
         }
-        #endif
+#endif
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
@@ -663,9 +665,11 @@ extern "C" {
     } // mock_archive_get_fsfreespace_plugin
 
     int
-    mockArchiveCopyPlugin( int         mode, 
-                        const char* srcFileName, 
-                        const char* destFileName ) {
+    mockArchiveCopyPlugin(
+        int         mode, 
+        const char* srcFileName, 
+        const char* destFileName )
+    {
         rodsLog( LOG_NOTICE, "XXXX - mockArchiveCopyPlugin copy from src [%s] to dst [%s]", srcFileName, destFileName );
 
         int inFd, outFd;
@@ -755,9 +759,28 @@ extern "C" {
         // get ref to fco
         eirods::first_class_object& fco = _ctx->fco();
         
+        // =-=-=-=-=-=-=-
+        // get the vault path for the resource
+        std::string path;
+        ret = _ctx->prop_map().get< std::string >( "path", path ); 
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // append the hash to the path as the new 'cache file name'
+        path += "/";
+        path += fco.physical_path().c_str();
+        
         int status = mockArchiveCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
-            return ERROR( status, "mock_archive_stagetocache_plugin failed." );
+            std::stringstream msg;
+            msg << "mock_archive_stagetocache_plugin failed copying archive file: \"";
+            msg << fco.physical_path();
+            msg << "\" to cache file: \"";
+            msg << _cache_file_name;
+            msg << "\"";
+            return ERROR( status, msg.str());
         } else {
             return SUCCESS();
         }
@@ -787,15 +810,20 @@ extern "C" {
         // hash the physical path to reflect object store behavior
         MD5_CTX context;
         char md5Buf[ MAX_NAME_LEN ];
-        char hash  [ MAX_NAME_LEN ];
+        unsigned char hash  [ MAX_NAME_LEN ];
 
         strncpy( md5Buf, fco.physical_path().c_str(), fco.physical_path().size() );
         MD5Init( &context );
         MD5Update( &context, (unsigned char*)md5Buf, fco.physical_path().size() );
         MD5Final( (unsigned char*)hash, &context );
        
-     
-        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, hash );
+
+        std::stringstream ins;
+        for(int i = 0; i < 16; ++i) {
+            ins << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
+        }
+
+        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, ins.str().c_str() );
 
 
         // =-=-=-=-=-=-=-
@@ -809,7 +837,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // append the hash to the path as the new 'cache file name'
         path += "/";
-        path += hash;
+        path += ins.str();
 
         rodsLog( LOG_NOTICE, "mock archive :: cache file name [%s]", _cache_file_name );
 
@@ -822,7 +850,7 @@ extern "C" {
         if( status < 0 ) {
             return ERROR( status, "mock_archive_synctoarch_plugin failed." );
         } else {
-            fco.physical_path( path );
+            fco.physical_path( ins.str() );
             return SUCCESS();
         }
 
@@ -831,11 +859,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_create( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+        eirods::resource_property_map& _prop_map,
+        eirods::file_object&           _file_obj,
+        const std::string&             _resc_name, 
+        const std::string&             _curr_host, 
+        float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
@@ -874,11 +902,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_open( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+        eirods::resource_property_map& _prop_map,
+        eirods::file_object&           _file_obj,
+        const std::string&             _resc_name, 
+        const std::string&             _curr_host, 
+        float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // initially set a good default
         _out_vote = 0.0;
@@ -1063,7 +1091,7 @@ extern "C" {
 
             eirods::error operator()( rcComm_t* ) {
                 rodsLog( LOG_NOTICE, "mockarchive_resource::post_disconnect_maintenance_operation - [%s]", 
-                name_.c_str() );
+                         name_.c_str() );
                 return SUCCESS();
             }
 
@@ -1074,7 +1102,7 @@ extern "C" {
 
     public:
         mockarchive_resource( const std::string& _inst_name, 
-                                 const std::string& _context ) : 
+                              const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
 
             if( !context_.empty() ) {
@@ -1122,7 +1150,7 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-            #if 0
+#if 0
             std::string name;
             eirods::error err = get_property< std::string >( "name", name );
             if( !err.ok() ) {
@@ -1131,9 +1159,9 @@ extern "C" {
 
             _op = maintenance_operation( name );
             return SUCCESS();
-            #else
+#else
             return ERROR( -1, "nop" );
-            #endif
+#endif
         }
 
     }; // class mockarchive_resource

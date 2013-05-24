@@ -30,6 +30,7 @@
 #include "eirods_resource_redirect.h"
 #include "eirods_hierarchy_parser.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
 
 int
 rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
