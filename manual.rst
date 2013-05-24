@@ -435,78 +435,55 @@ A replicating coordinating resource with three unix file system storage resource
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
 
 
+-----------------------------
+Users & Permissions
+-----------------------------
 
-.. 
-.. ------
-.. How To
-.. ------
-.. 
-.. Troubleshooting
-.. ---------------
-.. 
-.. These will be cross-referenced with each feature.
-.. 
-.. - where to check
-.. - what to expect
-.. - error codes - with numeric to string translation
-.. 
-.. Common Errors
-.. -------------
-.. iRODS Server is down
-.. credentials
-.. file not found
-.. port/firewall
-.. wrong server/port
-.. client version mismatch
-.. rule engine syntax
-.. iRODS permissions
-.. 
-.. Steps
-.. -----
-.. - ienv
-.. - networking
-..  - reachable?
-..  - port open?
-..  - server up?
-.. - check logs
-..  - on server
-..  - on client
-.. 
-.. Manage Resources
-.. ----------------
-.. - cache
-..   - cache cleanup (itrim via cronjob)
-..   - monitoring
-.. - compound
-.. - database
-.. - WOS
-.. - HPSS
-.. - S3
-.. - Group Population
-..    - Random
-..    - Round Robin
-..    - Least Populated
-.. 
-.. Manage Users
-.. ------------
-.. - groups
-.. - ACLs (always surprising)
-..    - multiple people / groups
-..    - inheritance
-..    - StrictACL
-.. 
-.. Examples
-.. --------
-.. - Least Recently Used (LRU)
-.. - First In First Out (FIFO)
-.. - Failover checking
-.. 
-.. ----------
-.. Monitoring
-.. ----------
-.. - nagios plugins (Jean-Yves)
-.. - other
-.. 
+Similar to the way that resources are grouped, users in E-iRODS can also be added to various groups, once the groups have been created. 
+A user can belong to more than one group at a time.
+The owner of a file has full control of the file and can give/remove access to other users/groups. The owner of a file can also give ownership rights to other users, who in
+turn can grant or revoke access to users.
+
+Access to files and collections is modified using ``ichmod`` - the E-iRODS equivalent of the Unix ``chmod`` (change mode) shell command.
+Viewing policies for collections can be set in the core.re file by setting the ``msiAclPolicy`` - E-iRODS has strictACL as its default setting.
+
+Collections in E-iRODS have an attribute named Inheritance, which is a directory specific setting.  When Collections have this attribute set to Enabled, new Data Objects and Collections added to the Collection inherit the access permissions (ACLs) of the Collection. Data Objects created within Collections with Inheritance set to Disabled do not inherit the parent Collection's ACL settings.
+By default, E-iRODS has Inheritance set to Disabled. 
+
+
+Inheritance is especially useful when working with shared projects such as a public folder to which all users have read access. With Inheritance set to Enabled, any sub-folders created under the public folder will inherit the properties of the public folder. 
+Therefore a user with read access to the public folder will also have read access to all objects and collections created
+in the public folder.
+
+--------------------
+Rule Engine Syntax
+--------------------
+
+The Rule Engine, which interprets rules, is a critical component of the E-iRODS system. Rules are definitions of actions that need to be performed by the server. 
+These actions are defined in terms of micro-services and other actions.
+The E-iRODS built-in Rule Engine interprets the rules and calls the appropriate micro-services.
+
+A Race condition occurs when two processes occur simultaneously and try to change shared data. The outcome of the process is unpredictable since both threads are "racing" to access/change the data.
+To avoid uncertainty in the outcome, the commands ``iput``, ``iget`` and ``irepl`` all have a --wlock/--rlock option to lock the data objects during these operations.
+An irodsServer thread then purges unused locked files every 2 hours.
+
+Delay execution
+----------------
+
+Rules can be run in two modes- immediate execution or delayed execution. Most of the actions and/or microservices are executed immediately; however some actions are better suited to be placed in a queue and executed later.
+The actions and/or microservices which are executed in delay mode are queued and invoked under the ``delayExec`` microservice and their execution is delayed to a later time. Typically, these are resource-heavy, time-intensive
+processes, better suited to being carried out in a delayed mode.
+
+One of the issues with delayed execution is that if a particular task fails, the queue starts to increase as scheduled tasks back up.
+The following commands may be used to troubleshoot queues that are backed up.
+
+::
+
+	iqdel    - remove a delayed rule (owned by you) from the queue.
+	iqmod    - modify certain values in existing delayed rules (owned by you).
+	iqstat   - show the queue status of delayed rules.
+
+..
 .. ---------------
 .. Delay Execution
 .. ---------------
@@ -518,19 +495,71 @@ A replicating coordinating resource with three unix file system storage resource
 .. - errors
 .. - queue management
 .. 
-.. --------------
-.. Authentication
-.. --------------
-.. - iRODS
-.. - OSAuth
-.. - GSI
 .. 
+.. ----------
+.. Monitoring
+.. ----------
+.. - nagios plugins (Jean-Yves)
+.. - other
+.. - Failover checking
+.. 
+
+--------------
+Authentication
+--------------
+
+	E-iRODS uses a secure password system for user authentication. The user passwords are scrambled and stored in the iCAT database.
+	Additionally, E-iRODS supports user authentication via PAM (Pluggable Authentication Modules), which in turn can be configured to support Kerberos and LDAP authentication systems.
+	To use E-iRODS with PAM, SSL has to be set up between the E-iRODS client and server.
+
+PAM authentication setup
+-------------------------	
+	#. Add users
+
+		PAM can be configured to to support various authentication systems; however the E-iRODS administrator still needs to add the users to the E-iRODS database. If the user's credentials will be
+		exclusively authenticated with PAM, a password need not be assigned.
+
+	
+		``iadmin``::
+
+			iadmin mkuser newuser rodsuser
+
+	#. Edit the config file to change the variables as detailed
+
+		``config.mk``::
+
+		
+		 # PAM_AUTH = 1 to 
+
+		   PAM_AUTH = 1
+
+		   and 
+
+		 # USE_SSL = 1  to
+
+ 		   USE_SSL = 1
+		
+		and run 'make' again.
+
+	#. Install PAM libraries if needed
+		::
+
+ 		 sudo apt-get install libpam0g-dev
+
+	   With PAM_AUTH enabled, 'make' will build server/bin/PamAuthCheck from server/auth/src/PamAuthCheck.c. PamAuthCheck.c is a simple program that is run by the irodsAgent to verify the user's password. 
+	   PamAuthCheck.c can be adjusted as needed, to use different PAM modules.
+	   For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) and runs 'iinit' and enters their system password.
+	   To protect the system password, SSL (via OpenSSL) is used to encrypt the 'iinit' session.
+
+..
+..
+..
 .. --------------
 .. Best Practices
 .. --------------
 .. - microservice objects (MSO)
 .. - tickets
-.. - realizable objects
+.. - realizable objects (remote database connection)
 .. - quota management
 
 -------------
@@ -555,6 +584,72 @@ iRODS/server/config/server.config
 
 ~/.irods/.irodsEnv
     This is the main iRODS configuration file defining the iRODS environment.  Any changes are effective immediately since iCommands reload their environment on every execution.
+
+-----------------------
+Troubleshooting
+-----------------------
+ 
+Common Errors
+-------------
+
+Some of the commonly encountered E-iRODS errors along with troubleshooting steps are discussed below.	
+
+
+#. **E-iRODS Server is down**	
+
+	Error Code: USER_SOCK_CONNECT_TIMEDOUT	-347000
+
+	Common areas to check for this error include:
+
+	**ienv**
+		The ienv command verifies the E-iRODS environment for the server
+
+	**Networking issues**
+
+	- Verify that a firewall is not blocking the connection on the E-iRODS port in use.
+	
+	- Check for network connectivity problems by pinging the server in question.
+
+	**E-iRODS server logs**
+		If the E-iRODS environment issues and networking issues have been ruled out, the E-iRODS server/client logs may provide information on the server status.
+
+#. **No such file or directory**
+
+	Common areas to check for this error include:
+
+	**Permissions**
+		Verify that the E-iRODS user has 'write' access to the directory in question.
+
+	**FUSE error**
+
+	**Zero byte files**
+
+
+#. **No rows found in the E-iRODS Catalog**
+
+	Error Code: CAT_NO_ROWS_FOUND	-808000
+
+	The CAT_NO_ROWS_FOUND error is encountered when there are no results for the  query that was executed. This can happen because 
+
+	- the query itself is framed incorrectly or 
+
+	- there truly are no results for the query i.e. there is no data corresponding to the criteria specified.
+
+#. **Access control/Permissions**
+
+	Error Code: CAT_NO_ACCESS_PERMISSION		-818000
+
+	This error can occur when a user tries to get or put a file that belongs to another user without the file owner having given read and/or write permission.
+	A more restrictive policy on viewing collections can be set in the core.re file - ``msiAclPolicy("STRICT")``. In this mode, the user will not even be able to see the file.
+	In a non-strict mode, the user would be able to see the file; however read/write permissions determine what the user can do with the file.
+ 	
+	Modifying the core.re file will apply the policy permanently; applying the policy via ``irule`` will have an impact only during the execution of the rule.
+
+#. **Credentials**
+
+	Error Code: CAT_INVALID_USER	-827000
+	
+	This error can occur when the user is unknown or invalid in some way (for instance- no password has been defined for the user).
 
 
 --------
