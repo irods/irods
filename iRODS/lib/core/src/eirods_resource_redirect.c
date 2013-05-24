@@ -176,6 +176,8 @@ namespace eirods {
 
             } // else
 
+            free( rodsObjStatOut );
+
         } // else
 
         // =-=-=-=-=-=-=-

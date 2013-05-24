@@ -561,9 +561,13 @@ freeDataObjInfo(dataObjInfo_t *dataObjInfo)
 
     /* separate specColl */
     if (dataObjInfo->specColl != NULL) free (dataObjInfo->specColl);
+    if( dataObjInfo->rescInfo != NULL) {
+        delete dataObjInfo->rescInfo;
+        dataObjInfo->rescInfo = 0;
+    }
 
     free (dataObjInfo);
-
+    dataObjInfo = 0;
     return (0);
 }
 
@@ -575,11 +579,6 @@ freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead)
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
-/*      don't free rescInfo because it came from global 
-        if (tmpDataObjInfo->rescInfo != NULL) {
-        free (tmpDataObjInfo->rescInfo);
-        }
-*/
         freeDataObjInfo (tmpDataObjInfo);
         tmpDataObjInfo = nextDataObjInfo;
     }

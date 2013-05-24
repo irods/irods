@@ -364,9 +364,9 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjInfo->collId = strtoll (tmpCollId, 0, 0);
         dataObjInfo->dataMapId = atoi (tmpDataMapId);
         rstrcpy (dataObjInfo->dataComments, tmpDataComments, LONG_NAME_LEN);
-        rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, NAME_LEN);
-        rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
-        rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
+        rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, TIME_LEN);
+        rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, TIME_LEN);
+        rstrcpy (dataObjInfo->dataModify, tmpDataModify, TIME_LEN);
         rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
         dataObjInfo->writeFlag = writeFlag;
         
@@ -967,14 +967,13 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
                     dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 {
 
-    dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
-                  *oldCacheInfo,    *downCurrentInfo,  *downOldInfo;
+    dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
+                  *oldCacheInfo = 0,    *downCurrentInfo = 0,  *downOldInfo = 0;
 
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
     
-
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);

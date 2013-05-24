@@ -23,6 +23,41 @@
 #include "eirods_resource_backport.h"
 #include "eirods_hierarchy_parser.h"
 
+
+// =-=-=-=-=-=-=-
+/// @brief function which determiens if a collection is created at the root level
+eirods::error validate_collection_path( 
+    const std::string& _path ) {
+    // =-=-=-=-=-=-=-
+    // get the local zone info so we can compare the
+    // path with the zone name
+    zoneInfo_t* zone_info = 0;
+    if( getLocalZoneInfo( &zone_info ) < 0 ) {
+        return ERROR( -1, "getLocalZoneInfo failed." ); 
+    }
+
+    // =-=-=-=-=-=-=-
+    // build a root zone name
+    std::string zone_name( "/" );
+    zone_name += zone_info->zoneName;
+    
+    // =-=-=-=-=-=-=-
+    // if the zone name does not appear at the root
+    // then this is an error
+    size_t pos = _path.find( zone_name );
+    if( 0 != pos  ) {
+        std::stringstream msg;
+        msg << "zone name does not appear at the root of the collection path [";
+        msg << _path;
+        msg << "]";
+        return ERROR( -1, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_collection_path
+
+
 int
 rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 {
@@ -34,7 +69,13 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 #ifdef RODS_CAT
     dataObjInfo_t *dataObjInfo = NULL;
 #endif
-    
+   
+    eirods::error ret = validate_collection_path( collCreateInp->collName ); 
+    if( !ret.ok() ) {
+        eirods::log( ret );
+        return SYS_INVALID_INPUT_PARAM;    
+    }
+
     resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
                        &collCreateInp->condInput);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
@@ -120,7 +161,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 int
 l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
-    int rescTypeInx;
+    //int rescTypeInx;
     fileMkdirInp_t fileMkdirInp;
     int status;
 

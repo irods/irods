@@ -132,7 +132,7 @@ closeAllL1desc (rsComm_t *rsComm)
 }
 
 int
-freeL1desc (int l1descInx)
+freeL1desc(int l1descInx)
 {
     if (l1descInx < 3 || l1descInx >= NUM_L1_DESC) {
         rodsLog (LOG_NOTICE,
@@ -566,7 +566,9 @@ initDataObjInfoForRepl (
 
 
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
-    destDataObjInfo->rescInfo = destRescInfo;
+    destDataObjInfo->rescInfo = new rescInfo_t;
+    memcpy( destDataObjInfo->rescInfo, destRescInfo, sizeof( rescInfo_t ) );
+
     if (destRescGroupName != NULL && strlen (destRescGroupName) > 0) {
         rstrcpy (destDataObjInfo->rescGroupName, destRescGroupName,
                  NAME_LEN);
@@ -691,7 +693,7 @@ allocAndSetL1descForZoneOpr (int remoteL1descInx, dataObjInp_t *dataObjInp,
         rstrcpy (dataObjInfo->dataType, openStat->dataType, NAME_LEN);
         L1desc[l1descInx].l3descInx = openStat->l3descInx;
         L1desc[l1descInx].replStatus = openStat->replStatus;
-        dataObjInfo->rescInfo = (rescInfo_t*)malloc (sizeof (rescInfo_t));
+        dataObjInfo->rescInfo = new rescInfo_t;
         bzero (dataObjInfo->rescInfo, sizeof (rescInfo_t));
         dataObjInfo->rescInfo->rescTypeInx = openStat->rescTypeInx;
     }

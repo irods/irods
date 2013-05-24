@@ -283,7 +283,7 @@ testMetadata(*RES) {
 
 testDelayExecSyntax {
         delay("<PLUSET>30s</PLUSET><EF>30s</EF>") {
-                writeLine('serverLog', 'delayed exec');
+                writeLine("serverLog", "delayed exec");
         }
         writeLine("stdout", "exec");
 }

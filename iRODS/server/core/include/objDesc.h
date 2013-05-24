@@ -75,7 +75,7 @@ extern "C" {
     allocL1Desc ();
 
     int
-    freeL1Desc (int fileInx);
+    freeL1Desc(int fileInx);
 
     int
     fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
@@ -95,7 +95,7 @@ extern "C" {
     int
     allocL1desc ();
     int
-    freeL1desc (int l1descInx);
+    freeL1desc(int l1descInx);
     int
     closeAllL1desc (rsComm_t *rsComm);
     int

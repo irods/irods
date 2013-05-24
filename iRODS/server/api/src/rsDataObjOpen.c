@@ -525,9 +525,11 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *myDataObjInfo = *(*dataObjInfoHead);
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
-        // rescInfo = tmpRescGrpInfo->rescInfo;
         rescInfo = (*dataObjInfoHead)->rescInfo;
-        myDataObjInfo->rescInfo = rescInfo;
+        
+        myDataObjInfo->rescInfo = new rescInfo_t;
+        memcpy( myDataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
+
         rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (myDataObjInfo->rescGroupName, (*dataObjInfoHead)->rescGroupName, NAME_LEN);
         

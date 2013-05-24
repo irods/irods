@@ -186,8 +186,8 @@ queueSpecCollCache( rsComm_t *rsComm, genQueryOut_t *genQueryOut, char *objPath 
             rstrcpy (tmpSpecCollCache->collId, tmpDataId, NAME_LEN);
             rstrcpy (tmpSpecCollCache->ownerName, tmpOwnerName, NAME_LEN);
             rstrcpy (tmpSpecCollCache->ownerZone, tmpOwnerZone, NAME_LEN);
-            rstrcpy (tmpSpecCollCache->createTime, tmpCreateTime, NAME_LEN);
-            rstrcpy (tmpSpecCollCache->modifyTime, tmpModifyTime, NAME_LEN);
+            rstrcpy (tmpSpecCollCache->createTime, tmpCreateTime, TIME_LEN);
+            rstrcpy (tmpSpecCollCache->modifyTime, tmpModifyTime, TIME_LEN);
             tmpSpecCollCache->next = SpecCollCacheHead;
             SpecCollCacheHead = tmpSpecCollCache;
 
@@ -211,10 +211,9 @@ queueSpecCollCacheWithObjStat (rodsObjStat_t *rodsObjStatOut)
     rstrcpy (tmpSpecCollCache->collId, rodsObjStatOut->dataId, NAME_LEN);
     rstrcpy (tmpSpecCollCache->ownerName, rodsObjStatOut->ownerName, NAME_LEN);
     rstrcpy (tmpSpecCollCache->ownerZone, rodsObjStatOut->ownerZone, NAME_LEN);
-    rstrcpy (tmpSpecCollCache->createTime, rodsObjStatOut->createTime,
-             NAME_LEN);
-    rstrcpy (tmpSpecCollCache->modifyTime, rodsObjStatOut->modifyTime,
-             NAME_LEN);
+    rstrcpy (tmpSpecCollCache->createTime, rodsObjStatOut->createTime,TIME_LEN);
+    rstrcpy (tmpSpecCollCache->modifyTime, rodsObjStatOut->modifyTime,TIME_LEN);
+             
 
     tmpSpecCollCache->next = SpecCollCacheHead;
     SpecCollCacheHead = tmpSpecCollCache;
@@ -309,6 +308,7 @@ statPathInSpecColl (rsComm_t *rsComm, char *objPath,
     dataObjInfo_t *dataObjInfo = NULL;
     specColl_t *specColl;
     specCollCache_t *specCollCache;
+
     if ((status = getSpecCollCache (rsComm, objPath, inCachOnly,
                                     &specCollCache)) < 0) {
         if (status != SYS_SPEC_COLL_NOT_IN_CACHE &&
@@ -349,9 +349,9 @@ statPathInSpecColl (rsComm_t *rsComm, char *objPath,
         }
         (*rodsObjStatOut)->objType = UNKNOWN_OBJ_T;
         rstrcpy ((*rodsObjStatOut)->createTime, specCollCache->createTime,
-                 NAME_LEN);
+                 TIME_LEN);
         rstrcpy ((*rodsObjStatOut)->modifyTime, specCollCache->modifyTime,
-                 NAME_LEN);
+                 TIME_LEN);
         freeAllDataObjInfo (dataObjInfo);
         /* XXXXX 0 return is creating a problem for fuse */
         return (0);
@@ -373,9 +373,9 @@ statPathInSpecColl (rsComm_t *rsComm, char *objPath,
         (*rodsObjStatOut)->objType = (objType_t)status;
         (*rodsObjStatOut)->objSize = dataObjInfo->dataSize;
         rstrcpy ((*rodsObjStatOut)->createTime, dataObjInfo->dataCreate,
-                 NAME_LEN);
+                 TIME_LEN);
         rstrcpy ((*rodsObjStatOut)->modifyTime, dataObjInfo->dataModify,
-                 NAME_LEN);
+                 TIME_LEN);
         freeAllDataObjInfo (dataObjInfo);
     }
 
@@ -578,7 +578,7 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
         tmpDataObjInfo = *dataObjInfo;
         replSpecColl (specColl, &tmpDataObjInfo->specColl);
         rstrcpy( specColl->resource,tmpDataObjInfo->rescName, NAME_LEN );
-        rstrcpy( specColl->rescHier,tmpDataObjInfo->rescHier, NAME_LEN );
+        rstrcpy( specColl->rescHier,tmpDataObjInfo->rescHier, MAX_NAME_LEN );
         rstrcpy( specColl->phyPath,tmpDataObjInfo->filePath, MAX_NAME_LEN );
         rstrcpy( tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN );
         specColl->replNum = tmpDataObjInfo->replNum;
@@ -599,10 +599,8 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
     }
 
     if (rodsStat->st_ctim != 0) {
-        snprintf ((*dataObjInfo)->dataCreate, NAME_LEN, "%d",
-                  rodsStat->st_ctim);
-        snprintf ((*dataObjInfo)->dataModify, NAME_LEN, "%d",
-                  rodsStat->st_mtim);
+        snprintf ((*dataObjInfo)->dataCreate, TIME_LEN, "%d", rodsStat->st_ctim);
+        snprintf ((*dataObjInfo)->dataModify, TIME_LEN, "%d", rodsStat->st_mtim);
     }
 
     if (rodsStat->st_mode & S_IFDIR) {

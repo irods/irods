@@ -223,12 +223,11 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
             return status;
         }
-
         /* update old repl to new repl */
         status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead, oldDataObjInfoHead, transStat, NULL);
           
         if (status >= 0 && outDataObjInfo != NULL) {
-            *outDataObjInfo = *oldDataObjInfoHead;
+            *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
             outDataObjInfo->next = NULL;
         } else {
             if(status < 0) {
@@ -290,7 +289,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         status = resolveSingleReplCopy( &dataObjInfoHead, &oldDataObjInfoHead,
                                         &myRescGrpInfo,   &destDataObjInfo, 
                                         &dataObjInp->condInput );
- 
+
         if (status == HAVE_GOOD_COPY) {
             // =-=-=-=-=-=-=-
             // JMC - backport 4450
@@ -320,48 +319,48 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                 ]]
                         ]]
 #endif // JMC - legacy resource
-                                                              // =-=-=-=-=-=-=-
-                                                              if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
-                                                                  /* pass back the GOOD_COPY */
-                                                                  *outDataObjInfo = *destDataObjInfo;
-                                                                  outDataObjInfo->next = NULL;
-                                                              }
+              // =-=-=-=-=-=-=-
+              if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
+                  /* pass back the GOOD_COPY */
+                  *outDataObjInfo = *destDataObjInfo;
+                  outDataObjInfo->next = NULL;
+              }
 
-                                                              // =-=-=-=-=-=-=-
-                                                              // JMC - backport 4494
-                                                              if( backupFlag == 0 && myRescGrpInfo != NULL        && 
-                                                                  ( allFlag == 1 || myRescGrpInfo->next == NULL ) && 
-                                                                  ( myRescGrpInfo->status < 0 ) ) {
-                                                                  status = myRescGrpInfo->status;
-                                                                  // =-=-=-=-=-=-=-
-                                                              } else {
-                                                                  status = 0;
-                                                              }
-            
-                                                              // =-=-=-=-=-=-=-
-                                                              // JMC - backport 4494
-                                                              if( backupFlag == 0 && myRescGrpInfo != NULL        && 
-                                                                  ( allFlag == 1 || myRescGrpInfo->next == NULL ) && 
-                                                                  ( myRescGrpInfo->status < 0 ) ) {
-                                                                  status = myRescGrpInfo->status;
-                                                                  // =-=-=-=-=-=-=-
-                                                              } else {
-                                                                  status = 0;
-                                                              }
-            
-                                                              freeAllDataObjInfo (dataObjInfoHead);
-                                                              freeAllDataObjInfo (oldDataObjInfoHead);
-                                                              freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
-                                                              freeAllRescGrpInfo (myRescGrpInfo);
-                                                              return status;
-                                                              } else if (status < 0) {
-                    freeAllDataObjInfo (dataObjInfoHead);
-                    freeAllDataObjInfo (oldDataObjInfoHead);
-                    freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
-                    freeAllRescGrpInfo (myRescGrpInfo);
-                    rodsLog(LOG_NOTICE, "%s - Failed to resolve a single replication copy.", __FUNCTION__);
-                    return status;
-                }
+              // =-=-=-=-=-=-=-
+              // JMC - backport 4494
+              if( backupFlag == 0 && myRescGrpInfo != NULL        && 
+                  ( allFlag == 1 || myRescGrpInfo->next == NULL ) && 
+                  ( myRescGrpInfo->status < 0 ) ) {
+                  status = myRescGrpInfo->status;
+                  // =-=-=-=-=-=-=-
+              } else {
+                  status = 0;
+              }
+
+              // =-=-=-=-=-=-=-
+              // JMC - backport 4494
+              if( backupFlag == 0 && myRescGrpInfo != NULL        && 
+                  ( allFlag == 1 || myRescGrpInfo->next == NULL ) && 
+                  ( myRescGrpInfo->status < 0 ) ) {
+                  status = myRescGrpInfo->status;
+                  // =-=-=-=-=-=-=-
+              } else {
+                  status = 0;
+              }
+
+              freeAllDataObjInfo (dataObjInfoHead);
+              freeAllDataObjInfo (oldDataObjInfoHead);
+              freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
+              freeAllRescGrpInfo (myRescGrpInfo);
+              return status;
+          } else if (status < 0) {
+                freeAllDataObjInfo (dataObjInfoHead);
+                freeAllDataObjInfo (oldDataObjInfoHead);
+                freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
+                freeAllRescGrpInfo (myRescGrpInfo);
+                rodsLog(LOG_NOTICE, "%s - Failed to resolve a single replication copy.", __FUNCTION__);
+                return status;
+            }
             /* NO_GOOD_COPY drop through here */
     
         } // if mulitcopy flg
@@ -743,6 +742,8 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             if (cacheDataObjInfo == NULL) {
                 srcDataObjInfo  = (dataObjInfo_t*)calloc (1, sizeof (dataObjInfo_t));
                 *srcDataObjInfo = *inpSrcDataObjInfo;
+                srcDataObjInfo->rescInfo = new rescInfo_t;
+                memcpy( srcDataObjInfo->rescInfo, inpSrcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
             } else {
                 srcDataObjInfo = cacheDataObjInfo;
             }
@@ -784,6 +785,8 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 /* inherit the replStatus of the src */
                 inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
                 *myDestDataObjInfo = *inpDestDataObjInfo;
+                myDestDataObjInfo->rescInfo = new rescInfo_t;
+                memcpy( myDestDataObjInfo->rescInfo, inpDestDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
                 replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
                 addKeyVal (&myDataObjInp.condInput, FORCE_FLAG_KW, "");
                 myDataObjInp.openFlags |= (O_TRUNC | O_WRONLY);
@@ -1676,7 +1679,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 bzero (&compDataObjInfo, sizeof (compDataObjInfo));
                 rstrcpy (compDataObjInfo.rescGroupName, compRescGrpInfo->rescGroupName,
                          NAME_LEN);
-                compDataObjInfo.rescInfo = compRescGrpInfo->rescInfo;
+                compDataObjInfo.rescInfo=compRescGrpInfo->rescInfo;
                 status = getCacheDataInfoOfCompObj (rsComm, dataObjInp,
                                                     srcDataObjInfoHead, destDataObjInfoHead, &compDataObjInfo, 
                                                     oldDataObjInfo, outDataObjInfo);

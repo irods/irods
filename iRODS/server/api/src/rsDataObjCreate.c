@@ -368,7 +368,8 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     
     } else {
 #endif
-        dataObjInfo->rescInfo = rescInfo;
+        dataObjInfo->rescInfo = new rescInfo_t;
+        memcpy( dataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
         rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
         rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
         

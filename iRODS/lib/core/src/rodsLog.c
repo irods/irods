@@ -13,6 +13,7 @@
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
 #include <time.h>
+#include <sys/time.h>
 
 #ifndef windows_platform
 #include <unistd.h>

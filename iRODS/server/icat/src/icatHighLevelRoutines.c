@@ -3180,6 +3180,32 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
     return(0);
 }
 
+// =-=-=-=-=-=-=-
+/// @brief function which determines if a char is allowed in a zone name
+static bool allowed_zone_char( const char _c ) {
+    return ( !std::isalnum( _c ) && 
+             !( '_' == _c )      && 
+             !( '-' == _c ) );
+} // allowed_zone_char
+
+// =-=-=-=-=-=-=-
+/// @brief function for validing the name of a zone
+eirods::error validate_zone_name( 
+    std::string _zone_name ) {
+    std::string::iterator itr = std::find_if( _zone_name.begin(),
+                                              _zone_name.end(),
+                                              allowed_zone_char );
+    if( itr != _zone_name.end() ) {
+        std::stringstream msg;
+        msg << "validate_zone_name failed for zone [";
+        msg << _zone_name;
+        msg << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_zone_name
 
 /* register a Zone */
 int chlRegZone(rsComm_t *rsComm, 
@@ -3189,6 +3215,10 @@ int chlRegZone(rsComm_t *rsComm,
     char tSQL[MAX_SQL_SIZE];
     int status;
     char myTime[50];
+
+    if( !rsComm || !zoneName || !zoneType || !zoneConnInfo || !zoneComment ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegZone");
 
@@ -3207,6 +3237,14 @@ int chlRegZone(rsComm_t *rsComm,
         addRErrorMsg (&rsComm->rError, 0, 
                       "Currently, only zones of type 'remote' are allowed");
         return(CAT_INVALID_ARGUMENT);
+    }
+
+    // =-=-=-=-=-=-=-
+    // validate the zone name does not include improper characters
+    eirods::error ret = validate_zone_name( zoneName );
+    if( !ret.ok() ) {
+        eirods::log( ret );
+        return SYS_INVALID_INPUT_PARAM;
     }
 
     /* String to get next sequence item for objects */
@@ -4684,6 +4722,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
 	    selUserId, 
             IRODS_PAM_PASSWORD_MIN_TIME,
             IRODS_PAM_PASSWORD_MAX_TIME, &icss);
+
    if (status==0) {
 #ifndef PAM_AUTH_NO_EXTEND
       if (logSQL!=0) rodsLog(LOG_SQL, "chlUpdateIrodsPamPassword SQL 4");
@@ -4709,21 +4748,38 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm,
    }
 
 
-   j=0;
-   get64RandomBytes(rBuf);
-   for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
-      char c;
-      c = rBuf[i] &0x7f;
-      if (c < '0') c+='0';
-      if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
-           (c > '0' && c < '9') ){
-         randomPw[j++]=c;
-      }
-   }
-   randomPw[j]='\0';
+   // =-=-=-=-=-=-=-
+   // if the resultant scrambled password has a ' in the
+   // string, this can cause issues on some systems, notably
+   // Suse 12.  if this is the case we will just get another
+   // random password.
+   bool pw_good = false;
+   while( !pw_good ) {
 
-   strncpy(randomPwEncoded, randomPw, 50);
-   icatScramble(randomPwEncoded); 
+       j=0;
+       get64RandomBytes(rBuf);
+       for (i=0;i<50 && j<IRODS_PAM_PASSWORD_LEN-1;i++) {
+          char c;
+          c = rBuf[i] & 0x7f;
+          if (c < '0') c+='0';
+          if ( (c > 'a' && c < 'z') || (c > 'A' && c < 'Z') ||
+               (c > '0' && c < '9') ){
+             randomPw[j++]=c;
+          }
+       }
+       randomPw[j]='\0';
+
+       strncpy(randomPwEncoded, randomPw, 50);
+       icatScramble(randomPwEncoded); 
+       if( !strstr( randomPwEncoded, "\'" ) ) {
+           pw_good = true; 
+
+       } else {
+           rodsLog( LOG_STATUS, "chlUpdateIrodsPamPassword :: getting a new password [%s] has a single quote", randomPwEncoded );
+
+       }
+
+   } // while
 
    if (testTime!=NULL && strlen(testTime)>0) {
       strncpy(myTime, testTime, sizeof(myTime));
@@ -5403,8 +5459,9 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         OK=1;
     }
 
+#if 0 // JMC - no longer support resource classes
     if (strcmp(option, "class")==0) {
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 8");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 8");
         status = cmlCheckNameToken("resc_class", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
@@ -5417,7 +5474,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
-        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 9");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 9");
         status =  cmlExecuteNoAnswerSql(
             "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
             &icss);
@@ -5430,7 +5487,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         }
         OK=1;
     }
-
+#endif
     if (strcmp(option, "path")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 10");
       status = cmlGetStringValueFromSql(

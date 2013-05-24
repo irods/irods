@@ -2,3 +2,9 @@ This is the first release candidate of the Enterprise integrated Rule-Oriented D
 
 E-iRODS is developed under the auspices of the E-iRODS Consortium.  This release was prepared by the Renaissance Computing Institute (RENCI) and released under the New BSD (BSD-3) License.
 
+
+
+- Fixed an estimated 200 static analysis errors identified by cppcheck
+- Fixed an estimated 20 memory leaks identified by valgrind
+- Increased code coverage from 20% to over 50%
+- Continuously built and tested across 3 major linux distributions
