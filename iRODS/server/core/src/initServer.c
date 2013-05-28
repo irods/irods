@@ -1435,7 +1435,15 @@ cleanupAndExit (int status)
         while( tmp_host ) {
             rodsServerHost_t* free_me = tmp_host;
             tmp_host = tmp_host->next;
-            free( free_me->hostName );
+         
+            hostName_t* tmp_name = free_me->hostName;
+            while( tmp_name ) {
+                hostName_t* free_name = tmp_name;
+                tmp_name = free_name->next;
+                free( free_name->name );
+                free( free_name );
+            }
+
             free( free_me->zoneInfo );
             free( free_me );
         }
