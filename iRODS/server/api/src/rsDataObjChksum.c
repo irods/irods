@@ -130,10 +130,13 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
         dataObjInfo_t *outDataObjInfo = NULL;
         //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
         std::string resc_class;
-        eirods::error err = eirods::get_resource_property< std::string >( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
+        eirods::error err = eirods::get_resource_property< std::string >( 
+                                tmpDataObjInfo->rescInfo->rescName, 
+                                eirods::RESOURCE_CLASS,
+                                resc_class );
         if( !err.ok() ) {
             eirods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
-    }
+        }
 
     #if 0 // JMC - legacy resource 
 	if (rescClass  == COMPOUND_CL) {
@@ -146,7 +149,7 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 	    }
    } else 
    #endif // JMC - legacy resource 
-   if ( resc_class == "bundle" ) { // (rescClass == BUNDLE_CL) {
+   if ( resc_class == eirods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
 	    /* don't do BUNDLE_CL. should be done on the bundle file */
             tmpDataObjInfo = tmpDataObjInfo->next;
             status = 0;

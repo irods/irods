@@ -40,6 +40,10 @@ extern "C" {
 #define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
 
     // =-=-=-=-=-=-=-
+    /// @brief token to index the script property
+    const std::string SCRIPT_PROP( "script" );
+
+    // =-=-=-=-=-=-=-
     // 1. Define plugin Version Variable, used in plugin
     //    creation when the factory function is called.
     //    -- currently only 1.0 is supported.
@@ -129,7 +133,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -187,7 +191,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -320,7 +324,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -385,7 +389,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -478,7 +482,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -571,7 +575,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -659,7 +663,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the script property
         std::string script;
-        err = _ctx->prop_map().get< std::string >( "script", script );
+        err = _ctx->prop_map().get< std::string >( SCRIPT_PROP, script );
         if( !err.ok() ) {
             return PASSMSG( __FUNCTION__, err );
         }
@@ -757,7 +761,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_create - failed to get 'status' property", get_ret );
         }
@@ -772,7 +776,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_create - failed to get 'location' property", get_ret );
         }
@@ -800,7 +804,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_open - failed to get 'status' property", get_ret );
         }
@@ -815,7 +819,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "univ_mss_file_redirect_open - failed to get 'location' property", get_ret );
         }
@@ -924,7 +928,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "univ_mss_file_redirect_plugin - failed in get property for name";
@@ -978,7 +982,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // assign context string as the univ mss script to call
-            properties_.set< std::string >( "script", context_ );
+            properties_.set< std::string >( SCRIPT_PROP, context_ );
         }
 
         // =-=-=-=-=-=-
@@ -1040,9 +1044,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
         
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

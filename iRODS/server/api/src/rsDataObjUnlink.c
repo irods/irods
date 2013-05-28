@@ -405,9 +405,12 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     // =-=-=-=-=-=-=-
     // JMC - legacy resource  if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
     std::string resc_class;
-    eirods::error prop_err = eirods::get_resource_property<std::string>( dataObjInfo->rescInfo->rescName, "class", resc_class );
+    eirods::error prop_err = eirods::get_resource_property<std::string>( 
+                                 dataObjInfo->rescInfo->rescName, 
+                                 eirods::RESOURCE_CLASS,
+                                 resc_class );
     if( prop_err.ok() ) {
-        if( resc_class == "bundle" ) {//BUNDLE_CL ) {
+        if( resc_class == eirods::RESOURCE_CLASS_BUNDLE ) {//BUNDLE_CL ) {
             return 0;
         }
     } else {

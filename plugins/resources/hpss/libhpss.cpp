@@ -93,7 +93,7 @@ eirods::error hpss_generate_full_path(
     eirods::error ret;
     std::string vault_path;
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>("path", vault_path);
+    ret = _prop_map.get<std::string>( eirods::RESOURCE_PATH, vault_path );
     if(!ret.ok()) {
         std::stringstream msg;
         msg << "resource has no vault path.";
@@ -1184,7 +1184,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "hpss_file_redirect_create - failed to get 'status' property", get_ret );
         }
@@ -1199,7 +1199,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "hpss_file_redirect_create - failed to get 'location' property", get_ret );
         }
@@ -1227,7 +1227,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "hpss_file_redirect_open - failed to get 'status' property", get_ret );
         }
@@ -1242,7 +1242,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "hpss_file_redirect_open - failed to get 'location' property", get_ret );
         }
@@ -1351,7 +1351,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "hpss_file_redirect_plugin - failed in get property for name";
@@ -1564,9 +1564,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

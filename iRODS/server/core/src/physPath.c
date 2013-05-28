@@ -96,7 +96,9 @@ getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     // JMC - legacy resource if (RescTypeDef[dataObjInfo->rescInfo->rescTypeInx].createPathFlag == NO_CREATE_PATH) {
     int chk_path = 0;
-    eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "check_path_perm", chk_path );
+    eirods::error err = eirods::get_resource_property< int >( 
+                            dataObjInfo->rescInfo->rescName, 
+                            eirods::RESOURCE_CHECK_PATH_PERM, chk_path );
     if( !err.ok() ) {
         eirods::log( PASS( err ) );
     }
@@ -318,7 +320,9 @@ getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
 
             int chk_path = 0;
-            eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "check_path_perm", chk_path );
+            eirods::error err = eirods::get_resource_property< int >( 
+                                    rescInfo->rescName, 
+                                    eirods::RESOURCE_CHECK_PATH_PERM, chk_path );
             if( !err.ok() ) {
                 eirods::log( PASS( err ) );
             }
@@ -450,11 +454,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         }
 
     // =-=-=-=-=-=-=-
-    int category = 0;
-    eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
-    if( !err.ok() ) {
-        eirods::log( PASS( err ) );
-    }
+    int category = FILE_CAT; // only supporting file resource, not DB right now
 
     std::string location;
     eirods::error ret;
@@ -549,12 +549,7 @@ chkAndHandleOrphanFile (rsComm_t *rsComm, char* objPath, char* rescHier, char *f
     int status;
     dataObjInfo_t myDataObjInfo;
 
-    int category = 0;
-    eirods::error err = eirods::get_resource_property< int >( rescInfo->rescName, "category", category );
-    if( !err.ok() ) {
-        eirods::log( PASS( err ) );
-    }
-
+    int category = FILE_CAT; // only supporting file resources, not DB
     // JMC - legacy resource  - if (RescTypeDef[rescTypeInx].rescCat != FILE_CAT) {
     if( FILE_CAT != category ) {
         /* can't do anything with non file type */
@@ -742,7 +737,9 @@ syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         return 0;
 
     int create_path = 0;
-    eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "create_path", create_path );
+    eirods::error err = eirods::get_resource_property< int >( 
+                            dataObjInfo->rescInfo->rescName, 
+                            eirods::RESOURCE_CREATE_PATH, create_path );
     if( !err.ok() ) {
         eirods::log( PASS( err ) );
     }
@@ -1331,7 +1328,7 @@ getLeafRescPathName(
             eirods::log(LOG_ERROR, msg.str());
             result = ret.code();
         } else {
-            ret = eirods::get_resource_property<std::string>(leaf, "path", _ret_string);
+            ret = eirods::get_resource_property<std::string>(leaf, eirods::RESOURCE_PATH, _ret_string);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << "Unable to get vault path from resource: \"" << leaf << "\"";

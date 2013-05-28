@@ -129,7 +129,7 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string this_name;
-        ret = _ctx->prop_map().get<std::string>("name", this_name);
+        ret = _ctx->prop_map().get<std::string>( eirods::RESOURCE_NAME, this_name);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -1403,7 +1403,7 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string name;
-        ret = _ctx->prop_map().get<std::string>("name", name);
+        ret = _ctx->prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -1720,9 +1720,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

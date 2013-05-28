@@ -17,7 +17,7 @@ namespace eirods {
         std::string prop_name;
         // =-=-=-=-=-=-=-
         // get the resource property - host
-        prop_name = "host";
+        prop_name = RESOURCE_HOST;
         rodsServerHost_t* host = 0;
         err = _resc->get_property< rodsServerHost_t* >( prop_name, host );
         if( !err.ok() ) {
@@ -30,7 +30,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - id
-        prop_name = "id";
+        prop_name = RESOURCE_ID;
         long id = 0;
         err = _resc->get_property< long >( prop_name, id );
         if( !err.ok() ) {
@@ -43,7 +43,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - freespace
-        prop_name = "freespace";
+        prop_name = RESOURCE_FREESPACE;
         long freespace = 0;
         err = _resc->get_property< long >( prop_name, freespace );
         if( !err.ok() ) {
@@ -56,7 +56,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - quota
-        prop_name = "quota";
+        prop_name = RESOURCE_QUOTA;
         long quota = 0;
         err = _resc->get_property< long >( prop_name, quota );
         if( !err.ok() ) {
@@ -69,7 +69,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - zone
-        prop_name = "zone";
+        prop_name = RESOURCE_ZONE;
         std::string zone;
         err = _resc->get_property< std::string >( prop_name, zone );
         if( !err.ok() ) {
@@ -82,7 +82,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - name
-        prop_name = "name";
+        prop_name = RESOURCE_NAME;
         std::string name;
         err = _resc->get_property< std::string >( prop_name, name );
         if( !err.ok() ) {
@@ -95,7 +95,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - location
-        prop_name = "location";
+        prop_name = RESOURCE_LOCATION;
         std::string location;
         err = _resc->get_property< std::string >( prop_name, location );
         if( !err.ok() ) {
@@ -108,7 +108,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - type
-        prop_name = "type";
+        prop_name = RESOURCE_TYPE;
         std::string type;
         err = _resc->get_property< std::string >( prop_name, type );
         if( !err.ok() ) {
@@ -121,7 +121,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - class
-        prop_name = "class";
+        prop_name = RESOURCE_CLASS;
         std::string rclass;
         err = _resc->get_property< std::string >( prop_name, rclass );
         if( !err.ok() ) {
@@ -134,7 +134,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - path
-        prop_name = "path";
+        prop_name = RESOURCE_PATH;
         std::string path;
         err = _resc->get_property< std::string >( prop_name, path );
         if( !err.ok() ) {
@@ -147,7 +147,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - info
-        prop_name = "info";
+        prop_name = RESOURCE_INFO;
         std::string info;
         err = _resc->get_property< std::string >( prop_name, info );
         if( !err.ok() ) {
@@ -160,7 +160,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - comments
-        prop_name = "comments";
+        prop_name = RESOURCE_COMMENTS;
         std::string comments;
         err = _resc->get_property< std::string >( prop_name, comments );
         if( !err.ok() ) {
@@ -173,7 +173,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - create
-        prop_name = "create";
+        prop_name = RESOURCE_CREATE_TS;
         std::string create;
         err = _resc->get_property< std::string >( prop_name, create );
         if( !err.ok() ) {
@@ -186,7 +186,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - modify
-        prop_name = "modify";
+        prop_name = RESOURCE_MODIFY_TS;
         std::string modify;
         err = _resc->get_property< std::string >( prop_name, modify );
         if( !err.ok() ) {
@@ -199,7 +199,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // get the resource property - status
-        prop_name = "status";
+        prop_name = RESOURCE_STATUS;
         int status = 0;
         err = _resc->get_property< int >( prop_name, status );
         if( !err.ok() ) {
@@ -452,7 +452,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // find a matching resource
         resource_ptr resc;
-        error err = resc_mgr.resolve_from_property< rodsServerHost_t* >( "host", _info, resc );
+        error err = resc_mgr.resolve_from_property< rodsServerHost_t* >( RESOURCE_HOST, _info, resc );
         if( !err.ok() ) {
             return PASSMSG( "failed to resolve resource", err );
         }
@@ -460,7 +460,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the status property of the resource
         int status = -1;
-        err = resc->get_property< int >( "status", status );
+        err = resc->get_property< int >( RESOURCE_STATUS, status );
         if( !err.ok() ) {
             return PASSMSG( "failed to get resource property", err );
         }
@@ -480,7 +480,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check to see if the resource is active, if not fail
             int status = 0;
-            get_resource_property< int >( _name, "status", status );
+            get_resource_property< int >( _name, RESOURCE_STATUS, status );
             if( status == INT_RESC_STATUS_DOWN ) {
                 return ERROR( SYS_RESC_IS_DOWN, "The Resource is Down" );
             }
@@ -515,7 +515,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check to see if the resource is active, if not fail
             int status = 0;
-            get_resource_property< int >( _name, "status", status );
+            get_resource_property< int >( _name, RESOURCE_STATUS, status );
             if( status == INT_RESC_STATUS_DOWN ) {
                 return ERROR( SYS_RESC_IS_DOWN, "The Resource is Down" );
             }
@@ -564,7 +564,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the rods server host info for the child resc
         rodsServerHost_t* host = NULL;
-        error ret = get_resource_property< rodsServerHost_t* >( resc_name, "host", host );
+        error ret = get_resource_property< rodsServerHost_t* >( resc_name, RESOURCE_HOST, host );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "get_host_for_hier_string - failed to get host property for [";
@@ -613,7 +613,7 @@ namespace eirods {
         parser.last_resc( last_resc );
 
         std::string location;
-        error ret = get_resource_property< std::string >( last_resc, "location", location );
+        error ret = get_resource_property< std::string >( last_resc, RESOURCE_LOCATION, location );
         if( !ret.ok() ) {
             location = "";
             return PASSMSG( "get_loc_for_hier_string - failed in get_resource_property", ret );
@@ -650,7 +650,7 @@ namespace eirods {
                 msg << " - Failed to get the last resource in the hierarchy: \"" << _hier_string << "\"";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = get_resource_property<std::string>(last_resc, "path", _rtn_vault_path);
+                ret = get_resource_property<std::string>(last_resc, RESOURCE_PATH, _rtn_vault_path);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;

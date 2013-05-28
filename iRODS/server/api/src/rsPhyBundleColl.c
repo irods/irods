@@ -691,7 +691,10 @@ createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
     /* XXXXXX We do bundle only with UNIX_FILE_TYPE for now */
 
     std::string type;
-    eirods::error err = eirods::get_resource_property< std::string >( rescGrpInfo->rescInfo->rescName, "type", type );
+    eirods::error err = eirods::get_resource_property< std::string >( 
+                            rescGrpInfo->rescInfo->rescName, 
+                            eirods::RESOURCE_TYPE, 
+                            type );
     if( !err.ok() ) {
         eirods::log( PASS( err ) );
     }

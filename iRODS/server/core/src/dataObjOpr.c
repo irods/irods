@@ -432,7 +432,10 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
         }
 
         std::string class_type;
-        eirods::error prop_err = eirods::get_resource_property<std::string>( tmpDataObjInfo->rescInfo->rescName, "class", class_type );
+        eirods::error prop_err = eirods::get_resource_property<std::string>( 
+                                      tmpDataObjInfo->rescInfo->rescName, 
+                                      eirods::RESOURCE_CLASS, 
+                                      class_type );
         // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
         if (tmpDataObjInfo->replStatus > 0) {
 #if 0 // JMC - legacy resource
@@ -545,7 +548,10 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
 
             } else {
                 int resc_status = -1;
-                eirods::error prop_err = eirods::get_resource_property<int>( resc_name, "status", resc_status );
+                eirods::error prop_err = eirods::get_resource_property<int>( 
+                                             resc_name, 
+                                             eirods::RESOURCE_STATUS, 
+                                             resc_status );
                 // JMC - legacy resource if (getRescStatus (rsComm, NULL, condInput) == INT_RESC_STATUS_DOWN) {
                 if( resc_status == INT_RESC_STATUS_DOWN ) {
                         freeAllDataObjInfo (downCurrentInfo);
@@ -1935,8 +1941,15 @@ getDataObjByClass ( dataObjInfo_t *dataObjInfoHead, int rescClass,
     while (tmpDataObjInfo != NULL) {
 
        std::string resc_class;
-       eirods::get_resource_property( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
-      
+       eirods::error ret =  eirods::get_resource_property( 
+                                tmpDataObjInfo->rescInfo->rescName, 
+                                eirods::RESOURCE_CLASS, 
+                                resc_class );
+       if( !ret.ok() ) {
+           eirods::log( PASS( ret ) );
+           return -1;
+       }
+
        for( int i = 0; i < NumRescClass; ++i ) {
            if( resc_class == std::string( RescClass[i].className ) &&
                RescClass[i].classType == rescClass ) {
