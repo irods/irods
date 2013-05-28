@@ -1553,7 +1553,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                              dataObjInp.objPath, status);
                     return status;
                 }
-                status = _unbunAndStageBunfileObj (rsComm, &bunfileObjInfoHead, 
+                status = _unbunAndStageBunfileObj (rsComm, &bunfileObjInfoHead, &dataObjInp.condInput,
                                                    outCacheResc, 0);
 
                 freeAllDataObjInfo (bunfileObjInfoHead);
@@ -1562,7 +1562,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
 
             int
-                _unbunAndStageBunfileObj (rsComm_t *rsComm, dataObjInfo_t **bunfileObjInfoHead,
+                _unbunAndStageBunfileObj (rsComm_t *rsComm, dataObjInfo_t **bunfileObjInfoHead, keyValPair_t *condInput,
                                           rescInfo_t **outCacheResc, int rmBunCopyFlag)
             {
                 int status;
@@ -1572,7 +1572,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                 bzero (&dataObjInp, sizeof (dataObjInp));
                 bzero (&dataObjInp.condInput, sizeof (dataObjInp.condInput));
                 rstrcpy (dataObjInp.objPath, (*bunfileObjInfoHead)->objPath, MAX_NAME_LEN);
-                status = sortObjInfoForOpen (rsComm, bunfileObjInfoHead, NULL, 0);
+                status = sortObjInfoForOpen (rsComm, bunfileObjInfoHead, condInput, 0);
 
                 addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, (*bunfileObjInfoHead)->rescHier );
                 if (status < 0) return status;

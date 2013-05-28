@@ -65,7 +65,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                                                                     rsComm, dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "rsDataObjOpen :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in eirods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
