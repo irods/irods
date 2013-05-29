@@ -298,6 +298,14 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
     char *outParamNames[MAX_PARAMS_LEN];
     int n = extractVarNames(outParamNames, outParamsDesc);
     appendOutputToInput(inMsParamArray, outParamNames, n);
+   
+    // =-=-=-=-=-=-=-
+    // mem leak fix from hao 
+    int i;
+    for(i = 0; i < n; i++) {
+        free(outParamNames[i]);
+    }
+    
     Region *r = make_region(0, NULL);
     status =
 	   parseAndComputeRuleAdapter(ruleDef, inMsParamArray, rei, reiSaveFlag, r);
