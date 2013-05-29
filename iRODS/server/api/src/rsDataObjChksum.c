@@ -75,11 +75,14 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
     *outChksumStr = NULL;
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, dataObjInfoHead);
 
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjChksum :: getDataObjInfoIncSpecColl status [%d]", status );
+
     if (status < 0) {
         return status;
     } else if (allFlag == 0) {
         /* screen out any stale copies */
         status = sortObjInfoForOpen (rsComm, dataObjInfoHead, &dataObjInp->condInput, 0);
+rodsLog( LOG_NOTICE, "XXXX - _rsDataObjChksum :: sortObjInfoForOpen status [%d]", status );
 	  
 	    if (status < 0) 
             return status;
