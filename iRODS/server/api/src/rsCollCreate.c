@@ -29,31 +29,38 @@
 eirods::error validate_collection_path( 
     const std::string& _path ) {
     // =-=-=-=-=-=-=-
-    // get the local zone info so we can compare the
-    // path with the zone name
-    zoneInfo_t* zone_info = 0;
-    if( getLocalZoneInfo( &zone_info ) < 0 ) {
-        return ERROR( -1, "getLocalZoneInfo failed." ); 
-    }
+    // set up a default error structure
+    std::stringstream msg;
+    msg << "a valid zone name does not appear at the root of the collection path [";
+    msg << _path;
+    msg << "]";
+    eirods::error ret_val = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
 
     // =-=-=-=-=-=-=-
-    // build a root zone name
-    std::string zone_name( "/" );
-    zone_name += zone_info->zoneName;
-    
-    // =-=-=-=-=-=-=-
-    // if the zone name does not appear at the root
-    // then this is an error
-    size_t pos = _path.find( zone_name );
-    if( 0 != pos  ) {
-        std::stringstream msg;
-        msg << "zone name does not appear at the root of the collection path [";
-        msg << _path;
-        msg << "]";
-        return ERROR( -1, msg.str() );
-    }
+    // loop over the ZoneInfo linked list and see if the path
+    // has a root collection which matches any zone
+    zoneInfo_t* zone_info = ZoneInfoHead; 
+    while( zone_info ) {
+        // =-=-=-=-=-=-=-
+        // build a root zone name
+        std::string zone_name( "/" );
+        zone_name += zone_info->zoneName;
+     
+        // =-=-=-=-=-=-=-
+        // if the zone name appears at the root
+        // then this is a good path
+        size_t pos = _path.find( zone_name );
+        if( 0 == pos ) {
+            ret_val = SUCCESS();
+            zone_info = 0;
+        } else {
+            zone_info = zone_info->next;
 
-    return SUCCESS();
+        }
+
+    } // while
+
+    return ret_val;
 
 } // validate_collection_path
 
