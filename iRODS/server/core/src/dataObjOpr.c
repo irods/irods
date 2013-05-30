@@ -495,6 +495,7 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
 }
 
 /* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
+ * If RESC_HIER_STR_KW is set matching resc obj is first.
  * If it is for read (writeFlag == 0), discard old copies, then cache first,
  * archval second.
  * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
@@ -504,7 +505,53 @@ int
 sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
                     keyValPair_t *condInput, int writeFlag)
 {
-
+    int result = 0;
+    char* resc_hier = getValByKey(condInput, RESC_HIER_STR_KW);
+    if(!resc_hier) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - No resource hierarchy specified in keywords.";
+        eirods::log(ERROR(SYS_INVALID_INPUT_PARAM, msg.str()));
+        result = SYS_INVALID_INPUT_PARAM;
+    } else {
+        dataObjInfo_t* found_info = NULL;
+        dataObjInfo_t* prev_info = NULL;
+        for(dataObjInfo_t* dataObjInfo = *dataObjInfoHead;
+            result >= 0 && found_info == NULL && dataObjInfo != NULL;
+            dataObjInfo = dataObjInfo->next) {
+            if(strcmp(resc_hier, dataObjInfo->rescHier) == 0) {
+                found_info = dataObjInfo;
+            } else {
+                prev_info = dataObjInfo;
+            }
+        }
+        if(found_info == NULL) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - No data object found matching resource hierarchy: \"";
+            msg << resc_hier;
+            msg << "\"";
+            eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
+            result = EIRODS_HIERARCHY_ERROR;
+        } else {
+            if(prev_info == NULL) {
+                // our object is at the head of the list. So delete the rest of the list, if any and we are done.
+                if(found_info->next != NULL) {
+                    freeAllDataObjInfo(found_info->next);
+                    found_info->next = NULL;
+                }
+            } else {
+                // remove our object from the list. delete that list then make our object the head.
+                prev_info->next = found_info->next;
+                found_info->next = NULL;
+                freeAllDataObjInfo(*dataObjInfoHead);
+                *dataObjInfoHead = found_info;
+            }
+        }
+    }
+    return result;
+    
+#if 0
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
         *oldCacheInfo, *downCurrentInfo, *downOldInfo;
     int status = 0;
@@ -574,8 +621,7 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
         }
     }
     return (status);
-
-    return 0;
+#endif // #if 0
 }
 
 int
@@ -1640,6 +1686,8 @@ int
     if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
         (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
         (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 
+
+        
         status = requeDataObjInfoByResc (dataObjInfoHead, rescName, 
                                          writeFlag, topFlag);
     }

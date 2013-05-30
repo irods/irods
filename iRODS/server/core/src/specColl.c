@@ -524,6 +524,8 @@ specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
 
         bzero (&myDataObjInp, sizeof (myDataObjInp));
         rstrcpy (myDataObjInp.objPath, specColl->objPath, MAX_NAME_LEN);
+        // add the resource hierarchy to the condInput of the inp
+        addKeyVal(&myDataObjInp.condInput, RESC_HIER_STR_KW, specColl->rescHier);
         status = getDataObjInfo (rsComm, &myDataObjInp, dataObjInfo, NULL, 1);
         if (status < 0) {
             rodsLog (LOG_ERROR,

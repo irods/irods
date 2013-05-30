@@ -26,6 +26,7 @@
 #include "eirods_resource_backport.h"
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)

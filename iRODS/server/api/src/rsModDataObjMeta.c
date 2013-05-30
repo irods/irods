@@ -146,13 +146,6 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                 ret = PASSMSG(msg.str(), ret);
                 eirods::log(ret);
                 status = ret.code();
-
-                if(true) {
-                    eirods::stacktrace st;
-                    st.trace();
-                    st.dump();
-                }
-
             }
         }
     }

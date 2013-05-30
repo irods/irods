@@ -651,6 +651,9 @@ if ( ! $noprompt_flag ) {
 `/bin/rm -rf /tmp/foo`;# remove the vault for the testresource; needed in case
 # another unix login runs this test on this host
 `/bin/rm -rf /tmp/comp`;
+if (0) { # qqq - start of commented out section
+
+} # qqq - end of commented out section
 
 #-- print the result of the test into testSurvey.log
 

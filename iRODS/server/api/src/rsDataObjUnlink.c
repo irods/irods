@@ -57,39 +57,32 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         return status;
     }
 
-#ifdef COMMENT
     // =-=-=-=-=-=-=-
     // working on the "home zone", determine if we need to redirect to a different
     // server in this zone for this operation.  if there is a RESC_HIER_STR_KW then
     // we know that the redirection decision has already been made
-    int         local = LOCAL_HOST;
-    std::string hier;
-    char* hier_keyword = getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW );
-    if( hier_keyword == NULL ) {
-        rodsServerHost_t* host  =  0;
-        eirods::error ret = eirods::resource_redirect( eirods::EIRODS_OPEN_OPERATION, rsComm, 
-                                                       dataObjUnlinkInp, hier, host, local );
+
+    // =-=-=-=-=-=-=-
+    // determine the resource hierarchy if one is not provided
+    if( getValByKey( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        std::string       hier;
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+                                                                rsComm, dataObjUnlinkInp, hier );
         if( !ret.ok() ) { 
             std::stringstream msg;
-            msg << "rsDataObjUnlink :: failed in eirods::resource_redirect for [";
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
             msg << dataObjUnlinkInp->objPath << "]";
             eirods::log( PASSMSG( msg.str(), ret ) );
             return ret.code();
         }
-       
+           
         // =-=-=-=-=-=-=-
         // we resolved the redirect and have a host, set the hier str for subsequent
         // api calls, etc.
         addKeyVal( &dataObjUnlinkInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
     } // if keyword
-    
-    if( LOCAL_HOST != local ) {
-        rodsLog( LOG_NOTICE, "%s - resource_redirect requested remote server for [%s], hier string [%s]", 
-                 __FUNCTION__, dataObjUnlinkInp->objPath, hier.c_str() );
-    }
-#endif
-    
+
     if (getValByKey (
             &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
         getValByKey (
@@ -198,7 +191,7 @@ _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
                 /* not empty. Nothing to do */
                 return 0;
             } else {
-                status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, NULL, 1);
+                status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, &dataObjUnlinkInp->condInput, NULL, 1);
                 if (status < 0) {
                     /* go ahead and unlink the obj if the phy file does not 
                      * exist or have problem untaring it */

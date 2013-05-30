@@ -2258,15 +2258,6 @@ extern "C" {
                 strncpy( rmdir_inp.addr.hostAddr, resc_host.c_str(),   NAME_LEN );
                 strncpy( rmdir_inp.rescHier,      spec_coll->rescHier, MAX_NAME_LEN );
                 
-
-                if(true) {
-                    std::stringstream msg;
-                    msg << "qqq - Struct file resc hier: \"";
-                    msg << spec_coll->rescHier;
-                    msg << "\".";
-                    DEBUGMSG(msg.str());
-                }
-
                 status = rsFileRmdir( comm, &rmdir_inp );
                 if( status < 0 ) {
                     free_struct_file_desc( struct_file_index );

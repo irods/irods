@@ -851,13 +851,6 @@ extern "C" {
                                         msg << _ctx->fco().logical_path();
                                         msg << "\"";
                                         result = PASSMSG(msg.str(), ret);
-
-                                        if(true) {
-                                            eirods::stacktrace st;
-                                            st.trace();
-                                            st.dump();
-                                        }
-
                                     }
                                 }
                             }
@@ -1555,13 +1548,6 @@ extern "C" {
 
         else {
             // if the api commands involve replication we have to error out since managing replicas is our job
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Calling getvalbykey";
-                DEBUGMSG(msg.str());
-            }
-
             char* in_repl = getValByKey(&object->cond_input(), IN_REPL_KW);
             if(in_repl != NULL) {
                 std::stringstream msg;
