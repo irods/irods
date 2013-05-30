@@ -24,21 +24,18 @@ rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: making call to procApiRequest. done
     /* restore */
     dataObjInfo->rescInfo = srcRescInfo;
     dataObjInfo->next     = srcNext;
-
     /* cleanup fake pointers */
     if (status >= 0 && *outDataObjInfo != NULL) {
         if ((*outDataObjInfo)->rescInfo != NULL) {
-rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->rescInfo" );
             free ((*outDataObjInfo)->rescInfo);
-rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->rescInfo. done." );
             (*outDataObjInfo)->rescInfo = NULL;
         }
+#if 0 // JMC :: causes segv when a redirect to the icat is necessary
         if ((*outDataObjInfo)->next != NULL) {
-rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->next" );
             free ((*outDataObjInfo)->next);
-rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->next. done." );
             (*outDataObjInfo)->next = NULL;
         }
+#endif
     }
     return (status);
 }
