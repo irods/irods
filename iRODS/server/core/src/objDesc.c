@@ -145,7 +145,7 @@ freeL1desc(int l1descInx)
          * but malloc'ed */ 
         if (L1desc[l1descInx].remoteZoneHost != NULL &&
             L1desc[l1descInx].dataObjInfo->rescInfo != NULL)
-            free (L1desc[l1descInx].dataObjInfo->rescInfo);
+            // free (L1desc[l1descInx].dataObjInfo->rescInfo);
 #if 0   /* no longer need this with irsDataObjClose */
         /* will be freed in _rsDataObjReplS since it needs the new 
          * replNum and dataID */ 
