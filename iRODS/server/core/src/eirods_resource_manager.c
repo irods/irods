@@ -64,8 +64,8 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
-    error resource_manager::resolve_from_physical_path( std::string   _physical_path, 
-                                                        resource_ptr& _resc ) {
+    error resource_manager::validate_vault_path( 
+        std::string _physical_path ) {
         // =-=-=-=-=-=-=-
         // simple flag to state a resource matching the prop and value is found
         bool found = false;     
@@ -98,9 +98,7 @@ namespace eirods {
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
-                if( !value.empty() && (_physical_path.find( value ) != std::string::npos || 
-                                       value.find( _physical_path ) != std::string::npos )) {
-                    _resc = itr->second;
+                if( !value.empty() && (_physical_path.find( value ) != std::string::npos ) {
                     found = true;
                 }
             } else {
@@ -115,7 +113,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // did we find a resource and is the ptr valid?
-        if( true == found && _resc.get() ) {
+        if( true == found ) {
             return SUCCESS();
         } else {
             std::stringstream msg;
@@ -125,7 +123,7 @@ namespace eirods {
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
 
-    } // resolve_from_physical_path
+    } // validate_vault_path
 
     // =-=-=-=-=-=-=-
     // resolve a resource from a first_class_object
