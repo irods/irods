@@ -646,6 +646,12 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         /* mark this one as NEWLY_CREATED_COPY and others as OLD_COPY */
     }
 
+    status = getLocalZone();
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "chlModObjMeta - failed in getLocalZone with status [%d]", status );
+        return status;
+    }
+
     // If we are moving the data object from one resource to another resource, update the object counts for those resources
     // appropriately - hcj
     char* new_resc_hier = getValByKey(regParam, RESC_HIER_STR_KW);
@@ -668,9 +674,9 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
             return status;
         }
         // TODO - Address this in terms of resource hierarchies
-        else if((status = _updateObjCountOfResources(resc_hier, rsComm->clientUser.rodsZone, -1)) != 0) {
+        else if((status = _updateObjCountOfResources(resc_hier, localZone, -1)) != 0) {
             return status;
-        } else if((status = _updateObjCountOfResources(new_resc_hier, rsComm->clientUser.rodsZone, +1)) != 0) {
+        } else if((status = _updateObjCountOfResources(new_resc_hier, localZone, +1)) != 0) {
             return status;
         }
     }
@@ -1069,7 +1075,13 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
         return(status);
     }
 
-    if((status = _updateObjCountOfResources(dstDataObjInfo->rescHier, rsComm->clientUser.rodsZone, +1)) != 0) {
+    status = getLocalZone();
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "chlRegReplica - failed in getLocalZone with status [%d]", status );
+        return status;
+    }
+
+    if((status = _updateObjCountOfResources(dstDataObjInfo->rescHier, localZone, +1)) != 0) {
         return status;
     }
     
@@ -1344,8 +1356,14 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
         return(status);
     }
 
+    status = getLocalZone();
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "chlUnRegDataObj - failed in getLocalZone with status [%d]", status );
+        return status;
+    }
+
     // update the object count in the resource
-    if((status = _updateObjCountOfResources(resc_hier, rsComm->clientUser.rodsZone, -1)) != 0) {
+    if((status = _updateObjCountOfResources(resc_hier, localZone, -1)) != 0) {
         return status;
     }
     
