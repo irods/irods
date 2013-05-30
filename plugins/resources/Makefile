@@ -6,6 +6,7 @@ BASEDIRS = nonblocking \
            univmss \
            unixfilesystem \
            compound \
+           wos \
            random
 
 HPSSDIRS = hpss
