@@ -60,7 +60,6 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache, &destDataObjInp->condInput);
 
     remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, &rodsServerHost);
-
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
@@ -86,6 +85,7 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     // we resolved the hier str for subsequent api calls, etc.
     addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
 
+#if 0 // this should be handled by rsDataObjCreate as re
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
     hier = "";
@@ -102,6 +102,8 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
     // =-=-=-=-=-=-=-
     // we resolved the hier str for subsequent api calls, etc.
     addKeyVal( &destDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+#endif
+
 
 #if 0
     *transStat = malloc (sizeof (transferStat_t));
