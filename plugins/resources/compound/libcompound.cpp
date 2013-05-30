@@ -113,7 +113,7 @@ extern "C" {
         
         std::string           first_child_ctx  = itr->second.first;
         eirods::resource_ptr& first_child_resc = itr->second.second;
-        eirods::error get_err = first_child_resc->get_property<std::string>( "name", first_child_name );
+        eirods::error get_err = first_child_resc->get_property<std::string>( eirods::RESOURCE_NAME, first_child_name );
         if( !get_err.ok() ) {
             return PASS( get_err );
         }
@@ -128,7 +128,7 @@ extern "C" {
 
         std::string          second_child_ctx  = itr->second.first;
         eirods::resource_ptr second_child_resc = itr->second.second;
-        get_err = second_child_resc->get_property<std::string>( "name", second_child_name );
+        get_err = second_child_resc->get_property<std::string>( eirods::RESOURCE_NAME, second_child_name );
         if( !get_err.ok() ) {
             return PASS( get_err );
         }
@@ -255,7 +255,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource name
         std::string name;
-        ret = _ctx->prop_map().get< std::string >( "name", name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
         if( !ret.ok() ) {
             PASS( ret );
         }
@@ -864,14 +864,6 @@ extern "C" {
     } // compound_file_readdir
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX file_stage
-    eirods::error compound_file_stage(
-        eirods::resource_operation_context* _ctx ) { 
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
-
-    } // compound_file_stage
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX rename
     eirods::error compound_file_rename(
         eirods::resource_operation_context* _ctx,
@@ -896,31 +888,6 @@ extern "C" {
         return resc->call<const char*>( _ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name );
 
     } // compound_file_rename
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX truncate
-    eirods::error compound_file_truncate(
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next child resource
-        eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // forward the call
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
-
-    } // compound_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -1058,7 +1025,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error ret = _ctx->prop_map().get< int >( "status", resc_status );
+        eirods::error ret = _ctx->prop_map().get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !ret.ok() ) {
             return PASSMSG( "failed to get 'status' property", ret );
         }
@@ -1246,7 +1213,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error ret = _ctx->prop_map().get< int >( "status", resc_status );
+        eirods::error ret = _ctx->prop_map().get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1337,7 +1304,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "failed in get property for name";
@@ -1426,16 +1393,13 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "compound_file_fstat" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "compound_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "compound_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "compound_file_chmod" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "compound_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "compound_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "compound_file_stage" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "compound_file_rename" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "compound_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "compound_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "compound_file_rmdir" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "compound_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "compound_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "compound_file_stage_to_cache" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "compound_file_sync_to_arch" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "compound_file_registered" );
@@ -1446,9 +1410,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
         
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

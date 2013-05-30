@@ -132,7 +132,7 @@ closeAllL1desc (rsComm_t *rsComm)
 }
 
 int
-freeL1desc (int l1descInx)
+freeL1desc(int l1descInx)
 {
     if (l1descInx < 3 || l1descInx >= NUM_L1_DESC) {
         rodsLog (LOG_NOTICE,
@@ -145,7 +145,7 @@ freeL1desc (int l1descInx)
          * but malloc'ed */ 
         if (L1desc[l1descInx].remoteZoneHost != NULL &&
             L1desc[l1descInx].dataObjInfo->rescInfo != NULL)
-            free (L1desc[l1descInx].dataObjInfo->rescInfo);
+            // free (L1desc[l1descInx].dataObjInfo->rescInfo);
 #if 0   /* no longer need this with irsDataObjClose */
         /* will be freed in _rsDataObjReplS since it needs the new 
          * replNum and dataID */ 
@@ -518,11 +518,12 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
             // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
             // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
             std::string type;
-            eirods::error err = eirods::get_resource_property< std::string >( dataObjInfo->rescInfo->rescName, "type", type );
+            eirods::error err = eirods::get_resource_property< std::string >( 
+                                    dataObjInfo->rescInfo->rescName, eirods::RESOURCE_TYPE, type );
             if( !err.ok() ) {
                 eirods::log( PASS( err ) );
             } else {
-                if( "unix file system" == type ) {
+                if( eirods::RESOURCE_TYPE_NATIVE == type ) { // JMC :: 
                     addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
                 }
             }
@@ -566,7 +567,9 @@ initDataObjInfoForRepl (
 
 
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
-    destDataObjInfo->rescInfo = destRescInfo;
+    destDataObjInfo->rescInfo = new rescInfo_t;
+    memcpy( destDataObjInfo->rescInfo, destRescInfo, sizeof( rescInfo_t ) );
+
     if (destRescGroupName != NULL && strlen (destRescGroupName) > 0) {
         rstrcpy (destDataObjInfo->rescGroupName, destRescGroupName,
                  NAME_LEN);
@@ -691,7 +694,7 @@ allocAndSetL1descForZoneOpr (int remoteL1descInx, dataObjInp_t *dataObjInp,
         rstrcpy (dataObjInfo->dataType, openStat->dataType, NAME_LEN);
         L1desc[l1descInx].l3descInx = openStat->l3descInx;
         L1desc[l1descInx].replStatus = openStat->replStatus;
-        dataObjInfo->rescInfo = (rescInfo_t*)malloc (sizeof (rescInfo_t));
+        dataObjInfo->rescInfo = new rescInfo_t;
         bzero (dataObjInfo->rescInfo, sizeof (rescInfo_t));
         dataObjInfo->rescInfo->rescTypeInx = openStat->rescTypeInx;
     }

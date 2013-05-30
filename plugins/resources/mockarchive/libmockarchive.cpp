@@ -23,6 +23,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <iomanip>
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -83,7 +84,7 @@ eirods::error unix_generate_full_path(
     eirods::error ret;
     std::string vault_path;
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>(eirods::RESOURCE_PATH, vault_path);
+    ret = _prop_map.get<std::string>( eirods::RESOURCE_PATH, vault_path);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - resource has no vault path.";
@@ -189,7 +190,7 @@ eirods::error unix_check_params_and_path(
 
 // =-=-=-=-=-=-=- 
 //@brief Recursively make all of the dirs in the path
-eirods::error unix_file_mkdir_r( 
+eirods::error mock_archive_mkdir_r( 
     rsComm_t*                      _comm,
     const std::string&             _results,
     const std::string& path,
@@ -229,7 +230,7 @@ eirods::error unix_file_mkdir_r(
     
     return result;
 
-} // unix_file_mkdir_r
+} // mock_archive_mkdir_r
 
 extern "C" {
 
@@ -257,7 +258,7 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    eirods::error unix_file_registered_plugin(
+    eirods::error mock_archive_registered_plugin(
         eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
@@ -272,7 +273,7 @@ extern "C" {
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    eirods::error unix_file_unregistered_plugin(
+    eirods::error mock_archive_unregistered_plugin(
         eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
@@ -287,7 +288,7 @@ extern "C" {
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    eirods::error unix_file_modified_plugin(
+    eirods::error mock_archive_modified_plugin(
         eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
@@ -302,269 +303,61 @@ extern "C" {
     
     // =-=-=-=-=-=-=-
     // interface for POSIX create
-    eirods::error unix_file_create_plugin( 
+    eirods::error mock_archive_create_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make call to umask & open for create
-        mode_t myMask = umask((mode_t) 0000);
-        int    fd     = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "create not supported" );
 
-        // =-=-=-=-=-=-=-
-        // reset the old mask 
-        (void) umask((mode_t) myMask);
-                
-        // =-=-=-=-=-=-=-
-        // if we got a 0 descriptor, try again
-        if( fd == 0 ) {
-        
-            close (fd);
-            rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
-            open ("/dev/null", O_RDWR, 0);
-            fd = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // cache file descriptor in out-variable
-        fco.file_descriptor( fd );
-                        
-        // =-=-=-=-=-=-=-
-        // trap error case with bad fd
-        if( fd < 0 ) {
-            int status = UNIX_FILE_CREATE_ERR - errno;
-                        
-            // =-=-=-=-=-=-=-
-            // WARNING :: Major Assumptions are made upstream and use the FD also as a
-            //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
-            fco.file_descriptor( status );
-                        
-            std::stringstream msg;
-            msg << "unix_file_create_plugin: create error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
- 
-            return ERROR( status, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // declare victory!
-        return CODE( fd );
-
-    } // unix_file_create_plugin
+    } // mock_archive_create_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
-    eirods::error unix_file_open_plugin( 
+    eirods::error mock_archive_open_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // handle OSX weirdness...
-        int flags = fco.flags();
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "open not supported" );
 
-#if defined(osx_platform)
-        // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system 
-        if( flags & 0x200) {
-            flags = flags ^ 0x200;
-            flags = flags | O_TRUNC;
-        }
-#endif 
-        // =-=-=-=-=-=-=-
-        // make call to open
-        errno = 0;
-        int fd = open( fco.physical_path().c_str(), flags, fco.mode() );
-
-        // =-=-=-=-=-=-=-
-        // if we got a 0 descriptor, try again
-        if( fd == 0 ) {
-            close (fd);
-            rodsLog( LOG_NOTICE, "unix_file_open_plugin: 0 descriptor" );
-            open ("/dev/null", O_RDWR, 0);
-            fd = open( fco.physical_path().c_str(), flags, fco.mode() );
-        }       
-                        
-        // =-=-=-=-=-=-=-
-        // cache status in the file object
-        fco.file_descriptor( fd );
-
-        // =-=-=-=-=-=-=-
-        // did we still get an error?
-        if ( fd < 0 ) {
-            fd = UNIX_FILE_OPEN_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unix_file_open_plugin: open error for ";
-            msg << fco.physical_path();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            msg << ", status = ";
-            msg << fd;
-            msg << ", flags = ";
-            msg << flags;
- 
-            return ERROR( fd, msg.str() );
-        }
-        
-        // =-=-=-=-=-=-=-
-        // declare victory!
-        return CODE( fd );
-
-    } // unix_file_open_plugin
+    } // mock_archive_open_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
-    eirods::error unix_file_read_plugin( 
+    eirods::error mock_archive_read_plugin( 
         eirods::resource_operation_context* _ctx,
         void*                               _buf, 
         int                                 _len ) {
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to read
-        int status = read( fco.file_descriptor(), _buf, _len );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "read not supported" );
 
-        // =-=-=-=-=-=-=-
-        // pass along an error if it was not successful
-        if( status < 0 ) {
-            status = UNIX_FILE_READ_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unixFileReadPlugin - read error fd = ";
-            msg << fco.file_descriptor();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            return ERROR( status, msg.str() );
-        }
-                
-        // =-=-=-=-=-=-=-
-        // win!
-        return CODE( status );
-
-    } // unix_file_read_plugin
+    } // mock_archive_read_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
-    eirods::error unix_file_write_plugin( 
+    eirods::error mock_archive_write_plugin( 
         eirods::resource_operation_context* _ctx,
         void*                               _buf, 
         int                                 _len ) {
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-                
-        // =-=-=-=-=-=-=-
-        // make the call to write
-        int status = write( fco.file_descriptor(), _buf, _len );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "write not supported" );
 
-        // =-=-=-=-=-=-=-
-        // pass along an error if it was not successful
-        if (status < 0) {
-            status = UNIX_FILE_WRITE_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unix_file_write_plugin - write fd = ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-                
-        // =-=-=-=-=-=-=-
-        // win!
-        return CODE( status );
-
-    } // unix_file_write_plugin
+    } // mock_archive_write_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
-    eirods::error unix_file_close_plugin(
+    eirods::error mock_archive_close_plugin(
         eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-                               
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
         // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to close
-        int status = close( fco.file_descriptor() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "close not supported" );
 
-        // =-=-=-=-=-=-=-
-        // log any error
-        if( status < 0 ) {
-            status = UNIX_FILE_CLOSE_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unixFileClosePlugin: close error, ";
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // unix_file_close_plugin
+    } // mock_archive_close_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
-    eirods::error unix_file_unlink_plugin( 
+    eirods::error mock_archive_unlink_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -589,7 +382,7 @@ extern "C" {
             status = UNIX_FILE_UNLINK_ERR - errno;
                         
             std::stringstream msg;
-            msg << "unix_file_unlink_plugin: unlink error for ";
+            msg << "mock_archive_unlink_plugin: unlink error for ";
             msg << fco.physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
@@ -600,11 +393,11 @@ extern "C" {
 
         return CODE( status );
 
-    } // unix_file_unlink_plugin
+    } // mock_archive_unlink_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
-    eirods::error unix_file_stat_plugin( 
+    eirods::error mock_archive_stat_plugin( 
         eirods::resource_operation_context* _ctx,
         struct stat*                        _statbuf ) { 
         // =-=-=-=-=-=-=-
@@ -612,7 +405,7 @@ extern "C" {
         //        correct and should not have the vault path 
         //        prepended - hcj
         if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "unix_file_stat_plugin - invalid resource context" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "mock_archive_stat_plugin - invalid resource context" );
         }
          
         eirods::error ret = _ctx->valid(); 
@@ -633,63 +426,10 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if the file can't be accessed due to permission denied 
         // try again using root credentials.
-        #ifdef RUN_SERVER_AS_ROOT
+#ifdef RUN_SERVER_AS_ROOT
         if( status < 0 && errno == EACCES && isServiceUserSet() ) {
             if (changeToRootUser() == 0) {
                 status = stat (filename, statbuf);
-                changeToServiceUser();
-            }
-        }
-        #endif
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_stat_plugin: stat error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-                
-        return CODE( status );
-
-    } // unix_file_stat_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error unix_file_fstat_plugin( 
-        eirods::resource_operation_context* _ctx,
-        struct stat*                        _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to fstat
-        int status = fstat( fco.file_descriptor(), _statbuf );
-
-        // =-=-=-=-=-=-=-
-        // if the file can't be accessed due to permission denied 
-        // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-        if (status < 0 && errno == EACCES && isServiceUserSet()) {
-            if (changeToRootUser() == 0) {
-                status = fstat( fco.file_descriptor(), statbuf );
                 changeToServiceUser();
             }
         }
@@ -701,114 +441,61 @@ extern "C" {
             status = UNIX_FILE_STAT_ERR - errno;
  
             std::stringstream msg;
-            msg << "unix_file_fstat_plugin: fstat error for ";
-            msg << fco.file_descriptor();
+            msg << "mock_archive_stat_plugin: stat error for ";
+            msg << fco.physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
             msg << status;
-
             return ERROR( status, msg.str() );
-
-        } // if
-           
+        }
+                
         return CODE( status );
 
-    } // unix_file_fstat_plugin
+    } // mock_archive_stat_plugin
+
+    // =-=-=-=-=-=-=-
+    // interface for POSIX Fstat
+    eirods::error mock_archive_fstat_plugin( 
+        eirods::resource_operation_context* _ctx,
+        struct stat*                        _statbuf ) {
+        // =-=-=-=-=-=-=-
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "fstat not supported" );
+
+    } // mock_archive_fstat_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
-    eirods::error unix_file_lseek_plugin( 
+    eirods::error mock_archive_lseek_plugin( 
         eirods::resource_operation_context* _ctx,
         size_t                              _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to lseek       
-        size_t status = lseek( fco.file_descriptor(),  _offset, _whence );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "lseek not supported" );
 
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_LSEEK_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_lseek_plugin: lseek error for ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // unix_file_lseek_plugin
+    } // mock_archive_lseek_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
-    eirods::error unix_file_fsync_plugin( 
+    eirods::error mock_archive_fsync_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to fsync       
-        int status = fsync( fco.file_descriptor() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "fsync not supported" );
 
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_LSEEK_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_fsync_plugin: fsync error for ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // unix_file_fsync_plugin
+    } // mock_archive_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error unix_file_mkdir_plugin( 
+    eirods::error mock_archive_mkdir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=- 
         // NOTE :: this function assumes the object's physical path is correct and 
         //         should not have the vault path prepended - hcj
         if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "unix_file_mkdir_plugin - invalid resource context" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "mock_archive_mkdir_plugin - invalid resource context" );
         }
          
         eirods::error ret = _ctx->valid< eirods::collection_object >(); 
@@ -838,7 +525,7 @@ extern "C" {
  
             if (errno != EEXIST) {
                 std::stringstream msg;
-                msg << "unix_file_mkdir_plugin: mkdir error for ";
+                msg << "mock_archive_mkdir_plugin: mkdir error for ";
                 msg << coll_obj.physical_path();
                 msg << ", errno = '";
                 msg << strerror( errno );
@@ -853,224 +540,52 @@ extern "C" {
 
         return CODE( status );
 
-    } // unix_file_mkdir_plugin
+    } // mock_archive_mkdir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX rmdir
-    eirods::error unix_file_rmdir_plugin( 
+    eirods::error mock_archive_rmdir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = rmdir( fco.physical_path().c_str() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "rmdir not supported" );
 
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_RMDIR_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_rmdir_plugin: mkdir error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( errno, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // unix_file_rmdir_plugin
+    } // mock_archive_rmdir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
-    eirods::error unix_file_opendir_plugin( 
+    eirods::error mock_archive_opendir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "opendir not supported" );
 
-        // =-=-=-=-=-=-=-
-        // make the callt to opendir
-        DIR* dir_ptr = opendir( coll_obj.physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // if the directory can't be accessed due to permission
-        // denied try again using root credentials.            
-        #ifdef RUN_SERVER_AS_ROOT
-        if( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
-            if (changeToRootUser() == 0) {
-                dir_ptr = opendir ( coll_obj.physical_path().c_str() );
-                changeToServiceUser();
-            } // if
-        } // if
-        #endif
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( NULL == dir_ptr ) {
-            // =-=-=-=-=-=-=-
-            // cache status in out variable
-            int status = UNIX_FILE_OPENDIR_ERR - errno;
-
-            std::stringstream msg;
-            msg << "unix_file_opendir_plugin: opendir error for ";
-            msg << coll_obj.physical_path();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            msg << ", status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // cache dir_ptr & status in out variables
-        coll_obj.directory_pointer( dir_ptr );
-
-        return SUCCESS();
-
-    } // unix_file_opendir_plugin
+    } // mock_archive_opendir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
-    eirods::error unix_file_closedir_plugin( 
+    eirods::error mock_archive_closedir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "closedir not supported" );
 
-        // =-=-=-=-=-=-=-
-        // make the callt to opendir
-        int status = closedir( coll_obj.directory_pointer() );
-                        
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_CLOSEDIR_ERR - errno;
-
-            std::stringstream msg;
-            msg << "unix_file_closedir_plugin: closedir error for ";
-            msg << coll_obj.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // unix_file_closedir_plugin
+    } // mock_archive_closedir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error unix_file_readdir_plugin( 
+    eirods::error mock_archive_readdir_plugin( 
         eirods::resource_operation_context* _ctx,
         struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "readdir not supported" );
 
-        // =-=-=-=-=-=-=-
-        // zero out errno?
-        errno = 0;
-
-        // =-=-=-=-=-=-=-
-        // make the call to readdir
-        struct dirent * tmp_dirent = readdir( coll_obj.directory_pointer() );
-
-        // =-=-=-=-=-=-=-
-        // handle error cases
-        if( tmp_dirent == NULL ) {
-            if( errno == 0 ) { // just the end 
-
-                // =-=-=-=-=-=-=-
-                // cache status in out variable
-                return CODE( -1 );
-            } else {
-
-                // =-=-=-=-=-=-=-
-                // cache status in out variable
-                int status = UNIX_FILE_READDIR_ERR - errno;
-
-                std::stringstream msg;
-                msg << "unix_file_readdir_plugin: closedir error, status = ";
-                msg << status;
-                msg << ", errno = '";
-                msg << strerror( errno );
-                msg << "'";
-                                
-                return ERROR( status, msg.str() );
-            }
-        } else {
-            // =-=-=-=-=-=-=-
-            // alloc dirent as necessary
-            if( !( *_dirent_ptr ) ) {
-                (*_dirent_ptr ) = new rodsDirent_t;
-            }
-
-            // =-=-=-=-=-=-=-
-            // convert standard dirent to rods dirent struct
-            int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
-            if( status < 0 ) {
-
-            }
-
-#if defined(solaris_platform)
-            rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
-#endif
-
-            return CODE( 0 );
-        }
-
-    } // unix_file_readdir_plugin
+    } // mock_archive_readdir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error unix_file_rename_plugin( 
+    eirods::error mock_archive_rename_plugin( 
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
         // =-=-=-=-=-=-=- 
@@ -1101,11 +616,11 @@ extern "C" {
         std::string new_path = new_full_path;
         std::size_t last_slash = new_path.find_last_of('/');
         new_path.erase(last_slash);
-        ret = unix_file_mkdir_r( _ctx->comm(), "", new_path.c_str(), 0750 );
+        ret = mock_archive_mkdir_r( _ctx->comm(), "", new_path.c_str(), 0750 );
         if(!ret.ok()) {
 
             std::stringstream msg;
-            msg << "unix_file_rename_plugin: mkdir error for ";
+            msg << "mock_archive_rename_plugin: mkdir error for ";
             msg << new_path;
 
             return PASSMSG( msg.str(), ret);
@@ -1122,7 +637,7 @@ extern "C" {
             status = UNIX_FILE_RENAME_ERR - errno;
                                 
             std::stringstream msg;
-            msg << "unix_file_rename_plugin: rename error for ";
+            msg << "mock_archive_rename_plugin: rename error for ";
             msg <<  fco.physical_path();
             msg << " to ";
             msg << new_full_path;
@@ -1137,91 +652,26 @@ extern "C" {
 
         return CODE( status );
 
-    } // unix_file_rename_plugin
+    } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
-    eirods::error unix_file_get_fsfreespace_plugin( 
+    eirods::error mock_archive_get_fsfreespace_plugin( 
         eirods::resource_operation_context* _ctx ) { 
         // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        int status = -1;
-        rodsLong_t fssize = USER_NO_SUPPORT_ERR;
-#if defined(solaris_platform)
-        struct statvfs statbuf;
-#else
-        struct statfs statbuf;
-#endif
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "getfsfreespace not supported" );
 
-#if defined(solaris_platform) || defined(sgi_platform)   ||     \
-    defined(aix_platform)     || defined(linux_platform) ||     \
-    defined(osx_platform)
-#if defined(solaris_platform)
-        status = statvfs( fco.physical_path().c_str(), &statbuf );
-#else
-#if defined(sgi_platform)
-        status = statfs( fco.physical_path().c_str(), 
-                         &statbuf, sizeof (struct statfs), 0 );
-#else
-        status = statfs( fco.physical_path().c_str(), 
-                         &statbuf );
-#endif
-#endif
-
-        // =-=-=-=-=-=-=-
-        // handle error, if any
-        if( status < 0 ) {
-            status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
-
-            std::stringstream msg;
-            msg << "unix_file_get_fsfreespace_plugin: statfs error for ";
-            msg << fco.physical_path().c_str();
-            msg << ", status = ";
-            msg << USER_NO_SUPPORT_ERR;
-
-            return ERROR( USER_NO_SUPPORT_ERR, msg.str() );
-        }
-            
-#if defined(sgi_platform)
-        if (statbuf.f_frsize > 0) {
-            fssize = statbuf.f_frsize;
-        } else {
-            fssize = statbuf.f_bsize;
-        }
-        fssize *= statbuf.f_bavail;
-#endif
-
-#if defined(aix_platform) || defined(osx_platform) ||   \
-    defined(linux_platform)
-        fssize = statbuf.f_bavail * statbuf.f_bsize;
-#endif
- 
-#if defined(sgi_platform)
-        fssize = statbuf.f_bfree * statbuf.f_bsize;
-#endif
-
-#endif /* solaris_platform, sgi_platform .... */
-
-        return CODE( fssize );
-
-    } // unix_file_get_fsfreespace_plugin
+    } // mock_archive_get_fsfreespace_plugin
 
     int
-    unixFileCopyPlugin( int         mode, 
-                        const char* srcFileName, 
-                        const char* destFileName )
+    mockArchiveCopyPlugin(
+        int         mode, 
+        const char* srcFileName, 
+        const char* destFileName )
     {
+        rodsLog( LOG_NOTICE, "XXXX - mockArchiveCopyPlugin copy from src [%s] to dst [%s]", srcFileName, destFileName );
+
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
         rodsLong_t bytesCopied = 0;
@@ -1235,7 +685,7 @@ extern "C" {
         if (status < 0) {
             status = UNIX_FILE_STAT_ERR - errno;
             rodsLog (LOG_ERROR, 
-                     "unixFileCopyPlugin: stat of %s error, status = %d",
+                     "mockArchiveCopyPlugin: stat of %s error, status = %d",
                      srcFileName, status);
             return status;
         }
@@ -1244,7 +694,7 @@ extern "C" {
         if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLog (LOG_ERROR,
-                     "unixFileCopyPlugin: open error for srcFileName %s, status = %d",
+                     "mockArchiveCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
             close( inFd ); // JMC cppcheck - resource
             return status;
@@ -1254,7 +704,7 @@ extern "C" {
         if (outFd < 0) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLog (LOG_ERROR,
-                     "unixFileCopyPlugin: open error for destFileName %s, status = %d",
+                     "mockArchiveCopyPlugin: open error for destFileName %s, status = %d",
                      destFileName, status);
             close (inFd);
             return status;
@@ -1265,7 +715,7 @@ extern "C" {
             if (bytesWritten <= 0) {
                 status = UNIX_FILE_WRITE_ERR - errno;
                 rodsLog (LOG_ERROR,
-                         "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
+                         "mockArchiveCopyPlugin: write error for srcFileName %s, status = %d",
                          destFileName, status);
                 close (inFd);
                 close (outFd);
@@ -1279,20 +729,21 @@ extern "C" {
 
         if (bytesCopied != statbuf.st_size) {
             rodsLog ( LOG_ERROR,
-                      "unixFileCopyPlugin: Copied size %lld does not match source \
+                      "mockArchiveCopyPlugin: Copied size %lld does not match source \
                              size %lld of %s",
                       bytesCopied, statbuf.st_size, srcFileName );
             return SYS_COPY_LEN_ERR;
         } else {
             return 0;
         }
-    }
+
+    } // mockArchiveCopyPlugin
 
     // =-=-=-=-=-=-=-
     // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
-    eirods::error unix_file_stagetocache_plugin( 
+    eirods::error mock_archive_stagetocache_plugin( 
         eirods::resource_operation_context* _ctx,
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
@@ -1308,19 +759,38 @@ extern "C" {
         // get ref to fco
         eirods::first_class_object& fco = _ctx->fco();
         
-        int status = unixFileCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
+        // =-=-=-=-=-=-=-
+        // get the vault path for the resource
+        std::string path;
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // append the hash to the path as the new 'cache file name'
+        path += "/";
+        path += fco.physical_path().c_str();
+        
+        int status = mockArchiveCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
-            return ERROR( status, "unix_file_stagetocache_plugin failed." );
+            std::stringstream msg;
+            msg << "mock_archive_stagetocache_plugin failed copying archive file: \"";
+            msg << fco.physical_path();
+            msg << "\" to cache file: \"";
+            msg << _cache_file_name;
+            msg << "\"";
+            return ERROR( status, msg.str());
         } else {
             return SUCCESS();
         }
-    } // unix_file_stagetocache_plugin
+    } // mock_archive_stagetocache_plugin
 
     // =-=-=-=-=-=-=-
     // unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
-    eirods::error unix_file_synctoarch_plugin( 
+    eirods::error mock_archive_synctoarch_plugin( 
         eirods::resource_operation_context* _ctx,
         char*                               _cache_file_name ) {
         // =-=-=-=-=-=-=-
@@ -1335,30 +805,71 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get ref to fco
         eirods::first_class_object& fco = _ctx->fco();
+       
+        // =-=-=-=-=-=-=-
+        // hash the physical path to reflect object store behavior
+        MD5_CTX context;
+        char md5Buf[ MAX_NAME_LEN ];
+        unsigned char hash  [ MAX_NAME_LEN ];
+
+        strncpy( md5Buf, fco.physical_path().c_str(), fco.physical_path().size() );
+        MD5Init( &context );
+        MD5Update( &context, (unsigned char*)md5Buf, fco.physical_path().size() );
+        MD5Final( (unsigned char*)hash, &context );
+       
+
+        std::stringstream ins;
+        for(int i = 0; i < 16; ++i) {
+            ins << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
+        }
+
+        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, ins.str().c_str() );
+
+
+        // =-=-=-=-=-=-=-
+        // get the vault path for the resource
+        std::string path;
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // append the hash to the path as the new 'cache file name'
+        path += "/";
+        path += ins.str();
+
+        rodsLog( LOG_NOTICE, "mock archive :: cache file name [%s]", _cache_file_name );
+
+        rodsLog( LOG_NOTICE, "mock archive :: new hashed file name for [%s] is [%s]",
+                 fco.physical_path().c_str(), path.c_str() );
         
-        int status = unixFileCopyPlugin( fco.mode(), _cache_file_name, fco.physical_path().c_str() );
+        // =-=-=-=-=-=-=-
+        // make the copy to the 'archive'
+        int status = mockArchiveCopyPlugin( fco.mode(), _cache_file_name, path.c_str() );
         if( status < 0 ) {
-            return ERROR( status, "unix_file_synctoarch_plugin failed." );
+            return ERROR( status, "mock_archive_synctoarch_plugin failed." );
         } else {
+            fco.physical_path( ins.str() );
             return SUCCESS();
         }
 
-    } // unix_file_synctoarch_plugin
+    } // mock_archive_synctoarch_plugin
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error unix_file_redirect_create( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+    eirods::error mock_archive_redirect_create( 
+        eirods::resource_property_map& _prop_map,
+        eirods::file_object&           _file_obj,
+        const std::string&             _resc_name, 
+        const std::string&             _curr_host, 
+        float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_create - failed to get 'status' property", get_ret );
+            return PASSMSG( "mock_archive_redirect_create - failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1373,7 +884,7 @@ extern "C" {
         std::string host_name;
         get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_create - failed to get 'location' property", get_ret );
+            return PASSMSG( "mock_archive_redirect_create - failed to get 'location' property", get_ret );
         }
         
         // =-=-=-=-=-=-=-
@@ -1386,16 +897,16 @@ extern "C" {
 
         return SUCCESS();
 
-    } // unix_file_redirect_create
+    } // mock_archive_redirect_create
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
-    eirods::error unix_file_redirect_open( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+    eirods::error mock_archive_redirect_open( 
+        eirods::resource_property_map& _prop_map,
+        eirods::file_object&           _file_obj,
+        const std::string&             _resc_name, 
+        const std::string&             _curr_host, 
+        float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // initially set a good default
         _out_vote = 0.0;
@@ -1405,7 +916,7 @@ extern "C" {
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_open - failed to get 'status' property", get_ret );
+            return PASSMSG( "mock_archive_redirect_open - failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1419,7 +930,7 @@ extern "C" {
         std::string host_name;
         get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_open - failed to get 'location' property", get_ret );
+            return PASSMSG( "mock_archive_redirect_open - failed to get 'location' property", get_ret );
         }
         
         // =-=-=-=-=-=-=-
@@ -1473,12 +984,12 @@ extern "C" {
                              
         return SUCCESS();
 
-    } // unix_file_redirect_open
+    } // mock_archive_redirect_open
 
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
     // should provide the requested operation
-    eirods::error unix_file_redirect_plugin( 
+    eirods::error mock_archive_redirect_plugin( 
         eirods::resource_operation_context* _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
@@ -1488,7 +999,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the context pointer
         if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "unix_file_mkdir_plugin - invalid resource context" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "mock_archive_mkdir_plugin - invalid resource context" );
         }
          
         // =-=-=-=-=-=-=-
@@ -1503,16 +1014,16 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_opr ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null operation" );
+            return ERROR( -1, "mock_archive_redirect_plugin - null operation" );
         }
         if( !_curr_host ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null operation" );
+            return ERROR( -1, "mock_archive_redirect_plugin - null operation" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null outgoing hier parser" );
+            return ERROR( -1, "mock_archive_redirect_plugin - null outgoing hier parser" );
         }
         if( !_out_vote ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null outgoing vote" );
+            return ERROR( -1, "mock_archive_redirect_plugin - null outgoing vote" );
         }
         
         // =-=-=-=-=-=-=-
@@ -1525,7 +1036,7 @@ extern "C" {
         ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
-            msg << "unix_file_redirect_plugin - failed in get property for name";
+            msg << "mock_archive_redirect_plugin - failed in get property for name";
             return ERROR( -1, msg.str() );
         }
 
@@ -1538,29 +1049,29 @@ extern "C" {
         if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return unix_file_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
+            return mock_archive_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return unix_file_redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return mock_archive_redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
         }
       
         // =-=-=-=-=-=-=-
         // must have been passed a bad operation 
         std::stringstream msg;
-        msg << "unix_file_redirect_plugin - operation not supported [";
+        msg << "mock_archive_redirect_plugin - operation not supported [";
         msg << (*_opr) << "]";
         return ERROR( -1, msg.str() );
 
-    } // unix_file_redirect_plugin
+    } // mock_archive_redirect_plugin
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class unixfilesystem_resource : public eirods::resource {
+    class mockarchive_resource : public eirods::resource {
         // =-=-=-=-=-=-=-
         // 3a. create a class to provide maintenance operations, this is only for example
         //     and will not be called.
@@ -1579,8 +1090,8 @@ extern "C" {
             }
 
             eirods::error operator()( rcComm_t* ) {
-                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", 
-                name_.c_str() );
+                rodsLog( LOG_NOTICE, "mockarchive_resource::post_disconnect_maintenance_operation - [%s]", 
+                         name_.c_str() );
                 return SUCCESS();
             }
 
@@ -1590,8 +1101,8 @@ extern "C" {
         }; // class maintenance_operation
 
     public:
-        unixfilesystem_resource( const std::string& _inst_name, 
-                                 const std::string& _context ) : 
+        mockarchive_resource( const std::string& _inst_name, 
+                              const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
 
             if( !context_.empty() ) {
@@ -1639,21 +1150,21 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-            #if 0
+#if 0
             std::string name;
-            eirods::error err = get_property< std::string >( "name", name );
+            eirods::error err = get_property< std::string >( eirods::RESOURCE_NAME, name );
             if( !err.ok() ) {
-                return PASSMSG( "unixfilesystem_resource::post_disconnect_maintenance_operation failed.", err );
+                return PASSMSG( "mockarchive_resource::post_disconnect_maintenance_operation failed.", err );
             }
 
             _op = maintenance_operation( name );
             return SUCCESS();
-            #else
+#else
             return ERROR( -1, "nop" );
-            #endif
+#endif
         }
 
-    }; // class unixfilesystem_resource
+    }; // class mockarchive_resource
   
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
@@ -1665,37 +1176,37 @@ extern "C" {
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
-        // 4a. create unixfilesystem_resource
-        unixfilesystem_resource* resc = new unixfilesystem_resource( _inst_name, _context );
+        // 4a. create mockarchive_resource
+        mockarchive_resource* resc = new mockarchive_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "unix_file_create_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "unix_file_open_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "unix_file_read_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "unix_file_write_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "unix_file_close_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "unix_file_unlink_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "unix_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "unix_file_fstat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "unix_file_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "unix_file_fsync_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "unix_file_mkdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "unix_file_rmdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "unix_file_opendir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "unix_file_closedir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "unix_file_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "unix_file_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "unix_file_get_fsfreespace_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "unix_file_stagetocache_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "unix_file_synctoarch_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "unix_file_registered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "unix_file_unregistered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "unix_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "mock_archive_create_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "mock_archive_open_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,         "mock_archive_read_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "mock_archive_write_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "mock_archive_close_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,         "mock_archive_stat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "mock_archive_fstat_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "mock_archive_lseek_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "mock_archive_fsync_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "mock_archive_mkdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "mock_archive_rmdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "mock_archive_opendir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "mock_archive_closedir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "mock_archive_readdir_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "mock_archive_get_fsfreespace_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "mock_archive_registered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "mock_archive_unregistered_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "mock_archive_modified_plugin" );
         
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "unix_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

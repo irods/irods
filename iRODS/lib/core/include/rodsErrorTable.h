@@ -617,6 +617,7 @@
 #define EIRODS_INVALID_FILE_OBJECT        -1810000
 #define EIRODS_INVALID_OPERATION          -1811000
 #define EIRODS_CHILD_HAS_PARENT           -1812000
+#define EIRODS_FILE_NOT_IN_VAULT          -1813000
 
 /* SSL protocol error codes */
 

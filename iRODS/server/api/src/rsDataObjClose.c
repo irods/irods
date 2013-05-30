@@ -724,11 +724,6 @@ l3Close (rsComm_t *rsComm, int l1descInx)
         status = rsSubStructFileClose (rsComm, &subStructFileCloseInp);
     } else {
 
-        int category = 0; 
-        eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "category", category );
-        if( !err.ok() ) {
-            eirods::log( PASS( err ) );
-        }
 #if 0 // JMC - legacy resource 
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
         switch (RescTypeDef[rescTypeInx].rescCat) {

@@ -232,13 +232,11 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/cache.o \
 		$(svrReObjDir)/reIn2p3SysRule.o \
 		$(svrReObjDir)/nre.reLib1.o	\
-		$(svrReObjDir)/nre.reLib2.o \
 		$(svrReObjDir)/reNaraMetaData.o \
 		$(svrReObjDir)/reStruct.o \
 		$(svrReObjDir)/reSysDataObjOpr.o \
 		$(svrReObjDir)/reVariableMap.o \
-		$(svrReObjDir)/regExpMatch.o \
-		$(svrReObjDir)/ruleAdminMS.o \
+		$(svrReObjDir)/nre.ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/reRDA.o \

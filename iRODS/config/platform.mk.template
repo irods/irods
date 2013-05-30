@@ -70,7 +70,7 @@ ifeq ($(EIRODS_BUILD_DEBUG), 1)
 CCFLAGS += -g
 else
 # we'll change this to -O3 later to optimize... hit errors on first attempt
-CCFLAGS += -O0
+CCFLAGS += -O3
 endif
 
 EIRODS_BUILD_COVERAGE=0
@@ -288,8 +288,12 @@ endif
 
 ifdef USE_SSL
 MY_CFLAG+= -DUSE_SSL
-LDADD+=-L/usr/lib/x86_64-linux-gnu/ -lssl
-CL_LDADD+=-L/usr/lib/x86_64-linux-gnu/ -lssl
+ifeq ($(OS_platform), linux_platform)
+LDADD+=-L/usr/lib/x86_64-linux-gnu/
+CL_LDADD+=-L/usr/lib/x86_64-linux-gnu/
+endif
+LDADD+=-lssl -lcrypto
+CL_LDADD+=-lssl -lcrypto
 endif
 
 ifdef PAM_AUTH

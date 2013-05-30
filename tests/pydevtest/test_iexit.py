@@ -1,25 +1,32 @@
-import pydevtest_sessions as s
-from nose.tools import with_setup
 from nose.plugins.skip import SkipTest
-from pydevtest_common import assertiCmd, assertiCmdFail
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
+import pydevtest_sessions as s
 import commands
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_iexit():
-    # assertions
-    assertiCmd(s.adminsession,"iexit") # just go home
+class Test_iexit(object):
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_iexit_verbose():
-    # assertions
-    assertiCmd(s.adminsession,"iexit -v","LIST","Deleting (if it exists) session envFile:") # home, verbose
+    def setUp(self):
+        s.twousers_up()
+    def tearDown(self):
+        s.twousers_down()
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_iexit_with_bad_option():
-    # assertions
-    assertiCmdFail(s.adminsession,"iexit -z") # run iexit with bad option
+    ###################
+    # iexit
+    ###################
 
-@with_setup(s.adminonly_up,s.adminonly_down)
-def test_iexit_with_bad_parameter():
-    # assertions
-    assertiCmdFail(s.adminsession,"iexit badparameter") # run iexit with bad parameter
+    def test_iexit(self):
+        # assertions
+        assertiCmd(s.adminsession,"iexit") # just go home
+
+    def test_iexit_verbose(self):
+        # assertions
+        assertiCmd(s.adminsession,"iexit -v","LIST","Deleting (if it exists) session envFile:") # home, verbose
+
+    def test_iexit_with_bad_option(self):
+        # assertions
+        assertiCmdFail(s.adminsession,"iexit -z") # run iexit with bad option
+
+    def test_iexit_with_bad_parameter(self):
+        # assertions
+        assertiCmdFail(s.adminsession,"iexit badparameter") # run iexit with bad parameter
+

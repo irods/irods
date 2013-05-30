@@ -7,7 +7,7 @@
 %license LICENSE
 %readme README
 %description Enterprise edition of the Integrated Rule Oriented Data System
-%version 3.0rc1 300004
+%version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
 
 
 
@@ -376,7 +376,7 @@ f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsReServer ./i
 %if ICAT
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/irodsXmsgServer ./iRODS/server/bin/irodsXmsgServer
 %endif
-f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./plugins/resources/sos/*.so
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./iRODS/server/bin/*.so
 #f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/boost*/stage/lib/*.so
 #f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/ ./external/libarchive*/.libs/libarchive*.so*
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/server/bin/list.pl ./iRODS/server/bin/list.pl
@@ -820,6 +820,9 @@ f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_irods.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_irods.r
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiCreateUserAccountsFromDataObj.r ./iRODS/clients/icommands/test/rules3.0/rulemsiCreateUserAccountsFromDataObj.r
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/rulemsiobjget_test.r ./iRODS/clients/icommands/test/rules3.0/rulemsiobjget_test.r
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite1.r ./iRODS/clients/icommands/test/rules3.0/testsuite1.r
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite2.r ./iRODS/clients/icommands/test/rules3.0/testsuite2.r
+f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/rules3.0/testsuite3.r ./iRODS/clients/icommands/test/rules3.0/testsuite3.r
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/switchuser.py ./iRODS/clients/icommands/test/misc/switchuser.py
 f 644 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/misc/sample.email ./iRODS/clients/icommands/test/misc/sample.email

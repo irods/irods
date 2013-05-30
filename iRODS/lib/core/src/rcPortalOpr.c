@@ -94,7 +94,7 @@ rodsLong_t dataSize)
 #ifdef windows_platform
 	in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
 #else
-    in_fd = open (locFilePath, O_RDONLY, 0, FILE_DESC_TYPE, NULL);
+    in_fd = open (locFilePath, O_RDONLY, 0);
 #endif
     if (in_fd < 0) { /* error */
 	status = USER_FILE_DOES_NOT_EXIST - errno;

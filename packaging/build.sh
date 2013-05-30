@@ -209,11 +209,15 @@ fi
 
 
 echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
+echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
-echo "Detected Packaging Directory [$DETECTEDDIR]"
 echo "Build Directory set to [$BUILDDIR]"
+# read E-iRODS Version from file
+source ../packaging/VERSION
+echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
+echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
@@ -647,9 +651,9 @@ if [ "$DETECTEDOS" == "MacOSX" ] ; then
 elif [ "$DETECTEDOS" == "Solaris" ] ; then
     DETECTEDCPUCOUNT=`/usr/sbin/psrinfo -p`
 else
-    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l`
+    DETECTEDCPUCOUNT=`cat /proc/cpuinfo | grep processor | wc -l | tr -d ' '`
 fi
-if [ "$DETECTEDCPUCOUNT" \< "2" ] ; then
+if [ $DETECTEDCPUCOUNT -lt 2 ] ; then
     DETECTEDCPUCOUNT=1
 fi
 CPUCOUNT=$(( $DETECTEDCPUCOUNT + 3 ))
@@ -979,10 +983,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/eirods.list.template > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
-#    #   database admin role
-#    NEW_DB_ADMIN_ROLE=`awk -F\' '/^\\$DB_ADMIN_NAME/ {print $2}' iRODS/config/irods.config`
-#    sed -e "s,TEMPLATE_DB_ADMIN_ROLE,$NEW_DB_ADMIN_ROLE," ./packaging/eirods.list > /tmp/eirodslist.tmp
-#    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database type
     NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/eirods.list > /tmp/eirodslist.tmp
@@ -998,6 +998,26 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     #   database password
     sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
+
+
+    # =-=-=-=-=-=-=-
+    # populate EPMEIRODSVERSION and EIRODSVERSION in all EPM list files
+
+    # eirods main package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    # eirods-dev package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
+    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-dev.list > /tmp/eirodsdevlist.tmp
+    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
+    # eirods-icommands package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
+    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-icommands.list > /tmp/eirodsicommandslist.tmp
+    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
 
 
     set +e
@@ -1131,6 +1151,8 @@ fi
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
+# prepare epm list files from templates
+
 if [ "$BUILDEIRODS" == "1" ] ; then
     # get RENCI updates to EPM from repository
     echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
@@ -1230,7 +1252,6 @@ fi
 
 # rename generated packages appropriately
 cd $BUILDDIR
-EIRODSVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
 SUFFIX=""
 if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
     EXTENSION="rpm"

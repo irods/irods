@@ -129,7 +129,7 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string this_name;
-        ret = _ctx->prop_map().get<std::string>("name", this_name);
+        ret = _ctx->prop_map().get<std::string>( eirods::RESOURCE_NAME, this_name);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -851,13 +851,6 @@ extern "C" {
                                         msg << _ctx->fco().logical_path();
                                         msg << "\"";
                                         result = PASSMSG(msg.str(), ret);
-
-                                        if(true) {
-                                            eirods::stacktrace st;
-                                            st.trace();
-                                            st.dump();
-                                        }
-
                                     }
                                 }
                             }
@@ -1077,45 +1070,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
-    eirods::error replFileChmod(
-        eirods::resource_operation_context* _ctx)
-    {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-
-        ret = replCheckParams(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
-            eirods::resource_ptr child;
-            ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // replFileChmod
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX mkdir
     eirods::error replFileRmdir(
         eirods::resource_operation_context* _ctx)
     {
@@ -1273,45 +1227,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error replFileStage(
-        eirods::resource_operation_context* _ctx)
-    {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = replCheckParams(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
-            eirods::resource_ptr child;
-            ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // replFileStage
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
     eirods::error replFileRename(
         eirods::resource_operation_context* _ctx,
         const char*                    _new_file_name )
@@ -1350,47 +1265,6 @@ extern "C" {
         return result;
     } // replFileRename
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error replFileTruncate(
-        eirods::resource_operation_context* _ctx)
-    {
-        // =-=-=-=-=-=-=-
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = replCheckParams(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
-            eirods::resource_ptr child;
-            ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // replFileTruncate
-
-        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error replFileGetFsFreeSpace(
@@ -1522,7 +1396,7 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string name;
-        ret = _ctx->prop_map().get<std::string>("name", name);
+        ret = _ctx->prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -1674,13 +1548,6 @@ extern "C" {
 
         else {
             // if the api commands involve replication we have to error out since managing replicas is our job
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Calling getvalbykey";
-                DEBUGMSG(msg.str());
-            }
-
             char* in_repl = getValByKey(&object->cond_input(), IN_REPL_KW);
             if(in_repl != NULL) {
                 std::stringstream msg;
@@ -1823,16 +1690,13 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "replFileFstat" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "replFileFsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "replFileMkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "replFileChmod" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "replFileOpendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "replFileReaddir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "replFileStage" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "replFileRename" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "replFileGetFsFreeSpace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "replFileLseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "replFileRmdir" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "replFileClosedir" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "replFileTruncate" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "replStageToCache" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "replSyncToArch" );
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "replRedirect" );
@@ -1842,9 +1706,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

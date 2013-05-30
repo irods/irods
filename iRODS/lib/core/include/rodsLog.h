@@ -56,6 +56,7 @@ char *rodsErrorName(int errorValue, char **subName);
 void rodsLogErrorOld(int level, int errCode, char *textStr);
 void rodsLogError(int level, int errCode, char *formatStr, ...);
 int getRodsLogLevel ();
+void generateLogTimestamp(char *ts, int tsLen);
 
 #ifdef  __cplusplus
 }

@@ -585,7 +585,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
             RETURN;
     } else {
         Token *token;
-        token = nextTokenRuleGen(e, pc, 0);
+        token = nextTokenRuleGen(e, pc, 0, 0);
         if(strcmp(token->text, "|")==0) {
         	recoNode = parseActionsRuleGen(e, rulegen, 1, pc);
             if(node==NULL) {
@@ -598,7 +598,7 @@ Res *parseAndComputeExpression(char *expr, Env *env, ruleExecInfo_t *rei, int re
 				res = newErrorRes(r, RE_PARSER_ERROR);
 				RETURN;
             }
-            token = nextTokenRuleGen(e, pc, 0);
+            token = nextTokenRuleGen(e, pc, 0, 0);
         }
         if(token->type!=TK_EOS) {
             Label pos;

@@ -89,6 +89,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - dtor
     file_object::~file_object() {
+        clearKeyVal( &cond_input_ );
     } // dtor
 
     // =-=-=-=-=-=-=-
@@ -181,6 +182,10 @@ namespace eirods {
             status = getDataObjInfo( _comm, _data_obj_inp, &head_ptr, 0, 0 );
         }
         if( 0 == head_ptr || status < 0 ) {
+            if( head_ptr ) {
+                freeAllDataObjInfo( head_ptr );
+            }
+
             char* sys_error;
             char* rods_error = rodsErrorName(status, &sys_error);
             std::stringstream msg;
@@ -250,6 +255,9 @@ namespace eirods {
 
         _file_obj.replicas( objects );
 
+        //delete head_ptr->rescInfo;
+        //free( head_ptr );
+        freeAllDataObjInfo( head_ptr );
         return SUCCESS();
 
     } // file_object_factory
