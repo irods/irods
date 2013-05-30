@@ -86,6 +86,7 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
         rei->rgi = myRescGrpInfo;
     } else {
         eirods::log( PASS( err ) );
+        delete myRescGrpInfo->rescInfo;
         delete myRescGrpInfo;
         rei->rgi = NULL;
     }

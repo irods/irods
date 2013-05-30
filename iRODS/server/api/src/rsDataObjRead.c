@@ -141,12 +141,7 @@ bytesBuf_t *dataObjReadOutBBuf)
 
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
        
-        int category = 0; 
-        eirods::error err = eirods::get_resource_property< int >( dataObjInfo->rescInfo->rescName, "category", category );
-        if( !err.ok() ) {
-            eirods::log( PASS( err ) );
-        }
-
+        int category = FILE_CAT;  // do not support DB type
         // JMC - legacy resource - switch (RescTypeDef[rescTypeInx].rescCat) {
         switch( category ) {
           case FILE_CAT:

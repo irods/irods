@@ -15,10 +15,121 @@
 int _makeQuery( char *sel, char *cond, char **sql);
 
 /**
- * \fn msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+ * \fn msiExecStrCondQueryWithOptionsNew(msParam_t* queryParam,
  *        msParam_t* zeroResultsIsOK,
  *        msParam_t* maxReturnedRowsParam, 
  *        msParam_t* genQueryOutParam, 
+ *        ruleExecInfo_t *rei)
+ *
+ * \brief   This function takes a given condition string and options, creates an iCAT query, executes it and returns the values
+ * 			This function returns an empty result set if "zeroOK" instead of a string "emptySet".
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Romain Guinot
+ * \date    2007
+ *
+ * \usage See clients/icommands/test/rules3.0/
+ *
+ * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
+ * \param[in] zeroResultsIsOK - Optional - a msParam of type STR_MS_T - must equal "zeroOK"
+ * \param[in] maxReturnedRowsParam - Optional - a msParam of type STR_MS_T - as integer
+ * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified  none
+ * \iCatAttrDependence  none
+ * \iCatAttrModified  none
+ * \sideeffect  none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa  msiExecStrCondQuery
+**/
+int msiExecStrCondQueryWithOptionsNew(msParam_t* queryParam,
+				   msParam_t* zeroResultsIsOK,
+				   msParam_t* maxReturnedRowsParam, 
+				   msParam_t* genQueryOutParam,
+				   ruleExecInfo_t *rei)
+{
+    genQueryInp_t genQueryInp;
+    int i;
+    genQueryOut_t *genQueryOut = NULL;
+    char *query;
+    char *maxReturnedRowsStr;
+    int maxReturnedRows;
+
+    query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
+    strcpy(query, (const char*) queryParam->inOutStruct);
+
+    #ifndef RULE_ENGINE_N
+    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+    if (i < 0)
+       return(i);
+    #endif
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+    i = fillGenQueryInpFromStrCond(query, &genQueryInp);
+    if (i < 0)
+       return(i);
+
+    if(maxReturnedRowsParam != NULL) {
+        maxReturnedRowsStr = (char *) maxReturnedRowsParam->inOutStruct;
+	if(strcmp(maxReturnedRowsStr, "NULL") != 0)
+	{
+	   maxReturnedRows = atoi (maxReturnedRowsStr);
+	   genQueryInp.maxRows= maxReturnedRows;
+	}
+	else
+	   genQueryInp.maxRows= MAX_SQL_ROWS;
+    }
+    else
+       genQueryInp.maxRows= MAX_SQL_ROWS;
+    
+    genQueryInp.continueInx=0;
+
+    i = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+    if (zeroResultsIsOK !=NULL && 
+	strcmp((const char*)zeroResultsIsOK->inOutStruct, "zeroOK") == 0 )
+    {
+       if (i < 0 && i != CAT_NO_ROWS_FOUND)
+	  return(i);
+       else if (i == CAT_NO_ROWS_FOUND)
+       {
+	  /* genQueryOutParam->type = strdup(STR_MS_T);
+	  fillStrInMsParam (genQueryOutParam,"emptySet"); */
+	  genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+	  genQueryOut = (genQueryOut_t *) malloc(sizeof(genQueryOut_t));
+	  memset (genQueryOut, 0, sizeof (genQueryOut_t));
+	  genQueryOutParam->inOutStruct = genQueryOut;
+
+	  return(0);
+       }
+    }
+    else
+    {
+       if (i < 0)
+	  return(i);
+    }
+    if (i < 0)
+       return(i);
+    genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+    genQueryOutParam->inOutStruct = genQueryOut;
+    return(0);
+}
+
+/**
+ * \fn msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+ *        msParam_t* zeroResultsIsOK,
+ *        msParam_t* maxReturnedRowsParam,
+ *        msParam_t* genQueryOutParam,
  *        ruleExecInfo_t *rei)
  *
  * \brief   This function takes a given condition string and options, creates an iCAT query, executes it and returns the values
@@ -54,7 +165,7 @@ int _makeQuery( char *sel, char *cond, char **sql);
 **/
 int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
 				   msParam_t* zeroResultsIsOK,
-				   msParam_t* maxReturnedRowsParam, 
+				   msParam_t* maxReturnedRowsParam,
 				   msParam_t* genQueryOutParam,
 				   ruleExecInfo_t *rei)
 {
@@ -68,9 +179,12 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     query = (char *) malloc(strlen((const char*)queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
     strcpy(query, (const char*) queryParam->inOutStruct);
 
-    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+    #ifndef RULE_ENGINE_N
+    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei); 
     if (i < 0)
        return(i);
+    #endif
+
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
     i = fillGenQueryInpFromStrCond(query, &genQueryInp);
     if (i < 0)
@@ -88,11 +202,11 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     }
     else
        genQueryInp.maxRows= MAX_SQL_ROWS;
-    
+
     genQueryInp.continueInx=0;
 
     i = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
-    if (zeroResultsIsOK !=NULL && 
+    if (zeroResultsIsOK !=NULL &&
 	strcmp((const char*)zeroResultsIsOK->inOutStruct, "zeroOK") == 0 )
     {
        if (i < 0 && i != CAT_NO_ROWS_FOUND)
@@ -101,6 +215,7 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
        {
 	  genQueryOutParam->type = strdup(STR_MS_T);
 	  fillStrInMsParam (genQueryOutParam,"emptySet");
+
 	  return(0);
        }
     }
@@ -115,7 +230,6 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     genQueryOutParam->inOutStruct = genQueryOut;
     return(0);
 }
-
 
 /**
  * \fn msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
@@ -173,9 +287,11 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
   if (i < 0)
     return(i);
   ***/
+  #ifndef RULE_ENGINE_N
   i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
   if (i < 0)
     return(i);
+  #endif
   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
   i = fillGenQueryInpFromStrCond(query, &genQueryInp);
   if (i < 0)
@@ -210,12 +326,13 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
  *
  * \since pre-2.1
  *
- * \author	Arcot Rajasekar
- * \date	2008
+ * \author  Arcot Rajasekar
+ * \date    2008
  *
  * \note Takes a SQL-like iRODS query (no FROM clause) and returns a table structure. Use #msiGetMoreRows to get all rows.
  *
  * \usage See clients/icommands/test/rules3.0/
+ *
  * \param[in] genQueryInParam - a msParam of type GenQueryInp_MS_T
  * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
@@ -276,6 +393,7 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
  * \date    2009-10
  *
  * \note The resulting continueInx can be used to determine whether there are remaining rows to retrieve from the generated query.
+ *
  * \usage See clients/icommands/test/rules3.0/
  *
  * \param[in] genQueryOutParam - Required - of type GenQueryOut_MS_T.
@@ -417,7 +535,6 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
  * \pre none
  * \post none
  * \sa none
- * \bug  no known bugs
 **/
 int
 msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei)
@@ -497,8 +614,8 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 	return (rei->status);
 }
 
-// =-=-=-=-=-=-=-
-// JMC - backport 4713
+
+
 /**
  * \fn msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei)
  *
@@ -534,70 +651,71 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 int
 msiCloseGenQuery(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei) {
 
-       genQueryInp_t *genQueryInp;
-       genQueryOut_t *genQueryOut;
+	genQueryInp_t *genQueryInp;
+	genQueryOut_t *genQueryOut;
 
-       RE_TEST_MACRO ("    Calling msiCloseGenQuery")
+	RE_TEST_MACRO ("    Calling msiCloseGenQuery")
 
-       if (rei == NULL || rei->rsComm == NULL) {
-               rodsLog (LOG_ERROR, "msiCloseGenQuery: input rei or rsComm is NULL.");
-               return (SYS_INTERNAL_NULL_INPUT_ERR);
-       }
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
 
-       /* check for non null parameters */
-       if (genQueryInp_msp == NULL || genQueryOut_msp == NULL) {
-               rodsLog (LOG_ERROR, "msiCloseGenQuery: Missing parameter(s)");
-               return (USER__NULL_INPUT_ERR);
-       }
+	/* check for non null parameters */
+	if (genQueryInp_msp == NULL || genQueryOut_msp == NULL) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: Missing parameter(s)");
+		return (USER__NULL_INPUT_ERR);
+	}
 
-       /* no double close */
-       if (genQueryOut_msp->type == NULL) {
-               return 0;
-       }
+	/* no double close */
+	if (genQueryOut_msp->type == NULL) {
+		return 0;
+	}
 
-       /* check for proper input types */
-       if (strcmp(genQueryOut_msp->type, GenQueryOut_MS_T)) {
-               rodsLog (LOG_ERROR, "msiCloseGenQuery: genQueryOut_msp type is %s, should be GenQueryOut_MS_T", genQueryOut_msp->type);
-               return (USER_PARAM_TYPE_ERR);
-       }
+	/* check for proper input types */
+	if (strcmp(genQueryOut_msp->type, GenQueryOut_MS_T)) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: genQueryOut_msp type is %s, should be GenQueryOut_MS_T", genQueryOut_msp->type);
+		return (USER_PARAM_TYPE_ERR);
+	}
 
-       if (strcmp(genQueryInp_msp->type, GenQueryInp_MS_T)) {
-               rodsLog (LOG_ERROR, "msiCloseGenQuery: query_msp type is %s, should be GenQueryInp_MS_T", genQueryInp_msp->type);
-               return (USER_PARAM_TYPE_ERR);
-       }
+	if (strcmp(genQueryInp_msp->type, GenQueryInp_MS_T)) {
+		rodsLog (LOG_ERROR, "msiCloseGenQuery: query_msp type is %s, should be GenQueryInp_MS_T", genQueryInp_msp->type);
+		return (USER_PARAM_TYPE_ERR);
+	}
 
-       /* retrieve genQueryXXX data structures */
-       genQueryOut = (genQueryOut_t*)genQueryOut_msp->inOutStruct;
-       genQueryInp = (genQueryInp_t*)genQueryInp_msp->inOutStruct;
+	/* retrieve genQueryXXX data structures */
+	genQueryOut = (genQueryOut_t*)genQueryOut_msp->inOutStruct;
+	genQueryInp = (genQueryInp_t*)genQueryInp_msp->inOutStruct;
 
-       /* set contiuation index so icat know which statement to free */
-       genQueryInp->continueInx = genQueryOut->continueInx;
-       genQueryInp->maxRows = -1;
+	/* set contiuation index so icat know which statement to free */
+	genQueryInp->continueInx = genQueryOut->continueInx;
+	genQueryInp->maxRows = -1;
+	
+	/* free memory allocated for previous results */
+	freeGenQueryOut (&genQueryOut);
 
-       /* free memory allocated for previous results */
-       freeGenQueryOut (&genQueryOut);
-       if(genQueryInp->continueInx == 0) { // JMC - backport 4829
-	              /* query already closed */
-	               rei->status = 0;
-	               return rei->status;
-	   }
+	if(genQueryInp->continueInx == 0) {
+		/* query already closed */
+		rei->status = 0;
+		return rei->status;
+	}
 
-       /* close query */
-       rei->status = rsGenQuery(rei->rsComm, genQueryInp, &genQueryOut);
+	/* close query */
+	rei->status = rsGenQuery(rei->rsComm, genQueryInp, &genQueryOut);
 
-       /* free memory allocated */
-       freeGenQueryOut (&genQueryOut);
+	/* free memory allocated */
+	freeGenQueryOut (&genQueryOut);
 
-       if (rei->status == 0) {
-               /* clear output parameter */
-               genQueryOut_msp->type = NULL;
-               genQueryOut_msp->inOutStruct = NULL;
-       }
+	if (rei->status == 0) {
+		/* clear output parameter */
+		genQueryOut_msp->type = NULL;
+		genQueryOut_msp->inOutStruct = NULL;
+	}
 
-       return (rei->status);
+	return (rei->status);
 }
 
-// =-=-=-=-=-=-=-
+
 
 /**
  * \fn msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
@@ -675,16 +793,16 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 	query = (char *)malloc(strlen(rawQuery) + 10 + MAX_COND_LEN * 8);
 	strcpy(query, rawQuery);
 
+    #ifndef RULE_ENGINE_N
 	/* parse variables and replace them with their value */
-	rei->status  = replaceVariablesAndMsParams("", query, rei->msParamArray, rei);
+        rei->status  = replaceVariablesAndMsParams("", query, rei->msParamArray, rei);
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiMakeGenQuery: replaceVariablesAndMsParams failed.");
-		free( rawQuery );
-		free( query );
+		free(rawQuery); // cppcheck - Memory leak: rawQuery
 		return(rei->status);
 	}
-
+#endif
 	/* allocate memory for genQueryInp */
 	genQueryInp = (genQueryInp_t*)malloc(sizeof(genQueryInp_t));
 	memset (genQueryInp, 0, sizeof (genQueryInp_t));
@@ -696,8 +814,7 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiMakeGenQuery: fillGenQueryInpFromStrCond failed.");
-		free( rawQuery );
-		free( query );
+		free(rawQuery); // cppcheck - Memory leak: rawQuery
 		return(rei->status);
 	}
 
@@ -825,8 +942,6 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
  * \author  Antoine de Torcy
  * \date    2009-11-28
  *
- * \remark Terrell Russell - msi documentation, 2009-12-17
- *
  * \note This microservice sets a select field in a genQueryInp_t, from two parameters.
  *       One is an iCAT attribute index given without its 'COL_' prefix.
  *       The second one is the optional SQL operator.
@@ -941,7 +1056,6 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  * \brief Adds a condition to a genQueryInp_t
  *
  * \module core
- *
  *
  * \author  Antoine de Torcy
  * \date    2009-12-07
@@ -1067,7 +1181,6 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *opr, msParam_t *value
  * \brief  Writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
  *
  * \module core
- *
  *
  * \author  Antoine de Torcy
  * \date    2009-12-16

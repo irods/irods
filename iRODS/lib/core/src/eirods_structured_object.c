@@ -120,23 +120,24 @@ namespace eirods {
             return ERROR( status, msg.str() );
         }
         
-        _ptr->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
+        _ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
-        _ptr->set_property<long>( "id", -1 );
-        _ptr->set_property<long>( "freespace", -1 );
-        _ptr->set_property<long>( "quota", -1 );
+        _ptr->set_property<long>( RESOURCE_ID, -1 );
+        _ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
+        _ptr->set_property<long>( RESOURCE_QUOTA, -1 );
         
-        _ptr->set_property<std::string>( "zone",     addr_.zoneName );
-        _ptr->set_property<std::string>( "name",     "structfile" );
-        _ptr->set_property<std::string>( "location", addr_.hostAddr );
-        _ptr->set_property<std::string>( "type",     "structfile" );
-        _ptr->set_property<std::string>( "class",    "cache" );
-        _ptr->set_property<std::string>( "path",     physical_path_ );
-        _ptr->set_property<std::string>( "info",     "blank info" );
-        _ptr->set_property<std::string>( "comments", "blank comments" );
-        _ptr->set_property<std::string>( "create",   "create?" );
-        _ptr->set_property<std::string>( "modify",   "modify?" );
-        _ptr->set_property<int>( "status", INT_RESC_STATUS_UP );
+        _ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
+        
+        _ptr->set_property<std::string>( RESOURCE_ZONE,      addr_.zoneName );
+        _ptr->set_property<std::string>( RESOURCE_NAME,      "structfile" );
+        _ptr->set_property<std::string>( RESOURCE_LOCATION,  addr_.hostAddr );
+        _ptr->set_property<std::string>( RESOURCE_TYPE,      "structfile" );
+        _ptr->set_property<std::string>( RESOURCE_CLASS,     "cache" );
+        _ptr->set_property<std::string>( RESOURCE_PATH,      physical_path_ );
+        _ptr->set_property<std::string>( RESOURCE_INFO,      "blank info" );
+        _ptr->set_property<std::string>( RESOURCE_COMMENTS,  "blank comments" );
+        _ptr->set_property<std::string>( RESOURCE_CREATE_TS, "create?" );
+        _ptr->set_property<std::string>( RESOURCE_MODIFY_TS, "modify?" );
 
         return SUCCESS();
 

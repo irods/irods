@@ -63,93 +63,6 @@ namespace eirods {
     } // resolve
 
     // =-=-=-=-=-=-=-
-    // public - retrieve a resource given a vault path
-    error resource_manager::resolve_from_physical_path( std::string   _physical_path, 
-                                                        resource_ptr& _resc ) {
-        // =-=-=-=-=-=-=-
-        // simple flag to state a resource matching the prop and value is found
-        bool found = false;     
-                
-        // =-=-=-=-=-=-=-
-        // quick check on the resource table
-        if( resources_.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
-        }
-       
-        // =-=-=-=-=-=-=-
-        // quick check on the path that it has something in it
-        if( _physical_path.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty property" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // iterate through the map and search for our path
-        lookup_table< resource_ptr >::iterator itr = resources_.begin();
-        for( ; !found && itr != resources_.end(); ++itr ) {
-            // =-=-=-=-=-=-=-
-            // query resource for the property value
-            std::string value;
-            error ret = itr->second->get_property<std::string>( "path", value );
-
-            // =-=-=-=-=-=-=-
-            // if we get a good parameter and do not match non-storage nodes with an empty physical path
-            if( ret.ok()) {
-
-                // =-=-=-=-=-=-=-
-                // compare incoming value and stored value
-                // one may be a subset of the other so compare both ways
-                if( !value.empty() && (_physical_path.find( value ) != std::string::npos || 
-                                       value.find( _physical_path ) != std::string::npos )) {
-                    _resc = itr->second;
-                    found = true;
-                }
-            } else {
-                std::stringstream msg;
-                msg << "resource_manager::resolve_from_physical_path - ";
-                msg << "failed to get vault parameter from resource";
-                msg << ret.code();
-                eirods::log( PASSMSG( msg.str(), ret ) );
-            }
-
-        } // for itr
-
-        // =-=-=-=-=-=-=-
-        // did we find a resource and is the ptr valid?
-        if( true == found && _resc.get() ) {
-            return SUCCESS();
-        } else {
-            std::stringstream msg;
-            msg << "failed to find resource for path [";
-            msg << _physical_path;
-            msg << "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-        }
-
-    } // resolve_from_physical_path
-
-    // =-=-=-=-=-=-=-
-    // resolve a resource from a first_class_object
-    error resource_manager::resolve( const eirods::first_class_object& _object, 
-                                     resource_ptr&                     _resc ) {
-        // =-=-=-=-=-=-=-
-        // find a resource matching the vault path in the physical path
-        error ret =  resolve_from_physical_path( _object.physical_path(), _resc );
-
-        // =-=-=-=-=-=-=-
-        // if we cant find a resource for a given path, find any unix file system resource
-        // as this is necessary for some cases such as registration of a file which doesnt
-        // have a proper vault path.  this issue will be fixed when we push fcos up through
-        // the server api calls as we can treat them as a new class of fco
-        if( !ret.ok() ) {
-            ret = resolve_from_property< std::string >( "type", "unix file system", _resc );
-
-        }
-
-        return ret;
-
-    } // resolve
-
-    // =-=-=-=-=-=-=-
     // public - connect to the catalog and query for all the 
     //          attached resources and instantiate them
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {
@@ -423,34 +336,34 @@ namespace eirods {
                              addr.hostAddr );
                 }
 
-                resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
+                resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
             } else {
-                resc->set_property< rodsServerHost_t* >( "host", 0 );
+                resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, 0 );
             }
 
-            resc->set_property<long>( "id", strtoll( tmpRescId.c_str(), 0, 0 ) );
-            resc->set_property<long>( "freespace", strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
-            resc->set_property<long>( "quota", RESC_QUOTA_UNINIT );
+            resc->set_property<long>( RESOURCE_ID, strtoll( tmpRescId.c_str(), 0, 0 ) );
+            resc->set_property<long>( RESOURCE_FREESPACE, strtoll( tmpFreeSpace.c_str(), 0, 0 ) );
+            resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
                 
-            resc->set_property<std::string>( "zone",     tmpZoneName );
-            resc->set_property<std::string>( "name",     tmpRescName );
-            resc->set_property<std::string>( "location", tmpRescLoc );
-            resc->set_property<std::string>( "type",     tmpRescType );
-            resc->set_property<std::string>( "class",    tmpRescClass );
-            resc->set_property<std::string>( "path",     tmpRescVaultPath );
-            resc->set_property<std::string>( "info",     tmpRescInfo );
-            resc->set_property<std::string>( "comments", tmpRescComments );
-            resc->set_property<std::string>( "create",   tmpRescCreate );
-            resc->set_property<std::string>( "modify",   tmpRescModify );
-            resc->set_property<std::string>( "children", tmpRescChildren );
-            resc->set_property<std::string>( "parent",   tmpRescParent );
-            resc->set_property<std::string>( "context",  tmpRescContext );
+            resc->set_property<std::string>( RESOURCE_ZONE,      tmpZoneName );
+            resc->set_property<std::string>( RESOURCE_NAME,      tmpRescName );
+            resc->set_property<std::string>( RESOURCE_LOCATION,  tmpRescLoc );
+            resc->set_property<std::string>( RESOURCE_TYPE,      tmpRescType );
+            resc->set_property<std::string>( RESOURCE_CLASS,     tmpRescClass );
+            resc->set_property<std::string>( RESOURCE_PATH,      tmpRescVaultPath );
+            resc->set_property<std::string>( RESOURCE_INFO,      tmpRescInfo );
+            resc->set_property<std::string>( RESOURCE_COMMENTS,  tmpRescComments );
+            resc->set_property<std::string>( RESOURCE_CREATE_TS, tmpRescCreate );
+            resc->set_property<std::string>( RESOURCE_MODIFY_TS, tmpRescModify );
+            resc->set_property<std::string>( RESOURCE_CHILDREN,  tmpRescChildren );
+            resc->set_property<std::string>( RESOURCE_PARENT,    tmpRescParent );
+            resc->set_property<std::string>( RESOURCE_CONTEXT,   tmpRescContext );
             
             if( tmpRescStatus ==  std::string( RESC_DOWN ) ) {
-                resc->set_property<int>( "status", INT_RESC_STATUS_DOWN );
+                resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_DOWN );
             } else {
-                resc->set_property<int>( "status", INT_RESC_STATUS_UP );
+                resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
             }
 
             // =-=-=-=-=-=-=-
@@ -524,28 +437,28 @@ namespace eirods {
                      addr.hostAddr );
         }
     
-        resc->set_property< rodsServerHost_t* >( "host", tmpRodsServerHost );
+        resc->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
             
         // =-=-=-=-=-=-=-
         // start filling in the properties
-        resc->set_property<long>( "id", 999 );
-        resc->set_property<long>( "freespace", 999 );
-        resc->set_property<long>( "quota", RESC_QUOTA_UNINIT );
+        resc->set_property<long>( RESOURCE_ID, 999 );
+        resc->set_property<long>( RESOURCE_FREESPACE, 999 );
+        resc->set_property<long>( RESOURCE_QUOTA, RESC_QUOTA_UNINIT );
             
-        resc->set_property<std::string>( "zone",     zone_info->zoneName );
-        resc->set_property<std::string>( "name",     EIRODS_LOCAL_USE_ONLY_RESOURCE );
-        resc->set_property<std::string>( "location", "localhost" );
-        resc->set_property<std::string>( "type",     EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE );
-        resc->set_property<std::string>( "class",    "cache" );
-        resc->set_property<std::string>( "path",     EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT );
-        resc->set_property<std::string>( "info",     "info" );
-        resc->set_property<std::string>( "comments", "comments" );
-        resc->set_property<std::string>( "create",   "999" );
-        resc->set_property<std::string>( "modify",   "999" );
-        resc->set_property<std::string>( "children", "" );
-        resc->set_property<std::string>( "parent",   "" );
-        resc->set_property<std::string>( "context",  "" );
-        resc->set_property<int>( "status", INT_RESC_STATUS_UP );
+        resc->set_property<std::string>( RESOURCE_ZONE,      zone_info->zoneName );
+        resc->set_property<std::string>( RESOURCE_NAME,      EIRODS_LOCAL_USE_ONLY_RESOURCE );
+        resc->set_property<std::string>( RESOURCE_LOCATION,  "localhost" );
+        resc->set_property<std::string>( RESOURCE_TYPE,      EIRODS_LOCAL_USE_ONLY_RESOURCE_TYPE );
+        resc->set_property<std::string>( RESOURCE_CLASS,     "cache" );
+        resc->set_property<std::string>( RESOURCE_PATH,      EIRODS_LOCAL_USE_ONLY_RESOURCE_VAULT );
+        resc->set_property<std::string>( RESOURCE_INFO,      "info" );
+        resc->set_property<std::string>( RESOURCE_COMMENTS,  "comments" );
+        resc->set_property<std::string>( RESOURCE_CREATE_TS, "999" );
+        resc->set_property<std::string>( RESOURCE_MODIFY_TS, "999" );
+        resc->set_property<std::string>( RESOURCE_CHILDREN,  "" );
+        resc->set_property<std::string>( RESOURCE_PARENT,    "" );
+        resc->set_property<std::string>( RESOURCE_CONTEXT,   "" );
+        resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
 
         // =-=-=-=-=-=-=-
         // assign to the map
@@ -567,12 +480,12 @@ namespace eirods {
 
             // Get the children string and resource name
             std::string children_string;
-            error ret = resc->get_property<std::string>("children", children_string);
+            error ret = resc->get_property<std::string>( RESOURCE_CHILDREN, children_string);
             if(!ret.ok()) {
                 result = PASSMSG( "init_child_map failed.", ret);
             } else {
                 std::string resc_name;
-                error ret = resc->get_property<std::string>("name", resc_name);
+                error ret = resc->get_property<std::string>( RESOURCE_NAME, resc_name);
                 if(!ret.ok()) {
                     result = PASSMSG( "init_child_map failed.", ret);
                 } else {
@@ -623,8 +536,8 @@ namespace eirods {
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
         for( itr = resources_.begin(); itr != resources_.end(); ++itr ) {
             std::string loc, path, name;
-            error path_err = itr->second->get_property< std::string >( "path", path );
-            error loc_err  = itr->second->get_property< std::string >( "location", loc );
+            error path_err = itr->second->get_property< std::string >( RESOURCE_PATH, path );
+            error loc_err  = itr->second->get_property< std::string >( RESOURCE_LOCATION, loc );
             if( path_err.ok() && loc_err.ok() && "localhost" == loc ) {
                 rodsLog( LOG_NOTICE, "   RescName: %s, VaultPath: %s\n",
                          itr->first.c_str(), path.c_str() );
@@ -651,7 +564,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // skip if already processed
             std::string name;
-            error get_err = resc->get_property< std::string >( "name", name );
+            error get_err = resc->get_property< std::string >( RESOURCE_NAME, name );
 
             if( get_err.ok() ) {
                 std::vector< std::string >::iterator itr;
@@ -685,7 +598,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // dive if children are present
             std::string child_str;
-            error child_err = resc->get_property< std::string >( "children", child_str );
+            error child_err = resc->get_property< std::string >( RESOURCE_CHILDREN, child_str );
             if( child_err.ok() && !child_str.empty() ) {
                 gather_operations_recursive( child_str, proc_vec, resc_ops );
             }
@@ -762,7 +675,7 @@ namespace eirods {
             error get_err = resources_.get( child, resc );
             if( get_err.ok() ) {
                 std::string child_str;
-                error child_err = resc->get_property< std::string >( "children", child_str );
+                error child_err = resc->get_property< std::string >( RESOURCE_CHILDREN, child_str );
                 if( child_err.ok() && !child_str.empty() ) {
                     error gather_err = gather_operations_recursive( child_str, _proc_vec, _resc_ops );
                 }

@@ -83,7 +83,7 @@ eirods::error unix_generate_full_path(
     eirods::error ret;
     std::string vault_path;
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>("path", vault_path);
+    ret = _prop_map.get<std::string>(eirods::RESOURCE_PATH, vault_path);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - resource has no vault path.";
@@ -92,6 +92,7 @@ eirods::error unix_generate_full_path(
         if(_phy_path.compare(0, 1, "/") != 0 &&
            _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
             _ret_string  = vault_path;
+            _ret_string += "/";
             _ret_string += _phy_path;
         } else {
             // The physical path already contains the vault path
@@ -800,47 +801,6 @@ extern "C" {
     } // unix_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX chmod
-    eirods::error unix_file_chmod_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = chmod( fco.physical_path().c_str(), fco.mode() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_CHMOD_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_chmod_plugin: chmod error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        } // if
-
-        return CODE( status );
-
-    } // unix_file_chmod_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error unix_file_mkdir_plugin( 
         eirods::resource_operation_context* _ctx ) { 
@@ -1110,14 +1070,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error unix_file_stage_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        return CODE( SYS_NOT_SUPPORTED );
-
-    } // unix_file_stage_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
     eirods::error unix_file_rename_plugin( 
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
@@ -1187,51 +1139,6 @@ extern "C" {
 
     } // unix_file_rename_plugin
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error unix_file_truncate_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to rename
-        int status = truncate( file_obj.physical_path().c_str(), 
-                               file_obj.size() );
-
-        // =-=-=-=-=-=-=-
-        // handle any error cases
-        if( status < 0 ) {
-            // =-=-=-=-=-=-=-
-            // cache status in out variable
-            status = UNIX_FILE_TRUNCATE_ERR - errno;
-
-            std::stringstream msg;
-            msg << "unix_file_truncate_plugin: rename error for ";
-            msg << file_obj.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // unix_file_truncate_plugin
-
-        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error unix_file_get_fsfreespace_plugin( 
@@ -1449,7 +1356,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "unix_file_redirect_create - failed to get 'status' property", get_ret );
         }
@@ -1464,7 +1371,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "unix_file_redirect_create - failed to get 'location' property", get_ret );
         }
@@ -1496,7 +1403,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "unix_file_redirect_open - failed to get 'status' property", get_ret );
         }
@@ -1510,7 +1417,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "unix_file_redirect_open - failed to get 'location' property", get_ret );
         }
@@ -1615,7 +1522,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "unix_file_redirect_plugin - failed in get property for name";
@@ -1775,15 +1682,12 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "unix_file_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "unix_file_lseek_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "unix_file_fsync_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "unix_file_chmod_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "unix_file_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "unix_file_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "unix_file_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "unix_file_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "unix_file_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "unix_file_stage_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "unix_file_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "unix_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "unix_file_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "unix_file_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "unix_file_synctoarch_plugin" );
@@ -1795,9 +1699,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

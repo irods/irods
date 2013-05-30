@@ -319,7 +319,8 @@ createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy (dataObjInfo.rescHier, rescInfo->rescName, NAME_LEN); // in kw else
     }
 
-    dataObjInfo.rescInfo = rescInfo;
+    dataObjInfo.rescInfo = new rescInfo_t;
+    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
 
     status = getFilePathName (rsComm, &dataObjInfo, dataObjInp);
     if (status < 0) {
@@ -539,7 +540,8 @@ _bulkRegUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const std::string
                     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
                     rstrcpy (dataObjInfo.rescHier, rescHier.c_str(), MAX_NAME_LEN);
                     rstrcpy (dataObjInfo.dataType, "generic", NAME_LEN);
-                    dataObjInfo.rescInfo = rescInfo;
+                    dataObjInfo.rescInfo = new rescInfo_t;
+                    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
                     dataObjInfo.dataSize = dataSize;
 
                     status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);

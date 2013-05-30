@@ -301,13 +301,15 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                 rstrcpy (dataObjInp.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN);
                 rstrcpy (stageDataObjInfo.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN);
                 rstrcpy (stageDataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
-                stageDataObjInfo.rescInfo = rescInfo;
+                stageDataObjInfo.rescInfo = new rescInfo_t;
+                memcpy( stageDataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
 
                 status = getFilePathName (rsComm, &stageDataObjInfo, &dataObjInp);
                 if (status < 0) {
                     rodsLog (LOG_ERROR,
                              "regPhySubFile: getFilePathName err for %s. status = %d",
                              dataObjInp.objPath, status);
+                    delete stageDataObjInfo.rescInfo;
                     return (status);
                 }
 
@@ -323,6 +325,7 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                             rodsLog (LOG_ERROR,
                                      "regPhySubFile: resolveDupFilePath err for %s. status = %d",
                                      stageDataObjInfo.filePath, status);
+                            delete stageDataObjInfo.rescInfo;
                             return (status);
                         }
                     }
@@ -334,6 +337,7 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                         rodsLog (LOG_ERROR,
                                  "regPhySubFile: link error %s to %s. errno = %d",
                                  subfilePath, stageDataObjInfo.filePath, errno);
+                        delete stageDataObjInfo.rescInfo;
                         return (UNIX_FILE_LINK_ERR - errno);
                     }
 
@@ -350,9 +354,11 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
                         rodsLog (LOG_ERROR,
                                  "regPhySubFile: rsRegReplica error for %s. status = %d",
                                  bunDataObjInfo->objPath, status);
+                        delete stageDataObjInfo.rescInfo;
                         return status;
                     }
 
+                    delete stageDataObjInfo.rescInfo;
                     return status;
                 }
 

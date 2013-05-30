@@ -498,7 +498,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       to the fact that the server is down. We leave this case to be taken care of next time. */
    if(at_least_one_copy_is_good == 0)
    {
-      rodsLog(LOG_ERROR, "msiAutoReplicateService():process_single_obj(): Obj='%s/%s': Wanring: The system detects that all copies might be corrupted.", parColl, fileName);
+      rodsLog(LOG_ERROR, "msiAutoReplicateService():process_single_obj(): Obj='%s/%s': Warning: The system detects that all copies might be corrupted.", parColl, fileName);
 
 #ifndef windows_platform
       if((emailToNotify!=NULL)&&(strlen(emailToNotify)>0))

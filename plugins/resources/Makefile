@@ -23,8 +23,10 @@ ifeq ($(EIRODS_BUILD_COVERAGE), 1)
 GCC += -fprofile-arcs -ftest-coverage -lgcov
 endif
 
-OBJDIR = .objs
-DEPDIR = .deps
+export OBJDIR = .objs
+export DEPDIR = .deps
+export IRODSTOPDIR = ../../iRODS
+export SOTOPDIR = ${IRODSTOPDIR}/server/bin
 
 SUBS = ${BASEDIRS}
 
@@ -33,11 +35,6 @@ ifeq ($(EIRODS_BUILD_DEBUG), 0)
 endif
 
 .PHONY: ${SUBS} clean
-
-INC = -I ../../iRODS/lib/core/include/ -I ../../iRODS/lib/api/include/ -I../../iRODS/lib/md5/include \
-      -I../../iRODS/server/core/include/ -I../../iRODS/server/icat/include/ -I../../iRODS/server/re/include/ \
-      -I../../iRODS/server/drivers/include/ -I$(LIBARCHIVE_DIR)/libarchive/ -I$(BOOST_DIR) \
-      -I/opt/hpss/include  -L/opt/hpss/lib
 
 default: ${SUBS}
 
@@ -49,6 +46,7 @@ ${SUBS}:
 clean:
 	@-for dir in ${SUBS}; do \
 	rm $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
+	rm $$dir/*.o > /dev/null 2>&1; \
 	done
-	@-rm sos/*.so > /dev/null 2>&1
+	@-rm ${SOTOPDIR}/*.so > /dev/null 2>&1
 

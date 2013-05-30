@@ -70,7 +70,7 @@ ifeq ($(EIRODS_BUILD_DEBUG), 1)
 CCFLAGS += -g
 else
 # we'll change this to -O3 later to optimize... hit errors on first attempt
-CCFLAGS += -O0
+CCFLAGS += -O3
 endif
 
 EIRODS_BUILD_COVERAGE=0

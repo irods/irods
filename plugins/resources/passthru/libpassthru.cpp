@@ -151,25 +151,7 @@ extern "C" {
                 ret = resc->call( _ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco());
                 if(!ret.ok()) {
                     result = PASSMSG("failed calling child create.", ret);
-                } else {
-#if 0 // handled in redirect code now
-                    // Update the hierarchy string
-                    std::string child_name;
-                    ret = resc->get_property<std::string>("name", child_name);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__ << " - Failed to retrieve the child resource name.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        eirods::hierarchy_parser hparse;
-                        hparse.set_string(_ctx->fco()->resc_hier());
-                        hparse.add_child(child_name);
-                        std::string new_resc_hier;
-                        hparse.str(new_resc_hier);
-                        _ctx->fco()->resc_hier(new_resc_hier);
-                    }
-#endif // handled in redirect code now
-                }
+                } 
             }
         }
         return result;
@@ -415,30 +397,6 @@ extern "C" {
     } // pass_thru_file_mkdir_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX chmod
-    eirods::error pass_thru_file_chmod_plugin(  
-        eirods::resource_operation_context* _ctx ) {
-
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_chmod_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_chmod_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx->comm(), eirods::RESOURCE_OP_CHMOD, _ctx->fco());
-                result = PASSMSG("pass_thru_file_chmod_plugin - failed calling child chmod.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_chmod_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error pass_thru_file_rmdir_plugin( 
         eirods::resource_operation_context* _ctx ) {
@@ -532,29 +490,6 @@ extern "C" {
     } // pass_thru_file_readdir_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for stage operation
-    eirods::error pass_thru_file_stage_plugin(  
-        eirods::resource_operation_context* _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_stage_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_stage_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx->comm(), eirods::RESOURCE_OP_STAGE, _ctx->fco());
-                result = PASSMSG("pass_thru_file_stage_plugin - failed calling child stage.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_stage_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error pass_thru_file_rename_plugin(  
         eirods::resource_operation_context* _ctx,
@@ -578,31 +513,6 @@ extern "C" {
         return result;
     } // pass_thru_file_rename_plugin
 
-    // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error pass_thru_file_truncate_plugin(  
-        eirods::resource_operation_context* _ctx ) {
-        // =-=-=-=-=-=-=-
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_truncate_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx->child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_truncate_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco());
-                result = PASSMSG("pass_thru_file_truncate_plugin - failed calling child truncate.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_truncate_plugin
-
-        
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error pass_thru_file_getfsfreespace_plugin( 
@@ -783,7 +693,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "pass_thru_redirect_plugin - failed in get property for name";
@@ -873,16 +783,13 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "pass_thru_file_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "pass_thru_file_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "pass_thru_file_mkdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "pass_thru_file_chmod_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "pass_thru_file_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "pass_thru_file_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "pass_thru_file_stage_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "pass_thru_file_rename_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "pass_thru_file_getfsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "pass_thru_file_lseek_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "pass_thru_file_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "pass_thru_file_closedir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "pass_thru_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "pass_thru_stage_to_cache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "pass_thru_sync_to_arch_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "pass_thru_file_registered" );
@@ -893,9 +800,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

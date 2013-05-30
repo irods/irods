@@ -33,15 +33,12 @@ eirods::error fileFstat   ( rsComm_t*, eirods::first_class_object&, struct stat*
 eirods::error fileLseek   ( rsComm_t*, eirods::first_class_object&, size_t, int ); 
 eirods::error fileFsync   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileMkdir   ( rsComm_t*, eirods::first_class_object& );
-eirods::error fileChmod   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileRmdir   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileOpendir ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileClosedir( rsComm_t*, eirods::first_class_object& );
 eirods::error fileReaddir ( rsComm_t*, eirods::first_class_object&, struct rodsDirent** );
 eirods::error fileRename  ( rsComm_t*, eirods::first_class_object&, const std::string& );
 eirods::error fileGetFsFreeSpace( rsComm_t*, eirods::first_class_object& );
-eirods::error fileTruncate( rsComm_t*, eirods::first_class_object& );
-eirods::error fileStage   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileStageToCache( rsComm_t*, eirods::first_class_object&, const std::string& );
 eirods::error fileSyncToArch  ( rsComm_t*, eirods::first_class_object&, const std::string& );
 eirods::error fileRegistered(rsComm_t* _comm, eirods::first_class_object& _object );

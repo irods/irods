@@ -26,6 +26,7 @@
 #include "eirods_resource_backport.h"
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -496,7 +497,9 @@ moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
     rstrcpy (destDataObjInfo.objPath, destDataObjInp->objPath, MAX_NAME_LEN);
     rstrcpy (destDataObjInfo.dataType, srcDataObjInfo->dataType, NAME_LEN);
     destDataObjInfo.dataSize = srcDataObjInfo->dataSize;
-    destDataObjInfo.rescInfo = srcDataObjInfo->rescInfo;
+    destDataObjInfo.rescInfo = new rescInfo_t;
+    memcpy( destDataObjInfo.rescInfo, srcDataObjInfo->rescInfo, sizeof( rescInfo_t ) );
+
     rstrcpy (destDataObjInfo.rescName, srcDataObjInfo->rescInfo->rescName, NAME_LEN);
     rstrcpy (destDataObjInfo.rescHier, srcDataObjInfo->rescHier, MAX_NAME_LEN);
     status = getFilePathName (rsComm, &destDataObjInfo, destDataObjInp);
