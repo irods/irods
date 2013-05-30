@@ -96,18 +96,16 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     *dataObjInfoHead = NULL;
     *outChksumStr = NULL;
+    
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, dataObjInfoHead);
-
-    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjChksum :: getDataObjInfoIncSpecColl status [%d]", status );
-
     if (status < 0) {
         return status;
     } else if (allFlag == 0) {
         /* screen out any stale copies */
         status = sortObjInfoForOpen (rsComm, dataObjInfoHead, &dataObjInp->condInput, 0);
-          
-        if (status < 0) 
+        if (status < 0) {
             return status;
+        }
 
         tmpDataObjInfo = *dataObjInfoHead;
         if (tmpDataObjInfo->next == NULL) {

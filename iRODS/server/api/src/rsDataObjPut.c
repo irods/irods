@@ -254,47 +254,47 @@ preProcParaPut (rsComm_t *rsComm, int l1descInx,
 }
 
 int
-l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                    bytesBuf_t *dataObjInpBBuf)
-{
+l3DataPutSingleBuf( rsComm_t*     rsComm, 
+                    dataObjInp_t* dataObjInp,
+                    bytesBuf_t*   dataObjInpBBuf ) {
     int bytesWritten;
     int l1descInx;
     dataObjInfo_t *myDataObjInfo;
     char rescGroupName[NAME_LEN];
     rescInfo_t *rescInfo;
     rescGrpInfo_t *myRescGrpInfo = NULL;
-    rescGrpInfo_t *tmpRescGrpInfo;
-    rescInfo_t *tmpRescInfo;
+    rescGrpInfo_t *tmpRescGrpInfo = NULL;
+    rescInfo_t *tmpRescInfo = NULL;
     int status;
     openedDataObjInp_t dataObjCloseInp;
 
     /* don't actually physically open the file */
-    addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
-    l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-    
+    addKeyVal( &dataObjInp->condInput, NO_OPEN_FLAG_KW, "" );
+    l1descInx = rsDataObjCreate( rsComm, dataObjInp );
     if (l1descInx <= 2) {
         if (l1descInx >= 0) {
-            rodsLog (LOG_ERROR,
+            rodsLog( LOG_ERROR,
                      "l3DataPutSingleBuf: rsDataObjCreate of %s error, status = %d",
-                     dataObjInp->objPath, l1descInx);
+                     dataObjInp->objPath, 
+                     l1descInx );
             return SYS_FILE_DESC_OUT_OF_RANGE;
         } else {
             return l1descInx;
+
         }
     }
-    
-    bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp, dataObjInpBBuf );
-      
+   
+    bytesWritten = _l3DataPutSingleBuf( rsComm, l1descInx, dataObjInp, dataObjInpBBuf );
     if (bytesWritten < 0) {
         myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-        if (getStructFileType (myDataObjInfo->specColl) < 0 &&
-            strlen (myDataObjInfo->rescGroupName) > 0 &&
-            (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) == 0) {
+        if( getStructFileType (myDataObjInfo->specColl) < 0 &&
+            strlen( myDataObjInfo->rescGroupName ) > 0 &&
+            (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY ) == 0) {
             /* getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) { */
             /* File not in specColl and resc is a resc group and not 
              * overwriting existing data. Save resc info in case the put fail 
              */
-            rstrcpy (rescGroupName, myDataObjInfo->rescGroupName, NAME_LEN);
+            rstrcpy( rescGroupName, myDataObjInfo->rescGroupName, NAME_LEN );
             rescInfo = myDataObjInfo->rescInfo;
         } else {
             rescGroupName[0] = '\0';
@@ -371,7 +371,6 @@ _l3DataPutSingleBuf (rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
     myDataObjInfo = L1desc[l1descInx].dataObjInfo;
     
     bytesWritten = l3FilePutSingleBuf (rsComm, l1descInx, dataObjInpBBuf);
-
     if (bytesWritten >= 0) {
         if (L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY && 
             myDataObjInfo->specColl == NULL && 
@@ -385,8 +384,9 @@ _l3DataPutSingleBuf (rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
                 rodsLog (LOG_NOTICE,
                          "l3DataPutSingleBuf: rsRegDataObj for %s failed, status = %d",
                          myDataObjInfo->objPath, status);
-                if (status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME)
+                if (status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
                     l3Unlink (rsComm, myDataObjInfo);
+                }
                 return (status);
             } else {
                 myDataObjInfo->replNum = status;
@@ -454,7 +454,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     switch (RescTypeDef[rescTypeInx].rescCat)
     case FILE_CAT:
 #endif // JMC - legacy resource
-        memset (&filePutInp, 0, sizeof (filePutInp));
+    memset (&filePutInp, 0, sizeof (filePutInp));
     rstrcpy( filePutInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
     rstrcpy( filePutInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
     rstrcpy( filePutInp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
