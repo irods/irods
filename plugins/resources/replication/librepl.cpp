@@ -851,13 +851,6 @@ extern "C" {
                                         msg << _ctx->fco().logical_path();
                                         msg << "\"";
                                         result = PASSMSG(msg.str(), ret);
-
-                                        if(true) {
-                                            eirods::stacktrace st;
-                                            st.trace();
-                                            st.dump();
-                                        }
-
                                     }
                                 }
                             }

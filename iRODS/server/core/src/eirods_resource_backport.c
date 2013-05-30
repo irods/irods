@@ -575,13 +575,6 @@ namespace eirods {
 
         // Check for null host.
         if(host == NULL) {
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Host from hierarchy string: \"";

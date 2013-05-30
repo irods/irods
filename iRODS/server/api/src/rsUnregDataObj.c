@@ -77,13 +77,6 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
             ret = PASSMSG(msg.str(), ret);
             eirods::log(ret);
             status = ret.code();
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
         }
     }
     return (status);

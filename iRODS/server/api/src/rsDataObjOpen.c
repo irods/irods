@@ -745,13 +745,6 @@ eirods::error selectObjInfo(
             msg << resc_hier;
             msg << "\"";
             result = ERROR(EIRODS_HIERARCHY_ERROR, msg.str());
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
         }
     }
     return result;

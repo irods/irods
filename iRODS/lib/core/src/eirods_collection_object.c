@@ -99,13 +99,6 @@ namespace eirods {
                     std::stringstream msg;
                     msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
                     result = PASSMSG(msg.str(), ret);
-
-                    if(true) {
-                        eirods::stacktrace st;
-                        st.trace();
-                        st.dump();
-                    }
-
                 } 
             }
         }

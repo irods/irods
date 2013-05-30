@@ -155,13 +155,6 @@ int _rsFileOpen( rsComm_t*      _comm,
         msg << "]";
         eirods::error out_err = PASSMSG( msg.str(), ret_err );
         eirods::log( out_err );
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
     } // if
 
     return file_obj.file_descriptor();

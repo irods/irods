@@ -510,13 +510,6 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
         msg << " - No resource hierarchy specified in keywords.";
         eirods::log(ERROR(SYS_INVALID_INPUT_PARAM, msg.str()));
         result = SYS_INVALID_INPUT_PARAM;
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
     } else {
         dataObjInfo_t* found_info = NULL;
         dataObjInfo_t* prev_info = NULL;
@@ -537,13 +530,6 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
             msg << "\"";
             eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
             result = EIRODS_HIERARCHY_ERROR;
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
         } else {
             if(prev_info == NULL) {
                 // our object is at the head of the list. So delete the rest of the list, if any and we are done.
@@ -1694,6 +1680,8 @@ int
     if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
         (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
         (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 
+
+        
         status = requeDataObjInfoByResc (dataObjInfoHead, rescName, 
                                          writeFlag, topFlag);
     }

@@ -180,7 +180,11 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             // we resolved the redirect and have a host, set the hier str for subsequent
             // api calls, etc.
             addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-            addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, hier.c_str());
+            std::string top_resc;
+            eirods::hierarchy_parser parser;
+            parser.set_string(hier);
+            parser.first_resc(top_resc);
+            addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, top_resc.c_str());
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
 
         } else {
