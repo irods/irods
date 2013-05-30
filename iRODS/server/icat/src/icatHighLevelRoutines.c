@@ -117,7 +117,7 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo);
 static int removeAVUs();
 
 icatSessionStruct icss={0};
-char localZone[MAX_NAME_LEN]="";
+char localZone[MAX_NAME_LEN]={""};
 
 int creatingUserByGroupAdmin=0; // JMC - backport 4772
 
@@ -818,7 +818,6 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
     snprintf(dataStatusNum, MAX_NAME_LEN, "%d", dataObjInfo->replStatus);
     snprintf(dataSizeNum, MAX_NAME_LEN, "%lld", dataObjInfo->dataSize);
     getNowStr(myTime);
-
     cllBindVars[0]=dataIdNum;
     cllBindVars[1]=collIdNum;
     cllBindVars[2]=logicalFileName;
@@ -849,7 +848,13 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
         return(status);
     }
 
-    if((status = _updateObjCountOfResources(dataObjInfo->rescHier, rsComm->clientUser.rodsZone, 1)) != 0) {
+    status = getLocalZone();
+    if( status < 0 ) {
+        rodsLog( LOG_ERROR, "chlRegDataInfo - failed in getLocalZone with status [%d]", status );
+        return status;
+    }
+
+    if((status = _updateObjCountOfResources( dataObjInfo->rescHier, localZone, 1)) != 0) {
         return status;
     }
     
