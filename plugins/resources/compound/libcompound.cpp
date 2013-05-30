@@ -113,7 +113,7 @@ extern "C" {
         
         std::string           first_child_ctx  = itr->second.first;
         eirods::resource_ptr& first_child_resc = itr->second.second;
-        eirods::error get_err = first_child_resc->get_property<std::string>( "name", first_child_name );
+        eirods::error get_err = first_child_resc->get_property<std::string>( eirods::RESOURCE_NAME, first_child_name );
         if( !get_err.ok() ) {
             return PASS( get_err );
         }
@@ -128,7 +128,7 @@ extern "C" {
 
         std::string          second_child_ctx  = itr->second.first;
         eirods::resource_ptr second_child_resc = itr->second.second;
-        get_err = second_child_resc->get_property<std::string>( "name", second_child_name );
+        get_err = second_child_resc->get_property<std::string>( eirods::RESOURCE_NAME, second_child_name );
         if( !get_err.ok() ) {
             return PASS( get_err );
         }
@@ -255,7 +255,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource name
         std::string name;
-        ret = _ctx->prop_map().get< std::string >( "name", name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
         if( !ret.ok() ) {
             PASS( ret );
         }
@@ -1025,7 +1025,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error ret = _ctx->prop_map().get< int >( "status", resc_status );
+        eirods::error ret = _ctx->prop_map().get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !ret.ok() ) {
             return PASSMSG( "failed to get 'status' property", ret );
         }
@@ -1213,7 +1213,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error ret = _ctx->prop_map().get< int >( "status", resc_status );
+        eirods::error ret = _ctx->prop_map().get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1304,7 +1304,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "failed in get property for name";
@@ -1410,9 +1410,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
         
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

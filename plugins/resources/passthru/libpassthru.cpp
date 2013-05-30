@@ -151,25 +151,7 @@ extern "C" {
                 ret = resc->call( _ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco());
                 if(!ret.ok()) {
                     result = PASSMSG("failed calling child create.", ret);
-                } else {
-#if 0 // handled in redirect code now
-                    // Update the hierarchy string
-                    std::string child_name;
-                    ret = resc->get_property<std::string>("name", child_name);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__ << " - Failed to retrieve the child resource name.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        eirods::hierarchy_parser hparse;
-                        hparse.set_string(_ctx->fco()->resc_hier());
-                        hparse.add_child(child_name);
-                        std::string new_resc_hier;
-                        hparse.str(new_resc_hier);
-                        _ctx->fco()->resc_hier(new_resc_hier);
-                    }
-#endif // handled in redirect code now
-                }
+                } 
             }
         }
         return result;
@@ -711,7 +693,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "pass_thru_redirect_plugin - failed in get property for name";
@@ -818,9 +800,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

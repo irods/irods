@@ -98,6 +98,8 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *outChksumStr = NULL;
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, dataObjInfoHead);
 
+    rodsLog( LOG_NOTICE, "XXXX - _rsDataObjChksum :: getDataObjInfoIncSpecColl status [%d]", status );
+
     if (status < 0) {
         return status;
     } else if (allFlag == 0) {
@@ -152,7 +154,10 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         char *tmpChksumStr;
         //JMC - legacy resource :: int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
         std::string resc_class;
-        eirods::error err = eirods::get_resource_property< std::string >( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
+        eirods::error err = eirods::get_resource_property< std::string >( 
+            tmpDataObjInfo->rescInfo->rescName, 
+            eirods::RESOURCE_CLASS,
+            resc_class );
         if( !err.ok() ) {
             eirods::log( PASSMSG( "failed in get_resource_property [class]", err ) );
         }
@@ -168,7 +173,7 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
         } else 
 #endif // JMC - legacy resource 
-            if ( resc_class == "bundle" ) { // (rescClass == BUNDLE_CL) {
+            if ( resc_class == eirods::RESOURCE_CLASS_BUNDLE ) { // (rescClass == BUNDLE_CL) {
                 /* don't do BUNDLE_CL. should be done on the bundle file */
                 tmpDataObjInfo = tmpDataObjInfo->next;
                 status = 0;

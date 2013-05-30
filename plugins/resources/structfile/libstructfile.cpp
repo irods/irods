@@ -499,7 +499,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract the name of the host of the resource from the resource plugin
         rodsServerHost_t* rods_host = 0; 
-        eirods::error get_err = resc->get_property< rodsServerHost_t* >( "host", rods_host );
+        eirods::error get_err = resc->get_property< rodsServerHost_t* >( eirods::RESOURCE_HOST, rods_host );
         if( !get_err.ok() ) {
             return PASSMSG( "failed to call get_property", get_err );
         }
@@ -1739,7 +1739,7 @@ extern "C" {
             spec_coll->cacheDir ); 
 
             rodsHostAddr_t* host_addr = 0;
-            _ctx->prop_map().get< rodsHostAddr_t* >( "location", host_addr );    
+            _ctx->prop_map().get< rodsHostAddr_t* >( eirods::RESOURCE_LOCATION, host_addr );    
 
             /* remove cache */
             fileRmdirInp_t fileRmdirInp;

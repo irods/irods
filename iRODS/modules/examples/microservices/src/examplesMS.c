@@ -97,7 +97,7 @@ msiGetRescAddr( msParam_t *rescName, msParam_t *outAddress,
     } 
 
     std::string location;
-    err = resc->get_property< std::string >( "location", location );
+    err = resc->get_property< std::string >( eirods::RESOURCE_LOCATION, location );
     if( !err.ok() ) {
         std::stringstream msg;
         msg << "failed to get property [location]";

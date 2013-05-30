@@ -518,11 +518,12 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
             // JMC - legacy resource - int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
             // JMC - legacy resource - if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
             std::string type;
-            eirods::error err = eirods::get_resource_property< std::string >( dataObjInfo->rescInfo->rescName, "type", type );
+            eirods::error err = eirods::get_resource_property< std::string >( 
+                                    dataObjInfo->rescInfo->rescName, eirods::RESOURCE_TYPE, type );
             if( !err.ok() ) {
                 eirods::log( PASS( err ) );
             } else {
-                if( "unix file system" == type ) {
+                if( eirods::RESOURCE_TYPE_NATIVE == type ) { // JMC :: 
                     addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
                 }
             }
