@@ -87,10 +87,6 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
     }
     
-    // =-=-=-=-=-=-=-
-    // we resolved the hier str for subsequent api calls, etc.
-    addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
-
 #if 0 // this should be handled by rsDataObjCreate as re
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
