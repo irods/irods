@@ -6,7 +6,7 @@ import time
 import psutil
 import sys
 
-'''Originally written by Antoine deTorcy'''
+'''Originally written by Antoine de Torcy'''
 
 class RodsEnv(object):
     '''Contains Env/Auth variables.
@@ -251,6 +251,7 @@ class RodsSession(object):
                         'ireg',
                         'imcoll',
                         'irsync',
+			'ixmsg',
                         # added for test_allrules.py
                         'irule',
                         'iqdel',
