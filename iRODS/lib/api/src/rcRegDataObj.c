@@ -7,31 +7,36 @@ int
 rcRegDataObj (rcComm_t *conn, dataObjInfo_t *dataObjInfo, 
 dataObjInfo_t **outDataObjInfo)
 {
-    int status;
-    rescInfo_t *srcRescInfo;
-    dataObjInfo_t *srcNext;
+    int            status      = 0;
+    rescInfo_t*    srcRescInfo = 0;
+    dataObjInfo_t* srcNext     = 0;
 
     /* don't sent rescInfo and next */
     srcRescInfo = dataObjInfo->rescInfo;
-    srcNext = dataObjInfo->next;
+    srcNext     = dataObjInfo->next;
     dataObjInfo->rescInfo = NULL;
-    dataObjInfo->next = NULL;
-
+    dataObjInfo->next     = NULL;
+rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: making call to procApiRequest" );
     status = procApiRequest (conn, REG_DATA_OBJ_AN, dataObjInfo, NULL, 
         (void **) outDataObjInfo, NULL);
+rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: making call to procApiRequest. done." );
 
     /* restore */
     dataObjInfo->rescInfo = srcRescInfo;
-    dataObjInfo->next = srcNext;
+    dataObjInfo->next     = srcNext;
 
     /* cleanup fake pointers */
     if (status >= 0 && *outDataObjInfo != NULL) {
-	if ((*outDataObjInfo)->rescInfo != NULL) {
-	    free ((*outDataObjInfo)->rescInfo);
-	    (*outDataObjInfo)->rescInfo = NULL;
-	}
+        if ((*outDataObjInfo)->rescInfo != NULL) {
+rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->rescInfo" );
+            free ((*outDataObjInfo)->rescInfo);
+rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->rescInfo. done." );
+            (*outDataObjInfo)->rescInfo = NULL;
+        }
         if ((*outDataObjInfo)->next != NULL) {
+rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->next" );
             free ((*outDataObjInfo)->next);
+rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: calling delete on (*outDataObjInfo)->next. done." );
             (*outDataObjInfo)->next = NULL;
         }
     }
