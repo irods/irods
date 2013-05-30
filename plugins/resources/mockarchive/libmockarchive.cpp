@@ -762,7 +762,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the vault path for the resource
         std::string path;
-        ret = _ctx->prop_map().get< std::string >( "path", path ); 
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1152,7 +1152,7 @@ extern "C" {
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
 #if 0
             std::string name;
-            eirods::error err = get_property< std::string >( "name", name );
+            eirods::error err = get_property< std::string >( eirods::RESOURCE_NAME, name );
             if( !err.ok() ) {
                 return PASSMSG( "mockarchive_resource::post_disconnect_maintenance_operation failed.", err );
             }

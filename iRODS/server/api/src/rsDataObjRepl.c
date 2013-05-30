@@ -1191,7 +1191,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
   
                     int dst_create_path = 0; 
                     eirods::error err = eirods::get_resource_property< int >( destDataObjInfo->rescInfo->rescName, 
-                                                                              "create_path", dst_create_path );
+                                                                              eirods::RESOURCE_CREATE_PATH, dst_create_path );
                     if( !err.ok() ) {
                         eirods::log( PASS( err ) );
                     }
