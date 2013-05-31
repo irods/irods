@@ -35,6 +35,11 @@ int
 getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
                 dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 {
+eirods::stacktrace st;
+st.trace();
+st.dump();
+
+
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int i, status;
