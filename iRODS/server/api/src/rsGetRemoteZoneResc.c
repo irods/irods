@@ -15,6 +15,8 @@
 #include "dataObjCreate.h"
 #include "dataObjOpen.h"
 
+#include "eirods_resource_redirect.h"
+
 int
 rsGetRemoteZoneResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsHostAddr_t **rescAddr)
@@ -47,11 +49,29 @@ rodsHostAddr_t **rescAddr)
             if (status < 0 || NULL == myRescGrpInfo ) return status; // JMC cppcheck - nullptr
 	    rescInfo = myRescGrpInfo->rescInfo;
 	} else {
+ 
+        // =-=-=-=-=-=-=-
+        // determine the hier string for the dest data obj inp
+        std::string hier;
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, rsComm, 
+                                                                dataObjInp, hier );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << "failed in eirods::resolve_resource_hierarchy for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+   
+        // =-=-=-=-=-=-=-
+        // we resolved the hier str for subsequent api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
 	    int writeFlag;
 	    /* exist */
-	    writeFlag = getWriteFlag (dataObjInp->openFlags);
-	    status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
-	      &dataObjInp->condInput, writeFlag);
+	    writeFlag = getWriteFlag( dataObjInp->openFlags );
+	    status = sortObjInfoForOpen( rsComm, &dataObjInfoHead, &dataObjInp->condInput, writeFlag );
+	      
 	    if (status < 0) return status;
             status = applyPreprocRuleForOpen (rsComm, dataObjInp, 
 	     &dataObjInfoHead);

@@ -68,6 +68,7 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         return status;
     }
 
+#if 0 // this should be handled by rsDataObjCreate and rsDataObjOpen
     // =-=-=-=-=-=-=-
     // pre-determine hier strings for the source 
     if(getValByKey(&srcDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
@@ -87,7 +88,6 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
         addKeyVal( &srcDataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
     }
     
-#if 0 // this should be handled by rsDataObjCreate as re
     // =-=-=-=-=-=-=-
     // determine the hier string for the dest data obj inp
     if(getValByKey(&destDataObjInp->condInput, RESC_HIER_STR_KW) == NULL) {
