@@ -126,6 +126,8 @@ typedef struct WOS_STATISTICS_TYPE {
    char  *data;   /**< used for error reporting */
 } WOS_STATISTICS, *WOS_STATISTICS_P;
 
+extern "C" {
+
 int 
 putTheFile (const char *resource, const char *policy, const char *file, WOS_HEADERS_P headerP);
 int 
@@ -139,4 +141,5 @@ int
 getTheManagementData(const char *resource, const char *user, const char *password, 
                      WOS_STATISTICS_P statsP);
 
+}; // extern "C" 
 #endif
