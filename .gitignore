@@ -9,8 +9,9 @@ iRODS/.server_ldflags
 iRODS/config/config.mk
 iRODS/config/irods.config
 iRODS/config/platform.mk
+iRODS/lib/core/include/eirods_ms_home.h
+iRODS/lib/core/include/eirods_resources_home.h
 iRODS/server/config/server.config
-iRODS/server/re/include/eirods_ms_home.h
 iRODS/server/re/include/reAction.h
 packaging/eirods.list
 packaging/eirods-dev.list

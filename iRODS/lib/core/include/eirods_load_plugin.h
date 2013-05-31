@@ -124,7 +124,7 @@ namespace eirods {
         char* err = 0;
         if( !version_ptr || ( ( err = dlerror() ) != 0 ) ) {
             std::stringstream msg;
-            msg << "load_plugin :: failed to load sybol from shared object handle - "
+            msg << "load_plugin :: failed to load symbol from shared object handle - "
                 << "EIRODS_PLUGIN_VERSION" << " :: dlerror is " << err;
             dlclose( handle );
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
@@ -148,7 +148,7 @@ namespace eirods {
         factory_type factory = reinterpret_cast< factory_type >( dlsym( handle, "plugin_factory" ) );
         if( ( err = dlerror() ) != 0 ) {
             std::stringstream msg;
-            msg << "failed to load sybol from shared object handle - plugin_factory"
+            msg << "failed to load symbol from shared object handle - plugin_factory"
                 << " :: dlerror is " << err;
             dlclose( handle );
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
