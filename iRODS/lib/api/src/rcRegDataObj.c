@@ -30,12 +30,12 @@ rodsLog( LOG_NOTICE, "XXXX - rcRegDataObj :: making call to procApiRequest. done
             free ((*outDataObjInfo)->rescInfo);
             (*outDataObjInfo)->rescInfo = NULL;
         }
-#if 0 // JMC :: causes segv when a redirect to the icat is necessary
+
         if ((*outDataObjInfo)->next != NULL) {
             free ((*outDataObjInfo)->next);
             (*outDataObjInfo)->next = NULL;
         }
-#endif
+
     }
     return (status);
 }
