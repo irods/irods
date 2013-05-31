@@ -65,7 +65,8 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
     error resource_manager::validate_vault_path( 
-        std::string _physical_path ) {
+        std::string _physical_path, 
+	std::string & _out_path ) {
         // =-=-=-=-=-=-=-
         // simple flag to state a resource matching the prop and value is found
         bool found = false;     
@@ -100,6 +101,7 @@ namespace eirods {
                 // one may be a subset of the other so compare both ways
                 if( !value.empty() && (_physical_path.find( value ) != std::string::npos ) {
                     found = true;
+			_out_path = value;
                 }
             } else {
                 std::stringstream msg;
