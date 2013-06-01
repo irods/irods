@@ -2052,10 +2052,6 @@ int
 getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                    rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
 {
-    eirods::stacktrace st;
-    st.trace();
-    st.dump();
-
     int status;
     rodsServerHost_t *icatServerHost = NULL;
     rodsHostAddr_t *rescAddr = NULL;
