@@ -800,7 +800,11 @@ doCommand(char *cmdToken[], rodsArguments_t* _rodsArgs = 0 ) {
         return(0);
     }
     if (strcmp(cmdToken[0],"lt") == 0) {
-        showToken(cmdToken[1], cmdToken[2]);
+        if(strcmp(cmdToken[1], "resc_type") == 0) {
+            generalAdmin(0, "lt", "resc_type", "", "", "", "", "", "", "", "");
+        } else {
+            showToken(cmdToken[1], cmdToken[2]);
+        }
         return(0);
     }
     if (strcmp(cmdToken[0],"lr") == 0) {
