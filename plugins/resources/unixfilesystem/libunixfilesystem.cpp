@@ -1450,23 +1450,48 @@ extern "C" {
           
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
-            bool repl_us = ( _file_obj.repl_requested() == itr->repl_num() ); 
-            bool resc_us = ( _resc_name == last_resc );
+            bool repl_us  = ( _file_obj.repl_requested() == itr->repl_num() ); 
+            bool resc_us  = ( _resc_name == last_resc );
+            bool is_dirty = ( itr->is_dirty() != 1 );
 
             // =-=-=-=-=-=-=-
             // success - correct resource and dont need a specific
             //           replication, or the repl nums match
             if( resc_us ) {
-                if( !need_repl || ( need_repl && repl_us ) ) {
-                    found = true;
-                    if( curr_host ) {
+                // =-=-=-=-=-=-=-
+                // if a specific replica is requested then we
+                // ignore all other criteria
+                if( need_repl ) {
+                    if( repl_us ) {
                         _out_vote = 1.0;
                     } else {
-                        _out_vote = 0.5;
+                        // =-=-=-=-=-=-=-
+                        // repl requested and we are not it, vote 
+                        // very low
+                        _out_vote = 0.25;
                     }
-                    break; 
+                } else {
+                    // =-=-=-=-=-=-=-
+                    // if no repl is requested consider dirty flag
+                    if( is_dirty ) {
+                        // =-=-=-=-=-=-=-
+                        // repl is dirty, vote very low
+                        _out_vote = 0.25;
+                    } else {
+                        // =-=-=-=-=-=-=-
+                        // if our repl is not dirty then a local copy
+                        // wins, otherwise vote middle of the road
+                        if( curr_host ) {
+                            _out_vote = 1.0;
+                        } else {
+                            _out_vote = 0.5;
+                        }
+                    }
                 }
-
+           
+                found = true;
+                break;
+            
             } // if resc_us
 
         } // for itr
