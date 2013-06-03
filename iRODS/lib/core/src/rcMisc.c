@@ -2331,7 +2331,10 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
             for (i = 0;i < len; i++) {
                 errMsg = rError->errMsg[i];
-                printf ("Level %d: %s\n", i, errMsg->msg);
+                if(errMsg->status != STDOUT_STATUS) {
+                    printf ("Level %d: ", i);
+                }
+                printf("%s\n", errMsg->msg);
             }
             return (0);
         }

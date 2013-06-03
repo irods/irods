@@ -224,6 +224,34 @@ _addResource(
 }
 
 int
+_listRescTypes(rsComm_t* _rsComm)
+{
+    int result = 0;
+    eirods::plugin_name_generator name_gen;
+    eirods::plugin_name_generator::plugin_list_t plugin_list;
+    eirods::error ret = name_gen.list_plugins(eirods::EIRODS_RESOURCES_HOME, plugin_list);
+    if(ret.ok()) {
+        std::stringstream msg;
+        for(eirods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
+            result == 0 && it != plugin_list.end(); ++it)
+        {
+            msg << *it << std::endl;
+        }
+        if(result == 0) {
+            addRErrorMsg( &_rsComm->rError, STDOUT_STATUS, msg.str().c_str() );
+        }
+    } else {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to generate the list of resource plugins.";
+        eirods::error res = PASSMSG(msg.str(), ret);
+        eirods::log(res);
+        result = res.code();
+    }
+    return result;
+}
+
+int
 _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 {
     int status;
@@ -765,6 +793,15 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 
         return(status);
     }
+
+    if(strcmp(generalAdminInp->arg0, "lt") == 0) {
+        status = CAT_INVALID_ARGUMENT;
+        if(strcmp(generalAdminInp->arg1, "resc_type") == 0) {
+            status = _listRescTypes(rsComm);
+        }
+        return status;
+    }
+    
     return(CAT_INVALID_ARGUMENT);
 } 
 #endif
