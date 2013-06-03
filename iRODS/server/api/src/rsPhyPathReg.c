@@ -138,7 +138,17 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         rodsLog( LOG_ERROR, "rsPhyPathReg :: registration may only be done for a local storage node, resource hierarchy [%s]", hier.c_str() );
         return SYS_INVALID_INPUT_PARAM;
     }
-    
+   
+    std::string path;
+    ret = eirods::get_resource_property< std::string >( 
+              hier, 
+              eirods::RESOURCE_PATH, 
+              path );
+    if( !ret.ok() || eirods::EMPTY_RESC_PATH == path ) {
+        rodsLog( LOG_ERROR, "rsPhyPathReg :: registration may only be done for a local storage node, resource path is empty" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
     // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
     if( coll_type && (strcmp( coll_type, HAAW_STRUCT_FILE_STR) == 0 ||
