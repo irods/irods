@@ -4,7 +4,7 @@
 // My Includes
 #include "eirods_resource_plugin.h"
 #include "eirods_load_plugin.h"
-#include "eirods_ms_home.h"
+#include "eirods_resources_home.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -30,7 +30,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - dtor
     resource::~resource(  ) {
-                
+             
     } // dtor
     
     // =-=-=-=-=-=-=-
@@ -262,7 +262,7 @@ namespace eirods {
                                 const std::string _context ) {
                 
         resource* resc = 0;
-        error ret = load_plugin< resource >( resc, _plugin_name, EIRODS_MS_HOME, _inst_name, _context );
+        error ret = load_plugin< resource >( resc, _plugin_name, EIRODS_RESOURCES_HOME, _inst_name, _context );
         if( ret.ok() && resc ) {
             _plugin.reset( resc );
             return SUCCESS();       

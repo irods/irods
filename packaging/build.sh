@@ -393,6 +393,23 @@ else
     GREPCMD="grep"
 fi
 
+LIBCURLDEV=`find /usr -name curl.h 2> /dev/null`
+if [ "$LIBCURLDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libcurl4-gnutls-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT curl-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT libcurl-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT curl_devel"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://curl.haxx.se/download.html"
+    fi
+else
+    echo "Detected libcurl library [$LIBCURLDEV]"
+fi
+
 BZIP2DEV=`find /usr -name bzlib.h 2> /dev/null`
 if [ "$BZIP2DEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -932,10 +949,16 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # =-=-=-=-=-=-=-
     # modify the eirods_ms_home.h file with the proper path to the binary directory
-    irods_msvc_home=`./scripts/find_irods_home.sh`
-    irods_msvc_home="$irods_msvc_home/server/bin/"
-    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
-    mv /tmp/eirods_ms_home.h ./server/re/include/
+    detected_irods_home=`./scripts/find_irods_home.sh`
+    detected_irods_home=`dirname $detected_irods_home`
+    irods_msvc_home="$detected_irods_home/plugins/microservices/"
+    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
+    mv /tmp/eirods_ms_home.h ./lib/core/include/
+    # =-=-=-=-=-=-=-
+    # modify the eirods_resources_home.h file with the proper path to the binary directory
+    irods_resources_home="$detected_irods_home/plugins/resources/"
+    sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.h.src > /tmp/eirods_resources_home.h
+    mv /tmp/eirods_resources_home.h ./lib/core/include/
 
 
     ###########################################

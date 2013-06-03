@@ -6,6 +6,7 @@ BASEDIRS = nonblocking \
            univmss \
            unixfilesystem \
            compound \
+           wos \
            random \
            mockarchive
 
@@ -26,7 +27,7 @@ endif
 export OBJDIR = .objs
 export DEPDIR = .deps
 export IRODSTOPDIR = ../../iRODS
-export SOTOPDIR = ${IRODSTOPDIR}/server/bin
+export SOTOPDIR = .
 
 SUBS = ${BASEDIRS}
 

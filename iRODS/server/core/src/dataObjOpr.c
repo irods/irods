@@ -32,9 +32,12 @@
 #include "eirods_stacktrace.h"
 
 int
-getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-                dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
-{
+getDataObjInfo( 
+    rsComm_t*       rsComm, 
+    dataObjInp_t*   dataObjInp, 
+    dataObjInfo_t** dataObjInfoHead,
+    char*           accessPerm, 
+    int             ignoreCondInput ) {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int i, status;

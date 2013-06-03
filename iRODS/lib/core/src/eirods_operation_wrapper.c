@@ -4,8 +4,6 @@
 // =-=-=-=-=-=-=-
 // My Includes
 #include "eirods_operation_wrapper.h"
-#include "eirods_load_plugin.h"
-#include "eirods_ms_home.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes

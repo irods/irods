@@ -21,7 +21,7 @@
 #include "eirods_children_parser.h"
 #include "eirods_string_tokenize.h"
 #include "eirods_plugin_name_generator.h"
-#include "eirods_ms_home.h"
+#include "eirods_resources_home.h"
 
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
@@ -182,7 +182,7 @@ _addResource(
 
     // Check that there is a plugin matching the resource type
     eirods::plugin_name_generator name_gen;
-    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_MS_HOME)) {
+    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_RESOURCES_HOME)) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No plugin exists to provide resource type \"";

@@ -8,7 +8,7 @@ import time
 import shutil
 import random
 
-class Test_ChunkyDevTest(object):
+class ChunkyDevTest(object):
     def setUp(self):
         s.twousers_up()
     def tearDown(self):
