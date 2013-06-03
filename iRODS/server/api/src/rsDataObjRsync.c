@@ -1,3 +1,5 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
 #include "reGlobalsExtern.h"
 #include "dataObjChksum.h"
 #include "dataObjRsync.h"
@@ -8,9 +10,11 @@
 #include "modDataObjMeta.h"
 #include "getRemoteZoneResc.h"
 
+#include "eirods_resource_redirect.h"
+
 int
 rsDataObjRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-msParamArray_t **outParamArray)
+                msParamArray_t **outParamArray)
 {
     int status;
     char *rsyncMode;
@@ -21,50 +25,50 @@ msParamArray_t **outParamArray)
 
     *outParamArray = NULL;
     if (dataObjInp == NULL) { 
-       rodsLog(LOG_ERROR, "rsDataObjRsync error. NULL input");
-       return (SYS_INTERNAL_NULL_INPUT_ERR);
+        rodsLog(LOG_ERROR, "rsDataObjRsync error. NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     rsyncMode = getValByKey (&dataObjInp->condInput, RSYNC_MODE_KW);
     if (rsyncMode == NULL) {
-	rodsLog (LOG_ERROR,
-	  "rsDataObjRsync: RSYNC_MODE_KW input is missing");
-	return (USER_RSYNC_NO_MODE_INPUT_ERR);
+        rodsLog (LOG_ERROR,
+                 "rsDataObjRsync: RSYNC_MODE_KW input is missing");
+        return (USER_RSYNC_NO_MODE_INPUT_ERR);
     }
 
     if (strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
-	remoteZoneOpr = REMOTE_CREATE;
+        remoteZoneOpr = REMOTE_CREATE;
     } else {
-	remoteZoneOpr = REMOTE_OPEN;
+        remoteZoneOpr = REMOTE_OPEN;
     }
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
-      &dataObjInp->condInput);
+                       &dataObjInp->condInput);
     if (strcmp (rsyncMode, IRODS_TO_IRODS) == 0) {
-	if (isLocalZone (dataObjInp->objPath) == 0) {
-	    dataObjInp_t myDataObjInp;
-	    char *destObjPath;
-	    /* source in a remote zone. try dest */
+        if (isLocalZone (dataObjInp->objPath) == 0) {
+            dataObjInp_t myDataObjInp;
+            char *destObjPath;
+            /* source in a remote zone. try dest */
             destObjPath = getValByKey (&dataObjInp->condInput, 
-	      RSYNC_DEST_PATH_KW);
+                                       RSYNC_DEST_PATH_KW);
             if (destObjPath == NULL) {
                 rodsLog (LOG_ERROR,
-                  "rsDataObjRsync: RSYNC_DEST_PATH_KW input is missing for %s",
-                  dataObjInp->objPath);
+                         "rsDataObjRsync: RSYNC_DEST_PATH_KW input is missing for %s",
+                         dataObjInp->objPath);
                 return (USER_RSYNC_NO_MODE_INPUT_ERR);
-	    }
-	    myDataObjInp = *dataObjInp;
-	    remoteZoneOpr = REMOTE_CREATE;
-	    rstrcpy (myDataObjInp.objPath, destObjPath, MAX_NAME_LEN);
-	    remoteFlag = getAndConnRemoteZone (rsComm, &myDataObjInp, 
-	      &rodsServerHost, remoteZoneOpr);
-	} else {
-	    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, 
-	      &rodsServerHost, remoteZoneOpr);
-	}
+            }
+            myDataObjInp = *dataObjInp;
+            remoteZoneOpr = REMOTE_CREATE;
+            rstrcpy (myDataObjInp.objPath, destObjPath, MAX_NAME_LEN);
+            remoteFlag = getAndConnRemoteZone (rsComm, &myDataObjInp, 
+                                               &rodsServerHost, remoteZoneOpr);
+        } else {
+            remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, 
+                                               &rodsServerHost, remoteZoneOpr);
+        }
     } else {
         remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
-          remoteZoneOpr);
+                                           remoteZoneOpr);
     }
 
     if (remoteFlag < 0) {
@@ -72,37 +76,37 @@ msParamArray_t **outParamArray)
     } else if (remoteFlag == REMOTE_HOST) {
 
         status = _rcDataObjRsync (rodsServerHost->conn, dataObjInp,
-          outParamArray);
+                                  outParamArray);
 #if 0
-	int l1descInx;
-	if (status < 0) {
+        int l1descInx;
+        if (status < 0) {
             return (status);
         }
-	
-	if (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
-	    /* server request to client */
+        
+        if (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
+            /* server request to client */
             l1descInx = allocAndSetL1descForZoneOpr (0, dataObjInp,
-	      rodsServerHost, NULL);
+                                                     rodsServerHost, NULL);
             if (l1descInx < 0) return l1descInx;
-	    if (*outParamArray == NULL) {
-	        *outParamArray = malloc (sizeof (msParamArray_t));
-	        bzero (*outParamArray, sizeof (msParamArray_t));
-	    } 
-	    addIntParamToArray (*outParamArray, CL_ZONE_OPR_INX, l1descInx);
-	}
+            if (*outParamArray == NULL) {
+                *outParamArray = malloc (sizeof (msParamArray_t));
+                bzero (*outParamArray, sizeof (msParamArray_t));
+            } 
+            addIntParamToArray (*outParamArray, CL_ZONE_OPR_INX, l1descInx);
+        }
 #endif
         return status;
     }
 
     if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0) {
-	status = rsRsyncFileToData (rsComm, dataObjInp);
+        status = rsRsyncFileToData (rsComm, dataObjInp);
     } else if (strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) { 
-	status = rsRsyncDataToFile (rsComm, dataObjInp);
+        status = rsRsyncDataToFile (rsComm, dataObjInp);
     } else if (strcmp (rsyncMode, IRODS_TO_IRODS) == 0) {
-	status = rsRsyncDataToData (rsComm, dataObjInp);
+        status = rsRsyncDataToData (rsComm, dataObjInp);
     } else {
         rodsLog (LOG_ERROR, 
-          "rsDataObjRsync: rsyncMode %s  not supported");
+                 "rsDataObjRsync: rsyncMode %s  not supported");
         return (USER_RSYNC_NO_MODE_INPUT_ERR);
     }
     
@@ -114,38 +118,38 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int status;
     char *fileChksumStr = NULL;
-     char *dataObjChksumStr = NULL;
+    char *dataObjChksumStr = NULL;
     dataObjInfo_t *dataObjInfoHead = NULL;
 
     fileChksumStr = getValByKey (&dataObjInp->condInput, RSYNC_CHKSUM_KW);
 
     if (fileChksumStr == NULL) {
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing for %s",
-	  dataObjInp->objPath);
+                 "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing for %s",
+                 dataObjInp->objPath);
         return (CHKSUM_EMPTY_IN_STRUCT_ERR);
     }
 
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
-      &dataObjInfoHead);
+                               &dataObjInfoHead);
 
     if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && 
-      status != CAT_NO_ROWS_FOUND) {
-	/* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but 
-	 * cannot be registered. But the chksum value is OK.
-	 */
+        status != CAT_NO_ROWS_FOUND) {
+        /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but 
+         * cannot be registered. But the chksum value is OK.
+         */
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToFile: _rsDataObjChksum of %s error. status = %d",
-	  dataObjInp->objPath, status);
+                 "rsRsyncDataToFile: _rsDataObjChksum of %s error. status = %d",
+                 dataObjInp->objPath, status);
         return (status);
     }
 
     freeAllDataObjInfo (dataObjInfoHead);
 
     if (dataObjChksumStr != NULL &&
-      strcmp (dataObjChksumStr, fileChksumStr) == 0) {
-	free (dataObjChksumStr);
-	return (0);
+        strcmp (dataObjChksumStr, fileChksumStr) == 0) {
+        free (dataObjChksumStr);
+        return (0);
     }
 
     return SYS_SVR_TO_CLI_GET_ACTION;
@@ -160,17 +164,17 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     replDataObjInp (dataObjInp, myDataObjInp);
 
     status = addMsParam (myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
-      (void *) myDataObjInp, NULL);
+                         (void *) myDataObjInp, NULL);
 
     if (status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, status,
-          "rsRsyncDataToFile: addMsParam error. status = %d", status);
+                            "rsRsyncDataToFile: addMsParam error. status = %d", status);
         return (status);
     }
 
     /* tell the client to do the put */
     status = sendAndRecvBranchMsg (rsComm, rsComm->apiInx,
-     SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
+                                   SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
 
     return (status);
 #endif
@@ -181,36 +185,58 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int status;
     char *fileChksumStr = NULL;
-     char *dataObjChksumStr = NULL;
+    char *dataObjChksumStr = NULL;
     dataObjInfo_t *dataObjInfoHead = NULL;
 
     fileChksumStr = getValByKey (&dataObjInp->condInput, RSYNC_CHKSUM_KW);
 
     if (fileChksumStr == NULL) {
         rodsLog (LOG_ERROR,
-          "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing");
+                 "rsRsyncFileToData: RSYNC_CHKSUM_KW input is missing");
         return (CHKSUM_EMPTY_IN_STRUCT_ERR);
     }
 
+    // =-=-=-=-=-=-=-
+    // determine the resource hierarchy if one is not provided
+    if( getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW ) == NULL ) {
+        std::string       hier;
+        eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
+                                                                rsComm, dataObjInp, hier );
+        if( !ret.ok() ) { 
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " :: failed in eirods::resolve_resource_hierarchy for [";
+            msg << dataObjInp->objPath << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+            return ret.code();
+        }
+           
+        // =-=-=-=-=-=-=-
+        // we resolved the redirect and have a host, set the hier str for subsequent
+        // api calls, etc.
+        addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
+    } // if keyword
+
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
-      &dataObjInfoHead);
+                               &dataObjInfoHead);
 
     if (status < 0 && status != CAT_NO_ACCESS_PERMISSION && 
-      status != CAT_NO_ROWS_FOUND) {
+        status != CAT_NO_ROWS_FOUND) {
         /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
          * cannot be registered. But the chksum value is OK.
          */
         rodsLog (LOG_ERROR,
-          "rsRsyncFileToData: _rsDataObjChksum of %s error. status = %d",
-          dataObjInp->objPath, status);
+                 "rsRsyncFileToData: _rsDataObjChksum of %s error. status = %d",
+                 dataObjInp->objPath, status);
     }
 
     freeAllDataObjInfo (dataObjInfoHead);
 
     if (dataObjChksumStr != NULL &&
-      strcmp (dataObjChksumStr, fileChksumStr) == 0) {
-	free (dataObjChksumStr);
-	return (0);
+        strcmp (dataObjChksumStr, fileChksumStr) == 0) {
+        free (dataObjChksumStr);
+        return (0);
     }
     return SYS_SVR_TO_CLI_PUT_ACTION;
 #if 0
@@ -225,17 +251,17 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     addKeyVal (&myDataObjInp->condInput, REG_CHKSUM_KW, fileChksumStr);
 
     status = addMsParam (myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T,
-      (void *) myDataObjInp, NULL);
+                         (void *) myDataObjInp, NULL);
 
     if (status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, status,
-          "rsRsyncDataToFile: addMsParam error. status = %d", status);
+                            "rsRsyncDataToFile: addMsParam error. status = %d", status);
         return (status);
     }
 
     /* tell the client to do the put */
     status = sendAndRecvBranchMsg (rsComm, rsComm->apiInx,
-     SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
+                                   SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
 
     return (status);
 #endif
@@ -246,7 +272,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int status;
     char *srcChksumStr = NULL;
-     char *destChksumStr = NULL;
+    char *destChksumStr = NULL;
 #if 0
     dataObjInfo_t *srcDataObjInfoHead = NULL;
     dataObjInfo_t *destDataObjInfoHead = NULL;
@@ -261,61 +287,61 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     destObjPath = getValByKey (&dataObjInp->condInput, RSYNC_DEST_PATH_KW);
     if (destObjPath == NULL) {
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToData: RSYNC_DEST_PATH_KW input is missing for %s",
-	  dataObjInp->objPath);
+                 "rsRsyncDataToData: RSYNC_DEST_PATH_KW input is missing for %s",
+                 dataObjInp->objPath);
         return (USER_RSYNC_NO_MODE_INPUT_ERR);
     }
 
     memset (&dataObjCopyInp, 0, sizeof (dataObjCopyInp));
     rstrcpy (dataObjCopyInp.srcDataObjInp.objPath, dataObjInp->objPath,
-      MAX_NAME_LEN);
+             MAX_NAME_LEN);
     dataObjCopyInp.srcDataObjInp.dataSize = dataObjInp->dataSize;
     replDataObjInp (dataObjInp, &dataObjCopyInp.destDataObjInp);
     rstrcpy (dataObjCopyInp.destDataObjInp.objPath, destObjPath,
-      MAX_NAME_LEN);
+             MAX_NAME_LEN);
 
     /* use rsDataObjChksum because the path could in in remote zone */
     status = rsDataObjChksum (rsComm, &dataObjCopyInp.srcDataObjInp, 
-      &srcChksumStr);
+                              &srcChksumStr);
 
     if (status < 0 && 
-      (status != CAT_NO_ACCESS_PERMISSION || srcChksumStr == NULL)) {
+        (status != CAT_NO_ACCESS_PERMISSION || srcChksumStr == NULL)) {
         /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
          * cannot be registered. But the chksum value is OK.
          */
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
-	  dataObjCopyInp.srcDataObjInp.objPath, status);
+                 "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
+                 dataObjCopyInp.srcDataObjInp.objPath, status);
         clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
         return (status);
     }
 
     /* use rsDataObjChksum because the path could in in remote zone */
     status = rsDataObjChksum (rsComm, &dataObjCopyInp.destDataObjInp, 
-      &destChksumStr);
+                              &destChksumStr);
 
     if (status < 0 && status != CAT_NO_ACCESS_PERMISSION &&
-     status != CAT_NO_ROWS_FOUND) {
+        status != CAT_NO_ROWS_FOUND) {
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
-          dataObjCopyInp.destDataObjInp.objPath, status);
+                 "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
+                 dataObjCopyInp.destDataObjInp.objPath, status);
         clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
         return (status);
     }
 
-   if (destChksumStr != NULL && strcmp (srcChksumStr, destChksumStr) == 0) {
-	free (srcChksumStr);
-	free (destChksumStr);
+    if (destChksumStr != NULL && strcmp (srcChksumStr, destChksumStr) == 0) {
+        free (srcChksumStr);
+        free (destChksumStr);
         clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
         clearKeyVal (&dataObjCopyInp.srcDataObjInp.condInput);
-	return (0);
+        return (0);
     }
 
     addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, REG_CHKSUM_KW, 
-      srcChksumStr);
+               srcChksumStr);
     status = rsDataObjCopy (rsComm, &dataObjCopyInp, &transStat);
     if (transStat != NULL) {
-	free (transStat);
+        free (transStat);
     }
     free (srcChksumStr);
     if (destChksumStr != NULL)

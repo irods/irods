@@ -2,7 +2,6 @@
 *.pyc
 *.so
 .depends
-plugins/resources/Makefile
 iRODS/.client_cflags
 iRODS/.client_ldflags
 iRODS/.server_cflags
@@ -10,12 +9,19 @@ iRODS/.server_ldflags
 iRODS/config/config.mk
 iRODS/config/irods.config
 iRODS/config/platform.mk
+iRODS/lib/core/include/eirods_ms_home.h
+iRODS/lib/core/include/eirods_resources_home.h
 iRODS/server/config/server.config
-iRODS/server/re/include/eirods_ms_home.h
 iRODS/server/re/include/reAction.h
 packaging/eirods.list
+packaging/eirods-dev.list
+packaging/eirods-icommands.list
+plugins/resources/Makefile
+plugins/resources/*/.deps
+plugins/resources/*/.objs
 plugins/resources/hpss/Makefile
 plugins/resources/compound/Makefile
+plugins/resources/mockarchive/Makefile
 plugins/resources/nonblocking/Makefile
 plugins/resources/passthru/Makefile
 plugins/resources/random/Makefile
@@ -24,3 +30,5 @@ plugins/resources/roundrobin/Makefile
 plugins/resources/structfile/Makefile
 plugins/resources/univmss/Makefile
 plugins/resources/unixfilesystem/Makefile
+plugins/resources/wos/Makefile
+plugins/resources/woscoordinator/Makefile

@@ -97,7 +97,7 @@ void
 usage ()
 {
     char *msgs[]={
-        "Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource] [-G rescGroup]",
+        "Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource]",
         "               physicalFilePath, irodsPath",
         " ",
         "Register a file or a directory of files and subdirectory into iRODS.",
@@ -114,7 +114,7 @@ usage ()
         "grafts all files and subdirectories beneath the directory /tmp/src1 to",
         "the collection /tempZone/home/myUser/src1", 
         " ",
-        "An admin user will be able to register any Unix directory. But for a regular",
+        "An admin user will be able to register any UNIX directory. But for a regular",
         "user, he/she needs to have a UNIX account on the server with the same name as",
         "his/her iRODS user account and only UNIX directories created with this",
         "account can be registered by the user. Access control to the registered data",
@@ -125,10 +125,12 @@ usage ()
         "The acNoChkFilePathPerm rule in core.re can be used to bypass the path",
         "checking.",
         " ",
+        "With the advent of composable resources, it is necessary to point out the",
+        "target resource for a registered file or directory must be a single local",
+        "storage resource.  The target resource for the -R flag cannot be a",
+        "coordinating resource as they are pure virtual and exist only in the iCAT.",
         " ",
         "Options are:",
-        " -G  rescGroup - specifies the resource group of the resource. This must be",
-        "     input together with the -R option",
         " -R  resource - specifies the resource to store to. This can also be specified",
         "     in your environment or via a rule set up by the administrator.",
         " -C  the specified path is a directory. The default assumes the path is a file.",

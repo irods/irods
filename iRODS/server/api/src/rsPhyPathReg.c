@@ -137,9 +137,9 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     // =-=-=-=-=-=-=-
     // 
     // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
-    std::string resc_name;
     eirods::hierarchy_parser parser;
     parser.set_string( hier );
+    std::string resc_name;
     parser.first_resc( resc_name );
 
     rescGrpInfo = new rescGrpInfo_t;
@@ -156,7 +156,10 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     parser.last_resc( last_resc );
    
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( last_resc, "location", location );
+    eirods::error ret = eirods::get_resource_property< std::string >( 
+                          last_resc, 
+                          eirods::RESOURCE_LOCATION, 
+                          location );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "failed in get_resource_property", ret ) );
         delete rescGrpInfo->rescInfo;
@@ -247,7 +250,8 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
     memset (&dataObjInfo, 0, sizeof (dataObjInfo));
     rstrcpy (dataObjInfo.objPath, phyPathRegInp->objPath, MAX_NAME_LEN);
     rstrcpy (dataObjInfo.filePath, filePath, MAX_NAME_LEN);
-    dataObjInfo.rescInfo = rescGrpInfo->rescInfo;
+    dataObjInfo.rescInfo = new rescInfo_t;
+    memcpy( dataObjInfo.rescInfo, rescGrpInfo->rescInfo, sizeof( rescInfo_t ) );
     rstrcpy (dataObjInfo.rescName, rescGrpInfo->rescInfo->rescName, NAME_LEN);
     
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 
@@ -340,7 +344,8 @@ filePathRegRepl (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy (destDataObjInfo.filePath, filePath, MAX_NAME_LEN);
-    destDataObjInfo.rescInfo = rescInfo;
+    destDataObjInfo.rescInfo = new rescInfo_t;
+    memcpy( destDataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     rstrcpy (destDataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
     if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,
                                       RESC_GROUP_NAME_KW)) != NULL) {
@@ -378,7 +383,8 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
         rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
     }      
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
-    dataObjInfo.rescInfo = rescInfo;
+    dataObjInfo.rescInfo = new rescInfo_t; 
+    memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
 
     char* resc_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW ); 

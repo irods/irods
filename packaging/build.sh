@@ -209,11 +209,15 @@ fi
 
 
 echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
+echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
 BUILDDIR=$GITDIR  # we'll manipulate this later, depending on the coverage flag
 cd $BUILDDIR/iRODS
-echo "Detected Packaging Directory [$DETECTEDDIR]"
 echo "Build Directory set to [$BUILDDIR]"
+# read E-iRODS Version from file
+source ../packaging/VERSION
+echo "Detected E-iRODS Version to Build [$EIRODSVERSION]"
+echo "Detected EPM E-iRODS Version String [$EPMEIRODSVERSION]"
 # detect operating system
 DETECTEDOS=`../packaging/find_os.sh`
 echo "Detected OS [$DETECTEDOS]"
@@ -387,6 +391,23 @@ if [ "$DETECTEDOS" == "Solaris" ] ; then
     GREPCMD="ggrep"
 else
     GREPCMD="grep"
+fi
+
+LIBCURLDEV=`find /usr -name curl.h 2> /dev/null`
+if [ "$LIBCURLDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libcurl4-gnutls-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT curl-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT libcurl-devel"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT curl_devel"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://curl.haxx.se/download.html"
+    fi
+else
+    echo "Detected libcurl library [$LIBCURLDEV]"
 fi
 
 BZIP2DEV=`find /usr -name bzlib.h 2> /dev/null`
@@ -928,10 +949,16 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # =-=-=-=-=-=-=-
     # modify the eirods_ms_home.h file with the proper path to the binary directory
-    irods_msvc_home=`./scripts/find_irods_home.sh`
-    irods_msvc_home="$irods_msvc_home/server/bin/"
-    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./server/re/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
-    mv /tmp/eirods_ms_home.h ./server/re/include/
+    detected_irods_home=`./scripts/find_irods_home.sh`
+    detected_irods_home=`dirname $detected_irods_home`
+    irods_msvc_home="$detected_irods_home/plugins/microservices/"
+    sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
+    mv /tmp/eirods_ms_home.h ./lib/core/include/
+    # =-=-=-=-=-=-=-
+    # modify the eirods_resources_home.h file with the proper path to the binary directory
+    irods_resources_home="$detected_irods_home/plugins/resources/"
+    sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.h.src > /tmp/eirods_resources_home.h
+    mv /tmp/eirods_resources_home.h ./lib/core/include/
 
 
     ###########################################
@@ -979,10 +1006,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     NEW_DB_NAME=`awk -F\' '/^\\$DB_NAME / {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_NAME,$NEW_DB_NAME," ./packaging/eirods.list.template > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
-#    #   database admin role
-#    NEW_DB_ADMIN_ROLE=`awk -F\' '/^\\$DB_ADMIN_NAME/ {print $2}' iRODS/config/irods.config`
-#    sed -e "s,TEMPLATE_DB_ADMIN_ROLE,$NEW_DB_ADMIN_ROLE," ./packaging/eirods.list > /tmp/eirodslist.tmp
-#    mv /tmp/eirodslist.tmp ./packaging/eirods.list
     #   database type
     NEW_DB_TYPE=`awk -F\' '/^\\$DATABASE_TYPE/ {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_TYPE,$NEW_DB_TYPE," ./packaging/eirods.list > /tmp/eirodslist.tmp
@@ -998,6 +1021,26 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     #   database password
     sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
+
+
+    # =-=-=-=-=-=-=-
+    # populate EPMEIRODSVERSION and EIRODSVERSION in all EPM list files
+
+    # eirods main package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods.list > /tmp/eirodslist.tmp
+    mv /tmp/eirodslist.tmp ./packaging/eirods.list
+    # eirods-dev package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-dev.list.template > /tmp/eirodsdevlist.tmp
+    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-dev.list > /tmp/eirodsdevlist.tmp
+    mv /tmp/eirodsdevlist.tmp ./packaging/eirods-dev.list
+    # eirods-icommands package
+    sed -e "s,TEMPLATE_EPMEIRODSVERSION,$EPMEIRODSVERSION," ./packaging/eirods-icommands.list.template > /tmp/eirodsicommandslist.tmp
+    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
+    sed -e "s,TEMPLATE_EIRODSVERSION,$EIRODSVERSION," ./packaging/eirods-icommands.list > /tmp/eirodsicommandslist.tmp
+    mv /tmp/eirodsicommandslist.tmp ./packaging/eirods-icommands.list
 
 
     set +e
@@ -1131,6 +1174,8 @@ fi
 # available from: http://fossies.org/unix/privat/epm-4.2-source.tar.gz
 # md5sum 3805b1377f910699c4914ef96b273943
 
+# prepare epm list files from templates
+
 if [ "$BUILDEIRODS" == "1" ] ; then
     # get RENCI updates to EPM from repository
     echo "${text_green}${text_bold}Downloading EPM from RENCI${text_reset}"
@@ -1230,7 +1275,6 @@ fi
 
 # rename generated packages appropriately
 cd $BUILDDIR
-EIRODSVERSION=`grep "^%version" ./packaging/eirods.list | awk '{print $2}'`
 SUFFIX=""
 if   [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
     EXTENSION="rpm"

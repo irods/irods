@@ -34,6 +34,7 @@
 #include "eirods_resource_backport.h"
 #include "eirods_resource_redirect.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_stacktrace.h"
 
 int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -64,7 +65,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                                                                     rsComm, dataObjInp, hier );
             if( !ret.ok() ) { 
                 std::stringstream msg;
-                msg << "rsDataObjOpen :: failed in eirods::resolve_resource_hierarchy for [";
+                msg << "failed in eirods::resolve_resource_hierarchy for [";
                 msg << dataObjInp->objPath << "]";
                 eirods::log( PASSMSG( msg.str(), ret ) );
                 return ret.code();
@@ -127,9 +128,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             return lockFd;
         }
     }
+
     // =-=-=-=-=-=-=-
     /* query rcat for dataObjInfo and sort it */
-
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
 
     writeFlag = getWriteFlag (dataObjInp->openFlags);
@@ -154,8 +155,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         /* screen out any stale copies */
         status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, &dataObjInp->condInput, writeFlag);
         if (status < 0) { // JMC - backport 4604
-            if (lockFd > 0) 
+            if (lockFd > 0) {
                 rsDataObjUnlock (rsComm, dataObjInp, lockFd);
+            }
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Unable to select a data obj info matching the resource hierarchy from the keywords.";
+            eirods::log(ERROR(status, msg.str()));
             return status;
         }
 
@@ -237,7 +243,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                 tmpDataObjInfo = nextDataObjInfo;
                 continue;
             }
-           
+
         status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
         if (status >= 0) {
@@ -519,10 +525,13 @@ createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     *myDataObjInfo = *(*dataObjInfoHead);
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
-        rescInfo = tmpRescGrpInfo->rescInfo;
-        myDataObjInfo->rescInfo = rescInfo;
+        rescInfo = (*dataObjInfoHead)->rescInfo;
+        
+        myDataObjInfo->rescInfo = new rescInfo_t;
+        memcpy( myDataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
+
         rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
-        rstrcpy (myDataObjInfo->rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
+        rstrcpy (myDataObjInfo->rescGroupName, (*dataObjInfoHead)->rescGroupName, NAME_LEN);
         
         char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
         if( resc_hier ) {
@@ -706,3 +715,37 @@ procDataObjOpenForRead (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 }
 #endif // JMC - legacy resource
 // =-=-=-=-=-=-=-
+
+/// @brief Selects the dataObjInfo in the specified list whose resc hier matches that of the cond input
+eirods::error selectObjInfo(
+    dataObjInfo_t * _dataObjInfoHead,
+    keyValPair_t* _condInput,
+    dataObjInfo_t** _rtn_dataObjInfo)
+{
+    eirods::error result = SUCCESS();
+    *_rtn_dataObjInfo = NULL;
+    char* resc_hier = getValByKey(_condInput, RESC_HIER_STR_KW);
+    if(!resc_hier) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - No resource hierarchy specified in keywords.";
+        result = ERROR(SYS_INVALID_INPUT_PARAM, msg.str());
+    } else {
+        for(dataObjInfo_t* dataObjInfo = _dataObjInfoHead;
+            result.ok() && *_rtn_dataObjInfo == NULL && dataObjInfo != NULL;
+            dataObjInfo = dataObjInfo->next) {
+            if(strcmp(resc_hier, dataObjInfo->rescHier) == 0) {
+                *_rtn_dataObjInfo = dataObjInfo;
+            }
+        }
+        if(*_rtn_dataObjInfo == NULL) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to find a data obj matching resource hierarchy: \"";
+            msg << resc_hier;
+            msg << "\"";
+            result = ERROR(EIRODS_HIERARCHY_ERROR, msg.str());
+        }
+    }
+    return result;
+}

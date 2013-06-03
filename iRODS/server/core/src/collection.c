@@ -268,9 +268,9 @@ collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             rstrcpy ((*rodsObjStatOut)->ownerZone, ownerZone->value,
                      NAME_LEN);
             rstrcpy ((*rodsObjStatOut)->createTime, createTime->value,
-                     NAME_LEN);
+                     TIME_LEN);
             rstrcpy ((*rodsObjStatOut)->modifyTime, modifyTime->value,
-                     NAME_LEN);
+                     TIME_LEN);
 
             if (strlen (collType->value) > 0) {
                 specCollCache_t *specCollCache;

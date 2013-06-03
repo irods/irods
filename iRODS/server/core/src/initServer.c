@@ -1428,6 +1428,28 @@ cleanupAndExit (int status)
         disconnectAllSvrToSvrConn ();
     }
 
+#if 0 // JMC - fixes double free on resource server, fixes lean on icat server... ?
+    // =-=-=-=-=-=-=-
+    // clean up server host list
+    if( ServerHostHead ) {
+        rodsServerHost_t* tmp_host = ServerHostHead;
+        while( tmp_host ) {
+            rodsServerHost_t* free_me = tmp_host;
+            tmp_host = tmp_host->next;
+         
+            hostName_t* tmp_name = free_me->hostName;
+            while( tmp_name ) {
+                hostName_t* free_name = tmp_name;
+                tmp_name = free_name->next;
+                free( free_name->name );
+                free( free_name );
+            }
+
+            free( free_me->zoneInfo );
+            free( free_me );
+        }
+    }
+#endif 
 
     if (status >= 0) {
         exit (0);

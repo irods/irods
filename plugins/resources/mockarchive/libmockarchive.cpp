@@ -23,6 +23,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <iomanip>
 
 // =-=-=-=-=-=-=-
 // boost includes
@@ -83,7 +84,7 @@ eirods::error unix_generate_full_path(
     eirods::error ret;
     std::string vault_path;
     // TODO - getting vault path by property will not likely work for coordinating nodes
-    ret = _prop_map.get<std::string>("path", vault_path);
+    ret = _prop_map.get<std::string>( eirods::RESOURCE_PATH, vault_path);
     if(!ret.ok()) {
         std::stringstream msg;
         msg << __FUNCTION__ << " - resource has no vault path.";
@@ -92,6 +93,7 @@ eirods::error unix_generate_full_path(
         if(_phy_path.compare(0, 1, "/") != 0 &&
            _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
             _ret_string  = vault_path;
+            _ret_string += "/";
             _ret_string += _phy_path;
         } else {
             // The physical path already contains the vault path
@@ -424,14 +426,14 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if the file can't be accessed due to permission denied 
         // try again using root credentials.
-        #ifdef RUN_SERVER_AS_ROOT
+#ifdef RUN_SERVER_AS_ROOT
         if( status < 0 && errno == EACCES && isServiceUserSet() ) {
             if (changeToRootUser() == 0) {
                 status = stat (filename, statbuf);
                 changeToServiceUser();
             }
         }
-        #endif
+#endif
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
@@ -484,47 +486,6 @@ extern "C" {
         return ERROR( SYS_NOT_SUPPORTED, "fsync not supported" );
 
     } // mock_archive_fsync_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX chmod
-    eirods::error mock_archive_chmod_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = chmod( fco.physical_path().c_str(), fco.mode() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_CHMOD_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "mock_archive_chmod_plugin: chmod error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        } // if
-
-        return CODE( status );
-
-    } // mock_archive_chmod_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -624,16 +585,6 @@ extern "C" {
 
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
-    eirods::error mock_archive_stage_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "stage not supported" );
-
-    } // mock_archive_stage_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX readdir
     eirods::error mock_archive_rename_plugin( 
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
@@ -704,17 +655,6 @@ extern "C" {
     } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX truncate
-    eirods::error mock_archive_truncate_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "truncate not supported" );
-
-    } // mock_archive_truncate_plugin
-
-        
-    // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error mock_archive_get_fsfreespace_plugin( 
         eirods::resource_operation_context* _ctx ) { 
@@ -725,9 +665,11 @@ extern "C" {
     } // mock_archive_get_fsfreespace_plugin
 
     int
-    mockArchiveCopyPlugin( int         mode, 
-                        const char* srcFileName, 
-                        const char* destFileName ) {
+    mockArchiveCopyPlugin(
+        int         mode, 
+        const char* srcFileName, 
+        const char* destFileName )
+    {
         rodsLog( LOG_NOTICE, "XXXX - mockArchiveCopyPlugin copy from src [%s] to dst [%s]", srcFileName, destFileName );
 
         int inFd, outFd;
@@ -817,9 +759,28 @@ extern "C" {
         // get ref to fco
         eirods::first_class_object& fco = _ctx->fco();
         
+        // =-=-=-=-=-=-=-
+        // get the vault path for the resource
+        std::string path;
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // append the hash to the path as the new 'cache file name'
+        path += "/";
+        path += fco.physical_path().c_str();
+        
         int status = mockArchiveCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
-            return ERROR( status, "mock_archive_stagetocache_plugin failed." );
+            std::stringstream msg;
+            msg << "mock_archive_stagetocache_plugin failed copying archive file: \"";
+            msg << fco.physical_path();
+            msg << "\" to cache file: \"";
+            msg << _cache_file_name;
+            msg << "\"";
+            return ERROR( status, msg.str());
         } else {
             return SUCCESS();
         }
@@ -849,21 +810,26 @@ extern "C" {
         // hash the physical path to reflect object store behavior
         MD5_CTX context;
         char md5Buf[ MAX_NAME_LEN ];
-        char hash  [ MAX_NAME_LEN ];
+        unsigned char hash  [ MAX_NAME_LEN ];
 
         strncpy( md5Buf, fco.physical_path().c_str(), fco.physical_path().size() );
         MD5Init( &context );
         MD5Update( &context, (unsigned char*)md5Buf, fco.physical_path().size() );
         MD5Final( (unsigned char*)hash, &context );
        
-     
-        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, hash );
+
+        std::stringstream ins;
+        for(int i = 0; i < 16; ++i) {
+            ins << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
+        }
+
+        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, ins.str().c_str() );
 
 
         // =-=-=-=-=-=-=-
         // get the vault path for the resource
         std::string path;
-        ret = _ctx->prop_map().get< std::string >( "path", path ); 
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_PATH, path ); 
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -871,7 +837,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // append the hash to the path as the new 'cache file name'
         path += "/";
-        path += hash;
+        path += ins.str();
 
         rodsLog( LOG_NOTICE, "mock archive :: cache file name [%s]", _cache_file_name );
 
@@ -884,7 +850,7 @@ extern "C" {
         if( status < 0 ) {
             return ERROR( status, "mock_archive_synctoarch_plugin failed." );
         } else {
-            fco.physical_path( path );
+            fco.physical_path( ins.str() );
             return SUCCESS();
         }
 
@@ -893,15 +859,15 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_create( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+        eirods::resource_property_map& _prop_map,
+        eirods::file_object&           _file_obj,
+        const std::string&             _resc_name, 
+        const std::string&             _curr_host, 
+        float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "mock_archive_redirect_create - failed to get 'status' property", get_ret );
         }
@@ -916,7 +882,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "mock_archive_redirect_create - failed to get 'location' property", get_ret );
         }
@@ -936,11 +902,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_open( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+        eirods::resource_property_map& _prop_map,
+        eirods::file_object&           _file_obj,
+        const std::string&             _resc_name, 
+        const std::string&             _curr_host, 
+        float&                         _out_vote ) {
         // =-=-=-=-=-=-=-
         // initially set a good default
         _out_vote = 0.0;
@@ -948,7 +914,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
-        eirods::error get_ret = _prop_map.get< int >( "status", resc_status );
+        eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
             return PASSMSG( "mock_archive_redirect_open - failed to get 'status' property", get_ret );
         }
@@ -962,7 +928,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the resource host for comparison to curr host
         std::string host_name;
-        get_ret = _prop_map.get< std::string >( "location", host_name );
+        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
             return PASSMSG( "mock_archive_redirect_open - failed to get 'location' property", get_ret );
         }
@@ -1067,7 +1033,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( "name", resc_name );
+        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "mock_archive_redirect_plugin - failed in get property for name";
@@ -1125,7 +1091,7 @@ extern "C" {
 
             eirods::error operator()( rcComm_t* ) {
                 rodsLog( LOG_NOTICE, "mockarchive_resource::post_disconnect_maintenance_operation - [%s]", 
-                name_.c_str() );
+                         name_.c_str() );
                 return SUCCESS();
             }
 
@@ -1136,7 +1102,7 @@ extern "C" {
 
     public:
         mockarchive_resource( const std::string& _inst_name, 
-                                 const std::string& _context ) : 
+                              const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
 
             if( !context_.empty() ) {
@@ -1184,18 +1150,18 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-            #if 0
+#if 0
             std::string name;
-            eirods::error err = get_property< std::string >( "name", name );
+            eirods::error err = get_property< std::string >( eirods::RESOURCE_NAME, name );
             if( !err.ok() ) {
                 return PASSMSG( "mockarchive_resource::post_disconnect_maintenance_operation failed.", err );
             }
 
             _op = maintenance_operation( name );
             return SUCCESS();
-            #else
+#else
             return ERROR( -1, "nop" );
-            #endif
+#endif
         }
 
     }; // class mockarchive_resource
@@ -1227,15 +1193,12 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "mock_archive_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "mock_archive_lseek_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "mock_archive_fsync_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_CHMOD,        "mock_archive_chmod_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "mock_archive_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "mock_archive_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "mock_archive_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "mock_archive_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "mock_archive_readdir_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "mock_archive_stage_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "mock_archive_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "mock_archive_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
@@ -1247,9 +1210,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
-        resc->set_property< int >( "check_path_perm", 2 );//DO_CHK_PATH_PERM );
-        resc->set_property< int >( "create_path",     1 );//CREATE_PATH );
-        resc->set_property< int >( "category",        0 );//FILE_CAT );
+        resc->set_property< int >( eirods::RESOURCE_CHECK_PATH_PERM, 2 );//DO_CHK_PATH_PERM );
+        resc->set_property< int >( eirods::RESOURCE_CREATE_PATH,     1 );//CREATE_PATH );
 
         // =-=-=-=-=-=-=-
         // 4c. return the pointer through the generic interface of an

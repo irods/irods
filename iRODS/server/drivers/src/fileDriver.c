@@ -369,39 +369,6 @@ eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
 } // fileMkdir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX chmod
-eirods::error fileChmod( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileChmod - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
-    // =-=-=-=-=-=-=-
-    // retrieve the resource name given the path
-    eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to resolve resource", ret_err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // make the call to the eirods::RESOURCE_OP_CHMOD interface
-    ret_err = resc->call( _comm, eirods::RESOURCE_OP_CHMOD, _object );
-
-    // =-=-=-=-=-=-=-
-    // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to call 'chmod'", ret_err );
-    } else {
-        return CODE( ret_err.code() );
-    }
-
-} // fileChmod
-
-// =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rmdir
 eirods::error fileRmdir( rsComm_t* _comm, eirods::first_class_object& _object ) {
     // =-=-=-=-=-=-=-
@@ -526,39 +493,6 @@ eirods::error fileReaddir( rsComm_t* _comm, eirods::first_class_object& _object,
 } // fileReaddir
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin stage
-eirods::error fileStage( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileStage - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
-    // =-=-=-=-=-=-=-
-    // retrieve the resource name given the path
-    eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to resolve resource", ret_err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // make the call to the "stage" interface
-    ret_err = resc->call( _comm, eirods::RESOURCE_OP_STAGE, _object );
-
-    // =-=-=-=-=-=-=-
-    // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to call 'stage'", ret_err );
-    } else {
-        return CODE( ret_err.code() );
-    }
-
-} // fileStage
-
-// =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rename
 eirods::error fileRename( rsComm_t*                   _comm, 
                           eirods::first_class_object& _object, 
@@ -625,39 +559,6 @@ eirods::error fileGetFsFreeSpace( rsComm_t* _comm, eirods::first_class_object& _
     }
 
 } // fileGetFsFreeSpace
-
-// =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin truncate
-eirods::error fileTruncate( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileTruncate - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
-    // =-=-=-=-=-=-=-
-    // retrieve the resource name given the path
-    eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to resolve resource", ret_err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // make the call to the "truncate" interface
-    ret_err = resc->call( _comm, eirods::RESOURCE_OP_TRUNCATE, _object );
-
-    // =-=-=-=-=-=-=-
-    // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to call 'truncate'", ret_err );
-    } else {
-        return CODE( ret_err.code() );
-    }
-   
-} // fileTruncate
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin StageToCache

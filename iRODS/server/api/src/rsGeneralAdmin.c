@@ -21,7 +21,7 @@
 #include "eirods_children_parser.h"
 #include "eirods_string_tokenize.h"
 #include "eirods_plugin_name_generator.h"
-#include "eirods_ms_home.h"
+#include "eirods_resources_home.h"
 
 int
 rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
@@ -129,7 +129,7 @@ _addResource(
     // =-=-=-=-=-=-=-
     // grab resource context.  this may be overwritted by the 'location' as that 
     // could also hold the conext string if no host:path pair exists
-    strncpy(rescInfo.rescContext,   _generalAdminInp->arg5, sizeof rescInfo.rescContext);
+    strncpy( rescInfo.rescContext, _generalAdminInp->arg5, sizeof rescInfo.rescContext );
 
     if( !loc_path.empty() ) {
         // =-=-=-=-=-=-=-
@@ -151,7 +151,11 @@ _addResource(
             strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
             strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
         }
+
     }  else {
+        if ( strlen( rescInfo.rescContext ) != 0 ) {
+            addRErrorMsg( &_rsComm->rError, 0, "resource host:path string is empty" );
+        }
         strncpy( rescInfo.rescLoc,       eirods::EMPTY_RESC_HOST.c_str(), sizeof rescInfo.rescLoc );
         strncpy( rescInfo.rescVaultPath, eirods::EMPTY_RESC_PATH.c_str(), sizeof rescInfo.rescVaultPath );
 
@@ -178,7 +182,7 @@ _addResource(
 
     // Check that there is a plugin matching the resource type
     eirods::plugin_name_generator name_gen;
-    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_MS_HOME)) {
+    if(!name_gen.exists(rescInfo.rescType, eirods::EIRODS_RESOURCES_HOME)) {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - No plugin exists to provide resource type \"";
@@ -216,6 +220,34 @@ _addResource(
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
+    return result;
+}
+
+int
+_listRescTypes(rsComm_t* _rsComm)
+{
+    int result = 0;
+    eirods::plugin_name_generator name_gen;
+    eirods::plugin_name_generator::plugin_list_t plugin_list;
+    eirods::error ret = name_gen.list_plugins(eirods::EIRODS_RESOURCES_HOME, plugin_list);
+    if(ret.ok()) {
+        std::stringstream msg;
+        for(eirods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
+            result == 0 && it != plugin_list.end(); ++it)
+        {
+            msg << *it << std::endl;
+        }
+        if(result == 0) {
+            addRErrorMsg( &_rsComm->rError, STDOUT_STATUS, msg.str().c_str() );
+        }
+    } else {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - Failed to generate the list of resource plugins.";
+        eirods::error res = PASSMSG(msg.str(), ret);
+        eirods::log(res);
+        result = res.code();
+    }
     return result;
 }
 
@@ -761,6 +793,15 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 
         return(status);
     }
+
+    if(strcmp(generalAdminInp->arg0, "lt") == 0) {
+        status = CAT_INVALID_ARGUMENT;
+        if(strcmp(generalAdminInp->arg1, "resc_type") == 0) {
+            status = _listRescTypes(rsComm);
+        }
+        return status;
+    }
+    
     return(CAT_INVALID_ARGUMENT);
 } 
 #endif

@@ -561,9 +561,13 @@ freeDataObjInfo(dataObjInfo_t *dataObjInfo)
 
     /* separate specColl */
     if (dataObjInfo->specColl != NULL) free (dataObjInfo->specColl);
+    if( false && dataObjInfo->rescInfo != NULL) {
+        delete dataObjInfo->rescInfo;
+        dataObjInfo->rescInfo = 0;
+    }
 
     free (dataObjInfo);
-
+    dataObjInfo = 0;
     return (0);
 }
 
@@ -575,11 +579,6 @@ freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead)
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
-/*      don't free rescInfo because it came from global 
-        if (tmpDataObjInfo->rescInfo != NULL) {
-        free (tmpDataObjInfo->rescInfo);
-        }
-*/
         freeDataObjInfo (tmpDataObjInfo);
         tmpDataObjInfo = nextDataObjInfo;
     }
@@ -2332,7 +2331,10 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 
             for (i = 0;i < len; i++) {
                 errMsg = rError->errMsg[i];
-                printf ("Level %d: %s\n", i, errMsg->msg);
+                if(errMsg->status != STDOUT_STATUS) {
+                    printf ("Level %d: ", i);
+                }
+                printf("%s\n", errMsg->msg);
             }
             return (0);
         }

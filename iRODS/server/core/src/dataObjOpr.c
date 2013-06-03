@@ -32,9 +32,12 @@
 #include "eirods_stacktrace.h"
 
 int
-getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-                dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
-{
+getDataObjInfo( 
+    rsComm_t*       rsComm, 
+    dataObjInp_t*   dataObjInp, 
+    dataObjInfo_t** dataObjInfoHead,
+    char*           accessPerm, 
+    int             ignoreCondInput ) {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int i, status;
@@ -364,9 +367,9 @@ getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         dataObjInfo->collId = strtoll (tmpCollId, 0, 0);
         dataObjInfo->dataMapId = atoi (tmpDataMapId);
         rstrcpy (dataObjInfo->dataComments, tmpDataComments, LONG_NAME_LEN);
-        rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, NAME_LEN);
-        rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
-        rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
+        rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, TIME_LEN);
+        rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, TIME_LEN);
+        rstrcpy (dataObjInfo->dataModify, tmpDataModify, TIME_LEN);
         rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
         dataObjInfo->writeFlag = writeFlag;
         
@@ -432,7 +435,10 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
         }
 
         std::string class_type;
-        eirods::error prop_err = eirods::get_resource_property<std::string>( tmpDataObjInfo->rescInfo->rescName, "class", class_type );
+        eirods::error prop_err = eirods::get_resource_property<std::string>( 
+                                      tmpDataObjInfo->rescInfo->rescName, 
+                                      eirods::RESOURCE_CLASS, 
+                                      class_type );
         // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
         if (tmpDataObjInfo->replStatus > 0) {
 #if 0 // JMC - legacy resource
@@ -492,6 +498,7 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
 }
 
 /* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
+ * If RESC_HIER_STR_KW is set matching resc obj is first.
  * If it is for read (writeFlag == 0), discard old copies, then cache first,
  * archval second.
  * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
@@ -501,7 +508,67 @@ int
 sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
                     keyValPair_t *condInput, int writeFlag)
 {
+    int result = 0;
+    char* resc_hier = getValByKey(condInput, RESC_HIER_STR_KW);
+    if(!resc_hier) {
+        std::stringstream msg;
+        msg << __FUNCTION__;
+        msg << " - No resource hierarchy specified in keywords.";
+        eirods::log(ERROR(SYS_INVALID_INPUT_PARAM, msg.str()));
+        result = SYS_INVALID_INPUT_PARAM;
 
+        if(true) {
+            eirods::stacktrace st;
+            st.trace();
+            st.dump();
+        }
+
+    } else {
+        dataObjInfo_t* found_info = NULL;
+        dataObjInfo_t* prev_info = NULL;
+        for(dataObjInfo_t* dataObjInfo = *dataObjInfoHead;
+            result >= 0 && found_info == NULL && dataObjInfo != NULL;
+            dataObjInfo = dataObjInfo->next) {
+            if(strcmp(resc_hier, dataObjInfo->rescHier) == 0) {
+                found_info = dataObjInfo;
+            } else {
+                prev_info = dataObjInfo;
+            }
+        }
+        if(found_info == NULL) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - No data object found matching resource hierarchy: \"";
+            msg << resc_hier;
+            msg << "\"";
+            eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
+            result = EIRODS_HIERARCHY_ERROR;
+
+            if(true) {
+                eirods::stacktrace st;
+                st.trace();
+                st.dump();
+            }
+
+        } else {
+            if(prev_info == NULL) {
+                // our object is at the head of the list. So delete the rest of the list, if any and we are done.
+                if(found_info->next != NULL) {
+                    freeAllDataObjInfo(found_info->next);
+                    found_info->next = NULL;
+                }
+            } else {
+                // remove our object from the list. delete that list then make our object the head.
+                prev_info->next = found_info->next;
+                found_info->next = NULL;
+                freeAllDataObjInfo(*dataObjInfoHead);
+                *dataObjInfoHead = found_info;
+            }
+        }
+    }
+    return result;
+    
+#if 0
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
         *oldCacheInfo, *downCurrentInfo, *downOldInfo;
     int status = 0;
@@ -545,7 +612,10 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
 
             } else {
                 int resc_status = -1;
-                eirods::error prop_err = eirods::get_resource_property<int>( resc_name, "status", resc_status );
+                eirods::error prop_err = eirods::get_resource_property<int>( 
+                                             resc_name, 
+                                             eirods::RESOURCE_STATUS, 
+                                             resc_status );
                 // JMC - legacy resource if (getRescStatus (rsComm, NULL, condInput) == INT_RESC_STATUS_DOWN) {
                 if( resc_status == INT_RESC_STATUS_DOWN ) {
                         freeAllDataObjInfo (downCurrentInfo);
@@ -568,8 +638,7 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
         }
     }
     return (status);
-
-    return 0;
+#endif // #if 0
 }
 
 int
@@ -907,14 +976,13 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
                     dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 {
 
-    dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
-                  *oldCacheInfo,    *downCurrentInfo,  *downOldInfo;
+    dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
+                  *oldCacheInfo = 0,    *downCurrentInfo = 0,  *downOldInfo = 0;
 
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
     
-
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
@@ -1635,6 +1703,8 @@ int
     if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
         (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
         (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 
+
+        
         status = requeDataObjInfoByResc (dataObjInfoHead, rescName, 
                                          writeFlag, topFlag);
     }
@@ -1936,8 +2006,15 @@ getDataObjByClass ( dataObjInfo_t *dataObjInfoHead, int rescClass,
     while (tmpDataObjInfo != NULL) {
 
        std::string resc_class;
-       eirods::get_resource_property( tmpDataObjInfo->rescInfo->rescName, "class", resc_class );
-      
+       eirods::error ret =  eirods::get_resource_property( 
+                                tmpDataObjInfo->rescInfo->rescName, 
+                                eirods::RESOURCE_CLASS, 
+                                resc_class );
+       if( !ret.ok() ) {
+           eirods::log( PASS( ret ) );
+           return -1;
+       }
+
        for( int i = 0; i < NumRescClass; ++i ) {
            if( resc_class == std::string( RescClass[i].className ) &&
                RescClass[i].classType == rescClass ) {

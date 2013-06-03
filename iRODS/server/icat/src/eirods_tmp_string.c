@@ -20,7 +20,7 @@ namespace eirods {
     
     tmp_string::~tmp_string(void) {
         if(string_ != 0) {
-            delete string_;
+            delete [] string_;
         }
     }
 

@@ -67,20 +67,6 @@ namespace eirods {
         error result = SUCCESS();
         error ret;
     
-
-        if(resc_hier().empty()) {
-            std::stringstream msg;
-            msg << "qqq - No resource hierarchy specified for collection object.";
-            DEBUGMSG(msg.str());
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
-        }
-
         hierarchy_parser hparse;
         ret = hparse.set_string(resc_hier());
     
@@ -113,13 +99,6 @@ namespace eirods {
                     std::stringstream msg;
                     msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
                     result = PASSMSG(msg.str(), ret);
-
-                    if(true) {
-                        eirods::stacktrace st;
-                        st.trace();
-                        st.dump();
-                    }
-
                 } 
             }
         }

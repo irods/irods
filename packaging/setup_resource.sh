@@ -1,7 +1,12 @@
 #!/bin/bash -e
 
+# config
 IRODS_CONFIG_FILE="./iRODS/config/irods.config"
 SETUP_RESOURCE_FLAG="/tmp/setup_resource.flag"
+
+# get into the correct directory
+DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DETECTEDDIR/../
 
 # get temp file from prior run, if it exists
 if [ -f $SETUP_RESOURCE_FLAG ] ; then
