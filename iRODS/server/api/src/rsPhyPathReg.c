@@ -127,6 +127,19 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     }
 
     // =-=-=-=-=-=-=-
+    // ticket 1456 - only local stoage nodes may be used to register files.
+    //               determine if there is a hierarchy of resources, if so 
+    //               this is an error
+    eirods::hierarchy_parser parser;
+    parser.set_string( hier );
+    int num_levels = 0;
+    eirods::error ret = parser.num_levels( num_levels );
+    if( !ret.ok() || num_levels != 1 ) {
+        rodsLog( LOG_ERROR, "rsPhyPathReg :: registration may only be done for a local storage node, resource hierarchy [%s]", hier.c_str() );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    
+    // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
     if( coll_type && (strcmp( coll_type, HAAW_STRUCT_FILE_STR) == 0 ||
                                   strcmp ( coll_type, TAR_STRUCT_FILE_STR) == 0)) {
@@ -138,8 +151,6 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     // 
     // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
     std::string resc_name;
-    eirods::hierarchy_parser parser;
-    parser.set_string( hier );
     parser.first_resc( resc_name );
 
     rescGrpInfo = new rescGrpInfo_t;
@@ -156,10 +167,10 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     parser.last_resc( last_resc );
    
     std::string location;
-    eirods::error ret = eirods::get_resource_property< std::string >( 
-                            last_resc, 
-                            eirods::RESOURCE_LOCATION, 
-                            location );
+    ret = eirods::get_resource_property< std::string >( 
+              last_resc, 
+              eirods::RESOURCE_LOCATION, 
+              location );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "failed in get_resource_property", ret ) );
         delete rescGrpInfo->rescInfo;
