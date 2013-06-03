@@ -642,6 +642,7 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
             printf( "DRYRUN REMOVING RESOURCE [%s - %d] :: FAILURE\n", arg2, status );
         } // else
     } else {
+#if 0 // Commenting this out because printErrorStack is called later. - harry
         // =-=-=-=-=-=-=-
         // JMC - backport 4597
         if (Conn->rError) {
@@ -655,6 +656,7 @@ generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3,
                 printf("Level %d message: %s\n",i, ErrMsg->msg);
             }
         }
+#endif
         // =-=-=-=-=-=-=-
 
         if (status < 0 ) {

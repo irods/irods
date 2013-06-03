@@ -293,6 +293,9 @@ hasSymlinkInPath (char *myPath);
 int
 hasSymlinkInPartialPath (char *myPath, int pos);
 
+// Special status that supresses reError header printing
+static const int STDOUT_STATUS = 1000000;
+    
 #ifdef USE_BOOST_FS
 int
 getPathStMode (path & p);

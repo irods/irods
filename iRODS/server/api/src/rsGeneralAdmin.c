@@ -224,17 +224,21 @@ _addResource(
 }
 
 int
-_listRescTypes(void)
+_listRescTypes(rsComm_t* _rsComm)
 {
     int result = 0;
     eirods::plugin_name_generator name_gen;
     eirods::plugin_name_generator::plugin_list_t plugin_list;
-    eirods::error ret = name_gen.list_plugins(eirods::EIRODS_MS_HOME, plugin_list);
+    eirods::error ret = name_gen.list_plugins(eirods::EIRODS_RESOURCES_HOME, plugin_list);
     if(ret.ok()) {
+        std::stringstream msg;
         for(eirods::plugin_name_generator::plugin_list_t::iterator it = plugin_list.begin();
             result == 0 && it != plugin_list.end(); ++it)
         {
-            std::cout << *it << std::endl;
+            msg << *it << std::endl;
+        }
+        if(result == 0) {
+            addRErrorMsg( &_rsComm->rError, STDOUT_STATUS, msg.str().c_str() );
         }
     } else {
         std::stringstream msg;
@@ -793,7 +797,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
     if(strcmp(generalAdminInp->arg0, "lt") == 0) {
         status = CAT_INVALID_ARGUMENT;
         if(strcmp(generalAdminInp->arg1, "resc_type") == 0) {
-            status = _listRescTypes();
+            status = _listRescTypes(rsComm);
         }
         return status;
     }
