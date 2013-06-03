@@ -97,7 +97,7 @@ void
 usage ()
 {
     char *msgs[]={
-        "Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource] [-G rescGroup]",
+        "Usage : ireg [-hfCkKvV] [--repl] [-D dataType] [-R resource]",
         "               physicalFilePath, irodsPath",
         " ",
         "Register a file or a directory of files and subdirectory into iRODS.",
@@ -127,8 +127,6 @@ usage ()
         " ",
         " ",
         "Options are:",
-        " -G  rescGroup - specifies the resource group of the resource. This must be",
-        "     input together with the -R option",
         " -R  resource - specifies the resource to store to. This can also be specified",
         "     in your environment or via a rule set up by the administrator.",
         " -C  the specified path is a directory. The default assumes the path is a file.",
