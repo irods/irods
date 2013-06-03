@@ -35,7 +35,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // @brief  resolve a resource from a match with a given property
         error validate_vault_path( std::string, // physical path 
-			std::string );     // match vault path
+			           std::string & );     // match vault path
 
         // =-=-=-=-=-=-=-
         /// @brief  populate resource table from icat database

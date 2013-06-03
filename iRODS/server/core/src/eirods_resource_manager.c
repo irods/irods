@@ -99,7 +99,7 @@ namespace eirods {
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
-                if( !value.empty() && (_physical_path.find( value ) != std::string::npos ) {
+                if( !value.empty() && (_physical_path.find( value ) != std::string::npos )) {
                     found = true;
 			_out_path = value;
                 }
@@ -126,28 +126,6 @@ namespace eirods {
         }
 
     } // validate_vault_path
-
-    // =-=-=-=-=-=-=-
-    // resolve a resource from a first_class_object
-    error resource_manager::resolve( const eirods::first_class_object& _object, 
-                                     resource_ptr&                     _resc ) {
-        // =-=-=-=-=-=-=-
-        // find a resource matching the vault path in the physical path
-        error ret =  resolve_from_physical_path( _object.physical_path(), _resc );
-
-        // =-=-=-=-=-=-=-
-        // if we cant find a resource for a given path, find any unix file system resource
-        // as this is necessary for some cases such as registration of a file which doesnt
-        // have a proper vault path.  this issue will be fixed when we push fcos up through
-        // the server api calls as we can treat them as a new class of fco
-        if( !ret.ok() ) {
-            ret = resolve_from_property< std::string >( "type", "unix file system", _resc );
-
-        }
-
-        return ret;
-
-    } // resolve
 
     // =-=-=-=-=-=-=-
     // public - connect to the catalog and query for all the 
