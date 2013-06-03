@@ -337,13 +337,10 @@ _updateRescObjCount(
         ss << "update R_RESC_MAIN set resc_objcount=resc_objcount+";
         ss << _amount;
         ss << ", modify_ts=? where resc_id=?";
-        // eirods::tmp_string amount_string(ss.str().c_str());
         getNowStr(myTime);
         cllBindVarCount = 0;
-        // cllBindVars[cllBindVarCount++] = amount_string.str();
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = resc_id;
-        // logger.log();
         if((status = cmlExecuteNoAnswerSql(ss.str().c_str(), &icss)) != 0) {
             std::stringstream ss;
             ss << __FUNCTION__ << " cmlExecuteNoAnswerSql update failure " << status;
@@ -1793,10 +1790,10 @@ _updateRescChildren(
         std::string combined_children = ss.str();
 
         // have to do this to avoid const issues
-        char* tmp_children = strdup(combined_children.c_str());
+        eirods::tmp_string ts(combined_children.c_str());
         getNowStr(myTime);
         cllBindVarCount = 0;
-        cllBindVars[cllBindVarCount++] = tmp_children;
+        cllBindVars[cllBindVarCount++] = ts.str();
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = _resc_id;
         logger.log();
@@ -1808,7 +1805,6 @@ _updateRescChildren(
             _rollback("_updateRescChildren");
             result = status;
         }
-        free(tmp_children);
     }
     return result;
 }
@@ -1845,10 +1841,10 @@ _updateChildParent(
         // Update the parent for the child resource
         
         // have to do this to get around const
-        char* tmp_parent = strdup(_parent.c_str());
+        eirods::tmp_string ts(_parent.c_str());
         getNowStr(myTime);
         cllBindVarCount = 0;
-        cllBindVars[cllBindVarCount++] = tmp_parent;
+        cllBindVars[cllBindVarCount++] = ts.str();
         cllBindVars[cllBindVarCount++] = myTime;
         cllBindVars[cllBindVarCount++] = resc_id;
         logger.log();
@@ -1860,8 +1856,6 @@ _updateChildParent(
             _rollback("_updateChildParent");
             result = status;
         }
-        free(tmp_parent);
-        
     }
 
     return result;
