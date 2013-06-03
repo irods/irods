@@ -433,7 +433,7 @@ extern "C" {
                         msg << " - Failed while calling child operation.";
                         result = PASSMSG(msg.str(), ret);
                     } else {
-                        if(!file_object->in_pdmo()) {
+                        if(false && !file_object->in_pdmo()) {  // don't do this at register only on close - harry
                             eirods::error ret1 = replReplicateCreateWrite(_ctx);
                             if(!ret1.ok()) {
                                 std::stringstream msg;
