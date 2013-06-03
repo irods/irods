@@ -137,9 +137,9 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     // =-=-=-=-=-=-=-
     // 
     // JMC - legacy resource - status = getRescInfo( rsComm, NULL, &phyPathRegInp->condInput, &rescGrpInfo);
-    std::string resc_name;
     eirods::hierarchy_parser parser;
     parser.set_string( hier );
+    std::string resc_name;
     parser.first_resc( resc_name );
 
     rescGrpInfo = new rescGrpInfo_t;
@@ -157,9 +157,9 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
    
     std::string location;
     eirods::error ret = eirods::get_resource_property< std::string >( 
-                            last_resc, 
-                            eirods::RESOURCE_LOCATION, 
-                            location );
+                          last_resc, 
+                          eirods::RESOURCE_LOCATION, 
+                          location );
     if( !ret.ok() ) {
         eirods::log( PASSMSG( "failed in get_resource_property", ret ) );
         delete rescGrpInfo->rescInfo;

@@ -7,9 +7,33 @@ Enterprise iRODS (E-iRODS) Manual
 
 .. |todaysdate| date::
 
+|
+|
+|
+|
+|
+|
+|
+|
+|
+
+.. figure:: ./images/E-iRODS-Logo-Tagline.jpg
+   :width: 6 in
+   :align: center
+
+|
+|
+|
+
 :Author: Renaissance Computing Institute (RENCI)
 :Version: 3.0rc1
 :Date: |todaysdate|
+
+
+
+.. raw:: pdf
+
+   PageBreak
 
 .. contents:: Table of Contents
 .. section-numbering::
