@@ -63,6 +63,71 @@ namespace eirods {
     } // resolve
 
     // =-=-=-=-=-=-=-
+    // public - retrieve a resource given a vault path
+    error resource_manager::validate_vault_path( 
+        std::string _physical_path, 
+	std::string & _out_path ) {
+        // =-=-=-=-=-=-=-
+        // simple flag to state a resource matching the prop and value is found
+        bool found = false;     
+                
+        // =-=-=-=-=-=-=-
+        // quick check on the resource table
+        if( resources_.empty() ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty resource table" );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // quick check on the path that it has something in it
+        if( _physical_path.empty() ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty property" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // iterate through the map and search for our path
+        lookup_table< resource_ptr >::iterator itr = resources_.begin();
+        for( ; !found && itr != resources_.end(); ++itr ) {
+            // =-=-=-=-=-=-=-
+            // query resource for the property value
+            std::string value;
+            error ret = itr->second->get_property<std::string>( "path", value );
+
+            // =-=-=-=-=-=-=-
+            // if we get a good parameter and do not match non-storage nodes with an empty physical path
+            if( ret.ok()) {
+
+                // =-=-=-=-=-=-=-
+                // compare incoming value and stored value
+                // one may be a subset of the other so compare both ways
+                if( !value.empty() && (_physical_path.find( value ) != std::string::npos )) {
+                    found = true;
+			_out_path = value;
+                }
+            } else {
+                std::stringstream msg;
+                msg << "resource_manager::resolve_from_physical_path - ";
+                msg << "failed to get vault parameter from resource";
+                msg << ret.code();
+                eirods::log( PASSMSG( msg.str(), ret ) );
+            }
+
+        } // for itr
+
+        // =-=-=-=-=-=-=-
+        // did we find a resource and is the ptr valid?
+        if( true == found ) {
+            return SUCCESS();
+        } else {
+            std::stringstream msg;
+            msg << "failed to find resource for path [";
+            msg << _physical_path;
+            msg << "]";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+        }
+
+    } // validate_vault_path
+
+    // =-=-=-=-=-=-=-
     // public - connect to the catalog and query for all the 
     //          attached resources and instantiate them
     error resource_manager::init_from_catalog( rsComm_t* _comm ) {

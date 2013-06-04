@@ -135,6 +135,7 @@ namespace eirods {
         const hierarchy_parser& rhs)
     {
         resc_list_ = rhs.resc_list_;
+        return *this;
     }
 
 }; // namespace eirods
