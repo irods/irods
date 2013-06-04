@@ -206,82 +206,6 @@ showResc(char *name, int longOption)
    return (1);
 }
 
-/*
- Show the resource group
- */
-int
-showOneRescGroup(char *rescGroupName, int longOption)
-{
-   genQueryInp_t genQueryInp;
-   genQueryOut_t *genQueryOut;
-   int i1a[20];
-   int i1b[20]={0,0,0,0,0,0,0,0,0,0,0,0};
-   int i2a[20];
-   char *condVal[10];
-   char v1[BIG_STR];
-   int i, status;
-   char *tResult;
-
-   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-   i=0;
-   i1a[i++]=COL_R_RESC_NAME;
-   
-   genQueryInp.selectInp.inx = i1a;
-   genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = i;
-
-   genQueryInp.sqlCondInp.inx = i2a;
-   genQueryInp.sqlCondInp.value = condVal;
-
-   i2a[0]=COL_RESC_GROUP_NAME;
-   sprintf(v1,"='%s'",rescGroupName);
-   condVal[0]=v1;
-   genQueryInp.sqlCondInp.len=1;
-
-   if (zoneArgument[0]!='\0') {
-      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
-   }
-
-   genQueryInp.maxRows=50;
-   genQueryInp.continueInx=0;
-   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-   if (status == CAT_NO_ROWS_FOUND) {
-      return(0);
-   }
-
-   if (longOption) {
-      printf("resource group: %s \n",rescGroupName);
-   }
-   else {
-      printf("%s (resource group), resources: ",rescGroupName);
-   }
-
-   for (i=0;i<genQueryOut->rowCnt;i++) {
-      tResult = genQueryOut->sqlResult[0].value;
-      tResult += i*genQueryOut->sqlResult[0].len;
-      if (longOption) {
-	 printf("Includes resource: %s\n", tResult);
-      }
-      else {
-	 printf("%s ", tResult);
-      }
-   }
-
-   while (status==0 && genQueryOut->continueInx > 0) {
-      genQueryInp.continueInx=genQueryOut->continueInx;
-      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-      for (i=0;i<genQueryOut->rowCnt;i++) {
-	 tResult = genQueryOut->sqlResult[0].value;
-	 tResult += i*genQueryOut->sqlResult[0].len;
-	 printf("%s ", tResult);
-      }
-   }
-   if (!longOption) {
-      printf("\n");
-   }
-
-   return (1);
-}
 
 /*
 Via a general query, show a resource Access Control List
@@ -366,82 +290,6 @@ showRescAcl(char *name)
 }
 
 
-/*
-  Show the resource groups, if any
-*/
-int
-showRescGroups(int longOption)
-{
-   genQueryInp_t genQueryInp;
-   genQueryOut_t *genQueryOut;
-   int i1a[20];
-   int i1b[20]={0,0,0,0,0,0,0,0,0,0,0,0};
-   int i2a[20];
-   char *condVal[10];
-   int i, status;
-
-   memset(&genQueryInp, 0, sizeof(genQueryInp));
-
-   i=0;
-   i1a[i++]=COL_RESC_GROUP_NAME;
-   
-   genQueryInp.selectInp.inx = i1a;
-   genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = i;
-
-   genQueryInp.sqlCondInp.inx = i2a;
-   genQueryInp.sqlCondInp.value = condVal;
-
-   genQueryInp.sqlCondInp.len=0;
-
-   if (zoneArgument[0]!='\0') {
-      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
-   }
-
-   genQueryInp.maxRows=50;
-   genQueryInp.continueInx=0;
-   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-   if (status == CAT_NO_ROWS_FOUND) {
-      return(0);
-   }
-
-   if (status != 0) return(0);
-
-   for (i=0;i<genQueryOut->rowCnt;i++) {
-      char *tResult;
-      tResult = genQueryOut->sqlResult[0].value;
-      tResult += i*genQueryOut->sqlResult[0].len;
-      if (longOption==0) {
-	 printf("%s (resource group)\n", tResult);
-      }
-      else {
-	 printf("-----\n");
-	 showOneRescGroup(tResult, longOption);
-      }
-   }
-
-   while (status==0 && genQueryOut->continueInx > 0) {
-      genQueryInp.continueInx=genQueryOut->continueInx;
-      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-      if (status) {
-	 return(0);
-      }
-      for (i=0;i<genQueryOut->rowCnt;i++) {
-	 char *tResult;
-	 tResult = genQueryOut->sqlResult[0].value;
-	 tResult += i*genQueryOut->sqlResult[0].len;
-	 if (longOption==0) {
-	    printf("%s (resource group)\n", tResult);
-	 }
-	 else {
-	    printf("-----\n");
-	    showOneRescGroup(tResult, longOption);
-	 }
-      }
-   }
-   return (0);
-}
-
 int
 main(int argc, char **argv) {
    int status, status2;
@@ -501,23 +349,10 @@ main(int argc, char **argv) {
    status2=0;
    if (myRodsArgs.optind == argc) {  /* no resource name specified */
       status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-      status2 = showRescGroups(myRodsArgs.longOption);
    }
    else {
       if (myRodsArgs.accessControl == True) {
-	 showRescAcl(argv[myRodsArgs.optind]);
-      }
-      else {
-	 status = showOneRescGroup(argv[myRodsArgs.optind], 
-				   myRodsArgs.longOption);
-	 if (status==0) {
-	    status2 = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-	    if (status2==0) {
-	       /* Only print this if both fail */
-	       printf("Resource-group %s does not exist.\n",
-		      argv[myRodsArgs.optind]); 
-	    }
-	 }
+	      showRescAcl(argv[myRodsArgs.optind]);
       }
    }
 
@@ -536,9 +371,9 @@ Print the main usage/help information.
 void usage()
 {
    char *msgs[]={
-"ilsresc lists iRODS resources and resource-groups",
+"ilsresc lists iRODS resources",
 "Usage: ilsresc [-lvVhA] [Name]", 
-"If Name is present, list only that resource or resource-group,",
+"If Name is present, list only that resource, ",
 "otherwise list them all ",
 "Options are:", 
 " -l Long format - list details",
