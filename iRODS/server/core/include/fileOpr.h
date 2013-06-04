@@ -63,11 +63,9 @@ chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 int // JMC - backport 4766
 isValidFilePath (char *path);
 int
-matchVaultPath (rsComm_t *rsComm, char *filePath,
-                rodsServerHost_t *rodsServerHost, char **outVaultPath);
-int
-matchCliVaultPath (rsComm_t *rsComm, char *filePath,
-                   rodsServerHost_t *rodsServerHost);
+matchCliVaultPath( rsComm_t*, 
+                   const std::string&,
+                   rodsServerHost_t* );
 int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir);
 int

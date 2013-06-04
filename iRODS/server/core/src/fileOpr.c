@@ -313,9 +313,6 @@ chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
                  rodsServerHost_t *rodsServerHost, int chkType) // JMC - backport 4774
 {
     int status;
-    // =-=-=-=-=-=-=-
-    // JMC - backport 4774
-    char *outVaultPath = NULL;
 
     if (chkType == NO_CHK_PATH_PERM) {
         return 0;
@@ -347,9 +344,9 @@ chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
             return CANT_REG_IN_VAULT_FILE;
         }
     } else if (chkType == DO_CHK_PATH_PERM) {
-        int ret = matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost, &outVaultPath );
-        if( ret > 0 ) {
-            //if (matchVaultPath (rsComm, fileOpenInp->fileName, rodsServerHost,&outVaultPath) > 0) {
+        std::string out_path;
+        eirods::error ret = resc_mgr.validate_vault_path( fileOpenInp->fileName, rodsServerHost, out_path );
+        if( ret.ok() ) {
             /* a match */
             return CANT_REG_IN_VAULT_FILE;
         }
@@ -392,47 +389,76 @@ isValidFilePath (char *path)
     }
     return 0;
 }
-// =-=-=-=-=-=-=-
-int
-matchVaultPath (rsComm_t *rsComm, char *filePath, 
-                rodsServerHost_t *rodsServerHost, char **outVaultPath)
-{
-    rescGrpInfo_t *tmpRescGrpInfo;
-    rescInfo_t *tmpRescInfo;
-    int len;
-    if (isValidFilePath (filePath) < 0) { // JMC - backport 4766
-        /* no match */
-        return (0);
-    }
-    tmpRescGrpInfo = RescGrpInfo;
-
-    while (tmpRescGrpInfo != NULL) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        /* match the rodsServerHost */
-        if (tmpRescInfo->rodsServerHost == rodsServerHost) {
-            len = strlen (tmpRescInfo->rescVaultPath);
-            if( len > 0 && strncmp ( tmpRescInfo->rescVaultPath, filePath, len ) == 0 && // JMC -backport 4767
-                ( filePath[len] == '/' || filePath[len] == '\0' ) ) {
-                *outVaultPath = tmpRescInfo->rescVaultPath;
-                return (len);
-            }
-        }
-        tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-
-    /* no match */
-    return (0);
-}
 
 /* matchCliVaultPath - if the input path is inside 
  * $(vaultPath)/home/userName, return 1.
  * If it is in $(vaultPath) but not in $(vaultPath)/home/userName,
  * return -1. If it is a non vault path, return 0.
  */
-int
-matchCliVaultPath (rsComm_t *rsComm, char *filePath,
-                   rodsServerHost_t *rodsServerHost)
-{
+int matchCliVaultPath( 
+    rsComm_t*          _comm, 
+    const std::string& _path,
+    rodsServerHost_t*  _svr_host ) {
+    // =-=-=-=-=-=-=-
+    // sanity check
+    if( !_comm ) {
+        rodsLog( LOG_ERROR, "matchCliVaultPath :: null comm" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if( _path.empty() ) {
+        rodsLog( LOG_ERROR, "matchCliVaultPath :: empty file path" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    if( !_svr_host ) {
+        rodsLog( LOG_ERROR, "matchCliVaultPath :: null server host" );
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    // =-=-=-=-=-=-=-
+    // validate the vault path against a known host
+    std::string vault_path;
+    eirods::error ret = resc_mgr.validate_vault_path( _path, _svr_host, vault_path );
+    if( !ret.ok() || vault_path.empty() ) {
+        return 0;
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the substr of the file path, minus the vault path
+    std::string user_path = _path.substr( vault_path.size() );
+    
+    // =-=-=-=-=-=-=-
+    // if user_path starts with a / set the home pos accordingly
+    const size_t home_pos = ( user_path[0] == '/' ) ? 1 : 0;
+
+    // =-=-=-=-=-=-=-
+    // verify that the first chars are home/
+    size_t pos = user_path.find( "home/" );
+    if( home_pos != pos ) {
+        rodsLog( LOG_NOTICE, "matchCliVaultPath :: home/ is not found in the proper location for path [%s]", 
+                 user_path.c_str() );
+        return -1; 
+    }
+ 
+    // =-=-=-=-=-=-=-
+    // if user_path starts with a / set the home pos accordingly
+    const size_t user_pos = home_pos + 5;
+
+    // =-=-=-=-=-=-=-
+    // verify that the user name follows 'home/'
+    pos = user_path.find( _comm->clientUser.userName );
+    if( user_pos != pos ) {
+        rodsLog( LOG_NOTICE, "matchCliVaultPath :: [%s] is not found in the proper location for path [%s]", 
+                 _comm->clientUser.userName, user_path.c_str() );
+        return -1; 
+    }
+
+    // =-=-=-=-=-=-=-
+    // success
+    return 1;
+
+#if 0
     int len, nameLen;
     char *tmpPath;
     char *outVaultPath = NULL;
@@ -459,7 +485,8 @@ matchCliVaultPath (rsComm_t *rsComm, char *filePath,
         return 0;
 
     return -1;
-}
+#endif
+} // matchCliVaultPath
 
 /* filePathTypeInResc - the status of a filePath in a resource.
  * return LOCAL_FILE_T, LOCAL_DIR_T, UNKNOWN_OBJ_T or error (-ive)

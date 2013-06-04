@@ -65,8 +65,9 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - retrieve a resource given a vault path
     error resource_manager::validate_vault_path( 
-        std::string _physical_path, 
-	std::string & _out_path ) {
+        std::string       _physical_path, 
+        rodsServerHost_t* _svr_host,
+        std::string&      _out_path ) {
         // =-=-=-=-=-=-=-
         // simple flag to state a resource matching the prop and value is found
         bool found = false;     
@@ -88,27 +89,43 @@ namespace eirods {
         lookup_table< resource_ptr >::iterator itr = resources_.begin();
         for( ; !found && itr != resources_.end(); ++itr ) {
             // =-=-=-=-=-=-=-
+            // get the host pointer from the resource
+            rodsServerHost_t* svr_host = 0;
+            error ret = itr->second->get_property< rodsServerHost_t* >( RESOURCE_HOST, svr_host );
+            if( !ret.ok() ) {
+                PASS( ret );
+            }
+
+            // =-=-=-=-=-=-=-
+            // if this host matches the incoming host pointer then were good
+            // otherwise continue searching
+            if( svr_host != _svr_host ) {
+                continue;
+            }
+
+            // =-=-=-=-=-=-=-
             // query resource for the property value
-            std::string value;
-            error ret = itr->second->get_property<std::string>( "path", value );
+            std::string path;
+            ret = itr->second->get_property<std::string>( RESOURCE_PATH, path );
 
             // =-=-=-=-=-=-=-
             // if we get a good parameter and do not match non-storage nodes with an empty physical path
             if( ret.ok()) {
-
                 // =-=-=-=-=-=-=-
                 // compare incoming value and stored value
                 // one may be a subset of the other so compare both ways
-                if( !value.empty() && (_physical_path.find( value ) != std::string::npos )) {
-                    found = true;
-			_out_path = value;
+                if( !path.empty() && (_physical_path.find( path ) != std::string::npos )) {
+                    found     = true;
+                    _out_path = path;
                 }
+
             } else {
                 std::stringstream msg;
                 msg << "resource_manager::resolve_from_physical_path - ";
                 msg << "failed to get vault parameter from resource";
                 msg << ret.code();
                 eirods::log( PASSMSG( msg.str(), ret ) );
+            
             }
 
         } // for itr
