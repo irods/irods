@@ -1,9 +1,0 @@
-TARGET = libwos.so
-
-SRCS = libwos.cpp
-
-HEADERS = curlWosFunctions.h
-
-EXTRALIBS = -L/usr/lib64 -lcurl
-
-include ../Makefile.base
