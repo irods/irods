@@ -91,7 +91,9 @@ f 644 root root /usr/include/eirods/ ./iRODS/server/drivers/include/*.h
 d 755 root root /usr/share/eirods/
 d 755 root root /usr/share/eirods/examples
 d 755 root root /usr/share/eirods/examples/microservices
+d 755 root root /usr/share/eirods/examples/resources
 f 644 root root /usr/share/eirods/examples/microservices ./examples/microservices/*
+f 644 root root /usr/share/eirods/examples/resources ./examples/resources/*
 
 
 
