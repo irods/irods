@@ -27,9 +27,9 @@ namespace eirods {
         call_action_( 0 ) {
     } // ctor
 
-    ms_table_entry::ms_table_entry( std::string _name,
-                                    int         _num_args,
-                                    ms_func_ptr _fcn_ptr ) :
+    ms_table_entry::ms_table_entry( const std::string& _name,
+                                    int                _num_args,
+                                    ms_func_ptr        _fcn_ptr ) :
         plugin_base( "msvc", "ctx" ),
         num_args_( _num_args ), 
         call_action_( _fcn_ptr ) {

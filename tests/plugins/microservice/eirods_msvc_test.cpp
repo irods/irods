@@ -10,7 +10,7 @@
 
 extern "C" {
 
-    int EIRODS_PLUGIN_VERSION=1.0;
+    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
 	
     // =-=-=-=-=-=-=-
 	// 1. Write a standard issue microservice	
@@ -26,7 +26,9 @@ extern "C" {
 	//     service.  this will be called by the plugin loader in the irods server
 	//     to create the entry to the table when the plugin is requested.
 	eirods::ms_table_entry*  plugin_factory( ) {
-	    return new eirods::ms_table_entry( "eirods_msvc_test", 3 );	
+	    eirods::ms_table_entry* msvc = new eirods::ms_table_entry( 3 );	
+        msvc->add_operation( "eirods_msvc_test", "eirods_msvc_test" );
+        return msvc;
 	}
 
 }; // extern "C" 

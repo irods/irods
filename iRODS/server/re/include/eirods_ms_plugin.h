@@ -42,10 +42,11 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Constructors
         ms_table_entry( );
-        ms_table_entry( int ); // num ms args
-        ms_table_entry( std::string,  // ms name
-                        int,          // num ms args     
-                        ms_func_ptr );// function pointer
+        ms_table_entry( int );               // num ms args
+                        
+        ms_table_entry( const std::string&,  // ms name
+                        int,                 // num ms args     
+                        ms_func_ptr );       // function pointer
 
         // =-=-=-=-=-=-=-
         // copy ctor
