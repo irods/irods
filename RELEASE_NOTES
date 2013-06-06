@@ -1,8 +1,9 @@
 This is the first release of the Enterprise integrated Rule-Oriented Data System (E-iRODS).
 
-E-iRODS is developed under the auspices of the E-iRODS Consortium.  This release was prepared by the Renaissance Computing Institute (RENCI) and released under the New BSD (BSD-3) License.
+E-iRODS is developed under the auspices of the iRODS Consortium.  This release was prepared by the Renaissance Computing Institute (RENCI) and released under the New BSD (BSD-3) License.
 
-
+Development has focused on the following features and efforts:
+ 
 - Introduced pluggable interfaces for microservices and resources
 - Fixed an estimated 200 static analysis errors identified by cppcheck
 - Fixed an estimated 20 memory leaks identified by valgrind

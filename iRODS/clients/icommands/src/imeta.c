@@ -400,99 +400,6 @@ showResc(char *name, char *attrName, int wild)
 }
 
 /*
-Via a general query, show the AVUs for a resource group
-*/
-int
-showRescGroup(char *name, char *attrName, int wild) 
-{
-   genQueryInp_t genQueryInp;
-   genQueryOut_t *genQueryOut;
-   int i1a[10];
-   int i1b[10];
-   int i2a[10];
-   char *condVal[10];
-   char v1[BIG_STR];
-   char v2[BIG_STR];
-   int  status;
-   char *columnNames[]={"attribute", "value", "units"};
-
-   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-   if (upperCaseFlag) {
-     genQueryInp.options = UPPER_CASE_WHERE;
-   }
-
-   printf("AVUs defined for resource group %s:\n",name);
-   printCount=0;
-   i1a[0]=COL_META_RESC_GROUP_ATTR_NAME;
-   i1b[0]=0; /* currently unused */
-   i1a[1]=COL_META_RESC_GROUP_ATTR_VALUE;
-   i1b[1]=0;
-   i1a[2]=COL_META_RESC_GROUP_ATTR_UNITS;
-   i1b[2]=0;
-   genQueryInp.selectInp.inx = i1a;
-   genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = 3;
-
-   i2a[0]=COL_RESC_GROUP_NAME;
-   sprintf(v1,"='%s'",name);
-   condVal[0]=v1;
-
-   genQueryInp.sqlCondInp.inx = i2a;
-   genQueryInp.sqlCondInp.value = condVal;
-   genQueryInp.sqlCondInp.len=1;
-
-   if (attrName != NULL && *attrName!='\0') {
-      i2a[1]=COL_META_RESC_GROUP_ATTR_NAME;
-      if (wild) {
-	 sprintf(v2,"like '%s'",attrName);
-      }
-      else {
-	 sprintf(v2,"= '%s'",attrName);
-      }
-      condVal[1]=v2;
-      genQueryInp.sqlCondInp.len++;
-   }
-
-   genQueryInp.maxRows=10;
-   genQueryInp.continueInx=0;
-   genQueryInp.condInput.len=0;
-
-   /*
-   if (zoneArgument[0]!='\0') {
-      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
-   }
-   */
-   
-   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-   if (status == CAT_NO_ROWS_FOUND) {
-      /* When no AVU found, test the existence of the resource group itself */
-      i1a[0]=COL_RESC_GROUP_NAME;
-      genQueryInp.selectInp.len = 1;
-      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-      if (status==0) {
-	 printf("None\n");
-	 return(0);
-      }
-      if (status == CAT_NO_ROWS_FOUND) {
-	 printf("Resource group %s does not exist.\n", name);
-	 return(0);
-      }
-   }
-
-   printGenQueryResults(Conn, status, genQueryOut, columnNames);
-
-   while (status==0 && genQueryOut->continueInx > 0) {
-      genQueryInp.continueInx=genQueryOut->continueInx;
-      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-      if (genQueryOut->rowCnt>0) printf("----\n");
-      printGenQueryResults(Conn, status, genQueryOut, 
-					columnNames);
-   }
-
-   return (0);
-}
-
-/*
 Via a general query, show the AVUs for a user
 */
 int
@@ -841,69 +748,7 @@ int queryResc(char *attribute, char *op, char *value) {
    return (0);
 }
 
-/*
-Do a query on AVUs for resource groups and show the results
- */
-int queryRescGroup(char *attribute, char *op, char *value) {
-   genQueryInp_t genQueryInp;
-   genQueryOut_t *genQueryOut;
-   int i1a[10];
-   int i1b[10];
-   int i2a[10];
-   char *condVal[10];
-   char v1[BIG_STR];
-   char v2[BIG_STR];
-   int status;
-   char *columnNames[]={"resource group"};
 
-   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-   if (upperCaseFlag) {
-     genQueryInp.options = UPPER_CASE_WHERE;
-   }
-
-   printCount=0;
-   i1a[0]=COL_RESC_GROUP_NAME;
-   i1b[0]=0;  /* (unused) */
-   genQueryInp.selectInp.inx = i1a;
-   genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = 1;
-
-   i2a[0]=COL_META_RESC_GROUP_ATTR_NAME;
-   sprintf(v1,"='%s'",attribute);
-   condVal[0]=v1;
-
-   i2a[1]=COL_META_RESC_GROUP_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", op, value);
-   condVal[1]=v2;
-
-   genQueryInp.sqlCondInp.inx = i2a;
-   genQueryInp.sqlCondInp.value = condVal;
-   genQueryInp.sqlCondInp.len=2;
-
-   genQueryInp.maxRows=10;
-   genQueryInp.continueInx=0;
-   genQueryInp.condInput.len=0;
-
-   /*
-   if (zoneArgument[0]!='\0') {
-      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
-   }
-   */
-   
-   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-
-   printGenQueryResults(Conn, status, genQueryOut, columnNames);
-
-   while (status==0 && genQueryOut->continueInx > 0) {
-      genQueryInp.continueInx=genQueryOut->continueInx;
-      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-      if (genQueryOut->rowCnt>0) printf("----\n");
-      printGenQueryResults(Conn, status, genQueryOut, 
-					columnNames);
-   }
-
-   return (0);
-}
 
 /*
 Do a query on AVUs for users and show the results
@@ -984,10 +829,10 @@ modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    char fullName2[MAX_NAME_LEN];
 
    strncpy(fullName1, cwd, MAX_NAME_LEN);
-   if (strcmp(arg1,"-R")==0 || strcmp(arg1,"-r")==0 || 
-       strcmp(arg1,"-G")==0 || strcmp(arg1,"-g")==0 || 
+   if( strcmp(arg1,"-R")==0 || 
+       strcmp(arg1,"-r")==0 || 
        strcmp(arg1,"-u")==0) {
-      strncpy(fullName1, arg3, MAX_NAME_LEN);
+       strncpy(fullName1, arg3, MAX_NAME_LEN);
    }
    else {
       if (strlen(arg3)>0) {
@@ -1002,10 +847,10 @@ modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    }
 
    strncpy(fullName2, cwd, MAX_NAME_LEN);
-   if (strcmp(arg2,"-R")==0 || strcmp(arg2,"-r")==0 || 
-       strcmp(arg2,"-G")==0 || strcmp(arg2,"-g")==0 || 
+   if( strcmp(arg2,"-R")==0 || 
+       strcmp(arg2,"-r")==0 || 
        strcmp(arg2,"-u")==0) {
-      strncpy(fullName2, arg4, MAX_NAME_LEN);
+       strncpy(fullName2, arg4, MAX_NAME_LEN);
    }
    else {
       if (strlen(arg4)>0) {
@@ -1086,10 +931,10 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    char fullName[MAX_NAME_LEN];
 
    strncpy(fullName, cwd, MAX_NAME_LEN);
-   if (strcmp(arg1,"-R")==0 || strcmp(arg1,"-r")==0 || 
-       strcmp(arg1,"-G")==0 || strcmp(arg1,"-g")==0 || 
+   if( strcmp(arg1,"-R")==0 || 
+       strcmp(arg1,"-r")==0 || 
        strcmp(arg1,"-u")==0) {
-      strncpy(fullName, arg2, MAX_NAME_LEN);
+       strncpy(fullName, arg2, MAX_NAME_LEN);
    }
    else {
       if (strlen(arg2)>0) {
@@ -1258,11 +1103,9 @@ doCommand(char *cmdToken[]) {
    if (strcmp(cmdToken[1],"-C")==0) cmdToken[1][1]='c';
    if (strcmp(cmdToken[1],"-D")==0) cmdToken[1][1]='d';
    if (strcmp(cmdToken[1],"-R")==0) cmdToken[1][1]='r';
-   if (strcmp(cmdToken[1],"-G")==0) cmdToken[1][1]='g';
    if (strcmp(cmdToken[2],"-C")==0) cmdToken[2][1]='c';
    if (strcmp(cmdToken[2],"-D")==0) cmdToken[2][1]='d';
    if (strcmp(cmdToken[2],"-R")==0) cmdToken[2][1]='r';
-   if (strcmp(cmdToken[2],"-G")==0) cmdToken[2][1]='g';
 
    if (strcmp(cmdToken[0],"adda") == 0) {
       modAVUMetadata("adda", cmdToken[1], cmdToken[2], 
@@ -1342,10 +1185,6 @@ doCommand(char *cmdToken[]) {
 	 showResc(cmdToken[2], cmdToken[3], wild);
 	 return(0);
       }
-      if (strcmp(cmdToken[1],"-G")==0 || strcmp(cmdToken[1],"-g")==0) {
-	 showRescGroup(cmdToken[2], cmdToken[3], wild);
-	 return(0);
-      }
       if (strcmp(cmdToken[1],"-u")==0) {
 	 showUser(cmdToken[2], cmdToken[3], wild);
 	 return(0);
@@ -1363,10 +1202,6 @@ doCommand(char *cmdToken[]) {
       }
       if (strcmp(cmdToken[1],"-R")==0 || strcmp(cmdToken[1],"-r")==0) {
 	 queryResc(cmdToken[2], cmdToken[3], cmdToken[4]);
-	 return(0);
-      }
-      if (strcmp(cmdToken[1],"-G")==0 || strcmp(cmdToken[1],"-g")==0) {
-	 queryRescGroup(cmdToken[2], cmdToken[3], cmdToken[4]);
 	 return(0);
       }
       if (strcmp(cmdToken[1],"-u")==0) {
@@ -1620,11 +1455,11 @@ void usageMain()
 "via the 'add' command (and in other ways), and", 
 "then queried to find matching objects.",
 " ", 
-"For each command, -d, -C, -R, -G or -u is used to specify which type of", 
+"For each command, -d, -C, -R or -u is used to specify which type of", 
 "object to work with: dataobjs (irods files), collections, resources,",
-" resource groups or users. (Within imeta -c, -r and -g can be used, but -C,",
-" -R and -G are the", 
-"iRODS standard options for collections, resources and  resource groups.)",
+" or users. (Within imeta -c or -r can be used, but -C,",
+" -R is the", 
+"iRODS standard options for collections and resources.)",
 " ", 
 "Fields represented with upper case, such as Name, are entered values.  For", 
 "example, 'Name' is the name of a dataobject, collection, resource,", 
@@ -1677,7 +1512,7 @@ usage(char *subOpt)
 	 char *msgs[]={
 " add -d|C|R|G|u Name AttName AttValue [AttUnits]  (Add new AVU triplet)", 
 "Add an AVU to a dataobj (-d), collection(-C), resource(-R), ",
-"resource group(-G) or user(-u)",
+"or user(-u)",
 "Example: add -d file1 distance 12 miles",
 " ",
 "Admins can also use the command 'adda' (add as admin) to add metadata",
@@ -1715,7 +1550,7 @@ usage(char *subOpt)
 	 char *msgs[]={
 " rm  -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU)", 
 "Remove an AVU from a dataobj (-d), collection(-C), resource(-R),",
-"resource group(-G) or user(-u)",
+"or user(-u)",
 "Example: rm -d file1 distance 12 miles",
 "An AttUnits value must be included if it was when the AVU was added.",
 "Also see rmw for use of wildcard characters.",
@@ -1729,7 +1564,7 @@ usage(char *subOpt)
 	 char *msgs[]={
 " rmw  -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcard)", 
 "Remove an AVU from a dataobj (-d), collection(-C), resource(-R), ",
-"resource group(-G) or user(-u)",
+"or user(-u)",
 "An AttUnits value must be included if it was when the AVU was added.",
 "rmw is very similar to rm but using SQL wildcard characters, _ and %.",
 "The _ matches any single character and % matches any number of any",
@@ -1805,7 +1640,7 @@ usage(char *subOpt)
        char *msgs[]={
 " set -d|C|R|G|u Name AttName newValue [newUnits]  (assign a single value)", 
 "Set the newValue (and newUnit) of an AVU of a dataobj (-d), collection(-C),",
-"     resource(-R), resource group(-G) or user(-u).",
+"     resource(-R) or user(-u).",
 " ",
 "'set' modifies an AVU if it exists, or creates one if it does not.",
 "If the AttName does not exist, or is used by multiple objects, the AVU for",

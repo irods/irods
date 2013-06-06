@@ -4,7 +4,7 @@
 #define __EIRODS_RESOURCE_MANAGER_H__
 
 // =-=-=-=-=-=-=-
-// My Includes
+// eirods includes
 #include "eirods_resource_plugin.h"
 #include "eirods_first_class_object.h"
 
@@ -31,6 +31,12 @@ namespace eirods {
         // @brief  resolve a resource from a key into the resource table
         error resolve( std::string,     // resource key
                        resource_ptr& ); // resource out variable
+
+        // =-=-=-=-=-=-=-
+        // @brief  resolve a resource from a match with a given property
+        error validate_vault_path( std::string,       // physical path  of the data object
+                                   rodsServerHost_t*, // host for which we find the path
+			                       std::string& );    // match vault path
 
         // =-=-=-=-=-=-=-
         /// @brief  populate resource table from icat database

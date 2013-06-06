@@ -125,7 +125,7 @@ namespace eirods {
         if( !version_ptr || ( ( err = dlerror() ) != 0 ) ) {
             std::stringstream msg;
             msg << "load_plugin :: failed to load symbol from shared object handle - "
-                << "EIRODS_PLUGIN_VERSION" << " :: dlerror is " << err;
+                << "EIRODS_PLUGIN_INTERFACE_VERSION" << " :: dlerror is [" << err << "]";
             dlclose( handle );
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
@@ -149,7 +149,7 @@ namespace eirods {
         if( ( err = dlerror() ) != 0 ) {
             std::stringstream msg;
             msg << "failed to load symbol from shared object handle - plugin_factory"
-                << " :: dlerror is " << err;
+                << " :: dlerror is [" << err << "]";
             dlclose( handle );
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }

@@ -1,12 +1,9 @@
-=================================
-Enterprise iRODS (E-iRODS) Manual
-=================================
-
-.. header:: E-iRODS Manual
+.. header:: Enterprise iRODS (E-iRODS) Manual
 .. footer:: page ###Page###
 
 .. |todaysdate| date::
 
+|
 |
 |
 |
@@ -24,19 +21,20 @@ Enterprise iRODS (E-iRODS) Manual
 |
 |
 |
+|
+|
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0rc1
+:Version: 3.0
 :Date: |todaysdate|
 
 
+.. contents:: Table of Contents
+.. section-numbering::
 
 .. raw:: pdf
 
    PageBreak
-
-.. contents:: Table of Contents
-.. section-numbering::
 
 .. 
 ..   ----------------
@@ -93,8 +91,6 @@ This manual attempts to provide standalone documentation for E-iRODS as packaged
 
     http://eirods.org
 
-    file:///var/lib/eirods/iRODS/doc/html/index.html
-
 Additional documentation is available on the iRODS wiki and in the two books published by the iRODS team:
 
     http://irods.org
@@ -112,7 +108,10 @@ Additional documentation is available on the iRODS wiki and in the two books pub
 Download
 --------
 
-E-iRODS is currently released in binary form.  Full open source repositories and trackers will be available after the first major release.
+E-iRODS is released in both binary package format and with full source code.
+
+Binaries
+--------
 
 RPM and DEB formats are available for both iCAT-enabled servers and resource-only servers.  There are variations available for combinations of platform and operating system.
 
@@ -120,6 +119,13 @@ More combinations will be made available as our testing matrix continues to matu
 
 The latest files can be downloaded from http://eirods.org/download.
 
+Open Source
+-----------
+
+Repositories, ticket trackers, and source are available from the E-iRODS website.
+
+  http://eirods.org/developers
+  
 
 ------------
 Installation
@@ -127,13 +133,13 @@ Installation
 
 Installation of the Postgres iCAT DEB::
 
- $ (sudo) dpkg -i eirods-3.0rc1-64bit-icat-postgres.deb
+ $ (sudo) dpkg -i eirods-3.0-64bit-icat-postgres.deb
  $ (sudo) apt-get -f install
 
 Installation of the Resource RPM::
 
  - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
- $ (sudo) rpm -i eirods-3.0rc1-64bit-resource.rpm
+ $ (sudo) rpm -i eirods-3.0-64bit-resource.rpm
 
 These packages declare the dependencies necessary to run E-iRODS and if satisfied, they install a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
@@ -175,7 +181,7 @@ The default installation of E-iRODS comes with a single account 'rods' that has 
 
  eirods@hostname:~/ $ iadmin moduser rods password <newpassword>
 
-To make sure everything succeeded, you'll need to reauthenticate and check the new connection::
+To make sure everything succeeded, you will need to reauthenticate and check the new connection::
  
  eirods@hostname:~/ $ iinit
  Enter your current iRODS password:
@@ -281,7 +287,7 @@ Migration from Community iRODS
 
 Support for migrating from Community iRODS is planned, but automated scripts and documentation have not yet been completed.
 
-This section will be updated with support is included and tested.
+This section will be updated when support is included and tested.
 
 ----------
 Backing Up
@@ -289,18 +295,17 @@ Backing Up
 
 Backing up E-iRODS consists of three major parts:  The data, the iRODS system and configuration files, and the iCAT database itself.
 
+Configuration and maintenance of this type of backup system is out of scope for this document, but is included here as an indication of best practice.
+
 1) The data itself can be handled by the iRODS system through replication and should not require any specific backup efforts worth noting here.
 
-2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup`_ microservice.  When run on a regular schedule, the `msiServerBackup` microservice will gather and store all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
-
-.. _msiServerBackup: file:///var/lib/eirods/iRODS/doc/html/sys_backup_m_s_8c_abab044dfcae659a200741d4f69999c29.html
+2) The iRODS system and configuration files can be copied into iRODS as a set of Data Objects by using the `msiServerBackup` microservice.  When run on a regular schedule, the `msiServerBackup` microservice will gather and store all the necessary configuration information to help you reconstruct your iRODS setup during disaster recovery.
 
 3) The iCAT database itself can be backed up in a variety of ways.  A PostgreSQL database is contained on the local filesystem as a data/ directory and can be copied like any other set of files.  This is the most basic means to have backup copies.  However, this will have stale information almost immediately.  To cut into this problem of staleness, PostgreSQL 8.4+ includes a feature called `"Record-based Log Shipping"`__.  This consists of sending a full transaction log to another copy of PostgreSQL where it could be "re-played" and bring the copy up to date with the originating server.  Log shipping would generally be handled with a cronjob.  A faster, seamless version of log shipping called `"Streaming Replication"`__ was included in PostgreSQL 9.0+ and can keep two PostgreSQL servers in sync with sub-second delay.
 
 .. __: http://www.postgresql.org/docs/8.4/static/warm-standby.html#WARM-STANDBY-RECORD
 .. __: http://www.postgresql.org/docs/9.0/static/warm-standby.html#STREAMING-REPLICATION
 
-Configuration and maintenance of this type of backup system is out of scope for this document, but is included here as an indication of best practice.
 
 -----------
 Assumptions
@@ -353,10 +358,7 @@ Composable resources are best modeled with a tree metaphor (and in computer scie
 
 The terms root, leaf, branch, child, and parent represent locations and relationships within the structure of a particular tree.  The terms 'coordinating' and 'storage' represent the functionality of particular resources within a particular tree.  A resource node can be a coordinating resource and/or a storage resource.  For clarity and reuse, it is generally best practice to separate the two so that a particular resource node is either a coordinating resource or a storage resource.
 
-In computer science, a tree is a data structure with a hierarchical representation of linked nodes. These nodes can be named based on where they are in the
-hierarchy. The node at the top of a tree is the root node. Parent nodes and child nodes are on opposite ends of a connecting link, or edge. Leaf nodes are at
-the bottom of the tree, and any node that is not a leaf node is a branch node. These positional descriptors are helpful when describing the structure of a
-tree. Composable resources are best represented using this tree metaphor.
+In computer science, a tree is a data structure with a hierarchical representation of linked nodes. These nodes can be named based on where they are in the hierarchy. The node at the top of a tree is the root node. Parent nodes and child nodes are on opposite ends of a connecting link, or edge. Leaf nodes are at the bottom of the tree, and any node that is not a leaf node is a branch node. These positional descriptors are helpful when describing the structure of a tree. Composable resources are best represented using this tree metaphor.
 
 Virtualization
 --------------
@@ -365,11 +367,9 @@ In iRODS, files are stored as Data Objects on disk and have an associated physic
 
 Composable resources introduce the same dichotomy between the virtual and physical. E-iRODS resources are defined to be either coordinating resources or storage resources. These two different classes of resource map directly to the branch nodes and leaf nodes of a generic tree data structure. A coordinating resource has built-in logic that defines how it determines, or coordinates, the flow of data to and from its children. Coordinating resources exist solely in the iCAT and virtually exist across all E-iRODS servers in a particular Zone. A storage resource has a Vault (physical) path and knows how to speak to a specific type of storage medium (disk, tape, etc.). The encapsulation of resources into a plugin architecture allows E-iRODS to have a consistent interface to all resources, whether they represent coordination or storage.
 
-This virtualization of the coordinating resources allows the logic of how to manage both the placement and the retrieval of Data Objects to exist independent of the types of resources that are connected as children resources. When E-iRODS tries to retrieve data, each child resource will “vote” by offering whether it can provide the requested data, and coordinating resources will decide which particular storage resource (e.g. physical location) the read should come from. The specific manner of this vote is specific to the logic of the coordinating resource. For instance, a coordinating resource could optimize for reducing the number of requests made against each storage resource within some time frame or it could optimize for reducing latency in expected data retrieval times. We expect a wide variety of useful optimizations to be developed by the community.
+This virtualization of the coordinating resources allows the logic of how to manage both the placement and the retrieval of Data Objects to exist independent of the types of resources that are connected as children resources. When E-iRODS tries to retrieve data, each child resource will "vote" by offering whether it can provide the requested data, and coordinating resources will decide which particular storage resource (e.g. physical location) the read should come from. The specific manner of this vote is specific to the logic of the coordinating resource. For instance, a coordinating resource could optimize for reducing the number of requests made against each storage resource within some time frame or it could optimize for reducing latency in expected data retrieval times. We expect a wide variety of useful optimizations to be developed by the community.
 
 An intended side effect of the tree metaphor and the virtualization of coordinating resources is the deprecation of the concept of a resource group. Resource groups in community iRODS could not be put into other resource groups. A specific limiting example was that of the compound resource where, by definition, it was a group and could not be placed into another group significantly limiting its functionality as a management tool. Groups in E-iRODS now only refer to user groups.
-
-
 
 Read more at `http://eirods.org/release/e-irods-composable-resources/`__:
 
@@ -387,10 +387,11 @@ Coordinating Resources
 
 Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
 
+- legacy compound
 - random
+- replication
 - round robin
-- pass through (for testing)
-- replication (expected)
+- passthru (for testing)
 - load balanced (expected)
 - storage balanced (%-full) (expected)
 - storage balanced (bytes) (expected)
@@ -403,11 +404,11 @@ Storage resources represent storage interfaces and include the file driver infor
 
 - unix file system
 - structured file type (tar, zip, gzip, bzip)
-- Universal Mass Storage (expected)
+- non-blocking
+- Universal Mass Storage
 - HPSS (expected)
 - S3 (expected)
 - WOS (expected)
-- non-blocking (expected)
 
 Managing Child Resources
 ------------------------
@@ -462,53 +463,39 @@ A replicating coordinating resource with three unix file system storage resource
  eirods@hostname:~/ $ iadmin addchildtoresc example1 repl_resc3
 
 
------------------------------
+-------------------
 Users & Permissions
------------------------------
+-------------------
 
-Similar to the way that resources are grouped, users in E-iRODS can also be added to various groups, once the groups have been created. 
-A user can belong to more than one group at a time.
-The owner of a file has full control of the file and can give/remove access to other users/groups. The owner of a file can also give ownership rights to other users, who in
-turn can grant or revoke access to users.
+Users and permissions in E-iRODS are inspired by, but slightly different from, traditional UNIX filesystem permissions.  Access to Data Objects and Collections can be modified using the ``ichmod`` iCommand.
 
-Access to files and collections is modified using ``ichmod`` - the E-iRODS equivalent of the Unix ``chmod`` (change mode) shell command.
-Viewing policies for collections can be set in the core.re file by setting the ``msiAclPolicy`` - E-iRODS has strictACL as its default setting.
+Additionally, permissions can be managed via user groups in E-iRODS.  A user can belong to more than one group at a time.  The owner of a Data Object has full control of the file and can grant and remove access to other users and groups.  The owner of a Data Object can also give ownership rights to other users, who in turn can grant or revoke access to users.
 
-Collections in E-iRODS have an attribute named Inheritance, which is a directory specific setting.  When Collections have this attribute set to Enabled, new Data Objects and Collections added to the Collection inherit the access permissions (ACLs) of the Collection. Data Objects created within Collections with Inheritance set to Disabled do not inherit the parent Collection's ACL settings.
-By default, E-iRODS has Inheritance set to Disabled. 
+Inheritance is a collection-specific setting that determines the permission settings for new Data Objects and sub-Collections.  Data Objects created within Collections with Inheritance set to Disabled do not inherit the parent Collection's permissions.  By default, E-iRODS has Inheritance set to Disabled.  More can be read from the help provided by ``ichmod h``.
 
+Inheritance is especially useful when working with shared projects such as a public Collection to which all users should have read access. With Inheritance set to Enabled, any sub-Collections created under the public Collection will inherit the properties of the public Collection.  Therefore, a user with read access to the public Collection will also have read access to all Data Objects and Collections created in the public Collection.
 
-Inheritance is especially useful when working with shared projects such as a public folder to which all users have read access. With Inheritance set to Enabled, any sub-folders created under the public folder will inherit the properties of the public folder. 
-Therefore a user with read access to the public folder will also have read access to all objects and collections created
-in the public folder.
+-----------
+Rule Engine
+-----------
 
---------------------
-Rule Engine Syntax
---------------------
+The Rule Engine, which keeps track of state and interprets both system-defined rules and user-defined rules, is a critical component of the E-iRODS system.  Rules are definitions of actions that are to be performed by the server.  These actions are defined in terms of microservices and other actions.  The E-iRODS built-in Rule Engine interprets the rules and calls the appropriate microservices.
 
-The Rule Engine, which interprets rules, is a critical component of the E-iRODS system. Rules are definitions of actions that need to be performed by the server. 
-These actions are defined in terms of micro-services and other actions.
-The E-iRODS built-in Rule Engine interprets the rules and calls the appropriate micro-services.
+File Locking
+------------
 
-A Race condition occurs when two processes occur simultaneously and try to change shared data. The outcome of the process is unpredictable since both threads are "racing" to access/change the data.
-To avoid uncertainty in the outcome, the commands ``iput``, ``iget`` and ``irepl`` all have a --wlock/--rlock option to lock the data objects during these operations.
-An irodsServer thread then purges unused locked files every 2 hours.
+A race condition occurs when two processes simultaneously try to change the same data. The outcome of a race condition is unpredictable since both threads are "racing" to update the data.  To allow E-iRODS users to control such events, the iCommands ``iput``, ``iget``, and ``irepl`` each have both --wlock and --rlock options to lock the Data Objects during these operations.  An irodsServer thread then purges unused locked files every 2 hours.
 
 Delay execution
-----------------
+---------------
 
-Rules can be run in two modes- immediate execution or delayed execution. Most of the actions and/or microservices are executed immediately; however some actions are better suited to be placed in a queue and executed later.
-The actions and/or microservices which are executed in delay mode are queued and invoked under the ``delayExec`` microservice and their execution is delayed to a later time. Typically, these are resource-heavy, time-intensive
-processes, better suited to being carried out in a delayed mode.
+Rules can be run in two modes - immediate execution or delayed execution.  Most of the actions and microservices executed by the rule engine are executed immediately, however, some actions are better suited to be placed in a queue and executed later.  The actions and microservices which are to be executed in delay mode can be queued with the ``delayExec`` microservice.  Typically, delayed actions and microservices are resource-heavy, time-intensive processes, better suited to being carried out without having the user wait for their completion.  These delayed processes can also be used for cleanup and general maintenance of the E-iRODS system, like the cron in UNIX.
 
-One of the issues with delayed execution is that if a particular task fails, the queue starts to increase as scheduled tasks back up.
-The following commands may be used to troubleshoot queues that are backed up.
+Monitoring the delayed queue is important once your workflows and maintenance scripts depends on the health of the system. The delayed queue can be managed with the following three iCommands:
 
-::
-
-	iqdel    - remove a delayed rule (owned by you) from the queue.
-	iqmod    - modify certain values in existing delayed rules (owned by you).
-	iqstat   - show the queue status of delayed rules.
+#. iqdel    - remove a delayed rule (owned by you) from the queue.
+#. iqmod    - modify certain values in existing delayed rules (owned by you).
+#. iqstat   - show the queue status of delayed rules.
 
 ..
 .. ---------------
@@ -537,48 +524,190 @@ The following commands may be used to troubleshoot queues that are backed up.
 Authentication
 --------------
 
-	E-iRODS uses a secure password system for user authentication. The user passwords are scrambled and stored in the iCAT database.
-	Additionally, E-iRODS supports user authentication via PAM (Pluggable Authentication Modules), which in turn can be configured to support Kerberos and LDAP authentication systems.
-	To use E-iRODS with PAM, SSL has to be set up between the E-iRODS client and server.
+By default, E-iRODS uses a secure password system for user authentication.  The user passwords are scrambled and stored in the iCAT database.  Additionally, E-iRODS supports user authentication via PAM (Pluggable Authentication Modules), which in turn can be configured to support Kerberos and LDAP authentication systems.  PAM and SSL have been configured 'on' out of the box with E-iRODS, but there is still some setup required to configure an installation to communicate with your local external authentication server of choice.
 
-PAM authentication setup
--------------------------	
-	#. Add users
+PAM
+---
 
-		PAM can be configured to to support various authentication systems; however the E-iRODS administrator still needs to add the users to the E-iRODS database. If the user's credentials will be
-		exclusively authenticated with PAM, a password need not be assigned.
+User Setup
+**********
 
-	
-		``iadmin``::
+PAM can be configured to to support various authentication systems; however the E-iRODS administrator still needs to add the users to the E-iRODS database::
 
-			iadmin mkuser newuser rodsuser
+  eirods@hostname:~/ $ iadmin mkuser newuser rodsuser
 
-	#. Edit the config file to change the variables as detailed
+If the user's credentials will be exclusively authenticated with PAM, a password need not be assigned.
 
-		``config.mk``::
+For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) via their .irodsEnv file or by setting their environment variable::
 
-		
-		 # PAM_AUTH = 1 to 
+  eirods@hostname:~/ $ irodsAuthScheme=PAM
+  eirods@hostname:~/ $ export irodsAuthScheme
 
-		   PAM_AUTH = 1
+Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the 'iinit' session.
 
-		   and 
 
-		 # USE_SSL = 1  to
 
- 		   USE_SSL = 1
-		
-		and run 'make' again.
 
-	#. Install PAM libraries if needed
-		::
+In order to use the E-iRODS PAM support, you also need to have SSL working between the iRODS client and server. The SSL communication between client and iRODS server needs some basic setup in order to function properly. Much of the setup concerns getting a proper X.509 certificate setup on the server side, and setting up the trust for the server certificate on the client side. You can use either a self-signed certificate (best for testing) or a certificate from a trusted CA.
 
- 		 sudo apt-get install libpam0g-dev
+Server SSL Setup
+****************
 
-	   With PAM_AUTH enabled, 'make' will build server/bin/PamAuthCheck from server/auth/src/PamAuthCheck.c. PamAuthCheck.c is a simple program that is run by the irodsAgent to verify the user's password. 
-	   PamAuthCheck.c can be adjusted as needed, to use different PAM modules.
-	   For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) and runs 'iinit' and enters their system password.
-	   To protect the system password, SSL (via OpenSSL) is used to encrypt the 'iinit' session.
+Here are the basic steps to configure the server:
+
+Generate a new RSA key
+#######################
+
+Make sure it does not have a passphrase (i.e. do not use the -des, -des3 or -idea options to genrsa)::
+
+  eirods@hostname:~/ $ openssl genrsa -out server.key
+
+Acquire a certificate for the server
+####################################
+
+The certificate can be either from a trusted CA (internal or external), or can be self-signed (common for development and testing). To request a certificate from a CA, create your certificate signing request, and then follow the instructions given by the CA. When running the 'openssl req' command, some questions will be asked about what to put in the certificate. The locality fields do not really matter from the point of view of verification, but you probably want to try to be accurate. What is important, especially since this is a certificate for a server host, is to make sure to use the FQDN of the server as the "common name" for the certificate (should be the same name that clients use as their irodsHost), and do not add an email address. If you are working with a CA, you can also put host aliases that users might use to access the host in the 'subjectAltName' X.509 extension field if the CA offers this capability.
+
+To generate a Certificate Signing Request that can be sent to a CA, run the 'openssl req' command using the previously generated key::
+
+  eirods@hostname:~/ $ openssl req -new -key server.key -out server.csr
+
+To generate a self-signed certificate, also run 'openssl req', but with slightly different parameters. In the openssl command, you can put as many days as you wish::
+
+  eirods@hostname:~/ $ openssl req -new -x509 -key server.key -out server.crt -days 365
+
+Create the certificate chain file
+#################################
+
+If you are using a self-signed certificate, the chain file is just the same as the file with the certificate (server.crt).  If you have received a certificate from a CA, this file contains all the certificates that together can be used to verify the certificate, from the host certificate through the chain of intermediate CAs to the ultimate root CA.
+
+An example best illustrates how to create this file. A certificate for a host 'eirods.example.org' is requested from the proper domain registrar. Three files are received from the CA: eirods.crt, PositiveSSLCA2.crt and AddTrustExternalCARoot.crt. The certificates have the following 'subjects' and 'issuers'::
+
+  openssl x509 -noout -subject -issuer -in eirods.crt
+  subject= /OU=Domain Control Validated/OU=PositiveSSL/CN=eirods.example.org
+  issuer= /C=GB/ST=Greater Manchester/L=Salford/O=COMODO CA Limited/CN=PositiveSSL CA 2
+  openssl x509 -noout -subject -issuer -in PositiveSSLCA2.crt
+  subject= /C=GB/ST=Greater Manchester/L=Salford/O=COMODO CA Limited/CN=PositiveSSL CA 2
+  issuer= /C=SE/O=AddTrust AB/OU=AddTrust External TTP Network/CN=AddTrust External CA Root
+  openssl x509 -noout -subject -issuer -in AddTrustExternalCARoot.crt
+  subject= /C=SE/O=AddTrust AB/OU=AddTrust External TTP Network/CN=AddTrust External CA Root
+  issuer= /C=SE/O=AddTrust AB/OU=AddTrust External TTP Network/CN=AddTrust External CA Root
+
+The eirods.example.org cert was signed by the PositiveSSL CA 2, and that the PositiveSSL CA 2 cert was signed by the AddTrust External CA Root, and that the AddTrust External CA Root cert was self-signed, indicating that it is the root CA (and the end of the chain).
+
+To create the chain file for eirods.example.org::
+
+  eirods@hostname:~/ $ cat eirods.crt PositiveSSLCA2.crt AddTrustExternalCARoot.crt > chain.pem
+
+Generate OpenSSL parameters
+###########################
+
+Generate some Diffie-Hellman parameters for OpenSSL::
+
+  eirods@hostname:~/ $ openssl dhparam -2 -out dhparams.pem 2048
+
+Place files within accessible area
+##################################
+
+Put the dhparams.pem, server.key and chain.pem files somewhere that the E-iRODS server can access them (e.g. in iRODS/server/config).  Make sure that the eirods unix user can read the files (although you also want to make sure that the key file is only readable by the eirods user).
+
+Set SSL environment variables
+#############################
+
+The server needs to read these variables on startup::
+
+  eirods@hostname:~/ $ irodsSSLCertificateChainFile=/var/lib/eirods/iRODS/server/config/chain.pem
+  eirods@hostname:~/ $ export irodsSSLCertificateChainFile
+  eirods@hostname:~/ $ irodsSSLCertificateKeyFile=/var/lib/eirods/iRODS/server/config/server.key
+  eirods@hostname:~/ $ export irodsSSLCertificateKeyFile
+  eirods@hostname:~/ $ irodsSSLDHParamsFile=/var/lib/eirods/iRODS/server/config/dhparams.pem
+  eirods@hostname:~/ $ export irodsSSLDHParamsFile
+
+Restart E-iRODS
+###############
+
+Restart the server::
+
+  eirods@hostname:~/ $ ./iRODS/irodsctl restart
+
+Client SSL Setup
+****************
+
+The client may or may not require configuration at the SSL level, but there are a few parameters that can be set via environment variables to customize the client SSL interaction if necessary. In many cases, if the server's certificate comes from a common CA, your system might already be configured to accept certificates from that CA, and you will not have to adjust the client configuration at all. For example, on an Ubuntu Precise system, the /etc/ssl/certs directory is used as a repository for system trusted certificates installed via an Ubuntu package. Many of the commercial certificate vendors such as VeriSign and AddTrust have their certificates already installed.
+
+After setting up SSL on the server side, test SSL by using the PAM authentication (which requires an SSL connection) and running ``iinit`` with the log level set to LOG_NOTICE. If you see messages as follows, you need to set up trust for the server's certificate, or you need to turn off server verification.
+
+Error from non-trusted self-signed certificate::
+
+  eirods@hostname:~/ $ irodsLogLevel=LOG_NOTICE iinit
+  NOTICE: environment variable set, irodsLogLevel(input)=LOG_NOTICE, value=5
+  NOTICE: created irodsHome=/dn/home/eirods
+  NOTICE: created irodsCwd=/dn/home/eirods
+  Enter your current PAM (system) password:
+  NOTICE: sslVerifyCallback: problem with certificate at depth: 0
+  NOTICE: sslVerifyCallback:   issuer = /C=US/ST=North Carolina/L=Chapel Hill/O=RENCI/CN=eirods.example.org
+  NOTICE: sslVerifyCallback:   subject = /C=US/ST=North Carolina/L=Chapel Hill/O=RENCI/CN=eirods.example.org
+  NOTICE: sslVerifyCallback:   err 18:self signed certificate
+  ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
+  sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR 
+
+Error from untrusted CA that signed the server certificate::
+
+  eirods@hostname:~/ $ irodsLogLevel=LOG_NOTICE iinit
+  NOTICE: environment variable set, irodsLogLevel(input)=LOG_NOTICE, value=5
+  NOTICE: created irodsHome=/dn/home/eirods
+  NOTICE: created irodsCwd=/dn/home/eirods
+  Enter your current PAM (system) password:
+  NOTICE: sslVerifyCallback: problem with certificate at depth: 1
+  NOTICE: sslVerifyCallback:   issuer = /C=US/ST=North Carolina/O=example.org/CN=eirods.example.org Certificate Authority
+  NOTICE: sslVerifyCallback:   subject = /C=US/ST=North Carolina/O=example.org/CN=eirods.example.org Certificate Authority
+  NOTICE: sslVerifyCallback:   err 19:self signed certificate in certificate chain
+  ERROR: sslStart: error in SSL_connect. SSL error: error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
+  sslStart failed with error -2103000 SSL_HANDSHAKE_ERROR 
+
+Server verification can be turned off using the irodsSSLVerifyServer environment variable. If this variable is set to 'none', then any certificate (or none) is accepted by the client. This means that your connection will be encrypted, but you cannot be sure to what server (i.e. there is no server authentication). For that reason, this mode is discouraged.
+
+It is much better to set up trust for the server's certificate, even if it is a self-signed certificate. The easiest way is to use the irodsSSLCACertificateFile environment variable to contain all the certificates of either hosts or CAs that you trust. If you configured the server as described above, you could just set the following in your environment::
+
+  eirods@hostname:~/ $ irodsSSLCACertificateFile=/var/lib/eirods/iRODS/server/config/chain.pem
+  eirods@hostname:~/ $ export irodsSSLCACertificateFile
+
+Or this file could just contain the root CA certificate for a CA-signed server certificate.
+Another potential issue is that the server certificate does not contain the proper FQDN (in either the Common Name field or the subjectAltName field) to match the client's 'irodsHost' variable. If this situation cannot be corrected on the server side, the client can set::
+
+  eirods@hostname:~/ $ irodsSSLVerifyServer=cert
+  eirods@hostname:~/ $ export irodsSSLVerifyServer
+
+Then, the client library will only require certificate validation, but will not check that the hostname of the E-iRODS server matches the hostname(s) embedded within the certificate.
+
+Environment Variables
+*********************
+
+All the environment variables used by the SSL support (both server and client side) are listed below:
+
+irodsSSLCertificateChainFile (server)
+    The file containing the server's certificate chain. The certificates must be in PEM format and must be sorted starting with the subject's certificate (actual client or server certificate), followed by intermediate CA certificates if applicable, and ending at the highest level (root) CA.
+
+irodsSSLCertificateKeyFile (server)
+    Private key corresponding to the server's certificate in the certificate chain file.
+
+irodsSSLDHParamsFile (server)
+    The Diffie-Hellman parameter file location.
+
+irodsSSLVerifyServer (client)
+    What level of server certificate based authentication to perform. 'none' means not to perform any authentication at all. 'cert' means to verify the certificate validity (i.e. that it was signed by a trusted CA). 'hostname' means to validate the certificate and to verify that the irodsHost's FQDN matches either the common name or one of the subjectAltNames of the certificate. 'hostname' is the default setting.
+
+irodsSSLCACertificateFile (client)
+    Location of a file of trusted CA certificates in PEM format. Note that the certificates in this file are used in conjunction with the system default trusted certificates.
+
+irodsSSLCACertificatePath (client)
+    Location of a directory containing CA certificates in PEM format. The files each contain one CA certificate. The files are looked up by the CA subject name hash value, which must be available. If more than one CA certificate with the same name hash value exist, the extension must be different (e.g. 9d66eef0.0, 9d66eef0.1, etc.).  The search is performed based on the ordering of the extension number, regardless of other properties of the certificates.  Use the 'c_rehash' utility to create the necessary links.
+
+
+
+
+
+
+
 
 ..
 ..
@@ -624,61 +753,67 @@ Common Errors
 Some of the commonly encountered E-iRODS errors along with troubleshooting steps are discussed below.	
 
 
-#. **E-iRODS Server is down**	
+E-iRODS Server is down
+**********************
 
-	Error Code: USER_SOCK_CONNECT_TIMEDOUT	-347000
+Error Code: USER_SOCK_CONNECT_TIMEDOUT	-347000
 
-	Common areas to check for this error include:
+Common areas to check for this error include:
 
-	**ienv**
-		The ienv command verifies the E-iRODS environment for the server
+**ienv**
 
-	**Networking issues**
+- The ienv command displays the E-iRODS environment in use.  This may help debug the obvious error of trying to connect to the wrong machine or to the wrong Zone name.
 
-	- Verify that a firewall is not blocking the connection on the E-iRODS port in use.
-	
-	- Check for network connectivity problems by pinging the server in question.
+**Networking issues**
 
-	**E-iRODS server logs**
-		If the E-iRODS environment issues and networking issues have been ruled out, the E-iRODS server/client logs may provide information on the server status.
+- Verify that a firewall is not blocking the connection on the E-iRODS port in use (default 1247).
 
-#. **No such file or directory**
+- Check for network connectivity problems by pinging the server in question.
 
-	Common areas to check for this error include:
+**E-iRODS server logs**
 
-	**Permissions**
-		Verify that the E-iRODS user has 'write' access to the directory in question.
+If the E-iRODS environment issues and networking issues have been ruled out, the E-iRODS server/client logs may provide additional information with regards to the specifics of the error in question.
 
-	**FUSE error**
+No such file or directory
+*************************
 
-	**Zero byte files**
+Common areas to check for this error include:
+
+#. Permissions - Verify that the E-iRODS user has 'write' access to the directory in question
+
+#. FUSE error
+
+#. Zero byte files
 
 
-#. **No rows found in the E-iRODS Catalog**
+No rows found in the E-iRODS Catalog
+************************************
 
-	Error Code: CAT_NO_ROWS_FOUND	-808000
+:Error Code: CAT_NO_ROWS_FOUND -808000
 
-	The CAT_NO_ROWS_FOUND error is encountered when there are no results for the  query that was executed. This can happen because 
+This error is occurs when there are no results for the database query that was executed. This usually happens when either:
 
-	- the query itself is framed incorrectly or 
+#. the query itself is not well-formed (e.g. syntax error), or
 
-	- there truly are no results for the query i.e. there is no data corresponding to the criteria specified.
+#. the well-formed query produced no actual results (i.e. there is no data corresponding to the specified criteria).
 
-#. **Access control/Permissions**
+Access Control and Permissions
+******************************
 
-	Error Code: CAT_NO_ACCESS_PERMISSION		-818000
+:Error Code: CAT_NO_ACCESS_PERMISSION -818000
 
-	This error can occur when a user tries to get or put a file that belongs to another user without the file owner having given read and/or write permission.
-	A more restrictive policy on viewing collections can be set in the core.re file - ``msiAclPolicy("STRICT")``. In this mode, the user will not even be able to see the file.
-	In a non-strict mode, the user would be able to see the file; however read/write permissions determine what the user can do with the file.
- 	
-	Modifying the core.re file will apply the policy permanently; applying the policy via ``irule`` will have an impact only during the execution of the rule.
+This error can occur when an iRODS user tries to access an iRODS Data Object or Collection that belongs to another iRODS user without the owner having granted the appropriate permission (usually simply read or write).
 
-#. **Credentials**
+With the more restrictive "StrictACL" policy being turned "on" by default in E-iRODS, this may occur more often than expected with Community iRODS.  Check the permissions carefully and use ``ils -AL`` to help diagnose what permissions *are* set for the Data Objects and Collections of interest.
 
-	Error Code: CAT_INVALID_USER	-827000
-	
-	This error can occur when the user is unknown or invalid in some way (for instance- no password has been defined for the user).
+Modifying the "StrictACL" setting in the iRODS server's core.re file will apply the policy permanently; applying the policy via ``irule`` will have an impact only during the execution of that particular rule.
+
+Credentials
+***********
+
+:Error Code: CAT_INVALID_USER -827000
+
+This error can occur when the iRODS user is unknown or invalid in some way (for instance, no password has been defined for the user, or the user does not exist in that Zone).  This error is most common while debugging configuration issues with Zone Federation.
 
 
 --------
@@ -807,6 +942,10 @@ History of Releases
 ==========   =======    =====================================================
 Date         Version    Description
 ==========   =======    =====================================================
+2013-06-05   3.0        First Release.
+                          This is the first open source release from RENCI.
+                          It includes all the features mentioned below and
+                          has been both manually and continuously tested.
 2013-05-14   3.0rc1     First Release Candidate.
                           This is the first release candidate from RENCI.  It
                           includes PAM support, additional resources

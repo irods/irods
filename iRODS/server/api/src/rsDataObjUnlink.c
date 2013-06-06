@@ -301,24 +301,28 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
             rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH ) {
             ruleExecInfo_t rei;
 
-        initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
-        rei.doi = dataObjInfo;
-        rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
-        
-        applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-        if (rei.status != NO_CHK_PATH_PERM) {
-            char *outVaultPath;
-            rodsServerHost_t *rodsServerHost;
-            status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
-              &rodsServerHost);
-            if (status < 0) return status;
-            /* unregistering but not an admin user */
-            status = matchVaultPath (rsComm, dataObjInfo->filePath, rodsServerHost, &outVaultPath);
-            if (status != 0) {
-            /* in the vault */
-                    rodsLog (LOG_DEBUG,
-                             "dataObjUnlinkS: unregistering in vault file %s",
-                             dataObjInfo->filePath);
+            initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
+            rei.doi = dataObjInfo;
+            rei.status = DO_CHK_PATH_PERM;         /* default */ // JMC - backport 4758
+            
+            applyRule ("acSetChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+            if (rei.status != NO_CHK_PATH_PERM) {
+                rodsServerHost_t *rodsServerHost;
+                status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
+                  &rodsServerHost);
+                if (status < 0) {
+                    return status;
+                }
+
+                /* unregistering but not an admin user */
+                std::string out_path;
+                eirods::error ret = resc_mgr.validate_vault_path( dataObjInfo->filePath, rodsServerHost, out_path );
+                if( !ret.ok() ) {
+                    /* in the vault */
+                    std::stringstream msg;
+                    msg << "unregistering a data object which is in a vault [";
+                    msg << dataObjInfo->filePath << "]";
+                    eirods::log( PASSMSG( msg.str(), ret ) );
                     return CANT_UNREG_IN_VAULT_FILE;
                 }
             }

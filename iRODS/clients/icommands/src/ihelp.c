@@ -44,7 +44,7 @@ printMainHelp()
 "iinit    - initialize a session, so you don't need to retype your password.",
 "ilocate  - search for data-object(s) OR collections (via a script).",
 "ils      - list collections (directories) and data-objects (files).",
-"ilsresc  - list iRODS resources and resource-groups.",
+"ilsresc  - list iRODS resources.",
 "imcoll   - manage mounted collections and associated cache.",
 "imeta    - add/remove/copy/list/query user-defined metadata.",
 "imiscsvrinfo - retrieve basic server information.",

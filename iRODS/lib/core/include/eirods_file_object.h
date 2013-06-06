@@ -62,9 +62,7 @@ namespace eirods {
         // Mutators
         inline void size( size_t _v )        { size_           = _v; }
         inline void repl_requested( int _v ) { repl_requested_ = _v; }
-        inline void in_pdmo( bool _v )       {
-            in_pdmo_        = _v;
-        }
+        inline void in_pdmo( bool _v )       { in_pdmo_        = _v; }
         inline void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }

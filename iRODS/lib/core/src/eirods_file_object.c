@@ -225,6 +225,7 @@ namespace eirods {
         while( info_ptr ) {
             physical_object obj;
 
+            obj.is_dirty( info_ptr->replStatus );
             obj.repl_num( info_ptr->replNum );
             obj.map_id( info_ptr->dataMapId );
             obj.size( info_ptr->dataSize );

@@ -7,7 +7,7 @@ cwd=`pwd`
 cd ../../../iRODS
 irods_home=`./scripts/find_irods_home.sh`
 #echo "irods_msvc_home - $irods_msvc_home"
-irods_msvc_home="$irods_home/server/bin"
+irods_msvc_home="$irods_home/../plugins/microservices"
 #echo "irods_msvc_home - $irods_msvc_home"
 cd $cwd
 
@@ -30,7 +30,7 @@ msvc_run=$(grep "eirods_msvc_test :: 1 2 3" $irods_home/server/log/rodsLog* )
 
 # =-=-=-=-=-=-=-
 # check that rule didnt load twice
-dupe_load=$(grep "load_microservice_plugin :: loaded eirods_msvc_test" $irods_home/server/log/rodsLog*)
+dupe_load=$(grep "loaded \[eirods_msvc_test\]" $irods_home/server/log/rodsLog*)
 #echo "dupe_load - $dupe_load"
 
 # =-=-=-=-=-=-=-
@@ -40,7 +40,7 @@ irule -F ./run_eirods_missing_msvc_test.r &> /dev/null
 
 # =-=-=-=-=-=-=-
 # test to see that it failed properly
-miss_msvc=$(grep "load_microservice_plugin :: failed to load microservice plugin: /var/lib/eirods/iRODS/server/bin/libmissing_micro_service.so" /var/lib/eirods/iRODS/server/log/rodsLog* )
+miss_msvc=$(grep "missing_micro_service" /var/lib/eirods/iRODS/server/log/rodsLog* | grep NO_MICROSERVICE_FOUND_ERR )
 #echo "miss_msvc - $miss_msvc"
 
 

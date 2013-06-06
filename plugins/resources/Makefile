@@ -6,11 +6,8 @@ BASEDIRS = nonblocking \
            univmss \
            unixfilesystem \
            compound \
-           wos \
            random \
            mockarchive
-
-HPSSDIRS = hpss
 
 ######################################################################
 # Configuration should occur above this line
