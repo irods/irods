@@ -387,10 +387,11 @@ Coordinating Resources
 
 Coordinating resources contain the flow control logic which determines both how its child resources will be allocated copies of data as well as which copy is returned when a data object is requested.  These include:
 
+- legacy compound
 - random
 - replication
 - round robin
-- pass through (for testing)
+- passthru (for testing)
 - load balanced (expected)
 - storage balanced (%-full) (expected)
 - storage balanced (bytes) (expected)
@@ -404,7 +405,7 @@ Storage resources represent storage interfaces and include the file driver infor
 - unix file system
 - structured file type (tar, zip, gzip, bzip)
 - non-blocking
-- Universal Mass Storage (expected)
+- Universal Mass Storage
 - HPSS (expected)
 - S3 (expected)
 - WOS (expected)
@@ -537,7 +538,12 @@ PAM can be configured to to support various authentication systems; however the 
 
 If the user's credentials will be exclusively authenticated with PAM, a password need not be assigned.
 
-For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) and runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the 'iinit' session.
+For PAM Authentication, the iRODS user selects the new iRODS PAM authentication choice (instead of password, or Kerberos) via their .irodsEnv file or by setting their environment variable::
+
+  eirods@hostname:~/ $ irodsAuthScheme=PAM
+  eirods@hostname:~/ $ export irodsAuthScheme
+
+Then, the user runs 'iinit' and enters their system password.  To protect the system password, SSL (via OpenSSL) is used to encrypt the 'iinit' session.
 
 
 
