@@ -37,14 +37,15 @@ endif
 default: ${SUBS}
 
 ${SUBS}:
-	@-mkdir $@/${OBJDIR} > /dev/null 2>&1
-	@-mkdir $@/${DEPDIR} > /dev/null 2>&1
+	@-mkdir -p $@/${OBJDIR} > /dev/null 2>&1
+	@-mkdir -p $@/${DEPDIR} > /dev/null 2>&1
 	${MAKE} -C $@
 
 clean:
 	@-for dir in ${SUBS}; do \
-	rm $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
-	rm $$dir/*.o > /dev/null 2>&1; \
+	echo "Cleaning $$dir"; \
+	rm -f $$dir/${OBJDIR}/*.o > /dev/null 2>&1; \
+	rm -f $$dir/*.o > /dev/null 2>&1; \
 	done
-	@-rm ${SOTOPDIR}/*.so > /dev/null 2>&1
+	@-rm -f ${SOTOPDIR}/*.so > /dev/null 2>&1
 
