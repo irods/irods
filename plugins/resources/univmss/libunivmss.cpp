@@ -707,7 +707,7 @@ extern "C" {
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
-    eirods::error univ_mss_file_registered_plugin(
+    eirods::error univ_mss_file_registered(
         eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = univ_mss_check_param(_ctx);
@@ -718,11 +718,11 @@ extern "C" {
         }
         // NOOP
         return SUCCESS();
-    }
+    } // univ_mss_file_registered
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
-    eirods::error univ_mss_file_unregistered_plugin(
+    eirods::error univ_mss_file_unregistered(
         eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = univ_mss_check_param(_ctx);
@@ -733,11 +733,11 @@ extern "C" {
         }
         // NOOP
         return SUCCESS();
-    }
+    } // univ_mss_file_unregistered
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
-    eirods::error univ_mss_file_modified_plugin(
+    eirods::error univ_mss_file_modified(
         eirods::resource_operation_context* _ctx) {
         // Check the operation parameters and update the physical path
         eirods::error ret = univ_mss_check_param(_ctx);
@@ -748,7 +748,7 @@ extern "C" {
         }
         // NOOP
         return SUCCESS();
-    }
+    } // univ_mss_file_modified
 
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
@@ -884,7 +884,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // used to allow the resource to determine which host
     // should provide the requested operation
-    eirods::error univ_mss_file_redirect_plugin( 
+    eirods::error univ_mss_file_redirect( 
         eirods::resource_operation_context* _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
@@ -894,7 +894,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check the context pointer
         if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "univ_mss_file_redirect_plugin - invalid resource context" );
+            return ERROR( SYS_INVALID_INPUT_PARAM, "univ_mss_file_redirect- invalid resource context" );
         }
          
         // =-=-=-=-=-=-=-
@@ -909,16 +909,16 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_opr ) {
-            return ERROR( -1, "univ_mss_file_redirect_plugin - null operation" );
+            return ERROR( -1, "univ_mss_file_redirect- null operation" );
         }
         if( !_curr_host ) {
-            return ERROR( -1, "univ_mss_file_redirect_plugin - null operation" );
+            return ERROR( -1, "univ_mss_file_redirect- null operation" );
         }
         if( !_out_parser ) {
-            return ERROR( -1, "univ_mss_file_redirect_plugin - null outgoing hier parser" );
+            return ERROR( -1, "univ_mss_file_redirect- null outgoing hier parser" );
         }
         if( !_out_vote ) {
-            return ERROR( -1, "univ_mss_file_redirect_plugin - null outgoing vote" );
+            return ERROR( -1, "univ_mss_file_redirect- null outgoing vote" );
         }
         
         // =-=-=-=-=-=-=-
@@ -931,7 +931,7 @@ extern "C" {
         ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
-            msg << "univ_mss_file_redirect_plugin - failed in get property for name";
+            msg << "univ_mss_file_redirect- failed in get property for name";
             return ERROR( -1, msg.str() );
         }
 
@@ -955,11 +955,11 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // must have been passed a bad operation 
         std::stringstream msg;
-        msg << "univ_mss_file_redirect_plugin - operation not supported [";
+        msg << "univ_mss_file_redirect- operation not supported [";
         msg << (*_opr) << "]";
         return ERROR( -1, msg.str() );
 
-    } // univ_mss_file_redirect_plugin
+    } // univ_mss_file_redirect
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle universal mss resources
@@ -1017,30 +1017,29 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of 
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "univ_mss_file_create" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "univ_mss_file_open" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "univ_mss_file_read" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "univ_mss_file_write" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "univ_mss_file_close" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "univ_mss_file_unlink" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "univ_mss_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "univ_mss_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "univ_mss_file_fsync" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "univ_mss_file_mkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "univ_mss_file_opendir" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "univ_mss_file_readdir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGE,        "univ_mss_file_stage" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "univ_mss_file_rename" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "univ_mss_file_getfs_freespace" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "univ_mss_file_lseek" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "univ_mss_file_rmdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "univ_mss_file_closedir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "univ_mss_file_stage_to_cache" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "univ_mss_file_sync_to_arch" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "univ_mss_file_registered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "univ_mss_file_unregistered_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "univ_mss_file_modified_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "univ_mss_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,            "univ_mss_file_create" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,              "univ_mss_file_open" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,              "univ_mss_file_read" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,             "univ_mss_file_write" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "univ_mss_file_close" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "univ_mss_file_unlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,              "univ_mss_file_stat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSTAT,             "univ_mss_file_fstat" );
+        resc->add_operation( eirods::RESOURCE_OP_FSYNC,             "univ_mss_file_fsync" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "univ_mss_file_mkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "univ_mss_file_opendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,           "univ_mss_file_readdir" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,            "univ_mss_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "univ_mss_file_getfs_freespace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "univ_mss_file_lseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "univ_mss_file_rmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,          "univ_mss_file_closedir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE,      "univ_mss_file_stage_to_cache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,        "univ_mss_file_sync_to_arch" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "univ_mss_file_registered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "univ_mss_file_unregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "univ_mss_file_modified" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "univ_mss_file_redirect" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
