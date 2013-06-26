@@ -30,16 +30,16 @@ endif
 default: ${FULLTARGET}
 
 clean:
-	@-rm ${FULLTARGET} > /dev/null 2>&1
-	@-rm ${OBJS} > /dev/null 2>&1
+	@-rm -f ${FULLTARGET} > /dev/null 2>&1
+	@-rm -f ${OBJS} > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
-	@-mkdir ${SODIR} > /dev/null 2>&1
+	@-mkdir -p ${SODIR} > /dev/null 2>&1
 	${GCC} ${INC} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
 
 ${DEPFILE}: ${DEPS}
-	@-rm ${DEPFILE} > /dev/null 2>&1
+	@-rm -f ${DEPFILE} > /dev/null 2>&1
 	@for dep in ${DEPS}; do \
 	cat $$dep >> ${DEPFILE}; \
 	done

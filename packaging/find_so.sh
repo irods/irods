@@ -6,13 +6,13 @@ search_term="$1*"
 
 # =-=-=-=-=-=-=-
 # determine how many hits we have for finding the file
-num_res=$( find /usr -name "$search_term" -print 2> /dev/null | wc -l )
+num_res=$( find /usr -name "$search_term" -print 2> /dev/null | grep -v "vmware" | wc -l )
 
 # =-=-=-=-=-=-=-
 # count only binary ELF files
 if [ $num_res -gt 1 ]; then
 	ctr=0
-	for file in `find /usr -name "$search_term" -print 2> /dev/null`
+	for file in `find /usr -name "$search_term" -print 2> /dev/null | grep -v "vmware"`
 	do
 		elfstatus=`file $file | grep ELF | wc -l`
 		if [ "$elfstatus" == "1" ]; then
@@ -22,7 +22,7 @@ if [ $num_res -gt 1 ]; then
 	done
 else
 	# either 0 or 1 found
-	elf_links[0]=`find /usr -name "$search_term" -print 2> /dev/null`
+	elf_links[0]=`find /usr -name "$search_term" -print 2> /dev/null | grep -v "vmware"`
 fi
 
 # prepopulate the return variable with the proper values,
@@ -36,7 +36,7 @@ ret=${elf_links[0]}
 # pick first symlink, just because
 if [[ ( $num_res -gt 0 ) && ( "$ctr" == "0" ) ]] ; then
 	# return first one
-	ret=`find /usr -name "$search_term" -print 2> /dev/null | head -n1`
+	ret=`find /usr -name "$search_term" -print 2> /dev/null | grep -v "vmware" | head -n1`
 fi
 
 # =-=-=-=-=-=-=-
@@ -51,9 +51,9 @@ fi
 # if there is more than one binary file - look for 64bit only
 if [ ${#elf_links[@]} -gt 1 ]; then
 	# look for lib64 first
-	num_64bit=$( find /usr -type f -name "$search_term" -print | grep "64" | xargs file | grep "ELF" 2> /dev/null | wc -l )
+	num_64bit=$( find /usr -type f -name "$search_term" -print | grep -v "vmware" | grep "64" | xargs file | grep "ELF" 2> /dev/null | wc -l )
 	if [ "$num_64bit" -eq 1 ]; then
-		ret=`find /usr -type f -name "$search_term" -print | grep "64" 2> /dev/null`
+		ret=`find /usr -type f -name "$search_term" -print | grep -v "vmware" | grep "64" 2> /dev/null`
 		unset elf_links
 		elf_links[0]=$ret
 	fi
@@ -64,7 +64,7 @@ fi
 # set return value accordingly
 if [ ${#elf_links[@]} -gt 1 ]; then
 	echo "Multiple versions of [$display_name] found, aborting installation" 1>&2
-	echo -e `find /usr -name "$search_term" -print 2> /dev/null ` 1>&2
+	echo -e "$( find /usr -name "$search_term" -print 2> /dev/null | grep -v "vmware" | xargs file )" 1>&2
 	ret="FAIL/FAIL"
 fi
 
