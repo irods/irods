@@ -66,6 +66,7 @@ packInstructArray_t RodsPackTable[] = {
 	{"MsgHeader_PI", MsgHeader_PI},
 	{"StartupPack_PI", StartupPack_PI},
 	{"Version_PI", Version_PI},
+	{"CS_NEG_PI", CS_NEG_PI},
 	{"RErrMsg_PI", RErrMsg_PI},
 	{"RError_PI", RError_PI},
 	{"RHostAddr_PI", RHostAddr_PI},

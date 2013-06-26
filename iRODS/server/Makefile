@@ -50,7 +50,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/reServerLib.o	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/eirods_resource_manager.o \
-		$(svrCoreObjDir)/eirods_resource_backport.o
+		$(svrCoreObjDir)/eirods_resource_backport.o \
+		$(svrCoreObjDir)/eirods_server_negotiation.o 
 
 INCLUDES +=	-I$(svrCoreIncDir)
 

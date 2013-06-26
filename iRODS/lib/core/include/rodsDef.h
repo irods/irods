@@ -247,6 +247,7 @@ typedef struct msgHeader {
 #define RODS_RECONNECT_T    "RODS_RECONNECT"
 #define RODS_REAUTH_T     "RODS_REAUTH"
 #define RODS_API_REPLY_T    "RODS_API_REPLY"
+#define RODS_CS_NEG_T    "RODS_CS_NEG_T"
 
 /* The strct sent with RODS_CONNECT type by client */
 typedef struct startupPack {
@@ -282,6 +283,11 @@ typedef struct startupPack {
 #define SP_LOG_SQL	"spLogSql"
 #define SP_LOG_LEVEL	"spLogLevel"
 #define SERVER_BOOT_TIME "serverBootTime"
+
+// =-=-=-=-=-=-=-
+// magic token to assign to startup pack option variable
+// in order to request a client-server negotiation
+#define REQ_SVR_NEG	"request_server_negotation"
 
 /* Definition for resource status. If it is empty (strlen == 0), it is
  * assumed to be up */

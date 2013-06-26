@@ -27,6 +27,10 @@
 
 #define Version_PI "int status; str relVersion[NAME_LEN]; str apiVersion[NAME_LEN]; int reconnPort; str reconnAddr[LONG_NAME_LEN]; int cookie;"
 
+// =-=-=-=-=-=-=-
+// pack struct for client server negotiations
+#define CS_NEG_PI "int status; struct KeyValPair_PI;"
+
 /* packInstruct for rErrMsg_t */
 
 #define RErrMsg_PI "int status; str msg[ERR_MSG_LEN];"

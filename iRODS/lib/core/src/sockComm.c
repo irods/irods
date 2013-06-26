@@ -40,7 +40,10 @@ connToutHandler (int sig)
 #endif // JMC - UNUSED
 #endif  /* _WIN32 */
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_stacktrace.h"
+#include "eirods_client_server_negotiation.h"
 
 #ifdef USE_BOOST_ASIO
 
@@ -753,6 +756,29 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         return status;
     }
 
+    // =-=-=-=-=-=-=-
+    // if the client requests the connection negotiation then wait for a
+    // response here from the Agent
+    if( eirods::do_client_server_negotiation() ) {
+        // =-=-=-=-=-=-=-
+        // politely do the negotiation
+        std::string results;
+        eirods::error err = eirods::client_server_negotiation_for_client( *conn, results ); 
+        if( !err.ok() ) {
+            eirods::log( PASS( err ) ); 
+            return err.code();    
+        }
+        
+        // =-=-=-=-=-=-=-
+        // enable SSL if requested 
+        // NOTE:: this is disabled in rcDisconnect if the conn->ssl_on flag is set
+        if( eirods::CS_NEG_USE_SSL == results ) {
+            sslStart( conn );
+        }
+    }
+    
+    // =-=-=-=-=-=-=-
+    // back to business as usual
     status = readVersion (conn->sock, &conn->svrVersion);
 
     if (status < 0) {

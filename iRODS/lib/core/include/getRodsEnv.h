@@ -22,6 +22,7 @@ typedef struct {
    int rodsLogLevel;
    char rodsAuthFileName[LONG_NAME_LEN];
    char rodsDebug[NAME_LEN];
+   char rodsClientServerPolicy[ LONG_NAME_LEN ];
 } rodsEnv;
 
 int getRodsEnv(rodsEnv *myRodsEnv);

@@ -21,6 +21,8 @@
 #endif
 
 #include "eirods_stacktrace.h"
+#include "sslSockComm.h"
+
 
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
@@ -270,6 +272,13 @@ rcDisconnect (rcComm_t *conn)
     /* send disconnect msg to agent */
     status = sendRodsMsg (conn->sock, RODS_DISCONNECT_T, NULL, NULL, NULL, 0,
       conn->irodsProt);
+
+    // =-=-=-=-=-=-=-
+    // disable SSL if previously requested
+    if( conn->ssl_on ) {
+        sslEnd( conn );
+    
+    }
 
     /* need to call asio close if USE_BOOST_ASIO */
     close (conn->sock);
