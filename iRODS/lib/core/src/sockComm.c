@@ -765,7 +765,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         std::string results;
         eirods::error err = eirods::client_server_negotiation_for_client( *conn, results ); 
         if( !err.ok() ) {
-            eirods::log( PASS( err ) ); 
+            //eirods::log( PASS( err ) ); 
             return err.code();    
         }
         
@@ -773,8 +773,9 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         // enable SSL if requested 
         // NOTE:: this is disabled in rcDisconnect if the conn->ssl_on flag is set
         if( eirods::CS_NEG_USE_SSL == results ) {
-            sslStart( conn );
-        }
+            // JMC - off until we have net plugins :: sslStart( conn );
+        } 
+    
     }
     
     // =-=-=-=-=-=-=-
@@ -1094,15 +1095,15 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
 
     /* setup the startup pack */
 
-    startupPack.irodsProt = conn->irodsProt;
+    startupPack.irodsProt  = conn->irodsProt;
     startupPack.connectCnt = connectCnt;
     startupPack.reconnFlag = reconnFlag;
 
-    rstrcpy (startupPack.proxyUser, conn->proxyUser.userName, NAME_LEN);
-    rstrcpy (startupPack.proxyRodsZone, conn->proxyUser.rodsZone, NAME_LEN);
-    rstrcpy (startupPack.clientUser, conn->clientUser.userName, NAME_LEN);
-    rstrcpy (startupPack.clientRodsZone, conn->clientUser.rodsZone, 
-             NAME_LEN);
+    rstrcpy (startupPack.proxyUser,      conn->proxyUser.userName,  NAME_LEN);
+    rstrcpy (startupPack.proxyRodsZone,  conn->proxyUser.rodsZone,  NAME_LEN);
+    rstrcpy (startupPack.clientUser,     conn->clientUser.userName, NAME_LEN);
+    rstrcpy (startupPack.clientRodsZone, conn->clientUser.rodsZone, NAME_LEN);
+             
     rstrcpy (startupPack.relVersion, RODS_REL_VERSION,  NAME_LEN);
     rstrcpy (startupPack.apiVersion, RODS_API_VERSION,  NAME_LEN);
 
@@ -1111,6 +1112,10 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
     } else {
         startupPack.option[0] = '\0';
     }
+
+    if( ( tmpStr = getenv( eirods::RODS_CS_NEG ) ) != NULL ) {
+        strncat( startupPack.option, tmpStr, strlen( tmpStr ) );
+    } 
 
     /* always use XML_PROT for the startupPack */
     status = packStruct ((void *) &startupPack, &startupPackBBuf,

@@ -27,10 +27,6 @@
 
 #define Version_PI "int status; str relVersion[NAME_LEN]; str apiVersion[NAME_LEN]; int reconnPort; str reconnAddr[LONG_NAME_LEN]; int cookie;"
 
-// =-=-=-=-=-=-=-
-// pack struct for client server negotiations
-#define CS_NEG_PI "int status; struct KeyValPair_PI;"
-
 /* packInstruct for rErrMsg_t */
 
 #define RErrMsg_PI "int status; str msg[ERR_MSG_LEN];"
@@ -46,6 +42,10 @@
 #define RODS_DIRENT_T_PI "int d_offset; int d_ino; int d_reclen; int d_namlen; str d_name[DIR_LEN];" 
 
 #define KeyValPair_PI "int ssLen; str *keyWord[ssLen]; str *svalue[ssLen];" 
+
+// =-=-=-=-=-=-=-
+// pack struct for client server negotiations
+#define CS_NEG_PI "int status; str result[MAX_NAME_LEN];"
 
 #define InxIvalPair_PI "int iiLen; int *inx(iiLen); int *ivalue(iiLen);" 
 

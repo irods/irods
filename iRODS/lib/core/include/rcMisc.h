@@ -274,7 +274,7 @@ getPhyBunPath (const char *collection, const char *objPath, const char *phyBunDi
 int
 unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf);
 int
-mySetenvStr (char *envname, char *envval);
+mySetenvStr (const char *envname, const char *envval);
 int
 mySetenvInt (char *envname, int envval);
 int

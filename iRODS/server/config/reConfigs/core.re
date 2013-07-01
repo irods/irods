@@ -9,6 +9,8 @@ printHello { print_hello; }
 #
 # These are sys admin rules for creating and deleting users and renaming
 # the local zone.
+acPreConnect(*OUT) { *OUT="CS_NEG_DONT_USE_SSL"; }
+
 acCreateUser {
   acPreProcForCreateUser;
   acCreateUserF1;

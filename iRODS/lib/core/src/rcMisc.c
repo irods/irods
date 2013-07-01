@@ -4450,8 +4450,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                 return 0;
             }
 
-            int
-                mySetenvStr (char *envname, char *envval)
+            int mySetenvStr (const char *envname, const char *envval)
             {
                 int status;
 

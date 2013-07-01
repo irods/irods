@@ -276,7 +276,8 @@ rcDisconnect (rcComm_t *conn)
     // =-=-=-=-=-=-=-
     // disable SSL if previously requested
     if( conn->ssl_on ) {
-        sslEnd( conn );
+        printf( "DISABLE SSL\n" );
+        // JMC - this is off until we have network plugins :: sslEnd( conn );
     
     }
 
