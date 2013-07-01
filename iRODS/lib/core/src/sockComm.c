@@ -40,7 +40,10 @@ connToutHandler (int sig)
 #endif // JMC - UNUSED
 #endif  /* _WIN32 */
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_stacktrace.h"
+#include "eirods_client_server_negotiation.h"
 
 #ifdef USE_BOOST_ASIO
 
@@ -753,6 +756,30 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         return status;
     }
 
+    // =-=-=-=-=-=-=-
+    // if the client requests the connection negotiation then wait for a
+    // response here from the Agent
+    if( eirods::do_client_server_negotiation() ) {
+        // =-=-=-=-=-=-=-
+        // politely do the negotiation
+        std::string results;
+        eirods::error err = eirods::client_server_negotiation_for_client( *conn, results ); 
+        if( !err.ok() ) {
+            //eirods::log( PASS( err ) ); 
+            return err.code();    
+        }
+        
+        // =-=-=-=-=-=-=-
+        // enable SSL if requested 
+        // NOTE:: this is disabled in rcDisconnect if the conn->ssl_on flag is set
+        if( eirods::CS_NEG_USE_SSL == results ) {
+            // JMC - off until we have net plugins :: sslStart( conn );
+        } 
+    
+    }
+    
+    // =-=-=-=-=-=-=-
+    // back to business as usual
     status = readVersion (conn->sock, &conn->svrVersion);
 
     if (status < 0) {
@@ -1068,15 +1095,15 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
 
     /* setup the startup pack */
 
-    startupPack.irodsProt = conn->irodsProt;
+    startupPack.irodsProt  = conn->irodsProt;
     startupPack.connectCnt = connectCnt;
     startupPack.reconnFlag = reconnFlag;
 
-    rstrcpy (startupPack.proxyUser, conn->proxyUser.userName, NAME_LEN);
-    rstrcpy (startupPack.proxyRodsZone, conn->proxyUser.rodsZone, NAME_LEN);
-    rstrcpy (startupPack.clientUser, conn->clientUser.userName, NAME_LEN);
-    rstrcpy (startupPack.clientRodsZone, conn->clientUser.rodsZone, 
-             NAME_LEN);
+    rstrcpy (startupPack.proxyUser,      conn->proxyUser.userName,  NAME_LEN);
+    rstrcpy (startupPack.proxyRodsZone,  conn->proxyUser.rodsZone,  NAME_LEN);
+    rstrcpy (startupPack.clientUser,     conn->clientUser.userName, NAME_LEN);
+    rstrcpy (startupPack.clientRodsZone, conn->clientUser.rodsZone, NAME_LEN);
+             
     rstrcpy (startupPack.relVersion, RODS_REL_VERSION,  NAME_LEN);
     rstrcpy (startupPack.apiVersion, RODS_API_VERSION,  NAME_LEN);
 
@@ -1085,6 +1112,10 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
     } else {
         startupPack.option[0] = '\0';
     }
+
+    if( ( tmpStr = getenv( eirods::RODS_CS_NEG ) ) != NULL ) {
+        strncat( startupPack.option, tmpStr, strlen( tmpStr ) );
+    } 
 
     /* always use XML_PROT for the startupPack */
     status = packStruct ((void *) &startupPack, &startupPackBBuf,

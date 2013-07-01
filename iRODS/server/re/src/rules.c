@@ -716,7 +716,6 @@ Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamA
     Env *env = defaultEnv(r);
     /* retrieve generated data here as it may be overridden by convertMsParamArrayToEnv */
     execCmdOut_t *execOut = addCmdExecOutToEnv(globalEnv(env), r);
-
     Res *res;
     rError_t errmsgBuf;
     errmsgBuf.errMsg = NULL;

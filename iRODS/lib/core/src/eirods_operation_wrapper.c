@@ -45,7 +45,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
 	// public - assignment for stl container
 	operation_wrapper& operation_wrapper::operator=( const operation_wrapper& _rhs ) {
-		operation_ = _rhs.operation_;
+		operation_      = _rhs.operation_;
 		instance_name_  = _rhs.instance_name_;
 		operation_name_ = _rhs.operation_name_;
 		return *this;

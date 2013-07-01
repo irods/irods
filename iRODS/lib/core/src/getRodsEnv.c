@@ -281,6 +281,18 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
                 rodsLog(msgLevel, "irodsZone=%s",
                         rodsEnvArg->rodsZone);
             }
+            
+            // =-=-=-=-=-=-=-
+            // variable for client - server negotiations 
+            key=strstr(buf, "irodsClientServerPolicy");
+            if (key != NULL) {
+                rstrcpy( rodsEnvArg->rodsClientServerPolicy,
+                         findNextTokenAndTerm( key + 24 ),
+                         LONG_NAME_LEN );
+                rodsLog( msgLevel, "irodsClientServerPolicy=%s",
+                        rodsEnvArg->rodsClientServerPolicy );
+            }
+
             key=strstr(buf, "irodsServerDn");
             if (key != NULL) {
                 char *myStr;
@@ -433,6 +445,19 @@ getRodsEnvFromEnv(rodsEnv *rodsEnvArg) {
                 "environment variable set, irodsZone=%s",
                 rodsEnvArg->rodsZone);
     }
+ 
+    // =-=-=-=-=-=-=-
+    // variable for client - server negotiations 
+    getVar = getenv("irodsClientServerPolicy");
+    if( getVar != NULL ) {
+        rstrcpy( rodsEnvArg->rodsClientServerPolicy, 
+                 findNextTokenAndTerm( getVar ),
+                 LONG_NAME_LEN );
+        rodsLog( LOG_NOTICE,
+                 "environment variable set, irodsClientServerPolicy=%s",
+                 rodsEnvArg->rodsClientServerPolicy );
+    }
+
     getVar = getenv("irodsServerDn");
     if (getVar!=NULL) {
         char *myStr;

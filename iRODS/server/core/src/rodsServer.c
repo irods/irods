@@ -20,6 +20,10 @@
 #include "irodsntutil.h"
 #endif
 
+#include "eirods_client_server_negotiation.h"
+
+
+
 uint ServerBootTime;
 int SvrSock;
 
@@ -540,7 +544,22 @@ execAgent (int newSock, startupPack_t *startupPack)
     mySetenvStr (SP_CLIENT_RODS_ZONE, startupPack->clientRodsZone);
     mySetenvStr (SP_REL_VERSION, startupPack->relVersion);
     mySetenvStr (SP_API_VERSION, startupPack->apiVersion);
-    mySetenvStr (SP_OPTION, startupPack->option);
+
+    // =-=-=-=-=-=-=-
+    // if the client-server negotiation request is in the 
+    // option variable, set that env var and strip it out
+    std::string opt_str( startupPack->option );
+    size_t pos = opt_str.find( REQ_SVR_NEG );
+    if( std::string::npos != pos ) {
+        std::string trunc_str = opt_str.substr( 0, pos );
+        mySetenvStr( SP_OPTION,           trunc_str.c_str() );
+        mySetenvStr( eirods::RODS_CS_NEG, REQ_SVR_NEG );
+
+    } else {
+        mySetenvStr (SP_OPTION, startupPack->option);
+
+    }
+
     mySetenvInt (SERVER_BOOT_TIME, ServerBootTime);
 
 #if 0

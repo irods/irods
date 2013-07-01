@@ -43,6 +43,10 @@
 
 #define KeyValPair_PI "int ssLen; str *keyWord[ssLen]; str *svalue[ssLen];" 
 
+// =-=-=-=-=-=-=-
+// pack struct for client server negotiations
+#define CS_NEG_PI "int status; str result[MAX_NAME_LEN];"
+
 #define InxIvalPair_PI "int iiLen; int *inx(iiLen); int *ivalue(iiLen);" 
 
 #define InxValPair_PI "int isLen; int *inx(isLen); str *svalue[isLen];" 

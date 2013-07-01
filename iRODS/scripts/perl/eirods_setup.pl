@@ -1773,7 +1773,10 @@ sub configureIrodsUser
 			"# Account name:\n" .
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n" );
+			"irodsZone '$ZONE_NAME'\n" .
+            "# client-server connection policy" .
+            "irodsClientServerPolicy 'CS_NEG_DONT_CARE'" );
+            
 	} else {
 		# this is an instance of a Resource Server installation as
 		# determined by the lack of database info passed to the script.
