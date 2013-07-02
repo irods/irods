@@ -3885,6 +3885,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
             return(0); /* success so far, but more rows available */
         }
     }
+    return 0;
 }
 
 /* Delete a Collection by Administrator, */
