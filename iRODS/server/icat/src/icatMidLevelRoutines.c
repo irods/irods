@@ -447,6 +447,7 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
             }
         }
     }
+    return 0;
 }
 
 
