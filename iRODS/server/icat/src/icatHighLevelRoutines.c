@@ -37,6 +37,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <boost/regex.hpp>
 
 extern int get64RandomBytes(char *buf);
 
@@ -6028,6 +6029,26 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
 }
 
 
+/// @brief function for validating a username
+eirods::error validate_user_name(std::string _user_name) {
+
+	// Must be between 3 and NAME_LEN-1 characters.
+	// Must start and end with a word character.
+	// May contain non consecutive dashes and dots.
+	boost::regex re("^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$");
+
+	if (!boost::regex_match(_user_name, re)) {
+        std::stringstream msg;
+        msg << "validate_user_name failed for user [";
+        msg << _user_name;
+        msg << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_user_name
+
 
 /* Register a User, RuleEngine version */
 int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
@@ -6051,13 +6072,20 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         return(CATALOG_NOT_CONNECTED);
     }
 
-    if (userInfo==0) {
-        return(CAT_INVALID_ARGUMENT);
+    if (!userInfo) {
+        return(SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    if (userInfo->userType==0) {
-        return(CAT_INVALID_ARGUMENT);
+    // =-=-=-=-=-=-=-
+    // Validate user name before making queries
+    eirods::error ret = validate_user_name(userInfo->userName);
+    if(!ret.ok()) {
+        eirods::log(ret);
+        return SYS_INVALID_INPUT_PARAM;
     }
+    // =-=-=-=-=-=-=-
+
+
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
     if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
