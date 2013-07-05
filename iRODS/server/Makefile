@@ -307,6 +307,7 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # MODULE_LDFLAGS string.
 LDFLAGS +=	$(LIBRARY) $(LDADD) 
 
+# Boost libraries. Commented out and added to LIBRARY further down
 #LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
 #LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
 #LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
@@ -490,7 +491,7 @@ $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 
-LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a $(BOOST_DIR)/stage/lib/libboost_filesystem.a
+LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a $(BOOST_DIR)/stage/lib/libboost_filesystem.a $(BOOST_DIR)/stage/lib/libboost_regex.a
 
 #
 # Servers
