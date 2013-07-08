@@ -39,8 +39,8 @@ $TICKET2="ticket2";
 $TICKET3="ticket3";
 $TICKET_HOST="pivo.ucsd.edu";
 
-$U2="u2";
-$U3="u3";
+$U2="user2";
+$U3="user3";
 $U1="rods";
 $Resc="demoResc";
 $Resc2="Resc2";
