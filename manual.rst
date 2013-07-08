@@ -14,7 +14,7 @@
 |
 |
 
-.. figure:: ./images/E-iRODS-Logo-Tagline.jpg
+.. figure:: ./iRODS/images/E-iRODS-Logo-Tagline.jpg
    :width: 6 in
    :align: center
 
@@ -445,7 +445,7 @@ Creating a composite resource consists of creating the individual nodes of the d
 Example 1
 *********
 
-.. figure:: ./images/example1-tree.jpg
+.. figure:: ./iRODS/images/example1-tree.jpg
    :height: 1.5 in
    :width: 3 in
    :align: center
