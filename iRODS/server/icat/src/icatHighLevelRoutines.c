@@ -6076,15 +6076,6 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
         return(SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    // =-=-=-=-=-=-=-
-    // Validate user name before making queries
-    eirods::error ret = validate_user_name(userInfo->userName);
-    if(!ret.ok()) {
-        eirods::log(ret);
-        return SYS_INVALID_INPUT_PARAM;
-    }
-    // =-=-=-=-=-=-=-
-
 
     // =-=-=-=-=-=-=-
     // JMC - backport 4772
@@ -6143,6 +6134,17 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
     if (status != 0) {
         return (CAT_INVALID_ARGUMENT);
     }
+
+
+    // =-=-=-=-=-=-=-
+    // Validate user name format
+    eirods::error ret = validate_user_name(userName2);
+    if(!ret.ok()) {
+        eirods::log(ret);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    // =-=-=-=-=-=-=-
+
 
     if (zoneForm) {
         /* check that the zone exists (if not defaulting to local) */
