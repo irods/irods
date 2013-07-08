@@ -1752,7 +1752,7 @@ sub configureIrodsUser
 
 	if( 1 == $icatInstall ) {
 		# this is an instance of an iCAT installation as 
-        # determined by the passing of configuration parameters ( database info ).
+		# determined by the passing of configuration parameters ( database info ).
 		printToFile( $userIrodsFile,
 			"# iRODS personal configuration file.\n" .
 			"#\n" .
@@ -1774,13 +1774,13 @@ sub configureIrodsUser
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
 			"irodsZone '$ZONE_NAME'\n" .
-            "# client-server connection policy" .
-            "irodsClientServerPolicy 'CS_NEG_DONT_CARE'" );
-            
+			"# Client-Server connection policy:\n" .
+			"irodsClientServerPolicy 'CS_NEG_DONT_CARE'\n" );
+
 	} else {
 		# this is an instance of a Resource Server installation as
 		# determined by the lack of database info passed to the script.
-		# this info will be temp. until setup_resource.sh is ran by the DGA.
+		# this info will be temp. until setup_resource.sh is run by the DGA.
 
 		printToFile( $userIrodsFile,
 			"# iRODS personal configuration file.\n" .
