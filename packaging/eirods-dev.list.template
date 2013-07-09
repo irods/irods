@@ -6,7 +6,7 @@
 %vendor Renaissance Computing Institute <info@eirods.org>
 %license LICENSE
 %readme README
-%description Enterprise edition of the Integrated Rule Oriented Storage system
+%description Enterprise edition of the Integrated Rule Oriented Data System
 %version TEMPLATE_EIRODSVERSION TEMPLATE_EPMEIRODSVERSION
 
 
