@@ -1780,6 +1780,7 @@ sub printUsage
 	printNotice( "    restart       Restart the iRODS and database servers\n" );
 	printNotice( "    status        Show the status of iRODS and database servers\n" );
 	printNotice( "    devtest       Run a developer test suite\n" );
+	printNotice( "    devtestyall   Run an extended test suite\n" );
 	printNotice( "    loadtest      Run a concurrency (load/pound) test suite\n" );
 
 	setPrintVerbose( $oldVerbosity );
