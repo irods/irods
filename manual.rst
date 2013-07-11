@@ -25,7 +25,7 @@
 |
 
 :Author: Renaissance Computing Institute (RENCI)
-:Version: 3.0
+:Version: 3.0.1
 :Date: |todaysdate|
 
 
@@ -133,13 +133,13 @@ Installation
 
 Installation of the Postgres iCAT DEB::
 
- $ (sudo) dpkg -i eirods-3.0-64bit-icat-postgres.deb
+ $ (sudo) dpkg -i eirods-3.0.1-64bit-icat-postgres.deb
  $ (sudo) apt-get -f install
 
 Installation of the Resource RPM::
 
  - Make sure to read ./packaging/RPM_INSTALLATION_HOWTO.txt before trying to install the RPM package.
- $ (sudo) rpm -i eirods-3.0-64bit-resource.rpm
+ $ (sudo) rpm -i eirods-3.0.1-64bit-resource.rpm
 
 These packages declare the dependencies necessary to run E-iRODS and if satisfied, they install a service account and group named 'eirods', the E-iRODS binaries, microservice documentation, and this manual.
 
