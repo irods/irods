@@ -423,7 +423,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input xmlObj error. status = %d", rei->status);
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 		return (rei->status);
 	}
@@ -434,7 +434,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input xsdObj error. status = %d", rei->status);
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 		return (rei->status);
 	}
@@ -446,7 +446,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	if ((xmlObjID = rsDataObjOpen(rsComm, &xmlObjInp)) < 0) 
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot open XML data object. status = %d", xmlObjID);
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 		return (xmlObjID);
 	}
@@ -498,7 +498,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 	    xmlCleanupParser();
 
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 	    return (USER_INPUT_FORMAT_ERR);
 	}
@@ -515,7 +515,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlFreeDoc(doc);
 	    xmlCleanupParser();
 
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 		return (xsdObjID);
 	}
@@ -558,7 +558,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlFreeDoc(doc);
 		xmlCleanupParser();
 
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 	    return (USER_INPUT_FORMAT_ERR);
 	}
@@ -577,7 +577,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlFreeDoc(doc);
 	    xmlCleanupParser();
 
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 	    return (USER_INPUT_FORMAT_ERR);
 	}
@@ -594,7 +594,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlFreeDoc(xsd_doc);
         xmlCleanupParser();
 
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 	    return (USER_INPUT_FORMAT_ERR);
 	}
@@ -612,7 +612,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlFreeDoc(doc);
 	    xmlCleanupParser();
 
-		free( errBuf.buf ); // JMC cppcheck - leak
+		free( errBuf->buf ); // JMC cppcheck - leak
 		free( errBuf ); // JMC cppcheck - leak
 	    return (USER_INPUT_FORMAT_ERR);
 	}
@@ -642,7 +642,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	xmlFreeDoc(xsd_doc);
 	xmlCleanupParser();
 
-	free( errBuf.buf ); // JMC cppcheck - leak
+	free( errBuf->buf ); // JMC cppcheck - leak
 	free( errBuf ); // JMC cppcheck - leak
 	return (rei->status);
 }
