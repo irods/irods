@@ -1203,6 +1203,8 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm = rei->rsComm;
 
     dataObjInp = (dataObjInp_t*)malloc (sizeof (dataObjInp_t));
+    memset(dataObjInp, 0, sizeof (dataObjInp_t));
+
     /* parse inpParam1 */
     rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
       &myDataObjInp, 1);
