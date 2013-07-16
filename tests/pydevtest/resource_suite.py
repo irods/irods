@@ -7,26 +7,100 @@ import shlex
 import datetime
 import time
 
-class ShortAndSuite(object):
+class ResourceBase(object):
+
+    def __init__(self):
+        print "in ResourceBase.__init__"
+        self.testfile = "pydevtest_testfile.txt"
+        self.testdir = "pydevtest_testdir"
+        self.testresc = "pydevtest_TestResc"
+        self.anotherresc = "pydevtest_AnotherResc"
 
     def run_resource_setup(self):
         print "run_resource_setup - BEGIN"
+        # set up resource itself
         for i in self.my_test_resource["setup"]:
             parameters = shlex.split(i) # preserves quoted substrings
-            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+            if parameters[0] == "iadmin":
+                print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+            else:
+                output = commands.getstatusoutput(" ".join(parameters))
+                print output
+        # set up test resource
+        print "run_resource_setup - creating test resources"
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+        s.adminsession.runAdminCmd('iadmin',["mkresc",self.testresc,"unix file system",hostname+":/tmp/pydevtest_"+self.testresc])
+        s.adminsession.runAdminCmd('iadmin',["mkresc",self.anotherresc,"unix file system",hostname+":/tmp/pydevtest_"+self.anotherresc])
+        # set up test files
+        print "run_resource_setup - generating local testfile"
+        f = open(self.testfile,'wb')
+        f.write("I AM A TESTFILE -- ["+self.testfile+"]")
+        f.close()
+        print "run_resource_setup - adding testfile to grid"
+        s.adminsession.runCmd('imkdir',[self.testdir])
+        s.adminsession.runCmd('iput',[self.testfile])
+        print "run_resource_setup - adding testfile to grid public directory"
+        s.adminsession.runCmd('icp',[self.testfile,"../../public/"]) # copy of testfile into public
+        print "run_resource_setup - setting permissions"
+        # permissions
+        s.adminsession.runCmd('ichmod',["read",s.users[1]['name'],"../../public/"+self.testfile]) # read for user1
+        s.adminsession.runCmd('ichmod',["write",s.users[2]['name'],"../../public/"+self.testfile]) # write for user2
         print "run_resource_setup - END"
 
     def run_resource_teardown(self):
         print "run_resource_teardown - BEGIN"
+        # local file cleanup
+        print "run_resource_teardown - removing local testfile"
+        os.unlink(self.testfile)
+        # remove grid test files
+        print "run_resource_teardown  - removing testfile from grid public directory"
+        s.adminsession.runCmd('irm',[self.testfile,"../../public/"+self.testfile])
+        # tear down admin session files
+        print "run_resource_teardown  - admin session removing session files"
+        s.adminsession.runCmd('icd')
+        s.adminsession.runCmd('irm',['-r',s.adminsession.sessionId])
+        # clean trash
+        print "run_resource_teardown  - clean trash"
+        s.adminsession.runCmd('irmtrash',['-M'])
+        # remove resc
+        print "run_resource_teardown  - removing test resources"
+        s.adminsession.runAdminCmd('iadmin',['rmresc',self.testresc])
+        s.adminsession.runAdminCmd('iadmin',['rmresc',self.anotherresc])
+        # tear down resource itself
+        print "run_resource_teardown  - tearing down actual resource"
         for i in self.my_test_resource["teardown"]:
             parameters = shlex.split(i) # preserves quoted substrings
-            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+            if parameters[0] == "iadmin":
+                print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+            else:
+                output = commands.getstatusoutput(" ".join(parameters))
+                print output
         print "run_resource_teardown - END"
+
+class ShortAndSuite(ResourceBase):
+
+    def __init__(self):
+        print "in ShortAndSuite.__init__"
+        ResourceBase.__init__(self)
 
     def test_awesome(self):
         print "AWESOME!"
 
-class ResourceSuite(object):
+    def test_local_iget(self):
+        print self.testfile
+
+        # local setup
+        localfile = "local.txt"
+        # assertions
+        assertiCmd(s.adminsession,"iget "+self.testfile+" "+localfile) # iget
+        output = commands.getstatusoutput( 'ls '+localfile )
+        print "  output: ["+output[1]+"]"
+        assert output[1] == localfile
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+localfile )
+
+class ResourceSuite(ResourceBase):
     '''Define the tests to be run for a resource type.
 
     This class is designed to be used as a base class by developers
@@ -37,15 +111,9 @@ class ResourceSuite(object):
     they need to modify.
     '''
 
-    def run_resource_setup(self):
-        for i in self.my_test_resource["setup"]:
-            parameters = shlex.split(i) # preserves quoted substrings
-            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
-
-    def run_resource_teardown(self):
-        for i in self.my_test_resource["teardown"]:
-            parameters = shlex.split(i) # preserves quoted substrings
-            print s.adminsession.runAdminCmd(parameters[0],parameters[1:])
+    def __init__(self):
+        print "in ResourceSuite.__init__"
+        ResourceBase.__init__(self)
 
     # SKIP TEST
     def test_skip_me(self):
@@ -59,7 +127,7 @@ class ResourceSuite(object):
         # local setup
         localfile = "local.txt"
         # assertions
-        assertiCmd(s.adminsession,"iget "+s.testfile+" "+localfile) # iget
+        assertiCmd(s.adminsession,"iget "+self.testfile+" "+localfile) # iget
         output = commands.getstatusoutput( 'ls '+localfile )
         print "  output: ["+output[1]+"]"
         assert output[1] == localfile
@@ -70,9 +138,9 @@ class ResourceSuite(object):
         # local setup
         localfile = "local.txt"
         # assertions
-        assertiCmd(s.adminsession,"iget "+s.testfile+" "+localfile) # iget
-        assertiCmdFail(s.adminsession,"iget "+s.testfile+" "+localfile) # already exists
-        assertiCmd(s.adminsession,"iget -f "+s.testfile+" "+localfile) # already exists, so force
+        assertiCmd(s.adminsession,"iget "+self.testfile+" "+localfile) # iget
+        assertiCmdFail(s.adminsession,"iget "+self.testfile+" "+localfile) # already exists
+        assertiCmd(s.adminsession,"iget -f "+self.testfile+" "+localfile) # already exists, so force
         output = commands.getstatusoutput( 'ls '+localfile )
         print "  output: ["+output[1]+"]"
         assert output[1] == localfile
@@ -84,6 +152,13 @@ class ResourceSuite(object):
         assertiCmdFail(s.adminsession,"iget -z") # run iget with bad option
 
     ###################
+    # ihelp
+    ###################
+
+    def test_ihelp_all(self):
+        assertiCmd(s.adminsession,"ihelp -a","LIST","ihelp") # print help messages for all iCommands
+
+    ###################
     # imv
     ###################
 
@@ -91,23 +166,23 @@ class ResourceSuite(object):
         # local setup
         movedfile = "moved_file.txt"
         # assertions
-        assertiCmd(s.adminsession,"imv "+s.testfile+" "+movedfile) # move
+        assertiCmd(s.adminsession,"imv "+self.testfile+" "+movedfile) # move
         assertiCmd(s.adminsession,"ils -L "+movedfile,"LIST",movedfile) # should be listed
         # local cleanup
 
     def test_local_imv_to_directory(self):
         # local setup
         # assertions
-        assertiCmd(s.adminsession,"imv "+s.testfile+" "+s.testdir) # move
-        assertiCmd(s.adminsession,"ils -L "+s.testdir,"LIST",s.testfile) # should be listed
+        assertiCmd(s.adminsession,"imv "+self.testfile+" "+self.testdir) # move
+        assertiCmd(s.adminsession,"ils -L "+self.testdir,"LIST",self.testfile) # should be listed
         # local cleanup
 
     def test_local_imv_to_existing_filename(self):
         # local setup
         copyfile = "anotherfile.txt"
         # assertions
-        assertiCmd(s.adminsession,"icp "+s.testfile+" "+copyfile) # icp
-        assertiCmd(s.adminsession,"imv "+s.testfile+" "+copyfile, "ERROR", "CAT_NAME_EXISTS_AS_DATAOBJ") # cannot overwrite existing file
+        assertiCmd(s.adminsession,"icp "+self.testfile+" "+copyfile) # icp
+        assertiCmd(s.adminsession,"imv "+self.testfile+" "+copyfile, "ERROR", "CAT_NAME_EXISTS_AS_DATAOBJ") # cannot overwrite existing file
         # local cleanup
 
     ###################
@@ -128,8 +203,8 @@ class ResourceSuite(object):
         output = commands.getstatusoutput( 'rm '+datafilename )
 
     def test_local_iput_overwrite(self):
-        assertiCmdFail(s.adminsession,"iput "+s.testfile) # fail, already exists
-        assertiCmd(s.adminsession,"iput -f "+s.testfile) # iput again, force
+        assertiCmdFail(s.adminsession,"iput "+self.testfile) # fail, already exists
+        assertiCmd(s.adminsession,"iput -f "+self.testfile) # iput again, force
 
     def test_local_iput_recursive(self):
         recursivedirname = "dir"
@@ -154,9 +229,9 @@ class ResourceSuite(object):
         f.close()
         # assertions
         assertiCmdFail(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should not be listed
-        assertiCmd(s.adminsession,"iput -R testResc "+datafilename) # iput
+        assertiCmd(s.adminsession,"iput -R "+self.testresc+" "+datafilename) # iput
         assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should be listed
-        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST","testResc") # should be listed
+        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",self.testresc) # should be listed
         # local cleanup
         output = commands.getstatusoutput( 'rm '+datafilename )
 
@@ -435,50 +510,50 @@ class ResourceSuite(object):
         assertiCmdFail(s.adminsession,"irm doesnotexist") # does not exist
 
     def test_irm(self):
-        assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be listed
-        assertiCmd(s.adminsession,"irm "+s.testfile) # remove from grid
-        assertiCmdFail(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be deleted
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed
+        assertiCmd(s.adminsession,"irm "+self.testfile) # remove from grid
+        assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be deleted
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
-        assertiCmd(s.adminsession,"ils -L "+trashpath+"/"+s.testfile,"LIST",s.testfile) # should be in trash
+        assertiCmd(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",self.testfile) # should be in trash
 
     def test_irm_force(self):
-        assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be listed
-        assertiCmd(s.adminsession,"irm -f "+s.testfile) # remove from grid
-        assertiCmdFail(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be deleted
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed
+        assertiCmd(s.adminsession,"irm -f "+self.testfile) # remove from grid
+        assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be deleted
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
-        assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+s.testfile,"LIST",s.testfile) # should not be in trash
+        assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",self.testfile) # should not be in trash
 
     def test_irm_specific_replica(self):
-        assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be listed
-        assertiCmd(s.adminsession,"irepl -R "+s.testresc+" "+s.testfile) # creates replica
-        assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be listed twice
-        assertiCmd(s.adminsession,"irm -n 0 "+s.testfile) # remove original from grid
-        assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",["1 "+s.testresc,s.testfile]) # replica 1 should be there
-        assertiCmdFail(s.adminsession,"ils -L "+s.testfile,"LIST",["0 "+s.adminsession.getDefResource(),s.testfile]) # replica 0 should be gone
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+self.testfile) # creates replica
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed twice
+        assertiCmd(s.adminsession,"irm -n 0 "+self.testfile) # remove original from grid
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["1 "+self.testresc,self.testfile]) # replica 1 should be there
+        assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica 0 should be gone
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
-        assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+s.testfile,"LIST",["0 "+s.adminsession.getDefResource(),s.testfile]) # replica should not be in trash
+        assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
 
     def test_irm_recursive_file(self):
-        assertiCmd(s.adminsession,"ils -L "+s.testfile,"LIST",s.testfile) # should be listed
-        assertiCmd(s.adminsession,"irm -r "+s.testfile) # should not fail, even though a collection
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed
+        assertiCmd(s.adminsession,"irm -r "+self.testfile) # should not fail, even though a collection
 
     def test_irm_recursive(self):
-        assertiCmd(s.adminsession,"icp -r "+s.testdir+" copydir") # make a dir copy
+        assertiCmd(s.adminsession,"icp -r "+self.testdir+" copydir") # make a dir copy
         assertiCmd(s.adminsession,"ils -L ","LIST","copydir") # should be listed
         assertiCmd(s.adminsession,"irm -r copydir") # should remove
         assertiCmdFail(s.adminsession,"ils -L ","LIST","copydir") # should not be listed
 
     def test_irm_with_read_permission(self):
         assertiCmd(s.sessions[1],"icd ../../public") # switch to shared area
-        assertiCmd(s.sessions[1],"ils -AL "+s.testfile,"LIST",s.testfile) # should be listed
-        assertiCmdFail(s.sessions[1],"irm "+s.testfile) # read perm should not be allowed to remove
-        assertiCmd(s.sessions[1],"ils -AL "+s.testfile,"LIST",s.testfile) # should still be listed
+        assertiCmd(s.sessions[1],"ils -AL "+self.testfile,"LIST",self.testfile) # should be listed
+        assertiCmdFail(s.sessions[1],"irm "+self.testfile) # read perm should not be allowed to remove
+        assertiCmd(s.sessions[1],"ils -AL "+self.testfile,"LIST",self.testfile) # should still be listed
 
     def test_irm_with_write_permission(self):
         assertiCmd(s.sessions[2],"icd ../../public") # switch to shared area
-        assertiCmd(s.sessions[2],"ils -AL "+s.testfile,"LIST",s.testfile) # should be listed
-        assertiCmdFail(s.sessions[2],"irm "+s.testfile) # write perm should not be allowed to remove
-        assertiCmd(s.sessions[2],"ils -AL "+s.testfile,"LIST",s.testfile) # should still be listed
+        assertiCmd(s.sessions[2],"ils -AL "+self.testfile,"LIST",self.testfile) # should be listed
+        assertiCmdFail(s.sessions[2],"irm "+self.testfile) # write perm should not be allowed to remove
+        assertiCmd(s.sessions[2],"ils -AL "+self.testfile,"LIST",self.testfile) # should still be listed
 
     ###################
     # irmtrash
@@ -486,8 +561,8 @@ class ResourceSuite(object):
 
     def test_irmtrash_admin(self):
         # assertions
-        assertiCmd(s.adminsession,"irm "+s.testfile) # remove from grid
-        assertiCmd(s.adminsession,"ils -rL /"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/","LIST",s.testfile) # should be listed
+        assertiCmd(s.adminsession,"irm "+self.testfile) # remove from grid
+        assertiCmd(s.adminsession,"ils -rL /"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/","LIST",self.testfile) # should be listed
         assertiCmd(s.adminsession,"irmtrash") # should be listed
-        assertiCmdFail(s.adminsession,"ils -rL /"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/","LIST",s.testfile) # should be deleted
+        assertiCmdFail(s.adminsession,"ils -rL /"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/","LIST",self.testfile) # should be deleted
 

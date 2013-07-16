@@ -44,7 +44,7 @@ lcov -r $TOTALINFOFILE "external/*" --directory . -o $TOTALINFOFILE # remove ext
 genhtml -o $OUTDIR $TOTALINFOFILE                                   # generate html report
 
 # clean up
-rm $BASEINFOFILE
+#rm $BASEINFOFILE
 rm $TESTINFOFILE
 rm $TOTALINFOFILE
 
