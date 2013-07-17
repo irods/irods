@@ -24,7 +24,8 @@ $EIRODSROOT/iRODS/irodsctl restart
 # run RENCI developed python-based devtest suite
 # ( equivalent of original icommands and irules )
 cd $EIRODSROOT/tests/pydevtest
-python -m unittest -v -b -f test_eirods_resource_types
+python -m unittest -v -b -c -f test_eirods_resource_types
+nosetests -v test_allrules.py
 
 # run DICE developed perl-based devtest suite
 cd $EIRODSROOT
