@@ -1,4 +1,4 @@
-from nose.plugins.skip import SkipTest
+import unittest
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
@@ -115,9 +115,9 @@ class ResourceSuite(ResourceBase):
         print "in ResourceSuite.__init__"
         ResourceBase.__init__(self)
 
-    # SKIP TEST
+    @unittest.skip("default skip test")
     def test_skip_me(self):
-        raise SkipTest
+        pass
 
     ###################
     # iget
