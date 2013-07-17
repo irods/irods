@@ -56,9 +56,12 @@ class ResourceBase(object):
         # remove grid test files
         print "run_resource_teardown  - removing testfile from grid public directory"
         s.adminsession.runCmd('irm',[self.testfile,"../../public/"+self.testfile])
+        # remove any bundle files
+        print "run_resource_teardown  - removing any bundle files"
+        s.adminsession.runCmd('icd')
+        s.adminsession.runCmd('irm -rf ../../bundle')
         # tear down admin session files
         print "run_resource_teardown  - admin session removing session files"
-        s.adminsession.runCmd('icd')
         s.adminsession.runCmd('irm',['-r',s.adminsession.sessionId])
         # clean trash
         print "run_resource_teardown  - clean trash"
