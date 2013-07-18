@@ -10,9 +10,10 @@
 
 # check for continuous integration parameter
 if [ "$1" != "ci" ] ; then
-    OPTS=" -c -f -b "
+    # human user, use keyboard interrupt to clean up, and stop on first error
+    OPTS=" -b -c -f "
 else
-    OPTS=""
+    OPTS=" -b "
 fi
 
 # detect E-iRODS root directory
