@@ -1297,14 +1297,13 @@ resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead,
                         rescGrpInfo_t **destRescGrpInfo,
                         dataObjInfo_t **destDataObjInfo, 
                         keyValPair_t *condInput ) {
-    int status;
+    int status = 0;
     dataObjInfo_t *matchedDataObjInfo = NULL;
     dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
     /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
     status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
-
     if (status < 0) {
         return status;
     }
@@ -1472,7 +1471,6 @@ int matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
     if (replNumCond + rescCond == 0 && !destHierCond) {
         return (0);
     }
-
     *matchedDataObjInfo = NULL;
     *matchedOldDataObjInfo = NULL;
 

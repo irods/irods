@@ -644,8 +644,7 @@ int getRescGrpForCreate( rsComm_t *rsComm, dataObjInp_t *dataObjInp, rescGrpInfo
         // JMC - legacy resource status = setDefaultResc (rsComm, NULL, NULL, &dataObjInp->condInput, myRescGrpInfo );
         //if( !(*myRescGrpInfo) ) {
         (*myRescGrpInfo) = new rescGrpInfo_t;
-        (*myRescGrpInfo)->cacheNext = 0;
-        (*myRescGrpInfo)->next = 0;
+        bzero( (*myRescGrpInfo), sizeof( rescGrpInfo_t ) );
         (*myRescGrpInfo)->rescInfo = new rescInfo_t;
         //}
 

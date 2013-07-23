@@ -235,9 +235,11 @@ namespace eirods {
     // resource group info structure.
     error resource_to_resc_grp_info( rescGrpInfo_t& _grp_info, resource_ptr& _resc ) {
         // =-=-=-=-=-=-=-
-        // end the linked lists
+        // end the linked lists and ensure sane values
         _grp_info.next      = NULL;
         _grp_info.cacheNext = NULL;
+        _grp_info.status    = 0;
+        _grp_info.dummy     = 0;
 
         // =-=-=-=-=-=-=-
         // allocate the rescinfo struct if necessary

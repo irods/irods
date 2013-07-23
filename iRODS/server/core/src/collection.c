@@ -273,7 +273,7 @@ collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                      TIME_LEN);
 
             if (strlen (collType->value) > 0) {
-                specCollCache_t *specCollCache;
+                specCollCache_t *specCollCache = 0;
 
                 if ((specCollCache =
                      matchSpecCollCache (dataObjInp->objPath)) != NULL) {
@@ -286,9 +286,12 @@ collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     replSpecColl (&SpecCollCacheHead->specColl,
                                   &(*rodsObjStatOut)->specColl);
                 }
+
+
             }
         }
     }
+
     clearGenQueryInp (&genQueryInp);
     freeGenQueryOut (&genQueryOut);
 

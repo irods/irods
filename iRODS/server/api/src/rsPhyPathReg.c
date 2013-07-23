@@ -126,6 +126,7 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         hier = tmp_hier; 
     }
 
+
     // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
     if( coll_type && (strcmp( coll_type, HAAW_STRUCT_FILE_STR) == 0 ||
@@ -770,19 +771,22 @@ unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     return (status);
 }
 
-int
-structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
-{
-    collInp_t collCreateInp;
-    int status;
-    dataObjInfo_t *dataObjInfo = NULL;
-    char *structFilePath = NULL;
-    dataObjInp_t dataObjInp;
-    char *collType;
-    int len;
-    rodsObjStat_t *rodsObjStatOut = NULL;
-    specCollCache_t *specCollCache = NULL;
-    rescInfo_t *rescInfo = NULL;
+int structFileReg(
+    rsComm_t*     rsComm, 
+    dataObjInp_t* phyPathRegInp ) {
+    // =-=-=-=-=-=-=-
+    // 
+    dataObjInp_t     dataObjInp;
+    collInp_t        collCreateInp;
+    int              status         = 0;
+    int              len            = 0;
+    char*            collType       = NULL;
+    char*            structFilePath = NULL;
+    rescInfo_t*      rescInfo       = NULL;
+    dataObjInfo_t*   dataObjInfo    = NULL;
+    rodsObjStat_t*   rodsObjStatOut = NULL;
+    specCollCache_t* specCollCache  = NULL;
+    
 #if 0
     /* make it a privileged call for now */ // JMC - backport 4871
     if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH)
@@ -872,7 +876,8 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     if( !tmp_hier ) {
         rodsLog( LOG_ERROR, "structFileReg - RESC_HIER_STR_KW is NULL" );
         return -1;
-    } 
+    }
+    
 #if 0 // JMC - no longer necessary
     if (!structFileSupport (rsComm, phyPathRegInp->objPath, 
                             collType, tmp_hier)) {
@@ -885,13 +890,12 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
     /* mk the collection */
 
-    memset (&collCreateInp, 0, sizeof (collCreateInp));
-    rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
-    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, collType);
-
+    memset( &collCreateInp, 0, sizeof (collCreateInp) );
+    rstrcpy( collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN );
+    addKeyVal( &collCreateInp.condInput, COLLECTION_TYPE_KW, collType );
     /* have to use dataObjInp.objPath because structFile path was removed */ 
-    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW, 
-               dataObjInp.objPath);
+    addKeyVal( &collCreateInp.condInput, COLLECTION_INFO1_KW, dataObjInp.objPath );
+               
 
     /* try to mod the coll first */
     status = rsModColl (rsComm, &collCreateInp);

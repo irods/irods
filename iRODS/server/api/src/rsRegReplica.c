@@ -7,6 +7,9 @@
 #include "objMetaOpr.h" // JMC - backport 4497
 #include "icatHighLevelRoutines.h"
 
+#include "eirods_file_object.h"
+
+
 int
 rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 {
@@ -62,12 +65,40 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
           &regReplicaInp->condInput);
+        eirods::file_object file_obj(rsComm, destDataObjInfo);
+        eirods::error ret = fileModified(rsComm, file_obj);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to signal resource that the data object \"";
+            msg << destDataObjInfo->objPath;
+            msg << "\" was registered";
+            ret = PASSMSG(msg.str(), ret);
+            eirods::log(ret);
+            status = ret.code();
+        }
+
+
 	/* restore it */
 	rsComm->clientUser.authInfo.authFlag = savedClientAuthFlag;
     } else {
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo, &regReplicaInp->condInput);
 	    if (status >= 0) 
 			status = destDataObjInfo->replNum;
+        eirods::file_object file_obj(rsComm, destDataObjInfo);
+        eirods::error ret = fileModified(rsComm, file_obj);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to signal resource that the data object \"";
+            msg << destDataObjInfo->objPath;
+            msg << "\" was registered";
+            ret = PASSMSG(msg.str(), ret);
+            eirods::log(ret);
+            status = ret.code();
+        }
+
+
     }
 	// =-=-=-=-=-=-=-
 	// JMC - backport 4608

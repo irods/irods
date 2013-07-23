@@ -28,6 +28,10 @@
 #include "rodsClient.h"
 #include "rsIcatOpr.h"
 
+// =-=-=-=-=-=-
+// eirods includes
+#include "eirods_resource_redirect.h"
+#include "eirods_hierarchy_parser.h"
 
 int
 svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut)
@@ -93,31 +97,140 @@ isData (rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
 
 int // JMC - backport 4680
 getPhyPath (
-    rsComm_t *rsComm,
-    char *objName,
-    char *resource,
-    char *phyPath,
-    char *rescHier)
-{
-   genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char tmpStr[MAX_NAME_LEN];
-    char logicalEndName[MAX_NAME_LEN];
-    char logicalParentDirName[MAX_NAME_LEN];
-    int status;
+    rsComm_t* _comm,
+    char*     _obj_name,
+    char*     _resource,
+    char*     _phy_path,
+    char*     _resc_hier ) {
+    // =-=-=-=-=-=-=-
+    // This fcn basicaly picks the first data obj that is returned and uses 
+    // that resc hier which is very wrong in that the archive is returned first
+    // in this instance.  we need to do something like a resolve_resc_heir but
+    // pick the smarter choice.  perhaps return more rows and select one of the
+    // repls and then try the resolve on it?
+    // =-=-=-=-=-=-=-
+    std::string  resc_hier;
+    dataObjInp_t data_inp;
+    memset( &data_inp, 0, sizeof( data_inp ) );
+    strncpy( data_inp.objPath, _obj_name, MAX_NAME_LEN );
+    eirods::error ret = eirods::resolve_resource_hierarchy( 
+                            eirods::EIRODS_OPEN_OPERATION,
+                            _comm,
+                            &data_inp,
+                            resc_hier );
+    if( ret.ok() ) {
+        std::string              root_resc;
+        eirods::hierarchy_parser parser;
+        parser.set_string( resc_hier );
+        parser.first_resc( root_resc );
 
-    status = splitPathByKey(objName,
-                            logicalParentDirName, logicalEndName, '/');
-    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName);
-    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr);
-    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName);
-    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
-    addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
-    addInxIval (&genQueryInp.selectInp, COL_D_RESC_HIER, 1);
-    genQueryInp.maxRows = 2;
-    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-    if (status >= 0) {
+        // =-=-=-=-=-=-=-
+        // perform a genquery to get the physical path of the data object
+        // as the hier reolve does not do that for us
+        genQueryOut_t* gen_out = NULL;
+        char tmp_str                [ MAX_NAME_LEN ];
+        char logical_end_name       [ MAX_NAME_LEN ];
+        char logical_parent_dir_name[ MAX_NAME_LEN ];
+
+        // =-=-=-=-=-=-=-
+        // split the object path by the last delimiter /
+        int status = splitPathByKey( 
+                         _obj_name,
+                         logical_parent_dir_name, 
+                         logical_end_name, '/' );
+
+        genQueryInp_t  gen_inp;
+        memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
+        
+        // =-=-=-=-=-=-=-
+        // add query to the struct for the data object name
+        snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_end_name );
+        addInxVal( &gen_inp.sqlCondInp, COL_DATA_NAME, tmp_str );
+       
+        // =-=-=-=-=-=-=-
+        // add query to the struct for the collection name
+        snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_parent_dir_name );
+        addInxVal( &gen_inp.sqlCondInp, COL_COLL_NAME, tmp_str );
+
+        // =-=-=-=-=-=-=-
+        // add query to the struct for the resource hierarchy
+        snprintf( tmp_str, MAX_NAME_LEN, "='%s'", resc_hier.c_str() );
+        addInxVal( &gen_inp.sqlCondInp, COL_D_RESC_HIER, tmp_str );
+
+        // =-=-=-=-=-=-=-
+        // include request for data path and resource hierarchy
+        addInxIval( &gen_inp.selectInp, COL_D_DATA_PATH, 1 );
+
+        // =-=-=-=-=-=-=-
+        // request only 2 results in the set
+        gen_inp.maxRows = 2;
+        status = rsGenQuery( _comm, &gen_inp, &gen_out );
+        if( status >= 0 ) {
+            // =-=-=-=-=-=-=-
+            // extract the physical path from the query
+            sqlResult_t* phy_path_res = getSqlResultByInx( gen_out, COL_D_DATA_PATH );
+            if( !phy_path_res ) {
+                rodsLog (LOG_ERROR,
+                 "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
+                return (UNMATCHED_KEY_OR_INDEX);
+            }
+        
+            // =-=-=-=-=-=-=-
+            // copy the results to the out variables
+            strncpy( _phy_path,  phy_path_res->value, MAX_NAME_LEN     );
+            strncpy( _resource,  root_resc.c_str(),   root_resc.size() );
+            strncpy( _resc_hier, resc_hier.c_str(),   resc_hier.size() );
+
+            freeGenQueryOut( &gen_out );
+        }
+
+        clearGenQueryInp( &gen_inp );
+
+        return status;
+
+    } else {
+        return -1;
+    
+    }
+#if 0
+    genQueryOut_t* gen_out = NULL;
+    char tmp_str                [ MAX_NAME_LEN ];
+    char logical_end_name       [ MAX_NAME_LEN ];
+    char logical_parent_dir_name[ MAX_NAME_LEN ];
+
+    // =-=-=-=-=-=-=-
+    // split the object path by the last delimiter /
+    int status = splitPathByKey( 
+                     _obj_name,
+                     logical_parent_dir_name, 
+                     logical_end_name, '/' );
+
+    genQueryInp_t  gen_inp;
+    memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
+    
+    // =-=-=-=-=-=-=-
+    // add query to the struct for the data object name
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_end_name );
+    addInxVal( &gen_inp.sqlCondInp, COL_DATA_NAME, tmp_str );
+   
+    // =-=-=-=-=-=-=-
+    // add query to the struct for the collection name
+    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_parent_name );
+    addInxVal( &gen_inp.sqlCondInp, COL_COLL_NAME, tmp_str );
+
+    // =-=-=-=-=-=-=-
+    // include requests for data path and resource hierarchy
+    addInxIval( &gen_inp.selectInp, COL_D_DATA_PATH, 1 );
+    addInxIval( &gen_inp.selectInp, COL_D_RESC_HIER, 1 );
+
+    // =-=-=-=-=-=-=-
+    // request only 2 results in the set
+    gen_inp.maxRows = 2;
+    status = rsGenQuery( _comm, &gen_inp, &gen_out );
+    if( status >= 0 ) {
+        
+        // =-=-=-=-=-=-=-
+        //  
         sqlResult_t *phyPathRes = NULL;
         if ((phyPathRes = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH)) ==
 	    NULL) {
@@ -137,11 +250,13 @@ getPhyPath (
         }
         if (rescHier != NULL) {
             rstrcpy (rescHier, rescHierRes->value, MAX_NAME_LEN);
+
         }
         freeGenQueryOut (&genQueryOut);
     }
     clearGenQueryInp (&genQueryInp);
     return(status);
+#endif
 }
 
 int
