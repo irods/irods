@@ -18,7 +18,7 @@
 
 #include "fileDriver.h"
 
-typedef struct {
+typedef struct FileCloseInp {
     int fileInx;
     int in_pdmo;
 } fileCloseInp_t;

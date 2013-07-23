@@ -16,7 +16,7 @@
 #include "dataObjInpOut.h"
 #include "msParam.h"
 
-typedef struct {
+typedef struct ExecMyRuleInp {
     char myRule[META_STR_LEN];
     rodsHostAddr_t addr;
     keyValPair_t condInput;

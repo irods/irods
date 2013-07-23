@@ -17,7 +17,7 @@
 
 #include "fileDriver.h"
 
-typedef struct {
+typedef struct FileReadInp {
     int fileInx;
     int len;
 } fileReadInp_t;
