@@ -1,3 +1,0 @@
-Collection Spider||msiCollectionSpider(*Collection, *Objects, msiIsData(*Objects, *dataID, *foo)##writePosInt(stdout, *dataID)##writeLine(stdout, ""), *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
-*Collection=$1
-ruleExecOut

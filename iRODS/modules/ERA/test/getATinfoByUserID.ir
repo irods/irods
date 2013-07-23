@@ -1,3 +1,0 @@
-get audit trail info by user ID||msiGetAuditTrailInfoByUserID(10009, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
-null
-ruleExecOut

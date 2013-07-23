@@ -1,3 +1,0 @@
-remove AVUs recursively||msiCollectionSpider(*Collection,*Objects,msiStripAVUs(*Objects,null,*junk),*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
-*Collection=$1
-ruleExecOut

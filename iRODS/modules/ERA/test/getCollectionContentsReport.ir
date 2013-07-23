@@ -1,3 +1,0 @@
-Get collection contents summary||msiGetCollectionContentsReport(*collPath, *KVPairs, *Status)##writeKeyValPairs(stdout, *KVPairs, ": ")##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
-*collPath=/tempZone/home/antoine
-ruleExecOut

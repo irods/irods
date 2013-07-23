@@ -1,3 +1,0 @@
-Data Object Check||msiIsData(*objPath, *objID, *Status)##writePosInt(stdout, *objID)##writeLine(stdout, "")|nop
-*objPath=$1
-ruleExecOut

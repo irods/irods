@@ -1,3 +1,0 @@
-Get total collection size||msiGetCollectionSize(*collPath, *KVPairs, *Status)##writeKeyValPairs(stdout, *KVPairs, ": ")|nop
-*collPath=$1
-ruleExecOut

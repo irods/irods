@@ -1,3 +1,0 @@
-flagWithTimestamp||msiGetSystemTime(*Time, human)##msiAddKeyVal(*KVP,"TIMESTAMP",*Time)##msiAssociateKeyValuePairsToObj(*KVP,*Collection,"-C")##writeLine(stdout, *Time)|nop
-*Collection=$1
-ruleExecOut

@@ -1,3 +1,0 @@
-loadACL||msiLoadACLFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
-*ObjPath=/tempZone/home/antoine/addACL.txt
-ruleExecOut

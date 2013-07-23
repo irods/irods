@@ -1,3 +1,0 @@
-apply DC metadata template||msiApplyDCMetadataTemplate(*objPath, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
-*objPath=/tempZone/home/antoine/NARA_MS.txt
-ruleExecOut

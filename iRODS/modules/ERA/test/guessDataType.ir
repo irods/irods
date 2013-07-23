@@ -1,3 +1,0 @@
-GuessDataType||msiGuessDataType(*objPath,*dataType,*Status)##writeLine("stdout",*dataType)##writePosInt("stdout",*Status)##writeLine("stdout","")|nop
-*objPath="/pho27/home/rods/README.txt"
-ruleExecOut

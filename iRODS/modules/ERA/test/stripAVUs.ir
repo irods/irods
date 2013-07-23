@@ -1,3 +1,0 @@
-remove dataObj AVUs||msiStripAVUs(*target, null, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")|nop
-*target=$1
-ruleExecOut

@@ -1,3 +1,0 @@
-// XML module microservices
-#include "xsltMS.h"
-#include "xmlMS.h"

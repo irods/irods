@@ -1,3 +1,0 @@
-Recursive Checksum Check||msiAddKeyVal(*Results,"Bad Checksums:","")##msiCollectionSpider(*Collection,*Objects,acVerifyChecksum(*Objects,*Results),*Status)##writeKeyValPairs(stdout,*Results,"")|nop
-*Collection=$1
-ruleExecOut
