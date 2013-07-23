@@ -252,6 +252,7 @@ rsyncFileToDataUtil (rcComm_t *conn, rodsPath_t *srcPath,
 rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs, 
 dataObjInp_t *dataObjOprInp)
 {
+    rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: START" );
     int status;
     struct timeval startTime, endTime;
     int putFlag = 0;
@@ -341,6 +342,7 @@ dataObjInp_t *dataObjOprInp)
     if (putFlag == 1) {
 	/* only do the sync if no -l option specified */
 	if ( myRodsArgs->longOption != True ) { 
+    rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: calling rcDataObjPut" );
             status = rcDataObjPut (conn, dataObjOprInp, srcPath->outPath);
 	} else {
 	    status = 0;
@@ -353,6 +355,7 @@ dataObjInp_t *dataObjOprInp)
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL);
 	/* only do the sync if no -l option specified */
 	if ( myRodsArgs->longOption != True ) {
+    rodsLog( LOG_NOTICE, "XXXx - rsyncFileToDataUtil :: calling rcDataObjRsync" );
 	    status = rcDataObjRsync (conn, dataObjOprInp);
 	} else {
             status = 0;

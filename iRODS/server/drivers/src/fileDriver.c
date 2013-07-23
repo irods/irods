@@ -633,8 +633,7 @@ eirods::error fileSyncToArch( rsComm_t*                   _comm,
 // File registered with the database
 eirods::error fileRegistered(
     rsComm_t* _comm,
-    eirods::first_class_object& _object )
-{
+    eirods::first_class_object& _object ) {
     eirods::error result = SUCCESS();
     eirods::error ret;
     
@@ -645,8 +644,8 @@ eirods::error fileRegistered(
         msg << __FUNCTION__;
         msg << " - File name is empty.";
         result = ERROR(-1, msg.str());
-    } else {
 
+    } else {
         // =-=-=-=-=-=-=-
         // retrieve the resource name given the object
         eirods::resource_ptr resc;
@@ -656,10 +655,10 @@ eirods::error fileRegistered(
             msg << __FUNCTION__;
             msg << " - Failed to resolve resource.";
             result = PASSMSG(msg.str(), ret);
+
         } else {
-        
             // =-=-=-=-=-=-=-
-            // make the call to the "open" interface
+            // make the call to the "registered" interface
             ret = resc->call( _comm, eirods::RESOURCE_OP_REGISTERED, _object );
             if( !ret.ok() ) {
                 std::stringstream msg;

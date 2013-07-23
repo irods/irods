@@ -277,7 +277,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rodsLog(LOG_NOTICE, "%s - Failed to get a resource group for create.", __FUNCTION__);
         return status;
     }
-
+    
     if (multiCopyFlag == 0 ) { // JMC - backport 4594
 
         /* if one copy per resource, see if a good copy already exist, 
@@ -352,6 +352,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
               freeAllDataObjInfo (oldDataObjInfoHead);
               freeAllDataObjInfo (destDataObjInfo); // JMC - backport 4494
               freeAllRescGrpInfo (myRescGrpInfo);
+              
               return status;
           } else if (status < 0) {
                 freeAllDataObjInfo (dataObjInfoHead);
@@ -372,6 +373,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
          * replicate to myRescGrpInfo */ 
         if (destDataObjInfo != NULL) {
+            
             status = _rsDataObjReplUpdate( rsComm, dataObjInp, dataObjInfoHead,
                                            destDataObjInfo, transStat, oldDataObjInfoHead);
             if (status >= 0) {
@@ -433,6 +435,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         int allFlag;
         int savedStatus = 0;
         int replCnt = 0;
+
 
         if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
             allFlag = 1;
@@ -829,6 +832,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
         addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
+
         l1DataObjInp = L1desc[destL1descInx].dataObjInp;
         if (l1DataObjInp->oprType == PHYMV_OPR) {
             L1desc[destL1descInx].oprType = PHYMV_DEST;
@@ -1145,7 +1149,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                          L1desc[srcL1descInx].dataSize, 
                          L1desc[srcL1descInx].dataObjInfo->objPath); 
                 return (SYS_COPY_LEN_ERR);
-            } else if (L1desc[srcL1descInx].dataSize > 0 || 
+            } else if (L1desc[srcL1descInx].dataSize >= 0 || 
                        L1desc[srcL1descInx].dataSize == UNKNOWN_FILE_SZ) {
                 if (L1desc[l1descInx].stageFlag == SYNC_DEST) {
                     /* dest a DO_STAGE type, sync */
@@ -1154,6 +1158,8 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                     /* src a DO_STAGE type, stage */
                     status = l3FileStage (rsComm, srcL1descInx, l1descInx);
                 }
+            } else {
+
             }
 
             if (status < 0) {

@@ -40,8 +40,39 @@ namespace eirods {
         eirods::file_object file_obj;
 
         // =-=-=-=-=-=-=-
+        // if this is a special collection then we need to get the hier
+        // pass that along and bail as it is not a data object, or if
+        // it is just a not-so-special collection then we continue with
+        // processing the operation, as this may be a create op
+        rodsObjStat_t *rodsObjStatOut = NULL;
+        int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );
+        file_obj.logical_path( _data_obj_inp->objPath );
+        if( spec_stat >= 0 ) {
+            if( rodsObjStatOut->specColl != NULL ) {
+                _out_resc_hier = rodsObjStatOut->specColl->rescHier;
+                return SUCCESS();
+            }
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the resc name keyword from the conditional input
+        char* kw_resc_name = 0;
+        if( ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
+            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   ) ) == NULL &&
+            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    ) ) == NULL &&
+            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        ) ) == NULL ) {
+            kw_resc_name = 0;
+        }
+
+        // =-=-=-=-=-=-=-
         // call factory for given obj inp, get a file_object
         error fac_err = file_object_factory( _comm, _data_obj_inp, file_obj );
+
+        // =-=-=-=-=-=-=-
+        // we many need to change the operation from a create to an open depending
+        // on the existence of a resource keyword and / or a match with a physical
+        // object within the list 
         if( fac_err.ok() && 
             eirods::EIRODS_CREATE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
@@ -50,11 +81,7 @@ namespace eirods {
             // kw to the existing resources, if any match then
             // we open, otherwise it is a create in keeping with
             // original irods semantics
-            char* tmp_name = 0;
-            if( ( tmp_name = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
-                ( tmp_name = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   ) ) == NULL &&
-                ( tmp_name = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    ) ) == NULL &&
-                ( tmp_name = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        ) ) == NULL ) {
+            if( 0 == kw_resc_name ) {
                 oper = eirods::EIRODS_OPEN_OPERATION;
 
             } else {
@@ -64,14 +91,14 @@ namespace eirods {
                 for( size_t i = 0; i < repls.size(); ++i ) {
                     // =-=-=-=-=-=-=-
                     // extract the root resource from the hierarchy
+                    std::string              root_resc;
                     eirods::hierarchy_parser parser;
                     parser.set_string( repls[ i ].resc_hier() );
-                    std::string root_resc;
                     parser.first_resc( root_resc );
 
                     // =-=-=-=-=-=-=-
                     // if we have a match then set open & break, otherwise continue
-                    if( root_resc == tmp_name ) {
+                    if( root_resc == kw_resc_name ) {
                         oper = eirods::EIRODS_OPEN_OPERATION;
                         break; 
                     }
@@ -81,7 +108,7 @@ namespace eirods {
             } // else
 
         } // if fac_err ok && open op
-       
+
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specificied ( thats all we have for now ) 
         if( eirods::EIRODS_CREATE_OPERATION != oper ) {
@@ -95,15 +122,16 @@ namespace eirods {
             }
 
             // =-=-=-=-=-=-=-
-            // resolve a resc ptr for the given file_object
+            // resolve a resc ptr for the given file_object 
             eirods::error err = file_obj.resolve( resc_mgr, resc );
             if( !err.ok() ) {
-                std::stringstream msg;
-                msg << "resolve_resource_hierarchy :: failed in file_object.resolve";
-                return PASSMSG( msg.str(), err );
+                    return PASS( err );
             }
 
         } else {
+            // =-=-=-=-=-=-=-
+            // handle the create operation
+#if 0 // i believe this is handled above now
             std::string orig_path = _data_obj_inp->objPath;
             std::string path      = _data_obj_inp->objPath;
             size_t pos = path.find_last_of( '/' );
@@ -124,18 +152,19 @@ namespace eirods {
                 std::string resc_hier = rodsObjStatOut->specColl->rescHier;
                 file_obj.resc_hier( resc_hier );
                 skip_redir_for_spec_coll = true; 
-            } else {
+
+            } else 
+#endif 
+            
+            
+            {
                 // =-=-=-=-=-=-=-
                 // check for incoming requested destination resource first
                 std::string resc_name;
-                char* tmp_name = 0;
-                if( ( tmp_name = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
-                    ( tmp_name = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   ) ) == NULL &&
-                    ( tmp_name = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    ) ) == NULL &&
-                    ( tmp_name = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        ) ) == NULL ) {
-
+                if( 0 == kw_resc_name ) {
                     // =-=-=-=-=-=-=-
-                    // this must me a 'create' opreation so we get the resource in question
+                    // this is a 'create' opreation and no resource is specified,
+                    // query the server for the default or other resource to use
                     rescGrpInfo_t* grp_info = 0;
                     int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
                     if( status < 0 || !grp_info || !grp_info->rescInfo ) {
@@ -150,7 +179,8 @@ namespace eirods {
                     delete grp_info;
 
                 } else {
-                    resc_name = tmp_name;
+                    resc_name = kw_resc_name;
+
                 }
 
                 // =-=-=-=-=-=-=-
@@ -182,7 +212,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // unholy special treatment of special collections, once again
-        if( !skip_redir_for_spec_coll ) {
+        //if( !skip_redir_for_spec_coll ) {
             // =-=-=-=-=-=-=-
             // get current hostname, which is also done by init local server host
             char host_name_str[ MAX_NAME_LEN ];
@@ -211,10 +241,10 @@ namespace eirods {
                 return PASSMSG( msg.str(), err );
             }
         
-        } else {
-            _out_resc_hier = file_obj.resc_hier();
+        //} else {
+        //    _out_resc_hier = file_obj.resc_hier();
 
-        }
+        //}
 
         return SUCCESS();
 
