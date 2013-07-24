@@ -956,8 +956,8 @@ sub doTest
 	doTestIcommands( );
 
 	# Test irules
-	printSubtitle( "\nTesting irules...\n" );
-	doTestIrules( );
+#	printSubtitle( "\nTesting irules...\n" );
+#	doTestIrules( );
 
 	# Check if this host is ICAT-enabled.
 	# Note that the tests assume i-commands are in the path so we can too.
