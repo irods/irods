@@ -1,4 +1,0 @@
-/* Properties module microservices */
-#include "integrityChecksMS.h"
-#include "icutils.h"
-#include "icCollUtil.h"

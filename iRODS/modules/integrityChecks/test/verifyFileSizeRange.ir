@@ -1,3 +1,0 @@
-msiVerifyFileSizeRange||msiVerifyFileSizeRange(*Collection,*MinSize,*MaxSize,*STATUS)##writeKeyValPairs(stdout, *MaxSize, ": ")##writeLine(stdout,"")|nop
-*A=/homeZone/home/rods%*B=10%*C=50
-ruleExecOut%*STATUS

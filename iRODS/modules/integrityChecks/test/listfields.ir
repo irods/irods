@@ -1,3 +1,0 @@
-msiListFields||msiListFields(*Collection,*Field,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"")|nop
-*Collection=/homeZone/home/rods%*Field=DATA_REPL_STATUS
-ruleExecOut%*STATUS

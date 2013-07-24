@@ -1,3 +1,0 @@
-msiHiThere||msiHiThere(*A)##writeLine(stdout, *A)|nop
-null
-ruleExecOut

@@ -1,3 +1,0 @@
-msiVerifyExpiry||msiVerifyExpiry(*Collection,*TIME,*TYPE,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,*STATUS)|nop
-*Collection=/homeZone/home/rods%*TIME=2007-08-22%*TYPE=NOTEXPIRED
-ruleExecOut%*STATUS

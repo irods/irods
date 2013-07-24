@@ -1,3 +1,0 @@
-msiCheckFileDatatypes||msiCheckFileDatatypes(*Collection,*Datatype,*Status)##writeKeyValPairs(stdout, *B, ": ")##writeLine(stdout,"")|nop
-*A=/homeZone/home/rods%*B=generic,xml,kitten,mmCIF, ,
-ruleExecOut%*STATUS

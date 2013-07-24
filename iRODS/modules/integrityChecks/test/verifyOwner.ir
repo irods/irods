@@ -1,3 +1,0 @@
-msiVerifyOwner||msiVerifyOwner(*Collection,*Owner,*Buf,*Status)##writeBytesBuf(stdout,*Buf)##writeLine(stdout,"")|nop
-*Collection=/homeZone/home/rods/bigcollection%*Owner=rods
-ruleExecOut%*STATUS

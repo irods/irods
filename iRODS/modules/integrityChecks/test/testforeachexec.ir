@@ -1,3 +1,0 @@
-msiTestForEachExec||msiTestForEachExec(*Buf)##forEachExec(*Buf,writeLine(stdout,*Buf),nop)##writeLine(stdout,"")|nop
-null
-ruleExecOut

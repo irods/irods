@@ -1,3 +1,0 @@
-msiVerifySubCollOwner||msiVerifySubCollOwner(*Collection,*Ownerlist,*Buf,*Status)##forEachExec(*Buf,writeLine(stdout,*Buf),nop)##writeLine(stdout,"")|nop
-*Collection=/homeZone/home/rods%*Ownerlist=susan
-ruleExecOut

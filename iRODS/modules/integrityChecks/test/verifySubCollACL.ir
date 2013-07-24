@@ -1,3 +1,0 @@
-msiVerifySubCollACL||msiVerifySubCollACL(*Collection,*ACLlist,*Buf,*Status)##writeBytesBuf(stdout,*Buf)##writeLine(stdout,"")|nop
-*Collection=/homeZone/home/rods%*ACLlist="rods"
-ruleExecOut

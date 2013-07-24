@@ -1,3 +1,0 @@
-msiTestWritePosInt||msiTestWritePosInt(*A)##writePosInt(stdout, *A)##writeLine(stdout,"xxx")|nop
-null
-ruleExecOut
