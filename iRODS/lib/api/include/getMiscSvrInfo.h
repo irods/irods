@@ -20,7 +20,7 @@
 
 /* miscSvrInfo_t is the output struct */
 
-typedef struct {
+typedef struct MiscSvrInfo {
     int serverType;     /* RCAT_ENABLED or RCAT_NOT_ENABLED */
     uint serverBootTime;
     char relVersion[NAME_LEN];    /* the release version number */

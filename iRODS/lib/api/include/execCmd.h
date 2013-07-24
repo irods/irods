@@ -26,7 +26,7 @@ typedef struct {
     keyValPair_t condInput;
 } execCmd241_t;
 
-typedef struct {
+typedef struct ExecCmd {
     char cmd[LONG_NAME_LEN];
     char cmdArgv[HUGE_NAME_LEN];
     char execAddr[LONG_NAME_LEN];       /* if non empty, exec at this addr */
@@ -37,7 +37,7 @@ typedef struct {
     keyValPair_t condInput;
 } execCmd_t;
 
-typedef struct {
+typedef struct ExecCmdOut {
     bytesBuf_t stdoutBuf;
     bytesBuf_t stderrBuf;
     int status;	    /* XXXXXX have to move status to back for 64 bit addr */
