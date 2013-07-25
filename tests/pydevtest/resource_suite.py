@@ -11,6 +11,7 @@ class ResourceBase(object):
 
     def __init__(self):
         print "in ResourceBase.__init__"
+        self.my_test_resource = {"setup":[],"teardown":[]}
         self.testfile = "pydevtest_testfile.txt"
         self.testdir = "pydevtest_testdir"
         self.testresc = "pydevtest_TestResc"
@@ -55,10 +56,10 @@ class ResourceBase(object):
         os.unlink(self.testfile)
         # remove grid test files
         print "run_resource_teardown  - removing testfile from grid public directory"
-        s.adminsession.runCmd('irm',[self.testfile,"../../public/"+self.testfile])
+        s.adminsession.runCmd('icd')
+        s.adminsession.runCmd('irm',[self.testfile,"../public/"+self.testfile])
         # remove any bundle files
         print "run_resource_teardown  - removing any bundle files"
-        s.adminsession.runCmd('icd')
         s.adminsession.runCmd('irm -rf ../../bundle')
         # tear down admin session files
         print "run_resource_teardown  - admin session removing session files"
@@ -155,13 +156,6 @@ class ResourceSuite(ResourceBase):
         assertiCmdFail(s.adminsession,"iget -z") # run iget with bad option
 
     ###################
-    # ihelp
-    ###################
-
-    def test_ihelp_all(self):
-        assertiCmd(s.adminsession,"ihelp -a","LIST","ihelp") # print help messages for all iCommands
-
-    ###################
     # imv
     ###################
 
@@ -193,6 +187,7 @@ class ResourceSuite(ResourceBase):
     ###################
 
     def test_local_iput(self):
+        '''also needs to count and confirm number of replicas after the put'''
         # local setup
         datafilename = "newfile.txt"
         f = open(datafilename,'wb')
@@ -501,6 +496,39 @@ class ResourceSuite(ResourceBase):
         assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
         assertiCmd(s.sessions[1],"ireg {filepath} /{zone}/home/{username}/{sessionId}/{filename}".format(**kwargs), "ERROR","SYS_NO_PATH_PERMISSION") # ireg
         assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_ireg_as_rodsuser_in_vault(self):
+        # get vault base path
+        cmdout = s.sessions[1].runCmd('iquest',["%s", "select RESC_VAULT_PATH where RESC_NAME = 'demoResc'"])
+        vaultpath = cmdout[0].rstrip('\n')
+
+        # make dir in vault if necessary
+        dir = os.path.join(vaultpath, 'home', s.sessions[1].getUserName())
+        if not os.path.exists(dir):
+                os.makedirs(dir)
+
+        # create file in vault
+        filename = "newfile.txt"
+        filepath = os.path.join(dir, filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # keyword arguments for icommands
+        kwargs={'filepath':filepath, 
+            'filename':filename, 
+            'zone':s.sessions[1].getZoneName(),
+            'username':s.sessions[1].getUserName(),
+            'sessionId':s.sessions[1].sessionId}
+
+        # assertions
+        assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
+        assertiCmd(s.sessions[1],"ireg {filepath} /{zone}/home/{username}/{sessionId}/{filename}".format(**kwargs),
+                "ERROR","SYS_NO_PATH_PERMISSION") # ireg
+        assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should be listed
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )

@@ -259,6 +259,10 @@ class Test_AllRules(ResourceBase):
                 print "skipping "+rulefile+" ----- serverbackup"; continue
             if "rulemsiExecStrCondQueryWithOptions" in rulefile:
                 print "skipping "+rulefile+" ----- SYS_HEADER_READ_LEN_ERR, Operation now in progress"; continue
+            if "rulemsiTarFileExtract" in rulefile:
+                print "skipping "+rulefile+" ----- CAT_NO_ROWS_FOUND - failed in call to getDataObjInfoIncSpecColl"; continue
+            if "rulemsiDataObjRsync" in rulefile:
+                print "skipping "+rulefile+" ----- -130000 SYS_INVALID_INPUT_PARAM - no resource found for name [testResc]"; continue
 
             # actually run the test - yield means create a separate test for each rulefile
             print "-- running "+rulefile

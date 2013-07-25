@@ -1,13 +1,17 @@
-from nose.plugins.skip import SkipTest
+import unittest
+from resource_suite import ResourceBase
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
 
-class Test_iadmin(object):
+class Test_iAdminSuite(ResourceBase):
 
     def setUp(self):
         s.twousers_up()
+        self.run_resource_setup()
+
     def tearDown(self):
+        self.run_resource_teardown()
         s.twousers_down()
 
     ###################
@@ -113,3 +117,32 @@ class Test_iadmin(object):
         assertiCmd(s.adminsession,"iadmin rmuser "+testuser1) # good remove
         assertiCmdFail(s.adminsession,"iadmin lu","LIST",testuser1+"#"+s.adminsession.getZoneName()) # should be gone
 
+    def test_iadmin_mkuser():
+
+        # A few examples of valid and invalid usernames
+        valid = ['bob',
+                'e-irods',
+                '123.456', 
+                '___haysoos___']
+
+        invalid = ['bo',
+                '.bob', 
+                'bob.',
+                'e--irods', 
+                'jamesbond..007',  
+                '________________________________longer_than_NAME_LEN________________________________________________']
+
+        # Test valid names
+        for name in valid:
+            assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser") # should be accepted
+            assertiCmd(s.adminsession,"iadmin lu","LIST",name+"#"+s.adminsession.getZoneName()) # should be listed
+            assertiCmd(s.adminsession,"iadmin rmuser "+name) # remove user
+            assertiCmdFail(s.adminsession,"iadmin lu","LIST",name+"#"+s.adminsession.getZoneName()) # should be gone
+
+        # Test invalid names
+        for name in invalid:
+            assertiCmd(s.adminsession,"iadmin mkuser "+name+" rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
+
+        # Invalid names with special characters
+        assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
+        assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
