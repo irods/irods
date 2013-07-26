@@ -11,7 +11,8 @@ class ResourceBase(object):
 
     def __init__(self):
         print "in ResourceBase.__init__"
-        self.my_test_resource = {"setup":[],"teardown":[]}
+        if not self.my_test_resource:
+            self.my_test_resource = {"setup":[],"teardown":[]}
         self.testfile = "pydevtest_testfile.txt"
         self.testdir = "pydevtest_testdir"
         self.testresc = "pydevtest_TestResc"
@@ -118,10 +119,6 @@ class ResourceSuite(ResourceBase):
     def __init__(self):
         print "in ResourceSuite.__init__"
         ResourceBase.__init__(self)
-
-    @unittest.skip("default skip test")
-    def test_skip_me(self):
-        pass
 
     ###################
     # iget

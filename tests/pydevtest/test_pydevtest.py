@@ -1,6 +1,5 @@
 import unittest
 import pydevtest_sessions as s
-from nose.plugins.skip import SkipTest
 from pydevtest_common import assertiCmd, assertiCmdFail
 import commands
 
@@ -23,8 +22,9 @@ class Test_Pydevtest_Examples(unittest.TestCase):
         assert 345 < 8423         # int comparison
         assert "546" > "30000"    # string comparison
 
-    def test_skip_this_test(self):
-        raise SkipTest
+    @unittest.skip("default skip test")
+    def test_skip_me(self):
+        pass
 
     def test_attempt_bad_icommand(self):
         assertiCmdFail(s.adminsession,"idoesnotexist","LIST","nope")

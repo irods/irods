@@ -8,7 +8,7 @@ import socket
 class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     my_test_resource = {
-        "setup"    : [  
+        "setup"    : [
         ],
         "teardown" : [
         ],
@@ -318,8 +318,10 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite):
 
     def test_irm_specific_replica(self):
         # not allowed here - this is a managed replication resource
-        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed 3x
-        assertiCmd(s.adminsession,"irm -n 0 "+self.testfile, "ERROR", "-1811000 EIRODS_INVALID_OPERATION") # try to remove one of the managed replicas
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["0 ",self.testfile]) # should be listed 3x
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["1 ",self.testfile]) # should be listed 3x
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["2 ",self.testfile]) # should be listed 3x
+        assertiCmd(s.adminsession,"irm -n 2 "+self.testfile, "ERROR", "-1811000 EIRODS_INVALID_OPERATION") # try to remove one of the managed replicas
 
 class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
