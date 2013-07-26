@@ -51,6 +51,10 @@ class Test_Passthru_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         self.run_resource_teardown()
         s.twousers_down()
 
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
 class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
@@ -88,6 +92,10 @@ class Test_Random_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def tearDown(self):
         self.run_resource_teardown()
         s.twousers_down()
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
 
 class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
@@ -159,6 +167,10 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite):
     def test_local_iput_checksum(self):
         pass
 
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
 class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite):
 
     hostname = socket.gethostname()
@@ -201,6 +213,10 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite)
         assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica 0 should be gone
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
 
 class Test_Compound_Resource(unittest.TestCase, ResourceSuite):
 
@@ -245,6 +261,10 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite):
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
 
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
 class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
@@ -277,6 +297,10 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def tearDown(self):
         self.run_resource_teardown()
         s.twousers_down()
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
 
 class Test_Replication_Resource(unittest.TestCase, ResourceSuite):
 
@@ -323,6 +347,10 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite):
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["2 ",self.testfile]) # should be listed 3x
         assertiCmd(s.adminsession,"irm -n 2 "+self.testfile, "ERROR", "-1811000 EIRODS_INVALID_OPERATION") # try to remove one of the managed replicas
 
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
+
 class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
@@ -368,4 +396,8 @@ class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest
     def tearDown(self):
         self.run_resource_teardown()
         s.twousers_down()
+
+    @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
+    def test_ireg_as_rodsuser_in_vault(self):
+        pass
 
