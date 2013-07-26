@@ -11,8 +11,10 @@ DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
 # error checking
+set +e
 GENHTML=`which lcov`
-if [ "$?" -ne "0" ] ; then
+set -e
+if [ "$GENHTML" = "" ] ; then
     echo "ERROR :: lcov is not in your path" 1>&2
     echo "      :: lcov source: http://downloads.sourceforge.net/ltp/lcov-1.9.tar.gz" 1>&2
     exit 1

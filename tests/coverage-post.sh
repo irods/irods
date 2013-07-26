@@ -17,19 +17,25 @@ cd $DETECTEDDIR/../
 if [ "$1" != "" ] ; then
     OUTDIR=$1
 fi
+set +e
 GCOV=`which gcov`
-if [ "$?" -ne "0" ] ; then
+set -e
+if [ "$GCOV" = "" ] ; then
     echo "ERROR :: gcov is not in your path" 1>&2
     exit 1
 fi
+set +e
 GENINFO=`which lcov`
-if [ "$?" -ne "0" ] ; then
+set -e
+if [ "$GENINFO" = "" ] ; then
     echo "ERROR :: lcov is not in your path" 1>&2
     echo "      :: lcov source: http://downloads.sourceforge.net/ltp/lcov-1.9.tar.gz" 1>&2
     exit 1
 fi
+set +e
 GENHTML=`which genhtml`
-if [ "$?" -ne "0" ] ; then
+set -e
+if [ "$GENHTML" = "" ] ; then
     echo "ERROR :: genhtml is not in your path" 1>&2
     echo "      :: lcov source: http://downloads.sourceforge.net/ltp/lcov-1.9.tar.gz" 1>&2
     exit 1
