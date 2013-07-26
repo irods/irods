@@ -8,7 +8,9 @@ import shlex
 import datetime
 import time
 
-class Test_CatalogSuite(ResourceBase):
+class Test_CatalogSuite(unittest.TestCase, ResourceBase):
+
+    my_test_resource = {"setup":[],"teardown":[]}
 
     def setUp(self):
         s.twousers_up()

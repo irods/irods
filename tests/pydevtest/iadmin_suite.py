@@ -4,7 +4,9 @@ from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 import pydevtest_sessions as s
 import commands
 
-class Test_iAdminSuite(ResourceBase):
+class Test_iAdminSuite(unittest.TestCase, ResourceBase):
+
+    my_test_resource = {"setup":[],"teardown":[]}
 
     def setUp(self):
         s.twousers_up()
@@ -25,7 +27,7 @@ class Test_iAdminSuite(ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lz","LIST","notazone")
 
     def test_list_resources(self):
-        assertiCmd(s.adminsession,"iadmin lr","LIST",s.testresc)
+        assertiCmd(s.adminsession,"iadmin lr","LIST",self.testresc)
         assertiCmdFail(s.adminsession,"iadmin lr","LIST","notaresource")
 
     def test_list_users(self):
@@ -33,11 +35,11 @@ class Test_iAdminSuite(ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lu","LIST","notauser")
 
     def test_list_groups(self):
-        assertiCmd(s.adminsession,"iadmin lg","LIST",s.testgroup)
+        assertiCmd(s.adminsession,"iadmin lg","LIST",self.testgroup)
         assertiCmdFail(s.adminsession,"iadmin lg","LIST","notagroup")
-        assertiCmd(s.adminsession,"iadmin lg "+s.testgroup,"LIST",[s.sessions[1].getUserName()])
-        assertiCmd(s.adminsession,"iadmin lg "+s.testgroup,"LIST",[s.sessions[2].getUserName()])
-        assertiCmdFail(s.adminsession,"iadmin lg "+s.testgroup,"LIST","notauser")
+        assertiCmd(s.adminsession,"iadmin lg "+self.testgroup,"LIST",[s.sessions[1].getUserName()])
+        assertiCmd(s.adminsession,"iadmin lg "+self.testgroup,"LIST",[s.sessions[2].getUserName()])
+        assertiCmdFail(s.adminsession,"iadmin lg "+self.testgroup,"LIST","notauser")
 
     # RESOURCES
 
@@ -102,9 +104,9 @@ class Test_iAdminSuite(ResourceBase):
 
     def test_modify_resource_comment(self):
         mycomment = "thisisacomment with some spaces"
-        assertiCmdFail(s.adminsession,"iadmin lr "+s.testresc,"LIST",mycomment)
-        assertiCmd(s.adminsession,"iadmin modresc "+s.testresc+" comment '"+mycomment+"'")
-        assertiCmd(s.adminsession,"iadmin lr "+s.testresc,"LIST",mycomment)
+        assertiCmdFail(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
+        assertiCmd(s.adminsession,"iadmin modresc "+self.testresc+" comment '"+mycomment+"'")
+        assertiCmd(s.adminsession,"iadmin lr "+self.testresc,"LIST",mycomment)
 
     # USERS
 
@@ -117,7 +119,7 @@ class Test_iAdminSuite(ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmuser "+testuser1) # good remove
         assertiCmdFail(s.adminsession,"iadmin lu","LIST",testuser1+"#"+s.adminsession.getZoneName()) # should be gone
 
-    def test_iadmin_mkuser():
+    def test_iadmin_mkuser(self):
 
         # A few examples of valid and invalid usernames
         valid = ['bob',

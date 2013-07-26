@@ -11,8 +11,6 @@ class ResourceBase(object):
 
     def __init__(self):
         print "in ResourceBase.__init__"
-        if not self.my_test_resource:
-            self.my_test_resource = {"setup":[],"teardown":[]}
         self.testfile = "pydevtest_testfile.txt"
         self.testdir = "pydevtest_testdir"
         self.testresc = "pydevtest_TestResc"
@@ -48,6 +46,8 @@ class ResourceBase(object):
         # permissions
         s.adminsession.runCmd('ichmod',["read",s.users[1]['name'],"../../public/"+self.testfile]) # read for user1
         s.adminsession.runCmd('ichmod',["write",s.users[2]['name'],"../../public/"+self.testfile]) # write for user2
+        # set test group
+        self.testgroup = s.testgroup
         print "run_resource_setup - END"
 
     def run_resource_teardown(self):
