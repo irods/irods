@@ -33,7 +33,7 @@ $EIRODSROOT/iRODS/irodsctl restart
 # ( equivalent of original icommands and irules )
 cd $EIRODSROOT/tests/pydevtest
 python -m unittest -v $OPTS test_eirods_resource_types iadmin_suite catalog_suite
-#nosetests -v test_allrules.py
+nosetests -v test_allrules.py
 
 # run DICE developed perl-based devtest suite
 cd $EIRODSROOT

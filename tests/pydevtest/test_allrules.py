@@ -234,6 +234,52 @@ class Test_AllRules(ResourceBase):
             for n in names_to_skip:
                 if n in rulefile: print "skipping "+rulefile+" ----- XML"; skipme = 1
 
+            # transition to core microservices only
+            names_to_skip = [
+                "rulemsiAddKeyVal.r",
+                "rulemsiApplyDCMetadataTemplate.r",
+                "rulemsiAssociateKeyValuePairsToObj.r",
+                "rulemsiCollectionSpider.r",
+                "rulemsiCopyAVUMetadata.r",
+                "rulemsiExportRecursiveCollMeta.r",
+                "rulemsiFlagDataObjwithAVU.r",
+                "rulemsiGetCollectionACL.r",
+                "rulemsiGetCollectionContentsReport.r",
+                "rulemsiGetCollectionPSmeta.r",
+                "rulemsiGetCollectionSize.r",
+                "rulemsiGetDataObjACL.r",
+                "rulemsiGetDataObjAIP.r",
+                "rulemsiGetDataObjAVUs.r",
+                "rulemsiGetDataObjPSmeta.r",
+                "rulemsiGetObjectPath.r",
+                "rulemsiGetUserACL.r",
+                "rulemsiGetUserInfo.r",
+                "rulemsiGuessDataType.r",
+                "rulemsiIsColl.r",
+                "rulemsiIsData.r",
+                "rulemsiLoadACLFromDataObj.r",
+                "rulemsiLoadMetadataFromDataObj.r",
+                "rulemsiLoadUserModsFromDataObj.r",
+                "rulemsiPropertiesAdd.r",
+                "rulemsiPropertiesClear.r",
+                "rulemsiPropertiesClone.r",
+                "rulemsiPropertiesExists.r",
+                "rulemsiPropertiesFromString.r",
+                "rulemsiPropertiesGet.r",
+                "rulemsiPropertiesNew.r",
+                "rulemsiPropertiesRemove.r",
+                "rulemsiPropertiesSet.r",
+                "rulemsiRecursiveCollCopy.r",
+                "rulemsiRemoveKeyValuePairsFromObj.r",
+                "rulemsiSetDataType.r",
+                "rulemsiString2KeyValPair.r",
+                "rulemsiStripAVUs.r",
+                "rulemsiStructFileBundle.r",
+                "rulewriteKeyValPairs.r",
+            ]
+            for n in names_to_skip:
+                if n in rulefile: print "skipping "+rulefile+" ----- transition to core"; skipme = 1
+
             if skipme == 1: continue
 
             # skipping for now, not sure why it's throwing a stacktrace at the moment
