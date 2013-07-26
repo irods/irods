@@ -13,6 +13,7 @@ class Test_CatalogSuite(unittest.TestCase, ResourceBase):
     my_test_resource = {"setup":[],"teardown":[]}
 
     def setUp(self):
+        ResourceBase.__init__(self)
         s.twousers_up()
         self.run_resource_setup()
 
