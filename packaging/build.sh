@@ -713,7 +713,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # build a copy of boost
-    EIRODS_BUILD_BOOSTVERSION="boost_1_52_0"
+    EIRODS_BUILD_BOOSTVERSION="boost_1_54_0"
     cd $BUILDDIR/external/
     if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
@@ -722,7 +722,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         if [ -e "$EIRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.52.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.54.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
         fi
         gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $EIRODS_BUILD_BOOSTVERSION.tar
