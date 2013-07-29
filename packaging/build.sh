@@ -689,7 +689,8 @@ sleep 1
 if [ "$BUILDEIRODS" == "1" ] ; then
 
     # build a copy of libarchive
-    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.1.2"
+    EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER="3.1.2"
+    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER"
     cd $BUILDDIR/external/
     if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
@@ -698,7 +699,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         if [ -e "$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+            wget https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
         fi
         gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
