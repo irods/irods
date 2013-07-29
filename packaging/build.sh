@@ -689,7 +689,7 @@ sleep 1
 if [ "$BUILDEIRODS" == "1" ] ; then
 
     # build a copy of libarchive
-    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.0.4"
+    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.1.2"
     cd $BUILDDIR/external/
     if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
