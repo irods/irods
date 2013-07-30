@@ -393,6 +393,26 @@ else
     GREPCMD="grep"
 fi
 
+AUTOMAKE=`which automake`
+if [[ "$?" != "0" || `echo $AUTOMAKE | awk '{print $1}'` == "no" ]] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT automake"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT automake"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT automake"
+    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+        PREFLIGHT="$PREFLIGHT automake"
+    elif [ "$DETECTEDOS" == "MacOSX" ] ; then
+        PREFLIGHT="$PREFLIGHT automake"
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://www.gnu.org/software/automake/#downloading"
+    fi
+else
+    AUTOMAKEVERSION=`automake --version | head -n1 | awk '{print $4}'`
+    echo "Detected automake [$AUTOMAKE] v[$AUTOMAKEVERSION]"
+fi
+
 LIBCURLDEV=`find /usr -name curl.h 2> /dev/null`
 if [ "$LIBCURLDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -701,12 +721,13 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         else
             wget https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
         fi
-        gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
-        tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
+        gunzip v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+        tar xf v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar
     fi
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
+        ./build/autogen.sh
         CFLAGS="-fPIC" ./configure
         $MAKEJCMD
     else
