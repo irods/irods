@@ -719,7 +719,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         if [ -e "$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget http://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+            wget https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
         fi
         gunzip v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
         tar xf v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar
