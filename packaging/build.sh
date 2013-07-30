@@ -191,8 +191,9 @@ if [ "$1" == "clean" ] ; then
     rm -rf epm*
     echo "Cleaning external residuals..."
     cd $DETECTEDDIR/../external
-    rm -rf boost*
+    rm -rf cmake*
     rm -rf libarchive*
+    rm -rf boost*
     rm -rf hpssclient/
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
