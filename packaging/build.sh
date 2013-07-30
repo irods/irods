@@ -191,8 +191,9 @@ if [ "$1" == "clean" ] ; then
     rm -rf epm*
     echo "Cleaning external residuals..."
     cd $DETECTEDDIR/../external
-    rm -rf boost*
+    rm -rf cmake*
     rm -rf libarchive*
+    rm -rf boost*
     rm -rf hpssclient/
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
@@ -688,17 +689,45 @@ sleep 1
 # LOCAL COMPILATIONS - in ./external
 if [ "$BUILDEIRODS" == "1" ] ; then
 
+    # build a copy of cmake
+    EIRODS_BUILD_CMAKEVERSIONNUMBER="2.8.11.2"
+    EIRODS_BUILD_CMAKEVERSION="cmake-$EIRODS_BUILD_CMAKEVERSIONNUMBER"
+    cd $BUILDDIR/external/
+    if [ -d "$EIRODS_BUILD_CMAKEVERSION" ] ; then
+        echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
+    else
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CMAKEVERSION] from ftp.renci.org${text_reset}"
+        if [ -e "$EIRODS_BUILD_CMAKEVERSION.tar.gz" ] ; then
+            echo "Using existing copy"
+        else
+#            wget http://www.cmake.org/files/v2.8/$EIRODS_BUILD_CMAKEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CMAKEVERSION.tar.gz
+        fi
+#        gunzip $EIRODS_BUILD_CMAKEVERSION.tar.gz
+        tar xf $EIRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
+    fi
+    echo "${text_green}${text_bold}Building [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
+    cd $BUILDDIR/external/$EIRODS_BUILD_CMAKEVERSION
+    if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
+        ./bootstrap
+        $MAKEJCMD
+    else
+        echo "Nothing to build - all files up to date."
+    fi
+
     # build a copy of libarchive
-    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-3.1.2"
+    EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER="3.1.2"
+    EIRODS_BUILD_LIBARCHIVEVERSION="libarchive-$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER"
     cd $BUILDDIR/external/
     if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from ftp.renci.org${text_reset}"
         if [ -e "$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget http://cloud.github.com/downloads/libarchive/libarchive/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
+ #           wget -O $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         fi
         gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -706,7 +735,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
-        CFLAGS="-fPIC" ./configure
+        ../$EIRODS_BUILD_CMAKEVERSION/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
         $MAKEJCMD
     else
         echo "Nothing to build - all files up to date."
@@ -718,11 +747,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from ftp.renci.org${text_reset}"
         if [ -e "$EIRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.54.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+#            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.54.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_BOOSTVERSION.tar.gz
         fi
         gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $EIRODS_BUILD_BOOSTVERSION.tar

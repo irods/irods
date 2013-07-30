@@ -4,7 +4,7 @@ SRCS = libstructfile.cpp
 
 HEADERS = 
 
-EXTRALIBS = $(LIBARCHIVE_DIR)/.libs/libarchive.a \
+EXTRALIBS = $(LIBARCHIVE_DIR)/libarchive/libarchive.a \
             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
             $(BOOST_DIR)/stage/lib/libboost_system.a \
             SYSTEM_LIBZ_SO \
