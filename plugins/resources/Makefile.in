@@ -37,7 +37,7 @@ base:
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o librepl.so            librepl.cpp eirods_replicator.cpp eirods_create_write_replicator.cpp eirods_unlink_replicator.cpp eirods_object_oper.cpp
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libnonblocking.so     libnonblocking.cpp 
 	${GCC} ${INC} -Dlinux_platform -fPIC -shared -o libstructfile.so      libstructfile.cpp \
-	$(LIBARCHIVE_DIR)/.libs/libarchive.a \
+	$(LIBARCHIVE_DIR)/libarchive/libarchive.a \
 	$(BOOST_DIR)/stage/lib/libboost_filesystem.a \
 	$(BOOST_DIR)/stage/lib/libboost_system.a \
 	SYSTEM_LIBZ_SO \
