@@ -71,9 +71,7 @@ INCLUDES +=	-I$(svrApiIncDir)
 
 # Drivers
 SVR_DRIVERS_OBJS = \
-		$(svrDriversObjDir)/fileDriver.o \
-		$(svrDriversObjDir)/msoFileDriver.o \
-		$(svrDriversObjDir)/univMSSDriver.o 
+		$(svrDriversObjDir)/fileDriver.o
 
 ifdef AMAZON_S3
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o

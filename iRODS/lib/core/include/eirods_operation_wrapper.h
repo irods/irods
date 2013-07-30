@@ -18,7 +18,7 @@
 // eirods includes
 #include "eirods_plugin_base.h"
 #include "eirods_lookup_table.h"
-#include "eirods_resource_types.h"
+#include "eirods_plugin_context.h"
 #include "eirods_error.h"
 #include "eirods_operation_rule_execution_manager.h"
 
@@ -30,7 +30,6 @@
 #include <iostream>
 
 namespace eirods {
-
 	// =-=-=-=-=-=-=-
 	/**
 	  * \class 
@@ -44,9 +43,10 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		/// @brief constructors
 		operation_wrapper(  );
-		operation_wrapper( const std::string&,   // instance name
-                           const std::string&,   // operation name
-                           resource_operation ); // fcn ptr to loaded operation
+		operation_wrapper( 
+            const std::string&, // instance name
+            const std::string&, // operation name
+            plugin_operation );  // fcn ptr to loaded operation
 		
         // =-=-=-=-=-=-=-
 		/// @brief destructor
@@ -61,14 +61,14 @@ namespace eirods {
 		operation_wrapper& operator=( const operation_wrapper& _rhs );
 
 		// =-=-=-=-=-=-=-
-		// operator call that will git 'er done. this clearly must match the resource_operation type signature
+		// operator call that will git 'er done. this clearly must match the plugin_operation type signature
 		// NOTE :: we are taking the old, long route to handle multiple template params.  when we can use C++11
 		//         this will be MUCH cleaner.
 		
 		// =-=-=-=-=-=-=-
 		// public - single parameter template, there will be more...
 		error call( 
-                  resource_operation_context& _ctx ) {
+                  plugin_context& _ctx ) {
                    
             if( operation_ ) {
                // =-=-=-=-=-=-=-
@@ -78,17 +78,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
                _ctx.rule_results( pre_results );
-		       error op_err = (*operation_)( &_ctx );
+		       error op_err = (*operation_)( _ctx );
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
               return op_err;
 
@@ -103,7 +103,7 @@ namespace eirods {
 		// public - single parameter template, there will be more...
 		template< typename T1 >
 		error call( 
-                  resource_operation_context& _ctx,
+                  plugin_context& _ctx,
                   T1                          _t1 ) {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
@@ -113,17 +113,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
                _ctx.rule_results( pre_results );
-		       error op_err = (*operation_)( &_ctx, _t1 ); 
+		       error op_err = (*operation_)( _ctx, _t1 ); 
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
               return op_err;
 
@@ -137,7 +137,7 @@ namespace eirods {
 		// public - two parameter template, there will be more...
 		template< typename T1, typename T2 >
 		error call( 
-                  resource_operation_context& _ctx,
+                  plugin_context& _ctx,
                   T1                          _t1, 
                   T2                          _t2 ) {
 		   if( operation_ ) {
@@ -148,17 +148,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
                _ctx.rule_results( pre_results );
-			   error op_err = (*operation_)( &_ctx, _t1, _t2 ); 
+			   error op_err = (*operation_)( _ctx, _t1, _t2 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
                return op_err;
 
@@ -172,7 +172,7 @@ namespace eirods {
 		// public - three parameter template, there will be more...
 		template< typename T1, typename T2, typename T3 >
 		error call( 
-                  resource_operation_context& _ctx,
+                  plugin_context& _ctx,
                   T1                          _t1, 
                   T2                          _t2, 
                   T3                          _t3 ) {
@@ -184,17 +184,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
                _ctx.rule_results( pre_results );
-			   error op_err =  (*operation_)( &_ctx, _t1, _t2, _t3 ); 
+			   error op_err =  (*operation_)( _ctx, _t1, _t2, _t3 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
                return op_err;
 
@@ -208,7 +208,7 @@ namespace eirods {
 		// public - four parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4 >
 		error call( 
-                  resource_operation_context& _ctx,
+                  plugin_context& _ctx,
                   T1                          _t1, 
                   T2                          _t2, 
                   T3                          _t3, 
@@ -221,17 +221,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
                _ctx.rule_results( pre_results );
-               error op_err =  operation_( &_ctx, _t1, _t2, _t3, _t4 ); 
+               error op_err =  operation_( _ctx, _t1, _t2, _t3, _t4 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
                return op_err;
 
@@ -246,7 +246,7 @@ namespace eirods {
 		// public - five parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5 >
 		error call( 
-                  resource_operation_context& _ctx,
+                  plugin_context& _ctx,
                   T1                          _t1, 
                   T2                          _t2, 
                   T3                          _t3, 
@@ -260,17 +260,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
                _ctx.rule_results( pre_results );
-			   error op_err =  (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5 ); 
+			   error op_err =  (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5 ); 
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
                return op_err;
 
@@ -284,7 +284,7 @@ namespace eirods {
 		// public - six parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
 		error call( 
-                  resource_operation_context& _ctx,
+                  plugin_context& _ctx,
                   T1                          _t1, 
                   T2                          _t2, 
                   T3                          _t3, 
@@ -299,17 +299,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
                _ctx.rule_results( pre_results );
-			   error op_err = (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5, _t6 );  
+			   error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6 );  
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
                return op_err;
 
@@ -323,39 +323,40 @@ namespace eirods {
 		// public - seven parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
 		error call( 
-                  resource_operation_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2, 
-                  T3                          _t3, 
-                  T4                          _t4, 
-                  T5                          _t5, 
-                  T6                          _t6, 
-                  T7                          _t7 ) {
-		   if( operation_ ) {
-               // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+            plugin_context& _ctx,
+            T1                          _t1, 
+            T2                          _t2, 
+            T3                          _t3, 
+            T4                          _t4, 
+            T5                          _t5, 
+            T6                          _t6, 
+            T7                          _t7 ) {
+		    if( operation_ ) {
+                // =-=-=-=-=-=-=-
+                // instantiate a rule executor
+                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
 
-               // =-=-=-=-=-=-=-
-               // call the pre-rule for this op
-               std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+                // =-=-=-=-=-=-=-
+                // call the pre-rule for this op
+                std::string pre_results;
+                rule_exec.exec_pre_op( pre_results );
 
-               // =-=-=-=-=-=-=-
-               // call the actual operation		  
-               _ctx.rule_results( pre_results );
-			   error op_err = (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
- 
-               // =-=-=-=-=-=-=-
-               // call the poste-rule for this op
-               std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+                // =-=-=-=-=-=-=-
+                // call the actual operation		  
+                _ctx.rule_results( pre_results );
+                error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );  
 
-               return op_err;
+                // =-=-=-=-=-=-=-
+                // call the poste-rule for this op
+                std::string post_results;
+                rule_exec.exec_post_op( post_results );
 
-		   } else {
-			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
-		   }
+                return op_err;
+
+            } else {
+              return ERROR( NULL_VALUE_ERR, "null resource operation." );
+            
+            }
 
 		} // operator() - T1, T2, T3, T4, T5, T6, T7
 
@@ -363,15 +364,15 @@ namespace eirods {
 		// public - eight parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
         error call( 
-                  resource_operation_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2, 
-                  T3                          _t3, 
-                  T4                          _t4, 
-                  T5                          _t5, 
-                  T6                          _t6, 
-                  T7                          _t7,
-                  T8                          _t8 ) {
+            plugin_context& _ctx,
+            T1                          _t1, 
+            T2                          _t2, 
+            T3                          _t3, 
+            T4                          _t4, 
+            T5                          _t5, 
+            T6                          _t6, 
+            T7                          _t7,
+            T8                          _t8 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
@@ -380,17 +381,17 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( _ctx.comm(), pre_results );
+               rule_exec.exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
                _ctx.rule_results( pre_results );
-			   error op_err = (*operation_)( &_ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
+			   error op_err = (*operation_)( _ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );  
                                                 
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( _ctx.comm(), post_results );
+               rule_exec.exec_post_op( post_results );
 
                return op_err;
 
@@ -403,7 +404,7 @@ namespace eirods {
     private:
 		// =-=-=-=-=-=-=-
 		/// @brief function pointer to actual operation
-		resource_operation operation_;
+		plugin_operation operation_;
 		
         // =-=-=-=-=-=-=-
 		/// @brief instance name used for calling rules

@@ -88,7 +88,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_physical_object.o \
 		$(libCoreObjDir)/eirods_resource_redirect.o \
 		$(libCoreObjDir)/eirods_plugin_name_generator.o \
-		$(libCoreObjDir)/eirods_client_negotiation.o
+		$(libCoreObjDir)/eirods_client_negotiation.o 
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

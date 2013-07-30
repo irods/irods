@@ -7,19 +7,16 @@
 // eirods includes
 #include "eirods_log.h"
 #include "eirods_resource_types.h"
+#include "eirods_network_types.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
 #include "rcConnect.h"
 
+
 namespace eirods {
-
     // =-=-=-=-=-=-=-
-    // forward declaration
-    class resource_manager;
-
-    // =-=-=-=-=-=-=-
-    // 
+    // base class for all object types
     class first_class_object {
     public:
         // =-=-=-=-=-=-=-

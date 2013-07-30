@@ -97,20 +97,14 @@ extern "C" {
 
     /// @brief Check the general parameters passed in to most plugin functions
     eirods::error replCheckParams(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
         // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_ctx ) {
-            result = ERROR( SYS_INVALID_INPUT_PARAM, "null resource_property_map" );
-        } 
-        
-        // =-=-=-=-=-=-=-
         // verify that the resc context is valid 
-        ret = _ctx->valid(); 
+        ret = _ctx.valid(); 
         if( !ret.ok() ) { 
             result = PASSMSG( "resource context is invalid", ret );
         }
@@ -123,13 +117,13 @@ extern "C" {
      */
     eirods::error replGetNextRescInHier(
         const eirods::hierarchy_parser& _parser,
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         eirods::resource_ptr& _ret_resc)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string this_name;
-        ret = _ctx->prop_map().get<std::string>( eirods::RESOURCE_NAME, this_name);
+        ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, this_name);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -144,7 +138,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in the hierarchy.";
                 result = ERROR(-1, msg.str());
             } else {
-                _ret_resc = (_ctx->child_map())[child].second;
+                _ret_resc = (_ctx.child_map())[child].second;
             }
         }
         return result;
@@ -170,7 +164,7 @@ extern "C" {
 
     /// @brief Updates the fields in the resources properties for the object
     eirods::error replUpdateObjectAndOperProperties(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const std::string& _oper)
     {
         eirods::error result = SUCCESS();
@@ -179,9 +173,9 @@ extern "C" {
 
         // The object list is now a queue of operations and their associated objects. Their corresponding replicating operations
         // will be performed one at a time in the order in which they were put into the queue.
-        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
         if(object != NULL) {
-            ret = _ctx->prop_map().get<object_list_t>(object_list_prop, object_list);
+            ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
             eirods::object_oper oper;
             if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
                 std::stringstream msg;
@@ -216,7 +210,7 @@ extern "C" {
                 oper.object() = *object;
                 oper.operation() = _oper;
                 object_list.push_back(oper);
-                ret = _ctx->prop_map().set<object_list_t>(object_list_prop, object_list);
+                ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -228,7 +222,7 @@ extern "C" {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Failed casting first class object \"";
-            msg << _ctx->fco().logical_path();
+            msg << _ctx.fco().logical_path();
             msg << "\" to file object.";
             result = ERROR(-1, msg.str());
         }
@@ -236,14 +230,14 @@ extern "C" {
     }
 
     eirods::error get_selected_hierarchy(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         std::string& _hier_string,
         std::string& _root_resc)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
         eirods::hierarchy_parser selected_parser;
-        ret = _ctx->prop_map().get<eirods::hierarchy_parser>(hierarchy_prop, selected_parser);
+        ret = _ctx.prop_map().get<eirods::hierarchy_parser>(hierarchy_prop, selected_parser);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -270,14 +264,14 @@ extern "C" {
     }
     
     eirods::error replReplicateCreateWrite(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
         // get the list of objects that need to be replicated
         object_list_t object_list;
-        ret = _ctx->prop_map().get<object_list_t>(object_list_prop, object_list);
+        ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
         if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -286,7 +280,7 @@ extern "C" {
         } else if(object_list.size() > 0) {
             // get the child list
             child_list_t child_list;
-            ret = _ctx->prop_map().get<child_list_t>(child_list_prop, child_list);
+            ret = _ctx.prop_map().get<child_list_t>(child_list_prop, child_list);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -319,7 +313,7 @@ extern "C" {
                     } else {
 
                         // update the object list in the properties
-                        ret = _ctx->prop_map().set<object_list_t>(object_list_prop, object_list);
+                        ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
                         if(!ret.ok()) {
                             std::stringstream msg;
                             msg << __FUNCTION__;
@@ -334,14 +328,14 @@ extern "C" {
     }
 
     eirods::error replReplicateUnlink(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
         // get the list of objects that need to be replicated
         object_list_t object_list;
-        ret = _ctx->prop_map().get<object_list_t>(object_list_prop, object_list);
+        ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
         if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -350,7 +344,7 @@ extern "C" {
         } else if(object_list.size() > 0) {
             // get the child list
             child_list_t child_list;
-            ret = _ctx->prop_map().get<child_list_t>(child_list_prop, child_list);
+            ret = _ctx.prop_map().get<child_list_t>(child_list_prop, child_list);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -383,7 +377,7 @@ extern "C" {
                     } else {
 
                         // update the object list in the properties
-                        ret = _ctx->prop_map().set<object_list_t>(object_list_prop, object_list);
+                        ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
                         if(!ret.ok()) {
                             std::stringstream msg;
                             msg << __FUNCTION__;
@@ -402,7 +396,7 @@ extern "C" {
 
     // Called after a new file is registered with the ICAT
     eirods::error replFileRegistered(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -414,7 +408,7 @@ extern "C" {
             msg << " - Error found checking passed parameters.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            file_object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+            file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
             if(file_object != NULL) {
                 eirods::hierarchy_parser parser;
                 parser.set_string(file_object->resc_hier());
@@ -426,7 +420,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_REGISTERED, _ctx->fco());
+                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_REGISTERED, _ctx.fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -456,7 +450,7 @@ extern "C" {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to cast first class object \"";
-                msg << _ctx->fco().logical_path();
+                msg << _ctx.fco().logical_path();
                 msg << "\" to file object.";
                 result = ERROR(-1, msg.str());
             }
@@ -466,7 +460,7 @@ extern "C" {
 
     // Called when a file is unregistered from the ICAT
     eirods::error replFileUnregistered(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -478,7 +472,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -487,7 +481,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -501,7 +495,7 @@ extern "C" {
 
     // Called when a files entry is modified in the ICAT
     eirods::error replFileModified(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -513,7 +507,7 @@ extern "C" {
             msg << " - Error found checking passed parameters.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            file_object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+            file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
             if(file_object != NULL) {
                 eirods::hierarchy_parser parser;
                 parser.set_string(file_object->resc_hier());
@@ -525,7 +519,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_MODIFIED, _ctx->fco());
+                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -555,7 +549,7 @@ extern "C" {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to cast first class object \"";
-                msg << _ctx->fco().logical_path();
+                msg << _ctx.fco().logical_path();
                 msg << "\" to file object.";
                 result = ERROR(-1, msg.str());
             }
@@ -566,7 +560,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error replFileCreate(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -575,7 +569,7 @@ extern "C" {
             result = PASSMSG("replFileCreatePlugin - bad params.", ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -584,7 +578,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CREATE, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_CREATE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -607,7 +601,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     eirods::error replFileOpen(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -620,7 +614,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -629,7 +623,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_OPEN, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -644,7 +638,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
     eirods::error replFileRead(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         void*                          _buf, 
         int                            _len )
     {
@@ -659,7 +653,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -668,7 +662,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<void*, int>(_ctx->comm(), eirods::RESOURCE_OP_READ, _ctx->fco(), _buf, _len);
+                ret = child->call<void*, int>(_ctx.comm(), eirods::RESOURCE_OP_READ, _ctx.fco(), _buf, _len);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -686,7 +680,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
     eirods::error replFileWrite(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         void*                          _buf, 
         int                            _len )
     {
@@ -701,7 +695,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -710,7 +704,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<void*, int>(_ctx->comm(), eirods::RESOURCE_OP_WRITE, _ctx->fco(), _buf, _len);
+                ret = child->call<void*, int>(_ctx.comm(), eirods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -735,7 +729,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
     eirods::error replFileClose(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -748,10 +742,10 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            file_object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+            file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
             if(file_object != NULL) {
                 eirods::hierarchy_parser parser;
-                parser.set_string(_ctx->fco().resc_hier());
+                parser.set_string(_ctx.fco().resc_hier());
                 eirods::resource_ptr child;
                 ret =replGetNextRescInHier(parser, _ctx, child);
                 if(!ret.ok()) {
@@ -760,7 +754,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CLOSE, _ctx->fco());
+                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_CLOSE, _ctx.fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -773,7 +767,7 @@ extern "C" {
                                 std::stringstream msg;
                                 msg << __FUNCTION__;
                                 msg << " - Failed to replicate create/write operation for object \"";
-                                msg << _ctx->fco().logical_path();
+                                msg << _ctx.fco().logical_path();
                                 msg << "\"";
                                 eirods::log(LOG_NOTICE, msg.str());
                                 // result = PASSMSG(msg.str(), ret1);
@@ -790,7 +784,7 @@ extern "C" {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to cast first class object \"";
-                msg << _ctx->fco().logical_path();
+                msg << _ctx.fco().logical_path();
                 msg << "\" to file object.";
                 result = ERROR(-1, msg.str());
             }
@@ -802,7 +796,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     eirods::error replFileUnlink(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -814,10 +808,10 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object* file_object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+            eirods::file_object* file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
             if(file_object != NULL) {
                 eirods::hierarchy_parser parser;
-                parser.set_string(_ctx->fco().resc_hier());
+                parser.set_string(_ctx.fco().resc_hier());
                 eirods::resource_ptr child;
                 ret =replGetNextRescInHier(parser, _ctx, child);
                 if(!ret.ok()) {
@@ -826,7 +820,7 @@ extern "C" {
                     msg << " - Failed to get the next resource in hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_UNLINK, _ctx->fco());
+                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_UNLINK, _ctx.fco());
                     if(!ret.ok()) {
                         std::stringstream msg;
                         msg << __FUNCTION__;
@@ -848,7 +842,7 @@ extern "C" {
                                         std::stringstream msg;
                                         msg << __FUNCTION__;
                                         msg << " - Failed to replicate the unlink operation for file \"";
-                                        msg << _ctx->fco().logical_path();
+                                        msg << _ctx.fco().logical_path();
                                         msg << "\"";
                                         result = PASSMSG(msg.str(), ret);
                                     }
@@ -861,7 +855,7 @@ extern "C" {
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Failed to cast first class object \"";
-                msg << _ctx->fco().logical_path();
+                msg << _ctx.fco().logical_path();
                 msg << "\" to file object.";
                 result = ERROR(-1, msg.str());
             }
@@ -872,7 +866,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
     eirods::error replFileStat(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         struct stat*                   _statbuf )
     { 
         eirods::error result = SUCCESS();
@@ -886,7 +880,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -895,7 +889,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<struct stat*>(_ctx->comm(), eirods::RESOURCE_OP_STAT, _ctx->fco(), _statbuf);
+                ret = child->call<struct stat*>(_ctx.comm(), eirods::RESOURCE_OP_STAT, _ctx.fco(), _statbuf);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -912,7 +906,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
     eirods::error replFileFstat(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         struct stat*                   _statbuf )
     { 
         eirods::error result = SUCCESS();
@@ -926,7 +920,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -935,7 +929,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<struct stat*>(_ctx->comm(), eirods::RESOURCE_OP_FSTAT, _ctx->fco(), _statbuf);
+                ret = child->call<struct stat*>(_ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -952,7 +946,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error replFileLseek(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         size_t                         _offset, 
         int                            _whence )
     {
@@ -967,7 +961,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -976,7 +970,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<size_t, int>(_ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence);
+                ret = child->call<size_t, int>(_ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -993,7 +987,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
     eirods::error replFileFsync(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1006,7 +1000,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1015,7 +1009,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_FSYNC, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1032,7 +1026,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error replFileMkdir(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1045,7 +1039,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1054,7 +1048,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_MKDIR, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_MKDIR, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1071,7 +1065,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error replFileRmdir(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1084,7 +1078,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1093,7 +1087,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_RMDIR, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_RMDIR, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1110,7 +1104,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
     eirods::error replFileOpendir(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1123,7 +1117,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1132,7 +1126,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_OPENDIR, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_OPENDIR, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1149,7 +1143,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
     eirods::error replFileClosedir(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1162,7 +1156,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1171,7 +1165,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_CLOSEDIR, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1188,7 +1182,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error replFileReaddir(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         struct rodsDirent**            _dirent_ptr )
     {
         eirods::error result = SUCCESS();
@@ -1202,7 +1196,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1211,7 +1205,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<rodsDirent**>(_ctx->comm(), eirods::RESOURCE_OP_READDIR, _ctx->fco(), _dirent_ptr);
+                ret = child->call<rodsDirent**>(_ctx.comm(), eirods::RESOURCE_OP_READDIR, _ctx.fco(), _dirent_ptr);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1228,7 +1222,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error replFileRename(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const char*                    _new_file_name )
     {
         eirods::error result = SUCCESS();
@@ -1242,7 +1236,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1251,7 +1245,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<const char*>(_ctx->comm(), eirods::RESOURCE_OP_RENAME, _ctx->fco(), _new_file_name);
+                ret = child->call<const char*>(_ctx.comm(), eirods::RESOURCE_OP_RENAME, _ctx.fco(), _new_file_name);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1268,7 +1262,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error replFileGetFsFreeSpace(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1281,7 +1275,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1290,7 +1284,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_FREESPACE, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_FREESPACE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1309,7 +1303,7 @@ extern "C" {
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
     eirods::error replStageToCache(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const char*                    _cache_file_name )
     { 
         eirods::error result = SUCCESS();
@@ -1323,7 +1317,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1332,7 +1326,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_FREESPACE, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_FREESPACE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1351,7 +1345,7 @@ extern "C" {
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
     eirods::error replSyncToArch(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const char*                    _cache_file_name )
     { 
         eirods::error result = SUCCESS();
@@ -1365,7 +1359,7 @@ extern "C" {
             result = PASSMSG(msg.str(), ret);
         } else {
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(_ctx.fco().resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1374,7 +1368,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call<const char*>(_ctx->comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx->fco(), _cache_file_name);
+                ret = child->call<const char*>(_ctx.comm(), eirods::RESOURCE_OP_SYNCTOARCH, _ctx.fco(), _cache_file_name);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1390,13 +1384,13 @@ extern "C" {
 
     /// @brief Adds the current resource to the specified resource hierarchy
     eirods::error replAddSelfToHierarchy(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         eirods::hierarchy_parser& _parser)
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string name;
-        ret = _ctx->prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
+        ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -1416,7 +1410,7 @@ extern "C" {
 
     /// @brief Loop through the children and call redirect on each one to populate the hierarchy vector
     eirods::error replRedirectToChildren(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const std::string*             _operation,
         const std::string*             _curr_host,
         eirods::hierarchy_parser&      _parser,
@@ -1426,11 +1420,11 @@ extern "C" {
         eirods::error ret;
         eirods::resource_child_map::iterator it;
         float out_vote;
-        for(it = _ctx->child_map().begin(); result.ok() && it != _ctx->child_map().end(); ++it) {
+        for(it = _ctx.child_map().begin(); result.ok() && it != _ctx.child_map().end(); ++it) {
             eirods::hierarchy_parser parser(_parser);
             eirods::resource_ptr child = it->second.second;
             ret = child->call<const std::string*, const std::string*, eirods::hierarchy_parser*, float*>(
-                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), _operation, _curr_host, &parser, &out_vote);
+                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _operation, _curr_host, &parser, &out_vote);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -1446,7 +1440,7 @@ extern "C" {
     /// @brief Creates a list of hierarchies to which this operation must be replicated, all children except the one on which we are
     /// operating.
     eirods::error replCreateChildReplList(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const redirect_map_t& _redirect_map)
     {
         eirods::error result = SUCCESS();
@@ -1455,7 +1449,7 @@ extern "C" {
         // Check for an existing child list property. If it exists assume it is correct and do nothing.
         // This assumes that redirect always resolves to the same child. Is that ok? - hcj
         child_list_t repl_vector;
-        ret = _ctx->prop_map().get<child_list_t>(child_list_prop, repl_vector);
+        ret = _ctx.prop_map().get<child_list_t>(child_list_prop, repl_vector);
         if(!ret.ok()) {
             
             // loop over all of the children in the map except the first (selected) and add them to a vector
@@ -1466,7 +1460,7 @@ extern "C" {
             }
         
             // add the resulting vector as a property of the resource
-            eirods::error ret = _ctx->prop_map().set<child_list_t>(child_list_prop, repl_vector);
+            eirods::error ret = _ctx.prop_map().set<child_list_t>(child_list_prop, repl_vector);
             if(!ret.ok()) {
                 std::stringstream msg;
                 msg << __FUNCTION__;
@@ -1479,7 +1473,7 @@ extern "C" {
 
     /// @brief Selects a child from the vector of parsers based on host access
     eirods::error replSelectChild(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const std::string& _curr_host,
         const redirect_map_t& _redirect_map,
         eirods::hierarchy_parser* _out_parser,
@@ -1508,7 +1502,7 @@ extern "C" {
                 msg << " - Failed to add unselected children to the replication list.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = _ctx->prop_map().set<eirods::hierarchy_parser>(hierarchy_prop, parser);
+                ret = _ctx.prop_map().set<eirods::hierarchy_parser>(hierarchy_prop, parser);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -1523,13 +1517,13 @@ extern "C" {
 
     /// @brief Make sure the requested operation on the requested file object is valid
     eirods::error replValidOperation(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
-        eirods::first_class_object fco = _ctx->fco();
+        eirods::first_class_object fco = _ctx.fco();
 
         // cast the first class object to a file object
-        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx->fco()));
+        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
         if(object == NULL) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -1563,7 +1557,7 @@ extern "C" {
     
     /// @brief Determines which child should be used for the specified operation
     eirods::error replRedirect(
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const std::string*             _operation,
         const std::string*             _curr_host,
         eirods::hierarchy_parser*      _inout_parser,

@@ -136,8 +136,8 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         std::string this_name;
-        eirods::resource_property_map& prop_map = _ctx->prop_map();
-        eirods::resource_child_map& cmap = _ctx->child_map();
+        eirods::plugin_property_map& prop_map = _ctx->prop_map();
+        eirods::resource_child_map&  cmap     = _ctx->child_map();
 
         rodsLog( LOG_NOTICE, "before getting name");
         ret = prop_map.get<std::string>("name", this_name);
@@ -1117,8 +1117,8 @@ extern "C" {
 
     /// @brief Adds the current resource to the specified resource hierarchy
     eirods::error wosCoordAddSelfToHierarchy(
-        eirods::resource_property_map& _prop_map,
-        eirods::hierarchy_parser& _parser)
+        eirods::plugin_property_map& _prop_map,
+        eirods::hierarchy_parser&    _parser)
     {
         eirods::error ret;
         std::string name;
@@ -1249,8 +1249,8 @@ extern "C" {
             return ERROR( -1, "wosCoordRedirect - null outgoing vote" );
         }
         
-        eirods::resource_property_map& _prop_map = _ctx->prop_map();
-        eirods::resource_child_map& _cmap = _ctx->child_map();
+        eirods::plugin_property_map& _prop_map = _ctx->prop_map();
+        eirods::resource_child_map&  _cmap     = _ctx->child_map();
 
         // add ourselves to the hierarchy parser
         if(!(ret = wosCoordAddSelfToHierarchy(_prop_map, parser)).ok()) {

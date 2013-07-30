@@ -18,12 +18,14 @@
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_error.h"
+#include "eirods_lookup_table.h"
 
 namespace eirods {
     // =-=-=-=-=-=-=-
     /// @brief abstraction for post disconnect functor - plugins can bind
     //         functors, free functions or member functions as necessary
     typedef boost::function< eirods::error( rcComm_t* ) > pdmo_type;
+    typedef lookup_table<boost::any>                      plugin_property_map;
     
     /**
      * \class plugin_base - ABC for E-iRODS Plugins
@@ -78,9 +80,13 @@ namespace eirods {
         std::string                       context_;       // context string for this plugin
         std::string                       instance_name_; // name of this instance of the plugin
  
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
         /// @brief Map holding resource operations
         std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
+
+        /// =-=-=-=-=-=-=-
+        /// @brief heterogeneous key value map of plugin data
+        plugin_property_map properties_; 
 
     }; // class plugin_base
 

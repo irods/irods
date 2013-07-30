@@ -1,12 +1,12 @@
 BASEDIRS = nonblocking \
+           unixfilesystem \
+           structfile \
            passthru \
            replication \
            roundrobin \
-           structfile \
-           univmss \
-           unixfilesystem \
-           compound \
            random \
+           compound \
+           univmss \
            mockarchive
 
 ######################################################################

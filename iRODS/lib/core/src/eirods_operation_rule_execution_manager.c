@@ -13,55 +13,46 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // public - Constructor
         operation_rule_execution_manager::operation_rule_execution_manager( 
-                                          const std::string& _instance,
-                                          const std::string& _op_name ) :
-                                          instance_( _instance ) {
+            const std::string& _instance,
+            const std::string& _op_name ) :
+            instance_( _instance ) {
             rule_name_ = "pep_" + _op_name;
 
         } // ctor
 
         // =-=-=-=-=-=-=-
         // public - execute rule for pre operation
-        error operation_rule_execution_manager::exec_pre_op( rsComm_t*    _comm, 
-                                                             std::string& _res ) {
+        error operation_rule_execution_manager::exec_pre_op( 
+            std::string& _res ) {
             // =-=-=-=-=-=-=-
             // manufacture pre rule name
             std::string pre_name = rule_name_ + "_pre";
 
             // =-=-=-=-=-=-=-
             // execute the rule
-            return exec_op( pre_name, _comm, _res ); 
+            return exec_op( pre_name, _res ); 
 
         } // exec_post_op
 
         // =-=-=-=-=-=-=-
         // public - execute rule for post operation
-        error operation_rule_execution_manager::exec_post_op( rsComm_t*    _comm, 
-                                                              std::string& _res ) {
+        error operation_rule_execution_manager::exec_post_op( 
+            std::string& _res ) {
             // =-=-=-=-=-=-=-
             // manufacture pre rule name
             std::string post_name = rule_name_ + "_post";
 
             // =-=-=-=-=-=-=-
             // execute the rule
-            return exec_op( post_name, _comm, _res ); 
+            return exec_op( post_name, _res ); 
 
         } // exec_post_op
 
         // =-=-=-=-=-=-=-
         // private - execute rule for pre operation
-        error operation_rule_execution_manager::exec_op( const std::string& _name,
-                                                         rsComm_t*          _comm, 
-                                                         std::string&       _res ) {
-            // =-=-=-=-=-=-=-
-            // check comm ptr
-            if( !_comm ) {
-                std::stringstream msg;
-                msg << _name;
-                msg << " comm pointer is null";
-                return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-            }
-
+        error operation_rule_execution_manager::exec_op( 
+            const std::string& _name,
+            std::string&       _res ) {
             // =-=-=-=-=-=-=-
             // determine if rule exists
             RuleIndexListNode* re_node = 0;
@@ -73,9 +64,6 @@ namespace eirods {
             // manufacture an rei for the applyRule
             ruleExecInfo_t rei;
             memset ((char*)&rei, 0, sizeof (ruleExecInfo_t));
-            rei.rsComm = _comm;
-            rei.uoic   = &_comm->clientUser;
-            rei.uoip   = &_comm->proxyUser;
             rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
 
             // =-=-=-=-=-=-=-
@@ -98,8 +86,10 @@ namespace eirods {
             msParam_t* out_ms_param = getMsParamByLabel( &params, "*OUT" );
             if( out_ms_param ) {
                 _res = reinterpret_cast< char* >( out_ms_param->inOutStruct ); 
+            
             } else {
                 return ERROR( SYS_INVALID_INPUT_PARAM, "null out parameter" );    
+            
             }
 
             return SUCCESS();
