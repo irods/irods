@@ -696,11 +696,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ -d "$EIRODS_BUILD_CMAKEVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_CMAKEVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CMAKEVERSION] from cmake.org${text_reset}"
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_CMAKEVERSION] from ftp.renci.org${text_reset}"
         if [ -e "$EIRODS_BUILD_CMAKEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget http://www.cmake.org/files/v2.8/$EIRODS_BUILD_CMAKEVERSION.tar.gz
+#            wget http://www.cmake.org/files/v2.8/$EIRODS_BUILD_CMAKEVERSION.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_CMAKEVERSION.tar.gz
         fi
 #        gunzip $EIRODS_BUILD_CMAKEVERSION.tar.gz
         tar xf $EIRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
@@ -721,11 +722,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ -d "$EIRODS_BUILD_LIBARCHIVEVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from github.com${text_reset}"
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_LIBARCHIVEVERSION] from ftp.renci.org${text_reset}"
         if [ -e "$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget -O $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+ #           wget -O $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         fi
         gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         tar xf $EIRODS_BUILD_LIBARCHIVEVERSION.tar
@@ -745,11 +747,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ -d "$EIRODS_BUILD_BOOSTVERSION" ] ; then
         echo "${text_green}${text_bold}Detected copy of [$EIRODS_BUILD_BOOSTVERSION]${text_reset}"
     else
-        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from sourceforge.net${text_reset}"
+        echo "${text_green}${text_bold}Downloading [$EIRODS_BUILD_BOOSTVERSION] from ftp.renci.org${text_reset}"
         if [ -e "$EIRODS_BUILD_BOOSTVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.54.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+#            wget -O $EIRODS_BUILD_BOOSTVERSION.tar.gz http://sourceforge.net/projects/boost/files/boost/1.54.0/$EIRODS_BUILD_BOOSTVERSION.tar.gz/download
+            wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_BOOSTVERSION.tar.gz
         fi
         gunzip $EIRODS_BUILD_BOOSTVERSION.tar.gz
         tar xf $EIRODS_BUILD_BOOSTVERSION.tar
