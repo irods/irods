@@ -699,7 +699,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         if [ -e "$EIRODS_BUILD_CMAKEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
-            wget http://www.cmake.org/files/v2.8/cmake-$EIRODS_BUILD_CMAKEVERSION.tar.gz
+            wget http://www.cmake.org/files/v2.8/$EIRODS_BUILD_CMAKEVERSION.tar.gz
         fi
 #        gunzip $EIRODS_BUILD_CMAKEVERSION.tar.gz
         tar xf $EIRODS_BUILD_CMAKEVERSION.tar.gz # this version wasn't zipped
