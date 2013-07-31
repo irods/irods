@@ -306,7 +306,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::data_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -325,7 +325,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
 
         int mode = fco.mode(); 

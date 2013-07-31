@@ -107,6 +107,10 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                          tmpDataObjInfo->objPath, status);
             } else {
                 eirods::file_object file_obj(rsComm, tmpDataObjInfo);
+                char* in_pdmo = getValByKey( modDataObjMetaInp->regParam, IN_PDMO_KW);
+                if( in_pdmo ) {
+                    file_obj.in_pdmo( true );
+                }
                 eirods::error ret = fileModified(rsComm, file_obj);
                 if(!ret.ok()) {
                     std::stringstream msg;

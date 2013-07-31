@@ -86,6 +86,12 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 	    if (status >= 0) 
 			status = destDataObjInfo->replNum;
         eirods::file_object file_obj(rsComm, destDataObjInfo);
+        char* in_pdmo = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
+        if( in_pdmo ) {
+            file_obj.in_pdmo( true );
+        }
+
+
         eirods::error ret = fileModified(rsComm, file_obj);
         if(!ret.ok()) {
             std::stringstream msg;

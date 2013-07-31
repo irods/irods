@@ -38,11 +38,17 @@ namespace eirods {
         data_object( _rhs ) {
         // =-=-=-=-=-=-=-
         // explicit initialization
+        comm_           = _rhs.comm_;
+        logical_path_   = _rhs.logical_path_;
+        data_type_      = _rhs.data_type_;
+        file_descriptor_= _rhs.file_descriptor_;
+        l1_desc_idx_    = _rhs.l1_desc_idx_;
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
         memset(&cond_input_, 0, sizeof(keyValPair_t));
+
     } // cctor 
 
     // =-=-=-=-=-=-=-
@@ -55,33 +61,33 @@ namespace eirods {
         int _fd,
         int _m,
         int _f ) :
-        data_object(),
+        data_object(
+            _fn,
+            _resc_hier,
+            _m,
+            _f ),
         size_( -1 ),
-        in_pdmo_(false) {
+        in_pdmo_(false),
+        logical_path_(_logical_path),
+        comm_(_c),
+        file_descriptor_(_fd),
+        repl_requested_(-1) {
         // =-=-=-=-=-=-=-
         // explicit initialization
-        logical_path(_logical_path);
-        comm_            = _c;
-        physical_path_   = _fn;
-        resc_hier_       = _resc_hier;
-        file_descriptor_ = _fd;
-        mode_            = _m;
-        flags_           = _f;
-        repl_requested_  = -1;
         replicas_.empty();
         memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
     // from dataObjInfo
     file_object::file_object(
-        rsComm_t* _rsComm,
-        const dataObjInfo_t* _dataObjInfo)
-    {
-        comm_ = _rsComm;
+        rsComm_t*            _rsComm,
+        const dataObjInfo_t* _dataObjInfo ) {
         logical_path(_dataObjInfo->objPath);
-        physical_path_ = _dataObjInfo->filePath;
-        resc_hier_ = _dataObjInfo->rescHier;
-        flags_ = _dataObjInfo->flags;
+
+        comm_           = _rsComm;
+        physical_path_  = _dataObjInfo->filePath;
+        resc_hier_      = _dataObjInfo->rescHier;
+        flags_          = _dataObjInfo->flags;
         repl_requested_ = _dataObjInfo->replNum;
         replicas_.empty();
         // should mode be set here? - hcj
@@ -100,8 +106,13 @@ namespace eirods {
         const file_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
-        first_class_object::operator=( _rhs );
-
+        data_object::operator=( _rhs );
+        
+        comm_           = _rhs.comm_;
+        logical_path_   = _rhs.logical_path_;
+        data_type_      = _rhs.data_type_;
+        file_descriptor_= _rhs.file_descriptor_;
+        l1_desc_idx_    = _rhs.l1_desc_idx_;
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;

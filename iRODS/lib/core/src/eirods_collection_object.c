@@ -52,7 +52,7 @@ namespace eirods {
     collection_object& collection_object::operator=( const collection_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
-        first_class_object::operator=( _rhs );
+        data_object::operator=( _rhs );
 
         directory_pointer_  = _rhs.directory_pointer_;
 

@@ -44,11 +44,11 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        virtual DIR*        directory_pointer() const { return directory_pointer_; }
+        virtual DIR* directory_pointer() const { return directory_pointer_; }
                 
         // =-=-=-=-=-=-=-
         // Mutators     
-        virtual void directory_pointer( DIR* _p )          { directory_pointer_ = _p; }
+        virtual void directory_pointer( DIR* _p ) { directory_pointer_ = _p; }
 
     protected:
         // =-=-=-=-=-=-=-

@@ -213,7 +213,7 @@ _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-                 "%s: getDataObjInfo for %s failed", __FUNCTION__, dataObjInp->objPath);
+                 "%s: getDataObjInfo for [%s] failed", __FUNCTION__, dataObjInp->objPath );
         return (status);
     }
     

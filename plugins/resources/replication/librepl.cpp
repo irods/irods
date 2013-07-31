@@ -76,7 +76,7 @@
 template< typename DEST_TYPE >
 eirods::error replCheckParams(
     eirods::resource_plugin_context& _ctx ) {
-    eirods::error result;
+    eirods::error result = SUCCESS();
     // =-=-=-=-=-=-=-
     // verify that the resc context is valid 
     eirods::error ret = _ctx.valid< DEST_TYPE >(); 

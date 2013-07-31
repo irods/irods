@@ -896,7 +896,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
     ///        the coordinating node would be calling this on a leaf when necessary
     eirods::error compound_file_sync_to_arch(
         eirods::resource_plugin_context& _ctx, 
-        const char*                         _cache_file_name ) { 
+        const char*                      _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
