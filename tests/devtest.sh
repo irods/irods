@@ -13,7 +13,8 @@ if [ "$1" != "ci" ] ; then
     # human user, use keyboard interrupt to clean up, and stop on first error
     OPTS=" -b -c -f "
 else
-    OPTS=" -b "
+    # run as hudson
+    OPTS=" -b -f "
 fi
 
 # detect E-iRODS root directory
