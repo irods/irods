@@ -8,13 +8,23 @@
 #
 ###################################################################
 
+# only python 2.7+ has newer options
+PYTHONVERSION=$( python --version 2>&1 | awk '{print $2}' )
+if [ "$PYTHONVERSION" \< "2.7" ] ; then
+  # none
+  OPTS=""
+else
+  # buffer output and stop on first failure
+  OPTS=" -b -f "
+fi
+
 # check for continuous integration parameter
 if [ "$1" != "ci" ] ; then
-    # human user, use keyboard interrupt to clean up, and stop on first error
-    OPTS=" -b -c -f "
+    # human user, use keyboard interrupt to clean up
+    OPTS="$OPTS -c "
 else
     # run as hudson
-    OPTS=" -b -f "
+    OPTS="$OPTS "
 fi
 
 # detect E-iRODS root directory
