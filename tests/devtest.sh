@@ -39,5 +39,8 @@ nosetests -v test_allrules.py
 cd $EIRODSROOT
 $EIRODSROOT/iRODS/irodsctl devtesty
 
+# clean up /tmp
+ls /tmp/psqlodbc* | xargs rm -f
+
 # done
 exit 0
