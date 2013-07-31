@@ -72,6 +72,21 @@
 
 #include <string.h>
 
+/// @brief Check the general parameters passed in to most plugin functions
+template< typename DEST_TYPE >
+eirods::error replCheckParams(
+    eirods::resource_plugin_context& _ctx ) {
+    eirods::error result;
+    // =-=-=-=-=-=-=-
+    // verify that the resc context is valid 
+    eirods::error ret = _ctx.valid< DEST_TYPE >(); 
+    if( !ret.ok() ) { 
+        result = PASSMSG( "resource context is invalid", ret );
+    }
+
+    return result;
+}
+
 extern "C" {
 
     // =-=-=-=-=-=-=-
@@ -94,23 +109,6 @@ extern "C" {
 
     //////////////////////////////////////////////////////////////////////
     // Utility functions
-
-    /// @brief Check the general parameters passed in to most plugin functions
-    eirods::error replCheckParams(
-        eirods::resource_plugin_context& _ctx)
-    {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        // =-=-=-=-=-=-=-
-        // verify that the resc context is valid 
-        ret = _ctx.valid(); 
-        if( !ret.ok() ) { 
-            result = PASSMSG( "resource context is invalid", ret );
-        }
-        
-        return result;
-    }
 
     /**
      * @brief Gets the name of the child of this resource from the hierarchy
@@ -173,58 +171,49 @@ extern "C" {
 
         // The object list is now a queue of operations and their associated objects. Their corresponding replicating operations
         // will be performed one at a time in the order in which they were put into the queue.
-        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
-        if(object != NULL) {
-            ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
-            eirods::object_oper oper;
-            if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the object list from the resource.";
-                result = PASSMSG(msg.str(), ret);
-            } else if(replObjectInList(object_list, *object, oper)) {
-                // confirm the operations are compatible
-                bool mismatched = false;
-                if(_oper == create_oper) {
-                    if(oper.operation() != create_oper) {
-                        mismatched = true;
-                    }
-                } else if(_oper == write_oper) {
-                    // write is allowed after create
-                    if(oper.operation() != create_oper && oper.operation() != write_oper) {
-                        mismatched = true;
-                    }
-                } else if(_oper == unlink_oper) {
-                    if(oper.operation() != unlink_oper) {
-                        mismatched = true;
-                    }
-                }
-                if(mismatched) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Existing object's operation \"" << oper.operation() << "\"";
-                    msg << " does not match current operation \"" << _oper << "\"";
-                    result = ERROR(-1, msg.str());
-                }
-            } else {
-                oper.object() = *object;
-                oper.operation() = _oper;
-                object_list.push_back(oper);
-                ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed to set the object list property on the resource.";
-                    result = PASSMSG(msg.str(), ret);
-                }
-            }
-        } else {
+        eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>((_ctx.fco()));
+        ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
+        eirods::object_oper oper;
+        if(!ret.ok() && ret.code() != EIRODS_KEY_NOT_FOUND) {
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " - Failed casting first class object \"";
-            msg << _ctx.fco().logical_path();
-            msg << "\" to file object.";
-            result = ERROR(-1, msg.str());
+            msg << " - Failed to get the object list from the resource.";
+            result = PASSMSG(msg.str(), ret);
+        } else if(replObjectInList(object_list, file_obj, oper)) {
+            // confirm the operations are compatible
+            bool mismatched = false;
+            if(_oper == create_oper) {
+                if(oper.operation() != create_oper) {
+                    mismatched = true;
+                }
+            } else if(_oper == write_oper) {
+                // write is allowed after create
+                if(oper.operation() != create_oper && oper.operation() != write_oper) {
+                    mismatched = true;
+                }
+            } else if(_oper == unlink_oper) {
+                if(oper.operation() != unlink_oper) {
+                    mismatched = true;
+                }
+            }
+            if(mismatched) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Existing object's operation \"" << oper.operation() << "\"";
+                msg << " does not match current operation \"" << _oper << "\"";
+                result = ERROR(-1, msg.str());
+            }
+        } else {
+            oper.object() = file_obj;
+            oper.operation() = _oper;
+            object_list.push_back(oper);
+            ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to set the object list property on the resource.";
+                result = PASSMSG(msg.str(), ret);
+            }
         }
         return result;
     }
@@ -400,59 +389,49 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        eirods::file_object* file_object;
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Error found checking passed parameters.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
-            if(file_object != NULL) {
-                eirods::hierarchy_parser parser;
-                parser.set_string(file_object->resc_hier());
-                eirods::resource_ptr child;
-                ret =replGetNextRescInHier(parser, _ctx, child);
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>( _ctx.fco() );;
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_obj.resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_REGISTERED, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
-                    msg << " - Failed to get the next resource in hierarchy.";
+                    msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_REGISTERED, _ctx.fco());
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed while calling child operation.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        if(false && !file_object->in_pdmo()) {  // don't do this at register only on close - harry
-                            eirods::error ret1 = replReplicateCreateWrite(_ctx);
-                            if(!ret1.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to replicate create/write operation for object \"";
-                                msg << file_object->logical_path();
-                                msg << "\"";
-                                eirods::log(LOG_NOTICE, msg.str());
-                                // result = PASSMSG(msg.str(), ret1);
-                                result = CODE(ret.code());
-                            } else {
-                                result = CODE(ret.code());
-                            }
+                    if(false && !file_obj.in_pdmo()) {  // don't do this at register only on close - harry
+                        eirods::error ret1 = replReplicateCreateWrite(_ctx);
+                        if(!ret1.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to replicate create/write operation for object \"";
+                            msg << file_obj.logical_path();
+                            msg << "\"";
+                            eirods::log(LOG_NOTICE, msg.str());
+                            // result = PASSMSG(msg.str(), ret1);
+                            result = CODE(ret.code());
                         } else {
                             result = CODE(ret.code());
                         }
+                    } else {
+                        result = CODE(ret.code());
                     }
                 }
-            } else {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to cast first class object \"";
-                msg << _ctx.fco().logical_path();
-                msg << "\" to file object.";
-                result = ERROR(-1, msg.str());
             }
         }
         return result;
@@ -464,15 +443,16 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Error found checking passed parameters.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -481,7 +461,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_UNREGISTERED, _ctx.fco());
+                ret = child->call( file_obj.comm(), eirods::RESOURCE_OP_UNREGISTERED, file_obj ) ;
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
@@ -499,59 +479,49 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        eirods::file_object* file_object;
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Error found checking passed parameters.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
-            if(file_object != NULL) {
-                eirods::hierarchy_parser parser;
-                parser.set_string(file_object->resc_hier());
-                eirods::resource_ptr child;
-                ret =replGetNextRescInHier(parser, _ctx, child);
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>(_ctx.fco());
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_obj.resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
-                    msg << " - Failed to get the next resource in hierarchy.";
+                    msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco());
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed while calling child operation.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        if(!file_object->in_pdmo()) {
-                            eirods::error ret1 = replReplicateCreateWrite(_ctx);
-                            if(!ret1.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to replicate create/write operation for object \"";
-                                msg << file_object->logical_path();
-                                msg << "\"";
-                                eirods::log(LOG_NOTICE, msg.str());
-                                // result = PASSMSG(msg.str(), ret1);
-                                result = CODE(ret.code());
-                            } else {
-                                result = CODE(ret.code());
-                            }
+                    if(!file_obj.in_pdmo()) {
+                        eirods::error ret1 = replReplicateCreateWrite(_ctx);
+                        if(!ret1.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to replicate create/write operation for object \"";
+                            msg << file_obj.logical_path();
+                            msg << "\"";
+                            eirods::log(LOG_NOTICE, msg.str());
+                            // result = PASSMSG(msg.str(), ret1);
+                            result = CODE(ret.code());
                         } else {
                             result = CODE(ret.code());
                         }
+                    } else {
+                        result = CODE(ret.code());
                     }
                 }
-            } else {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to cast first class object \"";
-                msg << _ctx.fco().logical_path();
-                msg << "\" to file object.";
-                result = ERROR(-1, msg.str());
             }
         }
         return result;
@@ -564,12 +534,13 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             result = PASSMSG("replFileCreatePlugin - bad params.", ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -606,15 +577,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>((_ctx.fco()));
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -645,15 +617,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>((_ctx.fco()));
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -687,15 +660,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>((_ctx.fco()));
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -733,60 +707,50 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        eirods::file_object* file_object;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
-            if(file_object != NULL) {
-                eirods::hierarchy_parser parser;
-                parser.set_string(_ctx.fco().resc_hier());
-                eirods::resource_ptr child;
-                ret =replGetNextRescInHier(parser, _ctx, child);
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>(_ctx.fco());
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_obj.resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_CLOSE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
-                    msg << " - Failed to get the next resource in hierarchy.";
+                    msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_CLOSE, _ctx.fco());
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed while calling child operation.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        if(false && !file_object->in_pdmo()) {
-                            eirods::error ret1 = replReplicateCreateWrite(_ctx);
-                            if(!ret1.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to replicate create/write operation for object \"";
-                                msg << _ctx.fco().logical_path();
-                                msg << "\"";
-                                eirods::log(LOG_NOTICE, msg.str());
-                                // result = PASSMSG(msg.str(), ret1);
-                                result = CODE(ret.code());
-                            } else {
-                                result = CODE(ret.code());
-                            }
+                    if(false && !file_obj.in_pdmo()) {
+                        eirods::error ret1 = replReplicateCreateWrite(_ctx);
+                        if(!ret1.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to replicate create/write operation for object \"";
+                            msg << file_obj.logical_path();
+                            msg << "\"";
+                            eirods::log(LOG_NOTICE, msg.str());
+                            // result = PASSMSG(msg.str(), ret1);
+                            result = CODE(ret.code());
                         } else {
                             result = CODE(ret.code());
                         }
+                    } else {
+                        result = CODE(ret.code());
                     }
                 }
-            } else {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to cast first class object \"";
-                msg << _ctx.fco().logical_path();
-                msg << "\" to file object.";
-                result = ERROR(-1, msg.str());
             }
         }
         return result;
@@ -801,64 +765,55 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object* file_object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
-            if(file_object != NULL) {
-                eirods::hierarchy_parser parser;
-                parser.set_string(_ctx.fco().resc_hier());
-                eirods::resource_ptr child;
-                ret =replGetNextRescInHier(parser, _ctx, child);
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>(_ctx.fco());
+            eirods::hierarchy_parser parser;
+            parser.set_string(file_obj.resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_UNLINK, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
-                    msg << " - Failed to get the next resource in hierarchy.";
+                    msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_UNLINK, _ctx.fco());
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed while calling child operation.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-                        result = CODE(ret.code());
-                        if(false && !file_object->in_pdmo()) { // dont replicate unlink as it automagically deletes everything
-                            ret = replUpdateObjectAndOperProperties(_ctx, unlink_oper);
-                            if(!ret.ok()) {
-                                std::stringstream msg;
-                                msg << __FUNCTION__;
-                                msg << " - Failed to update the object and operation properties.";
-                                result = PASSMSG(msg.str(), ret);
-                            } else {
-                                if(!file_object->in_pdmo()) {
-                                    ret = replReplicateUnlink(_ctx);
-                                    if(!ret.ok()) {
-                                        std::stringstream msg;
-                                        msg << __FUNCTION__;
-                                        msg << " - Failed to replicate the unlink operation for file \"";
-                                        msg << _ctx.fco().logical_path();
-                                        msg << "\"";
-                                        result = PASSMSG(msg.str(), ret);
-                                    }
+                    result = CODE(ret.code());
+                    if(false && !file_obj.in_pdmo()) { // dont replicate unlink as it automagically deletes everything
+                        ret = replUpdateObjectAndOperProperties(_ctx, unlink_oper);
+                        if(!ret.ok()) {
+                            std::stringstream msg;
+                            msg << __FUNCTION__;
+                            msg << " - Failed to update the object and operation properties.";
+                            result = PASSMSG(msg.str(), ret);
+                        } else {
+                            if(!file_obj.in_pdmo()) {
+                                ret = replReplicateUnlink(_ctx);
+                                if(!ret.ok()) {
+                                    std::stringstream msg;
+                                    msg << __FUNCTION__;
+                                    msg << " - Failed to replicate the unlink operation for file \"";
+                                    msg << file_obj.logical_path();
+                                    msg << "\"";
+                                    result = PASSMSG(msg.str(), ret);
                                 }
                             }
                         }
                     }
                 }
-            } else {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to cast first class object \"";
-                msg << _ctx.fco().logical_path();
-                msg << "\" to file object.";
-                result = ERROR(-1, msg.str());
-            }
+            } 
         }
         return result;
     } // replFileUnlink
@@ -872,15 +827,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -912,15 +868,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -953,15 +910,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -992,15 +950,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1031,15 +990,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::collection_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1070,15 +1030,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::collection_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::collection_object& file_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1109,15 +1070,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::collection_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1148,15 +1110,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::collection_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1188,15 +1151,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::collection_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1228,15 +1192,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1267,15 +1232,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1309,15 +1275,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
 
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1351,15 +1318,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx.fco().resc_hier());
+            parser.set_string(file_obj.resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1520,38 +1488,37 @@ extern "C" {
         eirods::resource_plugin_context& _ctx)
     {
         eirods::error result = SUCCESS();
-        eirods::first_class_object fco = _ctx.fco();
-
         // cast the first class object to a file object
-        eirods::file_object* object = dynamic_cast<eirods::file_object*>(&(_ctx.fco()));
-        if(object == NULL) {
+        try {
+            eirods::file_object& file_obj = dynamic_cast<eirods::file_object&>(_ctx.fco());
+             // if the file object has a requested replica then fail since that circumvents the coordinating nodes management.
+            if(file_obj.repl_requested() >= 0) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Requesting replica: " << file_obj.repl_requested();
+                msg << "\tCannot request specific replicas from replicating resource.";
+                result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
+            }
+
+            else {
+                // if the api commands involve replication we have to error out since managing replicas is our job
+                char* in_repl = getValByKey(&file_obj.cond_input(), IN_REPL_KW);
+                if(in_repl != NULL) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Using repl or trim commands on a replication resource is not allowed. ";
+                    msg << "Managing replicas is the job of the replication resource.";
+                    result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
+                }
+            }
+        } catch ( std::bad_cast expr ) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - Invalid first class object.";
             result = ERROR(EIRODS_INVALID_FILE_OBJECT, msg.str());
         }
 
-        // if the file object has a requested replica then fail since that circumvents the coordinating nodes management.
-        else if(object->repl_requested() >= 0) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Requesting replica: " << object->repl_requested();
-            msg << "\tCannot request specific replicas from replicating resource.";
-            result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
-        }
-
-        else {
-            // if the api commands involve replication we have to error out since managing replicas is our job
-            char* in_repl = getValByKey(&object->cond_input(), IN_REPL_KW);
-            if(in_repl != NULL) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Using repl or trim commands on a replication resource is not allowed. ";
-                msg << "Managing replicas is the job of the replication resource.";
-                result = ERROR(EIRODS_INVALID_OPERATION, msg.str());
-            }
-        }
-        
+      
         return result;
     }
     

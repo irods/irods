@@ -33,6 +33,23 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
+/// =-=-=-=-=-=-=-
+/// @brief Check the general parameters passed in to most plugin functions
+template< typename DEST_TYPE >
+inline eirods::error univ_mss_check_param(
+    eirods::resource_plugin_context& _ctx ) { 
+    // =-=-=-=-=-=-=-
+    // ask the context if it is valid
+    eirods::error ret = _ctx.valid< DEST_TYPE >();
+    if( !ret.ok() ) {
+        return PASSMSG( "resource context is invalid", ret );
+
+    }
+   
+    return SUCCESS();
+
+} // univ_mss_check_param
+
 
 extern "C" {
 
@@ -48,22 +65,6 @@ extern "C" {
     //    creation when the factory function is called.
     //    -- currently only 1.0 is supported.
     double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
-    /// =-=-=-=-=-=-=-
-    /// @brief Check the general parameters passed in to most plugin functions
-    inline eirods::error univ_mss_check_param(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // ask the context if it is valid
-        eirods::error ret = _ctx.valid();
-        if( !ret.ok() ) {
-            return PASSMSG( "resource context is invalid", ret );
-
-        }
-       
-        return SUCCESS();
- 
-    } // univ_mss_check_param
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
@@ -115,7 +116,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::data_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -134,9 +135,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
-
 
         int status;
         execCmd_t execCmdInp;
@@ -170,10 +170,10 @@ extern "C" {
     /// @brief interface for POSIX Stat
     eirods::error univ_mss_file_stat(
         eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
+        struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::data_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -192,7 +192,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
 
 
@@ -306,7 +306,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -325,7 +325,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
 
         int mode = fco.mode(); 
@@ -371,7 +371,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::collection_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -390,7 +390,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::collection_object& fco = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
         std::string dirname = fco.physical_path();
 
         int status = 0;
@@ -464,7 +464,7 @@ extern "C" {
         const char*                         _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -483,7 +483,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
 
         // =-=-=-=-=-=-=-
@@ -554,7 +554,7 @@ extern "C" {
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -565,7 +565,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
 
         // =-=-=-=-=-=-=-
@@ -617,7 +617,7 @@ extern "C" {
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -628,7 +628,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         std::string filename = fco.physical_path();
 
         // =-=-=-=-=-=-=-
@@ -708,7 +708,7 @@ extern "C" {
     eirods::error univ_mss_file_registered(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param(_ctx);
+        eirods::error ret = univ_mss_check_param< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -723,7 +723,7 @@ extern "C" {
     eirods::error univ_mss_file_unregistered(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param(_ctx);
+        eirods::error ret = univ_mss_check_param< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -738,7 +738,7 @@ extern "C" {
     eirods::error univ_mss_file_modified(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param(_ctx);
+        eirods::error ret = univ_mss_check_param< eirods::file_object& >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -890,7 +890,7 @@ extern "C" {
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check the context validity
-        eirods::error ret = _ctx.valid< eirods::file_object >(); 
+        eirods::error ret = _ctx.valid< eirods::file_object& >(); 
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - resource context is invalid";

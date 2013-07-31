@@ -76,7 +76,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_plugin_base.o \
 		$(libCoreObjDir)/eirods_resource_plugin.o \
 		$(libCoreObjDir)/eirods_error.o  \
-		$(libCoreObjDir)/eirods_first_class_object.o \
+		$(libCoreObjDir)/eirods_data_object.o \
 		$(libCoreObjDir)/eirods_file_object.o \
 		$(libCoreObjDir)/eirods_collection_object.o \
 		$(libCoreObjDir)/eirods_log.o \

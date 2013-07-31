@@ -108,21 +108,30 @@ eirods::error unix_generate_full_path(
 /// @brief update the physical path in the file object
 eirods::error unix_check_path( 
     eirods::resource_plugin_context& _ctx ) {
-    // =-=-=-=-=-=-=-
-    // NOTE: Must do this for all storage resources
-    std::string full_path;
-    eirods::error ret = unix_generate_full_path( _ctx.prop_map(), 
-                                                 _ctx.fco().physical_path(), 
-                                                 full_path );
-    if(!ret.ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed generating full path for object.";
-        ret = PASSMSG(msg.str(), ret);
-    } else {
-        _ctx.fco().physical_path(full_path);
-    }
+    try {
+        eirods::data_object& data_obj = dynamic_cast< eirods::data_object& >( _ctx.fco() );
 
-    return ret;
+        // =-=-=-=-=-=-=-
+        // NOTE: Must do this for all storage resources
+        std::string full_path;
+        eirods::error ret = unix_generate_full_path( _ctx.prop_map(), 
+                                                     data_obj.physical_path(), 
+                                                     full_path );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << "Failed generating full path for object.";
+            ret = PASSMSG(msg.str(), ret);
+
+        } else {
+            data_obj.physical_path( full_path );
+        }
+
+        return ret;
+
+    } catch( std::bad_cast ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, "failed to cast fco to data_object" );
+
+    }
 
 } // unix_check_path
 
@@ -143,27 +152,6 @@ eirods::error unix_check_params_and_path(
         msg << __FUNCTION__;
         msg << " - resource context is invalid.";
         result = PASSMSG( msg.str(), ret );
-    } else {
-        result = unix_check_path( _ctx );
-    }
-
-    return result;
-
-} // unix_check_params_and_path
-
-// =-=-=-=-=-=-=-
-/// @brief Checks the basic operation parameters and updates the physical path in the file object
-eirods::error unix_check_params_and_path(
-    eirods::resource_plugin_context& _ctx ) {
-    
-    eirods::error result = SUCCESS();
-    eirods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // verify that the resc context is valid 
-    ret = _ctx.valid(); 
-    if( !ret.ok() ) { 
-        result = PASSMSG( "unix_check_params_and_path - resource context is invalid", ret );
     } else {
         result = unix_check_path( _ctx );
     }
@@ -245,7 +233,7 @@ extern "C" {
     eirods::error mock_archive_registered_plugin(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path(_ctx);
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -260,7 +248,7 @@ extern "C" {
     eirods::error mock_archive_unregistered_plugin(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path(_ctx);
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -275,7 +263,7 @@ extern "C" {
     eirods::error mock_archive_modified_plugin(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path(_ctx);
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -345,7 +333,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
@@ -354,7 +342,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to unlink      
@@ -398,7 +386,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to stat
@@ -564,10 +552,10 @@ extern "C" {
     // interface for POSIX readdir
     eirods::error mock_archive_rename_plugin( 
         eirods::resource_plugin_context& _ctx,
-        const char*                         _new_file_name ) {
+        const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
@@ -586,7 +574,7 @@ extern "C" {
          
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=- 
         // make the directories in the path to the new file
@@ -722,10 +710,10 @@ extern "C" {
     // is not used.
     eirods::error mock_archive_stagetocache_plugin( 
         eirods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name ) { 
+        const char*                      _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
@@ -734,7 +722,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // get the vault path for the resource
@@ -769,10 +757,10 @@ extern "C" {
     // is not used.
     eirods::error mock_archive_synctoarch_plugin( 
         eirods::resource_plugin_context& _ctx,
-        char*                               _cache_file_name ) {
+        char*                            _cache_file_name ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - Invalid parameters or physical path.";
@@ -781,7 +769,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx.fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
        
         // =-=-=-=-=-=-=-
         // hash the physical path to reflect object store behavior

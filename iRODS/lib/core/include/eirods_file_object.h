@@ -10,7 +10,7 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_first_class_object.h"
+#include "eirods_data_object.h"
 #include "eirods_physical_object.h"
 
 // =-=-=-=-=-=-=-
@@ -19,7 +19,7 @@
 
 namespace eirods {
 
-    class file_object : public first_class_object {
+    class file_object : public data_object {
     public:
         // =-=-=-=-=-=-=-
         // Constructors
@@ -49,21 +49,33 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // plugin resolution operation
         virtual error resolve( resource_manager&, resource_ptr& );
+        
+        // =-=-=-=-=-=-=-
+        // accessor for rule engine variables
+        virtual error get_re_vars( keyValPair_t& );
 
         // =-=-=-=-=-=-=-
         // Accessors
-        inline size_t                         size()           const { return size_;           }
-        inline int                            repl_requested() const { return repl_requested_; }
-        inline std::vector< physical_object > replicas()       const { return replicas_;       }
-        inline bool                           in_pdmo()        const { return in_pdmo_;        }
-        inline const keyValPair_t&            cond_input()     const { return cond_input_;     }
+        virtual rsComm_t*                      comm()            const { return comm_;            }
+        virtual std::string                    logical_path()    const { return logical_path_;    }
+        virtual std::string                    data_type()       const { return data_type_;       }
+        virtual int                            file_descriptor() const { return file_descriptor_; }
+        virtual int                            l1_desc_idx()     const { return l1_desc_idx_;     }
+        virtual size_t                         size()            const { return size_;            }
+        virtual int                            repl_requested()  const { return repl_requested_;  }
+        virtual std::vector< physical_object > replicas()        const { return replicas_;        }
+        virtual bool                           in_pdmo()         const { return in_pdmo_;         }
+        virtual const keyValPair_t&            cond_input()      const { return cond_input_;      }
         
         // =-=-=-=-=-=-=-
         // Mutators
-        inline void size( size_t _v )        { size_           = _v; }
-        inline void repl_requested( int _v ) { repl_requested_ = _v; }
-        inline void in_pdmo( bool _v )       { in_pdmo_        = _v; }
-        inline void replicas( const std::vector< physical_object >& _v ) {
+        virtual void logical_path( const std::string& _s )   { logical_path_    = _s;  }
+        virtual void file_descriptor( int _fd )              { file_descriptor_ = _fd; }
+        virtual void comm ( rsComm_t* _c )                   { comm_            = _c;  } 
+        virtual void size( size_t _v )                       { size_            = _v;  }
+        virtual void repl_requested( int _v )                { repl_requested_  = _v;  }
+        virtual void in_pdmo( bool _v )                      { in_pdmo_         = _v;  }
+        virtual void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
         inline void cond_input( const keyValPair_t& _cond_input ) { replKeyVal(&_cond_input, &cond_input_); }
@@ -74,6 +86,11 @@ namespace eirods {
         // NOTE :: These are not guaranteed to be properly populated right now
         //      :: that will need be done later when these changes are pushed 
         //      :: higher in the original design
+        rsComm_t*                      comm_;            // connection to irods session
+        std::string                    logical_path_;    // full logical path from icat
+        std::string                    data_type_;       // data type as described in objInfo.h:32
+        int                            file_descriptor_; // file descriptor, if the file is in flight
+        int                            l1_desc_idx_;     // index into irods L1 file decriptor table
         size_t                         size_;           // size of the file in bytes
         int                            repl_requested_; // requested replica number
         bool                           in_pdmo_;        // flag indicating the current operations are occurring from within a pdmo

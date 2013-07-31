@@ -33,32 +33,198 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
+// =-=-=-=-=-=-=-
+// constants for property map flags to signal a sync or stage
+const std::string SYNC_FLAG  ( "sync_flag" );   // property map key for sync to arch
+const std::string SYNC_UPDATE( "sync_update" ); // property map value for sync with update
+const std::string SYNC_CREATE( "sync_create" ); // property map value for sync with create
+const std::string SYNC_NONE  ( "sync_none" );   // property map value for no operation ( ex: open with read )
+ 
+// =-=-=-=-=-=-=-
+/// @ brief constant to index the cache child resource
+const std::string CACHE_CONTEXT_TYPE( "cache" );
 
-extern "C" {
+// =-=-=-=-=-=-=-
+/// @ brief constant to index the archive child resource
+const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
 
-    #define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-    #define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
+/// =-=-=-=-=-=-=-
+/// @brief Check the general parameters passed in to most plugin functions
+template< typename DEST_TYPE >
+inline eirods::error compound_check_param(
+    eirods::resource_plugin_context& _ctx ) { 
+    // =-=-=-=-=-=-=-
+    // ask the context if it is valid
+    eirods::error ret = _ctx.valid< DEST_TYPE >();
+    if( !ret.ok() ) {
+        return PASSMSG( "resource context is invalid", ret );
+
+    }
+   
+    return SUCCESS();
+
+} // compound_check_param
+
+// =-=-=-=-=-=-=-
+/// @brief helper function to get the next child in the hier string
+///        for use when forwarding an operation
+template< typename DEST_TYPE >
+eirods::error get_next_child( 
+    eirods::resource_plugin_context& _ctx,
+    eirods::resource_ptr&            _resc ) {
+    // =-=-=-=-=-=-=-
+    // check the context for validity
+    eirods::error ret = compound_check_param< DEST_TYPE >(_ctx);
+    if(!ret.ok()) {
+        return PASSMSG( "invalid resource context", ret);
+    }
+    // =-=-=-=-=-=-=-
+    // get the resource name
+    std::string name;
+    ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
+    if( !ret.ok() ) {
+        PASS( ret );
+    }
 
     // =-=-=-=-=-=-=-
-    // constants for property map flags to signal a sync or stage
-    const std::string SYNC_FLAG  ( "sync_flag" );   // property map key for sync to arch
-    const std::string SYNC_UPDATE( "sync_update" ); // property map value for sync with update
-    const std::string SYNC_CREATE( "sync_create" ); // property map value for sync with create
-    const std::string SYNC_NONE  ( "sync_none" );   // property map value for no operation ( ex: open with read )
+    // get the resource after this resource
+    eirods::hierarchy_parser parser;
+    DEST_TYPE& dst_obj = dynamic_cast< DEST_TYPE& >( _ctx.fco() );
+    parser.set_string( dst_obj.resc_hier() );
 
+    std::string child;
+    ret = parser.next( name, child );
+    if( !ret.ok() ) {
+        PASS( ret );
+    }
+    
+    // =-=-=-=-=-=-=-
+    // extract the next resource from the child map
+    if( _ctx.child_map().has_entry( child ) ) {
+        std::pair< std::string, eirods::resource_ptr > resc_pair;
+        ret = _ctx.child_map().get( child, resc_pair );
+        if( !ret.ok() ) {
+            return PASS( ret ); 
+        } else {
+            _resc = resc_pair.second;
+            return SUCCESS();
+        }
+        
+    } else {
+        std::stringstream msg;
+        msg << "child not found [" << child << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+
+    }
+
+} // get_next_child
+
+/// =-=-=-=-=-=-=-
+/// @brief replicate a given object for either a sync or a stage
+template< typename DEST_TYPE >
+eirods::error repl_object(
+    eirods::resource_plugin_context& _ctx,
+    const char*                      _stage_sync_kw,
+    bool                             _update_flg ) {
+    // =-=-=-=-=-=-=-
+    // error check incoming params
+    if( !_stage_sync_kw || strlen(_stage_sync_kw) == 0 ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM, "null or empty _stage_sync_kw" );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the root resource to pass to the cond input
+    DEST_TYPE& dst_obj = dynamic_cast< DEST_TYPE& >( _ctx.fco() );
+    eirods::hierarchy_parser parser;
+    parser.set_string( dst_obj.resc_hier() );
+
+    std::string resource;
+    parser.first_resc( resource );
+    
+    // =-=-=-=-=-=-=-
+    // get the cache name
+    std::string cache_name;
+    eirods::error ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the archive name
+    std::string arch_name;
+    ret = _ctx.prop_map().get< std::string >( ARCHIVE_CONTEXT_TYPE, arch_name );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
+
+    // =-=-=-=-=-=-=-
+    // manufacture a resc hier to either the archive or the cache resc
+    std::string keyword  = _stage_sync_kw;
+    std::string src_hier = dst_obj.resc_hier();
+    std::string tgt_name, src_name;
+
+    if( keyword == STAGE_OBJ_KW ) {
+        tgt_name = cache_name;
+    } else if( keyword == SYNC_OBJ_KW ) {
+        tgt_name = arch_name;
+    } else {
+        std::stringstream msg;
+        msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    size_t pos = src_hier.find( cache_name );
+    if( std::string::npos == pos ) {
+        pos = src_hier.find( arch_name );
+    }
+
+    std::string dst_hier = src_hier.substr( 0, pos );
+    dst_hier += tgt_name;
+
+    // =-=-=-=-=-=-=-
+    // create a data obj input struct to call rsDataObjRepl which given
+    // the _stage_sync_kw will either stage or sync the data object 
+    dataObjInp_t data_obj_inp;
+    bzero( &data_obj_inp, sizeof( data_obj_inp ) );
+    rstrcpy( data_obj_inp.objPath, dst_obj.logical_path().c_str(), MAX_NAME_LEN );
+    data_obj_inp.createMode = dst_obj.mode();
+    addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW, dst_obj.resc_hier().c_str() );
+    addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
+    addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
+    addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
+    addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            "" );
+    addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
+    if( _update_flg ) {
+        addKeyVal( &data_obj_inp.condInput, UPDATE_REPL_KW, "" );
+    }
+
+    transferStat_t* trans_stat = NULL;
+    int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
+    if( status < 0 ) {
+        char* sys_error;
+        char* rods_error = rodsErrorName(status, &sys_error);
+        std::stringstream msg;
+        msg << "Failed to replicate the data object [" << dst_obj.logical_path() << "] ";
+        msg << "for operation [" << _stage_sync_kw << "]";
+        return ERROR( status, msg.str() );
+    }
+     
+    // =-=-=-=-=-=-=-
+    // zero out the flag as the modified operation can be called
+    // many times and we dont want it to get confused
+    _ctx.prop_map()[ SYNC_FLAG ] = SYNC_NONE;
+
+    return SUCCESS();
+
+} // repl_object
+
+extern "C" {
     // =-=-=-=-=-=-=-
     // 1. Define plugin Version Variable, used in plugin
     //    creation when the factory function is called.
     //    -- currently only 1.0 is supported.
     double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
- 
-    // =-=-=-=-=-=-=-
-    /// @ brief constant to index the cache child resource
-    const std::string CACHE_CONTEXT_TYPE( "cache" );
-
-    // =-=-=-=-=-=-=-
-    /// @ brief constant to index the archive child resource
-    const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
 
     // =-=-=-=-=-=-=-
     /// @brief helper function to take a rule result, find a keyword and then
@@ -180,30 +346,14 @@ extern "C" {
 
     } // compound_start_operation
 
-    /// =-=-=-=-=-=-=-
-    /// @brief Check the general parameters passed in to most plugin functions
-    inline eirods::error compound_check_param(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // ask the context if it is valid
-        eirods::error ret = _ctx.valid();
-        if( !ret.ok() ) {
-            return PASSMSG( "resource context is invalid", ret );
-
-        }
-       
-        return SUCCESS();
- 
-    } // compound_check_param
-
     // =-=-=-=-=-=-=-
     /// @brief helper function to get the cache resource 
     eirods::error get_cache( 
         eirods::resource_plugin_context& _ctx,
-        eirods::resource_ptr&               _resc ) {
+        eirods::resource_ptr&            _resc ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -234,66 +384,14 @@ extern "C" {
 
     } // get_cache
 
-    // =-=-=-=-=-=-=-
-    /// @brief helper function to get the next child in the hier string
-    ///        for use when forwarding an operation
-    eirods::error get_next_child( 
-        eirods::resource_plugin_context& _ctx,
-        eirods::resource_ptr&               _resc ) {
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
-        // =-=-=-=-=-=-=-
-        // get the resource name
-        std::string name;
-        ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
-        if( !ret.ok() ) {
-            PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the resource after this resource
-        eirods::hierarchy_parser parser;
-        parser.set_string( _ctx.fco().resc_hier() );
- 
-        std::string child;
-        ret = parser.next( name, child );
-        if( !ret.ok() ) {
-            PASS( ret );
-        }
-        
-        // =-=-=-=-=-=-=-
-        // extract the next resource from the child map
-        if( _ctx.child_map().has_entry( child ) ) {
-            std::pair< std::string, eirods::resource_ptr > resc_pair;
-            ret = _ctx.child_map().get( child, resc_pair );
-            if( !ret.ok() ) {
-                return PASS( ret ); 
-            } else {
-                _resc = resc_pair.second;
-                return SUCCESS();
-            }
-            
-        } else {
-            std::stringstream msg;
-            msg << "child not found [" << child << "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-
-        }
-
-    } // get_next_child
-
-    // =-=-=-=-=-=-=-
+    /// =-=-=-=-=-=-=-
     /// @brief helper function to get the archive resource 
     eirods::error get_archive( 
         eirods::resource_plugin_context& _ctx,
         eirods::resource_ptr&               _resc ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -324,110 +422,12 @@ extern "C" {
     } // get_archive
 
     /// =-=-=-=-=-=-=-
-    /// @brief replicate a given object for either a sync or a stage
-    eirods::error repl_object(
-        eirods::resource_plugin_context& _ctx,
-        const char*                         _stage_sync_kw,
-        bool                                _update_flg ) {
-        // =-=-=-=-=-=-=-
-        // error check incoming params
-        if( !_stage_sync_kw || strlen(_stage_sync_kw) == 0 ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null or empty _stage_sync_kw" );
-
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the root resource to pass to the cond input
-        eirods::hierarchy_parser parser;
-        parser.set_string( _ctx.fco().resc_hier() );
-
-        std::string resource;
-        parser.first_resc( resource );
-        
-        // =-=-=-=-=-=-=-
-        // get the cache name
-        std::string cache_name;
-        eirods::error ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the archive name
-        std::string arch_name;
-        ret = _ctx.prop_map().get< std::string >( ARCHIVE_CONTEXT_TYPE, arch_name );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // manufacture a resc hier to either the archive or the cache resc
-        std::string keyword  = _stage_sync_kw;
-        std::string src_hier = _ctx.fco().resc_hier();
-        std::string tgt_name, src_name;
-
-        if( keyword == STAGE_OBJ_KW ) {
-            tgt_name = cache_name;
-        } else if( keyword == SYNC_OBJ_KW ) {
-            tgt_name = arch_name;
-        } else {
-            std::stringstream msg;
-            msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-        }
-
-        size_t pos = src_hier.find( cache_name );
-        if( std::string::npos == pos ) {
-            pos = src_hier.find( arch_name );
-        }
-
-        std::string dst_hier = src_hier.substr( 0, pos );
-        dst_hier += tgt_name;
-
-        // =-=-=-=-=-=-=-
-        // create a data obj input struct to call rsDataObjRepl which given
-        // the _stage_sync_kw will either stage or sync the data object 
-        dataObjInp_t data_obj_inp;
-        bzero( &data_obj_inp, sizeof( data_obj_inp ) );
-        rstrcpy( data_obj_inp.objPath, _ctx.fco().logical_path().c_str(), MAX_NAME_LEN );
-        data_obj_inp.createMode = _ctx.fco().mode();
-        addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      _ctx.fco().resc_hier().c_str() );
-        addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
-        addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
-        addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
-        addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            "" );
-        addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
-        if( _update_flg ) {
-            addKeyVal( &data_obj_inp.condInput, UPDATE_REPL_KW, "" );
-        }
-
-        transferStat_t* trans_stat = NULL;
-        int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
-        if( status < 0 ) {
-            char* sys_error;
-            char* rods_error = rodsErrorName(status, &sys_error);
-            std::stringstream msg;
-            msg << "Failed to replicate the data object [" << _ctx.fco().logical_path() << "] ";
-            msg << "for operation [" << _stage_sync_kw << "]";
-            return ERROR( status, msg.str() );
-        }
-         
-        // =-=-=-=-=-=-=-
-        // zero out the flag as the modified operation can be called
-        // many times and we dont want it to get confused
-        _ctx.prop_map()[ SYNC_FLAG ] = SYNC_NONE;
-
-        return SUCCESS();
-
-    } // repl_object
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
     eirods::error compound_file_create( 
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -435,7 +435,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::file_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -452,7 +452,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -479,7 +479,7 @@ extern "C" {
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -506,7 +506,7 @@ extern "C" {
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -545,7 +545,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -576,7 +576,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::data_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -584,7 +584,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::file_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -599,10 +599,10 @@ extern "C" {
     /// @brief interface for POSIX Stat
     eirods::error compound_file_stat(
         eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
+        struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::data_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -610,7 +610,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::data_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -628,7 +628,7 @@ extern "C" {
         struct stat*                        _statbuf ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -636,7 +636,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::file_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -655,7 +655,7 @@ extern "C" {
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -663,7 +663,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::file_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -680,7 +680,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -688,7 +688,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::file_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -700,37 +700,12 @@ extern "C" {
     } // compound_file_fsync
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX chmod
-    eirods::error compound_file_chmod(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next child resource
-        eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // forward the call
-        return resc->call( _ctx.comm(), eirods::RESOURCE_OP_CHMOD, _ctx.fco() );
-
-    } // compound_file_chmod
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
     eirods::error compound_file_mkdir(
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::collection_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -738,7 +713,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::collection_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -755,7 +730,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -763,7 +738,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::collection_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -780,7 +755,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -788,7 +763,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::collection_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -805,7 +780,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -813,7 +788,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::collection_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -831,7 +806,7 @@ extern "C" {
         struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -839,7 +814,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::collection_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -858,7 +833,7 @@ extern "C" {
 rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -866,7 +841,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child( _ctx, resc );
+        ret = get_next_child< eirods::file_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -894,7 +869,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid resource context";
@@ -924,7 +899,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid resource context";
@@ -951,7 +926,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         eirods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid resource context";
@@ -967,7 +942,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
     eirods::error compound_file_unregistered(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = compound_check_param(_ctx);
+        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid resource context";
@@ -986,7 +961,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         eirods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = compound_check_param( _ctx );
+        eirods::error ret = compound_check_param< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid resource context";
@@ -999,10 +974,10 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         ret = _ctx.prop_map().get< std::string >( SYNC_FLAG, flag );
         if( ret.ok() ) {
             if( SYNC_CREATE == flag ) {
-                return repl_object( _ctx, SYNC_OBJ_KW, false );
+                return repl_object< eirods::file_object >( _ctx, SYNC_OBJ_KW, false );
 
             } else if( SYNC_UPDATE == flag ) {
-                return repl_object( _ctx, SYNC_OBJ_KW, true );
+                return repl_object< eirods::file_object >( _ctx, SYNC_OBJ_KW, true );
 
             }
 
@@ -1100,7 +1075,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
         // if the vote is 0 then we do a wholesale stage, not an update
         // otherwise it is an update operation for the stage to cache
         bool update_flg = ( 0.0 != cache_check_vote );
-        ret = repl_object( _ctx, STAGE_OBJ_KW, update_flg );
+        ret = repl_object< eirods::file_object >( _ctx, STAGE_OBJ_KW, update_flg );
         if( !ret.ok() ) {
             return PASS( ret );    
         }
@@ -1155,8 +1130,6 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
         if( !ret.ok() ) {
             return PASS( ret );
         }
-rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: opening [%s] with heir [%s]", 
-         _ctx.fco().logical_path().c_str(), _ctx.fco().resc_hier().c_str() );
 
         // =-=-=-=-=-=-=-
         // ask the cache if it has the data object in question, politely
@@ -1188,7 +1161,7 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: archive vote %f, ar
 
             // =-=-=-=-=-=-=-
             // if the archive has it, then replicate
-            ret = repl_object( _ctx, STAGE_OBJ_KW, false );
+            ret = repl_object< eirods::file_object >( _ctx, STAGE_OBJ_KW, false );
             if( !ret.ok() ) {
                 return PASS( ret );    
             }

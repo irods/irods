@@ -31,7 +31,103 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
+    
+/// =-=-=-=-=-=-=-
+/// @brief Check the general parameters passed in to most plugin functions
+template< typename DEST_TYPE >
+inline eirods::error random_check_params(
+    eirods::resource_plugin_context& _ctx ) { 
+    // =-=-=-=-=-=-=-
+    // ask the context if it is valid
+    eirods::error ret = _ctx.valid< DEST_TYPE >();
+    if( !ret.ok() ) {
+        return PASSMSG( "resource context is invalid", ret );
 
+    }
+   
+    return SUCCESS();
+
+} // random_check_params
+
+/// =-=-=-=-=-=-=-
+/// @brief get the next resource shared pointer given this resources name
+///        as well as the object's hierarchy string 
+eirods::error get_next_child_in_hier( 
+                  const std::string&          _name, 
+                  const std::string&          _hier, 
+                  eirods::resource_child_map& _cmap, 
+                  eirods::resource_ptr&       _resc ) {
+
+    // =-=-=-=-=-=-=-
+    // create a parser and parse the string
+    eirods::hierarchy_parser parse;
+    eirods::error err = parse.set_string( _hier );
+    if( !err.ok() ) {
+        return PASSMSG( "get_next_child_in_hier - failed in set_string", err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the next resource in the series
+    std::string next;
+    err = parse.next( _name, next );
+    if( !err.ok() ) {
+        return PASSMSG( "get_next_child_in_hier - failed in next", err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the next resource from the child map
+    if( !_cmap.has_entry( next ) ) {
+        std::stringstream msg;
+        msg << "get_next_child_in_hier - child map missing entry [";
+        msg << next << "]";
+        return ERROR( -1, msg.str() );
+    }
+
+    // =-=-=-=-=-=-=-
+    // assign resource
+    _resc = _cmap[ next ].second;
+
+    return SUCCESS();
+
+} // get_next_child_in_hier
+
+// =-=-=-=-=-=-=-
+/// @brief get the resource for the child in the hierarchy
+///        to pass on the call
+template< typename DEST_TYPE >
+eirods::error random_get_resc_for_call( 
+    eirods::resource_plugin_context& _ctx,
+    eirods::resource_ptr&            _resc ) {
+    // =-=-=-=-=-=-=-
+    // check incoming parameters 
+    eirods::error err = random_check_params< DEST_TYPE >( _ctx );
+    if( !err.ok() ) {
+        return PASSMSG( "random_get_resc_for_call - bad resource context", err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the object's name
+    std::string name;
+    err = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
+    if( !err.ok() ) {
+        return PASSMSG( "random_get_resc_for_call - failed to get property 'name'.", err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // get the object's hier string
+    DEST_TYPE& dst_obj = dynamic_cast< DEST_TYPE& >( _ctx.fco() );
+    std::string hier = dst_obj.resc_hier( );
+  
+    // =-=-=-=-=-=-=-
+    // get the next child pointer given our name and the hier string
+    err = get_next_child_in_hier( name, hier, _ctx.child_map(), _resc );
+    if( !err.ok() ) {
+        return PASSMSG( "random_get_resc_for_call - get_next_child_in_hier failed.", err );
+    }
+
+    return SUCCESS();
+
+} // random_get_resc_for_call
 extern "C" {
 
 #define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
@@ -96,100 +192,7 @@ extern "C" {
         return SUCCESS();
 
     } // random_get_next_child_resource
-    
-    /// =-=-=-=-=-=-=-
-    /// @brief Check the general parameters passed in to most plugin functions
-    inline eirods::error random_check_params(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // ask the context if it is valid
-        eirods::error ret = _ctx.valid();
-        if( !ret.ok() ) {
-            return PASSMSG( "resource context is invalid", ret );
 
-        }
-       
-        return SUCCESS();
- 
-    } // random_check_params
-
-    /// =-=-=-=-=-=-=-
-    /// @brief get the next resource shared pointer given this resources name
-    ///        as well as the object's hierarchy string 
-    eirods::error get_next_child_in_hier( 
-                      const std::string&          _name, 
-                      const std::string&          _hier, 
-                      eirods::resource_child_map& _cmap, 
-                      eirods::resource_ptr&       _resc ) {
-
-        // =-=-=-=-=-=-=-
-        // create a parser and parse the string
-        eirods::hierarchy_parser parse;
-        eirods::error err = parse.set_string( _hier );
-        if( !err.ok() ) {
-            return PASSMSG( "get_next_child_in_hier - failed in set_string", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next resource in the series
-        std::string next;
-        err = parse.next( _name, next );
-        if( !err.ok() ) {
-            return PASSMSG( "get_next_child_in_hier - failed in next", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next resource from the child map
-        if( !_cmap.has_entry( next ) ) {
-            std::stringstream msg;
-            msg << "get_next_child_in_hier - child map missing entry [";
-            msg << next << "]";
-            return ERROR( -1, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // assign resource
-        _resc = _cmap[ next ].second;
-
-        return SUCCESS();
-
-    } // get_next_child_in_hier
-
-    // =-=-=-=-=-=-=-
-    /// @brief get the resource for the child in the hierarchy
-    ///        to pass on the call
-    eirods::error random_get_resc_for_call( 
-        eirods::resource_plugin_context& _ctx,
-        eirods::resource_ptr&               _resc ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters 
-        eirods::error err = random_check_params( _ctx );
-        if( !err.ok() ) {
-            return PASSMSG( "random_get_resc_for_call - bad resource context", err );
-        }
- 
-        // =-=-=-=-=-=-=-
-        // get the object's name
-        std::string name;
-        err = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
-        if( !err.ok() ) {
-            return PASSMSG( "random_get_resc_for_call - failed to get property 'name'.", err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the object's hier string
-        std::string hier = _ctx.fco().resc_hier( );
-      
-        // =-=-=-=-=-=-=-
-        // get the next child pointer given our name and the hier string
-        err = get_next_child_in_hier( name, hier, _ctx.child_map(), _resc );
-        if( !err.ok() ) {
-            return PASSMSG( "random_get_resc_for_call - get_next_child_in_hier failed.", err );
-        }
-
-        return SUCCESS();
-
-    } // random_get_resc_for_call
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
@@ -198,7 +201,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -219,7 +222,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -242,7 +245,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -265,7 +268,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -286,7 +289,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -307,7 +310,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::data_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -325,11 +328,11 @@ extern "C" {
     /// @brief interface for POSIX Stat
     eirods::error random_file_stat(
         eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
+        struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::data_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -351,7 +354,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -374,7 +377,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -395,7 +398,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -416,7 +419,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::collection_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -437,7 +440,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::collection_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -458,7 +461,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::collection_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -479,7 +482,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::collection_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -501,7 +504,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::collection_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -523,7 +526,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -544,7 +547,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -568,7 +571,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -592,7 +595,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -613,7 +616,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -634,7 +637,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -655,7 +658,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call( _ctx, resc );
+        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
             std::stringstream msg;
             msg <<  __FUNCTION__;
@@ -674,13 +677,13 @@ extern "C" {
     ///        should provide the requested operation
     eirods::error random_redirect(
         eirods::resource_plugin_context& _ctx, 
-        const std::string*                  _opr,
-        const std::string*                  _curr_host,
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
+        const std::string*               _opr,
+        const std::string*               _curr_host,
+        eirods::hierarchy_parser*        _out_parser,
+        float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
-        eirods::error err = random_check_params( _ctx );
+        eirods::error err = random_check_params< eirods::file_object >( _ctx );
         if( !err.ok() ) {
             return PASSMSG( "random_redirect - bad resource context", err );
         }
@@ -699,7 +702,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get the object's hier string
-        std::string hier = _ctx.fco().resc_hier( );
+        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        std::string hier = file_obj.resc_hier( );
  
         // =-=-=-=-=-=-=-
         // get the object's hier string

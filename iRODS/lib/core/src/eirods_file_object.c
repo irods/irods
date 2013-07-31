@@ -24,11 +24,10 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - ctor
     file_object::file_object() :
-        first_class_object(),
+        data_object(),
         size_(0),
         repl_requested_( -1 ),
-        in_pdmo_(false)
-    {
+        in_pdmo_(false) {
         memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
@@ -36,7 +35,9 @@ namespace eirods {
     // public - cctor
     file_object::file_object(
         const file_object& _rhs ) : 
-        first_class_object( _rhs ) {
+        data_object( _rhs ) {
+        // =-=-=-=-=-=-=-
+        // explicit initialization
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
@@ -54,10 +55,11 @@ namespace eirods {
         int _fd,
         int _m,
         int _f ) :
-        first_class_object(),
+        data_object(),
         size_( -1 ),
-        in_pdmo_(false)
-    {
+        in_pdmo_(false) {
+        // =-=-=-=-=-=-=-
+        // explicit initialization
         logical_path(_logical_path);
         comm_            = _c;
         physical_path_   = _fn;
@@ -167,6 +169,14 @@ namespace eirods {
         }
         return result;
     } // resolve
+
+    // =-=-=-=-=-=-=-
+    // public - get vars from object for rule engine 
+    error file_object::get_re_vars( 
+        keyValPair_t& _vars ) {
+
+    } // get_re_vars 
+
 
     // =-=-=-=-=-=-=-
     // static factory to create file_object from dataobjinfo linked list
