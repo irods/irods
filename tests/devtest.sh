@@ -75,7 +75,9 @@ cd $EIRODSROOT
 $EIRODSROOT/iRODS/irodsctl devtesty
 
 # clean up /tmp
+set +x
 ls /tmp/psqlodbc* | xargs rm -f
+set -x
 
 # done
 exit 0
