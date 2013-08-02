@@ -86,7 +86,8 @@ def admin_down():
 ##################
 def user_up(user):
     # set up single user session
-    sessionid      = "session-"+datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
+    rightnow       = datetime.datetime.now()
+    sessionid      = "session-"+rightnow.strftime("%Y%m%dT%H%M%S.")+str(rightnow.microsecond)
     myenv          = icommands.RodsEnv( user['host'],
                                         user['port'],
                                         user['resc'],

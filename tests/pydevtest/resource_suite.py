@@ -463,17 +463,10 @@ class ResourceSuite(ResourceBase):
         f.write("TESTFILE -- ["+filepath+"]")
         f.close()
 
-        # keyword arguments for icommands
-        kwargs={'filepath':filepath, 
-            'filename':filename, 
-            'zone':s.adminsession.getZoneName(),
-            'username':s.adminsession.getUserName(),
-            'sessionId':s.adminsession.sessionId}
-
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
-        assertiCmd(s.adminsession,"ireg {filepath} /{zone}/home/{username}/{sessionId}/{filename}".format(**kwargs)) # ireg
-        assertiCmd(s.adminsession,"ils -L {filename}".format(**kwargs),"LIST",filename) # should be listed
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ireg "+filepath+" /"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId+"/"+filename) # ireg
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename) # should be listed
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
@@ -486,17 +479,10 @@ class ResourceSuite(ResourceBase):
         f.write("TESTFILE -- ["+filepath+"]")
         f.close()
 
-        # keyword arguments for icommands
-        kwargs={'filepath':filepath, 
-            'filename':filename, 
-            'zone':s.sessions[1].getZoneName(),
-            'username':s.sessions[1].getUserName(),
-            'sessionId':s.sessions[1].sessionId}
-
         # assertions
-        assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
-        assertiCmd(s.sessions[1],"ireg {filepath} /{zone}/home/{username}/{sessionId}/{filename}".format(**kwargs), "ERROR","SYS_NO_PATH_PERMISSION") # ireg
-        assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
+        assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
+        assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
@@ -518,18 +504,10 @@ class ResourceSuite(ResourceBase):
         f.write("TESTFILE -- ["+filepath+"]")
         f.close()
 
-        # keyword arguments for icommands
-        kwargs={'filepath':filepath, 
-            'filename':filename, 
-            'zone':s.sessions[1].getZoneName(),
-            'username':s.sessions[1].getUserName(),
-            'sessionId':s.sessions[1].sessionId}
-
         # assertions
-        assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should not be listed
-        assertiCmd(s.sessions[1],"ireg {filepath} /{zone}/home/{username}/{sessionId}/{filename}".format(**kwargs),
-                "ERROR","SYS_NO_PATH_PERMISSION") # ireg
-        assertiCmdFail(s.sessions[1],"ils -L {filename}".format(**kwargs),"LIST",filename) # should be listed
+        assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
+        assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
