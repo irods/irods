@@ -264,22 +264,23 @@ fillIntInMsParam (msParam_t *msParam, int myInt)
     return (0);
 }
 
-int
-fillStrInMsParam (msParam_t *msParam, char *myStr)
-{
 
-    if (msParam != NULL) {
-	/* XXXX memory leak as fillMsParam will strdup too */
-#if 0
-        char *myInOutStruct;
-        myInOutStruct = strdup (myStr);
-        fillMsParam (msParam, NULL, STR_MS_T, myInOutStruct, NULL);
-#else
-        fillMsParam (msParam, NULL, STR_MS_T, myStr, NULL);
-#endif
-    }
-    return (0);
+int
+fillStrInMsParam (msParam_t *msParam, const char *myStr)
+{
+	if (!msParam) {
+		return SYS_INTERNAL_NULL_INPUT_ERR;
+	}
+
+	msParam->type = strdup (STR_MS_T);
+
+	if (myStr) {
+		msParam->inOutStruct = (void *) strdup (myStr);
+	}
+
+	return 0;
 }
+
 
 int
 fillBufLenInMsParam (msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf)
