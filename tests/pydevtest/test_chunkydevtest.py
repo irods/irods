@@ -1,4 +1,8 @@
-import unittest
+import sys
+if (sys.version_info >= (2,7)):
+    import unittest
+else:
+    import unittest2 as unittest
 import pydevtest_sessions as s
 from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
 from resource_suite import ResourceBase
