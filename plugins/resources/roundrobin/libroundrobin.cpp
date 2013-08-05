@@ -40,12 +40,6 @@ extern "C" {
     /// @brief token to index the next child property
     const std::string NEXT_CHILD_PROP( "next_child" );
 
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
     /// =-=-=-=-=-=-=-
     /// @brief build a sorted list of children based on hints in the context
     ///        string for them and their positoin in the child map

@@ -43,12 +43,6 @@ extern "C" {
     /// @brief token to index the script property
     const std::string SCRIPT_PROP( "script" );
 
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
     /// =-=-=-=-=-=-=-
     /// @brief Check the general parameters passed in to most plugin functions
     inline eirods::error univ_mss_check_param(

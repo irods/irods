@@ -33,16 +33,6 @@
 
 
 extern "C" {
-
-#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
-
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
- 
     // =-=-=-=-=-=-=-
     /// @brief Start Up Operation - initialize the random number generator
     eirods::error random_start_operation( 

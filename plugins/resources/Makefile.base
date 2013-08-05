@@ -36,7 +36,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
+	${GCC} ${INC} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/libRodsAPIs.a ${EXTRALIBS}
 
 ${DEPFILE}: ${DEPS}
 	@-rm -f ${DEPFILE} > /dev/null 2>&1
@@ -48,6 +48,6 @@ ${DEPS}: ${SRCS} ${HEADERS}
 	${GCC} ${INC} -MM $< -MT $(patsubst %.cpp, ${OBJDIR}/%.o, $<) -MF $@
 
 ${OBJDIR}/%.o: %.cpp
-	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $<
+	${GCC} ${INC} -D${OS_platform} -fPIC -c -g -o $@ $< 
 
 include ${DEPFILE}

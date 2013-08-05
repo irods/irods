@@ -19,10 +19,17 @@
 // eirods includes
 #include "eirods_error.h"
 
+/// =-=-=-=-=-=-=-
+/// @brief interface plugin loader will used to load the 
+///        plugin interface version.  this is linked directly
+///        into the plugins 
+extern "C" double get_plugin_interface_version();
+
 namespace eirods {
-    // =-=-=-=-=-=-=-
+
+    /// =-=-=-=-=-=-=-
     /// @brief abstraction for post disconnect functor - plugins can bind
-    //         functors, free functions or member functions as necessary
+    ///        functors, free functions or member functions as necessary
     typedef boost::function< eirods::error( rcComm_t* ) > pdmo_type;
     
     /**
@@ -72,13 +79,14 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief accessor for context string
-        const std::string& context_string( ) { return context_; }
+        const std::string& context_string( )     const { return context_;           }
+        double             interface_version(  ) const { return interface_version_; }
 
     protected:
-        std::string                       context_;       // context string for this plugin
-        std::string                       instance_name_; // name of this instance of the plugin
- 
-        // =-=-=-=-=-=-=-
+        std::string                       context_;           // context string for this plugin
+        std::string                       instance_name_;     // name of this instance of the plugin
+        double                            interface_version_; // version of the plugin interface
+        /// =-=-=-=-=-=-=-
         /// @brief Map holding resource operations
         std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
 

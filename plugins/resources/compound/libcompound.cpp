@@ -47,12 +47,6 @@ extern "C" {
     const std::string SYNC_NONE  ( "sync_none" );   // property map value for no operation ( ex: open with read )
 
     // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
- 
-    // =-=-=-=-=-=-=-
     /// @ brief constant to index the cache child resource
     const std::string CACHE_CONTEXT_TYPE( "cache" );
 

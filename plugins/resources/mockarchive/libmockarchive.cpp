@@ -233,17 +233,6 @@ eirods::error mock_archive_mkdir_r(
 } // mock_archive_mkdir_r
 
 extern "C" {
-
-#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
-
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
-
     // =-=-=-=-=-=-=-
     // 3. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
