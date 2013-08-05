@@ -469,7 +469,7 @@ extern "C" {
     // interface for POSIX lseek
     eirods::error mock_archive_lseek_plugin( 
         eirods::resource_operation_context* _ctx,
-        size_t                              _offset, 
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // operation not supported

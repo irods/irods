@@ -725,7 +725,7 @@ extern "C" {
     // interface for POSIX lseek
     eirods::error nonblocking_file_lseek_plugin( 
         eirods::resource_operation_context* _ctx,
-        size_t                              _offset, 
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path

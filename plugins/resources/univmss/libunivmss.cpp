@@ -292,7 +292,7 @@ extern "C" {
     /// @brief interface for POSIX lseek
     eirods::error univ_mss_file_lseek(
         eirods::resource_operation_context* _ctx,
-        size_t                              _offset, 
+        long long                           _offset, 
         int                                 _whence ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
  

@@ -17,8 +17,19 @@ namespace eirods {
         // Constructors
         // status, code, message, line number, file
         error();
-        error( bool, int, std::string, std::string, int, std::string );  
-        error( bool, int, std::string, std::string, int, std::string, const error& );  
+        error( bool,          // status
+               long long,     // code
+               std::string,   // message
+               std::string,   // file
+               int,           // line number
+               std::string ); // function 
+        error( bool,          // status
+               long long,     // code
+               std::string,   // message
+               std::string,   // file
+               int,           // line
+               std::string,   // function
+               const error& );// prev error
         error( const error& );   
 
         // =-=-=-=-=-=-=-
@@ -32,7 +43,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Members
         bool        status();
-        int         code();
+        long long   code();
         std::string result();
         bool        ok();
 
@@ -40,7 +51,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Attributes
         bool        status_;
-        int         code_;
+        long long   code_;
         std::string message_;
         std::vector< std::string > result_stack_;
         

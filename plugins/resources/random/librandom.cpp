@@ -375,7 +375,7 @@ extern "C" {
     /// @brief interface for POSIX lseek
     eirods::error random_file_lseek(
         eirods::resource_operation_context* _ctx,
-        size_t                              _offset, 
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
@@ -390,7 +390,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call< size_t, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
+        return resc->call< long long, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
     } // random_file_lseek
 

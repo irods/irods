@@ -720,7 +720,7 @@ extern "C" {
     // interface for POSIX lseek
     eirods::error unix_file_lseek_plugin( 
         eirods::resource_operation_context* _ctx,
-        size_t                              _offset, 
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -737,7 +737,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // make the call to lseek       
-        size_t status = lseek( fco.file_descriptor(),  _offset, _whence );
+        long long status = lseek( fco.file_descriptor(),  _offset, _whence );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary

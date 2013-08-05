@@ -271,7 +271,7 @@ eirods::error fileFstat( rsComm_t* _comm, eirods::first_class_object& _object, s
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX lseek
-eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, size_t _offset, int _whence ) {
+eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, long long _offset, int _whence ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _object.physical_path().empty() ) {
@@ -290,7 +290,7 @@ eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, s
 
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
-    ret_err = resc->call< size_t, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
+    ret_err = resc->call< long long, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
