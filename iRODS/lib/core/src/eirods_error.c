@@ -64,7 +64,7 @@ namespace eirods {
     // public - useful constructor
     error::error( 
         bool        _status, 
-        rodsLong_t  _code, 
+        long long   _code, 
         std::string _msg,
         std::string _file,
         int         _line,
@@ -83,7 +83,7 @@ namespace eirods {
     // public - useful constructor
     error::error( 
         bool         _status, 
-        rodsLong_t   _code, 
+        long long    _code, 
         std::string  _msg, 
         std::string  _file,
         int          _line,

@@ -248,8 +248,16 @@ eirods::error fileFstat(
 eirods::error fileLseek( 
     rsComm_t*                   _comm, 
     eirods::first_class_object& _object, 
-    rodsLong_t                  _offset, 
+    long long                   _offset, 
     int                         _whence ) {
+    // =-=-=-=-=-=-=-
+    // trap empty file name
+    if( _object.physical_path().empty() ) {
+        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
+        eirods::log( ret_err );
+        return ret_err;
+    }
+    
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
@@ -260,7 +268,7 @@ eirods::error fileLseek(
 
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
-    ret_err = resc->call< rodsLong_t, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
+    ret_err = resc->call< long long, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS

@@ -66,13 +66,6 @@
 
 
 extern "C" {
-
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
@@ -320,8 +313,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error pass_thru_file_lseek_plugin(
-        eirods::resource_plugin_context& _ctx,
-        size_t                              _offset, 
+        eirods::resource_operation_context* _ctx,
+        long long                           _offset, 
         int                                 _whence ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -335,7 +328,7 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASSMSG( "pass_thru_file_lseek_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<size_t, int>( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence);
+                ret = resc->call<long long, int>( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence);
                 result = PASSMSG("pass_thru_file_lseek_plugin - failed calling child lseek.", ret);
             }
         }

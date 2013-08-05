@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import os
 import shutil
 import subprocess
@@ -133,8 +134,9 @@ class RodsSession(object):
         terminates the icommand subprocess once the filename
         reaches filesize bytes or larger.
 
-        Returns 0  if subprocess was terminated.
+        Returns  0 if subprocess was terminated.
         Returns -1 if subprocess completed normally.
+        Returns -2 if timeout is reached.
 
         Not currently checking against allowed icommands.
         '''
@@ -151,17 +153,27 @@ class RodsSession(object):
         p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
             stderr = subprocess.PIPE, env = myenv)
 
+        # set timeout in seconds
+        timeout = 300 # 5 minutes
+        begin = time.time()
         # wait for filename to get big enough to terminate subprocess
         granularity = 0.01
         while not os.path.exists(filename):
+            if ((time.time() - begin) > timeout):
+                break
             time.sleep(granularity)
         while os.stat(filename).st_size < filesize:
+            if ((time.time() - begin) > timeout):
+                break
             time.sleep(granularity)
-            
-        # if subprocess did not complete by filesize threshold, we kill it
-        if p.poll() is None:
+
+        # if timeout was reached, return -2
+        if ((time.time() - begin) > timeout):
+            returncode = -2
+        # else if subprocess did not complete by filesize threshold, we kill it
+        elif p.poll() is None:
             p.terminate()
-             # expected, so return 0
+            # expected, so return 0
             returncode = 0
         # else the process finished before the filesize threshold was met
         else:
@@ -273,7 +285,7 @@ class RodsSession(object):
         proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
-           myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
+            myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
 
         if delay > 0:
             print "  runCmd: sleeping ["+str(delay)+"] seconds"

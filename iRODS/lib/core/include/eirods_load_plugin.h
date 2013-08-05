@@ -109,7 +109,7 @@ namespace eirods {
         if( !handle ) {
             std::stringstream msg;
             msg << "failed to open shared object file [" << so_name
-                << "] :: dlerror: is " << dlerror();
+                << "] :: dlerror: is [" << dlerror() << "]";
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
         }
 
@@ -118,21 +118,21 @@ namespace eirods {
         dlerror();
 
         // =-=-=-=-=-=-=-
-        // attempt to load the plugin version
-        double* version_ptr = static_cast< double* >( dlsym( handle, "EIRODS_PLUGIN_INTERFACE_VERSION" ) );
-
+        // attempt to load the plugin version interface
         char* err = 0;
-        if( !version_ptr || ( ( err = dlerror() ) != 0 ) ) {
+        double (*get_version)() = reinterpret_cast< double(*)() >( 
+                                      dlsym( handle, "get_plugin_interface_version" ) );
+        if( !get_version ||( ( err = dlerror() ) != 0 ) ) {
             std::stringstream msg;
-            msg << "load_plugin :: failed to load symbol from shared object handle - "
-                << "EIRODS_PLUGIN_INTERFACE_VERSION" << " :: dlerror is [" << err << "]";
+            msg << "failed to get [get_plugin_interface_version]";
+            msg << " dlerror is [" << err << "]";
             dlclose( handle );
             return ERROR( EIRODS_PLUGIN_ERROR, msg.str() );
-        }
+        } 
 
         // =-=-=-=-=-=-=-
         // extract value from pointer to version
-        double plugin_version = *version_ptr;
+        double plugin_version = get_version();
 
         // =-=-=-=-=-=-=-
         // Here is where we decide how to load the plugins based on the version...

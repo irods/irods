@@ -161,7 +161,7 @@ clearMsParamArray (msParamArray_t *msParamArray, int freeStruct);
 int 
 fillIntInMsParam (msParam_t *msParam, int myInt);
 int
-fillStrInMsParam (msParam_t *msParam, char *myStr);
+fillStrInMsParam (msParam_t *msParam, const char *myStr);
 int
 fillBufLenInMsParam (msParam_t *msParam, int myInt, bytesBuf_t *bytesBuf);
 int

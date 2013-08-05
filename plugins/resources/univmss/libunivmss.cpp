@@ -60,12 +60,6 @@ extern "C" {
     /// @brief token to index the script property
     const std::string SCRIPT_PROP( "script" );
 
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
     eirods::error univ_mss_file_create( 
@@ -285,8 +279,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error univ_mss_file_lseek(
-        eirods::resource_plugin_context& _ctx,
-        size_t                              _offset, 
+        eirods::resource_operation_context* _ctx,
+        long long                           _offset, 
         int                                 _whence ) {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
  

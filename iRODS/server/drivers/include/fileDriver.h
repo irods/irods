@@ -30,7 +30,7 @@ eirods::error fileClose   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileUnlink  ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileStat    ( rsComm_t*, eirods::first_class_object&, struct stat* );
 eirods::error fileFstat   ( rsComm_t*, eirods::first_class_object&, struct stat* );
-eirods::error fileLseek   ( rsComm_t*, eirods::first_class_object&, rodsLong_t, int ); 
+eirods::error fileLseek   ( rsComm_t*, eirods::first_class_object&, long long, int ); 
 eirods::error fileFsync   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileMkdir   ( rsComm_t*, eirods::first_class_object& );
 eirods::error fileRmdir   ( rsComm_t*, eirods::first_class_object& );

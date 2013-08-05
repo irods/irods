@@ -136,12 +136,6 @@ extern "C" {
     /// @brief token to index the next child property
     const std::string NEXT_CHILD_PROP( "next_child" );
 
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
     /// =-=-=-=-=-=-=-
     /// @brief build a sorted list of children based on hints in the context
     ///        string for them and their positoin in the child map
@@ -567,8 +561,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error round_robin_file_lseek(
-        eirods::resource_plugin_context& _ctx,
-        size_t                              _offset, 
+        eirods::resource_operation_context* _ctx,
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
@@ -583,7 +577,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call< size_t, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+        return resc->call< long long, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
     } // round_robin_file_lseek
 

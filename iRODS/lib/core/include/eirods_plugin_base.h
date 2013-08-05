@@ -20,11 +20,13 @@
 #include "eirods_error.h"
 #include "eirods_lookup_table.h"
 
-namespace eirods {
-    /// =-=-=-=-=-=-=-
-    /// @brief current supported plugin interface version
-    const double EIRODS_PLUGIN_INTERFACE_VERSION = 1.0;
+/// =-=-=-=-=-=-=-
+/// @brief interface plugin loader will used to load the 
+///        plugin interface version.  this is linked directly
+///        into the plugins 
+extern "C" double get_plugin_interface_version();
 
+namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief abstraction for post disconnect functor - plugins can bind
     ///        functors, free functions or member functions as necessary
@@ -84,8 +86,12 @@ namespace eirods {
     protected:
         std::string                       context_;           // context string for this plugin
         std::string                       instance_name_;     // name of this instance of the plugin
+<<<<<<< HEAD
         double                            interface_version_; // version of the plugin interface supported
 
+=======
+        double                            interface_version_; // version of the plugin interface
+>>>>>>> development
         /// =-=-=-=-=-=-=-
         /// @brief Map holding resource operations
         std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;

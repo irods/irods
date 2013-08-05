@@ -726,7 +726,7 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         if [ -e "$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz" ] ; then
             echo "Using existing copy"
         else
- #           wget -O $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
+#            wget -O $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz https://github.com/libarchive/libarchive/archive/v$EIRODS_BUILD_LIBARCHIVEVERSIONNUMBER.tar.gz
             wget ftp://ftp.renci.org/pub/eirods/external/$EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
         fi
         gunzip $EIRODS_BUILD_LIBARCHIVEVERSION.tar.gz
@@ -735,6 +735,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     echo "${text_green}${text_bold}Building [$EIRODS_BUILD_LIBARCHIVEVERSION]${text_reset}"
     cd $BUILDDIR/external/$EIRODS_BUILD_LIBARCHIVEVERSION
     if [[ ( ! -e "Makefile" ) || ( "$FULLPATHSCRIPTNAME" -nt "Makefile" ) ]] ; then
+        sed '/^#ifdef HAVE_LINUX_FIEMAP_H$/i \
+#ifdef HAVE_LINUX_TYPES_H\
+#include <linux/types.h>\
+#endif' ./libarchive/test/test_sparse_basic.c > /tmp/libarchive-test-test_sparse_basic.c
+        cp /tmp/libarchive-test-test_sparse_basic.c ./libarchive/test/test_sparse_basic.c
         ../$EIRODS_BUILD_CMAKEVERSION/bin/cmake -D CMAKE_C_FLAGS:STRING=-fPIC .
         $MAKEJCMD
     else

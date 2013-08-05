@@ -221,10 +221,12 @@ eirods::error repl_object(
 
 extern "C" {
     // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
+    /// @ brief constant to index the cache child resource
+    const std::string CACHE_CONTEXT_TYPE( "cache" );
+
+    // =-=-=-=-=-=-=-
+    /// @ brief constant to index the archive child resource
+    const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
 
     // =-=-=-=-=-=-=-
     /// @brief helper function to take a rule result, find a keyword and then
@@ -650,8 +652,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error compound_file_lseek(
-        eirods::resource_plugin_context& _ctx,
-        size_t                              _offset, 
+        eirods::resource_operation_context* _ctx,
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
@@ -670,7 +672,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< size_t, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+        return resc->call< long long, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
     } // compound_file_lseek
 

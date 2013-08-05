@@ -129,16 +129,6 @@ eirods::error random_get_resc_for_call(
 
 } // random_get_resc_for_call
 extern "C" {
-
-#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
-
-    // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
- 
     // =-=-=-=-=-=-=-
     /// @brief Start Up Operation - initialize the random number generator
     eirods::error random_start_operation( 
@@ -371,8 +361,8 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error random_file_lseek(
-        eirods::resource_plugin_context& _ctx,
-        size_t                              _offset, 
+        eirods::resource_operation_context* _ctx,
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
@@ -387,7 +377,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call< size_t, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
+        return resc->call< long long, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
  
     } // random_file_lseek
 

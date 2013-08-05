@@ -66,7 +66,7 @@
 
 
 // =-=-=-=-=-=-=-
-// 2. Define utility functions that the operations might need
+// 1. Define utility functions that the operations might need
 
 // =-=-=-=-=-=-=-
 // NOTE: All storage resources must do this on the physical path stored in the file object and then update 
@@ -225,19 +225,8 @@ eirods::error unix_file_mkdir_r(
 } // unix_file_mkdir_r
 
 extern "C" {
-
-#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
-
     // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
-
-    // =-=-=-=-=-=-=-
-    // 3. Define operations which will be called by the file*
+    // 2. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
     // =-=-=-=-=-=-=-
 
@@ -716,9 +705,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error unix_file_lseek_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        rodsLong_t                       _offset, 
-        int                              _whence ) {
+        eirods::resource_operation_context* _ctx,
+        long long                           _offset, 
+        int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
@@ -734,14 +723,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // make the call to lseek       
-rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: START - fd %d offset %lld, whence %d", 
-         fco.file_descriptor(), _offset, _whence );
-        rodsLong_t status = lseek( fco.file_descriptor(),  _offset, _whence );
+        long long status = lseek( fco.file_descriptor(),  _offset, _whence );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
         if( status < 0 ) {
-rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: failed - fd %d offset %lld", fco.file_descriptor(),status );
             status = UNIX_FILE_LSEEK_ERR - errno;
  
             std::stringstream msg;
@@ -752,11 +738,9 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: failed - fd %d offset %ll
             msg << "', status = ";
             msg << status;
                         
-rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: failed - fd %d return %lld", fco.file_descriptor(), status );
             return ERROR( status, msg.str() );
         }
 
-rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: succeed - fd %d return %lld", fco.file_descriptor(), status );
         return CODE( status );
 
     } // unix_file_lseek_plugin
@@ -1443,9 +1427,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: succeed - fd %d return %l
             // entry.
             std::string last_resc;
             eirods::hierarchy_parser parser;
-if( itr->resc_hier().empty() ) {
-    rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: empty hier string" );
-}
             parser.set_string( itr->resc_hier() );
             parser.last_resc( last_resc ); 
           

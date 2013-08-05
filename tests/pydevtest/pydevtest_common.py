@@ -131,7 +131,7 @@ def interruptiCmd(mysession,fullcmd,filename,filesize):
 
     Asserts that the icommand was successfully terminated early.
 
-    Returns 0 or -1.
+    Returns 0 or -1 or -2.
     '''
     parameters = shlex.split(fullcmd) # preserves quoted substrings
     print "\n"
@@ -142,8 +142,10 @@ def interruptiCmd(mysession,fullcmd,filename,filesize):
     resultcode = mysession.interruptCmd(parameters[0],parameters[1:],filename,filesize)
     if resultcode == 0:
         print "  resultcode: [0], interrupted successfully"
-    else:
+    elif resultcode == -1:
         print "  resultcode: [-1], icommand completed"
+    else:
+        print "  resultcode: [-2], icommand timeout"
     assert 0 == resultcode, "0 == resultcode"
     return resultcode
 

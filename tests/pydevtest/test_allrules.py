@@ -71,8 +71,8 @@ class Test_AllRules(ResourceBase):
         # testallrules teardown
         s.adminsession.runCmd('icd') # for home directory assumption
         s.adminsession.runCmd('ichmod',["-r","own","rods","."] )
-        s.adminsession.runCmd('imcoll',["-U","/tempZone/home/rods/test/phypathreg"] )
-        s.adminsession.runCmd('irm',["-rf","test","ruletest","forphymv","sub1","sub2","sub3","bagit","rules","bagit.tar","/tempZone/bundle/home/rods"] )
+        s.adminsession.runCmd('imcoll',["-U","/"+s.adminsession.getZoneName()+"/home/rods/test/phypathreg"] )
+        s.adminsession.runCmd('irm',["-rf","test","ruletest","forphymv","sub1","sub2","sub3","bagit","rules","bagit.tar","/"+s.adminsession.getZoneName()+"/bundle/home/rods"] )
         s.adminsession.runAdminCmd('iadmin',["rmresc","testallrulesResc"] )
         s.adminsession.runAdminCmd('iadmin',["rmuser","devtestuser"] )
         s.adminsession.runCmd('iqdel',["-a"] ) # remove all/any queued rules

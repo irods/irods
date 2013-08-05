@@ -95,12 +95,6 @@ extern "C" {
     }
 
     // =-=-=-=-=-=-=-
-    // 1. Define plugin Version Variable, used in plugin
-    //    creation when the factory function is called.
-    //    -- currently only 1.0 is supported.
-    double EIRODS_PLUGIN_INTERFACE_VERSION=1.0;
-
-    // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
     // =-=-=-=-=-=-=-
@@ -1160,8 +1154,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error tar_file_lseek_plugin( 
-        eirods::resource_plugin_context& _ctx, 
-        size_t                              _offset, 
+        eirods::resource_operation_context* _ctx, 
+        long long                           _offset, 
         int                                 _whence ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters

@@ -5,8 +5,16 @@
 // eirods includes
 #include "eirods_plugin_base.h"
 
-namespace eirods {
+extern "C" {
+    /// =-=-=-=-=-=-=-
+    /// @brief definition of plugin interface version
+    double get_plugin_interface_version() {
+        static const double EIRODS_PLUGIN_INTERFACE_VERSION = 1.0;
+        return EIRODS_PLUGIN_INTERFACE_VERSION;
+    }
+}
 
+namespace eirods {
     // =-=-=-=-=-=-=-
     // public - constructor
     plugin_base::plugin_base( 
