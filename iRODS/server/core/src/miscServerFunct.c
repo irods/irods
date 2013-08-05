@@ -347,6 +347,9 @@ svrPortalPutGet (rsComm_t *rsComm)
 #endif
 
     size0 = dataOprInp->dataSize / numThreads;
+
+rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGet :: size0 %lld\n\n", size0 );
+
     size1 = dataOprInp->dataSize - size0 * (numThreads - 1);
     offset0 = dataOprInp->offset;
 
@@ -374,106 +377,111 @@ svrPortalPutGet (rsComm_t *rsComm)
           0, size0, offset0, flags);
     }
 
-    if (numThreads == 1) {
-        if (oprType == PUT_OPR) {
-            partialDataPut (&myInput[0]);
-	} else {
-            partialDataGet (&myInput[0]);
-	}
+        if (numThreads == 1) {
+            if (oprType == PUT_OPR) {
+                partialDataPut (&myInput[0]);
+        } else {
+                partialDataGet (&myInput[0]);
+        }
         CLOSE_SOCK (lsock);
 
-	return (myInput[0].status);
+	    return (myInput[0].status);
     } else {
 #ifdef PARA_OPR
-	rodsLong_t mySize = 0;
-	rodsLong_t myOffset = 0;
+        rodsLong_t mySize = 0;
+        rodsLong_t myOffset = 0;
 
         for (i = 1; i < numThreads; i++) {
-	    int l3descInx;
+            int l3descInx;
 
-    	    portalFd = acceptSrvPortal (rsComm, thisPortList);
-    	    if (portalFd < 0) {
-        	rodsLog (LOG_NOTICE,
-          	"svrPortalPut: acceptSrvPortal error. errno = %d",
-          	 errno);
+            portalFd = acceptSrvPortal (rsComm, thisPortList);
+            if (portalFd < 0) {
+                rodsLog (LOG_NOTICE,
+                "svrPortalPut: acceptSrvPortal error. errno = %d",
+                 errno);
 
-        	CLOSE_SOCK (lsock);
+                CLOSE_SOCK (lsock);
 
-        	return (portalFd);
-    	    }
-	    myOffset += size0;
-	    if (i < numThreads - 1) {
-		mySize = size0;
-	    } else {
-		mySize = size1;
-	    }
+                return (portalFd);
+            }
 
-	    if (oprType == PUT_OPR) {
-	        /* open the file */ 
-	        l3descInx = l3OpenByHost (rsComm, dataOprInp->destRescTypeInx, 
-	         dataOprInp->destL3descInx, O_WRONLY); 
-    	        fillPortalTransferInp (&myInput[i], rsComm,
-		 portalFd, l3descInx, 0, dataOprInp->destRescTypeInx,
-	          i, mySize, myOffset, flags);
-		#ifdef USE_BOOST
-		tid[i] = new boost::thread( partialDataPut, &myInput[i] );
-		#else
-                pthread_create (&tid[i], pthread_attr_default,
-                 (void *(*)(void *)) partialDataPut, (void *) &myInput[i]);
-    		#endif             
+            myOffset += size0;
 
-	    } else {	/* a get */
-                l3descInx = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
-                 dataOprInp->srcL3descInx, O_RDONLY);
-                fillPortalTransferInp (&myInput[i], rsComm,
-		 l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
+rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGet :: myOffset %lld", myOffset );
+
+            if (i < numThreads - 1) {
+                mySize = size0;
+            } else {
+                mySize = size1;
+            }
+
+            if (oprType == PUT_OPR) {
+                /* open the file */ 
+                l3descInx = l3OpenByHost (rsComm, dataOprInp->destRescTypeInx, 
+                 dataOprInp->destL3descInx, O_WRONLY); 
+                    fillPortalTransferInp (&myInput[i], rsComm,
+             portalFd, l3descInx, 0, dataOprInp->destRescTypeInx,
                   i, mySize, myOffset, flags);
-		#ifdef USE_BOOST
-		tid[i] = new boost::thread( partialDataGet, &myInput[i] );
-		#else
-                pthread_create (&tid[i], pthread_attr_default,
-                 (void *(*)(void *)) partialDataGet, (void *) &myInput[i]);
-		#endif
-	    }
-	}
+            #ifdef USE_BOOST
+            tid[i] = new boost::thread( partialDataPut, &myInput[i] );
+            #else
+                    pthread_create (&tid[i], pthread_attr_default,
+                     (void *(*)(void *)) partialDataPut, (void *) &myInput[i]);
+                #endif             
 
-        /* spawn the first thread. do this last so the file will not be
-	 * closed */
-	if (oprType == PUT_OPR) {
-	    #ifdef USE_BOOST
-	    tid[0] = new boost::thread( partialDataPut, &myInput[0] );
+            } else {	/* a get */
+                    l3descInx = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
+                     dataOprInp->srcL3descInx, O_RDONLY);
+                    fillPortalTransferInp (&myInput[i], rsComm,
+             l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
+                      i, mySize, myOffset, flags);
+            #ifdef USE_BOOST
+            tid[i] = new boost::thread( partialDataGet, &myInput[i] );
             #else
-            pthread_create (&tid[0], pthread_attr_default,
-             (void *(*)(void *)) partialDataPut, (void *) &myInput[0]);
-	    #endif
-	} else {
-	    #ifdef USE_BOOST
-	    tid[0] = new boost::thread( partialDataGet, &myInput[0] );
-            #else
-            pthread_create (&tid[0], pthread_attr_default,
-             (void *(*)(void *)) partialDataGet, (void *) &myInput[0]);
-	    #endif
+                    pthread_create (&tid[i], pthread_attr_default,
+                     (void *(*)(void *)) partialDataGet, (void *) &myInput[i]);
+            #endif
+            }
+        } // for i
+
+            /* spawn the first thread. do this last so the file will not be
+         * closed */
+        if (oprType == PUT_OPR) {
+            #ifdef USE_BOOST
+            tid[0] = new boost::thread( partialDataPut, &myInput[0] );
+                #else
+                pthread_create (&tid[0], pthread_attr_default,
+                 (void *(*)(void *)) partialDataPut, (void *) &myInput[0]);
+            #endif
+        } else {
+            #ifdef USE_BOOST
+            tid[0] = new boost::thread( partialDataGet, &myInput[0] );
+                #else
+                pthread_create (&tid[0], pthread_attr_default,
+                 (void *(*)(void *)) partialDataGet, (void *) &myInput[0]);
+            #endif
         }
 
-        for ( i = 0; i < numThreads; i++) {
-	    if (tid[i] != 0)
-		#ifdef USE_BOOST
-		tid[i]->join();
-		#else
-                pthread_join (tid[i], NULL);
-		#endif
+        for ( i = 0; i < numThreads; i++) { 
+            if (tid[i] != 0)
+            #ifdef USE_BOOST
+            tid[i]->join();
+            #else
+                    pthread_join (tid[i], NULL);
+            #endif
             if (myInput[i].status < 0) {
                 retVal = myInput[i].status;
             }
-        }
+        } // for i
         CLOSE_SOCK (lsock);
-	return (retVal);
+	    return (retVal);
 
 #else	/* PARA_OPR */
         CLOSE_SOCK (lsock);
-	return (SYS_PARA_OPR_NO_SUPPORT);
+	    return (SYS_PARA_OPR_NO_SUPPORT);
 #endif	/* PARA_OPR */
-    }
+
+    } // else
 }
 
 int

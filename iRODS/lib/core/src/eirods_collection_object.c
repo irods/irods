@@ -108,6 +108,13 @@ namespace eirods {
 
     } // resolve
  
+    error collection_object::resolve( 
+        network_manager&,  
+        network_ptr&  ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM,
+                      "resolve not supported for network_manager" );
+    } // resolve
+
     // =-=-=-=-=-=-=-
     // public - get vars from object for rule engine 
     error collection_object::get_re_vars( 

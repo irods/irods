@@ -29,7 +29,9 @@ namespace eirods {
 
     error hierarchy_parser::set_string(
         const std::string& _resc_hier) {
-        
+        if( _resc_hier.empty() ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "empty heir string" );
+        }
         error result = SUCCESS();
         resc_list_.clear();
         string_tokenize(_resc_hier, DELIM, resc_list_ );

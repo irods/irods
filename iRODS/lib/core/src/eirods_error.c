@@ -1,12 +1,19 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// My Includes
-#include "eirods_log.h"
+// eirods includes
+#include "eirods_error.h"
 
 // =-=-=-=-=-=-=-
-// Boost Includes
+// irods includes
+#include "rodsLog.h"
+
+// =-=-=-=-=-=-=-
+// boost includes
 #include <boost/lexical_cast.hpp>
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 
 namespace eirods {
@@ -57,7 +64,7 @@ namespace eirods {
     // public - useful constructor
     error::error( 
         bool        _status, 
-        int         _code, 
+        rodsLong_t  _code, 
         std::string _msg,
         std::string _file,
         int         _line,
@@ -76,7 +83,7 @@ namespace eirods {
     // public - useful constructor
     error::error( 
         bool         _status, 
-        int          _code, 
+        rodsLong_t   _code, 
         std::string  _msg, 
         std::string  _file,
         int          _line,
@@ -128,7 +135,7 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - return the code of this error object
-    int error::code(  ) {
+    long long error::code(  ) {
         return code_;
 
     } // code

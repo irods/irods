@@ -42,11 +42,18 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Constructors
         ms_table_entry( );
-        ms_table_entry( int );               // num ms args
+        
+        // =-=-=-=-=-=-=-
+        // NOTE :: this ctor should be called by plugin authors
+        ms_table_entry( 
+            int ); // num ms args
                         
-        ms_table_entry( const std::string&,  // ms name
-                        int,                 // num ms args     
-                        ms_func_ptr );       // function pointer
+        // =-=-=-=-=-=-=-
+        // NOTE :: called internally for static plugins 
+        ms_table_entry( 
+            const std::string&,  // ms name
+            int,                 // num ms args     
+            ms_func_ptr );       // function pointer
 
         // =-=-=-=-=-=-=-
         // copy ctor

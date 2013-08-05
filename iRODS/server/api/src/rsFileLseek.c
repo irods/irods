@@ -104,6 +104,8 @@ int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t
                                          file_obj,
                                          fileLseekInp->offset, 
                                          fileLseekInp->whence );
+rodsLog( LOG_NOTICE, "XXXX - _rsFileLseek :: fd %d, status %lld", 
+         file_obj.file_descriptor(), lseek_err.code() );
     // =-=-=-=-=-=-=-
     // handle error conditions and log
     if( !lseek_err.ok() ) {
@@ -113,12 +115,18 @@ int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t
         msg << "]"; 
         eirods::error ret_err = PASSMSG( msg.str(), lseek_err );
         eirods::log( ret_err );
+rodsLog( LOG_NOTICE, "XXXX - _rsFileLseek :: return error" );
         return lseek_err.code();
 
     } else {
-        *fileLseekOut = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
-        memset (*fileLseekOut, 0, sizeof (fileLseekOut_t));
+        (*fileLseekOut) = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
+        memset( (*fileLseekOut), 0, sizeof( fileLseekOut_t ) );
+
         (*fileLseekOut)->offset = lseek_err.code();
+
+rodsLog( LOG_NOTICE, "XXXX - _rsFileLseek :: success - fd %d offset: %lld, code %lld", 
+         file_obj.file_descriptor(), (*fileLseekOut)->offset, lseek_err.code()  );
+
         return 0;
     }
 

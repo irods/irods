@@ -251,7 +251,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     eirods::error unix_file_registered_plugin(
-        eirods::resource_plugin_context& _ctx) {
+        eirods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
         if(!ret.ok()) {
@@ -266,7 +266,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     eirods::error unix_file_unregistered_plugin(
-        eirods::resource_plugin_context& _ctx) {
+        eirods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
         if(!ret.ok()) {
@@ -281,7 +281,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     eirods::error unix_file_modified_plugin(
-        eirods::resource_plugin_context& _ctx) {
+        eirods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
         if(!ret.ok()) {
@@ -434,8 +434,8 @@ extern "C" {
     // interface for POSIX Read
     eirods::error unix_file_read_plugin( 
         eirods::resource_plugin_context& _ctx,
-        void*                               _buf, 
-        int                                 _len ) {
+        void*                            _buf, 
+        int                              _len ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
@@ -476,8 +476,8 @@ extern "C" {
     // interface for POSIX Write
     eirods::error unix_file_write_plugin( 
         eirods::resource_plugin_context& _ctx,
-        void*                               _buf, 
-        int                                 _len ) {
+        void*                            _buf, 
+        int                              _len ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
@@ -717,7 +717,7 @@ extern "C" {
     // interface for POSIX lseek
     eirods::error unix_file_lseek_plugin( 
         eirods::resource_plugin_context& _ctx,
-        size_t                           _offset, 
+        rodsLong_t                       _offset, 
         int                              _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -734,11 +734,14 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // make the call to lseek       
-        size_t status = lseek( fco.file_descriptor(),  _offset, _whence );
+rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: START - fd %d offset %lld, whence %d", 
+         fco.file_descriptor(), _offset, _whence );
+        rodsLong_t status = lseek( fco.file_descriptor(),  _offset, _whence );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
         if( status < 0 ) {
+rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: failed - fd %d offset %lld", fco.file_descriptor(),status );
             status = UNIX_FILE_LSEEK_ERR - errno;
  
             std::stringstream msg;
@@ -749,9 +752,11 @@ extern "C" {
             msg << "', status = ";
             msg << status;
                         
+rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: failed - fd %d return %lld", fco.file_descriptor(), status );
             return ERROR( status, msg.str() );
         }
 
+rodsLog( LOG_NOTICE, "XXXX - unix_file_lseek_plugin :: succeed - fd %d return %lld", fco.file_descriptor(), status );
         return CODE( status );
 
     } // unix_file_lseek_plugin
@@ -993,7 +998,7 @@ extern "C" {
     // interface for POSIX readdir
     eirods::error unix_file_readdir_plugin( 
         eirods::resource_plugin_context& _ctx,
-        struct rodsDirent**                 _dirent_ptr ) {
+        struct rodsDirent**              _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
@@ -1438,6 +1443,9 @@ extern "C" {
             // entry.
             std::string last_resc;
             eirods::hierarchy_parser parser;
+if( itr->resc_hier().empty() ) {
+    rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: empty hier string" );
+}
             parser.set_string( itr->resc_hier() );
             parser.last_resc( last_resc ); 
           

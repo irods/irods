@@ -98,6 +98,8 @@ rodsLong_t offset, int whence)
     fileLseekInp_t fileLseekInp;
     fileLseekOut_t *fileLseekOut = NULL;
     int status;
+    rodsLog( LOG_NOTICE, "XXXX - _l3Lseek :: START - fd %d, offset %lld, whence %d", 
+             FileDesc[ l3descInx ].fd, offset, whence );
 
 #if 0 // JMC - legacy resource 
     switch (RescTypeDef[rescTypeInx].rescCat) {
@@ -120,11 +122,15 @@ rodsLong_t offset, int whence)
     }
 #endif // JMC - legacy resource 
     if (status < 0) {
+        rodsLog( LOG_NOTICE, "XXXX - _l3Lseek :: failed - fd %d, status %d", 
+                  FileDesc[ l3descInx ].fd, status );
         return (status);
     } else {
-	rodsLong_t offset = fileLseekOut->offset;
-	free (fileLseekOut);
-        return (offset);
+        rodsLong_t off = fileLseekOut->offset;
+        rodsLog( LOG_NOTICE, "XXXX - _l3Lseek :: success - fd %d, offset %lld", 
+                 FileDesc[ l3descInx ].fd, off );
+        free (fileLseekOut);
+        return (off);
     }
 }
 

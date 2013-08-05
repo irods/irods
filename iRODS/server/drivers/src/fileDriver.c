@@ -248,7 +248,7 @@ eirods::error fileFstat(
 eirods::error fileLseek( 
     rsComm_t*                   _comm, 
     eirods::first_class_object& _object, 
-    size_t                      _offset, 
+    rodsLong_t                  _offset, 
     int                         _whence ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
@@ -260,7 +260,7 @@ eirods::error fileLseek(
 
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
-    ret_err = resc->call< size_t, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
+    ret_err = resc->call< rodsLong_t, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS

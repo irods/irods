@@ -2,9 +2,9 @@
 
 // =-=-=-=-=-=-=-
 // My Includes
-#include "eirods_resource_plugin.h"
+#include "eirods_network_plugin.h"
 #include "eirods_load_plugin.h"
-#include "eirods_resources_home.h"
+#include "eirods_network_home.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -17,34 +17,35 @@
 #include <dlfcn.h>
 
 namespace eirods {
+
     // =-=-=-=-=-=-=-
     // public - ctor
-    resource::resource( 
+    network::network( 
         const std::string& _inst,
         const std::string& _ctx ) :
         plugin_base( 
             _inst, 
-            _ctx ), 
-        start_operation_( default_start_operation ), 
-        stop_operation_( default_stop_operation ) {
+            _ctx ),
+        start_operation_( eirods::network::default_start_operation ), 
+        stop_operation_ ( eirods::network::default_stop_operation  ) {
     } // ctor
     
     // =-=-=-=-=-=-=-
     // public - dtor
-    resource::~resource(  ) {
+    network::~network(  ) {
              
     } // dtor
     
     // =-=-=-=-=-=-=-
     // public - cctor
-    resource::resource( const resource& _rhs ) : 
+    network::network( 
+        const network& _rhs ) : 
         plugin_base( _rhs ) {
-        children_           = _rhs.children_;
         operations_         = _rhs.operations_;
         ops_for_delay_load_ = _rhs.ops_for_delay_load_;
                 
         if( properties_.size() > 0 ) {
-            std::cout << "[!]\tresource cctor - properties map is not empty." 
+            std::cout << "[!]\tnetwork cctor - properties map is not empty." 
                       << __FILE__ << ":" << __LINE__ << std::endl;
         }
         properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
@@ -52,30 +53,33 @@ namespace eirods {
     
     // =-=-=-=-=-=-=-
     // public - assignment
-    resource& resource::operator=( const resource& _rhs ) {
+    network& network::operator=( 
+        const network& _rhs ) {
         if( &_rhs == this ) {
             return *this;
         }
 
         plugin_base::operator=( _rhs );
 
-        children_           = _rhs.children_;
         operations_         = _rhs.operations_;
         ops_for_delay_load_ = _rhs.ops_for_delay_load_;
 
         if( properties_.size() > 0 ) {
-            std::cout << "[!]\tresource cctor - properties map is not empty." 
+            std::cout << "[!]\tnetwork cctor - properties map is not empty." 
                       << __FILE__ << ":" << __LINE__ << std::endl;
         }
+        
         properties_ = _rhs.properties_; // NOTE:: memory leak repaving old containers?
 
         return *this;
+
     } // operator=
     
     // =-=-=-=-=-=-=-
     // public - function which pulls all of the symbols out of the shared object and 
     //          associates them with their keys in the operations table
-    error resource::delay_load( void* _handle ) {
+    error network::delay_load( 
+        void* _handle ) {
         // =-=-=-=-=-=-=-
         // check params
         if( ! _handle ) {
@@ -86,12 +90,11 @@ namespace eirods {
             return ERROR( SYS_INVALID_INPUT_PARAM, "empty operations list" );
         }
 
-
         // =-=-=-=-=-=-=-
         // check if we need to load a start function
         if( !start_opr_name_.empty() ) {
             dlerror();
-            resource_maintenance_operation start_op = reinterpret_cast< resource_maintenance_operation >( 
+            network_maintenance_operation start_op = reinterpret_cast< network_maintenance_operation >( 
                 dlsym( _handle, start_opr_name_.c_str() ) );
             if( !start_op ) {
                 std::stringstream msg;
@@ -108,7 +111,7 @@ namespace eirods {
         // check if we need to load a stop function
         if( !stop_opr_name_.empty() ) {
             dlerror();
-            resource_maintenance_operation stop_op = reinterpret_cast< resource_maintenance_operation >( 
+            network_maintenance_operation stop_op = reinterpret_cast< network_maintenance_operation >( 
                 dlsym( _handle, stop_opr_name_.c_str() ) );
             if( !stop_op ) {
                 std::stringstream msg;
@@ -133,7 +136,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check key and fcn name before trying to load
             if( key.empty() ) {
-                std::cout << "[!]\teirods::resource::delay_load - empty op key for [" 
+                std::cout << "[!]\teirods::network::delay_load - empty op key for [" 
                           << fcn << "], skipping." << std::endl;
                 continue;
             }
@@ -141,7 +144,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // check key and fcn name before trying to load
             if( fcn.empty() ) {
-                std::cout << "[!]\teirods::resource::delay_load - empty function name for [" 
+                std::cout << "[!]\teirods::network::delay_load - empty function name for [" 
                           << key << "], skipping." << std::endl;
                 continue;
             }
@@ -151,7 +154,7 @@ namespace eirods {
             dlerror();
             plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >( dlsym( _handle, fcn.c_str() ) );
             if( !res_op_ptr ) {
-                std::cout << "[!]\teirods::resource::delay_load - failed to load [" 
+                std::cout << "[!]\teirods::network::delay_load - failed to load [" 
                           << fcn << "].  error - " << dlerror() << std::endl;
                 continue;
             }
@@ -169,104 +172,40 @@ namespace eirods {
             return ERROR( SYS_INVALID_INPUT_PARAM, "operations map is emtpy" );
         }
 
-
         return SUCCESS();
 
     } // delay_load
                
     // =-=-=-=-=-=-=-
-    // public - add a child resource to this resource.  this is virtual in case a developer wants to
-    //          do something fancier.
-    error resource::add_child( const std::string& _name, const std::string& _data, resource_ptr _resc ) {
-        // =-=-=-=-=-=-=-
-        // check params 
-        if( _name.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty name" );
-        }
-
-        if( 0 == _resc.get() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null resource pointer" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // add resource and data to the table
-        children_[ _name ] = std::pair< std::string, resource_ptr >( _data, _resc );
-
-        return SUCCESS();
-
-    } // add_child 
-
-    // =-=-=-=-=-=-=-
-    // public - remove a child resource to this resource.  this is virtual in case a developer wants to
-    //          do something fancier.
-    error resource::remove_child( const std::string& _name ) {
-        // =-=-=-=-=-=-=-
-        // check params 
-#ifdef DEBUG
-        if( _name.empty() ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "empty name" );
-        }
-#endif
-        
-        // =-=-=-=-=-=-=-
-        // if an entry exists, erase it otherwise issue a warning.
-        if( children_.has_entry( _name ) ) {
-            children_.erase( _name );
-            return SUCCESS();
-        } else {
-            std::stringstream msg;
-            msg << "resource has no child named [" << _name << "]";
-            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-        }
-        
-    } // remove_child 
-    
-    // =-=-=-=-=-=-=-
-    // public - mutator for parent pointer
-    error resource::set_parent( const resource_ptr& _resc ) {
-        parent_ = _resc;
-        return SUCCESS();
-
-    } // set_parent
-    
-    // =-=-=-=-=-=-=-
-    // public - accessor for parent pointer.  return value based on validity of the pointer
-    error resource::get_parent( resource_ptr& _resc ) {
-        _resc = parent_;
-        if( _resc.get() ) {
-            return SUCCESS();
-        } else {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "null parent pointer" );
-        }
-
-    } // get_parent
-
-    // =-=-=-=-=-=-=-
     // public - set a name for the developer provided start op
-    void resource::set_start_operation( const std::string& _op ) {
+    void network::set_start_operation( 
+        const std::string& _op ) {
         start_opr_name_ = _op;
-    } // resource::set_start_operation
+    } // network::set_start_operation
 
     // =-=-=-=-=-=-=-
     // public - set a name for the developer provided stop op
-    void resource::set_stop_operation( const std::string& _op ) {
+    void network::set_stop_operation( 
+        const std::string& _op ) {
         stop_opr_name_ = _op;
-    } // resource::set_stop_operation
+    } // network::set_stop_operation
  
-    // END resource
+    // END network
     // =-=-=-=-=-=-=-
 
     // =-=-=-=-=-=-=-
-    // function to load and return an initialized resource plugin
-    error load_resource_plugin( resource_ptr&     _plugin, 
-                                const std::string _plugin_name,
-                                const std::string _inst_name, 
-                                const std::string _context ) {
-                
-        resource* resc = 0;
-        error ret = load_plugin< resource >( resc, _plugin_name, EIRODS_RESOURCES_HOME, _inst_name, _context );
-        if( ret.ok() && resc ) {
-            _plugin.reset( resc );
+    // function to load and return an initialized network plugin
+    error load_network_plugin( 
+        network_ptr&      _plugin, 
+        const std::string _plugin_name,
+        const std::string _inst_name, 
+        const std::string _context ) {
+        // =-=-=-=-=-=-=-
+        // call generic plugin loader        
+        network* net = 0;
+        error ret = load_plugin< network >( net, _plugin_name, EIRODS_NETWORK_HOME, _inst_name, _context );
+        if( ret.ok() && net ) {
+            _plugin.reset( net );
             return SUCCESS();       
         
         } else {
@@ -274,7 +213,7 @@ namespace eirods {
         
         }
 
-    } // load_resource_plugin
+    } // load_network_plugin
 
 }; // namespace eirods
 

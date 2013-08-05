@@ -30,6 +30,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // plugin resolution operators
         virtual error resolve( resource_manager&, resource_ptr& ) = 0;
+        virtual error resolve( network_manager&,  network_ptr&  ) = 0;
         
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables

@@ -89,7 +89,9 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_resource_redirect.o \
 		$(libCoreObjDir)/eirods_plugin_name_generator.o \
 		$(libCoreObjDir)/eirods_client_negotiation.o \
-		$(libCoreObjDir)/eirods_network_plugin.o 
+		$(libCoreObjDir)/eirods_network_object.o \
+		$(libCoreObjDir)/eirods_ssl_object.o \
+		$(libCoreObjDir)/eirods_tcp_object.o 
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

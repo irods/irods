@@ -16,32 +16,42 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // ms_table_entry definition
     ms_table_entry::ms_table_entry( ) : 
-        plugin_base( "msvc", "ctx" ),
+        plugin_base( 
+           "", 
+           "" ),
         num_args_( 0 ), 
         call_action_( 0 ) { 
     } // def ctor
 
-    ms_table_entry::ms_table_entry( int _n ) :
-        plugin_base( "msvc", "ctx"),
+    ms_table_entry::ms_table_entry( 
+        int    _n ) :
+        plugin_base( 
+           "msvc", 
+           "ctx" ),
         num_args_( _n ), 
         call_action_( 0 ) {
     } // ctor
 
-    ms_table_entry::ms_table_entry( const std::string& _name,
-                                    int                _num_args,
-                                    ms_func_ptr        _fcn_ptr ) :
-        plugin_base( "msvc", "ctx" ),
+    ms_table_entry::ms_table_entry( 
+        const std::string& _name,
+        int                _num_args,
+        ms_func_ptr        _fcn_ptr ) :
+        plugin_base( 
+           "msvc", 
+           "ctx" ),
         num_args_( _num_args ), 
         call_action_( _fcn_ptr ) {
     } // ctor
 
-    ms_table_entry::ms_table_entry( const ms_table_entry& _rhs ) :
+    ms_table_entry::ms_table_entry( 
+        const ms_table_entry& _rhs ) :
         plugin_base( _rhs ),
         num_args_( _rhs.num_args_ ), 
         call_action_( _rhs.call_action_ ) {
     } // cctor
 
-    ms_table_entry& ms_table_entry::operator=( const ms_table_entry& _rhs ) { 
+    ms_table_entry& ms_table_entry::operator=( 
+        const ms_table_entry& _rhs ) { 
         plugin_base::operator=( _rhs );
         num_args_    = _rhs.num_args_;
         call_action_ = _rhs.call_action_;
@@ -51,7 +61,8 @@ namespace eirods {
     ms_table_entry::~ms_table_entry() {
     } // dtor
 
-    error ms_table_entry::delay_load( void* _h ) {
+    error ms_table_entry::delay_load( 
+        void* _h ) {
         // =-=-=-=-=-=-=-
         // check handle to open shared object
         if( !_h ) {

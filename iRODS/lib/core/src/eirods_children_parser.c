@@ -2,6 +2,7 @@
 
 #include "eirods_children_parser.h"
 #include "eirods_log.h"
+#include "rodsErrorTable.h"
 
 #include <sstream>
 #include <iostream>

@@ -20,7 +20,6 @@
 #include <boost/asio/ip/host_name.hpp>
 
 namespace eirods {
-
     // =-=-=-=-=-=-=-
     // public - ctor
     file_object::file_object() :
@@ -182,12 +181,20 @@ namespace eirods {
     } // resolve
 
     // =-=-=-=-=-=-=-
+    // plugin - resolve resource plugin for this object
+    error file_object::resolve( 
+        network_manager&,
+        network_ptr& ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM,
+                      "network_manage is not supported" );
+    } // resolve
+
+    // =-=-=-=-=-=-=-
     // public - get vars from object for rule engine 
     error file_object::get_re_vars( 
         keyValPair_t& _vars ) {
-
+        return SUCCESS();
     } // get_re_vars 
-
 
     // =-=-=-=-=-=-=-
     // static factory to create file_object from dataobjinfo linked list
