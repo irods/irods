@@ -134,12 +134,16 @@ fileChksum (
     eirods::file_object file_obj( rsComm, objPath, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
     eirods::error ret = fileOpen( rsComm, file_obj );
     if( !ret.ok() ) {
-        status = UNIX_FILE_OPEN_ERR - errno;
-        std::stringstream msg;
-        msg << "fileOpen failed for [";
-        msg << fileName;
-        msg << "]";
-        eirods::log( PASSMSG( msg.str(), ret ) );
+        if(ret.code() != EIRODS_DIRECT_ARCHIVE_ACCESS) {
+            status = UNIX_FILE_OPEN_ERR - errno;
+            std::stringstream msg;
+            msg << "fileOpen failed for [";
+            msg << fileName;
+            msg << "]";
+            eirods::log( PASSMSG( msg.str(), ret ) );
+        } else {
+            status = ret.code();
+        }
         return (status);
     }
 

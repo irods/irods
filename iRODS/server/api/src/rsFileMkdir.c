@@ -17,10 +17,6 @@
 int
 rsFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp)
 {
-    eirods::stacktrace st;
-    st.trace();
-    st.dump();
-
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;

@@ -235,6 +235,8 @@ dataObjChksumAndRegInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
     memset (&regParam, 0, sizeof (regParam));
     addKeyVal (&regParam, CHKSUM_KW, *outChksumStr);
+    // set pdmo flag so that chksum doesn't trigger file operations
+    addKeyVal(&regParam, IN_PDMO_KW, "");
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
     status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
