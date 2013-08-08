@@ -385,10 +385,15 @@ getDataObjInfo(
 }
 
 int
-sortObjInfo (dataObjInfo_t **dataObjInfoHead, 
-             dataObjInfo_t **currentArchInfo, dataObjInfo_t **currentCacheInfo, 
-             dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo, 
-             dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo)
+sortObjInfo (
+    dataObjInfo_t **dataObjInfoHead, 
+    dataObjInfo_t **currentArchInfo,
+    dataObjInfo_t **currentCacheInfo, 
+    dataObjInfo_t **oldArchInfo,
+    dataObjInfo_t **oldCacheInfo, 
+    dataObjInfo_t **downCurrentInfo,
+    dataObjInfo_t **downOldInfo,
+    const char* resc_hier)
 {
 
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
@@ -439,8 +444,23 @@ sortObjInfo (dataObjInfo_t **dataObjInfoHead,
                                       tmpDataObjInfo->rescInfo->rescName, 
                                       eirods::RESOURCE_CLASS, 
                                       class_type );
+
+        bool hier_match = false;
+        if(resc_hier != NULL && (strcmp(resc_hier, tmpDataObjInfo->rescHier) == 0)) {
+            hier_match = true;
+        }
+        
+        // if the resc hierarchy is defined match it
+        if(resc_hier != NULL && hier_match) {
+            queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+        }
+
+        else if(resc_hier != NULL && !hier_match) {
+            queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
+        }
+        
         // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
-        if (tmpDataObjInfo->replStatus > 0) {
+        else if (tmpDataObjInfo->replStatus > 0) {
 #if 0 // JMC - legacy resource
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
                 queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
@@ -516,13 +536,6 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
         msg << " - No resource hierarchy specified in keywords.";
         eirods::log(ERROR(SYS_INVALID_INPUT_PARAM, msg.str()));
         result = SYS_INVALID_INPUT_PARAM;
-
-        if(true) {
-            eirods::stacktrace st;
-            st.trace();
-            st.dump();
-        }
-
     } else {
         dataObjInfo_t* found_info = NULL;
         dataObjInfo_t* prev_info = NULL;
@@ -543,13 +556,6 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
             msg << "\"";
             eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
             result = EIRODS_HIERARCHY_ERROR;
-
-            if(true) {
-                eirods::stacktrace st;
-                st.trace();
-                st.dump();
-            }
-
         } else {
             if(prev_info == NULL) {
                 // our object is at the head of the list. So delete the rest of the list, if any and we are done.
@@ -972,8 +978,11 @@ matchAndTrimRescGrp (dataObjInfo_t **dataObjInfoHead,
  */
 
 int
-sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
-                    dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
+sortObjInfoForRepl (
+    dataObjInfo_t **dataObjInfoHead, 
+    dataObjInfo_t **oldDataObjInfoHead,
+    int deleteOldFlag,
+    const char* resc_hier)
 {
 
     dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
@@ -981,7 +990,7 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
 
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
-                 &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
+                 &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier);
     
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
@@ -1568,7 +1577,8 @@ int
     int condFlag;
     int toTrim;
 
-    sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0);
+    // char* resc_hier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
+    sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0, NULL);
 
     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);

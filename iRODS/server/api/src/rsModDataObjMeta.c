@@ -107,6 +107,10 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
                          tmpDataObjInfo->objPath, status);
             } else {
                 eirods::file_object file_obj(rsComm, tmpDataObjInfo);
+                char* pdmo_kw = getValByKey(regParam, IN_PDMO_KW);
+                if(pdmo_kw != NULL) {
+                    file_obj.in_pdmo(true);
+                }
                 eirods::error ret = fileModified(rsComm, file_obj);
                 if(!ret.ok()) {
                     std::stringstream msg;
@@ -136,6 +140,10 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
             eirods::log(ret);
         } else {
             eirods::file_object file_obj(rsComm, dataObjInfo);
+            char* pdmo_kw = getValByKey(regParam, IN_PDMO_KW);
+            if(pdmo_kw != NULL) {
+                file_obj.in_pdmo(true);
+            }
             eirods::error ret = fileModified(rsComm, file_obj);
             if(!ret.ok()) {
                 std::stringstream msg;

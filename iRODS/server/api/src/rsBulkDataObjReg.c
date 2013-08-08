@@ -227,6 +227,7 @@ modDataObjSizeMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     if (strlen (dataObjInfo->chksum) > 0) {
         addKeyVal (&regParam, CHKSUM_KW, dataObjInfo->chksum);
     }
+    addKeyVal(&regParam, IN_PDMO_KW, "");
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
 

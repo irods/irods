@@ -39,7 +39,7 @@ int
 dataObjExist (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
 sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
-                    dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag);
+                    dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag, const char* resc_hier);
 int
 sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
                     keyValPair_t *condInput, int writeFlag);

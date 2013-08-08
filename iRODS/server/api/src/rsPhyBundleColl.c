@@ -487,6 +487,8 @@ bundleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir,
         // JMC - backport 4528
         if (chksumFlag != 0) {
             addKeyVal (&regParam, CHKSUM_KW, tmpBunReplCache->chksumStr);
+            // avoid triggering file operations
+            addKeyVal(&regParam, IN_PDMO_KW, "");
             status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
             clearKeyVal (&regParam);
             if (status < 0) {

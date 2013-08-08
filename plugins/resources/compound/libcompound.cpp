@@ -36,8 +36,8 @@
 
 extern "C" {
 
-    #define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-    #define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
+#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
+#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
 
     // =-=-=-=-=-=-=-
     // constants for property map flags to signal a sync or stage
@@ -86,8 +86,8 @@ extern "C" {
     /// @brief start up operation - determine which child is the cache and which is the
     ///        archive.  cache those names in local variables for ease of use
     eirods::error compound_start_operation( 
-                  eirods::resource_property_map& _prop_map,
-                  eirods::resource_child_map&    _cmap ) {
+        eirods::resource_property_map& _prop_map,
+        eirods::resource_child_map&    _cmap ) {
         // =-=-=-=-=-=-=-
         // trap invalid number of children 
         if( _cmap.size() == 0 || _cmap.size() > 2 ) {
@@ -323,6 +323,45 @@ extern "C" {
 
     } // get_archive
 
+    /// @brief Returns the cache resource making sure it corresponds to the fco resc hier
+    eirods::error get_cache_resc(
+        eirods::resource_operation_context* _ctx,
+        eirods::resource_ptr&               _resc)
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        eirods::resource_ptr next_resc;
+        
+        // =-=-=-=-=-=-=-
+        // get the cache resource
+        if( !(ret = get_cache( _ctx, _resc )).ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get cache resource.";
+            result = PASSMSG(msg.str(), ret);
+        }
+
+        // get the next child resource in the hierarchy
+        else if(!(ret = get_next_child(_ctx, next_resc)).ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get next child resource.";
+            result = PASSMSG(msg.str(), ret);
+        }
+
+        // Make sure the file object came from the cache resource
+        else if(_resc != next_resc) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Cannot open data object: \"";
+            msg << _ctx->fco().physical_path();
+            msg << "\" It is stored in an archive resource which is not directly accessible.";
+            result = ERROR(EIRODS_DIRECT_ARCHIVE_ACCESS, msg.str());
+        }
+        
+        return result;
+    }
+    
     /// =-=-=-=-=-=-=-
     /// @brief replicate a given object for either a sync or a stage
     eirods::error repl_object(
@@ -368,27 +407,30 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // manufacture a resc hier to either the archive or the cache resc
         std::string keyword  = _stage_sync_kw;
-        std::string src_hier = _ctx->fco().resc_hier();
+        std::string inp_hier = _ctx->fco().resc_hier();
         std::string tgt_name, src_name;
 
         if( keyword == STAGE_OBJ_KW ) {
             tgt_name = cache_name;
+            src_name = arch_name;
         } else if( keyword == SYNC_OBJ_KW ) {
             tgt_name = arch_name;
+            src_name = cache_name;
         } else {
             std::stringstream msg;
             msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
         }
 
-        size_t pos = src_hier.find( cache_name );
+        size_t pos = inp_hier.find( cache_name );
         if( std::string::npos == pos ) {
-            pos = src_hier.find( arch_name );
+            pos = inp_hier.find( arch_name );
         }
 
-        std::string dst_hier = src_hier.substr( 0, pos );
+        std::string dst_hier = inp_hier.substr( 0, pos );
         dst_hier += tgt_name;
-
+        std::string src_hier = inp_hier.substr( 0, pos );
+        src_hier += src_name;
         // =-=-=-=-=-=-=-
         // create a data obj input struct to call rsDataObjRepl which given
         // the _stage_sync_kw will either stage or sync the data object 
@@ -396,7 +438,7 @@ extern "C" {
         bzero( &data_obj_inp, sizeof( data_obj_inp ) );
         rstrcpy( data_obj_inp.objPath, _ctx->fco().logical_path().c_str(), MAX_NAME_LEN );
         data_obj_inp.createMode = _ctx->fco().mode();
-        addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      _ctx->fco().resc_hier().c_str() );
+        addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
         addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
@@ -454,26 +496,41 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     eirods::error compound_file_open( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        eirods::resource_ptr cache_resc;
+        
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
+        if(!(ret = compound_check_param(_ctx)).ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Invalid resource context.";
+            result = PASSMSG(msg.str(), ret);
         }
 
         // =-=-=-=-=-=-=-
         // get the cache resource
-        eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
+        else if( !(ret = get_cache_resc( _ctx, cache_resc )).ok() ) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to get cache resource.";
+            result = PASSMSG(msg.str(), ret);
         }
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco() );
+        else if(!(ret = cache_resc->call( _ctx->comm(), eirods::RESOURCE_OP_OPEN, _ctx->fco() )).ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed calling open on cache resource.";
+            result = PASSMSG(msg.str(), ret);
+        }
 
+        return result;
+        
     } // compound_file_open
 
     /// =-=-=-=-=-=-=-
@@ -860,7 +917,7 @@ extern "C" {
     eirods::error compound_file_rename(
         eirods::resource_operation_context* _ctx,
         const char*                         _new_file_name ) {
-rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
+        rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         // =-=-=-=-=-=-=-
         // check the context for validity
         eirods::error ret = compound_check_param(_ctx);
@@ -989,6 +1046,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
     ///        at this point
     eirods::error compound_file_modified(
         eirods::resource_operation_context* _ctx ) {
+
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = compound_check_param( _ctx );
@@ -1003,12 +1061,19 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         std::string flag;
         ret = _ctx->prop_map().get< std::string >( SYNC_FLAG, flag );
         if( ret.ok() ) {
-            if( SYNC_CREATE == flag ) {
-                return repl_object( _ctx, SYNC_OBJ_KW, false );
-
-            } else if( SYNC_UPDATE == flag ) {
-                return repl_object( _ctx, SYNC_OBJ_KW, true );
-
+            eirods::file_object* fo = dynamic_cast<eirods::file_object*>(&_ctx->fco());
+            if(fo == NULL) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Unable to cast first class object to file object.";
+                return ERROR(SYS_INVALID_INPUT_PARAM, msg.str());
+            }
+            if(!fo->in_pdmo()) {
+                if( SYNC_CREATE == flag ) {
+                    return repl_object( _ctx, SYNC_OBJ_KW, false );
+                } else if( SYNC_UPDATE == flag ) {
+                    return repl_object( _ctx, SYNC_OBJ_KW, true );
+                }
             }
 
         } // if ret.ok
@@ -1025,7 +1090,7 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_rename :: START" );
         const std::string*             _curr_host, 
         eirods::hierarchy_parser*      _out_parser,
         float*                         _out_vote ) {
-rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: START" );
+        rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: START" );
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
@@ -1051,16 +1116,16 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: START" );
 
         // =-=-=-=-=-=-=-
         // set the sync flag in the prop map
-rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
+        rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
         _ctx->prop_map().set( SYNC_FLAG, SYNC_CREATE );
 
         // =-=-=-=-=-=-=-
         // ask the cache if it is willing to accept a new file, politely
         ret = resc->call< const std::string*, const std::string*, 
-                          eirods::hierarchy_parser*, float* >( 
-                          _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
-                          &eirods::EIRODS_CREATE_OPERATION, _curr_host, 
-                          _out_parser, _out_vote );
+            eirods::hierarchy_parser*, float* >( 
+                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
+                &eirods::EIRODS_CREATE_OPERATION, _curr_host, 
+                _out_parser, _out_vote );
         return ret;
 
     } // compound_file_redirect_create
@@ -1097,10 +1162,10 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
         float                    cache_check_vote   = 0.0;
         eirods::hierarchy_parser cache_check_parser = (*_out_parser);
         ret = cache_resc->call< const std::string*, const std::string*, 
-                                eirods::hierarchy_parser*, float* >( 
-                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
-                                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                &cache_check_parser, &cache_check_vote );
+            eirods::hierarchy_parser*, float* >( 
+                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
+                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                &cache_check_parser, &cache_check_vote );
         // =-=-=-=-=-=-=-
         // if the vote is 0 then we do a wholesale stage, not an update
         // otherwise it is an update operation for the stage to cache
@@ -1115,9 +1180,9 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
         // from the cache
         ret = cache_resc->call< const std::string*, const std::string*, 
                                 eirods::hierarchy_parser*, float* >( 
-                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
-                                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                _out_parser, _out_vote );
+                                    _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
+                                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                                    _out_parser, _out_vote );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1160,8 +1225,8 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_redirect_create :: set sync flag" );
         if( !ret.ok() ) {
             return PASS( ret );
         }
-rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: opening [%s] with heir [%s]", 
-         _ctx->fco().logical_path().c_str(), _ctx->fco().resc_hier().c_str() );
+        rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: opening [%s] with hier [%s]", 
+                 _ctx->fco().logical_path().c_str(), _ctx->fco().resc_hier().c_str() );
 
         // =-=-=-=-=-=-=-
         // ask the cache if it has the data object in question, politely
@@ -1169,24 +1234,24 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: opening [%s] with h
         eirods::hierarchy_parser cache_check_parser = (*_out_parser);
         ret = cache_resc->call< const std::string*, const std::string*, 
                                 eirods::hierarchy_parser*, float* >( 
-                                _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
-                                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                &cache_check_parser, &cache_check_vote );
+                                    _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
+                                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                                    &cache_check_parser, &cache_check_vote );
 
         // =-=-=-=-=-=-=-
         // if the vote is 0 then the cache doesnt have it so it will need be staged
         if( 0.0 == cache_check_vote ) {
-rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: cache didnt have it" );
+            rodsLog( LOG_NOTICE, "XXXX - %s :: cache didnt have it", __FUNCTION__ );
             // =-=-=-=-=-=-=-
             // ask the archive if it has the data object in question, politely
             float                    arch_check_vote   = 0.0;
             eirods::hierarchy_parser arch_check_parser = (*_out_parser);
             ret = arch_resc->call< const std::string*, const std::string*, 
-                                    eirods::hierarchy_parser*, float* >( 
-                                    _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
-                                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                    &arch_check_parser, &arch_check_vote );
-rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: archive vote %f, arch ret %d", arch_check_vote, ret.ok() );
+                                   eirods::hierarchy_parser*, float* >( 
+                                       _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
+                                       &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                                       &arch_check_parser, &arch_check_vote );
+            rodsLog( LOG_NOTICE, "XXXX - %s :: archive vote %f, arch ret %d", __FUNCTION__, arch_check_vote, ret.ok() );
             if( !ret.ok() || 0.0 == arch_check_vote ) {
                 return PASS( ret );    
             }
@@ -1203,9 +1268,9 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_cache_policy :: archive vote %f, ar
             // from the cache resouce
             ret = cache_resc->call< const std::string*, const std::string*, 
                                     eirods::hierarchy_parser*, float* >( 
-                                    _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
-                                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                    _out_parser, _out_vote );
+                                        _ctx->comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx->fco(), 
+                                        &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                                        _out_parser, _out_vote );
             if( !ret.ok() ) {
                 return PASS( ret );    
             }

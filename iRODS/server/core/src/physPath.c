@@ -400,7 +400,6 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
     // =-=-=-=-=-=-=-
     // JMC - backport 4527
     dataObjInfo_t *dataObjInfo; 
-    rescInfo_t *rescInfo = inpDataObjInfo->rescInfo;
     int destL1descInx = -1;
 
 #if 0 // JMC - removing compound resources 
@@ -452,10 +451,10 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         } else {
             dataObjInfo = inpDataObjInfo;
         }
-
+    
     // =-=-=-=-=-=-=-
     int category = FILE_CAT; // only supporting file resource, not DB right now
-
+    
     std::string location;
     eirods::error ret;
     // JMC - legacy resource - switch ( RescTypeDef[rescTypeInx].rescCat) {
@@ -477,6 +476,13 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
         rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
         fileChksumInp.in_pdmo = dataObjInfo->in_pdmo;
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
+        if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
+            std::stringstream msg;
+            msg << "Data object: \"";
+            msg << dataObjInfo->filePath;
+            msg << "\" is located in an archive resource. Ignoring its checksum.";
+            eirods::log(LOG_NOTICE, msg.str());
+        }
         break;
     default:
         rodsLog (LOG_NOTICE,
@@ -514,6 +520,9 @@ dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     memset (&regParam, 0, sizeof (regParam));
     addKeyVal (&regParam, CHKSUM_KW, *chksumStr);
 
+    // always set pdmo flag here... total hack - harry
+    addKeyVal(&regParam, IN_PDMO_KW, "");
+    
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
 

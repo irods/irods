@@ -297,7 +297,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     regReplica_t regReplicaInp;
     int noChkCopyLenFlag;
 
-
     l1descInx = dataObjCloseInp->l1descInx;
 
     l3descInx = L1desc[l1descInx].l3descInx;
@@ -424,6 +423,10 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
                          IRODS_ADMIN_KW) != NULL) {
             addKeyVal (&regParam, IRODS_ADMIN_KW, "");
         }
+        char* pdmo_kw = getValByKey(&dataObjCloseInp->condInput, IN_PDMO_KW);
+        if(pdmo_kw != NULL) {
+            addKeyVal(&regParam, IN_PDMO_KW, pdmo_kw);
+        }
         modDataObjMetaInp.dataObjInfo = destDataObjInfo;
         modDataObjMetaInp.regParam = &regParam;
         status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
@@ -487,6 +490,10 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             if ((L1desc[l1descInx].replStatus & FILE_PATH_HAS_CHG) != 0) {
                 /* path has changed */ 
                 addKeyVal (&regParam, FILE_PATH_KW, destDataObjInfo->filePath);
+            }
+            char* pdmo_kw = getValByKey(&dataObjCloseInp->condInput, IN_PDMO_KW);
+            if(pdmo_kw != NULL) {
+                addKeyVal(&regParam, IN_PDMO_KW, pdmo_kw);
             }
             modDataObjMetaInp.dataObjInfo = destDataObjInfo;
             modDataObjMetaInp.regParam = &regParam;
@@ -856,10 +863,14 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
 
             if (status < 0) {
-                rodsLog (LOG_NOTICE,
-                         "procChksumForClose: _dataObjChksum error for %s, status = %d",
-                         dataObjInfo->objPath, status);
-                return status;
+                if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
+                    return 0;
+                } else {
+                    rodsLog (LOG_NOTICE,
+                             "procChksumForClose: _dataObjChksum error for %s, status = %d",
+                             dataObjInfo->objPath, status);
+                    return status;
+                }
             } else {
                 rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
