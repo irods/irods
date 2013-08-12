@@ -158,17 +158,14 @@ class RodsSession(object):
         begin = time.time()
         # wait for filename to get big enough to terminate subprocess
         granularity = 0.01
-        while not os.path.exists(filename):
-            if ((time.time() - begin) > timeout):
-                break
+        while ((time.time() - begin < timeout) and (not os.path.exists(filename))):
+            # does not exist yet
             time.sleep(granularity)
-        while os.stat(filename).st_size < filesize:
-            if ((time.time() - begin) > timeout):
-                break
+        while ((time.time() - begin < timeout) and (os.stat(filename).st_size < filename)):
+            # not big enough yet
             time.sleep(granularity)
-
         # if timeout was reached, return -2
-        if ((time.time() - begin) > timeout):
+        if ((time.time() - begin) >= timeout):
             returncode = -2
         # else if subprocess did not complete by filesize threshold, we kill it
         elif p.poll() is None:
