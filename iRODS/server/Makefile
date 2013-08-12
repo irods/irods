@@ -243,7 +243,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/configuration.o \
 		$(svrReObjDir)/reAutoReplicateService.o \
 		$(svrReObjDir)/sysBackupMS.o \
-		$(svrReObjDir)/eirods_ms_plugin.o 
+		$(svrReObjDir)/eirods_ms_plugin.o \
+		$(svrReObjDir)/eirods_operation_rule_execution_manager.o
 
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer

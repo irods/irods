@@ -5,6 +5,9 @@
 #ifndef __EIRODS_NETWORK_MANAGER_H__
 #define __EIRODS_NETWORK_MANAGER_H__
 
+// =-=-=-=-=-=-=-
+// eirods includes
+
 namespace eirods {
 
     class network_manager {

@@ -20,7 +20,10 @@
 #include "irodsntutil.h"
 #endif
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_client_server_negotiation.h"
+#include "eirods_network_factory.h"
 
 
 
@@ -337,8 +340,21 @@ serverMain (char *logDir)
 	if (status < 0) {
             rodsLog (LOG_NOTICE,
 	      "serverMain: chkAgentProcCnt failed status = %d", status);
-            sendVersion (newSock, status, 0, NULL, 0);
-	    status = mySockClose (newSock);
+            // =-=-=-=-=-=-=-
+            // create network object to communicate to the network
+            // plugin interface.  repave with newSock as that is the 
+            // operational socket at this point
+            eirods::net_obj_ptr net_obj;
+            eirods::error ret = eirods::network_factory( &svrComm, net_obj );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+            } else {
+                ret = sendVersion (net_obj, status, 0, NULL, 0 );
+                if( !ret.ok() ) {
+                    eirods::log( PASS( ret ) );
+                }
+            }
+	        status = mySockClose (newSock);
             printf ("close status = %d\n", status);
 	    continue;
         }
@@ -1126,9 +1142,25 @@ readWorkerTask ()
 {
     agentProc_t *myConnReq = NULL;
     startupPack_t *startupPack;
-    int newSock;
-    int status;
+    int newSock = 0;
+    int status  = 0;
     struct timeval tv;
+
+    // =-=-=-=-=-=-=-
+    // artificially create a conn object in order to
+    // create a network object.  this is gratuitous
+    // but necessary to maintain the consistent interface.
+    rcComm_t            tmp_comm;
+printf( "XXXX - readWorkerTask :: declare net ptr\n" );
+    eirods::net_obj_ptr net_obj;
+printf( "XXXX - readWorkerTask :: declare net ptr. done.\n" );
+printf( "XXXX - readWorkerTask :: call network factory\n" );
+    eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
+printf( "XXXX - readWorkerTask :: call network factory. done.\n" );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return;
+    } 
 
     tv.tv_sec = READ_STARTUP_PACK_TOUT_SEC;
     tv.tv_usec = 0;
@@ -1138,13 +1170,22 @@ readWorkerTask ()
 	    /* someone else took care of it */
             continue;
         }
-	newSock = myConnReq->sock;
-        status = readStartupPack (newSock, &startupPack, &tv);
+	    
+        newSock = myConnReq->sock;
 
-        if (status < 0) {
-            rodsLog (LOG_NOTICE, "readStartupPack error from %s, status = %d",
-              inet_ntoa (myConnReq->remoteAddr.sin_addr), status);
-            sendVersion (newSock, status, 0, NULL, 0);
+        // =-=-=-=-=-=-=-
+        // repave the socket handle with the new socket
+        // for this connection
+printf( "XXXX - readWorkerTask :: setting socket handle\n" );
+        net_obj->socket_handle( newSock );
+printf( "XXXX - readWorkerTask :: setting socket handle. done.\n" );
+        
+printf( "XXXX - readWorkerTask :: calling readStartupPack\n" );
+        status = readStartupPack( net_obj, &startupPack, &tv );
+printf( "XXXX - readWorkerTask :: calling readStartupPack. done.\n" );
+        if( status < 0 ) {
+            rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", status );
+            sendVersion ( net_obj, status, 0, NULL, 0);
 #ifndef SINGLE_SVR_THR
 	    #ifdef USE_BOOST
 	    boost::unique_lock<boost::mutex> bad_req_lock( BadReqMutex );
@@ -1161,42 +1202,45 @@ readWorkerTask ()
 	    #endif
 #endif
             mySockClose (newSock);
-	} else if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
-            sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
+	    } else if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
+            sendVersion( net_obj, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0 );
             mySockClose (newSock);
             free (myConnReq);
-	} else {
+	    } else {
             if (startupPack->clientUser[0] == '\0') {
                 status = chkAllowedUser (startupPack->clientUser,
                   startupPack->clientRodsZone);
                 if (status < 0) {
-                    sendVersion (newSock, status, 0, NULL, 0);
+                    sendVersion (net_obj, status, 0, NULL, 0);
                     mySockClose (newSock);
-		    free (myConnReq);
-		}
+		            free (myConnReq);
+		        }
             }
-	    myConnReq->startupPack = *startupPack;
-	    free (startupPack);
+            
+            myConnReq->startupPack = *startupPack;
+            free (startupPack);
 #ifndef SINGLE_SVR_THR
 	    #ifdef USE_BOOST_COND
-	    boost::unique_lock< boost::mutex > spwn_req_lock( SpawnReqCondMutex );
+	        boost::unique_lock< boost::mutex > spwn_req_lock( SpawnReqCondMutex );
 	    #else
-	    pthread_mutex_lock (&SpawnReqCondMutex);
+	        pthread_mutex_lock (&SpawnReqCondMutex);
 	    #endif
 #endif
-	    queAgentProc (myConnReq, &SpawnReqHead, BOTTOM_POS);
+	        queAgentProc (myConnReq, &SpawnReqHead, BOTTOM_POS);
 #ifndef SINGLE_SVR_THR
-	    #ifdef USE_BOOST_COND
-	    SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all
-	    spwn_req_lock.unlock();
-	    #else
-	    pthread_cond_signal (&SpawnReqCond);
-	    pthread_mutex_unlock (&SpawnReqCondMutex);
-	    #endif
+            #ifdef USE_BOOST_COND
+            SpawnReqCond.notify_all(); // NOTE:: look into notify_one vs notify_all
+            spwn_req_lock.unlock();
+            #else
+            pthread_cond_signal (&SpawnReqCond);
+            pthread_mutex_unlock (&SpawnReqCondMutex);
+            #endif
 #endif
-	}
-    }
-}
+	    } // else
+    
+    } // while 1
+
+} // readWorkerTask
 
 void
 spawnManagerTask ()
@@ -1279,12 +1323,26 @@ procSingleConnReq (agentProc_t *connReq)
 
     newSock = connReq->sock;
 
-    status = readStartupPack (newSock, &startupPack, NULL);
+    // =-=-=-=-=-=-=-
+    // artificially create a conn object in order to
+    // create a network object.  this is gratuitous
+    // but necessary to maintain the consistent interface.
+    rcComm_t            tmp_comm;
+    eirods::net_obj_ptr net_obj;
+    eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return -1;
+    } 
+
+    net_obj->socket_handle( newSock );
+
+    status = readStartupPack( net_obj, &startupPack, NULL );
 
     if (status < 0) {
         rodsLog (LOG_NOTICE, "readStartupPack error from %s, status = %d",
           inet_ntoa (connReq->remoteAddr.sin_addr), status);
-        sendVersion (newSock, status, 0, NULL, 0);
+        sendVersion( net_obj, status, 0, NULL, 0 );
         mySockClose (newSock);
 	return status;
     }
@@ -1292,7 +1350,7 @@ procSingleConnReq (agentProc_t *connReq)
     printSysTiming ("irodsServer", "read StartupPack", 0);
 #endif
     if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
-        sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
+        sendVersion ( net_obj, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
         mySockClose (newSock);
         return SYS_EXCEED_CONNECT_CNT;
     }

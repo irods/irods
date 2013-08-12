@@ -17,6 +17,14 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - ctor
     network_object::network_object(
+        const rcComm_t& _comm ) : 
+        socket_handle_( _comm.sock ) {
+
+    } // ctor
+
+    // =-=-=-=-=-=-=-
+    // public - ctor
+    network_object::network_object(
         const rsComm_t& _comm ) : 
         socket_handle_( _comm.sock ) {
 
@@ -40,11 +48,18 @@ namespace eirods {
     network_object& network_object::operator=( 
         const network_object& _rhs ) {
         socket_handle_ = _rhs.socket_handle_;
-
         return *this;
 
     } // operator=
  
+    // =-=-=-=-=-=-=-
+    // public - equivalence operator
+    bool network_object::operator==( 
+        const network_object& _rhs ) const {
+        return ( socket_handle_ == _rhs.socket_handle_ );
+
+    } // operator==
+
     // =-=-=-=-=-=-=-
     // public - get rule engine kvp
     error network_object::get_re_vars(

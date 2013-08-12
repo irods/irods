@@ -8,13 +8,19 @@
 // eirods includes
 #include "eirods_network_object.h"
 
+// =-=-=-=-=-=-=-
+// ssl includes
+#include "ssl.h"
+
 namespace eirods {
     // =-=-=-=-=-=-=-
     // SSL Network Object
     class ssl_object : public network_object {
+    public:
         // =-=-=-=-=-=-=-
         // Constructors
         ssl_object();
+        ssl_object( const rcComm_t& );
         ssl_object( const rsComm_t& );
         ssl_object( const ssl_object& );
 

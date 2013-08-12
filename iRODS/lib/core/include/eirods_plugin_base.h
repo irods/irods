@@ -86,12 +86,8 @@ namespace eirods {
     protected:
         std::string                       context_;           // context string for this plugin
         std::string                       instance_name_;     // name of this instance of the plugin
-<<<<<<< HEAD
         double                            interface_version_; // version of the plugin interface supported
 
-=======
-        double                            interface_version_; // version of the plugin interface
->>>>>>> development
         /// =-=-=-=-=-=-=-
         /// @brief Map holding resource operations
         std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;

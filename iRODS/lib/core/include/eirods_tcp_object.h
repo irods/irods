@@ -12,9 +12,11 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // TCP Network Object
     class tcp_object : public network_object {
+    public:
         // =-=-=-=-=-=-=-
         // Constructors
         tcp_object();
+        tcp_object( const rcComm_t& );
         tcp_object( const rsComm_t& );
         tcp_object( const tcp_object& );
 

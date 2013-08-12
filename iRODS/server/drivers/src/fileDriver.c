@@ -251,14 +251,6 @@ eirods::error fileLseek(
     long long                   _offset, 
     int                         _whence ) {
     // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
-    // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
     eirods::error ret_err = _object.resolve( resc_mgr, resc ); 

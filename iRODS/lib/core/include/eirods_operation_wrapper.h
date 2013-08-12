@@ -20,7 +20,7 @@
 #include "eirods_lookup_table.h"
 #include "eirods_plugin_context.h"
 #include "eirods_error.h"
-#include "eirods_operation_rule_execution_manager.h"
+#include "eirods_operation_rule_execution_manager_factory.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -73,12 +73,12 @@ namespace eirods {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
  
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -88,7 +88,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
               return op_err;
 
@@ -108,12 +108,12 @@ namespace eirods {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
                
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -123,7 +123,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
               return op_err;
 
@@ -143,12 +143,12 @@ namespace eirods {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -158,7 +158,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
                return op_err;
 
@@ -179,12 +179,12 @@ namespace eirods {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -194,7 +194,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
                return op_err;
 
@@ -216,12 +216,12 @@ namespace eirods {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -231,7 +231,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
                return op_err;
 
@@ -255,12 +255,12 @@ namespace eirods {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
  
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -270,7 +270,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
                return op_err;
 
@@ -294,12 +294,12 @@ namespace eirods {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -309,7 +309,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
                return op_err;
 
@@ -334,12 +334,12 @@ namespace eirods {
 		    if( operation_ ) {
                 // =-=-=-=-=-=-=-
                 // instantiate a rule executor
-                operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+                oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
 
                 // =-=-=-=-=-=-=-
                 // call the pre-rule for this op
                 std::string pre_results;
-                rule_exec.exec_pre_op( pre_results );
+                rule_exec->exec_pre_op( pre_results );
 
                 // =-=-=-=-=-=-=-
                 // call the actual operation		  
@@ -349,7 +349,7 @@ namespace eirods {
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
                 std::string post_results;
-                rule_exec.exec_post_op( post_results );
+                rule_exec->exec_post_op( post_results );
 
                 return op_err;
 
@@ -376,12 +376,12 @@ namespace eirods {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               operation_rule_execution_manager rule_exec( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec.exec_pre_op( pre_results );
+               rule_exec->exec_pre_op( pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
@@ -391,7 +391,7 @@ namespace eirods {
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
                std::string post_results;
-               rule_exec.exec_post_op( post_results );
+               rule_exec->exec_post_op( post_results );
 
                return op_err;
 

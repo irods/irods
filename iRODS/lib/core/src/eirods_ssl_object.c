@@ -18,6 +18,16 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - ctor
     ssl_object::ssl_object(
+        const rcComm_t& _comm ) : 
+        network_object( _comm ),
+        ssl_ctx_( _comm.ssl_ctx ), 
+        ssl_( _comm.ssl ) {
+    } // ctor
+
+
+    // =-=-=-=-=-=-=-
+    // public - ctor
+    ssl_object::ssl_object(
         const rsComm_t& _comm ) : 
         network_object( _comm ),
         ssl_ctx_( _comm.ssl_ctx ), 
@@ -50,7 +60,19 @@ namespace eirods {
         return *this;
 
     } // operator=
+ 
+    // =-=-=-=-=-=-=-
+    // public - assignment operator
+    bool ssl_object::operator==( 
+        const ssl_object& _rhs ) const {
+        bool ret = network_object::operator==( _rhs );
+        ret &= ( ssl_ctx_ == _rhs.ssl_ctx_ );
+        ret &= ( ssl_     == _rhs.ssl_     );
 
+        return ret;
+
+    } // operator==
+ 
     // =-=-=-=-=-=-=-
     // public - resolver for resource_manager
     error ssl_object::resolve( 

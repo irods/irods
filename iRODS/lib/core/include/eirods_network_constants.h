@@ -11,14 +11,14 @@
 namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief constants for network object indexing
-    const std::string NETWORK_OP_START( "start" );
-    const std::string NETWORK_OP_END( "end" );
-    const std::string NETWORK_OP_ACCEPT( "accept" );
-    const std::string NETWORK_OP_SHUTDOWN( "shutdown" );
-    const std::string NETWORK_OP_READ_HEADER( "read_header" );
-    const std::string NETWORK_OP_READ_BODY( "read_body" );
-    const std::string NETWORK_OP_WRITE_HEADER( "write_header" );
-    const std::string NETWORK_OP_WRITE_BODY( "write_body" );
+    const std::string NETWORK_OP_CLIENT_START( "network_op_client_start" );
+    const std::string NETWORK_OP_CLIENT_STOP( "network_op_client_stop" );
+    const std::string NETWORK_OP_AGENT_START( "network_op_agent_start" );
+    const std::string NETWORK_OP_AGENT_STOP( "network_op_agent_stop" );
+    const std::string NETWORK_OP_READ_HEADER( "network_op_read_header" );
+    const std::string NETWORK_OP_READ_BODY( "network_op_read_body" );
+    const std::string NETWORK_OP_WRITE_HEADER( "network_op_write_header" );
+    const std::string NETWORK_OP_WRITE_BODY( "network_op_write_body" );
 
 }; // namespace eirods
 

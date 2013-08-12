@@ -22,7 +22,7 @@ namespace eirods {
         const std::string& _c ) :
         context_( _c ),
         instance_name_( _n ),
-        interface_version_( EIRODS_PLUGIN_INTERFACE_VERSION ) {
+        interface_version_( get_plugin_interface_version() ) {
     } // ctor
 
     // =-=-=-=-=-=-=-

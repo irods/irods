@@ -117,8 +117,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
-        rcComm_t&    _comm,    
-        std::string& _result ) {
+        eirods::net_obj_ptr _ptr,
+        std::string&        _result ) {
         // =-=-=-=-=-=-=-
         // prep the out variable
         _result.clear();
@@ -126,7 +126,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // =-=-=-=-=-=-=-
         // we requested a negotiation, wait for the response from CS_NEG_SVR_1_MSG
         boost::shared_ptr< cs_neg_t > cs_neg;
-        error err = read_client_server_negotiation_message( _comm.sock, cs_neg );
+        error err = read_client_server_negotiation_message( _ptr, cs_neg );
         if( !err.ok() ) {
             return PASS( err );
         }
@@ -179,7 +179,9 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
             send_cs_neg.status_ = CS_NEG_STATUS_FAILURE;
             strncpy( send_cs_neg.result_, CS_NEG_FAILURE.c_str(), CS_NEG_FAILURE.size() );
             
-            error send_err = send_client_server_negotiation_message( _comm.sock, send_cs_neg );
+            error send_err = send_client_server_negotiation_message( 
+                                 _ptr, 
+                                 send_cs_neg );
             if( !send_err.ok() ) {
                 ret = PASSMSG( "failed to send CS_NEG_CLI1_MSG Failure Messsage", send_err );
             }
@@ -196,7 +198,9 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         cs_neg_t send_cs_neg;
         send_cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
         strncpy( send_cs_neg.result_, result.c_str(), result.size() );
-        err = send_client_server_negotiation_message( _comm.sock, send_cs_neg );
+        err = send_client_server_negotiation_message( 
+                  _ptr, 
+                  send_cs_neg );
         if( !err.ok() ) {
             return PASSMSG( "failed to send CS_NEG_CLI_1_MSG Success Message", err );
         }
@@ -212,8 +216,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error send_client_server_negotiation_message( 
-        int           _socket,
-        cs_neg_t&     _cs_neg_msg ) {
+        eirods::net_obj_ptr _ptr, 
+        cs_neg_t&           _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // pack the negotiation message
         bytesBuf_t* cs_neg_buf = 0;
@@ -228,14 +232,14 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
 
         // =-=-=-=-=-=-=-
         // pack the negotiation message
-        status = sendRodsMsg( _socket, 
+        eirods::error ret = sendRodsMsg( _ptr, 
                               RODS_CS_NEG_T, 
                               cs_neg_buf, 
                               0, 0, 0,
                               XML_PROT );
         freeBBuf( cs_neg_buf );
-        if( status < 0 ) {
-            return ERROR( status, "failed to send client-server negotiation message" );
+        if( !ret.ok() ) {
+            return PASSMSG( "failed to send client-server negotiation message", ret );
         
         }
 
@@ -246,7 +250,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error read_client_server_negotiation_message( 
-        int                             _socket,
+        eirods::net_obj_ptr             _ptr, 
         boost::shared_ptr< cs_neg_t >&  _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // read the message header 
@@ -255,23 +259,24 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         tv.tv_usec = 0;
 
         msgHeader_t msg_header;
-        int status = readMsgHeader( _socket, &msg_header, &tv );
-        if( status < 0 ) {
-            return ERROR( status, "read message header failed" );
+        eirods::error ret = readMsgHeader( _ptr, &msg_header, &tv );
+        if( !ret.ok() ) {
+            return PASSMSG( "read message header failed", ret );
         }
 
         // =-=-=-=-=-=-=-
         // read the message body 
         bytesBuf_t struct_buf, data_buf, error_buf;
         memset( &data_buf, 0, sizeof( bytesBuf_t ) );
-        status = readMsgBody( _socket, 
-                              &msg_header, 
-                              &struct_buf, 
-                              &data_buf,
-                              &error_buf, 
-                              XML_PROT, 0 );
-        if( status < 0 ) {
-            return ERROR( status, "readMsgBody failed" );
+        ret = readMsgBody(
+                  _ptr,
+                  &msg_header, 
+                  &struct_buf, 
+                  &data_buf,
+                  &error_buf, 
+                  XML_PROT, 0 );
+        if( !ret.ok() ) {
+            return PASS( ret );
         
         }
 
@@ -287,7 +292,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
             std::stringstream msg;
             msg << "wrong message type [" << msg_header.type << "] ";
             msg << "expected [" << RODS_CS_NEG_T << "]";
-            return ERROR( SYS_HEADER_TPYE_LEN_ERR, msg.str() );
+            return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
         }
      
         // =-=-=-=-=-=-=-
@@ -324,11 +329,11 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         // =-=-=-=-=-=-=-
         // do an unpack into our out variable using the xml protocol
         cs_neg_t* tmp_cs_neg = 0;
-        status = unpackStruct( struct_buf.buf, 
-                               (void **) &tmp_cs_neg,
-                               "CS_NEG_PI", 
-                               RodsPackTable, 
-                               XML_PROT );
+        int status = unpackStruct( struct_buf.buf, 
+                         (void **) &tmp_cs_neg,
+                         "CS_NEG_PI", 
+                         RodsPackTable, 
+                         XML_PROT );
         free( struct_buf.buf );
         if( status < 0 ) {
             rodsLog( LOG_ERROR, "read_client_server_negotiation_message :: unpackStruct FAILED" );

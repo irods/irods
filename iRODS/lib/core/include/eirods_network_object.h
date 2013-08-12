@@ -12,6 +12,10 @@
 // irods includes
 #include "rcConnect.h"
 
+// =-=-=-=-=-=-=-
+// boost includes
+#include <boost/shared_ptr.hpp>
+
 namespace eirods {
     // =-=-=-=-=-=-=-
     // network object base class
@@ -20,6 +24,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // Constructors
         network_object();
+        network_object( const rcComm_t& );
         network_object( const rsComm_t& );
         network_object( const network_object& );
 
@@ -47,12 +52,20 @@ namespace eirods {
         // Accessors
         virtual int socket_handle() const { return socket_handle_; }
 
+        // =-=-=-=-=-=-=-
+        // Mutators
+        virtual void socket_handle( int _s ) { socket_handle_ = _s; }
+
     private:
         // =-=-=-=-=-=-=-
         // Attributes 
         int socket_handle_; // socket descriptor
 
     }; // network_object
+
+    // =-=-=-=-=-=-=-
+    // helpful typedef for sock comm interface & factory
+    typedef boost::shared_ptr< network_object > net_obj_ptr;
 
 }; // namespace eirods
 

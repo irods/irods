@@ -16,6 +16,14 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - ctor
     tcp_object::tcp_object(
+        const rcComm_t& _comm ) : 
+        network_object( _comm ) {
+
+    } // ctor
+
+    // =-=-=-=-=-=-=-
+    // public - ctor
+    tcp_object::tcp_object(
         const rsComm_t& _comm ) : 
         network_object( _comm ) {
 
@@ -41,6 +49,14 @@ namespace eirods {
         network_object::operator=( _rhs );
 
         return *this;
+
+    } // operator=
+
+    // =-=-=-=-=-=-=-
+    // public - assignment operator
+    bool tcp_object::operator==( 
+        const tcp_object& _rhs ) const {
+        return network_object::operator==( _rhs );
 
     } // operator=
 
