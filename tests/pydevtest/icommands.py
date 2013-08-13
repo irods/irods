@@ -150,18 +150,24 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
+        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        (myrodslogfile, err) = proc.communicate()
+        with open(myrodslogfile.rstrip(),"a") as myrodslog:
+            myrodslog.write(" --- interrupt icommand ["+' '.join(argList)+"] --- \n")
+        myrodslog.close()
+
         p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
             stderr = subprocess.PIPE, env = myenv)
 
         # set timeout in seconds
-        timeout = 300 # 5 minutes
+        timeout = 60  # 1 minute
         begin = time.time()
         # wait for filename to get big enough to terminate subprocess
         granularity = 0.01
         while ((time.time() - begin < timeout) and (not os.path.exists(filename))):
             # does not exist yet
             time.sleep(granularity)
-        while ((time.time() - begin < timeout) and (os.stat(filename).st_size < filename)):
+        while ((time.time() - begin < timeout) and (os.stat(filename).st_size < filesize)):
             # not big enough yet
             time.sleep(granularity)
         # if timeout was reached, return -2
@@ -197,6 +203,12 @@ class RodsSession(object):
 
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
+
+        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        (myrodslogfile, err) = proc.communicate()
+        with open(myrodslogfile.rstrip(),"a") as myrodslog:
+            myrodslog.write(" --- interrupt icommand delay("+str(delay)+") ["+' '.join(argList)+"] --- \n")
+        myrodslog.close()
 
         p = subprocess.Popen(argList, stdout = subprocess.PIPE, \
             stderr = subprocess.PIPE, env = myenv)
@@ -283,6 +295,7 @@ class RodsSession(object):
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
+        myrodslog.close()
 
         if delay > 0:
             print "  runCmd: sleeping ["+str(delay)+"] seconds"
@@ -318,6 +331,7 @@ class RodsSession(object):
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
            myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")
+        myrodslog.close()
 
         return subprocess.Popen(argList, stdin = subprocess.PIPE, \
             stdout = subprocess.PIPE, stderr = subprocess.PIPE, \
