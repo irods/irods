@@ -1154,9 +1154,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error tar_file_lseek_plugin( 
-        eirods::resource_operation_context* _ctx, 
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx, 
+        long long                        _offset, 
+        int                              _whence ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = tar_check_params( _ctx );

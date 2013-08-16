@@ -313,9 +313,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error pass_thru_file_lseek_plugin(
-        eirods::resource_operation_context* _ctx,
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx,
+        long long                        _offset, 
+        int                              _whence ) {
         eirods::error result = SUCCESS();
         eirods::error ret;
         
@@ -328,7 +328,7 @@ extern "C" {
             if(!ret.ok()) {
                 result = PASSMSG( "pass_thru_file_lseek_plugin - failed getting the first child resource pointer.", ret);
             } else {
-                ret = resc->call<long long, int>( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence);
+                ret = resc->call<long long, int>( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence);
                 result = PASSMSG("pass_thru_file_lseek_plugin - failed calling child lseek.", ret);
             }
         }

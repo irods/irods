@@ -63,35 +63,34 @@ extern "C" {
 // =-=-=-=-=-=-=-
 // network plugin interface functions
 eirods::error readMsgHeader ( 
-   eirods::net_obj_ptr,  // network object
-   msgHeader_t*,         // header
-   struct timeval* );    // time value
+    eirods::net_obj_ptr,  // network object
+    msgHeader_t*,         // header
+    struct timeval* );    // time value
 eirods::error readMsgBody( 
-   eirods::net_obj_ptr,  // network object
-   msgHeader_t*,         // header
-   bytesBuf_t*,          // input struct buf
-   bytesBuf_t*,          // stream buf 
-   bytesBuf_t*,          // error buf 
-   irodsProt_t,          // protocol
-   struct timeval* );    // time value
-
-int writeMsgHeader( int sock, msgHeader_t *myHeader);
+    eirods::net_obj_ptr,  // network object
+    msgHeader_t*,         // header
+    bytesBuf_t*,          // input struct buf
+    bytesBuf_t*,          // stream buf 
+    bytesBuf_t*,          // error buf 
+    irodsProt_t,          // protocol
+    struct timeval* );    // time value
+eirods::error writeMsgHeader( 
+    eirods::net_obj_ptr, // network object
+    msgHeader_t* );      // header structure
 eirods::error sendRodsMsg( 
-                  eirods::net_obj_ptr, // network object, 
-                  char*,               // message type
-                  bytesBuf_t*,         // message buffer 
-                  bytesBuf_t*,         // stream buffer
-                  bytesBuf_t*,         // error buffer
-                  int,                 // internal info?
-                  irodsProt_t );       // protocol
-
+    eirods::net_obj_ptr, // network object, 
+    char*,               // message type
+    bytesBuf_t*,         // message buffer 
+    bytesBuf_t*,         // stream buffer
+    bytesBuf_t*,         // error buffer
+    int,                 // internal info?
+    irodsProt_t );       // protocol
 eirods::error readReconMsg(
     eirods::net_obj_ptr, 
     reconnMsg_t** );
 eirods::error sendReconnMsg(
     eirods::net_obj_ptr, 
     reconnMsg_t* );
-
 
 // =-=-=-=-=-=-=-
 // additional interfaces for network plugin support

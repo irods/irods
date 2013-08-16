@@ -50,10 +50,6 @@ connToutHandler (int sig)
 #include "eirods_network_constants.h"
 
 // =-=-=-=-=-=-=-
-// singleton for network plugin manager
-eirods::network_manager netwk_mgr;
-
-// =-=-=-=-=-=-=-
 //
 eirods::error sockClientStart( 
     eirods::net_obj_ptr _ptr ) {
@@ -61,7 +57,7 @@ eirods::error sockClientStart(
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -91,7 +87,7 @@ eirods::error sockClientStop(
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -121,7 +117,7 @@ eirods::error sockAgentStart(
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
@@ -150,7 +146,7 @@ eirods::error sockAgentStop(
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
@@ -175,11 +171,16 @@ eirods::error readMsgHeader(
     eirods::net_obj_ptr     _ptr, 
     msgHeader_t*            _header, 
     struct timeval*         _time_val ) {
+
+    if( !_ptr.get() ) {
+        return ERROR( -1, "FAIL" );
+    }
+
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
@@ -197,19 +198,29 @@ eirods::error readMsgHeader(
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to call 'read header'", ret_err );
     } 
-
+    
     // =-=-=-=-=-=-=-
     // unpack the header message, always use XML_PROT for the header
-    void* tmp_header = static_cast< void* >( _header );
+    msgHeader_t* out_header = 0;
     int status = unpackStruct( 
                      static_cast<void*>( tmp_buf ), 
-                     static_cast<void**>( &tmp_header ),
+                     (void**) &out_header,
                      "MsgHeader_PI", 
                      RodsPackTable, 
                      XML_PROT );
     if( status < 0 ) {
         return ERROR( status, "unpackStruct error" );
     }
+
+    if( !out_header ) {
+        return ERROR( -1, "" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // need to do an assignment due to something potentially going out
+    // of scope from unpackStruct.
+    // NOTE :: look into why this is necessary
+    *_header = *out_header;
 
     // =-=-=-=-=-=-=-
     // win!
@@ -231,7 +242,7 @@ eirods::error readMsgBody(
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -400,61 +411,47 @@ rsAcceptConn (rsComm_t *svrComm)
     return (newSock);
 }
 
-int
-writeMsgHeader (int sock, msgHeader_t *myHeader)
-{
-    int nbytes;
-    int status;
-    int myLen;
-    bytesBuf_t *headerBBuf = NULL;
-
-    /* always use XML_PROT for the Header */
-    status = packStruct ((void *) myHeader, &headerBBuf,
-                         "MsgHeader_PI", RodsPackTable, 0, XML_PROT);
-
-    if (status < 0 || NULL == headerBBuf ) { // JMC cppcheck - nullptr
-        rodsLogError (LOG_ERROR, status,
-                      "writeMsgHeader: packStruct error, status = %d", status);
-        return status;
+// =-=-=-=-=-=-=-
+// 
+eirods::error writeMsgHeader(
+    eirods::net_obj_ptr _ptr,
+    msgHeader_t*        _header ) {
+    // =-=-=-=-=-=-=-
+    // always use XML_PROT for the Header 
+    bytesBuf_t* header_buf = 0;
+    int status = packStruct( 
+                     static_cast<void *>( _header ), 
+                     &header_buf,
+                     "MsgHeader_PI", 
+                     RodsPackTable, 
+                     0, XML_PROT );
+    if( status < 0 || 
+        0 == header_buf ) {
+        return ERROR( status, "packstruct error" );
     }
 
     // =-=-=-=-=-=-=-
-    // INSERT PLUGIN CODE HERE
-
-
-
-    if (getRodsLogLevel () >= LOG_DEBUG3) {
-        printf ("sending header: len = %d\n%s\n", headerBBuf->len, 
-                (char *) headerBBuf->buf);
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret );
     }
-
-    myLen = htonl (headerBBuf->len);
-
-    nbytes = myWrite (sock, (void *) &myLen, sizeof (myLen), SOCK_TYPE, NULL);
-
-    if (nbytes != sizeof (myLen)) {
-        rodsLog (LOG_ERROR,
-                 "writeMsgHeader: wrote %d bytes for myLen , expect %d, status = %d",
-                 nbytes, sizeof (myLen), SYS_HEADER_WRITE_LEN_ERR - errno);
-        return (SYS_HEADER_WRITE_LEN_ERR - errno);
+  
+    // =-=-=-=-=-=-=-
+    // make the call to the plugin interface
+    ret = net->call< bytesBuf_t* >( 
+              eirods::NETWORK_OP_WRITE_HEADER,
+              *_ptr.get(),
+              header_buf );
+    if( !ret.ok() ) {
+        return PASS( ret );
     }
-
-    /* now send the header */
-
-    nbytes = myWrite (sock, headerBBuf->buf, headerBBuf->len, SOCK_TYPE, NULL);
-
-    if (headerBBuf->len != nbytes) {
-        rodsLog (LOG_ERROR,
-                 "writeMsgHeader: wrote %d bytes, expect %d, status = %d",
-                 nbytes, headerBBuf->len, SYS_HEADER_WRITE_LEN_ERR - errno);
-        freeBBuf (headerBBuf);
-        return (SYS_HEADER_WRITE_LEN_ERR - errno);
-    }
-
-    freeBBuf (headerBBuf);
-
-    return (0);
-}
+    
+    return SUCCESS(); 
+   
+} // writeMsgHeader
 
 int 
 myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
@@ -642,15 +639,14 @@ eirods::error readVersion(
 
     // =-=-=-=-=-=-=-
     // unpack the message, always use XML for this message type
-    void* tmp_ver = static_cast< void* >( _version );
     int status = unpackStruct( 
                      inputStructBBuf.buf, 
-                     static_cast< void** >( &tmp_ver ),
+                     ( void** )( _version ),
                      "Version_PI", 
                      RodsPackTable, 
                      XML_PROT );
     free( inputStructBBuf.buf );
-    if (status < 0) {
+    if( status < 0 ) {
         rodsLogError (LOG_NOTICE, status,
                       "readVersion:unpackStruct error. status = %d",
                       status);
@@ -791,7 +787,6 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     }
 
     setConnAddr (conn);
-
     status = sendStartupPack (conn, connectCnt, reconnFlag);
 
     if (status < 0) {
@@ -1173,7 +1168,6 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
     /* always use XML_PROT for the startupPack */
     status = packStruct ((void *) &startupPack, &startupPackBBuf,
                          "StartupPack_PI", RodsPackTable, 0, XML_PROT);
-
     if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
                       "sendStartupPack: packStruct error, status = %d", status);
@@ -1186,13 +1180,13 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
         eirods::log( PASS( ret ) );
         return ret.code();
     }
+    
     ret = sendRodsMsg(
               net_obj, 
               RODS_CONNECT_T, 
               startupPackBBuf, 
               NULL, NULL, 0, 
               XML_PROT );
-    freeBBuf( startupPackBBuf );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
         return ret.code();
@@ -1236,14 +1230,15 @@ eirods::error sendVersion (
     eirods::error ret = sendRodsMsg( 
                             _ptr, 
                             RODS_VERSION_T, 
-                            versionBBuf, NULL, NULL, 0,
+                            versionBBuf, 
+                            NULL, NULL, 0,
                             XML_PROT );
     freeBBuf( versionBBuf );
     if( !ret.ok() ) {
         return PASS( ret );
     }
 
-    return CODE( status );
+    return SUCCESS();
 
 } // sendVersion
 
@@ -1260,7 +1255,7 @@ eirods::error sendRodsMsg(
     // resolve a network interface plugin from the
     // network object
     eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( netwk_mgr, net );
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -1268,9 +1263,10 @@ eirods::error sendRodsMsg(
 
     // =-=-=-=-=-=-=-
     // make the call to the "write body" interface
-    ret_err = net->call< bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >( 
+    ret_err = net->call< char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >( 
                   eirods::NETWORK_OP_WRITE_BODY, 
                   *_ptr.get(),
+                  _msg_type,
                   _msg_buf,
                   _bs_buf,
                   _error_buf,
@@ -1286,6 +1282,8 @@ eirods::error sendRodsMsg(
         return CODE( ret_err.code() );
 
     }
+
+    return SUCCESS();
 
 } // sendRodsMsg
 
@@ -1399,10 +1397,9 @@ eirods::error readReconMsg(
     }
 
     /* always use XML_PROT for the startup pack */
-    void* tmp_msg = static_cast<void*>( _msg );
     status = unpackStruct( 
                  inputStructBBuf.buf, 
-                 static_cast<void**>( &tmp_msg ), 
+                 ( void** )( _msg ), 
                  "ReconnMsg_PI", 
                  RodsPackTable, 
                  XML_PROT );
@@ -1461,7 +1458,8 @@ eirods::error sendReconnMsg(
 
 } // sendReconnMsg
 
-int svrSwitchConnect (rsComm_t *rsComm) {
+int svrSwitchConnect(
+    rsComm_t *rsComm ) {
     // =-=-=-=-=-=-=-
     // construct a network object from the comm
     eirods::net_obj_ptr net_obj;

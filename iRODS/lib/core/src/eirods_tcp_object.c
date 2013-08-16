@@ -10,7 +10,7 @@ namespace eirods {
     // public - ctor
     tcp_object::tcp_object() :
         network_object() {
-
+   
     } // ctor
 
     // =-=-=-=-=-=-=-
@@ -40,6 +40,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - dtor
     tcp_object::~tcp_object() {
+    
     } // dtor
 
     // =-=-=-=-=-=-=-
@@ -65,8 +66,9 @@ namespace eirods {
     error tcp_object::resolve( 
         resource_manager&, 
         resource_ptr& ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM, 
-                      "object does not support resource_manager" );     
+        return ERROR( 
+                   SYS_INVALID_INPUT_PARAM, 
+                   "object does not support resource_manager" );     
     } // resolve
     
     // =-=-=-=-=-=-=-
@@ -74,17 +76,40 @@ namespace eirods {
     error tcp_object::resolve( 
         network_manager& _mgr,  
         network_ptr&     _ptr ) {
+        // =-=-=-=-=-=-=-
+        // ask the network manager for a tcp resource
+        error ret = _mgr.resolve( TCP_NETWORK_PLUGIN, _ptr );
+        if( !ret.ok() ) {
+            // =-=-=-=-=-=-=-
+            // attempt to load the plugin, in this case the type,
+            // instance name, key etc are all tcp as there is only
+            // the need for one instance of a tcp object, etc.
+            std::string empty_context( "" );
+            ret = _mgr.init_from_type( 
+                      TCP_NETWORK_PLUGIN,
+                      TCP_NETWORK_PLUGIN,
+                      TCP_NETWORK_PLUGIN,
+                      empty_context,
+                      _ptr );
+            if( !ret.ok() ) {
+                return PASS( ret );
+
+            } else {
+                return SUCCESS();
+
+            }
+
+        } // if !ok
 
         return SUCCESS();
+
     } // resolve
         
     // =-=-=-=-=-=-=-
     // accessor for rule engine variables
     error tcp_object::get_re_vars( 
         keyValPair_t& _kvp ) {
-        network_object::get_re_vars( _kvp );
-
-        return SUCCESS();
+        return network_object::get_re_vars( _kvp );
 
     } // get_re_vars
  

@@ -540,7 +540,7 @@ extern "C" {
     /// @brief interface for POSIX Fstat
     eirods::error round_robin_file_fstat(
         eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
+        struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
@@ -561,9 +561,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error round_robin_file_lseek(
-        eirods::resource_operation_context* _ctx,
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx,
+        long long                        _offset, 
+        int                              _whence ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc; 
@@ -577,7 +577,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // call lseek on the child 
-        return resc->call< long long, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
+        return resc->call< long long, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
  
     } // round_robin_file_lseek
 

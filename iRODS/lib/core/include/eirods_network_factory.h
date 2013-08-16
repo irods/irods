@@ -20,55 +20,9 @@ namespace eirods {
    // object or an ssl object based on wether ssl has been enabled
    static eirods::error network_factory( 
        rcComm_t*           _comm,
-       eirods::net_obj_ptr _ptr ) {
-eirods::stacktrace st;
-st.trace();
-st.dump();
-
-       if( !_comm ) {
-           return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
-       }
-
+       eirods::net_obj_ptr& _ptr ) {
        // =-=-=-=-=-=-=-
-       // currently our only criteria on the network object
-       // is wether SSL has been enabled.  if it has then we
-       // want an ssl object which will resolve to an ssl 
-       // network plugin
-       if( _comm->ssl_on ) {
-           eirods::ssl_object* ssl = new eirods::ssl_object( *_comm );
-           _ptr.reset( ssl );
-       } else {
-           // =-=-=-=-=-=-=-
-           // otherwise we just need an plain ol' tcp object
-           // which resolves to a plain ol' tcp network plugin
-           eirods::tcp_object* tcp  = new eirods::tcp_object( *_comm );
-           if( !tcp ) {
-               return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
-           }
-
-           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( tcp );
-           if( !nobj ) {
-               return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
-           }
-
-printf( "XXXX - client network_factory  :: resetting ptr with tcp object\n" );
-           _ptr.reset( nobj );
-printf( "XXXX - client network_factory  :: resetting ptr with tcp object. done.\n" );
-
-       }
-
-       return SUCCESS();
-
-   } // network_factory
-
-   // =-=-=-=-=-=-=-
-   // version for server connection as well
-   static eirods::error network_factory( 
-       rsComm_t*           _comm,
-       eirods::net_obj_ptr _ptr ) {
-eirods::stacktrace st;
-st.trace();
-st.dump();
+       // param check 
        if( !_comm ) {
            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
        }
@@ -86,7 +40,57 @@ st.dump();
            // otherwise we just need an plain ol' tcp object
            // which resolves to a plain ol' tcp network plugin
            eirods::tcp_object* tcp = new eirods::tcp_object( *_comm );
-           _ptr.reset( tcp );
+           if( !tcp ) {
+               return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
+           }
+
+           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( tcp );
+           if( !nobj ) {
+               return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
+           }
+
+           _ptr.reset( nobj );
+
+       }
+
+       return SUCCESS();
+
+   } // network_factory
+
+   // =-=-=-=-=-=-=-
+   // version for server connection as well
+   static eirods::error network_factory( 
+       rsComm_t*           _comm,
+       eirods::net_obj_ptr& _ptr ) {
+       // =-=-=-=-=-=-=-
+       // param check 
+       if( !_comm ) {
+           return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+       }
+
+       // =-=-=-=-=-=-=-
+       // currently our only criteria on the network object
+       // is wether SSL has been enabled.  if it has then we
+       // want an ssl object which will resolve to an ssl 
+       // network plugin
+       if( _comm->ssl_on ) {
+           eirods::ssl_object* ssl = new eirods::ssl_object( *_comm );
+           _ptr.reset( ssl );
+       } else {
+           // =-=-=-=-=-=-=-
+           // otherwise we just need an plain ol' tcp object
+           // which resolves to a plain ol' tcp network plugin
+           eirods::tcp_object* tcp = new eirods::tcp_object( *_comm );
+           if( !tcp ) {
+               return ERROR( SYS_INVALID_INPUT_PARAM, "tcp allocation failed" );
+           }
+
+           eirods::network_object* nobj = dynamic_cast< eirods::network_object* >( tcp );
+           if( !nobj ) {
+               return ERROR( SYS_INVALID_INPUT_PARAM, "tcp dynamic cast failed" );
+           }
+
+           _ptr.reset( nobj );
 
        }
 

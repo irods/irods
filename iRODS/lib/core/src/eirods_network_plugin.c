@@ -5,6 +5,7 @@
 #include "eirods_network_plugin.h"
 #include "eirods_load_plugin.h"
 #include "eirods_network_home.h"
+#include "eirods_stacktrace.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -33,7 +34,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - dtor
     network::~network(  ) {
-             
+
     } // dtor
     
     // =-=-=-=-=-=-=-
@@ -196,14 +197,19 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // function to load and return an initialized network plugin
     error load_network_plugin( 
-        network_ptr&      _plugin, 
-        const std::string _plugin_name,
-        const std::string _inst_name, 
-        const std::string _context ) {
+        network_ptr&       _plugin, 
+        const std::string& _plugin_name,
+        const std::string& _inst_name, 
+        const std::string& _context ) {
         // =-=-=-=-=-=-=-
         // call generic plugin loader        
         network* net = 0;
-        error ret = load_plugin< network >( net, _plugin_name, EIRODS_NETWORK_HOME, _inst_name, _context );
+        error ret = load_plugin< network >( 
+                        net, 
+                        _plugin_name, 
+                        EIRODS_NETWORK_HOME, 
+                        _inst_name, 
+                        _context );
         if( ret.ok() && net ) {
             _plugin.reset( net );
             return SUCCESS();       

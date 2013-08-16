@@ -344,6 +344,7 @@ serverMain (char *logDir)
             // create network object to communicate to the network
             // plugin interface.  repave with newSock as that is the 
             // operational socket at this point
+
             eirods::net_obj_ptr net_obj;
             eirods::error ret = eirods::network_factory( &svrComm, net_obj );
             if( !ret.ok() ) {
@@ -1151,13 +1152,11 @@ readWorkerTask ()
     // create a network object.  this is gratuitous
     // but necessary to maintain the consistent interface.
     rcComm_t            tmp_comm;
-printf( "XXXX - readWorkerTask :: declare net ptr\n" );
+    bzero( &tmp_comm, sizeof( rcComm_t ) );
+
     eirods::net_obj_ptr net_obj;
-printf( "XXXX - readWorkerTask :: declare net ptr. done.\n" );
-printf( "XXXX - readWorkerTask :: call network factory\n" );
     eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
-printf( "XXXX - readWorkerTask :: call network factory. done.\n" );
-    if( !ret.ok() ) {
+    if( !ret.ok() || !net_obj.get() ) {
         eirods::log( PASS( ret ) );
         return;
     } 
@@ -1176,13 +1175,9 @@ printf( "XXXX - readWorkerTask :: call network factory. done.\n" );
         // =-=-=-=-=-=-=-
         // repave the socket handle with the new socket
         // for this connection
-printf( "XXXX - readWorkerTask :: setting socket handle\n" );
         net_obj->socket_handle( newSock );
-printf( "XXXX - readWorkerTask :: setting socket handle. done.\n" );
-        
-printf( "XXXX - readWorkerTask :: calling readStartupPack\n" );
         status = readStartupPack( net_obj, &startupPack, &tv );
-printf( "XXXX - readWorkerTask :: calling readStartupPack. done.\n" );
+
         if( status < 0 ) {
             rodsLog( LOG_ERROR, "readWorkerTask - readStartupPack failed. %d", status );
             sendVersion ( net_obj, status, 0, NULL, 0);
@@ -1328,6 +1323,8 @@ procSingleConnReq (agentProc_t *connReq)
     // create a network object.  this is gratuitous
     // but necessary to maintain the consistent interface.
     rcComm_t            tmp_comm;
+    bzero( &tmp_comm, sizeof( rcComm_t ) );
+    
     eirods::net_obj_ptr net_obj;
     eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
     if( !ret.ok() ) {

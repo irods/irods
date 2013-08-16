@@ -180,7 +180,6 @@ main(int argc, char *argv[])
 
     /* send the server version and atatus as part of the protocol. Put
      * rsComm.reconnPort as the status */
-
     ret = sendVersion( net_obj, status, rsComm.reconnPort,
                           rsComm.reconnAddr, rsComm.cookie);
 
@@ -189,6 +188,7 @@ main(int argc, char *argv[])
         unregister_handlers();
         cleanupAndExit (status);
     }
+
 #ifdef SYS_TIMING
     printSysTiming ("irodsAgent", "sendVersion", 0);
 #endif

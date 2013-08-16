@@ -351,8 +351,6 @@ svrPortalPutGet (rsComm_t *rsComm)
 
     size0 = dataOprInp->dataSize / numThreads;
 
-rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGet :: size0 %lld\n\n", size0 );
-
     size1 = dataOprInp->dataSize - size0 * (numThreads - 1);
     offset0 = dataOprInp->offset;
 
@@ -409,8 +407,6 @@ rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGet :: size0 %lld\n\n", size0 );
             }
 
             myOffset += size0;
-
-rodsLog( LOG_NOTICE, "XXXX - svrPortalPutGet :: myOffset %lld", myOffset );
 
             if (i < numThreads - 1) {
                 mySize = size0;
@@ -2358,7 +2354,6 @@ readStartupPack(
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-
     eirods::error ret = readMsgHeader( _ptr, &myHeader, tv );
    if( !ret.ok() ) {
         eirods::log( PASS( ret ) );  

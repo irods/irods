@@ -10,6 +10,10 @@
 
 namespace eirods {
     // =-=-=-=-=-=-=-
+    // constant key for tcp network object
+    const std::string TCP_NETWORK_PLUGIN( "tcp" );
+
+    // =-=-=-=-=-=-=-
     // TCP Network Object
     class tcp_object : public network_object {
     public:

@@ -1,7 +1,7 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef ___EIRODS_RESC_PLUGIN_H__
-#define ___EIRODS_RESC_PLUGIN_H__
+#ifndef ___EIRODS_NETWORK_PLUGIN_H__
+#define ___EIRODS_NETWORK_PLUGIN_H__
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -183,16 +183,16 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // given the name of a network, try to load the shared object
-    error load_network_plugin( network_ptr&,        // plugin
-                               const std::string,   // plugin name
-                               const std::string,   // instance name
-                               const std::string ); // context string
-
+    error load_network_plugin( 
+        network_ptr&,         // plugin
+        const std::string&,   // plugin name
+        const std::string&,   // instance name
+        const std::string& ); // context string
 
 }; // namespace eirods
 
 
-#endif // ___EIRODS_RESC_PLUGIN_H__
+#endif // ___EIRODS_NETWORK_PLUGIN_H__
 
 
 

@@ -28,7 +28,7 @@ namespace eirods {
         std::string&         _out_resc_hier ) {
         // =-=-=-=-=-=-=-
         // flag to skip redirect for spec coll
-        bool skip_redir_for_spec_coll = false;
+        //bool skip_redir_for_spec_coll = false;
 
         // =-=-=-=-=-=-=-
         // cache the operation, as we may need to modify it

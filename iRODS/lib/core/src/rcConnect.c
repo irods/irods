@@ -112,7 +112,6 @@ int reconnFlag)
 	free (conn);
         return NULL;
     }
-
     status = connectToRhost (conn, connectCnt, reconnFlag);
 
     if (status < 0) {

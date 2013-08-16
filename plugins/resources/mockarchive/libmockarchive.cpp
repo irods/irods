@@ -426,9 +426,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error mock_archive_lseek_plugin( 
-        eirods::resource_operation_context* _ctx,
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx,
+        long long                        _offset, 
+        int                              _whence ) {
         // =-=-=-=-=-=-=-
         // operation not supported
         return ERROR( SYS_NOT_SUPPORTED, "lseek not supported" );

@@ -221,14 +221,6 @@ eirods::error repl_object(
 
 extern "C" {
     // =-=-=-=-=-=-=-
-    /// @ brief constant to index the cache child resource
-    const std::string CACHE_CONTEXT_TYPE( "cache" );
-
-    // =-=-=-=-=-=-=-
-    /// @ brief constant to index the archive child resource
-    const std::string ARCHIVE_CONTEXT_TYPE( "archive" );
-
-    // =-=-=-=-=-=-=-
     /// @brief helper function to take a rule result, find a keyword and then
     ///        parse it for the value
     eirods::error get_stage_policy(
@@ -652,9 +644,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error compound_file_lseek(
-        eirods::resource_operation_context* _ctx,
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx,
+        long long                        _offset, 
+        int                              _whence ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
         eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
@@ -672,7 +664,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call< long long, int >( _ctx->comm(), eirods::RESOURCE_OP_LSEEK, _ctx->fco(), _offset, _whence );
+        return resc->call< long long, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
  
     } // compound_file_lseek
 

@@ -98,10 +98,9 @@ bytesBuf_t *bsBBuf)
     }
     
     /* some sanity check */
-
     if (inputStructBBuf->len > 0 && RsApiTable[apiInx].inPackInstruct == NULL) {
-	rodsLog (LOG_NOTICE,
-          "rsApiHandler: input struct error for apiNumber %d", apiNumber);
+	    rodsLog (LOG_NOTICE,
+          "rsApiHandler: input struct error 1 for apiNumber %d", apiNumber);
 	sendApiReply (rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct, 
 	  &myOutBsBBuf);
 	return (SYS_API_INPUT_ERR);
@@ -109,7 +108,7 @@ bytesBuf_t *bsBBuf)
  
     if (inputStructBBuf->len <= 0 && RsApiTable[apiInx].inPackInstruct != NULL){
 	rodsLog (LOG_NOTICE,
-          "rsApiHandler: input struct error for apiNumber %d", apiNumber);
+          "rsApiHandler: input struct error 2 for apiNumber %d", apiNumber);
 	sendApiReply (rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct, 
 	  &myOutBsBBuf);
 	return (SYS_API_INPUT_ERR);
@@ -521,6 +520,10 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
+    bzero( &inputStructBBuf, sizeof( bytesBuf_t ) );
+    bzero( &bsBBuf, sizeof( bytesBuf_t ) );
+    bzero( &errorBBuf, sizeof( bytesBuf_t ) );
+
 //#ifndef windows_platform
     svrChkReconnAtReadStart (rsComm);
 //#endif
@@ -539,7 +542,6 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         return ret.code();
 
     }
-
 
 //#ifdef windows_platform
 //    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
@@ -677,8 +679,8 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 #endif
     ret = readMsgBody( net_obj, &myHeader, &inputStructBBuf,
                           &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL);
-	    if ( !ret.ok() ) {
-          eirods::log( PASS( ret ) );
+	if ( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
 //#ifndef windows_platform
         svrChkReconnAtReadEnd (rsComm);
 //#endif

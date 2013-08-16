@@ -705,9 +705,9 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error unix_file_lseek_plugin( 
-        eirods::resource_operation_context* _ctx,
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx,
+        long long                        _offset, 
+        int                              _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );

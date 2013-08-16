@@ -229,7 +229,9 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS)
+	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+                $(BOOST_DIR)/stage/lib/libboost_system.a \
+
 
 
 
