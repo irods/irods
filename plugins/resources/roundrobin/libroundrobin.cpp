@@ -31,6 +31,9 @@
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
+
+
+
 /// =-=-=-=-=-=-=-
 /// @brief Check the general parameters passed in to most plugin functions
 template< typename DEST_TYPE >
@@ -129,12 +132,13 @@ eirods::error round_robin_get_resc_for_call(
 } // round_robin_get_resc_for_call
 
 extern "C" {
-
-#define NB_READ_TOUT_SEC        60      /* 60 sec timeout */
-#define NB_WRITE_TOUT_SEC       60      /* 60 sec timeout */
-
+    /// =-=-=-=-=-=-=-
     /// @brief token to index the next child property
-    const std::string NEXT_CHILD_PROP( "next_child" );
+    const std::string NEXT_CHILD_PROP( "round_robin_next_child" );
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief token to index the vector of children
+    const std::string CHILD_VECTOR_PROP( "round_robin_child_vector" );
 
     /// =-=-=-=-=-=-=-
     /// @brief build a sorted list of children based on hints in the context
@@ -279,7 +283,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // extract child_vector
         std::vector< std::string > child_vector; 
-        eirods::error get_err = _prop_map.get( "child_vector", child_vector );
+        eirods::error get_err = _prop_map.get( CHILD_VECTOR_PROP, child_vector );
         if( !get_err.ok() ) {
             std::stringstream msg;
             msg << "update_next_child_resource - failed to get child vector";
@@ -366,7 +370,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // add the child list to the property map
-        err = _prop_map.set< std::vector< std::string > >( "child_vector", child_vector );
+        err = _prop_map.set< std::vector< std::string > >( CHILD_VECTOR_PROP, child_vector );
         if( !err.ok() ) {
             return PASSMSG( "round_robin_start_operation - failed.", err );
         }
@@ -861,16 +865,101 @@ extern "C" {
         return resc->call( _ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco() );
 
     } // round_robin_file_modified
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief find the next valid child resource for create operation
+    eirods::error get_next_valid_child_resource( 
+        eirods::plugin_property_map& _prop_map,
+        eirods::resource_child_map&  _cmap,
+        eirods::resource_ptr&        _resc ) {
+        // =-=-=-=-=-=-=-
+        // counter and flag
+        size_t child_ctr   = 0;
+        bool   child_found = false;
+ 
+        // =-=-=-=-=-=-=-
+        // while we have not found a child and have not
+        // exhausted all the children in the map
+        while( !child_found &&
+               child_ctr < _cmap.size() ) {
+            // =-=-=-=-=-=-=-
+            // increment child counter
+            child_ctr++;
+
+            // =-=-=-=-=-=-=-
+            // get the next_child property 
+            std::string next_child;
+            eirods::error err = _prop_map.get< std::string >( NEXT_CHILD_PROP, next_child ); 
+            if( !err.ok() ) {
+                return PASSMSG( "round_robin_redirect - get property for 'next_child' failed.", err );
+            
+            }
+
+            // =-=-=-=-=-=-=-
+            // get the next_child resource 
+            if( !_cmap.has_entry( next_child ) ) {
+                std::stringstream msg;
+                msg << "child map has no child by name [";
+                msg << next_child << "]";
+                return PASSMSG( msg.str(), err );
+                    
+            } 
+
+            // =-=-=-=-=-=-=-
+            // request our child resource to test it
+            eirods::resource_ptr resc = _cmap[ next_child ].second;
+
+            // =-=-=-=-=-=-=-
+            // get the resource's status
+            int resc_status = 0;
+            err = resc->get_property<int>( eirods::RESOURCE_STATUS, resc_status ); 
+            if( !err.ok() ) {
+                return PASSMSG( "failed to get property", err );
+            
+            }
+
+            // =-=-=-=-=-=-=-
+            // determine if the resource is up and available
+            if( INT_RESC_STATUS_DOWN != resc_status ) {
+                // =-=-=-=-=-=-=-
+                // we found a valid child, set out variable
+                _resc = resc;
+                child_found = true;
+
+           } else {
+                // =-=-=-=-=-=-=-
+                // update the next_child as we do not have a valid child yet
+                err = update_next_child_resource( _prop_map );
+                if( !err.ok() ) {
+                    return PASSMSG( "update_next_child_resource failed", err );
+
+                }
+
+            }
+
+        } // while
+
+        // =-=-=-=-=-=-=-
+        // return appropriately
+        if( child_found ) {
+            return SUCCESS();
+        
+        } else {
+            return ERROR( EIRODS_NEXT_RESC_FOUND, "no valid child found" );
+        
+        }
+
+    } // get_next_valid_child_resource
 
     /// =-=-=-=-=-=-=-
     /// @brief used to allow the resource to determine which host
     ///        should provide the requested operation
     eirods::error round_robin_redirect(
         eirods::resource_plugin_context& _ctx, 
-        const std::string*                  _opr,
-        const std::string*                  _curr_host,
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
+        const std::string*               _opr,
+        const std::string*               _curr_host,
+        eirods::hierarchy_parser*        _out_parser,
+        float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error err = round_robin_check_params< eirods::file_object >( _ctx );
@@ -900,7 +989,7 @@ extern "C" {
         std::string name;
         err = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, name );
         if( !err.ok() ) {
-            return PASSMSG( "round_robin_redirect - failed to get property 'name'.", err );
+            return PASSMSG( "failed to get property 'name'.", err );
         }
 
         // =-=-=-=-=-=-=-
@@ -915,47 +1004,55 @@ extern "C" {
             eirods::resource_ptr resc; 
             err = get_next_child_in_hier( name, hier, _ctx.child_map(), resc );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - get_next_child_in_hier failed.", err );
+                return PASSMSG( "get_next_child_in_hier failed.", err );
             }
 
             // =-=-=-=-=-=-=-
             // forward the redirect call to the child for assertion of the whole operation,
             // there may be more than a leaf beneath us
-            return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
+            return resc->call< const std::string*, 
+                               const std::string*, 
+                               eirods::hierarchy_parser*, 
+                               float* >( 
+                       _ctx.comm(), 
+                       eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
+                       _ctx.fco(), 
+                       _opr, 
+                       _curr_host, 
+                       _out_parser, 
+                       _out_vote );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
-            // get the next_child property 
-            std::string next_child;
-            eirods::error err = _ctx.prop_map().get< std::string >( NEXT_CHILD_PROP, next_child ); 
+            // get the next available child resource
+            eirods::resource_ptr resc;
+            eirods::error err = get_next_valid_child_resource( 
+                                    _ctx.prop_map(), 
+                                    _ctx.child_map(), 
+                                    resc );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - get property for 'next_child' failed.", err );
+                return PASS( err );
             
             }
-
-            // =-=-=-=-=-=-=-
-            // get the next_child resource 
-            if( !_ctx.child_map().has_entry( next_child ) ) {
-                std::stringstream msg;
-                msg << "round_robin_redirect - child map has no child by name [";
-                msg << next_child << "]";
-                return PASSMSG( msg.str(), err );
-                    
-            } 
-
-            // =-=-=-=-=-=-=-
-            // request our child resource to redirect
-            eirods::resource_ptr resc = _ctx.child_map()[ next_child ].second;
 
             // =-=-=-=-=-=-=-
             // forward the 'put' redirect to the appropriate child
-            err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
+            err = resc->call< const std::string*, 
+                              const std::string*, 
+                              eirods::hierarchy_parser*, 
+                              float* >( 
+                       _ctx.comm(), 
+                       eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
+                       _ctx.fco(), 
+                       _opr, 
+                       _curr_host, 
+                       _out_parser, 
+                       _out_vote );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - forward of put redirect failed", err );
+                return PASSMSG( "forward of put redirect failed", err );
             
             }
+            
             std::string new_hier;
             _out_parser->str( new_hier );
             
@@ -963,7 +1060,7 @@ extern "C" {
             // update the next_child appropriately as the above succeeded
             err = update_next_child_resource( _ctx.prop_map() );
             if( !err.ok() ) {
-                return PASSMSG( "round_robin_redirect - update_next_child_resource failed", err );
+                return PASSMSG( "update_next_child_resource failed", err );
 
             }
 
