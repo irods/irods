@@ -72,11 +72,10 @@ LIB_CORE_OBJS =	\
         $(libCoreObjDir)/eirods_assert.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
 		$(libCoreObjDir)/eirods_string_tokenize.o \
-		$(libCoreObjDir)/eirods_operation_rule_execution_manager.o \
 		$(libCoreObjDir)/eirods_plugin_base.o \
 		$(libCoreObjDir)/eirods_resource_plugin.o \
 		$(libCoreObjDir)/eirods_error.o  \
-		$(libCoreObjDir)/eirods_first_class_object.o \
+		$(libCoreObjDir)/eirods_data_object.o \
 		$(libCoreObjDir)/eirods_file_object.o \
 		$(libCoreObjDir)/eirods_collection_object.o \
 		$(libCoreObjDir)/eirods_log.o \
@@ -88,7 +87,12 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_physical_object.o \
 		$(libCoreObjDir)/eirods_resource_redirect.o \
 		$(libCoreObjDir)/eirods_plugin_name_generator.o \
-		$(libCoreObjDir)/eirods_client_negotiation.o
+		$(libCoreObjDir)/eirods_client_negotiation.o \
+		$(libCoreObjDir)/eirods_network_object.o \
+		$(libCoreObjDir)/eirods_network_plugin.o \
+		$(libCoreObjDir)/eirods_ssl_object.o \
+		$(libCoreObjDir)/eirods_tcp_object.o \
+		$(libCoreObjDir)/eirods_network_manager.o 
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

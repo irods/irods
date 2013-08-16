@@ -12,14 +12,15 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - ctor
     collection_object::collection_object() :
-        first_class_object(),
+        data_object(),
         directory_pointer_(0) {
     } // collection_object
 
     // =-=-=-=-=-=-=-
     // public - cctor
-    collection_object::collection_object( const collection_object& _rhs ) : 
-        first_class_object( _rhs ) {
+    collection_object::collection_object( 
+        const collection_object& _rhs ) :
+        data_object( _rhs ) {
         directory_pointer_ = _rhs.directory_pointer_;
 
     } // cctor 
@@ -31,18 +32,19 @@ namespace eirods {
         const std::string& _resc_hier,
         int _m,
         int _f ) :
-        first_class_object(),
-        directory_pointer_(0)
-    {
-        physical_path_   = _fn;
-        mode_            = _m;
-        flags_           = _f;
-        resc_hier_       = _resc_hier;
+        data_object( 
+            _fn, 
+            _resc_hier, 
+            _m, 
+            _f ),
+        directory_pointer_(0) {
+
     } // collection_object
 
     // =-=-=-=-=-=-=-
     // public - dtor
     collection_object::~collection_object() {
+
     } // dtor
 
     // =-=-=-=-=-=-=-
@@ -50,7 +52,7 @@ namespace eirods {
     collection_object& collection_object::operator=( const collection_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
-        first_class_object::operator=( _rhs );
+        data_object::operator=( _rhs );
 
         directory_pointer_  = _rhs.directory_pointer_;
 
@@ -103,7 +105,24 @@ namespace eirods {
             }
         }
         return result;
+
     } // resolve
+ 
+    error collection_object::resolve( 
+        network_manager&,  
+        network_ptr&  ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM,
+                      "resolve not supported for network_manager" );
+    } // resolve
+
+    // =-=-=-=-=-=-=-
+    // public - get vars from object for rule engine 
+    error collection_object::get_re_vars( 
+        keyValPair_t& _vars ) {
+        return SUCCESS();
+
+    } // get_re_vars 
+
 
 }; // namespace eirods
 

@@ -6,6 +6,7 @@
 #include "eirods_resource_constants.h"
 #include "eirods_object_oper.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_resource_plugin_context.h"
 
 #include <vector>
 #include <list>

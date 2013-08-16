@@ -20,11 +20,11 @@
 // stl includes
 #include <iostream>
 
-// global
+// =-=-=-=-=-=-=-
+// global singleton 
 eirods::resource_manager resc_mgr;
 
 namespace eirods {
-
     // =-=-=-=-=-=-=-
     // public - Constructor
     resource_manager::resource_manager() {

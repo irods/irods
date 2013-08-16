@@ -9,27 +9,33 @@
 #include <sstream>
 #include <vector>
 
-namespace eirods {
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rodsType.h"
 
+namespace eirods {
+    /// =-=-=-=-=-=-=-
+    /// @brief error stack object which holds error history
     class error {
     public:
         // =-=-=-=-=-=-=-
         // Constructors
-        // status, code, message, line number, file
         error();
-        error( bool,          // status
-               long long,     // code
-               std::string,   // message
-               std::string,   // file
-               int,           // line number
-               std::string ); // function 
-        error( bool,          // status
-               long long,     // code
-               std::string,   // message
-               std::string,   // file
-               int,           // line
-               std::string,   // function
-               const error& );// prev error
+        error( 
+            bool,          // status
+            long long,     // error code 
+            std::string,   // message
+            std::string,   // file name
+            int,           // line number
+            std::string ); // function  
+        error( 
+            bool,           // status
+            long long,      // error code
+            std::string,    // message
+            std::string,    // file name 
+            int,            // line number     
+            std::string,    // function
+            const error& ); // previous error 
         error( const error& );   
 
         // =-=-=-=-=-=-=-

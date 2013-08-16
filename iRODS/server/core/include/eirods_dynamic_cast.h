@@ -18,7 +18,6 @@ namespace eirods {
     //       :: to build on eariler centos and ubuntu distributions.  it will
     //       :: be removed when we deprecate support for those platforms.
     void dynamic_cast_hack() {
-
         file_object       file_obj;
         collection_object coll_obj;
         structured_object struct_obj;

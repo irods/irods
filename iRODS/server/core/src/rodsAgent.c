@@ -22,6 +22,7 @@ static void NtAgentSetEnvsFromArgs(int ac, char **av);
 #include "eirods_dynamic_cast.h"
 #include "eirods_signal.h"
 #include "eirods_client_server_negotiation.h"
+#include "eirods_network_factory.h"
 
 /* #define SERVER_DEBUG 1   */
 int
@@ -74,9 +75,17 @@ main(int argc, char *argv[])
     memset (&rsComm, 0, sizeof (rsComm));
 
     status = initRsCommWithStartupPack (&rsComm, NULL);
+ 
+    // =-=-=-=-=-=-=-
+    // manufacture a network object for comms
+    eirods::net_obj_ptr net_obj;
+    eirods::error ret = eirods::network_factory( &rsComm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+    }
 
     if (status < 0) {
-        sendVersion (rsComm.sock, status, 0, NULL, 0);
+        sendVersion ( net_obj, status, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
     }
@@ -110,7 +119,7 @@ main(int argc, char *argv[])
     status = getRodsEnv (&rsComm.myEnv);
 
     if (status < 0) {
-        sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        sendVersion ( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
     }
@@ -128,7 +137,7 @@ main(int argc, char *argv[])
 #endif
 
     if (status < 0) {
-        sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        sendVersion ( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
     }
@@ -142,7 +151,7 @@ main(int argc, char *argv[])
                                  rsComm.clientUser.rodsZone);
 
         if (status < 0) {
-            sendVersion (rsComm.sock, status, 0, NULL, 0);
+            sendVersion ( net_obj, status, 0, NULL, 0);
             unregister_handlers();
             cleanupAndExit (status);
         }
@@ -151,13 +160,13 @@ main(int argc, char *argv[])
     // =-=-=-=-=-=-=-
     // handle negotiations with the client regarding TLS if requested
     std::string neg_results;
-    eirods::error ret = eirods::client_server_negotiation_for_server( rsComm, neg_results );
+    ret = eirods::client_server_negotiation_for_server( net_obj, neg_results );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
         // =-=-=-=-=-=-=-
         // send a 'we failed to negotiate' message here??
         // or use the error stack rule engine thingie
-        sendVersion( rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
+        sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         unregister_handlers();
         cleanupAndExit( ret.code() );
     }
@@ -171,15 +180,15 @@ main(int argc, char *argv[])
 
     /* send the server version and atatus as part of the protocol. Put
      * rsComm.reconnPort as the status */
-
-    status = sendVersion (rsComm.sock, status, rsComm.reconnPort,
+    ret = sendVersion( net_obj, status, rsComm.reconnPort,
                           rsComm.reconnAddr, rsComm.cookie);
 
-    if (status < 0) {
-        sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+    if( !ret.ok() ) {
+        sendVersion (net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         unregister_handlers();
         cleanupAndExit (status);
     }
+
 #ifdef SYS_TIMING
     printSysTiming ("irodsAgent", "sendVersion", 0);
 #endif

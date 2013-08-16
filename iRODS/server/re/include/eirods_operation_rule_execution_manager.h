@@ -10,6 +10,10 @@
 #include "rcConnect.h"
 
 // =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_operation_rule_execution_manager_base.h"
+
+// =-=-=-=-=-=-=-
 // stl includes
 #include <string>
 
@@ -23,36 +27,39 @@ namespace eirods {
 	  * \brief  class which builds operation rule names, queries for the rule existence,
       *         and provides an interface for execution in a pre and post operation condition
 	  **/
-    class operation_rule_execution_manager {
+    class operation_rule_execution_manager : public 
+        operation_rule_execution_manager_base {
     public: 
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
         /// @brief Constructor
-        operation_rule_execution_manager( const std::string&,   // name of the plugin
-                                          const std::string& ); // operation name
-                                          
+        operation_rule_execution_manager( 
+            const std::string&,   // name of the plugin
+            const std::string& ); // operation name
 
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
+        /// @brief necessary virtual dtor
+        virtual ~operation_rule_execution_manager() {}
+
+        /// =-=-=-=-=-=-=-
         /// @brief execute rule for pre operation
-        error exec_pre_op( rsComm_t*,      // client connection
-                           std::string& ); // results of call to rule
+        error exec_pre_op( 
+            std::string& ); // results of call to rule
 
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
         /// @brief execute rule for post operation
-        error exec_post_op( rsComm_t*,      // client connection
-                            std::string& ); // results of call to rule
+        error exec_post_op( 
+            std::string& ); // results of call to rule
 
     private:
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
         /// @brief name of the rule minus the _pre or _post
         std::string rule_name_;
 
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
         /// @brief execute rule for post operation
-        error exec_op( const std::string&, // rule name 
-                       rsComm_t*,          // client connection
-                       std::string& );     // results of call to rule
-
-        std::string instance_; // instance name of the plugin
+        error exec_op( 
+            const std::string&, // rule name 
+            std::string& );     // results of call to rule
 
     }; // class operation_rule_execution_manager
 

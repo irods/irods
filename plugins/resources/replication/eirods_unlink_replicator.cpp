@@ -15,7 +15,7 @@ namespace eirods {
     }
 
     error unlink_replicator::replicate(
-        resource_operation_context* _ctx,
+        resource_plugin_context& _ctx,
         const child_list_t& _siblings,
         const object_oper& _object_oper)
     {
@@ -46,7 +46,7 @@ namespace eirods {
                     addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, hierarchy_string.c_str());
                     addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, "");
                     addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, "");
-                    int status = rsDataObjUnlink(_ctx->comm(), &dataObjInp);
+                    int status = rsDataObjUnlink(_ctx.comm(), &dataObjInp);
                     // CAT_NO_ROWS_FOUND is okay if the file being unlinked is a registered file in which case there are no replicas
                     if(status < 0 && status != CAT_NO_ROWS_FOUND) {
                         char* sys_error;

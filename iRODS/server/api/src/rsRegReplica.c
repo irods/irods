@@ -66,10 +66,12 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
           &regReplicaInp->condInput);
         eirods::file_object file_obj(rsComm, destDataObjInfo);
-	char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
-	if(pdmo_kw != NULL) {
-	    file_obj.in_pdmo(true);
-	}
+        
+        char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
+        if(pdmo_kw != NULL) {
+            file_obj.in_pdmo(true);
+        }
+
         eirods::error ret = fileModified(rsComm, file_obj);
         if(!ret.ok()) {
             std::stringstream msg;
@@ -90,10 +92,13 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 	    if (status >= 0) 
 			status = destDataObjInfo->replNum;
         eirods::file_object file_obj(rsComm, destDataObjInfo);
-	char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
-	if(pdmo_kw != NULL) {
-	    file_obj.in_pdmo(true);
-	}
+
+        char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
+        if(pdmo_kw != NULL) {
+            file_obj.in_pdmo(true);
+        }
+
+
         eirods::error ret = fileModified(rsComm, file_obj);
         if(!ret.ok()) {
             std::stringstream msg;

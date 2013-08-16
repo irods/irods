@@ -75,9 +75,9 @@
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
 eirods::error unix_generate_full_path(
-    eirods::resource_property_map&      _prop_map,
-    const std::string&                  _phy_path,
-    std::string&                        _ret_string )
+    eirods::plugin_property_map& _prop_map,
+    const std::string&           _phy_path,
+    std::string&                 _ret_string )
 {
     eirods::error result = SUCCESS();
     eirods::error ret;
@@ -106,19 +106,29 @@ eirods::error unix_generate_full_path(
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
 eirods::error unix_check_path( 
-    eirods::resource_operation_context* _ctx ) {
-    // =-=-=-=-=-=-=-
-    // NOTE: Must do this for all storage resources
-    std::string full_path;
-    eirods::error ret = unix_generate_full_path( _ctx->prop_map(), 
-                                                 _ctx->fco().physical_path(), 
-                                                 full_path );
-    if(!ret.ok()) {
-        std::stringstream msg;
-        msg << "Failed generating full path for object.";
-        ret = PASSMSG(msg.str(), ret);
-    } else {
-        _ctx->fco().physical_path(full_path);
+    eirods::resource_plugin_context& _ctx ) {
+    eirods::error ret;
+
+    try { 
+        eirods::data_object& data_obj = dynamic_cast< eirods::data_object& >( _ctx.fco() );
+
+        // =-=-=-=-=-=-=-
+        // NOTE: Must do this for all storage resources
+        std::string full_path;
+        ret = unix_generate_full_path( 
+            _ctx.prop_map(), 
+            data_obj.physical_path(),
+            full_path );
+        if( !ret.ok() ) {
+            std::stringstream msg;
+            msg << "Failed generating full path for object.";
+            ret = PASSMSG( msg.str(), ret );
+        } else {
+            data_obj.physical_path( full_path );
+        }
+    
+    } catch( std::bad_cast exp ) {
+        ret = ERROR( SYS_INVALID_INPUT_PARAM, "failed to cast fco to data_object" );
     }
 
     return ret;
@@ -129,47 +139,14 @@ eirods::error unix_check_path(
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
 template< typename DEST_TYPE >
 eirods::error nonblocking_check_params_and_path(
-    eirods::resource_operation_context* _ctx ) {
+    eirods::resource_plugin_context& _ctx ) {
     
     eirods::error result = SUCCESS();
     eirods::error ret;
 
     // =-=-=-=-=-=-=-
-    // check incoming parameters
-    if( !_ctx ) {
-        result = ERROR( SYS_INVALID_INPUT_PARAM, "null resource_property_map" );
-    } 
-  
-    // =-=-=-=-=-=-=-
     // verify that the resc context is valid 
-    ret = _ctx->valid< DEST_TYPE >(); 
-    if( !ret.ok() ) { 
-        result = PASSMSG( "resource context is invalid", ret );
-    } else {
-        result = unix_check_path( _ctx );
-    }
-
-    return result;
-
-} // nonblocking_check_params_and_path
-
-// =-=-=-=-=-=-=-
-/// @brief Checks the basic operation parameters and updates the physical path in the file object
-eirods::error nonblocking_check_params_and_path(
-    eirods::resource_operation_context* _ctx ) {
-    
-    eirods::error result = SUCCESS();
-    eirods::error ret;
-
-    // =-=-=-=-=-=-=-
-    // check incoming parameters
-    if( !_ctx ) {
-        result = ERROR( SYS_INVALID_INPUT_PARAM, "null resource_property_map" );
-    } 
-  
-    // =-=-=-=-=-=-=-
-    // verify that the resc context is valid 
-    ret = _ctx->valid(); 
+    ret = _ctx.valid< DEST_TYPE >(); 
     if( !ret.ok() ) { 
         result = PASSMSG( "resource context is invalid", ret );
     } else {
@@ -237,10 +214,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error nonblocking_file_create_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -249,7 +226,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make call to umask & open for create
@@ -304,10 +281,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     eirods::error nonblocking_file_open_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -316,7 +293,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // handle OSX weirdness...
@@ -374,12 +351,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Read
     eirods::error nonblocking_file_read_plugin( 
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         void*                               _buf, 
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -388,7 +365,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
  
         int status;
         struct timeval tv;
@@ -460,12 +437,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Write
     eirods::error nonblocking_file_write_plugin( 
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         void*                               _buf, 
         int                                 _len ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -474,7 +451,7 @@ extern "C" {
          
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
          
         int fd = fco.file_descriptor();
         int nbytes   = 0;
@@ -532,10 +509,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
     eirods::error nonblocking_file_close_plugin(
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-                               
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -544,7 +521,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to close
@@ -571,10 +548,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     eirods::error nonblocking_file_unlink_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::data_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -583,7 +560,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to unlink      
@@ -611,17 +588,13 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Stat
     eirods::error nonblocking_file_stat_plugin( 
-        eirods::resource_operation_context* _ctx,
-        struct stat*                        _statbuf ) { 
+        eirods::resource_plugin_context& _ctx,
+        struct stat*                     _statbuf ) { 
         // =-=-=-=-=-=-=-
         // NOTE:: this function assumes the object's physical path is 
         //        correct and should not have the vault path 
         //        prepended - hcj
-        if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "invalid resource context" );
-        }
-         
-        eirods::error ret = _ctx->valid(); 
+        eirods::error ret = _ctx.valid< eirods::data_object >(); 
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "resource context is invalid";
@@ -630,7 +603,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to stat
@@ -666,11 +639,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX Fstat
     eirods::error nonblocking_file_fstat_plugin( 
-        eirods::resource_operation_context* _ctx,
-        struct stat*                        _statbuf ) {
+        eirods::resource_plugin_context& _ctx,
+        struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -679,7 +652,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to fstat
@@ -716,12 +689,12 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error nonblocking_file_lseek_plugin( 
-        eirods::resource_operation_context* _ctx,
-        long long                           _offset, 
-        int                                 _whence ) {
+        eirods::resource_plugin_context& _ctx,
+        long long                        _offset, 
+        int                              _whence ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -730,7 +703,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to lseek       
@@ -758,10 +731,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
     eirods::error nonblocking_file_fsync_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -770,7 +743,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to fsync       
@@ -799,15 +772,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error nonblocking_file_mkdir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=- 
         // NOTE :: this function assumes the object's physical path is correct and 
         //         should not have the vault path prepended - hcj
-        if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "nonblocking_file_mkdir_plugin - invalid resource context" );
-        }
-         
-        eirods::error ret = _ctx->valid< eirods::collection_object >(); 
+        eirods::error ret = _ctx.valid< eirods::collection_object >(); 
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "resource context is invalid";
@@ -816,7 +785,7 @@ extern "C" {
  
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the call to mkdir & umask
@@ -854,10 +823,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX rmdir
     eirods::error nonblocking_file_rmdir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::collection_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -866,7 +835,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::collection_object& fco = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to chmod
@@ -895,7 +864,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
     eirods::error nonblocking_file_opendir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = nonblocking_check_params_and_path< eirods::collection_object >( _ctx );
@@ -907,7 +876,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the callt to opendir
@@ -954,7 +923,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
     eirods::error nonblocking_file_closedir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = nonblocking_check_params_and_path< eirods::collection_object >( _ctx );
@@ -966,7 +935,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the callt to opendir
@@ -995,7 +964,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error nonblocking_file_readdir_plugin( 
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -1008,7 +977,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // zero out errno?
@@ -1067,11 +1036,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX readdir
     eirods::error nonblocking_file_rename_plugin( 
-        eirods::resource_operation_context* _ctx,
-        const char*                         _new_file_name ) {
+        eirods::resource_plugin_context& _ctx,
+        const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1081,7 +1050,7 @@ extern "C" {
         // =-=-=-=-=-=-=- 
         // manufacture a new path from the new file name 
         std::string new_full_path;
-        ret = unix_generate_full_path( _ctx->prop_map(), _new_file_name, new_full_path );
+        ret = unix_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Unable to generate full path for destinate file: \"" << _new_file_name << "\"";
@@ -1090,14 +1059,14 @@ extern "C" {
          
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=- 
         // make the directories in the path to the new file
         std::string new_path = new_full_path;
         std::size_t last_slash = new_path.find_last_of('/');
         new_path.erase(last_slash);
-        ret = nonblocking_file_mkdir_r( _ctx->comm(), "", new_path.c_str(), 0750 );
+        ret = nonblocking_file_mkdir_r( _ctx.comm(), "", new_path.c_str(), 0750 );
         if(!ret.ok()) {
 
             std::stringstream msg;
@@ -1138,10 +1107,10 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error nonblocking_file_get_fsfreespace_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << " Invalid parameters or physical path.";
@@ -1150,7 +1119,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         int status = -1;
         rodsLong_t fssize = USER_NO_SUPPORT_ERR;
@@ -1289,11 +1258,11 @@ extern "C" {
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
     eirods::error nonblocking_file_stagetocache_plugin( 
-        eirods::resource_operation_context* _ctx,
-        const char*                         _cache_file_name ) { 
+        eirods::resource_plugin_context& _ctx,
+        const char*                      _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1302,7 +1271,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         int status = unixFileCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
@@ -1317,11 +1286,11 @@ extern "C" {
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
     eirods::error nonblocking_file_synctoarch_plugin( 
-        eirods::resource_operation_context* _ctx,
-        char*                               _cache_file_name ) {
+        eirods::resource_plugin_context& _ctx,
+        char*                            _cache_file_name ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path( _ctx );
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1330,7 +1299,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
         
         int status = unixFileCopyPlugin( fco.mode(), _cache_file_name, fco.physical_path().c_str() );
         if( status < 0 ) {
@@ -1344,11 +1313,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error redirect_create( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+                      eirods::plugin_property_map& _prop_map,
+                      eirods::file_object&         _file_obj,
+                      const std::string&           _resc_name, 
+                      const std::string&           _curr_host, 
+                      float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
@@ -1387,11 +1356,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // redirect_get - code to determine redirection for get operation
     eirods::error redirect_open( 
-                      eirods::resource_property_map& _prop_map,
-                      eirods::file_object&           _file_obj,
-                      const std::string&             _resc_name, 
-                      const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+                      eirods::plugin_property_map& _prop_map,
+                      eirods::file_object&         _file_obj,
+                      const std::string&           _resc_name, 
+                      const std::string&           _curr_host, 
+                      float&                       _out_vote ) {
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
@@ -1476,21 +1445,14 @@ extern "C" {
     // unix_redirerct_plugin - used to allow the resource to determine which host
     //                         should provide the requested operation
     eirods::error nonblocking_file_redirect_plugin( 
-        eirods::resource_operation_context* _ctx,
+        eirods::resource_plugin_context& _ctx,
         const std::string*                  _opr,
         const std::string*                  _curr_host,
         eirods::hierarchy_parser*           _out_parser,
         float*                              _out_vote ) {
-
-        // =-=-=-=-=-=-=-
-        // check the context pointer
-        if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "nonblocking_file_mkdir_plugin - invalid resource context" );
-        }
-         
         // =-=-=-=-=-=-=-
         // check the context validity
-        eirods::error ret = _ctx->valid< eirods::file_object >(); 
+        eirods::error ret = _ctx.valid< eirods::file_object >(); 
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "resource context is invalid";
@@ -1514,12 +1476,12 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
+        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
+        ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "nonblocking_file_redirect_plugin - failed in get property for name";
@@ -1535,12 +1497,12 @@ extern "C" {
         if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'get' operation
-            return redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
 
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // call redirect determination for 'create' operation
-            return redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+            return redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
         }
       
         // =-=-=-=-=-=-=-
@@ -1555,9 +1517,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     eirods::error nonblocking_file_registered_plugin(
-        eirods::resource_operation_context* _ctx ) {
+        eirods::resource_plugin_context& _ctx ) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path(_ctx);
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1570,9 +1532,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     eirods::error nonblocking_file_unregistered_plugin(
-        eirods::resource_operation_context* _ctx) {
+        eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path(_ctx);
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -1585,9 +1547,9 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     eirods::error nonblocking_file_modified_plugin(
-        eirods::resource_operation_context* _ctx) {
+        eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path(_ctx);
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";

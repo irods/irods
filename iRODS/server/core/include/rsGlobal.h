@@ -14,8 +14,12 @@
 #include "dataObjOpr.h"
 #include "miscUtil.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_resource_manager.h"
 
+// =-=-=-=-=-=-=-
+// externs to singleton plugin managers
 extern eirods::resource_manager resc_mgr;
 
 #define CACHE_DIR_STR "cacheDir"

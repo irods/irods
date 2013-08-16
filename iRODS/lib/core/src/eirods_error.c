@@ -1,12 +1,19 @@
 /* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
-// My Includes
-#include "eirods_log.h"
+// eirods includes
+#include "eirods_error.h"
 
 // =-=-=-=-=-=-=-
-// Boost Includes
+// irods includes
+#include "rodsLog.h"
+
+// =-=-=-=-=-=-=-
+// boost includes
 #include <boost/lexical_cast.hpp>
+
+// =-=-=-=-=-=-=-
+// stl includes
 #include <iostream>
 
 namespace eirods {

@@ -17,25 +17,27 @@ extern "C" {
 namespace eirods {
     // =-=-=-=-=-=-=-
     // public - constructor
-    plugin_base::plugin_base( const std::string& _n,
-                              const std::string& _c ) :
-                              context_( _c ),
-                              instance_name_( _n ),
-                              interface_version_( get_plugin_interface_version() ) {
-
+    plugin_base::plugin_base( 
+        const std::string& _n,
+        const std::string& _c ) :
+        context_( _c ),
+        instance_name_( _n ),
+        interface_version_( get_plugin_interface_version() ) {
     } // ctor
 
     // =-=-=-=-=-=-=-
     // public - copy constructor
-    plugin_base::plugin_base( const plugin_base& _rhs ) :
-                              context_( context_ ),
-                              instance_name_( _rhs.instance_name_ ),
-                              interface_version_( _rhs.interface_version_ ) {
+    plugin_base::plugin_base( 
+        const plugin_base& _rhs ) :
+        context_( context_ ),
+        instance_name_( _rhs.instance_name_ ),
+        interface_version_( _rhs.interface_version_ ) {
     } // cctor
 
     // =-=-=-=-=-=-=-
     // public - assignment operator
-    plugin_base& plugin_base::operator=( const plugin_base& _rhs ) {
+    plugin_base& plugin_base::operator=( 
+        const plugin_base& _rhs ) {
         instance_name_     = _rhs.instance_name_;
         context_           = _rhs.context_;
         interface_version_ = _rhs.interface_version_;

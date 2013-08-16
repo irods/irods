@@ -17,14 +17,16 @@
 #include <dlfcn.h>
 
 namespace eirods {
-
     // =-=-=-=-=-=-=-
     // public - ctor
-    resource::resource( const std::string& _inst,
-                        const std::string& _ctx  ) : 
-                        plugin_base( _inst, _ctx ), 
-                        start_operation_( eirods::resource::default_start_operation ), 
-                        stop_operation_( default_stop_operation ) {
+    resource::resource( 
+        const std::string& _inst,
+        const std::string& _ctx ) :
+        plugin_base( 
+            _inst, 
+            _ctx ), 
+        start_operation_( default_start_operation ), 
+        stop_operation_( default_stop_operation ) {
     } // ctor
     
     // =-=-=-=-=-=-=-
@@ -147,7 +149,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // call dlsym to load and check results
             dlerror();
-            resource_operation res_op_ptr = reinterpret_cast< resource_operation >( dlsym( _handle, fcn.c_str() ) );
+            plugin_operation res_op_ptr = reinterpret_cast< plugin_operation >( dlsym( _handle, fcn.c_str() ) );
             if( !res_op_ptr ) {
                 std::cout << "[!]\teirods::resource::delay_load - failed to load [" 
                           << fcn << "].  error - " << dlerror() << std::endl;

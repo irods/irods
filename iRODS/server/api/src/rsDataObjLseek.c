@@ -122,9 +122,9 @@ rodsLong_t offset, int whence)
     if (status < 0) {
         return (status);
     } else {
-	rodsLong_t offset = fileLseekOut->offset;
-	free (fileLseekOut);
-        return (offset);
+        rodsLong_t off = fileLseekOut->offset;
+        free (fileLseekOut);
+        return (off);
     }
 }
 

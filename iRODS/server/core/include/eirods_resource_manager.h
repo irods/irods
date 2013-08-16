@@ -162,8 +162,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // Attributes
-        lookup_table< boost::shared_ptr< resource > > resources_;
-        std::vector< std::vector< pdmo_type > >       maintenance_operations_;
+        lookup_table< resource_ptr >            resources_;
+        std::vector< std::vector< pdmo_type > > maintenance_operations_;
 
     }; // class resource_manager
 

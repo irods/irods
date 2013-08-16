@@ -169,6 +169,8 @@ int mkFileDirR(
                          tmpPath);
                 return (stat_err.code() );
             }
+        } else {
+            eirods::log( stat_err );
         }
 
         /* Go backward */

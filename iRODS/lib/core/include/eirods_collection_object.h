@@ -10,23 +10,21 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_first_class_object.h"
-
-
-#include <iostream>
+#include "eirods_data_object.h"
 
 namespace eirods {
 
-    class collection_object : public first_class_object {
+    class collection_object : public data_object {
     public:
         // =-=-=-=-=-=-=-
         // Constructors
         collection_object();
         collection_object( const collection_object& );
-        collection_object( const std::string& _filename,
-                           const std::string& _resc_hier,
-                           int _mode,
-                           int _flags );
+        collection_object( 
+            const std::string&, // phy path
+            const std::string&, // resc hier
+            int,                // mode
+            int );              // flags
 
         // =-=-=-=-=-=-=-
         // Destructor
@@ -39,14 +37,19 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // plugin resolution operation
         virtual error resolve( resource_manager&, resource_ptr& );
+        virtual error resolve( network_manager&,  network_ptr&  );
+        
+        // =-=-=-=-=-=-=-
+        // accessor for rule engine variables
+        virtual error get_re_vars( keyValPair_t& ); 
 
         // =-=-=-=-=-=-=-
         // Accessors
-        inline DIR* directory_pointer() const { return directory_pointer_;   }
+        virtual DIR* directory_pointer() const { return directory_pointer_; }
                 
         // =-=-=-=-=-=-=-
         // Mutators     
-        inline void directory_pointer( DIR* _p ) { directory_pointer_ = _p; }
+        virtual void directory_pointer( DIR* _p ) { directory_pointer_ = _p; }
 
     protected:
         // =-=-=-=-=-=-=-
@@ -54,7 +57,7 @@ namespace eirods {
         // NOTE :: These are not guaranteed to be properly populated right now
         //      :: that will need be done later when these changes are pushed 
         //      :: higher in the original design
-        DIR* directory_pointer_; // pointer to open filesystem directory
+        DIR* directory_pointer_;    // pointer to open filesystem directory
 
     }; // class collection_object
 

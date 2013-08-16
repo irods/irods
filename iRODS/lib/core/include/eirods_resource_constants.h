@@ -4,6 +4,10 @@
 #ifndef ___EIRODS_RESOURCE_CONSTANTS_H__
 #define ___EIRODS_RESOURCE_CONSTANTS_H__
 
+// =-=-=-=-=-=-=-
+// stl includes
+#include <string>
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-

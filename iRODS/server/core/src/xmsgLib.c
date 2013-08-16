@@ -17,6 +17,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+
 boost::mutex			ReqQueCondMutex;
 boost::condition_variable	ReqQueCond;
 boost::thread*			ProcReqThread[ NUM_XMSG_THR ];
@@ -28,6 +29,11 @@ pthread_t ProcReqThread[NUM_XMSG_THR];
 pthread_mutex_t MessQueCondMutex;  /* RAJA Nov 29 2010 */
 #endif	/* USE_BOOST */
 #endif
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_network_factory.h"
+
 
 xmsgReq_t *XmsgReqHead = NULL;
 xmsgReq_t *XmsgReqTail = NULL; /* points to last item in Q RAJA Nov 19 2010 */
@@ -680,27 +686,37 @@ procReqRoutine ()
 	    continue;
 	}
 
-        status = readStartupPack (myXmsgReq->sock, &startupPack, NULL);
+	memset (&rsComm, 0, sizeof (rsComm));
+	rsComm.sock = myXmsgReq->sock;
+
+    // =-=-=-=-=-=-=-
+    // maufacture a network object
+    eirods::net_obj_ptr net_obj;
+    eirods::error ret = eirods::network_factory( &rsComm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+    }  
+   
+    status = readStartupPack( net_obj, &startupPack, NULL );
 	if (status < 0) {
             rodsLog (LOG_ERROR,
               "procReqRoutine: readStartupPack error, status = %d", status);
 	    free (myXmsgReq);
             continue;
 	}
-	memset (&rsComm, 0, sizeof (rsComm));
 	initRsCommWithStartupPack (&rsComm, startupPack);
 	/***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
 	if (startupPack != NULL) free (startupPack);
 	/***** added by RAJA Nov 12, 2010 to take care of memory leak  found by J-Y **/
-	rsComm.sock = myXmsgReq->sock;
-        status = sendVersion (rsComm.sock, 0, 0, NULL, 0);
-
-        if (status < 0) {
-            sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
-	    free (myXmsgReq);
-            continue;
-        }
-        FD_ZERO(&sockMask);
+  
+    
+    ret = sendVersion ( net_obj, 0, 0, NULL, 0);
+    if( !ret.ok() ) {
+        sendVersion ( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0);
+        free (myXmsgReq);
+        continue;
+    }
+    FD_ZERO(&sockMask);
 	memset (&msgTimeout, 0, sizeof (msgTimeout));
 	msgTimeout.tv_sec = REQ_MSG_TIMEOUT_TIME;
 	while (1) {

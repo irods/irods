@@ -29,6 +29,11 @@ jmp_buf Jenv;
 #endif
 #endif	/* USE_BOOST */
 
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_network_factory.h"
+
+
 int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
 bytesBuf_t *bsBBuf)
@@ -45,21 +50,35 @@ bytesBuf_t *bsBBuf)
     
     memset (&myOutBsBBuf, 0, sizeof (bytesBuf_t));
     memset (&rsComm->rError, 0, sizeof (rError_t));
-
+    
     apiInx = apiTableLookup (apiNumber);
+
+    // =-=-=-=-=-=-=-
+    // create a network object
+    eirods::net_obj_ptr net_obj;
+    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return apiInx;
+    }
+
     if (apiInx < 0) {
-	rodsLog (LOG_ERROR,
-	  "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber);
-	/* cannot use sendApiReply because it does not know apiInx */
-#ifdef USE_SSL
+        rodsLog (LOG_ERROR,
+          "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber);
+	    /* cannot use sendApiReply because it does not know apiInx */
+#if 0 // JMC - network interface
+        #ifdef USE_SSL
         if (rsComm->ssl_on)
             sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL, NULL, NULL,
                             apiInx, rsComm->irodsProt, rsComm->ssl);
         else
-#endif
+        #endif
 	        sendRodsMsg( rsComm->sock, RODS_API_REPLY_T, NULL, NULL, NULL,
 	                     apiInx, rsComm->irodsProt );
-	return (apiInx);
+#endif
+        sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL, NULL, NULL,
+                     apiInx, rsComm->irodsProt );
+	    return (apiInx);
     }
  
     rsComm->apiInx = apiInx;
@@ -79,10 +98,9 @@ bytesBuf_t *bsBBuf)
     }
     
     /* some sanity check */
-
     if (inputStructBBuf->len > 0 && RsApiTable[apiInx].inPackInstruct == NULL) {
-	rodsLog (LOG_NOTICE,
-          "rsApiHandler: input struct error for apiNumber %d", apiNumber);
+	    rodsLog (LOG_NOTICE,
+          "rsApiHandler: input struct error 1 for apiNumber %d", apiNumber);
 	sendApiReply (rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct, 
 	  &myOutBsBBuf);
 	return (SYS_API_INPUT_ERR);
@@ -90,7 +108,7 @@ bytesBuf_t *bsBBuf)
  
     if (inputStructBBuf->len <= 0 && RsApiTable[apiInx].inPackInstruct != NULL){
 	rodsLog (LOG_NOTICE,
-          "rsApiHandler: input struct error for apiNumber %d", apiNumber);
+          "rsApiHandler: input struct error 2 for apiNumber %d", apiNumber);
 	sendApiReply (rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct, 
 	  &myOutBsBBuf);
 	return (SYS_API_INPUT_ERR);
@@ -259,9 +277,20 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 //#endif
 
     if (retVal == SYS_HANDLER_DONE_NO_ERROR) {
-	/* not actually an error */
-	retVal = 0;
+	    /* not actually an error */
+	    retVal = 0;
     }
+
+    // =-=-=-=-=-=-=-
+    // create a network object
+    eirods::net_obj_ptr net_obj;
+    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+
+    }
+
 
     if (RsApiTable[apiInx].outPackInstruct != NULL && myOutStruct != NULL) {
 
@@ -272,6 +301,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
        if (status < 0) {
             rodsLog (LOG_NOTICE,
              "sendApiReply: packStruct error, status = %d", status);
+#if 0 // JMC - network interface
 #ifdef USE_SSL
             if (rsComm->ssl_on) 
                 sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
@@ -279,6 +309,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
             else
 #endif
                 sendRodsMsg( rsComm->sock, RODS_API_REPLY_T, NULL,
+                             NULL, NULL, status, rsComm->irodsProt);
+#endif
+                sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
                              NULL, NULL, status, rsComm->irodsProt);
 //#ifndef windows_platform
             svrChkReconnAtSendEnd (rsComm);
@@ -302,6 +335,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
        if (status < 0) {
             rodsLog (LOG_NOTICE,
              "sendApiReply: packStruct error, status = %d", status);
+#if 0 // JMC - network interface
 #ifdef USE_SSL
             if (rsComm->ssl_on) 
                 sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
@@ -309,6 +343,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
             else
 #endif
                 sendRodsMsg( rsComm->sock, RODS_API_REPLY_T, NULL,
+                             NULL, NULL, status, rsComm->irodsProt);
+#endif
+                sendRodsMsg( net_obj, RODS_API_REPLY_T, NULL,
                              NULL, NULL, status, rsComm->irodsProt);
 //#ifndef windows_platform
             svrChkReconnAtSendEnd (rsComm);
@@ -321,6 +358,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
         myRErrorBBuf = NULL;
     }
 
+#if 0 // JMC - network interface
 #ifdef USE_SSL
     if (rsComm->ssl_on) 
         status = sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
@@ -329,14 +367,15 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 #endif
         status = sendRodsMsg( rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
                               myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
-	
-    if (status < 0) {
-	int status1;
-        rodsLog (LOG_NOTICE,
-         "sendApiReply: sendRodsMsg error, status = %d", status);
+#endif	
+    ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, myOutStructBBuf,
+                          myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
+    if( !ret.ok() ) {
+   	    int status1;
+        eirods::log( PASS( ret ) ); 
 //#ifndef windows_platform
         if (rsComm->reconnSock > 0) {
-	    int savedStatus = status;
+	    int savedStatus = ret.code();
 #ifdef USE_BOOST
 	    boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
             rodsLog (LOG_DEBUG,
@@ -356,6 +395,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 	        /* should not be here */
                 rodsLog (LOG_NOTICE,
                   "sendApiReply: Switch connection and retry sendRodsMsg");
+#if 0 // JMC - network interface
 #ifdef USE_SSL
                 if (rsComm->ssl_on) 
                     status = sslSendRodsMsg (rsComm->sock, RODS_API_REPLY_T, 
@@ -366,7 +406,12 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 	                status = sendRodsMsg( rsComm->sock, RODS_API_REPLY_T, 
 	                                      myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, 
 	          rsComm->irodsProt);
-	        if (status >= 0) {
+#endif
+	          ret = sendRodsMsg( net_obj, RODS_API_REPLY_T, 
+	                             myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, 
+                                 retVal, rsComm->irodsProt);
+	           
+	        if ( ret.code() >= 0) {
 		    rodsLog (LOG_NOTICE,
                       "sendApiReply: retry sendRodsMsg succeeded");
 		} else {
@@ -475,6 +520,10 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
+    bzero( &inputStructBBuf, sizeof( bytesBuf_t ) );
+    bzero( &bsBBuf, sizeof( bytesBuf_t ) );
+    bzero( &errorBBuf, sizeof( bytesBuf_t ) );
+
 //#ifndef windows_platform
     svrChkReconnAtReadStart (rsComm);
 //#endif
@@ -483,6 +532,16 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     memset (&bsBBuf, 0, sizeof (bsBBuf));
 
     /* read the header */
+
+    // =-=-=-=-=-=-=-
+    // create a network object
+    eirods::net_obj_ptr net_obj;
+    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+
+    }
 
 //#ifdef windows_platform
 //    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
@@ -514,49 +573,55 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
         struct timeval tv;
         tv.tv_sec = READ_HEADER_TIMEOUT_IN_SEC;
         tv.tv_usec = 0;
+       
         while (1) {
+#if 0 // JMC - network factory
 #ifdef USE_SSL
             if (rsComm->ssl_on)
                 status = sslReadMsgHeader (rsComm->sock, &myHeader, &tv, rsComm->ssl);
             else
 #endif
                 status = readMsgHeader (rsComm->sock, &myHeader, &tv);
-	    if (status < 0) {
-		if (isL1descInuse () && retryCnt < MAX_READ_HEADER_RETRY) {
+#endif
+            ret = readMsgHeader (net_obj, &myHeader, &tv);
+	        if( !ret.ok() ) {
+                if (isL1descInuse () && retryCnt < MAX_READ_HEADER_RETRY) {
                     rodsLogError (LOG_ERROR, status,
-                      "readAndProcClientMsg:readMsgHeader error. status = %d", 
-		      status);
+                          "readAndProcClientMsg:readMsgHeader error. status = %d",  ret.code());
                     retryCnt++;
                     continue;
                 }
-		if (status == USER_SOCK_CONNECT_TIMEDOUT) {
-                    rodsLog (LOG_ERROR,
-                      "readAndProcClientMsg: readMsgHeader by pid %d timedout",
-                      getpid ());
-                    return status;
-		}
+                if ( ret.code() == USER_SOCK_CONNECT_TIMEDOUT) {
+                        rodsLog (LOG_ERROR,
+                          "readAndProcClientMsg: readMsgHeader by pid %d timedout",
+                          getpid ());
+                        return  ret.code();
+                }
+            
             }
-	    break;
+	        break;
         }
 #endif
     } else {
+#if 0 // JMC - network interface
 #ifdef USE_SSL
         if (rsComm->ssl_on)
             status = sslReadMsgHeader (rsComm->sock, &myHeader, NULL, rsComm->ssl);
         else
 #endif
             status = readMsgHeader (rsComm->sock, &myHeader, NULL);
+#endif
+            ret = readMsgHeader( net_obj, &myHeader, NULL);
     }
 //#endif
 
-    if (status < 0) {
+    if( !ret.ok() ) {
 //#ifndef windows_platform
-        rodsLog (LOG_DEBUG,
-          "readAndProcClientMsg: readMsgHeader error. status = %d", status);
+        eirods::log( PASS( ret ) );  
         /* attempt to accept reconnect. ENOENT result  from
                      * user cntl-C */
         if (rsComm->reconnSock > 0) {
-	    int savedStatus = status;
+	    int savedStatus = ret.code();
 	    /* try again. the socket might have changed */ 
 #ifdef USE_BOOST
 	    boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
@@ -573,13 +638,16 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 	    svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
 #endif
+#if 0 // JMC - network interface
 #ifdef USE_SSL
             if (rsComm->ssl_on)
                 status = sslReadMsgHeader (rsComm->sock, &myHeader, NULL, rsComm->ssl);
             else
 #endif
 	            status = readMsgHeader (rsComm->sock, &myHeader, NULL);
-	    if (status < 0) {
+#endif
+	    ret = readMsgHeader( net_obj, &myHeader, NULL );
+	    if ( !ret.ok() ) {
                 svrChkReconnAtReadEnd (rsComm);
 	        return (savedStatus);
 	    }
@@ -599,6 +667,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
             initSysTiming ("irodsAgent", "recv request", 0);
     }
 #endif
+#if 0 // JMC - network interface
 #ifdef USE_SSL
     if (rsComm->ssl_on)
         status = sslReadMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
@@ -607,9 +676,11 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 #endif
         status = readMsgBody( rsComm->sock, &myHeader, &inputStructBBuf,
                               &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL);
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-          "agentMain: readMsgBody error. status = %d", status);
+#endif
+    ret = readMsgBody( net_obj, &myHeader, &inputStructBBuf,
+                          &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL);
+	if ( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
 //#ifndef windows_platform
         svrChkReconnAtReadEnd (rsComm);
 //#endif
