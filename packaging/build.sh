@@ -174,6 +174,11 @@ if [ "$1" == "clean" ] ; then
     rm -f manual.pdf
     rm -f eirods-manual*.pdf
     rm -f libeirods.a
+    echo "Cleaning Network plugins..."
+    cd plugins/network
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
     echo "Cleaning Resource plugins..."
     cd plugins/resources
     set +e
@@ -1029,8 +1034,13 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # =-=-=-=-=-=-=-
     # build resource plugins
-
 	cd $BUILDDIR/plugins/resources/
+	make
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
+    # build network plugins
+	cd $BUILDDIR/plugins/network/
 	make
 	cd $BUILDDIR
 
