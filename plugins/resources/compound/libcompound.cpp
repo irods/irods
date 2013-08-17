@@ -623,7 +623,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child< eirods::file_object >( _ctx, resc );
+        ret = get_next_child< eirods::data_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -664,10 +664,10 @@ extern "C" {
     /// @brief interface for POSIX Fstat
     eirods::error compound_file_fstat(
         eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
+        struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
+        eirods::error ret = compound_check_param< eirods::data_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -675,7 +675,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child< eirods::file_object >( _ctx, resc );
+        ret = get_next_child< eirods::data_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -769,7 +769,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
+        eirods::error ret = compound_check_param< eirods::collection_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -794,7 +794,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
+        eirods::error ret = compound_check_param< eirods::collection_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -819,7 +819,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
+        eirods::error ret = compound_check_param< eirods::collection_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -845,7 +845,7 @@ extern "C" {
         struct rodsDirent**                 _dirent_ptr ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
+        eirods::error ret = compound_check_param< eirods::collection_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -868,10 +868,10 @@ extern "C" {
     /// @brief interface for POSIX rename
     eirods::error compound_file_rename(
         eirods::resource_plugin_context& _ctx,
-        const char*                         _new_file_name ) {
+        const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
+        eirods::error ret = compound_check_param< eirods::data_object >(_ctx);
         if(!ret.ok()) {
             return PASSMSG( "invalid resource context", ret);
         }
@@ -879,7 +879,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // get the next child resource
         eirods::resource_ptr resc;
-        ret = get_next_child< eirods::file_object >( _ctx, resc );
+        ret = get_next_child< eirods::data_object >( _ctx, resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -904,7 +904,7 @@ extern "C" {
     ///        the coordinating node would be calling this on a leaf when necessary
     eirods::error compound_file_stage_to_cache(
         eirods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name ) { 
+        const char*                      _cache_file_name ) { 
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
