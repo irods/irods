@@ -179,6 +179,7 @@ if [ "$1" == "clean" ] ; then
     set +e
     make clean > /dev/null 2>&1
     set -e
+    cd ../..
     echo "Cleaning Resource plugins..."
     cd plugins/resources
     set +e
