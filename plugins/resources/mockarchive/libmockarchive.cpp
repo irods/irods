@@ -286,8 +286,8 @@ extern "C" {
     // interface for POSIX Read
     eirods::error mock_archive_read_plugin( 
         eirods::resource_plugin_context& _ctx,
-        void*                               _buf, 
-        int                                 _len ) {
+        void*                            _buf, 
+        int                              _len ) {
         // =-=-=-=-=-=-=-
         // operation not supported
         return ERROR( SYS_NOT_SUPPORTED, "read not supported" );
@@ -298,8 +298,8 @@ extern "C" {
     // interface for POSIX Write
     eirods::error mock_archive_write_plugin( 
         eirods::resource_plugin_context& _ctx,
-        void*                               _buf, 
-        int                                 _len ) {
+        void*                            _buf, 
+        int                              _len ) {
         // =-=-=-=-=-=-=-
         // operation not supported
         return ERROR( SYS_NOT_SUPPORTED, "write not supported" );
@@ -360,7 +360,7 @@ extern "C" {
     // interface for POSIX Stat
     eirods::error mock_archive_stat_plugin( 
         eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) { 
+        struct stat*                     _statbuf ) { 
         // =-=-=-=-=-=-=-
         // NOTE:: this function assumes the object's physical path is 
         //        correct and should not have the vault path 
@@ -369,7 +369,7 @@ extern "C" {
         eirods::error ret = _ctx.valid(); 
         if(!ret.ok()) {
             std::stringstream msg;
-            msg << __FUNCTION__ << " - resource context is invalid";
+            msg << "resource context is invalid";
             return PASSMSG( msg.str(), ret );
         }
         
@@ -379,6 +379,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // make the call to stat
+rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]", 
+         fco.physical_path().c_str() );
         int status = stat( fco.physical_path().c_str(), _statbuf );
 
         // =-=-=-=-=-=-=-

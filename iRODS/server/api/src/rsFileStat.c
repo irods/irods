@@ -113,12 +113,11 @@ int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **file
 
     if(fileStatInp->objPath[0] == '\0') {
         std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
+        msg << "Empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
         return -1;
     }
-    
+
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
     eirods::file_object file_obj( rsComm, fileStatInp->objPath, fileStatInp->fileName, fileStatInp->rescHier, 0, 0, 0 );

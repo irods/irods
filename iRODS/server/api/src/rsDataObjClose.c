@@ -369,7 +369,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         /* don't check for size if it is DO_STAGING type because the
          * fileStat call may not be supported */ 
         newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
-
+        
         /* check for consistency of the write operation */
 
         if (newSize < 0) {

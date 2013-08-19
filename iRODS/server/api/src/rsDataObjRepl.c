@@ -219,6 +219,7 @@ _rsDataObjRepl (
         char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
         char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
         status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier);
+
         if (status < 0) {
             rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
             return status;
@@ -375,7 +376,7 @@ _rsDataObjRepl (
     }
 
     if (myRescGrpInfo != NULL) {
-        /* new kreplication to the resource group */
+        /* new replication to the resource group */
         status = _rsDataObjReplNewCopy( rsComm, dataObjInp, dataObjInfoHead,
                                         myRescGrpInfo, transStat, oldDataObjInfoHead, 
                                         outDataObjInfo);
@@ -393,70 +394,75 @@ _rsDataObjRepl (
  *      destDataObjInfoHead.
  * Additinal input -
  *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be
- *     replicated. Only one will be picked.
+ 
  *   dataObjInfo_t *destDataObjInfoHead -  a link of copies to be updated.
  *     The dataSize in this struct will also be updated.
  *   dataObjInfo_t *oldDataObjInfo - this is for destDataObjInfo is a
  *       COMPOUND_CL resource. If it is, need to find an old copy of
  *       the resource in the same group so that it can be updated first.
  */
-
-int
-_rsDataObjReplUpdate(
+int _rsDataObjReplUpdate(
     rsComm_t*       rsComm,
-    dataObjInp_t*  dataObjInp,
+    dataObjInp_t*   dataObjInp,
     dataObjInfo_t*  srcDataObjInfoHead,
-    dataObjInfo_t* destDataObjInfoHead,
+    dataObjInfo_t*  destDataObjInfoHead,
     transferStat_t* transStat,
-    dataObjInfo_t* oldDataObjInfo )
-{
+    dataObjInfo_t*  oldDataObjInfo ) {
+    // =-=-=-=-=-=-=-
+    // 
     dataObjInfo_t *destDataObjInfo = 0;
     dataObjInfo_t *srcDataObjInfo = 0;
-    int status;
-    int allFlag;
+    int status = 0;
+    int allFlag = 0;
     int savedStatus = 0;
     int replCnt = 0;
 
-
+    // =-=-=-=-=-=-=-
+    // set all or single flag
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
         allFlag = 1;
     } else {
         allFlag = 0;
     }
 
+    // =-=-=-=-=-=-=-
+    // cache a copy of the dest resc hier if there is one
+    std::string dst_resc_hier;
+    char* dst_resc_hier_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
+    if( dst_resc_hier_ptr ) {
+        dst_resc_hier = dst_resc_hier;
+            
+    }    
+         
+    // =-=-=-=-=-=-=-
+    // loop over all the dest data obj info structs
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
     destDataObjInfo = destDataObjInfoHead;
     while (destDataObjInfo != NULL) {
+        // =-=-=-=-=-=-=-
+        // skip invalid data ids
         if (destDataObjInfo->dataId == 0) {
             destDataObjInfo = destDataObjInfo->next;
             continue;
         }
 
-#if 0 // JMC - legacy resource
-        /* destDataObj exists */
-        if (getRescClass (destDataObjInfo->rescInfo) == COMPOUND_CL) {
-            /* need to get a copy in cache first */
-            if ((status = getCacheDataInfoOfCompObj (rsComm, dataObjInp,
-                                                     srcDataObjInfoHead, destDataObjInfoHead, destDataObjInfo,
-                                                     oldDataObjInfo, &srcDataObjInfo)) < 0) {
-                return status;
+        // =-=-=-=-=-=-=-
+        // overwrite a specific destDataObjInfo 
+        srcDataObjInfo = srcDataObjInfoHead;
+        while (srcDataObjInfo != NULL) {
+
+            // =-=-=-=-=-=-=-
+            // set the dest resc hier kw from the dest obj info as it is already known and we do not
+            // want the resc hier makgin this decision again
+            addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, destDataObjInfo->rescHier );
+            status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
+              
+            if (status >= 0) {
+                break;
             }
-            status = _rsDataObjReplS (rsComm, dataObjInp,
-                                      srcDataObjInfo, NULL, "", destDataObjInfo, 1);
-        } else 
-#endif // JMC - legacy resource
-        {
-            srcDataObjInfo = srcDataObjInfoHead;
-            while (srcDataObjInfo != NULL) {
-                /* overwrite a specific destDataObjInfo */
-                status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
-                  
-                if (status >= 0) {
-                    break;
-                }
-                srcDataObjInfo = srcDataObjInfo->next;
-            }
+            srcDataObjInfo = srcDataObjInfo->next;
         }
+    
         if (status >= 0) {
             transStat->numThreads = dataObjInp->numThreads;
             if (allFlag == 0) {
@@ -469,8 +475,16 @@ _rsDataObjReplUpdate(
         destDataObjInfo = destDataObjInfo->next;
     }
 
+    // =-=-=-=-=-=-=-
+    // repave the key word if it was set before
+    if( !dst_resc_hier.empty() ) {
+        addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, dst_resc_hier.c_str() );
+
+    }
+
     return savedStatus;
-}
+
+} // _rsDataObjReplUpdate
 
 /* _rsDataObjReplNewCopy - Replicate new copies to destRescGrpInfo.
  * Additinal input -
@@ -612,7 +626,7 @@ _rsDataObjReplNewCopy (
         int l1descInx;
         openedDataObjInp_t dataObjCloseInp;
         dataObjInfo_t *myDestDataObjInfo;
-
+        
         l1descInx = dataObjOpenForRepl( rsComm, dataObjInp, srcDataObjInfo, destRescInfo, 
                                         rescGroupName, destDataObjInfo, updateFlag );
 
@@ -643,6 +657,8 @@ _rsDataObjReplNewCopy (
         if(pdmo_kw != NULL) {
             addKeyVal(&dataObjCloseInp.condInput, IN_PDMO_KW, pdmo_kw);
         }
+
+
         status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
 
         if (destDataObjInfo != NULL) {
@@ -761,7 +777,6 @@ _rsDataObjReplNewCopy (
         std::string op_name;
         memset (&dest_inp, 0, sizeof (dest_inp));
         memset (&dest_inp.condInput, 0, sizeof (dest_inp.condInput));
-    
         strncpy( dest_inp.objPath, dataObjInp->objPath, MAX_NAME_LEN );
         addKeyVal( &(dest_inp.condInput), RESC_NAME_KW, myDestRescInfo->rescName );
 
