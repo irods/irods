@@ -124,7 +124,7 @@ class Test_NonBlocking_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         self.run_resource_teardown()
         s.twousers_down()
 
-class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite):
+class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -175,7 +175,7 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite):
+class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -222,7 +222,7 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite)
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-class Test_Compound_Resource(unittest.TestCase, ResourceSuite):
+class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
@@ -306,7 +306,7 @@ class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
-class Test_Replication_Resource(unittest.TestCase, ResourceSuite):
+class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
     my_test_resource = {
