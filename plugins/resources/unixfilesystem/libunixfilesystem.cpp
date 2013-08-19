@@ -1328,7 +1328,7 @@ extern "C" {
     } // unix_file_synctoarch_plugin
 
     // =-=-=-=-=-=-=-
-    // redirect_get - code to determine redirection for get operation
+    // redirect_create - code to determine redirection for create operation
     eirods::error unix_file_redirect_create( 
                       eirods::plugin_property_map& _prop_map,
                       eirods::file_object&         _file_obj,
@@ -1371,7 +1371,7 @@ extern "C" {
     } // unix_file_redirect_create
 
     // =-=-=-=-=-=-=-
-    // redirect_get - code to determine redirection for get operation
+    // redirect_open - code to determine redirection for open operation
     eirods::error unix_file_redirect_open( 
                       eirods::plugin_property_map& _prop_map,
                       eirods::file_object&         _file_obj,
