@@ -84,11 +84,7 @@ eirods::error unix_generate_full_path(
     std::string vault_path;
     // TODO - getting vault path by property will not likely work for coordinating nodes
     ret = _prop_map.get<std::string>(eirods::RESOURCE_PATH, vault_path);
-    if(!ret.ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - resource has no vault path.";
-        result = ERROR(-1, msg.str());
-    } else {
+    if((result = ASSERT_ERROR(ret.ok(), SYS_INVALID_INPUT_PARAM, "resource has no vault path.")).ok()) {
         if(_phy_path.compare(0, 1, "/") != 0 &&
            _phy_path.compare(0, vault_path.size(), vault_path) != 0) {
             _ret_string  = vault_path;
@@ -107,22 +103,21 @@ eirods::error unix_generate_full_path(
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
 eirods::error unix_check_path( 
-    eirods::resource_operation_context* _ctx ) {
+    eirods::resource_operation_context* _ctx )
+{
+    eirods::error result = SUCCESS();
+    
     // =-=-=-=-=-=-=-
     // NOTE: Must do this for all storage resources
     std::string full_path;
     eirods::error ret = unix_generate_full_path( _ctx->prop_map(), 
                                                  _ctx->fco().physical_path(), 
                                                  full_path );
-    if(!ret.ok()) {
-        std::stringstream msg;
-        msg << __FUNCTION__ << " - Failed generating full path for object.";
-        ret = PASSMSG(msg.str(), ret);
-    } else {
+    if((result = ASSERT_PASS(ret, "Failed generating full path for object.")).ok()) {
         _ctx->fco().physical_path(full_path);
     }
 
-    return ret;
+    return result;
 
 } // unix_check_path
 
@@ -137,25 +132,16 @@ eirods::error unix_check_params_and_path(
 
     // =-=-=-=-=-=-=-
     // check incoming parameters
-    if( !_ctx ) {
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - null resource context";
-        result = ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-    } 
+    if((result = ASSERT_ERROR(_ctx, SYS_INVALID_INPUT_PARAM, "null resource context.")).ok()) {
   
-    // =-=-=-=-=-=-=-
-    // verify that the resc context is valid 
-    ret = _ctx->valid< DEST_TYPE >(); 
-    if( !ret.ok() ) { 
-        std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - resource context is invalid.";
-        result = PASSMSG( msg.str(), ret );
-    } else {
-        result = unix_check_path( _ctx );
+        // =-=-=-=-=-=-=-
+        // verify that the resc context is valid 
+        ret = _ctx->valid< DEST_TYPE >(); 
+        if((result = ASSERT_PASS(ret, "resource context is invalid." )).ok()) { 
+            result = unix_check_path( _ctx );
+        }
     }
-
+    
     return result;
 
 } // unix_check_params_and_path
@@ -170,19 +156,16 @@ eirods::error unix_check_params_and_path(
 
     // =-=-=-=-=-=-=-
     // check incoming parameters
-    if( !_ctx ) {
-        result = ERROR( SYS_INVALID_INPUT_PARAM, "unix_check_params_and_path - null resource_property_map" );
-    } 
+    if((result = ASSERT_ERROR(_ctx, SYS_INVALID_INPUT_PARAM, "unix_check_params_and_path - null resource_property_map")).ok()) {
   
-    // =-=-=-=-=-=-=-
-    // verify that the resc context is valid 
-    ret = _ctx->valid(); 
-    if( !ret.ok() ) { 
-        result = PASSMSG( "unix_check_params_and_path - resource context is invalid", ret );
-    } else {
-        result = unix_check_path( _ctx );
+        // =-=-=-=-=-=-=-
+        // verify that the resc context is valid 
+        ret = _ctx->valid(); 
+        if((result = ASSERT_PASS(ret, "unix_check_params_and_path - resource context is invalid")).ok()) { 
+            result = unix_check_path( _ctx );
+        }
     }
-
+    
     return result;
 
 } // unix_check_params_and_path
@@ -193,8 +176,8 @@ eirods::error unix_file_mkdir_r(
     rsComm_t*                      _comm,
     const std::string&             _results,
     const std::string& path,
-    mode_t mode ) {
-
+    mode_t mode )
+{
     eirods::error result = SUCCESS();
     std::string subdir;
     std::size_t pos = 0;
@@ -207,20 +190,8 @@ eirods::error unix_file_mkdir_r(
             
             // =-=-=-=-=-=-=-
             // handle error cases
-            if( status < 0 && errno != EEXIST) {
-                status = UNIX_FILE_RENAME_ERR - errno;
-                            
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << ": mkdir error for ";
-                msg << subdir;
-                msg << ", errno = ";
-                msg << strerror(errno);
-                msg << ", status = ";
-                msg << status;
-                    
-                result = ERROR( status, msg.str() );
-            }
+            result = ASSERT_ERROR(status >= 0 || errno == EEXIST, UNIX_FILE_RENAME_ERR - errno, "mkdir error for \"%s\", errno = \"%s\", status = %d.",
+                                  subdir.c_str(), strerror(errno), status);
         }
         if(pos == std::string::npos) {
             done = true;
@@ -247,182 +218,168 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     eirods::error unix_file_registered_plugin(
-        eirods::resource_operation_context* _ctx) {
+        eirods::resource_operation_context* _ctx)
+    {
+        eirods::error result = SUCCESS();
+        
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+        
         // NOOP
-        return SUCCESS();
+        return result;
     }
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file unregistration
     eirods::error unix_file_unregistered_plugin(
-        eirods::resource_operation_context* _ctx) {
+        eirods::resource_operation_context* _ctx)
+    {
+        eirods::error result = SUCCESS();
+        
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+
         // NOOP
-        return SUCCESS();
+        return result;
     }
     
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file modification
     eirods::error unix_file_modified_plugin(
-        eirods::resource_operation_context* _ctx) {
+        eirods::resource_operation_context* _ctx)
+    {
+        eirods::error result = SUCCESS();
+        
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        result = ASSERT_PASS(ret, "Invalid parameters or physical path.");
+
         // NOOP
-        return SUCCESS();
+        return result;
     }
     
     // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error unix_file_create_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make call to umask & open for create
-        mode_t myMask = umask((mode_t) 0000);
-        int    fd     = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
-
-        // =-=-=-=-=-=-=-
-        // reset the old mask 
-        (void) umask((mode_t) myMask);
-                
-        // =-=-=-=-=-=-=-
-        // if we got a 0 descriptor, try again
-        if( fd == 0 ) {
-        
-            close (fd);
-            rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
-            open ("/dev/null", O_RDWR, 0);
-            fd = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // cache file descriptor in out-variable
-        fco.file_descriptor( fd );
-                        
-        // =-=-=-=-=-=-=-
-        // trap error case with bad fd
-        if( fd < 0 ) {
-            int status = UNIX_FILE_CREATE_ERR - errno;
-                        
             // =-=-=-=-=-=-=-
-            // WARNING :: Major Assumptions are made upstream and use the FD also as a
-            //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
-            fco.file_descriptor( status );
-                        
-            std::stringstream msg;
-            msg << "unix_file_create_plugin: create error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
- 
-            return ERROR( status, msg.str() );
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
+        
+            // =-=-=-=-=-=-=-
+            // make call to umask & open for create
+            mode_t myMask = umask((mode_t) 0000);
+            int    fd     = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
+
+            // =-=-=-=-=-=-=-
+            // reset the old mask 
+            (void) umask((mode_t) myMask);
+                
+            // =-=-=-=-=-=-=-
+            // if we got a 0 descriptor, try again
+            if( fd == 0 ) {
+        
+                close (fd);
+                rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
+                open ("/dev/null", O_RDWR, 0);
+                fd = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
+            }
+
+            // =-=-=-=-=-=-=-
+            // cache file descriptor in out-variable
+            fco.file_descriptor( fd );
+            
+            // =-=-=-=-=-=-=-
+            // trap error case with bad fd
+            int status = UNIX_FILE_CREATE_ERR - errno;
+            if(!(result = ASSERT_ERROR(fd >= 0, UNIX_FILE_CREATE_ERR - errno, "create error for \"%s\", errno = \"%s\", status = %d",
+                                       fco.physical_path().c_str(), strerror(errno), status)).ok()) {
+
+                // =-=-=-=-=-=-=-
+                // WARNING :: Major Assumptions are made upstream and use the FD also as a
+                //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
+                fco.file_descriptor( status );
+                result.code(status);
+            } else {
+                result.code(fd);
+            }
         }
 
         // =-=-=-=-=-=-=-
         // declare victory!
-        return CODE( fd );
+        return result;
 
     } // unix_file_create_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Open
     eirods::error unix_file_open_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        // =-=-=-=-=-=-=-
-        // handle OSX weirdness...
-        int flags = fco.flags();
+            // =-=-=-=-=-=-=-
+            // handle OSX weirdness...
+            int flags = fco.flags();
 
 #if defined(osx_platform)
-        // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system 
-        if( flags & 0x200) {
-            flags = flags ^ 0x200;
-            flags = flags | O_TRUNC;
-        }
+            // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system 
+            if( flags & 0x200) {
+                flags = flags ^ 0x200;
+                flags = flags | O_TRUNC;
+            }
 #endif 
-        // =-=-=-=-=-=-=-
-        // make call to open
-        errno = 0;
-        int fd = open( fco.physical_path().c_str(), flags, fco.mode() );
+            // =-=-=-=-=-=-=-
+            // make call to open
+            errno = 0;
+            int fd = open( fco.physical_path().c_str(), flags, fco.mode() );
 
-        // =-=-=-=-=-=-=-
-        // if we got a 0 descriptor, try again
-        if( fd == 0 ) {
-            close (fd);
-            rodsLog( LOG_NOTICE, "unix_file_open_plugin: 0 descriptor" );
-            open ("/dev/null", O_RDWR, 0);
-            fd = open( fco.physical_path().c_str(), flags, fco.mode() );
-        }       
+            // =-=-=-=-=-=-=-
+            // if we got a 0 descriptor, try again
+            if( fd == 0 ) {
+                close (fd);
+                rodsLog( LOG_NOTICE, "unix_file_open_plugin: 0 descriptor" );
+                open ("/dev/null", O_RDWR, 0);
+                fd = open( fco.physical_path().c_str(), flags, fco.mode() );
+            }       
                         
-        // =-=-=-=-=-=-=-
-        // cache status in the file object
-        fco.file_descriptor( fd );
+            // =-=-=-=-=-=-=-
+            // cache status in the file object
+            fco.file_descriptor( fd );
 
-        // =-=-=-=-=-=-=-
-        // did we still get an error?
-        if ( fd < 0 ) {
-            fd = UNIX_FILE_OPEN_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unix_file_open_plugin: open error for ";
-            msg << fco.physical_path();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            msg << ", status = ";
-            msg << fd;
-            msg << ", flags = ";
-            msg << flags;
- 
-            return ERROR( fd, msg.str() );
+            // =-=-=-=-=-=-=-
+            // did we still get an error?
+            int status = UNIX_FILE_OPEN_ERR - errno;
+            if (!(result = ASSERT_ERROR(fd >= 0, status, "Open error for \"%s\", errno = \"%s\", status = %d, flags = %d.",
+                                        fco.physical_path().c_str(), strerror(errno), status, flags)).ok()) {
+                result.code(status);
+            } else {
+                result.code(fd);
+            }
         }
         
         // =-=-=-=-=-=-=-
         // declare victory!
-        return CODE( fd );
+        return result;
 
     } // unix_file_open_plugin
 
@@ -431,40 +388,37 @@ extern "C" {
     eirods::error unix_file_read_plugin( 
         eirods::resource_operation_context* _ctx,
         void*                               _buf, 
-        int                                 _len ) {
+        int                                 _len )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        // =-=-=-=-=-=-=-
-        // make the call to read
-        int status = read( fco.file_descriptor(), _buf, _len );
+            // =-=-=-=-=-=-=-
+            // make the call to read
+            int status = read( fco.file_descriptor(), _buf, _len );
 
-        // =-=-=-=-=-=-=-
-        // pass along an error if it was not successful
-        if( status < 0 ) {
-            status = UNIX_FILE_READ_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unixFileReadPlugin - read error fd = ";
-            msg << fco.file_descriptor();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            return ERROR( status, msg.str() );
+            // =-=-=-=-=-=-=-
+            // pass along an error if it was not successful
+            int err_status = UNIX_FILE_READ_ERR - errno;
+            if(!(result = ASSERT_ERROR(status >= 0, err_status, "Read error for file: \"%s\", errno = \"%s\".",
+                                       fco.physical_path().c_str(), strerror(errno))).ok()) {
+                result.code(err_status);
+            } else {
+                result.code(status);
+            }
         }
-                
+        
         // =-=-=-=-=-=-=-
         // win!
-        return CODE( status );
+        return result;
 
     } // unix_file_read_plugin
 
@@ -473,121 +427,109 @@ extern "C" {
     eirods::error unix_file_write_plugin( 
         eirods::resource_operation_context* _ctx,
         void*                               _buf, 
-        int                                 _len ) {
+        int                                 _len )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
          
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-                
-        // =-=-=-=-=-=-=-
-        // make the call to write
-        int status = write( fco.file_descriptor(), _buf, _len );
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
+            
+            // =-=-=-=-=-=-=-
+            // make the call to write
+            int status = write( fco.file_descriptor(), _buf, _len );
 
-        // =-=-=-=-=-=-=-
-        // pass along an error if it was not successful
-        if (status < 0) {
-            status = UNIX_FILE_WRITE_ERR - errno;
+            // =-=-=-=-=-=-=-
+            // pass along an error if it was not successful
+            int err_status = UNIX_FILE_WRITE_ERR - errno;
+            if (!(result = ASSERT_ERROR(status >= 0, err_status, "Write file: \"%s\", errno = \"%s\", status = %d.",
+                                        fco.physical_path().c_str(), strerror(errno), err_status)).ok()) {
                         
-            std::stringstream msg;
-            msg << "unix_file_write_plugin - write fd = ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
+                result.code(err_status);
+            } else {
+                result.code(status);
+            }
         }
-                
+        
         // =-=-=-=-=-=-=-
         // win!
-        return CODE( status );
+        return result;
 
     } // unix_file_write_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Close
     eirods::error unix_file_close_plugin(
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-                               
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
+        
+            // =-=-=-=-=-=-=-
+            // make the call to close
+            int status = close( fco.file_descriptor() );
+
+            // =-=-=-=-=-=-=-
+            // log any error
+            int err_status = UNIX_FILE_CLOSE_ERR - errno;
+            if(!(result = ASSERT_ERROR(status >= 0, err_status, "Close error for file: \"%s\", errno = \"%s\", status = %d.",
+                                      fco.physical_path().c_str(), strerror(errno), err_status)).ok()) {
+                result.code(err_status);
+            } else {
+                result.code(status);
+            }
         }
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to close
-        int status = close( fco.file_descriptor() );
-
-        // =-=-=-=-=-=-=-
-        // log any error
-        if( status < 0 ) {
-            status = UNIX_FILE_CLOSE_ERR - errno;
-                        
-            std::stringstream msg;
-            msg << "unixFileClosePlugin: close error, ";
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // unix_file_close_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX Unlink
     eirods::error unix_file_unlink_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        // =-=-=-=-=-=-=-
-        // make the call to unlink      
-        int status = unlink( fco.physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // error handling
-        if( status < 0 ) {
-            status = UNIX_FILE_UNLINK_ERR - errno;
+            // =-=-=-=-=-=-=-
+            // make the call to unlink      
+            int status = unlink( fco.physical_path().c_str() );
+            
+            // =-=-=-=-=-=-=-
+            // error handling
+            int err_status = UNIX_FILE_UNLINK_ERR - errno;
+            if(!(result = ASSERT_ERROR(status >= 0, err_status, "Unlink error for \"%s\", errno = \"%s\", status = %d.",
+                                       fco.physical_path().c_str(), strerror(errno), err_status)).ok()) {
                         
-            std::stringstream msg;
-            msg << "unix_file_unlink_plugin: unlink error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
+                result.code(err_status);
+            } else {
+                result.code(status);
+            }
         }
-
-        return CODE( status );
+        
+        return result;
 
     } // unix_file_unlink_plugin
 
@@ -595,58 +537,47 @@ extern "C" {
     // interface for POSIX Stat
     eirods::error unix_file_stat_plugin( 
         eirods::resource_operation_context* _ctx,
-        struct stat*                        _statbuf ) { 
+        struct stat*                        _statbuf )
+    {
+        eirods::error result = SUCCESS();
         // =-=-=-=-=-=-=-
         // NOTE:: this function assumes the object's physical path is 
         //        correct and should not have the vault path 
         //        prepended - hcj
-        if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "unix_file_stat_plugin - invalid resource context" );
-        }
+        if((result = ASSERT_ERROR(_ctx, SYS_INVALID_INPUT_PARAM, "invalid resource context." )).ok()) {
          
-        eirods::error ret = _ctx->valid(); 
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - resource context is invalid";
-            return PASSMSG( msg.str(), ret );
-        }
+            eirods::error ret = _ctx->valid(); 
+            if((result = ASSERT_PASS(ret, "resource context is invalid.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+                // =-=-=-=-=-=-=-
+                // get ref to fco
+                eirods::first_class_object& fco = _ctx->fco();
         
-        // =-=-=-=-=-=-=-
-        // make the call to stat
-        int status = stat( fco.physical_path().c_str(), _statbuf );
+                // =-=-=-=-=-=-=-
+                // make the call to stat
+                int status = stat( fco.physical_path().c_str(), _statbuf );
 
-        // =-=-=-=-=-=-=-
-        // if the file can't be accessed due to permission denied 
-        // try again using root credentials.
-        #ifdef RUN_SERVER_AS_ROOT
-        if( status < 0 && errno == EACCES && isServiceUserSet() ) {
-            if (changeToRootUser() == 0) {
-                status = stat (filename, statbuf);
-                changeToServiceUser();
+                // =-=-=-=-=-=-=-
+                // if the file can't be accessed due to permission denied 
+                // try again using root credentials.
+#ifdef RUN_SERVER_AS_ROOT
+                if( status < 0 && errno == EACCES && isServiceUserSet() ) {
+                    if (changeToRootUser() == 0) {
+                        status = stat (filename, statbuf);
+                        changeToServiceUser();
+                    }
+                }
+#endif
+
+                // =-=-=-=-=-=-=-
+                // return an error if necessary
+                int err_status = UNIX_FILE_STAT_ERR - errno;
+                result = ASSERT_ERROR(status >= 0, err_status, "Stat error for \"%s\", errno = \"%s\", status = %d.",
+                                      fco.physical_path().c_str(), strerror(errno), err_status);
             }
         }
-        #endif
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_stat_plugin: stat error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-            return ERROR( status, msg.str() );
-        }
-                
-        return CODE( status );
+        
+        return result;
 
     } // unix_file_stat_plugin
 
@@ -654,54 +585,43 @@ extern "C" {
     // interface for POSIX Fstat
     eirods::error unix_file_fstat_plugin( 
         eirods::resource_operation_context* _ctx,
-        struct stat*                        _statbuf ) {
+        struct stat*                        _statbuf )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        // =-=-=-=-=-=-=-
-        // make the call to fstat
-        int status = fstat( fco.file_descriptor(), _statbuf );
+            // =-=-=-=-=-=-=-
+            // make the call to fstat
+            int status = fstat( fco.file_descriptor(), _statbuf );
 
-        // =-=-=-=-=-=-=-
-        // if the file can't be accessed due to permission denied 
-        // try again using root credentials.
+            // =-=-=-=-=-=-=-
+            // if the file can't be accessed due to permission denied 
+            // try again using root credentials.
 #ifdef RUN_SERVER_AS_ROOT
-        if (status < 0 && errno == EACCES && isServiceUserSet()) {
-            if (changeToRootUser() == 0) {
-                status = fstat( fco.file_descriptor(), statbuf );
-                changeToServiceUser();
+            if (status < 0 && errno == EACCES && isServiceUserSet()) {
+                if (changeToRootUser() == 0) {
+                    status = fstat( fco.file_descriptor(), statbuf );
+                    changeToServiceUser();
+                }
             }
-        }
 #endif
 
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_fstat_plugin: fstat error for ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-
-            return ERROR( status, msg.str() );
-
-        } // if
-           
-        return CODE( status );
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            int err_status = UNIX_FILE_STAT_ERR - errno;
+            result = ASSERT_ERROR(status >= 0, err_status, "Fstat error for \"%s\", errno = \"%s\", status = %d.",
+                                  fco.physical_path().c_str(), strerror(errno), err_status); 
+        }
+        
+        return result;
 
     } // unix_file_fstat_plugin
 
@@ -710,137 +630,119 @@ extern "C" {
     eirods::error unix_file_lseek_plugin( 
         eirods::resource_operation_context* _ctx,
         long long                           _offset, 
-        int                                 _whence ) {
+        int                                 _whence )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
+        
+            // =-=-=-=-=-=-=-
+            // make the call to lseek       
+            long long status = lseek( fco.file_descriptor(),  _offset, _whence );
+
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            long long err_status = UNIX_FILE_LSEEK_ERR - errno;
+            result = ASSERT_ERROR(status >= 0, err_status, "Lseek error for \"%s\", errno = \"%s\", status = %ld.",
+                                  fco.physical_path().c_str(), strerror(errno), err_status);
         }
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to lseek       
-        long long status = lseek( fco.file_descriptor(),  _offset, _whence );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_LSEEK_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_lseek_plugin: lseek error for ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // unix_file_lseek_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX fsync
     eirods::error unix_file_fsync_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
+        
+            // =-=-=-=-=-=-=-
+            // make the call to fsync       
+            int status = fsync( fco.file_descriptor() );
+
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            int err_status = UNIX_FILE_LSEEK_ERR - errno;
+            result = ASSERT_ERROR(status >= 0, err_status, "Fsync error for \"%s\", errno = \"%s\", status = %d.",
+                                  fco.physical_path().c_str(), strerror(errno), err_status); 
         }
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to fsync       
-        int status = fsync( fco.file_descriptor() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_LSEEK_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_fsync_plugin: fsync error for ";
-            msg << fco.file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // unix_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
     eirods::error unix_file_mkdir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=- 
         // NOTE :: this function assumes the object's physical path is correct and 
         //         should not have the vault path prepended - hcj
-        if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "unix_file_mkdir_plugin - invalid resource context" );
-        }
+        if((result = ASSERT_ERROR(_ctx, SYS_INVALID_INPUT_PARAM, "Invalid resource context." )).ok()) {
          
-        eirods::error ret = _ctx->valid< eirods::collection_object >(); 
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - resource context is invalid";
-            return PASSMSG( msg.str(), ret );
-        }
- 
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the call to mkdir & umask
-        mode_t myMask = umask( ( mode_t ) 0000 );
-        int    status = mkdir( coll_obj.physical_path().c_str(), coll_obj.mode() );
-
-        // =-=-=-=-=-=-=-
-        // reset the old mask 
-        umask( ( mode_t ) myMask );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_MKDIR_ERR - errno;
- 
-            if (errno != EEXIST) {
+            eirods::error ret = _ctx->valid< eirods::collection_object >(); 
+            if(!ret.ok()) {
                 std::stringstream msg;
-                msg << "unix_file_mkdir_plugin: mkdir error for ";
-                msg << coll_obj.physical_path();
-                msg << ", errno = '";
-                msg << strerror( errno );
-                msg << "', status = ";
-                msg << status;
+                msg << __FUNCTION__ << " - resource context is invalid";
+                return PASSMSG( msg.str(), ret );
+            }
+ 
+            // =-=-=-=-=-=-=-
+            // cast down the chain to our understood object type
+            eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+
+            // =-=-=-=-=-=-=-
+            // make the call to mkdir & umask
+            mode_t myMask = umask( ( mode_t ) 0000 );
+            int    status = mkdir( coll_obj.physical_path().c_str(), coll_obj.mode() );
+
+            // =-=-=-=-=-=-=-
+            // reset the old mask 
+            umask( ( mode_t ) myMask );
+
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            if( status < 0 ) {
+                status = UNIX_FILE_MKDIR_ERR - errno;
+ 
+                if (errno != EEXIST) {
+                    std::stringstream msg;
+                    msg << "unix_file_mkdir_plugin: mkdir error for ";
+                    msg << coll_obj.physical_path();
+                    msg << ", errno = '";
+                    msg << strerror( errno );
+                    msg << "', status = ";
+                    msg << status;
                                 
-                return ERROR( status, msg.str() );
+                    return ERROR( status, msg.str() );
 
-            } // if errno != EEXIST
+                } // if errno != EEXIST
 
-        } // if status < 0 
-
-        return CODE( status );
+            } // if status < 0 
+        }
+        
+        return result;
 
     } // unix_file_mkdir_plugin
 

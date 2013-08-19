@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cstdarg>
 
 namespace eirods {
 
@@ -42,11 +43,14 @@ namespace eirods {
 		
         // =-=-=-=-=-=-=-
         // Members
-        bool        status();
-        long long   code();
+        bool        status() const;
+        long long   code() const;
         std::string result();
         bool        ok();
 
+        // Mutators
+        void code(long long _code) { code_ = _code; }
+        
     private:
         // =-=-=-=-=-=-=-
         // Attributes
@@ -61,6 +65,9 @@ namespace eirods {
 		
     }; // class error
 
+    error assert_error(bool expr_, long long code_, const std::string& file_, const std::string& function_, int line_, const std::string& format_, ...);
+    error assert_pass(bool expr_, const error& , const std::string& file_, const std::string& function_, int line_, const std::string& format_, ...);
+    
 }; // namespace eirods
 
 
@@ -70,6 +77,9 @@ namespace eirods {
 #define PASSMSG( message_, prev_error_ ) (eirods::error( prev_error_.status(), prev_error_.code(), message_, __FILE__, __LINE__, __FUNCTION__, prev_error_ ) )
 #define CODE( code_ ) ( eirods::error( true, code_, "", __FILE__, __LINE__, __FUNCTION__ ) )
 #define SUCCESS( ) ( eirods::error( true, 0, "", __FILE__, __LINE__, __FUNCTION__ ) )
+
+#define ASSERT_ERROR(expr_, code_, format_, ...)  (eirods::assert_error(expr_, code_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
+#define ASSERT_PASS(prev_error_, format_, ...) (eirods::assert_pass(prev_error_.ok(), prev_error_, __FILE__, __FUNCTION__, __LINE__, format_, ##__VA_ARGS__))
 
 #endif // __EIRODS_ERROR_H__
 
