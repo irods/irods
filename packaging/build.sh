@@ -163,6 +163,11 @@ fi
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
+# set up git commit hooks
+#if [ -d ".git" ] ; then
+#    cp ./packaging/pre-commit ./.git/hooks/pre-commit
+#fi
+
 MANDIR=man
 # check for clean
 if [ "$1" == "clean" ] ; then
