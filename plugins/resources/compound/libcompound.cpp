@@ -89,8 +89,8 @@ eirods::error get_next_child(
     // =-=-=-=-=-=-=-
     // get the resource after this resource
     eirods::hierarchy_parser parser;
-    DEST_TYPE& dst_obj = dynamic_cast< DEST_TYPE& >( _ctx.fco() );
-    parser.set_string( dst_obj.resc_hier() );
+    boost::shared_ptr< DEST_TYPE > dst_obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
+    parser.set_string( dst_obj->resc_hier() );
 
     std::string child;
     ret = parser.next( name, child );
@@ -221,10 +221,10 @@ eirods::error get_cache_resc(
 
     // Make sure the file object came from the cache resource
     else if(_resc != next_resc) {
-        DEST_TYPE& obj = dynamic_cast< DEST_TYPE& >( _ctx.fco() );
+        boost::shared_ptr< DEST_TYPE > obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
         std::stringstream msg;
         msg << "Cannot open data object: \"";
-        msg << obj.physical_path();
+        msg << obj->physical_path();
         msg << "\" It is stored in an archive resource which is not directly accessible.";
         result = ERROR(EIRODS_DIRECT_ARCHIVE_ACCESS, msg.str());
     }
@@ -369,12 +369,12 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // get the file object from the fco
-        eirods::file_object& obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // get the root resource to pass to the cond input
         eirods::hierarchy_parser parser;
-        parser.set_string( obj.resc_hier() );
+        parser.set_string( obj->resc_hier() );
 
         std::string resource;
         parser.first_resc( resource );
@@ -398,7 +398,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // manufacture a resc hier to either the archive or the cache resc
         std::string keyword  = _stage_sync_kw;
-        std::string inp_hier = obj.resc_hier();
+        std::string inp_hier = obj->resc_hier();
         std::string tgt_name, src_name;
 
         if( keyword == STAGE_OBJ_KW ) {
@@ -427,8 +427,8 @@ extern "C" {
         // the _stage_sync_kw will either stage or sync the data object 
         dataObjInp_t data_obj_inp;
         bzero( &data_obj_inp, sizeof( data_obj_inp ) );
-        rstrcpy( data_obj_inp.objPath, obj.logical_path().c_str(), MAX_NAME_LEN );
-        data_obj_inp.createMode = obj.mode();
+        rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
+        data_obj_inp.createMode = obj->mode();
         addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
@@ -445,7 +445,7 @@ extern "C" {
             char* sys_error;
             char* rods_error = rodsErrorName(status, &sys_error);
             std::stringstream msg;
-            msg << "Failed to replicate the data object [" << obj.logical_path() << "] ";
+            msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
             msg << "for operation [" << _stage_sync_kw << "]";
             return ERROR( status, msg.str() );
         }
@@ -1011,13 +1011,8 @@ extern "C" {
         std::string flag;
         ret = _ctx.prop_map().get< std::string >( SYNC_FLAG, flag );
         if( ret.ok() ) {
-            eirods::file_object* fo = dynamic_cast<eirods::file_object*>(&_ctx.fco());
-            if(fo == NULL) {
-                std::stringstream msg;
-                msg << "Unable to cast first class object to file object.";
-                return ERROR(SYS_INVALID_INPUT_PARAM, msg.str());
-            }
-            if(!fo->in_pdmo()) {
+            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            if(!file_obj->in_pdmo()) {
                 if( SYNC_CREATE == flag ) {
                     return repl_object( _ctx, SYNC_OBJ_KW, false );
                 } else if( SYNC_UPDATE == flag ) {
@@ -1332,10 +1327,6 @@ extern "C" {
             return ERROR( SYS_INVALID_INPUT_PARAM, "null outgoing vote" );
         }
         
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
-
         // =-=-=-=-=-=-=-
         // get the name of this resource
         std::string resc_name;

@@ -117,8 +117,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
-        eirods::net_obj_ptr _ptr,
-        std::string&        _result ) {
+        eirods::network_object_ptr _ptr,
+        std::string&               _result ) {
         // =-=-=-=-=-=-=-
         // prep the out variable
         _result.clear();
@@ -216,8 +216,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error send_client_server_negotiation_message( 
-        eirods::net_obj_ptr _ptr, 
-        cs_neg_t&           _cs_neg_msg ) {
+        eirods::network_object_ptr _ptr, 
+        cs_neg_t&                  _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // pack the negotiation message
         bytesBuf_t* cs_neg_buf = 0;
@@ -250,7 +250,7 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error read_client_server_negotiation_message( 
-        eirods::net_obj_ptr             _ptr, 
+        eirods::network_object_ptr      _ptr, 
         boost::shared_ptr< cs_neg_t >&  _cs_neg_msg ) {
         // =-=-=-=-=-=-=-
         // read the message header 

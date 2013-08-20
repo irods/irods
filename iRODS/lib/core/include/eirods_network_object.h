@@ -65,7 +65,7 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // helpful typedef for sock comm interface & factory
-    typedef boost::shared_ptr< network_object > net_obj_ptr;
+    typedef boost::shared_ptr< network_object > network_object_ptr;
 
 }; // namespace eirods
 

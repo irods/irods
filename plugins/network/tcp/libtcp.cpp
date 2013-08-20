@@ -211,8 +211,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object& tcp = dynamic_cast< eirods::tcp_object& >( _ctx.fco() );
-        int socket_handle = tcp.socket_handle();
+        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=- 
         // read the header length packet */
@@ -226,7 +226,7 @@ extern "C" {
                   _time_val );
         if( !ret.ok() || 
             bytes_read != sizeof( header_length ) ) {
-eirods::log( ret );
+
             int status = 0;
             if( bytes_read < 0) {
                 status =  bytes_read - errno;
@@ -315,8 +315,8 @@ eirods::log( ret );
         
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object& tcp = dynamic_cast< eirods::tcp_object& >( _ctx.fco() );
-        int socket_handle = tcp.socket_handle();
+        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=-
         // convert host byte order to network byte order
@@ -387,8 +387,8 @@ eirods::log( ret );
 
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object& tcp = dynamic_cast< eirods::tcp_object& >( _ctx.fco() );
-        int socket_handle = tcp.socket_handle();
+        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=-
         // initialize a new header
@@ -412,9 +412,8 @@ eirods::log( ret );
         
         // =-=-=-=-=-=-=-
         // send the header
-        eirods::net_obj_ptr net_obj( new eirods::tcp_object( tcp ) );
         ret = writeMsgHeader( 
-                  net_obj,
+                  tcp,
                   &msg_header ); 
         if( !ret.ok() ) {
            return PASSMSG( "writeMsgHeader failed", ret ); 
@@ -556,8 +555,8 @@ eirods::log( ret );
 
         // =-=-=-=-=-=-=-
         // extract the useful bits from the context
-        eirods::tcp_object& tcp = dynamic_cast< eirods::tcp_object& >( _ctx.fco() );
-        int socket_handle = tcp.socket_handle();
+        eirods::tcp_object_ptr tcp = boost::dynamic_pointer_cast< eirods::tcp_object >( _ctx.fco() );
+        int socket_handle = tcp->socket_handle();
 
         // =-=-=-=-=-=-=-
         // trap header ptr

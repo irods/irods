@@ -75,10 +75,12 @@ remoteFileFsync (rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp,
 
 // =-=-=-=-=-=-=-
 // local function to handle call to fsync via resource plugin
-int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
+int _rsFileFsync( 
+    rsComm_t*       _comm, 
+    fileFsyncInp_t* _fsync_inp ) {
 
-    if(FileDesc[fileFsyncInp->fileInx].objPath == NULL ||
-       FileDesc[fileFsyncInp->fileInx].objPath[0] == '\0') {
+    if(FileDesc[_fsync_inp->fileInx].objPath == NULL ||
+       FileDesc[_fsync_inp->fileInx].objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -88,20 +90,22 @@ int _rsFileFsync( rsComm_t *rsComm, fileFsyncInp_t *fileFsyncInp ) {
     
     // =-=-=-=-=-=-=-
     // make call to fsync via resource plugin
-    eirods::file_object file_obj(  rsComm,
-                                   FileDesc[fileFsyncInp->fileInx].objPath,
-                                   FileDesc[fileFsyncInp->fileInx].fileName,
-                                   FileDesc[fileFsyncInp->fileInx].rescHier,
-                                   FileDesc[fileFsyncInp->fileInx].fd,
-                                   0, 0 );
-    eirods::error fsync_err = fileFsync( rsComm, file_obj );
+    eirods::file_object_ptr file_obj(  
+                                new eirods::file_object( 
+                                    _comm,
+                                    FileDesc[_fsync_inp->fileInx].objPath,
+                                    FileDesc[_fsync_inp->fileInx].fileName,
+                                    FileDesc[_fsync_inp->fileInx].rescHier,
+                                    FileDesc[_fsync_inp->fileInx].fd,
+                                    0, 0 ) );
+    eirods::error fsync_err = fileFsync( _comm, file_obj );
 
     // =-=-=-=-=-=-=-
     // log error if necessary
     if( !fsync_err.ok() ) {
         std::stringstream msg;
         msg << "fsync failed for [";
-        msg << FileDesc[fileFsyncInp->fileInx].fileName;
+        msg << FileDesc[_fsync_inp->fileInx].fileName;
         msg << "]";
         eirods::error ret_err = PASSMSG( msg.str(), fsync_err );
         eirods::log( ret_err );

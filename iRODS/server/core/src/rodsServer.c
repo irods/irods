@@ -345,7 +345,7 @@ serverMain (char *logDir)
             // plugin interface.  repave with newSock as that is the 
             // operational socket at this point
 
-            eirods::net_obj_ptr net_obj;
+            eirods::network_object_ptr net_obj;
             eirods::error ret = eirods::network_factory( &svrComm, net_obj );
             if( !ret.ok() ) {
                 eirods::log( PASS( ret ) );
@@ -1154,7 +1154,7 @@ readWorkerTask ()
     rcComm_t            tmp_comm;
     bzero( &tmp_comm, sizeof( rcComm_t ) );
 
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
     if( !ret.ok() || !net_obj.get() ) {
         eirods::log( PASS( ret ) );
@@ -1325,7 +1325,7 @@ procSingleConnReq (agentProc_t *connReq)
     rcComm_t            tmp_comm;
     bzero( &tmp_comm, sizeof( rcComm_t ) );
     
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( &tmp_comm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );

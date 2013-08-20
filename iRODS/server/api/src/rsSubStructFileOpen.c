@@ -66,15 +66,16 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsSubStructFileOpen( rsComm_t*  _comm,
-                      subFile_t* _sub_file ) {
-
+_rsSubStructFileOpen( 
+    rsComm_t*  _comm,
+    subFile_t* _sub_file ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj( *_sub_file );
-    struct_obj.comm( _comm );
-    
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          *_sub_file ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
@@ -82,7 +83,7 @@ _rsSubStructFileOpen( rsComm_t*  _comm,
     if( !open_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileOpen for [";
-        msg << struct_obj.sub_file_path();
+        msg << struct_obj->sub_file_path();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), open_err ) );
         return open_err.code();

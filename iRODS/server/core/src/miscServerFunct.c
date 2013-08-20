@@ -1888,7 +1888,7 @@ reconnManager (rsComm_t *rsComm)
         
         // =-=-=-=-=-=-=-
         // create a network object
-        eirods::net_obj_ptr net_obj;
+        eirods::network_object_ptr net_obj;
         eirods::error ret = eirods::network_factory( rsComm, net_obj );
         if( !ret.ok() ) {
             eirods::log( PASS( ret ) );
@@ -2348,7 +2348,7 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
 int
 readStartupPack(
-    eirods::net_obj_ptr _ptr, 
+    eirods::network_object_ptr _ptr, 
     startupPack_t**     startupPack, 
     struct timeval*     tv ) {
     int status;

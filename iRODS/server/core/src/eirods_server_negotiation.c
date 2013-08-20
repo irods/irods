@@ -16,8 +16,8 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server( 
-        eirods::net_obj_ptr _ptr,
-        std::string&        _result ) {
+        eirods::network_object_ptr _ptr,
+        std::string&               _result ) {
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule
         ruleExecInfo_t rei;

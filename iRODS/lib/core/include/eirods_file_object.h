@@ -101,12 +101,17 @@ namespace eirods {
         keyValPair_t                  cond_input_;      // input keywords
         
     }; // class file_object
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for managed file object ptr
+    typedef boost::shared_ptr< file_object > file_object_ptr;
+     
 
     // =-=-=-=-=-=-=-
     // factory function which will take a dataObjInfo pointer and create a file_object
-    error file_object_factory( rsComm_t*,      // server network connection  
-                               dataObjInp_t*,  // incoming data object request struct
-                               file_object& ); // out var for file object
+    error file_object_factory( rsComm_t*,         // server network connection  
+                               dataObjInp_t*,     // incoming data object request struct
+                               file_object_ptr ); // out var for file object
     // =-=-=-=-=-=-=-
     // function which will inform eirods as to which server to select for a given operation
     error resource_redirect( const std::string&,   // operation in question

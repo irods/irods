@@ -19,8 +19,8 @@ namespace eirods {
    // super basic free factory function to create either a tcp
    // object or an ssl object based on wether ssl has been enabled
    static eirods::error network_factory( 
-       rcComm_t*           _comm,
-       eirods::net_obj_ptr& _ptr ) {
+       rcComm_t*                   _comm,
+       eirods::network_object_ptr& _ptr ) {
        // =-=-=-=-=-=-=-
        // param check 
        if( !_comm ) {
@@ -60,8 +60,9 @@ namespace eirods {
    // =-=-=-=-=-=-=-
    // version for server connection as well
    static eirods::error network_factory( 
-       rsComm_t*           _comm,
-       eirods::net_obj_ptr& _ptr ) {
+       rsComm_t*                   _comm,
+       eirods::network_object_ptr& _ptr ) {
+
        // =-=-=-=-=-=-=-
        // param check 
        if( !_comm ) {

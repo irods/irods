@@ -691,7 +691,7 @@ procReqRoutine ()
 
     // =-=-=-=-=-=-=-
     // maufacture a network object
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( &rsComm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );

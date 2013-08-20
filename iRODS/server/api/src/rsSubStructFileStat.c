@@ -70,10 +70,12 @@ int _rsSubStructFileStat( rsComm_t*    _comm,
                           rodsStat_t** _stat_out ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj( *_sub_file );
-    struct_obj.comm( _comm );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          *_sub_file ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // call abstracted interface to stat

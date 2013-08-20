@@ -80,19 +80,23 @@ int _rsSubStructFileRead( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj;
-    struct_obj.comm( _comm );
-    struct_obj.file_descriptor( _read_inp->fd );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object(  ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->file_descriptor( _read_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
-    eirods::error read_err = fileRead( _comm, struct_obj, _out_buf->buf, _read_inp->len );
+    eirods::error read_err = fileRead( 
+                                 _comm, 
+                                 struct_obj, 
+                                 _out_buf->buf, 
+                                 _read_inp->len );
     if( !read_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileRead for [";
-        msg << struct_obj.physical_path();
+        msg << struct_obj->physical_path();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), read_err ) );
         _out_buf->len = 0;

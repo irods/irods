@@ -72,6 +72,10 @@ namespace eirods {
 
     }; // class structured_object
 
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for shared structured object pointer
+    typedef boost::shared_ptr< structured_object > structured_object_ptr;
+
 }; // namespace eirods
 
 #endif // __EIRODS_STRUCTURED_OBJECT_H__

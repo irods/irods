@@ -82,28 +82,31 @@ remoteFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp,
     return status;
 }
 
-int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGetOutBBuf ) {
+int _rsFileGet(
+    rsComm_t*      _comm, 
+    fileOpenInp_t* _get_inp, 
+    bytesBuf_t*    _get_buf ) {
 
     int fd;
     int len;
 
-    len = fileGetInp->dataSize;
+    len = _get_inp->dataSize;
     if (len <= 0)
         return (0);
-    fd = _rsFileOpen (rsComm, fileGetInp);
+    fd = _rsFileOpen (_comm, _get_inp);
 
     if (fd < 0) {
         rodsLog (LOG_NOTICE,
                  "_rsFileGet: fileGet for %s, status = %d",
-                 fileGetInp->fileName, fd);
+                 _get_inp->fileName, fd);
         return (fd);
     }
 
-    if (fileGetOutBBuf->buf == NULL) {
-        fileGetOutBBuf->buf = malloc (len);
+    if (_get_buf->buf == NULL) {
+        _get_buf->buf = malloc (len);
     }
 
-    if(fileGetInp->objPath[0] == '\0') {
+    if(_get_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -111,32 +114,40 @@ int _rsFileGet (rsComm_t *rsComm, fileOpenInp_t *fileGetInp, bytesBuf_t *fileGet
         return -1;
     }
     
-    eirods::file_object file_obj( rsComm, fileGetInp->objPath, fileGetInp->fileName, fileGetInp->resc_hier_, fd, fileGetInp->mode, fileGetInp->flags  );
-    eirods::error read_err = fileRead( rsComm,
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    _get_inp->objPath, 
+                                    _get_inp->fileName, 
+                                    _get_inp->resc_hier_, 
+                                    fd, 
+                                    _get_inp->mode, 
+                                    _get_inp->flags  ) );
+    eirods::error read_err = fileRead( _comm,
                                        file_obj,
-                                       fileGetOutBBuf->buf, 
+                                       _get_buf->buf, 
                                        len );
     int bytes_read = read_err.code();
     if ( bytes_read != len ) {
         if ( bytes_read >= 0) {
         
-            fileGetOutBBuf->len = bytes_read;
+            _get_buf->len = bytes_read;
 
         } else {
             std::stringstream msg;
             msg << "fileRead failed for [";
-            msg << fileGetInp->fileName;
+            msg << _get_inp->fileName;
             msg << "]";
             eirods::error ret_err = PASSMSG( msg.str(), read_err );
             eirods::log( ret_err );
         }
     } else {
-        fileGetOutBBuf->len = bytes_read;
+        _get_buf->len = bytes_read;
     }
 
     // =-=-=-=-=-=-=-
     // call resource plugin close 
-    eirods::error close_err = fileClose( rsComm,
+    eirods::error close_err = fileClose( _comm,
                                          file_obj );
     if( !close_err.ok() ) {
         eirods::error err = PASSMSG( "error on close", close_err );

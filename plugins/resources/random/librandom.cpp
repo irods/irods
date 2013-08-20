@@ -115,8 +115,8 @@ eirods::error random_get_resc_for_call(
 
     // =-=-=-=-=-=-=-
     // get the object's hier string
-    DEST_TYPE& dst_obj = dynamic_cast< DEST_TYPE& >( _ctx.fco() );
-    std::string hier = dst_obj.resc_hier( );
+    boost::shared_ptr< DEST_TYPE > dst_obj = boost::dynamic_pointer_cast< DEST_TYPE >( _ctx.fco() );
+    std::string hier = dst_obj->resc_hier( );
   
     // =-=-=-=-=-=-=-
     // get the next child pointer given our name and the hier string
@@ -692,8 +692,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get the object's hier string
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
-        std::string hier = file_obj.resc_hier( );
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        std::string hier = file_obj->resc_hier( );
  
         // =-=-=-=-=-=-=-
         // get the object's hier string

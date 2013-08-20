@@ -78,12 +78,14 @@ remoteFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp,
     return status;
 }
 
-// =-=-=-=-=-=-=-
-// 
-int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **fileFstatOut ) {
-
-    if(FileDesc[fileFstatInp->fileInx].objPath == NULL ||
-       FileDesc[fileFstatInp->fileInx].objPath[0] == '\0') {
+int _rsFileFstat(
+    rsComm_t*       _comm, 
+    fileFstatInp_t* _fstat_inp, 
+    rodsStat_t**    _fstat_out ) {
+    // =-=-=-=-=-=-=-
+    // 
+    if(FileDesc[_fstat_inp->fileInx].objPath == NULL ||
+       FileDesc[_fstat_inp->fileInx].objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -94,20 +96,22 @@ int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **f
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
     struct stat myFileStat;
-    eirods::file_object file_obj( rsComm, 
-                                  FileDesc[fileFstatInp->fileInx].objPath, 
-                                  FileDesc[fileFstatInp->fileInx].fileName, 
-                                  FileDesc[fileFstatInp->fileInx].rescHier, 
-                                  FileDesc[fileFstatInp->fileInx].fd,
-                                  0, 0 );
-    eirods::error stat_err = fileFstat( rsComm, file_obj, &myFileStat );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    FileDesc[_fstat_inp->fileInx].objPath, 
+                                    FileDesc[_fstat_inp->fileInx].fileName, 
+                                    FileDesc[_fstat_inp->fileInx].rescHier, 
+                                    FileDesc[_fstat_inp->fileInx].fd,
+                                    0, 0 ) );
+    eirods::error stat_err = fileFstat( _comm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-
     // log error if necessary
     if( !stat_err.ok() ) {
         std::stringstream msg;
         msg << "fileFstat for [";
-        msg << FileDesc[fileFstatInp->fileInx].fileName;
+        msg << FileDesc[_fstat_inp->fileInx].fileName;
         msg << "]";
         eirods::error ret_err = PASSMSG( msg.str(), stat_err );
         eirods::log( ret_err );
@@ -117,14 +121,14 @@ int _rsFileFstat (rsComm_t *rsComm, fileFstatInp_t *fileFstatInp, rodsStat_t **f
 
     // =-=-=-=-=-=-=-
     // convert unix stat struct to an irods stat struct
-    *fileFstatOut = (rodsStat_t*)malloc (sizeof (rodsStat_t));
-    int status = statToRodsStat(*fileFstatOut, &myFileStat);
+    *_fstat_out = (rodsStat_t*)malloc (sizeof (rodsStat_t));
+    int status = statToRodsStat(*_fstat_out, &myFileStat);
 
     // =-=-=-=-=-=-=-
     // manage error if necessary
     if (status < 0) {
-        free (*fileFstatOut);
-        *fileFstatOut = NULL;
+        free (*_fstat_out);
+        *_fstat_out = NULL;
     }
 
     return status;

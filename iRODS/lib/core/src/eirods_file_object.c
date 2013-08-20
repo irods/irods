@@ -198,9 +198,9 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // static factory to create file_object from dataobjinfo linked list
-    error file_object_factory( rsComm_t*     _comm,
-                               dataObjInp_t* _data_obj_inp,
-                               file_object&  _file_obj ) {
+    error file_object_factory( rsComm_t*        _comm,
+                               dataObjInp_t*    _data_obj_inp,
+                               file_object_ptr  _file_obj ) {
         // =-=-=-=-=-=-=-
         // make a call to build the linked list 
         dataObjInfo_t* head_ptr = 0;
@@ -227,22 +227,22 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // start populating file_object
-        _file_obj.comm( _comm );
-        _file_obj.logical_path( _data_obj_inp->objPath );
-        _file_obj.resc_hier( head_ptr->rescHier );
-        _file_obj.cond_input( _data_obj_inp->condInput );
+        _file_obj->comm( _comm );
+        _file_obj->logical_path( _data_obj_inp->objPath );
+        _file_obj->resc_hier( head_ptr->rescHier );
+        _file_obj->cond_input( _data_obj_inp->condInput );
         
         // =-=-=-=-=-=-=-
         // handle requested repl number
         char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
         if( repl_num ) {
-            _file_obj.repl_requested( atoi( repl_num ) );
+            _file_obj->repl_requested( atoi( repl_num ) );
         }
 
         // handle the case where we are being called as part of a pdmo
         char* in_pdmo = getValByKey(&_data_obj_inp->condInput, IN_PDMO_KW);
         if(in_pdmo) {
-            _file_obj.in_pdmo(true);
+            _file_obj->in_pdmo(true);
         }
         
         // =-=-=-=-=-=-=-
@@ -282,7 +282,7 @@ namespace eirods {
 
         } // while
 
-        _file_obj.replicas( objects );
+        _file_obj->replicas( objects );
 
         //delete head_ptr->rescInfo;
         //free( head_ptr );

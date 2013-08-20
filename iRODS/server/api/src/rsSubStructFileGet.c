@@ -72,10 +72,11 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
                          bytesBuf_t* _out_buf ) {
     // =-=-=-=-=-=-=-
     // convert subfile to a first class object
-    eirods::structured_object struct_obj( *_sub_file );
-    struct_obj.comm( _comm );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          *_sub_file ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     if( _sub_file->offset <= 0 ) {
         eirods::log( ERROR( SYS_INVALID_INPUT_PARAM, "invalid length" ) );
@@ -88,7 +89,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     if( !open_err.ok() ) {
         std::stringstream msg;
         msg << "fileOpen error for [";
-        msg << struct_obj.sub_file_path();
+        msg << struct_obj->sub_file_path();
         msg << "], status = ";
         msg << open_err.code();
         eirods::log( PASSMSG( msg.str(), open_err ) );  
@@ -110,7 +111,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
        if( status >= 0 ) {
             std::stringstream msg;
             msg << "failed in fileRead for [";
-            msg << struct_obj.sub_file_path();
+            msg << struct_obj->sub_file_path();
             msg << ", toread ";
             msg << _sub_file->offset;
             msg << ", read ";
@@ -121,7 +122,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
         } else {
             std::stringstream msg;
             msg << "failed in fileRead for [";
-            msg << struct_obj.sub_file_path();
+            msg << struct_obj->sub_file_path();
             msg << ", status = ";
             msg << read_err.code();
             eirods::log( PASSMSG( msg.str(), read_err ) );
@@ -139,7 +140,7 @@ int _rsSubStructFileGet( rsComm_t*   _comm,
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "failed in fileClose for [";
-        msg << struct_obj.sub_file_path();
+        msg << struct_obj->sub_file_path();
         msg << ", status = ";
         msg << close_err.code();
         eirods::log( PASSMSG( msg.str(), read_err ) );

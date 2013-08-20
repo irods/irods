@@ -61,6 +61,10 @@ namespace eirods {
 
     }; // class collection_object
 
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for managed collection object pointer
+    typedef boost::shared_ptr< collection_object > collection_object_ptr;
+
 }; // namespace eirods
 
 #endif // __EIRODS_COLLECTION_OBJECT_H__

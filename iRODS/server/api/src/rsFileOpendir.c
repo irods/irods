@@ -88,28 +88,35 @@ rodsServerHost_t *rodsServerHost)
 
 // =-=-=-=-=-=-=-
 // _rsFileOpendir - this the local version of rsFileOpendir.
-int _rsFileOpendir( rsComm_t *rsComm, fileOpendirInp_t *fileOpendirInp, void **dirPtr ) {
+int _rsFileOpendir( 
+    rsComm_t*         _comm, 
+    fileOpendirInp_t* _opendir_inp, 
+    void**            _dir_ptr ) {
     // =-=-=-=-=-=-=-
     // FIXME:: XXXX need to check resource permission and vault permission
     // when RCAT is available 
      
     // =-=-=-=-=-=-=-
 	// make the call to opendir via resource plugin
-    eirods::collection_object coll_obj( fileOpendirInp->dirName, fileOpendirInp->resc_hier_, 0, 0 );
-    eirods::error opendir_err = fileOpendir( rsComm, coll_obj );
+    eirods::collection_object_ptr coll_obj( 
+                                      new eirods::collection_object( 
+                                          _opendir_inp->dirName, 
+                                          _opendir_inp->resc_hier_, 
+                                          0, 0 ) );
+    eirods::error opendir_err = fileOpendir( _comm, coll_obj );
 
     // =-=-=-=-=-=-=-
 	// log an error, if any
     if( !opendir_err.ok() ) {
 		std::stringstream msg;
 		msg << "fileOpendir failed for [";
-		msg <<fileOpendirInp->dirName; 
+		msg <<_opendir_inp->dirName; 
 		msg << "]";
 		eirods::error err = PASSMSG( msg.str(), opendir_err );
 		eirods::log ( err );
 	}
 
-    (*dirPtr) = coll_obj.directory_pointer(); // JMC -- TEMPORARY 
+    (*_dir_ptr) = coll_obj->directory_pointer(); // JMC -- TEMPORARY 
 
     return (opendir_err.code());
 

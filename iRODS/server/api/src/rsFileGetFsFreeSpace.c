@@ -87,10 +87,13 @@ remoteFileGetFsFreeSpace (rsComm_t *rsComm,
 
 // =-=-=-=-=-=-=-
 // local function to make call to freespace via resource plugin
-int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsFreeSpaceInp, 
-                           fileGetFsFreeSpaceOut_t **fileGetFsFreeSpaceOut) {
-
-    if(fileGetFsFreeSpaceInp->objPath[0] == '\0') {
+int _rsFileGetFsFreeSpace( 
+    rsComm_t*                 _comm, 
+    fileGetFsFreeSpaceInp_t*  _freespace_inp, 
+    fileGetFsFreeSpaceOut_t** _freespace_out ) {
+    // =-=-=-=-=-=-=-
+    //
+    if(_freespace_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -100,16 +103,22 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
     
     // =-=-=-=-=-=-=-
     // make call to freespace via resource plugin
-    eirods::file_object file_obj( rsComm, fileGetFsFreeSpaceInp->objPath, fileGetFsFreeSpaceInp->fileName, fileGetFsFreeSpaceInp->rescHier,
-                                  0, 0, fileGetFsFreeSpaceInp->flag );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    _freespace_inp->objPath, 
+                                    _freespace_inp->fileName, 
+                                    _freespace_inp->rescHier,
+                                    0, 0, 
+                                    _freespace_inp->flag ) );
  
-    eirods::error free_err = fileGetFsFreeSpace( rsComm, file_obj );
+    eirods::error free_err = fileGetFsFreeSpace( _comm, file_obj );
     // =-=-=-=-=-=-=-
     // handle errors if any
     if( !free_err.ok() ) {
         std::stringstream msg;
         msg << "fileGetFsFreeSpace failed for [";
-        msg << fileGetFsFreeSpaceInp->fileName;
+        msg << _freespace_inp->fileName;
         msg << "]";
         eirods::error err = PASSMSG( msg.str(), free_err );
         eirods::log ( err );
@@ -118,8 +127,8 @@ int _rsFileGetFsFreeSpace( rsComm_t *rsComm, fileGetFsFreeSpaceInp_t *fileGetFsF
 
     // =-=-=-=-=-=-=-
     // otherwise its a success, set size appropriately
-    *fileGetFsFreeSpaceOut = (fileGetFsFreeSpaceOut_t*)malloc (sizeof (fileGetFsFreeSpaceOut_t));
-    (*fileGetFsFreeSpaceOut)->size = free_err.code();
+    *_freespace_out  = (fileGetFsFreeSpaceOut_t*)malloc (sizeof (fileGetFsFreeSpaceOut_t));
+    (*_freespace_out )->size = free_err.code();
 
     return (0);
 

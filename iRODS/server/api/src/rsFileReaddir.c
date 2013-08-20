@@ -80,13 +80,18 @@ remoteFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
 
 // =-=-=-=-=-=-=-
 // local function to call readdir via resource plugin
-int _rsFileReaddir( rsComm_t*         _comm, 
-                    fileReaddirInp_t* _file_readdir_inp, 
-                    rodsDirent_t**    _rods_dirent ) {
+int _rsFileReaddir( 
+    rsComm_t*         _comm, 
+    fileReaddirInp_t* _file_readdir_inp, 
+    rodsDirent_t**    _rods_dirent ) {
     // =-=-=-=-=-=-=-
     // create a collection_object, and extract dir ptr from the file desc table
-    eirods::collection_object coll_obj( FileDesc[ _file_readdir_inp->fileInx].fileName, FileDesc[ _file_readdir_inp->fileInx].rescHier, 0, 0 );
-    coll_obj.directory_pointer( reinterpret_cast< DIR* >( FileDesc[ _file_readdir_inp->fileInx].driverDep ) ); 
+    eirods::collection_object_ptr coll_obj( 
+                                      new eirods::collection_object( 
+                                          FileDesc[ _file_readdir_inp->fileInx].fileName, 
+                                          FileDesc[ _file_readdir_inp->fileInx].rescHier, 
+                                          0, 0 ) );
+    coll_obj->directory_pointer( reinterpret_cast< DIR* >( FileDesc[ _file_readdir_inp->fileInx].driverDep ) ); 
 
     // =-=-=-=-=-=-=-
     // make call to readdir via resource plugin and handle errors, if necessary

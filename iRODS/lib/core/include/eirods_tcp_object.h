@@ -51,6 +51,10 @@ namespace eirods {
         
     }; // class tcp_object
 
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for shared tcp object ptr
+    typedef boost::shared_ptr< tcp_object > tcp_object_ptr;
+
 }; // namespace eirods
 
 #endif // __EIRODS_TCP_OBJECT_H__

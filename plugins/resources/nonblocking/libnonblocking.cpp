@@ -110,21 +110,21 @@ eirods::error unix_check_path(
     eirods::error ret;
 
     try { 
-        eirods::data_object& data_obj = dynamic_cast< eirods::data_object& >( _ctx.fco() );
+        eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
         ret = unix_generate_full_path( 
             _ctx.prop_map(), 
-            data_obj.physical_path(),
+            data_obj->physical_path(),
             full_path );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << "Failed generating full path for object.";
             ret = PASSMSG( msg.str(), ret );
         } else {
-            data_obj.physical_path( full_path );
+            data_obj->physical_path( full_path );
         }
     
     } catch( std::bad_cast exp ) {
@@ -226,12 +226,12 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make call to umask & open for create
         mode_t myMask = umask((mode_t) 0000);
-        int    fd     = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
+        int    fd     = open( fco->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco->mode() );
 
         // =-=-=-=-=-=-=-
         // reset the old mask 
@@ -244,12 +244,12 @@ extern "C" {
             close (fd);
             rodsLog( LOG_NOTICE, "nonblocking_file_create_plugin: 0 descriptor" );
             open ("/dev/null", O_RDWR, 0);
-            fd = open( fco.physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco.mode() );
+            fd = open( fco->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco->mode() );
         }
 
         // =-=-=-=-=-=-=-
         // cache file descriptor in out-variable
-        fco.file_descriptor( fd );
+        fco->file_descriptor( fd );
                         
         // =-=-=-=-=-=-=-
         // trap error case with bad fd
@@ -259,11 +259,11 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // WARNING :: Major Assumptions are made upstream and use the FD also as a
             //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
-            fco.file_descriptor( status );
+            fco->file_descriptor( status );
                         
             std::stringstream msg;
             msg << "nonblocking_file_create_plugin: create error for ";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -293,11 +293,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // handle OSX weirdness...
-        int flags = fco.flags();
+        int flags = fco->flags();
 
 #if defined(osx_platform)
         // For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system 
@@ -309,7 +309,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // make call to open
         errno = 0;
-        int fd = open( fco.physical_path().c_str(), flags, fco.mode() );
+        int fd = open( fco->physical_path().c_str(), flags, fco->mode() );
 
         // =-=-=-=-=-=-=-
         // if we got a 0 descriptor, try again
@@ -317,12 +317,12 @@ extern "C" {
             close (fd);
             rodsLog( LOG_NOTICE, "nonblocking_file_open_plugin: 0 descriptor" );
             open ("/dev/null", O_RDWR, 0);
-            fd = open( fco.physical_path().c_str(), flags, fco.mode() );
+            fd = open( fco->physical_path().c_str(), flags, fco->mode() );
         }       
                         
         // =-=-=-=-=-=-=-
         // cache status in the file object
-        fco.file_descriptor( fd );
+        fco->file_descriptor( fd );
 
         // =-=-=-=-=-=-=-
         // did we still get an error?
@@ -331,7 +331,7 @@ extern "C" {
                         
             std::stringstream msg;
             msg << "nonblocking_file_open_plugin: open error for ";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << ", errno = ";
             msg << strerror( errno );
             msg << ", status = ";
@@ -365,7 +365,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
  
         int status;
         struct timeval tv;
@@ -373,7 +373,7 @@ extern "C" {
         int toRead;
         char *tmpPtr;
         fd_set set;
-        int fd = fco.file_descriptor();
+        int fd = fco->file_descriptor();
 
         bzero (&tv, sizeof (tv));
         tv.tv_sec = NB_READ_TOUT_SEC;
@@ -409,7 +409,7 @@ extern "C" {
             }
             #endif
 
-            nbytes = read( fco.file_descriptor(), (void *) tmpPtr, toRead );
+            nbytes = read( fco->file_descriptor(), (void *) tmpPtr, toRead );
             if (nbytes < 0) {
                 if (errno == EINTR) {
                     /* interrupted */
@@ -451,9 +451,9 @@ extern "C" {
          
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
          
-        int fd = fco.file_descriptor();
+        int fd = fco->file_descriptor();
         int nbytes   = 0;
         int toWrite  = 0;
         int status   = 0;
@@ -487,7 +487,7 @@ extern "C" {
             }
             #endif
 
-            nbytes = write ( fco.file_descriptor(), (void *) tmpPtr, _len );
+            nbytes = write ( fco->file_descriptor(), (void *) tmpPtr, _len );
             if (nbytes < 0) {
                 if (errno == EINTR) {
                     /* interrupted */
@@ -521,11 +521,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to close
-        int status = close( fco.file_descriptor() );
+        int status = close( fco->file_descriptor() );
 
         // =-=-=-=-=-=-=-
         // log any error
@@ -560,11 +560,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
+        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to unlink      
-        int status = unlink( fco.physical_path().c_str() );
+        int status = unlink( fco->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // error handling
@@ -573,7 +573,7 @@ extern "C" {
                         
             std::stringstream msg;
             msg << "unlink error for ";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -603,11 +603,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
+        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to stat
-        int status = stat( fco.physical_path().c_str(), _statbuf );
+        int status = stat( fco->physical_path().c_str(), _statbuf );
 
         // =-=-=-=-=-=-=-
         // if the file can't be accessed due to permission denied 
@@ -628,7 +628,7 @@ extern "C" {
  
             std::stringstream msg;
             msg << ": stat error for ";
-            msg << fco.physical_path() << "]";
+            msg << fco->physical_path() << "]";
             return ERROR( status, msg.str() );
         }
                 
@@ -652,11 +652,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to fstat
-        int status = fstat( fco.file_descriptor(), _statbuf );
+        int status = fstat( fco->file_descriptor(), _statbuf );
 
         // =-=-=-=-=-=-=-
         // if the file can't be accessed due to permission denied 
@@ -664,7 +664,7 @@ extern "C" {
 #ifdef RUN_SERVER_AS_ROOT
         if (status < 0 && errno == EACCES && isServiceUserSet()) {
             if (changeToRootUser() == 0) {
-                status = fstat( fco.file_descriptor(), statbuf );
+                status = fstat( fco->file_descriptor(), statbuf );
                 changeToServiceUser();
             }
         }
@@ -677,7 +677,7 @@ extern "C" {
  
             std::stringstream msg;
             msg << "fstat error for: ";
-            msg << fco.file_descriptor(); 
+            msg << fco->file_descriptor(); 
             return ERROR( status, msg.str() );
 
         } // if
@@ -703,11 +703,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to lseek       
-        size_t status = lseek( fco.file_descriptor(),  _offset, _whence );
+        size_t status = lseek( fco->file_descriptor(),  _offset, _whence );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
@@ -716,7 +716,7 @@ extern "C" {
  
             std::stringstream msg;
             msg << "lseek error for ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -743,11 +743,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to fsync       
-        int status = fsync( fco.file_descriptor() );
+        int status = fsync( fco->file_descriptor() );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
@@ -756,7 +756,7 @@ extern "C" {
  
             std::stringstream msg;
             msg << "fsync error for ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -785,12 +785,12 @@ extern "C" {
  
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
+        eirods::collection_object_ptr coll_obj = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the call to mkdir & umask
         mode_t myMask = umask( ( mode_t ) 0000 );
-        int    status = mkdir( coll_obj.physical_path().c_str(), coll_obj.mode() );
+        int    status = mkdir( coll_obj->physical_path().c_str(), coll_obj->mode() );
 
         // =-=-=-=-=-=-=-
         // reset the old mask 
@@ -804,7 +804,7 @@ extern "C" {
             if (errno != EEXIST) {
                 std::stringstream msg;
                 msg << "nonblocking_file_mkdir_plugin: mkdir error for ";
-                msg << coll_obj.physical_path();
+                msg << coll_obj->physical_path();
                 msg << ", errno = '";
                 msg << strerror( errno );
                 msg << "', status = ";
@@ -835,11 +835,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::collection_object& fco = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
+        eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to chmod
-        int status = rmdir( fco.physical_path().c_str() );
+        int status = rmdir( fco->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // return an error if necessary
@@ -848,7 +848,7 @@ extern "C" {
  
             std::stringstream msg;
             msg << "nonblocking_file_rmdir_plugin: mkdir error for ";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -876,11 +876,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
+        eirods::collection_object_ptr coll_obj = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the callt to opendir
-        DIR* dir_ptr = opendir( coll_obj.physical_path().c_str() );
+        DIR* dir_ptr = opendir( coll_obj->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // if the directory can't be accessed due to permission
@@ -888,7 +888,7 @@ extern "C" {
         #ifdef RUN_SERVER_AS_ROOT
         if( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
             if (changeToRootUser() == 0) {
-                dir_ptr = opendir ( coll_obj.physical_path().c_str() );
+                dir_ptr = opendir ( coll_obj->physical_path().c_str() );
                 changeToServiceUser();
             } // if
         } // if
@@ -903,7 +903,7 @@ extern "C" {
 
             std::stringstream msg;
             msg << "nonblocking_file_opendir_plugin: opendir error for ";
-            msg << coll_obj.physical_path();
+            msg << coll_obj->physical_path();
             msg << ", errno = ";
             msg << strerror( errno );
             msg << ", status = ";
@@ -914,7 +914,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cache dir_ptr & status in out variables
-        coll_obj.directory_pointer( dir_ptr );
+        coll_obj->directory_pointer( dir_ptr );
 
         return SUCCESS();
 
@@ -935,11 +935,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
+        eirods::collection_object_ptr coll_obj = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the callt to opendir
-        int status = closedir( coll_obj.directory_pointer() );
+        int status = closedir( coll_obj->directory_pointer() );
                         
         // =-=-=-=-=-=-=-
         // return an error if necessary
@@ -948,7 +948,7 @@ extern "C" {
 
             std::stringstream msg;
             msg << "nonblocking_file_closedir_plugin: closedir error for ";
-            msg << coll_obj.physical_path();
+            msg << coll_obj->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -977,7 +977,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
+        eirods::collection_object_ptr coll_obj = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // zero out errno?
@@ -985,7 +985,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make the call to readdir
-        struct dirent * tmp_dirent = readdir( coll_obj.directory_pointer() );
+        struct dirent * tmp_dirent = readdir( coll_obj->directory_pointer() );
 
         // =-=-=-=-=-=-=-
         // handle error cases
@@ -1059,7 +1059,7 @@ extern "C" {
          
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=- 
         // make the directories in the path to the new file
@@ -1079,7 +1079,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make the call to rename
-        int status = rename( fco.physical_path().c_str(), new_full_path.c_str() );
+        int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
 
         // =-=-=-=-=-=-=-
         // handle error cases
@@ -1088,7 +1088,7 @@ extern "C" {
                                 
             std::stringstream msg;
             msg << "nonblocking_file_rename_plugin: rename error for ";
-            msg <<  fco.physical_path();
+            msg <<  fco->physical_path();
             msg << " to ";
             msg << new_full_path;
             msg << ", errno = ";
@@ -1119,7 +1119,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         int status = -1;
         rodsLong_t fssize = USER_NO_SUPPORT_ERR;
@@ -1133,13 +1133,13 @@ extern "C" {
     defined(aix_platform)     || defined(linux_platform) ||     \
     defined(osx_platform)
 #if defined(solaris_platform)
-        status = statvfs( fco.physical_path().c_str(), &statbuf );
+        status = statvfs( fco->physical_path().c_str(), &statbuf );
 #else
 #if defined(sgi_platform)
-        status = statfs( fco.physical_path().c_str(), 
+        status = statfs( fco->physical_path().c_str(), 
                          &statbuf, sizeof (struct statfs), 0 );
 #else
-        status = statfs( fco.physical_path().c_str(), 
+        status = statfs( fco->physical_path().c_str(), 
                          &statbuf );
 #endif
 #endif
@@ -1151,7 +1151,7 @@ extern "C" {
 
             std::stringstream msg;
             msg << "nonblocking_file_get_fsfreespace_plugin: statfs error for ";
-            msg << fco.physical_path().c_str();
+            msg << fco->physical_path().c_str();
             msg << ", status = ";
             msg << USER_NO_SUPPORT_ERR;
 
@@ -1271,9 +1271,9 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
-        int status = unixFileCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
+        int status = unixFileCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
             return ERROR( status, "nonblocking_file_stagetocache_plugin failed." );
         } else {
@@ -1299,9 +1299,9 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
-        int status = unixFileCopyPlugin( fco.mode(), _cache_file_name, fco.physical_path().c_str() );
+        int status = unixFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
         if( status < 0 ) {
             return ERROR( status, "nonblocking_file_synctoarch_plugin failed." );
         } else {
@@ -1314,7 +1314,7 @@ extern "C" {
     // redirect_get - code to determine redirection for get operation
     eirods::error redirect_create( 
                       eirods::plugin_property_map& _prop_map,
-                      eirods::file_object&         _file_obj,
+                      eirods::file_object_ptr      _file_obj,
                       const std::string&           _resc_name, 
                       const std::string&           _curr_host, 
                       float&                       _out_vote ) {
@@ -1323,7 +1323,7 @@ extern "C" {
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'status' property", get_ret );
+            return PASSMSG( "failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1338,7 +1338,7 @@ extern "C" {
         std::string host_name;
         get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'location' property", get_ret );
+            return PASSMSG( "failed to get 'location' property", get_ret );
         }
         
         // =-=-=-=-=-=-=-
@@ -1357,7 +1357,7 @@ extern "C" {
     // redirect_get - code to determine redirection for get operation
     eirods::error redirect_open( 
                       eirods::plugin_property_map& _prop_map,
-                      eirods::file_object&         _file_obj,
+                      eirods::file_object_ptr      _file_obj,
                       const std::string&           _resc_name, 
                       const std::string&           _curr_host, 
                       float&                       _out_vote ) {
@@ -1366,7 +1366,7 @@ extern "C" {
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'status' property", get_ret );
+            return PASSMSG( "failed to get 'status' property", get_ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1381,7 +1381,7 @@ extern "C" {
         std::string host_name;
         get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
         if( !get_ret.ok() ) {
-            return PASSMSG( "redirect_open - failed to get 'location' property", get_ret );
+            return PASSMSG( "failed to get 'location' property", get_ret );
         }
         
         // =-=-=-=-=-=-=-
@@ -1390,13 +1390,13 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make some flags to clairify decision making
-        bool need_repl = ( _file_obj.repl_requested() > -1 );
+        bool need_repl = ( _file_obj->repl_requested() > -1 );
 
         // =-=-=-=-=-=-=-
         // set up variables for iteration
         bool          found     = false;
         eirods::error final_ret = SUCCESS();
-        std::vector< eirods::physical_object > objs = _file_obj.replicas();
+        std::vector< eirods::physical_object > objs = _file_obj->replicas();
         std::vector< eirods::physical_object >::iterator itr = objs.begin();
         
         // =-=-=-=-=-=-=-
@@ -1416,7 +1416,7 @@ extern "C" {
           
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
-            bool repl_us = ( _file_obj.repl_requested() == itr->repl_num() ); 
+            bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() ); 
             bool resc_us = ( _resc_name == last_resc );
 
             // =-=-=-=-=-=-=-
@@ -1476,7 +1476,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // get the name of this resource

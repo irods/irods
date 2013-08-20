@@ -170,7 +170,7 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
                               inputBsBBuf, NULL, RcApiTable[apiInx].apiNumber, conn->irodsProt);
 #endif
 
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
@@ -297,7 +297,7 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
         status = readMsgHeader( conn->sock, &myHeader, NULL );
 #endif
 
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );

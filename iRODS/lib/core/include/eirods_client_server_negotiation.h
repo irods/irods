@@ -56,25 +56,25 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server( 
-        eirods::net_obj_ptr, // server connection handle
-        std::string& );      // results of negotiation
+        eirods::network_object_ptr, // server connection handle
+        std::string& );             // results of negotiation
  
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
-        eirods::net_obj_ptr, // client connection handle
-        std::string& );      // results of the negotiation
+        eirods::network_object_ptr, // client connection handle
+        std::string& );             // results of the negotiation
    
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error send_client_server_negotiation_message( 
-        eirods::net_obj_ptr, // socket
-        cs_neg_t& );         // message payload
+        eirods::network_object_ptr, // socket
+        cs_neg_t& );                // message payload
  
     /// =-=-=-=-=-=-=-
     /// @brief function which sends the negotiation message
     error read_client_server_negotiation_message( 
-        eirods::net_obj_ptr,              // socket
+        eirods::network_object_ptr,       // socket
         boost::shared_ptr< cs_neg_t >& ); // message payload
 
 }; // namespace eirods

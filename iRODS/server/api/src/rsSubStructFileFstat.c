@@ -80,11 +80,12 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
 
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj;
-    struct_obj.comm( _comm );
-    struct_obj.file_descriptor( _fstat_inp->fd );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                           ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->file_descriptor( _fstat_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to open a file
@@ -93,7 +94,7 @@ int _rsSubStructFileFstat( rsComm_t*                _comm,
     if( !fstat_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileFstat for [";
-        msg << struct_obj.file_descriptor();
+        msg << struct_obj->file_descriptor();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), fstat_err ) );
         return fstat_err.code();

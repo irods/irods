@@ -277,7 +277,7 @@ int rcDisconnect(
 
     // =-=-=-=-=-=-=-
     // create network object to pass to plugin interface
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory(  _conn, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
@@ -480,7 +480,7 @@ cliReconnManager (rcComm_t *conn)
         // create network object, need to override the socket
         // with the reconn socket.  no way to infer this in the
         // factory for the client comm
-        eirods::net_obj_ptr net_obj;
+        eirods::network_object_ptr net_obj;
         eirods::error ret = eirods::network_factory( conn, net_obj );
         if( !ret.ok() ) {
             eirods::log( PASS( ret ) );

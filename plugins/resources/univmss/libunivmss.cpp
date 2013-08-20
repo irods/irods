@@ -110,7 +110,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::data_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::data_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -129,8 +129,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
-        std::string filename = fco.physical_path();
+        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        std::string filename = fco->physical_path();
 
         int status;
         execCmd_t execCmdInp;
@@ -167,7 +167,7 @@ extern "C" {
         struct stat*                     _statbuf ) {
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::data_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::data_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -186,8 +186,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
-        std::string filename = fco.physical_path();
+        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        std::string filename = fco->physical_path();
 
 
         int i, status;
@@ -300,7 +300,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::data_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::data_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -319,10 +319,10 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::data_object& fco = dynamic_cast< eirods::data_object& >( _ctx.fco() );
-        std::string filename = fco.physical_path();
+        eirods::data_object_ptr fco = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
+        std::string filename = fco->physical_path();
 
-        int mode = fco.mode(); 
+        int mode = fco->mode(); 
         int status = 0;
         execCmd_t execCmdInp;
         char cmdArgv[HUGE_NAME_LEN] = "";
@@ -365,7 +365,7 @@ extern "C" {
         eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::collection_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::collection_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -384,8 +384,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::collection_object& fco = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
-        std::string dirname = fco.physical_path();
+        eirods::collection_object_ptr fco = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
+        std::string dirname = fco->physical_path();
 
         int status = 0;
         execCmd_t execCmdInp;
@@ -411,7 +411,7 @@ extern "C" {
         }
         
         int mode = getDefDirMode(); 
-        fco.mode( mode );
+        fco->mode( mode );
         err = univ_mss_file_chmod( _ctx );
          
         return err;
@@ -458,7 +458,7 @@ extern "C" {
         const char*                         _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -477,8 +477,8 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
-        std::string filename = fco.physical_path();
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        std::string filename = fco->physical_path();
 
         // =-=-=-=-=-=-=-
         // first create the directory name
@@ -489,7 +489,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        eirods::collection_object coll_obj( dirname, fco.resc_hier(), fco.mode(), 0 );
+        eirods::collection_object_ptr coll_obj( 
+                                          new eirods::collection_object(
+                                              dirname, 
+                                              fco->resc_hier(), 
+                                              fco->mode(), 0 ) );
         eirods::resource_plugin_context context( 
             _ctx.prop_map(), 
             coll_obj, "", 
@@ -548,7 +552,7 @@ extern "C" {
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -559,8 +563,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
-        std::string filename = fco.physical_path();
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        std::string filename = fco->physical_path();
 
         // =-=-=-=-=-=-=-
         // get the script property
@@ -611,7 +615,7 @@ extern "C" {
         const char*                         _cache_file_name ) { 
         // =-=-=-=-=-=-=-
         // check context
-        eirods::error err = univ_mss_check_param< eirods::file_object& >( _ctx );
+        eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -622,8 +626,8 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // snag a ref to the fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
-        std::string filename = fco.physical_path();
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        std::string filename = fco->physical_path();
 
         // =-=-=-=-=-=-=-
         // first create the directory name
@@ -634,7 +638,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // create a context to call the mkdir operation
-        eirods::collection_object coll_obj( dirname, fco.resc_hier(), fco.mode(), 0 );
+        eirods::collection_object_ptr coll_obj( 
+                                          new eirods::collection_object( 
+                                              dirname, 
+                                              fco->resc_hier(), 
+                                              fco->mode(), 0 ) );
         eirods::resource_plugin_context context( 
             _ctx.prop_map(), 
             coll_obj, "",
@@ -702,7 +710,7 @@ extern "C" {
     eirods::error univ_mss_file_registered(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param< eirods::file_object& >(_ctx);
+        eirods::error ret = univ_mss_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -717,7 +725,7 @@ extern "C" {
     eirods::error univ_mss_file_unregistered(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param< eirods::file_object& >(_ctx);
+        eirods::error ret = univ_mss_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -732,7 +740,7 @@ extern "C" {
     eirods::error univ_mss_file_modified(
         eirods::resource_plugin_context& _ctx) {
         // Check the operation parameters and update the physical path
-        eirods::error ret = univ_mss_check_param< eirods::file_object& >(_ctx);
+        eirods::error ret = univ_mss_check_param< eirods::file_object >(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Invalid parameters or physical path.";
@@ -746,7 +754,7 @@ extern "C" {
     // redirect_get - code to determine redirection for get operation
     eirods::error univ_mss_file_redirect_create( 
         eirods::plugin_property_map& _prop_map,
-        eirods::file_object&         _file_obj,
+        eirods::file_object_ptr         _file_obj,
         const std::string&           _resc_name, 
         const std::string&           _curr_host, 
         float&                       _out_vote ) {
@@ -789,7 +797,7 @@ extern "C" {
     // redirect_get - code to determine redirection for get operation
     eirods::error univ_mss_file_redirect_open( 
         eirods::plugin_property_map& _prop_map,
-        eirods::file_object&         _file_obj,
+        eirods::file_object_ptr         _file_obj,
         const std::string&           _resc_name, 
         const std::string&           _curr_host, 
         float&                       _out_vote ) {
@@ -822,13 +830,13 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // make some flags to clairify decision making
-        bool need_repl = ( _file_obj.repl_requested() > -1 );
+        bool need_repl = ( _file_obj->repl_requested() > -1 );
 
         // =-=-=-=-=-=-=-
         // set up variables for iteration
         bool          found     = false;
         eirods::error final_ret = SUCCESS();
-        std::vector< eirods::physical_object > objs = _file_obj.replicas();
+        std::vector< eirods::physical_object > objs = _file_obj->replicas();
         std::vector< eirods::physical_object >::iterator itr = objs.begin();
         
         // =-=-=-=-=-=-=-
@@ -848,7 +856,7 @@ extern "C" {
           
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
-            bool repl_us = ( _file_obj.repl_requested() == itr->repl_num() ); 
+            bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() ); 
             bool resc_us = ( _resc_name == last_resc );
 
             // =-=-=-=-=-=-=-
@@ -884,7 +892,7 @@ extern "C" {
         float*                              _out_vote ) {
         // =-=-=-=-=-=-=-
         // check the context validity
-        eirods::error ret = _ctx.valid< eirods::file_object& >(); 
+        eirods::error ret = _ctx.valid< eirods::file_object >(); 
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__ << " - resource context is invalid";
@@ -908,7 +916,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // get the name of this resource

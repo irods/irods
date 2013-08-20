@@ -134,7 +134,7 @@ int
 setupSrvPortalForParaOpr (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 int oprType, portalOprOut_t **portalOprOut);
 int
-readStartupPack ( eirods::net_obj_ptr, startupPack_t **startupPack, struct timeval *tv);
+readStartupPack ( eirods::network_object_ptr, startupPack_t **startupPack, struct timeval *tv);
 #ifdef RUN_SERVER_AS_ROOT
 int 
 initServiceUser ();

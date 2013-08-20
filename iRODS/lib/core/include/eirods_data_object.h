@@ -71,6 +71,10 @@ namespace eirods {
     
     }; // class data_object
 
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for managed data object pointer
+    typedef boost::shared_ptr< data_object > data_object_ptr;
+
 }; // namespace eirods
 
 #endif // __EIRODS_DATA_OBJECT_H__

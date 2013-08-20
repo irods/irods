@@ -55,7 +55,7 @@ bytesBuf_t *bsBBuf)
 
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( rsComm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
@@ -283,7 +283,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( rsComm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
@@ -535,7 +535,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( rsComm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );

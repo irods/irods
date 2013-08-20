@@ -24,11 +24,11 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // ctor
         resource_plugin_context( 
-            plugin_property_map&  _prop_map,  
-            first_class_object&   _fco,       
-            const std::string&    _results,
-            rsComm_t*             _comm,
-            resource_child_map&   _child_map )  :
+            plugin_property_map&    _prop_map,  
+            first_class_object_ptr  _fco,       
+            const std::string&      _results,
+            rsComm_t*              _comm,
+            resource_child_map&    _child_map )  :
             plugin_context( _prop_map,
                             _fco,
                             _results ),
@@ -61,7 +61,7 @@ namespace eirods {
             // =-=-=-=-=-=-=
             // trap case of incorrect type for first class object
             try {
-                OBJ_TYPE& ref = dynamic_cast< OBJ_TYPE& >( fco_ );
+                boost::shared_ptr< OBJ_TYPE > ref = boost::dynamic_pointer_cast< OBJ_TYPE >( fco_ );
             } catch( std::bad_cast exp ) {
                 ret = PASSMSG( "invalid type for fco cast", ret );
             }

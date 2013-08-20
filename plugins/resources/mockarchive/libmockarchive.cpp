@@ -109,13 +109,13 @@ eirods::error unix_generate_full_path(
 eirods::error unix_check_path( 
     eirods::resource_plugin_context& _ctx ) {
     try {
-        eirods::data_object& data_obj = dynamic_cast< eirods::data_object& >( _ctx.fco() );
+        eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
         eirods::error ret = unix_generate_full_path( _ctx.prop_map(), 
-                                                     data_obj.physical_path(), 
+                                                     data_obj->physical_path(), 
                                                      full_path );
         if(!ret.ok()) {
             std::stringstream msg;
@@ -123,7 +123,7 @@ eirods::error unix_check_path(
             ret = PASSMSG(msg.str(), ret);
 
         } else {
-            data_obj.physical_path( full_path );
+            data_obj->physical_path( full_path );
         }
 
         return ret;
@@ -331,11 +331,11 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to unlink      
-        int status = unlink( fco.physical_path().c_str() );
+        int status = unlink( fco->physical_path().c_str() );
 
         // =-=-=-=-=-=-=-
         // error handling
@@ -344,7 +344,7 @@ extern "C" {
                         
             std::stringstream msg;
             msg << "mock_archive_unlink_plugin: unlink error for ";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -375,13 +375,13 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // make the call to stat
 rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]", 
-         fco.physical_path().c_str() );
-        int status = stat( fco.physical_path().c_str(), _statbuf );
+         fco->physical_path().c_str() );
+        int status = stat( fco->physical_path().c_str(), _statbuf );
 
         // =-=-=-=-=-=-=-
         // if the file can't be accessed due to permission denied 
@@ -402,7 +402,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
  
             std::stringstream msg;
             msg << "mock_archive_stat_plugin: stat error for ";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
@@ -463,12 +463,12 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
  
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx.fco() );
+        eirods::collection_object_ptr coll_obj = boost::dynamic_pointer_cast< eirods::collection_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the call to mkdir & umask
         mode_t myMask = umask( ( mode_t ) 0000 );
-        int    status = mkdir( coll_obj.physical_path().c_str(), coll_obj.mode() );
+        int    status = mkdir( coll_obj->physical_path().c_str(), coll_obj->mode() );
 
         // =-=-=-=-=-=-=-
         // reset the old mask 
@@ -482,7 +482,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
             if (errno != EEXIST) {
                 std::stringstream msg;
                 msg << "mock_archive_mkdir_plugin: mkdir error for ";
-                msg << coll_obj.physical_path();
+                msg << coll_obj->physical_path();
                 msg << ", errno = '";
                 msg << strerror( errno );
                 msg << "', status = ";
@@ -565,7 +565,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
          
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=- 
         // make the directories in the path to the new file
@@ -585,7 +585,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
 
         // =-=-=-=-=-=-=-
         // make the call to rename
-        int status = rename( fco.physical_path().c_str(), new_full_path.c_str() );
+        int status = rename( fco->physical_path().c_str(), new_full_path.c_str() );
 
         // =-=-=-=-=-=-=-
         // handle error cases
@@ -594,7 +594,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
                                 
             std::stringstream msg;
             msg << "mock_archive_rename_plugin: rename error for ";
-            msg <<  fco.physical_path();
+            msg <<  fco->physical_path();
             msg << " to ";
             msg << new_full_path;
             msg << ", errno = ";
@@ -713,7 +713,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
         // =-=-=-=-=-=-=-
         // get the vault path for the resource
@@ -726,13 +726,13 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         // =-=-=-=-=-=-=-
         // append the hash to the path as the new 'cache file name'
         path += "/";
-        path += fco.physical_path().c_str();
+        path += fco->physical_path().c_str();
         
-        int status = mockArchiveCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
+        int status = mockArchiveCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
             std::stringstream msg;
             msg << "mock_archive_stagetocache_plugin failed copying archive file: \"";
-            msg << fco.physical_path();
+            msg << fco->physical_path();
             msg << "\" to cache file: \"";
             msg << _cache_file_name;
             msg << "\"";
@@ -760,7 +760,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         
         // =-=-=-=-=-=-=-
         // get ref to fco
-        eirods::file_object& fco = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
        
         // =-=-=-=-=-=-=-
         // hash the physical path to reflect object store behavior
@@ -768,9 +768,9 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         char md5Buf[ MAX_NAME_LEN ];
         unsigned char hash  [ MAX_NAME_LEN ];
 
-        strncpy( md5Buf, fco.physical_path().c_str(), fco.physical_path().size() );
+        strncpy( md5Buf, fco->physical_path().c_str(), fco->physical_path().size() );
         MD5Init( &context );
-        MD5Update( &context, (unsigned char*)md5Buf, fco.physical_path().size() );
+        MD5Update( &context, (unsigned char*)md5Buf, fco->physical_path().size() );
         MD5Final( (unsigned char*)hash, &context );
        
 
@@ -798,15 +798,15 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         rodsLog( LOG_NOTICE, "mock archive :: cache file name [%s]", _cache_file_name );
 
         rodsLog( LOG_NOTICE, "mock archive :: new hashed file name for [%s] is [%s]",
-                 fco.physical_path().c_str(), path.c_str() );
+                 fco->physical_path().c_str(), path.c_str() );
         
         // =-=-=-=-=-=-=-
         // make the copy to the 'archive'
-        int status = mockArchiveCopyPlugin( fco.mode(), _cache_file_name, path.c_str() );
+        int status = mockArchiveCopyPlugin( fco->mode(), _cache_file_name, path.c_str() );
         if( status < 0 ) {
             return ERROR( status, "mock_archive_synctoarch_plugin failed." );
         } else {
-            fco.physical_path( ins.str() );
+            fco->physical_path( ins.str() );
             return SUCCESS();
         }
 
@@ -816,7 +816,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_create( 
         eirods::plugin_property_map& _prop_map,
-        eirods::file_object&         _file_obj,
+        eirods::file_object_ptr         _file_obj,
         const std::string&           _resc_name, 
         const std::string&           _curr_host, 
         float&                       _out_vote ) {
@@ -859,7 +859,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     // redirect_get - code to determine redirection for get operation
     eirods::error mock_archive_redirect_open( 
         eirods::plugin_property_map& _prop_map,
-        eirods::file_object&         _file_obj,
+        eirods::file_object_ptr         _file_obj,
         const std::string&           _resc_name, 
         const std::string&           _curr_host, 
         float&                       _out_vote ) {
@@ -895,13 +895,13 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
 
         // =-=-=-=-=-=-=-
         // make some flags to clairify decision making
-        bool need_repl = ( _file_obj.repl_requested() > -1 );
+        bool need_repl = ( _file_obj->repl_requested() > -1 );
 
         // =-=-=-=-=-=-=-
         // set up variables for iteration
         bool          found     = false;
         eirods::error final_ret = SUCCESS();
-        std::vector< eirods::physical_object > objs = _file_obj.replicas();
+        std::vector< eirods::physical_object > objs = _file_obj->replicas();
         std::vector< eirods::physical_object >::iterator itr = objs.begin();
         
         // =-=-=-=-=-=-=-
@@ -917,7 +917,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
           
             // =-=-=-=-=-=-=-
             // more flags to simplify decision making
-            bool repl_us = ( _file_obj.repl_requested() == itr->repl_num() ); 
+            bool repl_us = ( _file_obj->repl_requested() == itr->repl_num() ); 
             bool resc_us = ( _resc_name == last_resc );
 
             // =-=-=-=-=-=-=-
@@ -977,7 +977,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx.fco() );
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // get the name of this resource

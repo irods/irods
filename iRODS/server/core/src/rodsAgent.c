@@ -78,7 +78,7 @@ main(int argc, char *argv[])
  
     // =-=-=-=-=-=-=-
     // manufacture a network object for comms
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( &rsComm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );

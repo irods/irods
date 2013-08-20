@@ -77,12 +77,18 @@ remoteFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp,
 
 // =-=-=-=-=-=-=-
 // local function which handles removing directories via the resource plugin
-int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
+int _rsFileRmdir(
+    rsComm_t*       _comm, 
+    fileRmdirInp_t* _rmdir_inp ) {
     
     int status = 0;
-    eirods::collection_object coll_obj( fileRmdirInp->dirName, fileRmdirInp->rescHier, 0, 0 );
+    eirods::collection_object_ptr coll_obj( 
+                                      new eirods::collection_object( 
+                                          _rmdir_inp->dirName, 
+                                          _rmdir_inp->rescHier, 
+                                          0, 0 ) );
 
-    if ((fileRmdirInp->flags & RMDIR_RECUR) != 0) {
+    if ((_rmdir_inp->flags & RMDIR_RECUR) != 0) {
         // =-=-=-=-=-=-=-
         // FIXME :: revisit this after moving to First class Objects
         // recursive. This is a very dangerous operation. curently
@@ -93,22 +99,22 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
         // =-=-=-=-=-=-=-
         // if it is not a cache dir, return an error as we only do this
         // for cache dirs at the moment.
-        if( strstr( fileRmdirInp->dirName, CACHE_DIR_STR) == NULL ) {
+        if( strstr( _rmdir_inp->dirName, CACHE_DIR_STR) == NULL ) {
             rodsLog( LOG_ERROR,"_rsFileRmdir: recursive rm of non cachedir path %s",
-                     fileRmdirInp->dirName );
+                     _rmdir_inp->dirName );
             return (SYS_INVALID_FILE_PATH);
         }
 
         // =-=-=-=-=-=-=-
         // call opendir via resource plugin
-        eirods::error opendir_err = fileOpendir( rsComm, coll_obj );
+        eirods::error opendir_err = fileOpendir( _comm, coll_obj );
 
         // =-=-=-=-=-=-=-
         // log an error, if any
         if( !opendir_err.ok() ) {
             std::stringstream msg;
             msg << "fileOpendir failed for [";
-            msg << fileRmdirInp->dirName; 
+            msg << _rmdir_inp->dirName; 
             msg << "]";
             eirods::error err = PASSMSG( msg.str(), opendir_err );
             eirods::log ( err );
@@ -117,7 +123,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 
         // =-=-=-=-=-=-=-
         // read the directory via resource plugin and either handle files or recurse into another directory
-        eirods::error readdir_err = fileReaddir( rsComm, coll_obj, &myFileDirent );
+        eirods::error readdir_err = fileReaddir( _comm, coll_obj, &myFileDirent );
         while( readdir_err.ok() && 0 == readdir_err.code() ) {
             struct stat statbuf;
             char myPath[MAX_NAME_LEN];
@@ -126,18 +132,22 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
             // handle relative paths
             if( strcmp( myFileDirent->d_name, "."  ) == 0 || 
                 strcmp( myFileDirent->d_name, ".." ) == 0) {
-                readdir_err = fileReaddir( rsComm, coll_obj, &myFileDirent );
+                readdir_err = fileReaddir( _comm, coll_obj, &myFileDirent );
                 continue;
             }
 
             // =-=-=-=-=-=-=-
             // cache path name
-            snprintf( myPath, MAX_NAME_LEN, "%s/%s", fileRmdirInp->dirName, &myFileDirent->d_name );
+            snprintf( myPath, MAX_NAME_LEN, "%s/%s", &_rmdir_inp->dirName[0], &myFileDirent->d_name[0] );
 
             // =-=-=-=-=-=-=-
             // call stat via resource plugin, handle errors
-            eirods::collection_object myPath_obj( myPath, fileRmdirInp->rescHier, 0, 0 );
-            eirods::error stat_err = fileStat( rsComm, myPath_obj, &statbuf );
+            eirods::collection_object_ptr myPath_obj( 
+                                              new eirods::collection_object( 
+                                                  myPath, 
+                                                  _rmdir_inp->rescHier, 
+                                                  0, 0 ) );
+            eirods::error stat_err = fileStat( _comm, myPath_obj, &statbuf );
             if( !stat_err.ok() ) {
                 std::stringstream msg;
                 msg << "fileStat failed for [";
@@ -148,7 +158,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 
                 // =-=-=-=-=-=-=-
                 // call closedir via resource plugin, handle errors
-                eirods::error closedir_err = fileClosedir( rsComm, myPath_obj );
+                eirods::error closedir_err = fileClosedir( _comm, myPath_obj );
                 if( !closedir_err.ok() ) {
                     std::stringstream msg;
                     msg << "fileClosedir for [";
@@ -167,7 +177,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
             if ((statbuf.st_mode & S_IFREG) != 0) {
                 // =-=-=-=-=-=-=-
                 // handle case where file is found
-                eirods::error unlink_err = fileUnlink( rsComm, myPath_obj );
+                eirods::error unlink_err = fileUnlink( _comm, myPath_obj );
                 if( !unlink_err.ok() ) {
                     eirods::error log_err = PASSMSG( "error during unlink.", unlink_err );
                     eirods::log( log_err );
@@ -179,14 +189,14 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
                 fileRmdirInp_t myRmdirInp;
                 memset( &myRmdirInp, 0, sizeof( myRmdirInp ) );
 
-                myRmdirInp.fileType = fileRmdirInp->fileType;
-                myRmdirInp.flags    = fileRmdirInp->flags;
+                myRmdirInp.fileType = _rmdir_inp->fileType;
+                myRmdirInp.flags    = _rmdir_inp->flags;
                 rstrcpy( myRmdirInp.dirName, myPath, MAX_NAME_LEN );
-                rstrcpy( myRmdirInp.rescHier, fileRmdirInp->rescHier, MAX_NAME_LEN);
+                rstrcpy( myRmdirInp.rescHier, _rmdir_inp->rescHier, MAX_NAME_LEN);
                 
                 // =-=-=-=-=-=-=-
                 // RECURSE - call _rsFileRmdir on this new found directory
-                status = _rsFileRmdir (rsComm, &myRmdirInp);
+                status = _rsFileRmdir (_comm, &myRmdirInp);
 
             } else {
                 rodsLog( LOG_NOTICE, "_rsFileRmdir:  for %s, status = %d", myPath, status);
@@ -199,7 +209,7 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 
                 // =-=-=-=-=-=-=-
                 // call closedir via resource plugin, handle errors
-                eirods::error closedir_err = fileClosedir( rsComm, myPath_obj );
+                eirods::error closedir_err = fileClosedir( _comm, myPath_obj );
                 if( !closedir_err.ok() ) {
                     std::stringstream msg;
                     msg << "fileClosedir failed for [";
@@ -215,17 +225,17 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
         
             // =-=-=-=-=-=-=-
             // continue readdir via resource plugin 
-            readdir_err = fileReaddir( rsComm, coll_obj, &myFileDirent );
+            readdir_err = fileReaddir( _comm, coll_obj, &myFileDirent );
                 
         } // while
 
         // =-=-=-=-=-=-=-
         // call closedir via resource plugin, handle errors
-        eirods::error closedir_err = fileClosedir( rsComm, coll_obj );
+        eirods::error closedir_err = fileClosedir( _comm, coll_obj );
         if( !closedir_err.ok() ) {
             std::stringstream msg;
             msg << "fileClosedir failed for [";
-            msg << fileRmdirInp->dirName;
+            msg << _rmdir_inp->dirName;
             msg << "]";
             eirods::error log_err = PASSMSG( msg.str(), closedir_err );
             eirods::log( log_err ); 
@@ -239,11 +249,11 @@ int _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp) {
 
     // =-=-=-=-=-=-=-
     // make the call to rmdir via the resource plugin
-    eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
+    eirods::error rmdir_err = fileRmdir( _comm, coll_obj );
     if( !rmdir_err.ok() ) {
         std::stringstream msg;
         msg << "fileRmdir failed for [";
-        msg << fileRmdirInp->dirName;
+        msg << _rmdir_inp->dirName;
         msg << "]";
         eirods::error err = PASSMSG( msg.str(), rmdir_err );
         eirods::log ( err );

@@ -78,40 +78,42 @@ remoteFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
     return status;
 }
 
-int
-_rsFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp)
-{
-
-    if(FileDesc[fileCloseInp->fileInx].objPath == NULL ||
-       FileDesc[fileCloseInp->fileInx].objPath[0] == '\0') {
+int _rsFileClose(
+    rsComm_t*       _comm, 
+    fileCloseInp_t* _close_inp ) {
+    // =-=-=-=-=-=-=-
+    // trap for invalid objects
+    if( FileDesc[ _close_inp->fileInx ].objPath == NULL ||
+        FileDesc[ _close_inp->fileInx ].objPath[0] == '\0') {
         std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
+        msg << "Empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
-        return -1;
+        return SYS_INVALID_INPUT_PARAM;
     }
     
     // =-=-=-=-=-=-=-
     // call the resource plugin close operation 
-    eirods::file_object file_obj( rsComm,
-                                  FileDesc[fileCloseInp->fileInx].objPath, 
-                                  FileDesc[fileCloseInp->fileInx].fileName, 
-                                  FileDesc[fileCloseInp->fileInx].rescHier, 
-                                  FileDesc[fileCloseInp->fileInx].fd,
-                                  0, 0 );
-    if(fileCloseInp->in_pdmo != 0) {
-        file_obj.in_pdmo(true);
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm,
+                                    FileDesc[ _close_inp->fileInx ].objPath, 
+                                    FileDesc[ _close_inp->fileInx ].fileName, 
+                                    FileDesc[ _close_inp->fileInx ].rescHier, 
+                                    FileDesc[ _close_inp->fileInx ].fd,
+                                    0, 0 ) );
+    if(_close_inp->in_pdmo != 0) {
+        file_obj->in_pdmo(true);
     } else {
-        file_obj.in_pdmo(false);
+        file_obj->in_pdmo(false);
     }
     
-    eirods::error close_err = fileClose( rsComm, file_obj );
+    eirods::error close_err = fileClose( _comm, file_obj );
     // =-=-=-=-=-=-=-
     // log an error, if any
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "fileClose failed for [";
-        msg << fileCloseInp->fileInx;
+        msg << _close_inp->fileInx;
         msg << "]";
         eirods::error err = PASSMSG( msg.str(), close_err ); 
     }

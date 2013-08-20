@@ -68,8 +68,10 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
                         subStructFileRenameInp_t* _rename_inp ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj( _rename_inp->subFile );
-    struct_obj.comm( _comm );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          _rename_inp->subFile ) );
+    struct_obj->comm( _comm );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to rename
@@ -77,7 +79,7 @@ _rsSubStructFileRename( rsComm_t*                 _comm,
     if( !rename_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileRename for [";
-        msg << struct_obj.physical_path();
+        msg << struct_obj->physical_path();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), rename_err ) );
         return rename_err.code();

@@ -52,7 +52,7 @@ connToutHandler (int sig)
 // =-=-=-=-=-=-=-
 //
 eirods::error sockClientStart( 
-    eirods::net_obj_ptr _ptr ) {
+    eirods::network_object_ptr _ptr ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -65,7 +65,7 @@ eirods::error sockClientStart(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = net->call( eirods::NETWORK_OP_CLIENT_START, *_ptr.get() );
+    ret_err = net->call( eirods::NETWORK_OP_CLIENT_START, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -82,7 +82,7 @@ eirods::error sockClientStart(
 // =-=-=-=-=-=-=-
 //
 eirods::error sockClientStop( 
-    eirods::net_obj_ptr _ptr ) {                                                                                 
+    eirods::network_object_ptr _ptr ) {                                                                                 
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -95,7 +95,7 @@ eirods::error sockClientStop(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = net->call( eirods::NETWORK_OP_CLIENT_STOP, *_ptr.get() );
+    ret_err = net->call( eirods::NETWORK_OP_CLIENT_STOP, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -112,7 +112,7 @@ eirods::error sockClientStop(
 // =-=-=-=-=-=-=-
 //
 eirods::error sockAgentStart( 
-    eirods::net_obj_ptr _ptr ) {                                                                                 
+    eirods::network_object_ptr _ptr ) {                                                                                 
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -124,7 +124,7 @@ eirods::error sockAgentStart(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = net->call( eirods::NETWORK_OP_AGENT_START, *_ptr.get() );
+    ret_err = net->call( eirods::NETWORK_OP_AGENT_START, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -141,7 +141,7 @@ eirods::error sockAgentStart(
 // =-=-=-=-=-=-=-
 //
 eirods::error sockAgentStop( 
-    eirods::net_obj_ptr _ptr ) {                                                                                 
+    eirods::network_object_ptr _ptr ) {                                                                                 
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -153,7 +153,7 @@ eirods::error sockAgentStop(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = net->call( eirods::NETWORK_OP_AGENT_STOP, *_ptr.get() );
+    ret_err = net->call( eirods::NETWORK_OP_AGENT_STOP, _ptr );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -168,14 +168,9 @@ eirods::error sockAgentStop(
 // =-=-=-=-=-=-=-
 // 
 eirods::error readMsgHeader( 
-    eirods::net_obj_ptr     _ptr, 
-    msgHeader_t*            _header, 
-    struct timeval*         _time_val ) {
-
-    if( !_ptr.get() ) {
-        return ERROR( -1, "FAIL" );
-    }
-
+    eirods::network_object_ptr _ptr, 
+    msgHeader_t*               _header, 
+    struct timeval*            _time_val ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -188,9 +183,10 @@ eirods::error readMsgHeader(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     char tmp_buf[ MAX_NAME_LEN ]; 
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
     ret_err = net->call< void*, struct timeval* >( 
                   eirods::NETWORK_OP_READ_HEADER, 
-                  *_ptr.get(), 
+                  ptr,
                   tmp_buf, 
                   _time_val );
     // =-=-=-=-=-=-=-
@@ -231,7 +227,7 @@ eirods::error readMsgHeader(
 // =-=-=-=-=-=-=-
 // 
 eirods::error readMsgBody(
-    eirods::net_obj_ptr _ptr, 
+    eirods::network_object_ptr _ptr, 
     msgHeader_t*        _header, 
     bytesBuf_t*         _input_struct_buf, 
     bytesBuf_t*         _bs_buf, 
@@ -250,6 +246,7 @@ eirods::error readMsgBody(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
     ret_err = net->call< msgHeader_t*, 
                          bytesBuf_t*, 
                          bytesBuf_t*, 
@@ -257,7 +254,7 @@ eirods::error readMsgBody(
                          irodsProt_t, 
                          struct timeval* >( 
                              eirods::NETWORK_OP_READ_BODY, 
-                             *_ptr.get(),
+                             ptr,
                              _header,
                              _input_struct_buf,
                              _bs_buf,
@@ -414,7 +411,7 @@ rsAcceptConn (rsComm_t *svrComm)
 // =-=-=-=-=-=-=-
 // 
 eirods::error writeMsgHeader(
-    eirods::net_obj_ptr _ptr,
+    eirods::network_object_ptr _ptr,
     msgHeader_t*        _header ) {
     // =-=-=-=-=-=-=-
     // always use XML_PROT for the Header 
@@ -441,9 +438,10 @@ eirods::error writeMsgHeader(
   
     // =-=-=-=-=-=-=-
     // make the call to the plugin interface
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
     ret = net->call< bytesBuf_t* >( 
               eirods::NETWORK_OP_WRITE_HEADER,
-              *_ptr.get(),
+              ptr,
               header_buf );
     if( !ret.ok() ) {
         return PASS( ret );
@@ -564,7 +562,7 @@ myWrite (int sock, void *buf, int len, irodsDescType_t irodsDescType,
 // =-=-=-=-=-=-=-
 //
 eirods::error readVersion(
-    eirods::net_obj_ptr _ptr, 
+    eirods::network_object_ptr _ptr, 
     version_t**         _version ) {
     // =-=-=-=-=-=-=-
     // init timval struct for header call
@@ -799,7 +797,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     
     // =-=-=-=-=-=-=-
     // create a network object
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
         return ret.code();    
@@ -1174,7 +1172,7 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
         return status;
     }
 
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
@@ -1198,7 +1196,7 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
 
 
 eirods::error sendVersion (
-    eirods::net_obj_ptr _ptr, 
+    eirods::network_object_ptr _ptr, 
     int                 versionStatus, 
     int                 reconnPort, 
     char*               reconnAddr, 
@@ -1244,7 +1242,7 @@ eirods::error sendVersion (
 
 
 eirods::error sendRodsMsg(
-    eirods::net_obj_ptr _ptr,
+    eirods::network_object_ptr _ptr,
     char*               _msg_type, 
     bytesBuf_t*         _msg_buf, 
     bytesBuf_t*         _bs_buf, 
@@ -1263,9 +1261,10 @@ eirods::error sendRodsMsg(
 
     // =-=-=-=-=-=-=-
     // make the call to the "write body" interface
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
     ret_err = net->call< char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >( 
                   eirods::NETWORK_OP_WRITE_BODY, 
-                  *_ptr.get(),
+                  ptr,
                   _msg_type,
                   _msg_buf,
                   _bs_buf,
@@ -1326,7 +1325,7 @@ rods_inet_ntoa (struct in_addr in)
 // =-=-=-=-=-=-=-
 // 
 eirods::error readReconMsg( 
-    eirods::net_obj_ptr _ptr, 
+    eirods::network_object_ptr _ptr, 
     reconnMsg_t**       _msg ){
     int status;
     msgHeader_t myHeader;
@@ -1416,7 +1415,7 @@ eirods::error readReconMsg(
 // =-=-=-=-=-=-=-
 // interface for requesting a reconnection
 eirods::error sendReconnMsg(
-    eirods::net_obj_ptr _ptr, 
+    eirods::network_object_ptr _ptr, 
     reconnMsg_t*        _msg ) {
     // =-=-=-=-=-=-=-
     // trap invalid param 
@@ -1462,7 +1461,7 @@ int svrSwitchConnect(
     rsComm_t *rsComm ) {
     // =-=-=-=-=-=-=-
     // construct a network object from the comm
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( rsComm, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
@@ -1491,7 +1490,7 @@ int cliSwitchConnect (rcComm_t *conn)
 {
     // =-=-=-=-=-=-=-
     // construct a network object from the comm
-    eirods::net_obj_ptr net_obj;
+    eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );

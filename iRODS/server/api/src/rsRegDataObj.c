@@ -64,7 +64,10 @@ _rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         ret = ERROR(status, msg.str());
         eirods::log(ret);
     } else {
-        eirods::file_object file_obj(rsComm, dataObjInfo);
+        eirods::file_object_ptr file_obj(
+                                    new eirods::file_object( 
+                                        rsComm, 
+                                        dataObjInfo ) );
         ret = fileRegistered(rsComm, file_obj);
         if(!ret.ok()) {
             std::stringstream msg;

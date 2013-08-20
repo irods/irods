@@ -65,11 +65,15 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
           &regReplicaInp->condInput);
-        eirods::file_object file_obj(rsComm, destDataObjInfo);
+        
+        eirods::file_object_ptr file_obj(
+                                    new eirods::file_object( 
+                                        rsComm, 
+                                        destDataObjInfo ) );
         
         char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
-            file_obj.in_pdmo(true);
+            file_obj->in_pdmo(true);
         }
 
         eirods::error ret = fileModified(rsComm, file_obj);
@@ -91,11 +95,14 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo, &regReplicaInp->condInput);
 	    if (status >= 0) 
 			status = destDataObjInfo->replNum;
-        eirods::file_object file_obj(rsComm, destDataObjInfo);
+        eirods::file_object_ptr file_obj(
+                                    new eirods::file_object( 
+                                        rsComm, 
+                                        destDataObjInfo ) );
 
         char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
-            file_obj.in_pdmo(true);
+            file_obj->in_pdmo(true);
         }
 
 

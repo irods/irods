@@ -589,18 +589,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_create_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_create_plugin - null comm pointer in structure_object" );
         }
@@ -610,7 +610,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_create_plugin - tar_struct_file_open error for [";
@@ -642,19 +642,19 @@ extern "C" {
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileCreateInp.fileName, 
                                                                   spec_coll, 
-                                                                  fco.sub_file_path().c_str() );
+                                                                  fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG("compose_cache_dir_physical_path failed.", comp_err );
                          
         }
 
-        fileCreateInp.mode       = fco.mode();
-        fileCreateInp.flags      = fco.flags();
+        fileCreateInp.mode       = fco->mode();
+        fileCreateInp.flags      = fco->flags();
         fileCreateInp.fileType   = UNIX_FILE_TYPE;      /* the only type for cache */
         fileCreateInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileCreateInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileCreateInp.resc_hier_, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
-        strncpy( fileCreateInp.objPath, fco.logical_path().c_str(), MAX_NAME_LEN);
+        strncpy( fileCreateInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN);
         
         // =-=-=-=-=-=-=-
         // make the call to create a file
@@ -669,7 +669,7 @@ extern "C" {
         } else {
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
-            fco.file_descriptor( sub_index );
+            fco->file_descriptor( sub_index );
             return CODE(  sub_index  );
         }
 
@@ -688,18 +688,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_open_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_open_plugin - null comm pointer in structure_object" );
         }
@@ -709,7 +709,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_struct_file_open error for [";
@@ -739,19 +739,19 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        eirods::error comp_err = compose_cache_dir_physical_path( fileOpenInp.fileName, spec_coll, fco.sub_file_path().c_str() );
+        eirods::error comp_err = compose_cache_dir_physical_path( fileOpenInp.fileName, spec_coll, fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG( "compose_cache_dir_physical_path failed.", comp_err );
                          
         }
 
-        fileOpenInp.mode       = fco.mode();
-        fileOpenInp.flags      = fco.flags();
+        fileOpenInp.mode       = fco->mode();
+        fileOpenInp.flags      = fco->flags();
         fileOpenInp.fileType   = UNIX_FILE_TYPE;        /* the only type for cache */
         fileOpenInp.otherFlags = NO_CHK_PERM_FLAG; // JMC - backport 4768
         strncpy( fileOpenInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileOpenInp.resc_hier_, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
-        strncpy( fileOpenInp.objPath, fco.logical_path().c_str(), MAX_NAME_LEN );
+        strncpy( fileOpenInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
         
         // =-=-=-=-=-=-=-
         // make the call to create a file
@@ -766,7 +766,7 @@ extern "C" {
         } else {
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
-            fco.file_descriptor( sub_index );
+            fco->file_descriptor( sub_index );
             return CODE(  sub_index  );
         }
 
@@ -787,16 +787,16 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_read_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
@@ -807,13 +807,13 @@ extern "C" {
         bytesBuf_t fileReadOutBBuf;
         memset (&fileReadInp, 0, sizeof (fileReadInp));
         memset (&fileReadOutBBuf, 0, sizeof (fileReadOutBBuf));
-        fileReadInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
+        fileReadInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         fileReadInp.len     = _len;
         fileReadOutBBuf.buf = _buf;
 
         // =-=-=-=-=-=-=-
         // make the call to read a file
-        int status = rsFileRead( fco.comm(), &fileReadInp, &fileReadOutBBuf );
+        int status = rsFileRead( fco->comm(), &fileReadInp, &fileReadOutBBuf );
         return CODE(status);
 
     } // tar_file_read_plugin
@@ -833,16 +833,16 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_write_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
@@ -854,20 +854,20 @@ extern "C" {
         memset( &fileWriteInp,     0, sizeof (fileWriteInp) );
         memset( &fileWriteOutBBuf, 0, sizeof (fileWriteOutBBuf) );
         fileWriteInp.len     = fileWriteOutBBuf.len = _len;
-        fileWriteInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
+        fileWriteInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         fileWriteOutBBuf.buf = _buf;
 
         // =-=-=-=-=-=-=-
         // make the write api call
-        int status = rsFileWrite( fco.comm(), &fileWriteInp, &fileWriteOutBBuf );
+        int status = rsFileWrite( fco->comm(), &fileWriteInp, &fileWriteOutBBuf );
         if( status > 0 ) {
             // =-=-=-=-=-=-=-
             // cache has been written 
-            int         struct_idx = PluginTarSubFileDesc[ fco.file_descriptor() ].structFileInx;
+            int         struct_idx = PluginTarSubFileDesc[ fco->file_descriptor() ].structFileInx;
             specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
             if( spec_coll->cacheDirty == 0 ) {
                 spec_coll->cacheDirty = 1;    
-                int status1 = modCollInfo2( fco.comm(), spec_coll, 0 );
+                int status1 = modCollInfo2( fco->comm(), spec_coll, 0 );
                 if( status1 < 0 ) 
                     return CODE( status1 );
             }
@@ -890,16 +890,16 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_close_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
@@ -907,22 +907,22 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a close structure and make the rs call
         fileCloseInp_t fileCloseInp;
-        fileCloseInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
-        int status = rsFileClose( fco.comm(), &fileCloseInp );
+        fileCloseInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
+        int status = rsFileClose( fco->comm(), &fileCloseInp );
         if( status < 0 ) {
             std::stringstream msg;
             msg << "tar_file_close_plugin - failed in rsFileClose for fd [ ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " ]";
             return ERROR( status, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // close out the sub file allocation and free the space
-        int struct_file_index = PluginTarSubFileDesc[ fco.file_descriptor() ].structFileInx;
+        int struct_file_index = PluginTarSubFileDesc[ fco->file_descriptor() ].structFileInx;
         PluginStructFileDesc[ struct_file_index ].openCnt++;
-        free_tar_sub_file_desc( fco.file_descriptor() );
-        fco.file_descriptor( 0 );
+        free_tar_sub_file_desc( fco->file_descriptor() );
+        fco->file_descriptor( 0 );
 
         return CODE( status );
 
@@ -941,18 +941,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_unlink_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_unlink_plugin - null comm pointer in structure_object" );
         }
@@ -962,7 +962,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_unlink_plugin - tar_struct_file_open error for [";
@@ -979,13 +979,13 @@ extern "C" {
         fileUnlinkInp_t fileUnlinkInp;
         memset( &fileUnlinkInp, 0, sizeof( fileUnlinkInp ) );
         strncpy( fileUnlinkInp.rescHier, eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), MAX_NAME_LEN );
-        strncpy( fileUnlinkInp.objPath, fco.logical_path().c_str(), MAX_NAME_LEN );
+        strncpy( fileUnlinkInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileUnlinkInp.fileName, 
                                                                   spec_coll, 
-                                                                  fco.sub_file_path().c_str() );
+                                                                  fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG(
                          "tar_file_unlink_plugin - compose_cache_dir_physical_path failed.", comp_err );
@@ -1027,18 +1027,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_stat_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_stat_plugin - null comm pointer in structure_object" );
         }
@@ -1048,7 +1048,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_stat_plugin - tar_struct_file_open error for [";
@@ -1068,11 +1068,11 @@ extern "C" {
         strncpy( fileStatInp.rescHier,
                  eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
                  MAX_NAME_LEN );
-        strncpy( fileStatInp.objPath, fco.logical_path().c_str(), MAX_NAME_LEN);
+        strncpy( fileStatInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN);
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
-        eirods::error comp_err = compose_cache_dir_physical_path( fileStatInp.fileName, spec_coll, fco.sub_file_path().c_str() );
+        eirods::error comp_err = compose_cache_dir_physical_path( fileStatInp.fileName, spec_coll, fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG(
                          "tar_file_stat_plugin - compose_cache_dir_physical_path failed.", comp_err );
@@ -1112,23 +1112,23 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_fstat_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_fstat_plugin - null comm pointer in structure_object" );
         }
@@ -1137,7 +1137,7 @@ extern "C" {
         // build a fstat structure and make the rs call
         fileFstatInp_t fileFstatInp;
         memset( &fileFstatInp, 0, sizeof( fileFstatInp ) );
-        fileFstatInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
+        fileFstatInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         
         rodsStat_t* rods_stat;
         int status = rsFileFstat( comm, &fileFstatInp, &rods_stat );
@@ -1166,23 +1166,23 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_lseek_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_lseek_plugin - null comm pointer in structure_object" );
         }
@@ -1191,7 +1191,7 @@ extern "C" {
         // build a lseek structure and make the rs call
         fileLseekInp_t fileLseekInp;
         memset( &fileLseekInp, 0, sizeof( fileLseekInp ) );
-        fileLseekInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
+        fileLseekInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         fileLseekInp.offset  = _offset;
         fileLseekInp.whence  = _whence;
         
@@ -1231,18 +1231,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_mkdir_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_mkdir_plugin - null comm pointer in structure_object" );
         }
@@ -1252,7 +1252,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_mkdir_plugin - tar_struct_file_open error for [";
@@ -1270,13 +1270,13 @@ extern "C" {
         fileMkdirInp.fileType = UNIX_FILE_TYPE; /* the only type for cache */
         strncpy( fileMkdirInp.addr.hostAddr, resc_host.c_str(), NAME_LEN );
         strncpy( fileMkdirInp.rescHier, spec_coll->rescHier, MAX_NAME_LEN);
-        fileMkdirInp.mode = fco.mode();
+        fileMkdirInp.mode = fco->mode();
 
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileMkdirInp.dirName, 
                                                                   spec_coll, 
-                                                                  fco.sub_file_path().c_str() );
+                                                                  fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG(
                          "tar_file_mkdir_plugin - compose_cache_dir_physical_path failed.", comp_err );
@@ -1317,18 +1317,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_rmdir_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_rmdir_plugin - null comm pointer in structure_object" );
         }
@@ -1338,7 +1338,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_rmdir_plugin - tar_struct_file_open error for [";
@@ -1361,7 +1361,7 @@ extern "C" {
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileRmdirInp.dirName, 
                                                                   spec_coll, 
-                                                                  fco.sub_file_path().c_str() );
+                                                                  fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG(
                          "tar_file_rmdir_plugin - compose_cache_dir_physical_path failed.", comp_err );
@@ -1402,18 +1402,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_opendir_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_opendir_plugin - null comm pointer in structure_object" );
         }
@@ -1423,7 +1423,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_opendir_plugin - tar_struct_file_open error for [";
@@ -1453,14 +1453,14 @@ extern "C" {
         memset( &fileOpendirInp, 0, sizeof( fileOpendirInp ) );
         fileOpendirInp.fileType = UNIX_FILE_TYPE;       // the only type for cache
         strncpy( fileOpendirInp.addr.hostAddr, resc_host.c_str(),                 NAME_LEN );
-        strncpy( fileOpendirInp.objPath,       fco.logical_path().c_str(), MAX_NAME_LEN );
-        strncpy( fileOpendirInp.resc_hier_,    fco.resc_hier().c_str(),    MAX_NAME_LEN );
+        strncpy( fileOpendirInp.objPath,       fco->logical_path().c_str(), MAX_NAME_LEN );
+        strncpy( fileOpendirInp.resc_hier_,    fco->resc_hier().c_str(),    MAX_NAME_LEN );
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileOpendirInp.dirName, 
                                                                   spec_coll, 
-                                                                  fco.sub_file_path().c_str() );
+                                                                  fco->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG(
                          "tarFileRmdirPlugin - compose_cache_dir_physical_path failed.", comp_err );
@@ -1481,7 +1481,7 @@ extern "C" {
         } else {
             PluginTarSubFileDesc[ sub_index ].fd = status;
             PluginStructFileDesc[ struct_file_index ].openCnt++;
-            fco.file_descriptor( sub_index );
+            fco->file_descriptor( sub_index );
 
             return CODE( sub_index );
         }
@@ -1501,16 +1501,16 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the fco
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_closedir_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
@@ -1518,7 +1518,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file close dir structure to pass off to the server api call
         fileClosedirInp_t fileClosedirInp;
-        fileClosedirInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
+        fileClosedirInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
         int status = rsFileClosedir( _ctx.comm(), &fileClosedirInp );
         if( status < 0 ) {
             return ERROR( status, "tar_file_closedir_plugin - failed on call to rsFileClosedir" );
@@ -1526,10 +1526,10 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // close out the sub file index and free the allocation
-        int struct_file_index = PluginTarSubFileDesc[ fco.file_descriptor() ].structFileInx;
+        int struct_file_index = PluginTarSubFileDesc[ fco->file_descriptor() ].structFileInx;
         PluginStructFileDesc[ struct_file_index ].openCnt++;
-        free_tar_sub_file_desc( fco.file_descriptor() );
-        fco.file_descriptor( 0 );
+        free_tar_sub_file_desc( fco->file_descriptor() );
+        fco->file_descriptor( 0 );
 
         return CODE( status );
 
@@ -1549,16 +1549,16 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // extract the fco
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // check range on the sub file index
-        if( fco.file_descriptor() < 1                      || 
-            fco.file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco.file_descriptor() ].inuseFlag == 0 ) {
+        if( fco->file_descriptor() < 1                      || 
+            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
+            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
             std::stringstream msg;
             msg << "tar_file_readdir_plugin - sub file index ";
-            msg << fco.file_descriptor();
+            msg << fco->file_descriptor();
             msg << " is out of range.";
             return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
         }
@@ -1566,7 +1566,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // build a file read dir structure to pass off to the server api call
         fileReaddirInp_t fileReaddirInp; 
-        fileReaddirInp.fileInx = PluginTarSubFileDesc[ fco.file_descriptor() ].fd;
+        fileReaddirInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
 
         // =-=-=-=-=-=-=-
         // make the api call to read the directory
@@ -1593,18 +1593,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_rename_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_rename_plugin - null comm pointer in structure_object" );
         }
@@ -1614,7 +1614,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_rename_plugin - tar_struct_file_open error for [";
@@ -1635,13 +1635,13 @@ extern "C" {
         strncpy( fileRenameInp.rescHier,
                  eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE.c_str(), 
                  MAX_NAME_LEN );
-        strncpy( fileRenameInp.objPath, fco.logical_path().c_str(), MAX_NAME_LEN );
+        strncpy( fileRenameInp.objPath, fco->logical_path().c_str(), MAX_NAME_LEN );
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err_old = compose_cache_dir_physical_path( fileRenameInp.oldFileName, 
                                                                       spec_coll, 
-                                                                      fco.sub_file_path().c_str() );
+                                                                      fco->sub_file_path().c_str() );
         if( !comp_err_old.ok() ) {
             return PASSMSG(
                          "tar_file_rename_plugin - compose_cache_dir_physical_path failed for old file name.", 
@@ -1693,18 +1693,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_extract_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_extract_plugin - null comm pointer in structure_object" );
         }
@@ -1722,7 +1722,7 @@ extern "C" {
         PluginStructFileDesc[ struct_file_index ].specColl  = spec_coll;
         PluginStructFileDesc[ struct_file_index ].rsComm    = comm;
         strncpy( PluginStructFileDesc[ struct_file_index ].dataType, 
-                 fco.data_type().c_str(), NAME_LEN );
+                 fco->data_type().c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // extract the file
@@ -2160,18 +2160,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& fco = dynamic_cast< eirods::structured_object& >( _ctx.fco() );
+        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = fco.spec_coll();
+        specColl_t* spec_coll = fco->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_sync_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = fco.comm();
+        rsComm_t* comm = fco->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_sync_plugin - null comm pointer in structure_object" );
         }
@@ -2181,7 +2181,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err = tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        fco.resc_hier(), resc_host );
+                                                        fco->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_sync_plugin - tar_struct_file_open error for [";
@@ -2191,7 +2191,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // copy the data type requested by user for compression
-        strncpy( PluginStructFileDesc[ struct_file_index ].dataType, fco.data_type().c_str(), NAME_LEN );
+        strncpy( PluginStructFileDesc[ struct_file_index ].dataType, fco->data_type().c_str(), NAME_LEN );
 
         // =-=-=-=-=-=-=-
         // use the cached specColl. specColl may have changed 
@@ -2205,7 +2205,7 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // delete operation
-        if( ( fco.opr_type() & DELETE_STRUCT_FILE) != 0 ) {
+        if( ( fco->opr_type() & DELETE_STRUCT_FILE) != 0 ) {
             /* remove cache and the struct file */
             free_struct_file_desc( struct_file_index );
             return SUCCESS();
@@ -2219,7 +2219,7 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // write the tar file and register no dirty 
                 eirods::error sync_err = sync_cache_dir_to_tar_file( struct_file_index, 
-                                                                     fco.opr_type(), 
+                                                                     fco->opr_type(), 
                                                                      resc_host );
                 if( !sync_err.ok() ) {
                     std::stringstream msg;
@@ -2233,7 +2233,7 @@ extern "C" {
                 }
 
                 spec_coll->cacheDirty = 0;
-                if( ( fco.opr_type() & NO_REG_COLL_INFO ) == 0 ) {
+                if( ( fco->opr_type() & NO_REG_COLL_INFO ) == 0 ) {
                     int status = modCollInfo2( comm,  spec_coll, 0 );
                     if( status < 0 ) {
                         free_struct_file_desc( struct_file_index );
@@ -2247,7 +2247,7 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // remove cache dir if necessary
-            if( ( fco.opr_type() & PURGE_STRUCT_FILE_CACHE ) != 0 ) {
+            if( ( fco->opr_type() & PURGE_STRUCT_FILE_CACHE ) != 0 ) {
                 // =-=-=-=-=-=-=-
                 // need to unregister the cache before removing it
                 int status = modCollInfo2( comm,  spec_coll, 1 );

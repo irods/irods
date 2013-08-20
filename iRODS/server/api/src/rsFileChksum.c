@@ -103,15 +103,13 @@ _rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
     return (status);
 } 
 
-int
-fileChksum (
-    int fileType,
-    rsComm_t *rsComm,
-    char* objPath,
-    char *fileName,
-    char* rescHier,
-    char *chksumStr)
-{
+int fileChksum (
+    int       fileType,
+    rsComm_t* rsComm,
+    char*     objPath,
+    char*     fileName,
+    char*     rescHier,
+    char*     chksumStr ) {
     MD5_CTX context;
     int bytes_read;
     unsigned char buffer[SVR_MD5_BUF_SZ], digest[16];
@@ -131,7 +129,13 @@ fileChksum (
     
     // =-=-=-=-=-=-=-
     // call resource plugin to open file
-    eirods::file_object file_obj( rsComm, objPath, fileName, rescHier, -1, 0, O_RDONLY ); // FIXME :: hack until this is better abstracted - JMC
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    rsComm, 
+                                    objPath, 
+                                    fileName, 
+                                    rescHier, 
+                                    -1, 0, O_RDONLY ) ); // FIXME :: hack until this is better abstracted - JMC
     eirods::error ret = fileOpen( rsComm, file_obj );
     if( !ret.ok() ) {
         if(ret.code() != EIRODS_DIRECT_ARCHIVE_ACCESS) {

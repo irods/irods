@@ -108,10 +108,13 @@ remoteFileStat (rsComm_t *rsComm, fileStatInp_t *fileStatInp,
 
 // =-=-=-=-=-=-=-
 // local function to handle call to stat via resource plugin
-int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **fileStatOut ) {
+int _rsFileStat( 
+    rsComm_t*      _comm, 
+    fileStatInp_t* _stat_inp, 
+    rodsStat_t**   _stat_out ) {
     struct stat myFileStat;
 
-    if(fileStatInp->objPath[0] == '\0') {
+    if(_stat_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << "Empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
@@ -120,8 +123,14 @@ int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **file
 
     // =-=-=-=-=-=-=-
     // make call to stat via resource plugin
-    eirods::file_object file_obj( rsComm, fileStatInp->objPath, fileStatInp->fileName, fileStatInp->rescHier, 0, 0, 0 );
-    eirods::error stat_err = fileStat( rsComm, file_obj, &myFileStat );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    _stat_inp->objPath, 
+                                    _stat_inp->fileName, 
+                                    _stat_inp->rescHier, 
+                                    0, 0, 0 ) );
+    eirods::error stat_err = fileStat( _comm, file_obj, &myFileStat );
 
     // =-=-=-=-=-=-=-
     // log error if necessary
@@ -132,14 +141,14 @@ int _rsFileStat( rsComm_t *rsComm, fileStatInp_t *fileStatInp, rodsStat_t **file
 
     // =-=-=-=-=-=-=-
     // convert unix stat struct to an irods stat struct
-    *fileStatOut = (rodsStat_t*)malloc (sizeof (rodsStat_t));
-    int status = statToRodsStat (*fileStatOut, &myFileStat);
+    *_stat_out = (rodsStat_t*)malloc (sizeof (rodsStat_t));
+    int status = statToRodsStat (*_stat_out, &myFileStat);
         
     // =-=-=-=-=-=-=-
     // manage error if necessary
     if (status < 0) {
-        free (*fileStatOut);
-        *fileStatOut = NULL;
+        free (*_stat_out);
+        *_stat_out = NULL;
     }
 
     return status;

@@ -76,11 +76,12 @@ int _rsSubStructFileReaddir( rsComm_t*                 _comm,
     
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj;
-    struct_obj.comm( _comm );
-    struct_obj.file_descriptor( _read_inp->fd );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                           ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->file_descriptor( _read_inp->fd );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to read a file
@@ -88,7 +89,7 @@ int _rsSubStructFileReaddir( rsComm_t*                 _comm,
     if( !readdir_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileReaddir for [";
-        msg << struct_obj.physical_path();
+        msg << struct_obj->physical_path();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), readdir_err ) );
         return readdir_err.code();

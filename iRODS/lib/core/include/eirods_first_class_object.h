@@ -13,6 +13,9 @@
 // irods includes
 #include "rcConnect.h"
 
+// =-=-=-=-=-=-=-
+// boost includs
+#include <boost/shared_ptr.hpp>
 
 namespace eirods {
     // =-=-=-=-=-=-=-
@@ -37,6 +40,10 @@ namespace eirods {
         virtual error get_re_vars( keyValPair_t& ) = 0;
     
     }; // class first_class_object
+
+    /// =-=-=-=-=-=-=-
+    /// @brief shared pointer to first_class_object
+    typedef boost::shared_ptr< first_class_object > first_class_object_ptr;
 
 }; // namespace eirods
 

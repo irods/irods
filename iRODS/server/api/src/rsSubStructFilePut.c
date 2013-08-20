@@ -75,10 +75,11 @@ _rsSubStructFilePut( rsComm_t*   _comm,
    
     // =-=-=-=-=-=-=-
     // create a structured object on which to operate    
-    eirods::structured_object struct_obj( *_sub_file );
-    struct_obj.comm( _comm );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          *_sub_file ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // force the opening of a file?
@@ -87,7 +88,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed on call to fileCreate for [";
-            msg << struct_obj.sub_file_path();
+            msg << struct_obj->sub_file_path();
             eirods::log( PASSMSG( msg.str(), err ) );
             fd = -1;
 
@@ -100,7 +101,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed on call to fileCreate for [";
-            msg << struct_obj.sub_file_path();
+            msg << struct_obj->sub_file_path();
             eirods::log( PASSMSG( msg.str(), err ) );
             fd = -1;
 
@@ -133,7 +134,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     if( !write_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileWrite for [";
-        msg << struct_obj.sub_file_path();
+        msg << struct_obj->sub_file_path();
         eirods::log( PASSMSG( msg.str(), write_err ) );
         status = write_err.code();
 
@@ -163,7 +164,7 @@ _rsSubStructFilePut( rsComm_t*   _comm,
     if( !close_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileWrite for [";
-        msg << struct_obj.sub_file_path();
+        msg << struct_obj->sub_file_path();
         eirods::log( PASSMSG( msg.str(), close_err ) );
         status = close_err.code();
 

@@ -63,57 +63,57 @@ extern "C" {
 // =-=-=-=-=-=-=-
 // network plugin interface functions
 eirods::error readMsgHeader ( 
-    eirods::net_obj_ptr,  // network object
-    msgHeader_t*,         // header
-    struct timeval* );    // time value
+    eirods::network_object_ptr, // network object
+    msgHeader_t*,                   // header
+    struct timeval* );              // time value
 eirods::error readMsgBody( 
-    eirods::net_obj_ptr,  // network object
-    msgHeader_t*,         // header
-    bytesBuf_t*,          // input struct buf
-    bytesBuf_t*,          // stream buf 
-    bytesBuf_t*,          // error buf 
-    irodsProt_t,          // protocol
-    struct timeval* );    // time value
-eirods::error writeMsgHeader( 
-    eirods::net_obj_ptr, // network object
-    msgHeader_t* );      // header structure
+    eirods::network_object_ptr, // network object
+    msgHeader_t*,                   // header
+    bytesBuf_t*,                    // input struct buf
+    bytesBuf_t*,                    // stream buf 
+    bytesBuf_t*,                    // error buf 
+    irodsProt_t,                    // protocol
+    struct timeval* );              // time value
+eirods::error writeMsgHeader(
+    eirods::network_object_ptr, // network object
+    msgHeader_t* );                 // header structure
 eirods::error sendRodsMsg( 
-    eirods::net_obj_ptr, // network object, 
-    char*,               // message type
-    bytesBuf_t*,         // message buffer 
-    bytesBuf_t*,         // stream buffer
-    bytesBuf_t*,         // error buffer
-    int,                 // internal info?
-    irodsProt_t );       // protocol
+    eirods::network_object_ptr, // network object, 
+    char*,                          // message type
+    bytesBuf_t*,                    // message buffer 
+    bytesBuf_t*,                    // stream buffer
+    bytesBuf_t*,                    // error buffer
+    int,                            // internal info?
+    irodsProt_t );                  // protocol
 eirods::error readReconMsg(
-    eirods::net_obj_ptr, 
+    eirods::network_object_ptr, 
     reconnMsg_t** );
 eirods::error sendReconnMsg(
-    eirods::net_obj_ptr, 
+    eirods::network_object_ptr, 
     reconnMsg_t* );
 
 // =-=-=-=-=-=-=-
 // additional interfaces for network plugin support
 // start and stop the network interface, client side
-eirods::error sockClientStart( eirods::net_obj_ptr );
-eirods::error sockClientStop( eirods::net_obj_ptr );
+eirods::error sockClientStart( eirods::network_object_ptr );
+eirods::error sockClientStop( eirods::network_object_ptr );
 
 // =-=-=-=-=-=-=-
 // start and stop the network interface, agent side
-eirods::error sockAgentStart( eirods::net_obj_ptr );
-eirods::error sockAgentStop( eirods::net_obj_ptr );
+eirods::error sockAgentStart( eirods::network_object_ptr );
+eirods::error sockAgentStop( eirods::network_object_ptr );
 
 // =-=-=-=-=-=-=-
 // other dependent functions
 eirods::error readVersion(
-    eirods::net_obj_ptr, // network object 
-    version_t** );       // version info
+    eirods::network_object_ptr, // network object 
+    version_t** );                  // version info
 eirods::error sendVersion (
-    eirods::net_obj_ptr, // network object
-    int,                 // version status
-    int,                 // port for reconnection
-    char*,               // address for reconnection
-    int );               // shared cookie
+    eirods::network_object_ptr, // network object
+    int,                            // version status
+    int,                            // port for reconnection
+    char*,                          // address for reconnection
+    int );                          // shared cookie
 
 // =-=-=-=-=-=-=-
 // other legacy functions
