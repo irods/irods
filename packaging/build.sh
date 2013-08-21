@@ -219,7 +219,7 @@ if [ "$1" == "clean" ] ; then
     exit 0
 fi
 
-
+# begin self-awareness
 echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
 echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
@@ -1006,6 +1006,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     irods_msvc_home="$detected_irods_home/plugins/microservices/"
     sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
     mv /tmp/eirods_ms_home.h ./lib/core/include/
+    # =-=-=-=-=-=-=-
+    # modify the eirods_network_home.h file with the proper path to the binary directory
+    irods_network_home="$detected_irods_home/plugins/network/"
+    sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.h.src > /tmp/eirods_network_home.h
+    mv /tmp/eirods_network_home.h ./lib/core/include/
     # =-=-=-=-=-=-=-
     # modify the eirods_resources_home.h file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"

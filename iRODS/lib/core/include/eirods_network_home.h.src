@@ -6,7 +6,7 @@
 
 namespace eirods {
 
-	const std::string EIRODS_NETWORK_HOME( "/var/lib/eirods/plugins/network/" );
+	const std::string EIRODS_NETWORK_HOME( "EIRODSNETWORKPATH" );
 
 }; // namespace eirods
 
