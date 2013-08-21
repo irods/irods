@@ -265,6 +265,12 @@ if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
     fi
 fi
 
+################################################################################
+# housekeeping - update examples - keep them current
+cp $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp /tmp/libunixfilesystem.cpp
+sed -e s,unix,example,g /tmp/libunixfilesystem.cpp > $BUILDDIR/examples/resources/libexamplefilesystem.cpp
+rm /tmp/libunixfilesystem.cpp
+
 
 ################################################################################
 # use error codes to determine dependencies
