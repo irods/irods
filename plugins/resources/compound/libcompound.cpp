@@ -422,6 +422,7 @@ extern "C" {
         dst_hier += tgt_name;
         std::string src_hier = inp_hier.substr( 0, pos );
         src_hier += src_name;
+
         // =-=-=-=-=-=-=-
         // create a data obj input struct to call rsDataObjRepl which given
         // the _stage_sync_kw will either stage or sync the data object 

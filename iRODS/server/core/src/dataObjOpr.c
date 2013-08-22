@@ -979,15 +979,41 @@ matchAndTrimRescGrp (dataObjInfo_t **dataObjInfoHead,
 
 int
 sortObjInfoForRepl (
-    dataObjInfo_t **dataObjInfoHead, 
-    dataObjInfo_t **oldDataObjInfoHead,
-    int deleteOldFlag,
-    const char* resc_hier)
-{
+    dataObjInfo_t** dataObjInfoHead,     // RESC_HIER
+    dataObjInfo_t** oldDataObjInfoHead,  // DST_RESC_HIER
+    int             deleteOldFlag,
+    const char*     resc_hier,
+    const char*     dst_resc_hier ) {
+    // =-=-=-=-=-=-=-
+    // trap bad pointers
+    if( !*dataObjInfoHead ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
+
+    // =-=-=-=-=-=-=-
+    // short circuit sort for the case where a dst resc hier is provided
+    // which means the choice for to which repl to update is made already
+    if( dst_resc_hier ) {
+        dataObjInfo_t* tmp_info = *dataObjInfoHead;
+        while( tmp_info ) {
+            // =-=-=-=-=-=-=-
+            // compare resc hier strings, if its a match this is our 
+            // choice so queue it up on the oldDataObjInfoHead
+            if( 0 == strcmp( dst_resc_hier, tmp_info->rescHier ) ) {
+                queDataObjInfo( oldDataObjInfoHead, tmp_info, 1, 1 );
+                tmp_info = 0;
+            
+            } else {
+                tmp_info = tmp_info->next;
+
+            }
+
+        } // while tmp_info
+
+    } // if dst_resc_hier
 
     dataObjInfo_t *currentArchInfo = 0, *currentCacheInfo = 0, *oldArchInfo = 0,
                   *oldCacheInfo = 0,    *downCurrentInfo = 0,  *downOldInfo = 0;
-
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier);
@@ -1578,7 +1604,7 @@ int
     int toTrim;
 
     // char* resc_hier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
-    sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0, NULL);
+    sortObjInfoForRepl( dataObjInfoHead, &oldDataObjInfoHead, 0, NULL, NULL );
 
     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);

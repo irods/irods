@@ -593,11 +593,12 @@ freeAllDataObjInfo(dataObjInfo_t *dataObjInfoHead)
  *               0 - queue the input dataObjInfo at the bottom of the
  *                   queue.
  */
+int queDataObjInfo(
+    dataObjInfo_t** dataObjInfoHead, 
+    dataObjInfo_t*  dataObjInfo,
+    int             singleInfoFlag, 
+    int             topFlag ) {
 
-int
-queDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo,
-                int singleInfoFlag, int topFlag)
-{
     dataObjInfo_t *tmpDataObjInfo;
 
     if (dataObjInfo == NULL)

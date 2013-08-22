@@ -218,7 +218,7 @@ _rsDataObjRepl (
     if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
         char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
         char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier);
+        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
 
         if (status < 0) {
             rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
@@ -245,7 +245,7 @@ _rsDataObjRepl (
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
     // char* resc_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, NULL);
+    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, NULL, NULL );
  
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
@@ -427,13 +427,14 @@ int _rsDataObjReplUpdate(
 
     // =-=-=-=-=-=-=-
     // cache a copy of the dest resc hier if there is one
+
     std::string dst_resc_hier;
     char* dst_resc_hier_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
     if( dst_resc_hier_ptr ) {
         dst_resc_hier = dst_resc_hier;
             
     }    
-         
+
     // =-=-=-=-=-=-=-
     // loop over all the dest data obj info structs
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
@@ -450,11 +451,11 @@ int _rsDataObjReplUpdate(
         // overwrite a specific destDataObjInfo 
         srcDataObjInfo = srcDataObjInfoHead;
         while (srcDataObjInfo != NULL) {
-
             // =-=-=-=-=-=-=-
-            // set the dest resc hier kw from the dest obj info as it is already known and we do not
-            // want the resc hier makgin this decision again
+            // if the dst hier kw is not set, then set the dest resc hier kw from the dest obj info 
+            // as it is already known and we do not want the resc hier making this decision again
             addKeyVal( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW, destDataObjInfo->rescHier );
+
             status = _rsDataObjReplS( rsComm, dataObjInp, srcDataObjInfo, NULL, "", destDataObjInfo, 1 );
               
             if (status >= 0) {
