@@ -572,8 +572,10 @@ extern "C" {
                 // =-=-=-=-=-=-=-
                 // return an error if necessary
                 int err_status = UNIX_FILE_STAT_ERR - errno;
-                result = ASSERT_ERROR(status >= 0, err_status, "Stat error for \"%s\", errno = \"%s\", status = %d.",
-                                      fco.physical_path().c_str(), strerror(errno), err_status);
+                if((result = ASSERT_ERROR(status >= 0, err_status, "Stat error for \"%s\", errno = \"%s\", status = %d.",
+                                          fco.physical_path().c_str(), strerror(errno), err_status)).ok()) {
+                    result.code(status);
+                }
             }
         }
         
@@ -650,8 +652,10 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // return an error if necessary
             long long err_status = UNIX_FILE_LSEEK_ERR - errno;
-            result = ASSERT_ERROR(status >= 0, err_status, "Lseek error for \"%s\", errno = \"%s\", status = %ld.",
-                                  fco.physical_path().c_str(), strerror(errno), err_status);
+            if((result = ASSERT_ERROR(status >= 0, err_status, "Lseek error for \"%s\", errno = \"%s\", status = %ld.",
+                                      fco.physical_path().c_str(), strerror(errno), err_status)).ok()) {
+                result.code(status);
+            }
         }
         
         return result;
@@ -702,44 +706,27 @@ extern "C" {
         if((result = ASSERT_ERROR(_ctx, SYS_INVALID_INPUT_PARAM, "Invalid resource context." )).ok()) {
          
             eirods::error ret = _ctx->valid< eirods::collection_object >(); 
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__ << " - resource context is invalid";
-                return PASSMSG( msg.str(), ret );
+            if((result = ASSERT_PASS(ret, "resource context is invalid.")).ok()) {
+ 
+                // =-=-=-=-=-=-=-
+                // cast down the chain to our understood object type
+                eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+
+                // =-=-=-=-=-=-=-
+                // make the call to mkdir & umask
+                mode_t myMask = umask( ( mode_t ) 0000 );
+                int    status = mkdir( coll_obj.physical_path().c_str(), coll_obj.mode() );
+
+                // =-=-=-=-=-=-=-
+                // reset the old mask 
+                umask( ( mode_t ) myMask );
+
+                // =-=-=-=-=-=-=-
+                // return an error if necessary
+                long long err_status = UNIX_FILE_MKDIR_ERR - errno;
+                result = ASSERT_ERROR(status >= 0, err_status, "Mkdir error for \"%s\", errno = \"%s\", status = %ld.",
+                                      coll_obj.physical_path().c_str(), strerror(errno), err_status);
             }
- 
-            // =-=-=-=-=-=-=-
-            // cast down the chain to our understood object type
-            eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
-
-            // =-=-=-=-=-=-=-
-            // make the call to mkdir & umask
-            mode_t myMask = umask( ( mode_t ) 0000 );
-            int    status = mkdir( coll_obj.physical_path().c_str(), coll_obj.mode() );
-
-            // =-=-=-=-=-=-=-
-            // reset the old mask 
-            umask( ( mode_t ) myMask );
-
-            // =-=-=-=-=-=-=-
-            // return an error if necessary
-            if( status < 0 ) {
-                status = UNIX_FILE_MKDIR_ERR - errno;
- 
-                if (errno != EEXIST) {
-                    std::stringstream msg;
-                    msg << "unix_file_mkdir_plugin: mkdir error for ";
-                    msg << coll_obj.physical_path();
-                    msg << ", errno = '";
-                    msg << strerror( errno );
-                    msg << "', status = ";
-                    msg << status;
-                                
-                    return ERROR( status, msg.str() );
-
-                } // if errno != EEXIST
-
-            } // if status < 0 
         }
         
         return result;
@@ -749,141 +736,112 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX rmdir
     eirods::error unix_file_rmdir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
+        
+            // =-=-=-=-=-=-=-
+            // make the call to chmod
+            int status = rmdir( fco.physical_path().c_str() );
+
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            int err_status = UNIX_FILE_RMDIR_ERR - errno;
+            result = ASSERT_ERROR(status >= 0, err_status, "Rmdir error for \"%s\", errno = \"%s\", status = %d.",
+                                  fco.physical_path().c_str(), strerror(errno), err_status);
         }
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
-        
-        // =-=-=-=-=-=-=-
-        // make the call to chmod
-        int status = rmdir( fco.physical_path().c_str() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_RMDIR_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "unix_file_rmdir_plugin: mkdir error for ";
-            msg << fco.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( errno, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // unix_file_rmdir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX opendir
     eirods::error unix_file_opendir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+            // =-=-=-=-=-=-=-
+            // cast down the chain to our understood object type
+            eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
 
-        // =-=-=-=-=-=-=-
-        // make the callt to opendir
-        DIR* dir_ptr = opendir( coll_obj.physical_path().c_str() );
+            // =-=-=-=-=-=-=-
+            // make the callt to opendir
+            DIR* dir_ptr = opendir( coll_obj.physical_path().c_str() );
 
-        // =-=-=-=-=-=-=-
-        // if the directory can't be accessed due to permission
-        // denied try again using root credentials.            
-        #ifdef RUN_SERVER_AS_ROOT
-        if( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
-            if (changeToRootUser() == 0) {
-                dir_ptr = opendir ( coll_obj.physical_path().c_str() );
-                changeToServiceUser();
+            // =-=-=-=-=-=-=-
+            // if the directory can't be accessed due to permission
+            // denied try again using root credentials.            
+#ifdef RUN_SERVER_AS_ROOT
+            if( dir_ptr == NULL && errno == EACCES && isServiceUserSet() ) {
+                if (changeToRootUser() == 0) {
+                    dir_ptr = opendir ( coll_obj.physical_path().c_str() );
+                    changeToServiceUser();
+                } // if
             } // if
-        } // if
-        #endif
+#endif
 
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( NULL == dir_ptr ) {
             // =-=-=-=-=-=-=-
             // cache status in out variable
-            int status = UNIX_FILE_OPENDIR_ERR - errno;
+            int err_status = UNIX_FILE_OPENDIR_ERR - errno;
 
-            std::stringstream msg;
-            msg << "unix_file_opendir_plugin: opendir error for ";
-            msg << coll_obj.physical_path();
-            msg << ", errno = ";
-            msg << strerror( errno );
-            msg << ", status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            if((result = ASSERT_ERROR(NULL != dir_ptr, err_status, "Opendir error for \"%s\", errno = \"%s\", status = %d.",
+                                      coll_obj.physical_path().c_str(), strerror(errno), err_status)).ok()) {
+                // =-=-=-=-=-=-=-
+                // cache dir_ptr & status in out variables
+                coll_obj.directory_pointer( dir_ptr );
+            }
         }
-
-        // =-=-=-=-=-=-=-
-        // cache dir_ptr & status in out variables
-        coll_obj.directory_pointer( dir_ptr );
-
-        return SUCCESS();
+        
+        return result;
 
     } // unix_file_opendir_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX closedir
     eirods::error unix_file_closedir_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // cast down the chain to our understood object type
+            eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+
+            // =-=-=-=-=-=-=-
+            // make the callt to opendir
+            int status = closedir( coll_obj.directory_pointer() );
+                        
+            // =-=-=-=-=-=-=-
+            // return an error if necessary
+            int err_status = UNIX_FILE_CLOSEDIR_ERR - errno;
+            result = ASSERT_ERROR(status >= 0, err_status, "Closedir error for \"%s\", errno = \"%s\", status = %d.",
+                                  coll_obj.physical_path().c_str(), strerror(errno), err_status);
         }
         
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
-
-        // =-=-=-=-=-=-=-
-        // make the callt to opendir
-        int status = closedir( coll_obj.directory_pointer() );
-                        
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_CLOSEDIR_ERR - errno;
-
-            std::stringstream msg;
-            msg << "unix_file_closedir_plugin: closedir error for ";
-            msg << coll_obj.physical_path();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
+        return result;
 
     } // unix_file_closedir_plugin
 
@@ -891,71 +849,53 @@ extern "C" {
     // interface for POSIX readdir
     eirods::error unix_file_readdir_plugin( 
         eirods::resource_operation_context* _ctx,
-        struct rodsDirent**                 _dirent_ptr ) {
+        struct rodsDirent**                 _dirent_ptr )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::collection_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
+            // =-=-=-=-=-=-=-
+            // cast down the chain to our understood object type
+            eirods::collection_object& coll_obj = dynamic_cast< eirods::collection_object& >( _ctx->fco() );
 
-        // =-=-=-=-=-=-=-
-        // zero out errno?
-        errno = 0;
+            // =-=-=-=-=-=-=-
+            // zero out errno?
+            errno = 0;
 
-        // =-=-=-=-=-=-=-
-        // make the call to readdir
-        struct dirent * tmp_dirent = readdir( coll_obj.directory_pointer() );
+            // =-=-=-=-=-=-=-
+            // make the call to readdir
+            struct dirent * tmp_dirent = readdir( coll_obj.directory_pointer() );
 
-        // =-=-=-=-=-=-=-
-        // handle error cases
-        if( tmp_dirent == NULL ) {
-            if( errno == 0 ) { // just the end 
-
-                // =-=-=-=-=-=-=-
-                // cache status in out variable
-                return CODE( -1 );
-            } else {
-
+            // =-=-=-=-=-=-=-
+            // handle error cases
+            if((result = ASSERT_ERROR(tmp_dirent != NULL || errno != 0, -1, "End of directory list reached.")).ok()) {
                 // =-=-=-=-=-=-=-
                 // cache status in out variable
                 int status = UNIX_FILE_READDIR_ERR - errno;
+                if((result = ASSERT_ERROR(tmp_dirent != NULL, status, "Readdir error, status = %d, errno= \"%s\".",
+                                          status, strerror(errno))).ok()) {
+                    // =-=-=-=-=-=-=-
+                    // alloc dirent as necessary
+                    if( !( *_dirent_ptr ) ) {
+                        (*_dirent_ptr ) = new rodsDirent_t;
+                    }
 
-                std::stringstream msg;
-                msg << "unix_file_readdir_plugin: closedir error, status = ";
-                msg << status;
-                msg << ", errno = '";
-                msg << strerror( errno );
-                msg << "'";
-                                
-                return ERROR( status, msg.str() );
-            }
-        } else {
-            // =-=-=-=-=-=-=-
-            // alloc dirent as necessary
-            if( !( *_dirent_ptr ) ) {
-                (*_dirent_ptr ) = new rodsDirent_t;
-            }
-
-            // =-=-=-=-=-=-=-
-            // convert standard dirent to rods dirent struct
-            int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
-            if( status < 0 ) {
-
-            }
+                    // =-=-=-=-=-=-=-
+                    // convert standard dirent to rods dirent struct
+                    int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
 
 #if defined(solaris_platform)
-            rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
+                    rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
 #endif
-
-            return CODE( 0 );
+                }
+            }
         }
+        
+        return result;
 
     } // unix_file_readdir_plugin
 
