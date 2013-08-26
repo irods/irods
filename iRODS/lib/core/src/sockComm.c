@@ -800,6 +800,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
         return ret.code();    
     }
 
@@ -814,7 +815,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
                   net_obj, 
                   results ); 
         if( !ret.ok() ) {
-            //eirods::log( PASS( err ) ); 
+            eirods::log( PASS( ret ) ); 
             return ret.code();    
         }
         
