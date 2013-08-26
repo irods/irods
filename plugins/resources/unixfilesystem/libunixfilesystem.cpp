@@ -903,156 +903,131 @@ extern "C" {
     // interface for POSIX readdir
     eirods::error unix_file_rename_plugin( 
         eirods::resource_operation_context* _ctx,
-        const char*                         _new_file_name ) {
+        const char*                         _new_file_name )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
 
-        // =-=-=-=-=-=-=- 
-        // manufacture a new path from the new file name 
-        std::string new_full_path;
-        ret = unix_generate_full_path( _ctx->prop_map(), _new_file_name, new_full_path );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Unable to generate full path for destinate file: \"" << _new_file_name << "\"";
-            return PASSMSG(msg.str(), ret);
-        }
+            // =-=-=-=-=-=-=- 
+            // manufacture a new path from the new file name 
+            std::string new_full_path;
+            ret = unix_generate_full_path( _ctx->prop_map(), _new_file_name, new_full_path );
+            if((result = ASSERT_PASS(ret, "Unable to generate full path for destination file: \"%s\".",
+                                     _new_file_name)).ok()) {
          
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+                // =-=-=-=-=-=-=-
+                // get ref to fco
+                eirods::first_class_object& fco = _ctx->fco();
 
-        // =-=-=-=-=-=-=- 
-        // make the directories in the path to the new file
-        std::string new_path = new_full_path;
-        std::size_t last_slash = new_path.find_last_of('/');
-        new_path.erase(last_slash);
-        ret = unix_file_mkdir_r( _ctx->comm(), "", new_path.c_str(), 0750 );
-        if(!ret.ok()) {
+                // =-=-=-=-=-=-=- 
+                // make the directories in the path to the new file
+                std::string new_path = new_full_path;
+                std::size_t last_slash = new_path.find_last_of('/');
+                new_path.erase(last_slash);
+                ret = unix_file_mkdir_r( _ctx->comm(), "", new_path.c_str(), 0750 );
+                if((result = ASSERT_PASS(ret, "Mkdir error for \"%s\".", new_path.c_str())).ok()) {
 
-            std::stringstream msg;
-            msg << "unix_file_rename_plugin: mkdir error for ";
-            msg << new_path;
+                    // =-=-=-=-=-=-=-
+                    // make the call to rename
+                    int status = rename( fco.physical_path().c_str(), new_full_path.c_str() );
 
-            return PASSMSG( msg.str(), ret);
-
+                    // =-=-=-=-=-=-=-
+                    // handle error cases
+                    int err_status = UNIX_FILE_RENAME_ERR - errno;
+                    if((result = ASSERT_ERROR(status >= 0, err_status, "Rename error for \"%s\" to \"%s\", errno = \"%s\", status = %d.",
+                                              fco.physical_path().c_str(), new_full_path.c_str(), strerror(errno), err_status)).ok()) {
+                        result.code(status);
+                    }
+                }
+            }
         }
-
-        // =-=-=-=-=-=-=-
-        // make the call to rename
-        int status = rename( fco.physical_path().c_str(), new_full_path.c_str() );
-
-        // =-=-=-=-=-=-=-
-        // handle error cases
-        if( status < 0 ) {
-            status = UNIX_FILE_RENAME_ERR - errno;
-                                
-            std::stringstream msg;
-            msg << "unix_file_rename_plugin: rename error for ";
-            msg <<  fco.physical_path();
-            msg << " to ";
-            msg << new_full_path;
-            msg << ", errno = ";
-            msg << strerror(errno);
-            msg << ", status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-
-        }
-
-        return CODE( status );
+        
+        return result;
 
     } // unix_file_rename_plugin
 
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error unix_file_get_fsfreespace_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_operation_context* _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        int status = -1;
-        rodsLong_t fssize = USER_NO_SUPPORT_ERR;
+            int status = -1;
+            rodsLong_t fssize = USER_NO_SUPPORT_ERR;
 #if defined(solaris_platform)
-        struct statvfs statbuf;
+            struct statvfs statbuf;
 #else
-        struct statfs statbuf;
+            struct statfs statbuf;
 #endif
 
 #if defined(solaris_platform) || defined(sgi_platform)   ||     \
     defined(aix_platform)     || defined(linux_platform) ||     \
     defined(osx_platform)
 #if defined(solaris_platform)
-        status = statvfs( fco.physical_path().c_str(), &statbuf );
+            status = statvfs( fco.physical_path().c_str(), &statbuf );
 #else
 #if defined(sgi_platform)
-        status = statfs( fco.physical_path().c_str(), 
-                         &statbuf, sizeof (struct statfs), 0 );
+            status = statfs( fco.physical_path().c_str(), 
+                             &statbuf, sizeof (struct statfs), 0 );
 #else
-        status = statfs( fco.physical_path().c_str(), 
-                         &statbuf );
+            status = statfs( fco.physical_path().c_str(), 
+                             &statbuf );
 #endif
 #endif
 
-        // =-=-=-=-=-=-=-
-        // handle error, if any
-        if( status < 0 ) {
-            status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
+            // =-=-=-=-=-=-=-
+            // handle error, if any
+            int err_status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
+            if((result = ASSERT_ERROR(status >= 0, err_status, "Statfs error for \"%s\", status = %d.",
+                                      fco.physical_path().c_str(), err_status)).ok()) {
 
-            std::stringstream msg;
-            msg << "unix_file_get_fsfreespace_plugin: statfs error for ";
-            msg << fco.physical_path().c_str();
-            msg << ", status = ";
-            msg << USER_NO_SUPPORT_ERR;
-
-            return ERROR( USER_NO_SUPPORT_ERR, msg.str() );
-        }
-            
 #if defined(sgi_platform)
-        if (statbuf.f_frsize > 0) {
-            fssize = statbuf.f_frsize;
-        } else {
-            fssize = statbuf.f_bsize;
-        }
-        fssize *= statbuf.f_bavail;
+                if (statbuf.f_frsize > 0) {
+                    fssize = statbuf.f_frsize;
+                } else {
+                    fssize = statbuf.f_bsize;
+                }
+                fssize *= statbuf.f_bavail;
 #endif
 
 #if defined(aix_platform) || defined(osx_platform) ||   \
     defined(linux_platform)
-        fssize = statbuf.f_bavail * statbuf.f_bsize;
+                fssize = statbuf.f_bavail * statbuf.f_bsize;
 #endif
  
 #if defined(sgi_platform)
-        fssize = statbuf.f_bfree * statbuf.f_bsize;
+                fssize = statbuf.f_bfree * statbuf.f_bsize;
 #endif
 
 #endif /* solaris_platform, sgi_platform .... */
-
-        return CODE( fssize );
+            }
+        }
+        
+        return result;
 
     } // unix_file_get_fsfreespace_plugin
 
-    int
+    eirods::error
     unixFileCopyPlugin( int         mode, 
                         const char* srcFileName, 
                         const char* destFileName )
     {
+        eirods::error result = SUCCESS();
+        
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
         rodsLong_t bytesCopied = 0;
@@ -1062,61 +1037,44 @@ extern "C" {
         struct stat statbuf;
 
         status = stat (srcFileName, &statbuf);
+        int err_status = UNIX_FILE_STAT_ERR - errno;
+        if ((result = ASSERT_ERROR(status >= 0, err_status, "Stat of \"%s\" error, status = %d",
+                                   srcFileName, err_status)).ok()) {
 
-        if (status < 0) {
-            status = UNIX_FILE_STAT_ERR - errno;
-            rodsLog (LOG_ERROR, 
-                     "unixFileCopyPlugin: stat of %s error, status = %d",
-                     srcFileName, status);
-            return status;
-        }
-
-        inFd = open (srcFileName, O_RDONLY, 0);
-        if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
-            status = UNIX_FILE_OPEN_ERR - errno;
-            rodsLog (LOG_ERROR,
-                     "unixFileCopyPlugin: open error for srcFileName %s, status = %d",
-                     srcFileName, status );
-            close( inFd ); // JMC cppcheck - resource
-            return status;
-        }
-
-        outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode);
-        if (outFd < 0) {
-            status = UNIX_FILE_OPEN_ERR - errno;
-            rodsLog (LOG_ERROR,
-                     "unixFileCopyPlugin: open error for destFileName %s, status = %d",
-                     destFileName, status);
-            close (inFd);
-            return status;
-        }
-
-        while ((bytesRead = read (inFd, (void *) myBuf, TRANS_BUF_SZ)) > 0) {
-            bytesWritten = write (outFd, (void *) myBuf, bytesRead);
-            if (bytesWritten <= 0) {
-                status = UNIX_FILE_WRITE_ERR - errno;
-                rodsLog (LOG_ERROR,
-                         "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
-                         destFileName, status);
-                close (inFd);
-                close (outFd);
-                return status;
+            inFd = open (srcFileName, O_RDONLY, 0);
+            err_status = UNIX_FILE_OPEN_ERR - errno;
+            if (!(result = ASSERT_ERROR(inFd >= 0 && (statbuf.st_mode & S_IFREG) != 0, err_status, "Open error for srcFileName \"%s\", status = %d",
+                                       srcFileName, status)).ok()) {
+                close( inFd ); // JMC cppcheck - resource
             }
-            bytesCopied += bytesWritten;
-        }
+            else {
+                outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode);
+                err_status = UNIX_FILE_OPEN_ERR - errno;
+                if (!(result = ASSERT_ERROR(outFd >= 0, err_status, "Open error for destFileName %s, status = %d",
+                                           destFileName, status)).ok()) {
+                    close (inFd);
+                }
+                else {
+                    while (result.ok() && (bytesRead = read (inFd, (void *) myBuf, TRANS_BUF_SZ)) > 0) {
+                        bytesWritten = write (outFd, (void *) myBuf, bytesRead);
+                        err_status = UNIX_FILE_WRITE_ERR - errno;
+                        if ((result = ASSERT_ERROR(bytesWritten > 0, err_status, "Write error for srcFileName %s, status = %d",
+                                                   destFileName, status)).ok()) {
+                            bytesCopied += bytesWritten;
+                        }
+                    }
 
-        close (inFd);
-        close (outFd);
+                    close (inFd);
+                    close (outFd);
 
-        if (bytesCopied != statbuf.st_size) {
-            rodsLog ( LOG_ERROR,
-                      "unixFileCopyPlugin: Copied size %lld does not match source \
-                             size %lld of %s",
-                      bytesCopied, statbuf.st_size, srcFileName );
-            return SYS_COPY_LEN_ERR;
-        } else {
-            return 0;
+                    if(result.ok()) {
+                        result = ASSERT_ERROR(bytesCopied == statbuf.st_size, SYS_COPY_LEN_ERR, "Copied size %lld does not match source size %lld of %s",
+                                              bytesCopied, statbuf.st_size, srcFileName);
+                    }
+                }
+            }
         }
+        return result;
     }
 
     // =-=-=-=-=-=-=-
@@ -1125,26 +1083,23 @@ extern "C" {
     // is not used.
     eirods::error unix_file_stagetocache_plugin( 
         eirods::resource_operation_context* _ctx,
-        const char*                         _cache_file_name ) { 
+        const char*                         _cache_file_name )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        int status = unixFileCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
-        if( status < 0 ) {
-            return ERROR( status, "unix_file_stagetocache_plugin failed." );
-        } else {
-            return SUCCESS();
+            ret = unixFileCopyPlugin( fco.mode(), fco.physical_path().c_str(), _cache_file_name );
+            result = ASSERT_PASS(ret, "Failed");
         }
+        return result;
     } // unix_file_stagetocache_plugin
 
     // =-=-=-=-=-=-=-
@@ -1153,27 +1108,23 @@ extern "C" {
     // is not used.
     eirods::error unix_file_synctoarch_plugin( 
         eirods::resource_operation_context* _ctx,
-        char*                               _cache_file_name ) {
+        char*                               _cache_file_name )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::first_class_object& fco = _ctx->fco();
+            // =-=-=-=-=-=-=-
+            // get ref to fco
+            eirods::first_class_object& fco = _ctx->fco();
         
-        int status = unixFileCopyPlugin( fco.mode(), _cache_file_name, fco.physical_path().c_str() );
-        if( status < 0 ) {
-            return ERROR( status, "unix_file_synctoarch_plugin failed." );
-        } else {
-            return SUCCESS();
+            ret = unixFileCopyPlugin( fco.mode(), _cache_file_name, fco.physical_path().c_str() );
+            result = ASSERT_PASS(ret, "Failed");
         }
-
+        return result;
     } // unix_file_synctoarch_plugin
 
     // =-=-=-=-=-=-=-
@@ -1183,39 +1134,40 @@ extern "C" {
                       eirods::file_object&           _file_obj,
                       const std::string&             _resc_name, 
                       const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+                      float&                         _out_vote )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // determine if the resource is down 
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
-        if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_create - failed to get 'status' property", get_ret );
-        }
+        if((result = ASSERT_PASS(get_ret, "Failed to get \"status\" property." )).ok()) {
 
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if( INT_RESC_STATUS_DOWN == resc_status ) {
-            _out_vote = 0.0;
-            return SUCCESS(); 
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the resource host for comparison to curr host
-        std::string host_name;
-        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
-        if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_create - failed to get 'location' property", get_ret );
-        }
+            // =-=-=-=-=-=-=-
+            // if the status is down, vote no.
+            if( INT_RESC_STATUS_DOWN == resc_status ) {
+                _out_vote = 0.0;
+            }
+            else {
+                
+                // =-=-=-=-=-=-=-
+                // get the resource host for comparison to curr host
+                std::string host_name;
+                get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
+                if((result = ASSERT_PASS(get_ret, "Failed to get \"location\" property." )).ok()) {
         
-        // =-=-=-=-=-=-=-
-        // vote higher if we are on the same host
-        if( _curr_host == host_name ) {
-            _out_vote = 1.0;
-        } else {
-            _out_vote = 0.5;
+                    // =-=-=-=-=-=-=-
+                    // vote higher if we are on the same host
+                    if( _curr_host == host_name ) {
+                        _out_vote = 1.0;
+                    } else {
+                        _out_vote = 0.5;
+                    }
+                }
+            }
         }
-
-        return SUCCESS();
+        return result;
 
     } // unix_file_redirect_create
 
@@ -1226,7 +1178,10 @@ extern "C" {
                       eirods::file_object&           _file_obj,
                       const std::string&             _resc_name, 
                       const std::string&             _curr_host, 
-                      float&                         _out_vote ) {
+                      float&                         _out_vote )
+    {
+        eirods::error result = SUCCESS();
+        
         // =-=-=-=-=-=-=-
         // initially set a good default
         _out_vote = 0.0;
@@ -1235,99 +1190,95 @@ extern "C" {
         // determine if the resource is down 
         int resc_status = 0;
         eirods::error get_ret = _prop_map.get< int >( eirods::RESOURCE_STATUS, resc_status );
-        if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_open - failed to get 'status' property", get_ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // if the status is down, vote no.
-        if( INT_RESC_STATUS_DOWN == resc_status ) {
-            return SUCCESS(); 
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the resource host for comparison to curr host
-        std::string host_name;
-        get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
-        if( !get_ret.ok() ) {
-            return PASSMSG( "unix_file_redirect_open - failed to get 'location' property", get_ret );
-        }
-        
-        // =-=-=-=-=-=-=-
-        // set a flag to test if were at the curr host, if so we vote higher
-        bool curr_host = ( _curr_host == host_name );
-
-        // =-=-=-=-=-=-=-
-        // make some flags to clairify decision making
-        bool need_repl = ( _file_obj.repl_requested() > -1 );
-
-        // =-=-=-=-=-=-=-
-        // set up variables for iteration
-        bool          found     = false;
-        eirods::error final_ret = SUCCESS();
-        std::vector< eirods::physical_object > objs = _file_obj.replicas();
-        std::vector< eirods::physical_object >::iterator itr = objs.begin();
-        
-        // =-=-=-=-=-=-=-
-        // check to see if the replica is in this resource, if one is requested
-        for( ; itr != objs.end(); ++itr ) {
-            // =-=-=-=-=-=-=-
-            // run the hier string through the parser and get the last
-            // entry.
-            std::string last_resc;
-            eirods::hierarchy_parser parser;
-            parser.set_string( itr->resc_hier() );
-            parser.last_resc( last_resc ); 
-          
-            // =-=-=-=-=-=-=-
-            // more flags to simplify decision making
-            bool repl_us  = ( _file_obj.repl_requested() == itr->repl_num() ); 
-            bool resc_us  = ( _resc_name == last_resc );
-            bool is_dirty = ( itr->is_dirty() != 1 );
+        if((result = ASSERT_PASS(get_ret, "Failed to get \"status\" property." )).ok()) {
 
             // =-=-=-=-=-=-=-
-            // success - correct resource and dont need a specific
-            //           replication, or the repl nums match
-            if( resc_us ) {
+            // if the status is down, vote no.
+            if( INT_RESC_STATUS_DOWN != resc_status ) {
+
                 // =-=-=-=-=-=-=-
-                // if a specific replica is requested then we
-                // ignore all other criteria
-                if( need_repl ) {
-                    if( repl_us ) {
-                        _out_vote = 1.0;
-                    } else {
-                        // =-=-=-=-=-=-=-
-                        // repl requested and we are not it, vote 
-                        // very low
-                        _out_vote = 0.25;
-                    }
-                } else {
+                // get the resource host for comparison to curr host
+                std::string host_name;
+                get_ret = _prop_map.get< std::string >( eirods::RESOURCE_LOCATION, host_name );
+                if((result = ASSERT_PASS(get_ret, "Failed to get \"location\" property." )).ok()) {
+        
                     // =-=-=-=-=-=-=-
-                    // if no repl is requested consider dirty flag
-                    if( is_dirty ) {
-                        // =-=-=-=-=-=-=-
-                        // repl is dirty, vote very low
-                        _out_vote = 0.25;
-                    } else {
-                        // =-=-=-=-=-=-=-
-                        // if our repl is not dirty then a local copy
-                        // wins, otherwise vote middle of the road
-                        if( curr_host ) {
-                            _out_vote = 1.0;
-                        } else {
-                            _out_vote = 0.5;
-                        }
-                    }
-                }
-           
-                found = true;
-                break;
-            
-            } // if resc_us
+                    // set a flag to test if were at the curr host, if so we vote higher
+                    bool curr_host = ( _curr_host == host_name );
 
-        } // for itr
-                             
-        return SUCCESS();
+                    // =-=-=-=-=-=-=-
+                    // make some flags to clairify decision making
+                    bool need_repl = ( _file_obj.repl_requested() > -1 );
+
+                    // =-=-=-=-=-=-=-
+                    // set up variables for iteration
+                    bool          found     = false;
+                    eirods::error final_ret = SUCCESS();
+                    std::vector< eirods::physical_object > objs = _file_obj.replicas();
+                    std::vector< eirods::physical_object >::iterator itr = objs.begin();
+        
+                    // =-=-=-=-=-=-=-
+                    // check to see if the replica is in this resource, if one is requested
+                    for( ; itr != objs.end(); ++itr ) {
+                        // =-=-=-=-=-=-=-
+                        // run the hier string through the parser and get the last
+                        // entry.
+                        std::string last_resc;
+                        eirods::hierarchy_parser parser;
+                        parser.set_string( itr->resc_hier() );
+                        parser.last_resc( last_resc ); 
+          
+                        // =-=-=-=-=-=-=-
+                        // more flags to simplify decision making
+                        bool repl_us  = ( _file_obj.repl_requested() == itr->repl_num() ); 
+                        bool resc_us  = ( _resc_name == last_resc );
+                        bool is_dirty = ( itr->is_dirty() != 1 );
+
+                        // =-=-=-=-=-=-=-
+                        // success - correct resource and dont need a specific
+                        //           replication, or the repl nums match
+                        if( resc_us ) {
+                            // =-=-=-=-=-=-=-
+                            // if a specific replica is requested then we
+                            // ignore all other criteria
+                            if( need_repl ) {
+                                if( repl_us ) {
+                                    _out_vote = 1.0;
+                                } else {
+                                    // =-=-=-=-=-=-=-
+                                    // repl requested and we are not it, vote 
+                                    // very low
+                                    _out_vote = 0.25;
+                                }
+                            } else {
+                                // =-=-=-=-=-=-=-
+                                // if no repl is requested consider dirty flag
+                                if( is_dirty ) {
+                                    // =-=-=-=-=-=-=-
+                                    // repl is dirty, vote very low
+                                    _out_vote = 0.25;
+                                } else {
+                                    // =-=-=-=-=-=-=-
+                                    // if our repl is not dirty then a local copy
+                                    // wins, otherwise vote middle of the road
+                                    if( curr_host ) {
+                                        _out_vote = 1.0;
+                                    } else {
+                                        _out_vote = 0.5;
+                                    }
+                                }
+                            }
+           
+                            found = true;
+                            break;
+            
+                        } // if resc_us
+
+                    } // for itr
+                }
+            }
+        }                             
+        return result;
 
     } // unix_file_redirect_open
 
@@ -1339,76 +1290,62 @@ extern "C" {
         const std::string*                  _opr,
         const std::string*                  _curr_host,
         eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
-
-        // =-=-=-=-=-=-=-
-        // check the context pointer
-        if( !_ctx ) {
-            return ERROR( SYS_INVALID_INPUT_PARAM, "unix_file_mkdir_plugin - invalid resource context" );
-        }
-         
-        // =-=-=-=-=-=-=-
-        // check the context validity
-        eirods::error ret = _ctx->valid< eirods::file_object >(); 
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__ << " - resource context is invalid";
-            return PASSMSG( msg.str(), ret );
-        }
- 
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        if( !_opr ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null operation" );
-        }
-        if( !_curr_host ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null operation" );
-        }
-        if( !_out_parser ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null outgoing hier parser" );
-        }
-        if( !_out_vote ) {
-            return ERROR( -1, "unix_file_redirect_plugin - null outgoing vote" );
-        }
+        float*                              _out_vote )
+    {
+        eirods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
-
-        // =-=-=-=-=-=-=-
-        // get the name of this resource
-        std::string resc_name;
-        ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
-        if( !ret.ok() ) {
-            std::stringstream msg;
-            msg << "unix_file_redirect_plugin - failed in get property for name";
-            return ERROR( -1, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // add ourselves to the hierarchy parser by default
-        _out_parser->add_child( resc_name );
-
-        // =-=-=-=-=-=-=-
-        // test the operation to determine which choices to make
-        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+        // check the context pointer
+        if((result = ASSERT_ERROR(_ctx, SYS_INVALID_INPUT_PARAM, "Invalid resource context." )).ok()) {
+         
             // =-=-=-=-=-=-=-
-            // call redirect determination for 'get' operation
-            return unix_file_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
+            // check the context validity
+            eirods::error ret = _ctx->valid< eirods::file_object >(); 
+            if((result = ASSERT_PASS(ret, "Invalid resource context.")).ok()) {
+ 
+                // =-=-=-=-=-=-=-
+                // check incoming parameters
+                if((result = ASSERT_ERROR(_opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM, "Invalid input parameter.")).ok()) {
+        
+                    // =-=-=-=-=-=-=-
+                    // cast down the chain to our understood object type
+                    eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
 
-        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
-            // =-=-=-=-=-=-=-
-            // call redirect determination for 'create' operation
-            return unix_file_redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+                    // =-=-=-=-=-=-=-
+                    // get the name of this resource
+                    std::string resc_name;
+                    ret = _ctx->prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
+                    if((result = ASSERT_PASS(ret, "Failed in get property for name." )).ok()) {
+
+                        // =-=-=-=-=-=-=-
+                        // add ourselves to the hierarchy parser by default
+                        _out_parser->add_child( resc_name );
+
+                        // =-=-=-=-=-=-=-
+                        // test the operation to determine which choices to make
+                        if( eirods::EIRODS_OPEN_OPERATION == (*_opr) ) {
+                            // =-=-=-=-=-=-=-
+                            // call redirect determination for 'get' operation
+                            ret = unix_file_redirect_open( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
+                            result = ASSERT_PASS(ret, "Failed redirecting for open.");
+
+                        } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
+                            // =-=-=-=-=-=-=-
+                            // call redirect determination for 'create' operation
+                            ret = unix_file_redirect_create( _ctx->prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
+                            result = ASSERT_PASS(ret, "Failed redirecting for create.");
+                        }
+
+                        else {
+                            // =-=-=-=-=-=-=-
+                            // must have been passed a bad operation 
+                            result = ASSERT_ERROR(false, EIRODS_INVALID_OPERATION, "Operation not supported.");
+                        }
+                    }
+                }
+            }
         }
-      
-        // =-=-=-=-=-=-=-
-        // must have been passed a bad operation 
-        std::stringstream msg;
-        msg << "unix_file_redirect_plugin - operation not supported [";
-        msg << (*_opr) << "]";
-        return ERROR( -1, msg.str() );
-
+        return result;
     } // unix_file_redirect_plugin
 
     // =-=-=-=-=-=-=-
@@ -1494,21 +1431,21 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
-        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-            #if 0
-            std::string name;
-            eirods::error err = get_property< std::string >( "name", name );
-            if( !err.ok() ) {
-                return PASSMSG( "unixfilesystem_resource::post_disconnect_maintenance_operation failed.", err );
+        eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  )
+            {
+                eirods::error result = SUCCESS();
+#if 0
+                std::string name;
+                eirods::error err = get_property< std::string >( "name", name );
+                if((result = ASSERT_PASS(err, "post_disconnect_maintenance_operation failed.")).ok()) {
+                    
+                    _op = maintenance_operation( name );
+                }
+                return result;
+#else
+                return ERROR( -1, "nop" );
+#endif
             }
-
-            _op = maintenance_operation( name );
-            return SUCCESS();
-            #else
-            return ERROR( -1, "nop" );
-            #endif
-        }
-
     }; // class unixfilesystem_resource
   
     // =-=-=-=-=-=-=-
