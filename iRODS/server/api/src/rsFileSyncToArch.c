@@ -103,46 +103,53 @@ remoteFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp, r
 
 // =-=-=-=-=-=-=-=
 // _rsFileSyncToArch - this the local version of rsFileSyncToArch.
-int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp) {
+int _rsFileSyncToArch( 
+    rsComm_t*           _comm, 
+    fileStageSyncInp_t* _sync_inp ) {
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission
     // when RCAT is available 
     
     // =-=-=-=-=-=-=-
     // prep 
-    if(fileSyncToArchInp->objPath[0] == '\0') {
+    if(_sync_inp->objPath[0] == '\0') {
         std::stringstream msg;
-        msg << __FUNCTION__;
-        msg << " - Empty logical path.";
+        msg << "Empty logical path.";
         eirods::log(LOG_ERROR, msg.str());
         return -1;
     }
     
     // =-=-=-=-=-=-=-
     // make call to synctoarch via resource plugin
-    eirods::file_object file_obj( rsComm,
-                                  fileSyncToArchInp->objPath,
-                                  fileSyncToArchInp->filename, "", 0, 
-                                  fileSyncToArchInp->mode, 
-                                  fileSyncToArchInp->flags );
-    file_obj.resc_hier( fileSyncToArchInp->rescHier );
-    eirods::error sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
+    eirods::file_object_ptr file_obj( 
+                            new eirods::file_object( 
+                                _comm,
+                                _sync_inp->objPath,
+                                _sync_inp->filename, "", 0, 
+                                _sync_inp->mode, 
+                                _sync_inp->flags ) );
+    file_obj->resc_hier( _sync_inp->rescHier );
+    eirods::error sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );
 
     if( !sync_err.ok() ) {
 
         if (getErrno (sync_err.code()) == ENOENT) {
             // =-=-=-=-=-=-=-
             // the directory does not exist, lets make one
-            mkDirForFilePath( rsComm,"/", fileSyncToArchInp->filename, getDefDirMode() );
+            mkDirForFilePath( _comm,"/", _sync_inp->filename, getDefDirMode() );
         } else if (getErrno (sync_err.code()) == EEXIST) {
             // =-=-=-=-=-=-=-
             // an empty dir may be there, make the call to rmdir via the resource plugin
-            eirods::collection_object coll_obj( fileSyncToArchInp->filename, fileSyncToArchInp->rescHier, 0, 0 );
-            eirods::error rmdir_err = fileRmdir( rsComm, coll_obj );
+            eirods::collection_object_ptr coll_obj( 
+                                              new eirods::collection_object(
+                                                  _sync_inp->filename, 
+                                                  _sync_inp->rescHier, 
+                                                  0, 0 ) );
+            eirods::error rmdir_err = fileRmdir( _comm, coll_obj );
             if( !rmdir_err.ok() ) {
                 std::stringstream msg;
                 msg << "fileRmdir failed for [";
-                msg << fileSyncToArchInp->filename;
+                msg << _sync_inp->filename;
                 msg << "]";
                 eirods::error err = PASSMSG( msg.str(), sync_err );
                 eirods::log ( err );
@@ -150,7 +157,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp) 
         } else {
             std::stringstream msg;
             msg << "fileSyncToArch failed for [";
-            msg << fileSyncToArchInp->filename;
+            msg << _sync_inp->filename;
             msg << "]";
             eirods::error err = PASSMSG( msg.str(), sync_err );
             eirods::log ( err );
@@ -159,11 +166,11 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp) 
         
         // =-=-=-=-=-=-=-
         // make call to synctoarch via resource plugin
-        sync_err = fileSyncToArch( rsComm, file_obj, fileSyncToArchInp->cacheFilename );
+        sync_err = fileSyncToArch( _comm, file_obj, _sync_inp->cacheFilename );
         if( !sync_err.ok() ) {
             std::stringstream msg;
             msg << "fileSyncToArch failed for [";
-            msg << fileSyncToArchInp->filename;
+            msg << _sync_inp->filename;
             msg << "]";
             msg << sync_err.code();
             eirods::error err = PASSMSG( msg.str(), sync_err );
@@ -174,7 +181,7 @@ int _rsFileSyncToArch( rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp) 
 
     // =-=-=-=-=-=-=-
     // has the file name has changed?
-    rstrcpy(fileSyncToArchInp->filename, file_obj.physical_path().c_str(), MAX_NAME_LEN);
+    rstrcpy(_sync_inp->filename, file_obj->physical_path().c_str(), MAX_NAME_LEN);
 
     return (sync_err.code());
 

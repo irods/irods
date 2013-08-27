@@ -10,7 +10,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - ctor
     structured_object::structured_object() :
-        first_class_object(),
+        file_object(),
         sub_file_path_(""),
         mode_(0),
         flags_(0),
@@ -23,7 +23,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - cctor
     structured_object::structured_object( const structured_object& _rhs ) : 
-        first_class_object( _rhs ) {
+        file_object( _rhs ) {
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
         mode_          = _rhs.mode_;
@@ -38,7 +38,7 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - cctor
     structured_object::structured_object( subFile_t& _sub ) :
-        first_class_object(),
+        file_object(),
         sub_file_path_(""),
         mode_(0),
         flags_(0),
@@ -73,7 +73,7 @@ namespace eirods {
     structured_object& structured_object::operator=( const structured_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
-        first_class_object::operator=( _rhs );
+        file_object::operator=( _rhs );
 
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
@@ -143,6 +143,13 @@ namespace eirods {
 
     } // resolve
     
+    // =-=-=-=-=-=-=-
+    // public - get vars from object for rule engine 
+    error structured_object::get_re_vars( 
+        keyValPair_t& _vars ) {
+        return SUCCESS();
+
+    } // get_re_vars 
 
 }; // namespace eirods
 

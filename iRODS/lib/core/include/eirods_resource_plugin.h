@@ -5,16 +5,18 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_plugin_base.h"
 #include "eirods_resource_constants.h"
 #include "eirods_operation_wrapper.h"
+#include "eirods_resource_plugin_context.h"
 
 #include <iostream>
 
 namespace eirods {
-
-
-
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for resource maintenance operation for start / stop operations
+    typedef error (*resource_maintenance_operation)( 
+        plugin_property_map&, 
+        resource_child_map& );
 
     // =-=-=-=-=-=-=-
     /**
@@ -87,22 +89,22 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         /// @brief default start operation
-        static error default_start_operation( resource_property_map&,
+        static error default_start_operation( plugin_property_map&,
                                               resource_child_map& ) {
              return SUCCESS(); 
         };
         
         // =-=-=-=-=-=-=-
         /// @brief default stop operation
-        static error default_stop_operation( resource_property_map&,
+        static error default_stop_operation( plugin_property_map&,
                                              resource_child_map& ) { 
             return SUCCESS(); 
         };
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object_ptr _obj ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
             return operations_[ _op ].call( ctx );
         
         } // call - 
@@ -110,8 +112,12 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
         template< typename T1 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
             return operations_[ _op ].call< T1 >( ctx, _t1 );
         
         } // call - T1
@@ -119,8 +125,13 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 2 params
         template< typename T1, typename T2 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
                 return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
         
         } // call - T1, T2
@@ -128,54 +139,112 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 3 params
         template< typename T1, typename T2, typename T3 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
-            return operations_[ _op ].call< T1, T2, T3 >( ctx, _t1, _t2, _t3 );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2, 
+            T3 _t3 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
+            return operations_[ _op ].call< T1, T2, T3 >( 
+                       ctx, _t1, _t2, _t3 );
             
         } // call - T1, T2, T3
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 4 params
         template< typename T1, typename T2, typename T3, typename T4 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
-            return  operations_[ _op ].call< T1, T2, T3, T4 >( ctx, _t1, _t2, _t3, _t4 );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2, 
+            T3 _t3, 
+            T4 _t4 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
+            return  operations_[ _op ].call< T1, T2, T3, T4 >( 
+                        ctx, _t1, _t2, _t3, _t4 );
             
         } // call - T1, T2, T3, T4
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 5 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
-            return operations_[ _op ].call< T1, T2, T3, T4, T5 >( ctx, _t1, _t2, _t3, _t4, _t5 );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2, 
+            T3 _t3, 
+            T4 _t4, 
+            T5 _t5 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5 >( 
+                       ctx, _t1, _t2, _t3, _t4, _t5 );
             
         } // call - T1, T2, T3, T4, T5
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 6 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
-            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( ctx, _t1, _t2, _t3, _t4, 
-                                                                          _t5, _t6 );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2, 
+            T3 _t3, 
+            T4 _t4, 
+            T5 _t5, 
+            T6 _t6 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( 
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6 );
+                                                                          
         } // call - T1, T2, T3, T4, T5, T6
  
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 7 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
-            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( ctx, _t1, _t2, _t3, 
-                                                                              _t4, _t5, _t6, _t7 );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2, 
+            T3 _t3, 
+            T4 _t4, 
+            T5 _t5, 
+            T6 _t6, 
+            T7 _t7 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( 
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );
+                                                                              
         } // call - T1, T2, T3, T4, T5, T6, T7
 
         // =-=-=-=-=-=-=-
         /// @brief delegate the call to the operation in question to the operation wrapper, with 8 params
         template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
-        error call( rsComm_t* _comm, const std::string& _op, eirods::first_class_object& _obj, T1 _t1, T2 _t2, T3 _t3, T4 _t4, T5 _t5, T6 _t6, T7 _t7, T8 _t8 ) {
-            resource_operation_context ctx( _comm, properties_, children_, _obj, "" );
-            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
+        error call( 
+            rsComm_t* _comm, 
+            const std::string& _op, 
+            eirods::first_class_object_ptr _obj, 
+            T1 _t1, 
+            T2 _t2, 
+            T3 _t3, 
+            T4 _t4, 
+            T5 _t5, 
+            T6 _t6, 
+            T7 _t7, 
+            T8 _t8 ) {
+            resource_plugin_context ctx( properties_, _obj, "", _comm, children_ );
+            return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( 
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
+
         } // call - T1, T2, T3, T4, T5, T6, T7, T8
 
     protected:
@@ -194,10 +263,6 @@ namespace eirods {
         resource_child_map  children_;
         resource_ptr        parent_;
                                
-        // =-=-=-=-=-=-=-
-        /// @brief Map holding resource properties
-        resource_property_map properties_;
-        
         // =-=-=-=-=-=-=- 
         /// @brief operations to be loaded from the plugin
         lookup_table< operation_wrapper > operations_;    

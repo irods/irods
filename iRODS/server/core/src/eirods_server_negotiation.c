@@ -16,15 +16,12 @@ namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_server( 
-        rsComm_t&    _comm,
-        std::string& _result ) {
+        eirods::network_object_ptr _ptr,
+        std::string&               _result ) {
         // =-=-=-=-=-=-=-
         // manufacture an rei for the applyRule
         ruleExecInfo_t rei;
         memset ((char*)&rei, 0, sizeof (ruleExecInfo_t));
-        rei.rsComm = &_comm;
-        rei.uoic   = &_comm.clientUser;
-        rei.uoip   = &_comm.proxyUser;
         
         // =-=-=-=-=-=-=-
         // if it is, then call the pre PEP and get the result
@@ -81,7 +78,7 @@ namespace eirods {
         eirods::cs_neg_t cs_neg;
         cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
         strncpy( cs_neg.result_, rule_result.c_str(), MAX_NAME_LEN );
-        error err = send_client_server_negotiation_message( _comm.sock, cs_neg );
+        error err = send_client_server_negotiation_message( _ptr, cs_neg );
         if( !err.ok() ) {
             std::stringstream msg;
             msg << "failed with PEP value of [" << rule_result << "]";
@@ -91,7 +88,7 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // get the response from CS_NEG_CLI_1_MSG
         boost::shared_ptr< cs_neg_t > read_cs_neg;
-        err = read_client_server_negotiation_message( _comm.sock, read_cs_neg );
+        err = read_client_server_negotiation_message( _ptr, read_cs_neg );
         if( !err.ok() ) {
             return PASS( err );
         }

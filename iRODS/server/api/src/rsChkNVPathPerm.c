@@ -150,7 +150,13 @@ _rsChkNVPathPerm (rsComm_t *rsComm, fileOpenInp_t *chkNVPathPermInp)
     eirods::error stat_err;
     while (1) {
        
-        eirods::file_object file_obj( rsComm, chkNVPathPermInp->objPath, tmpPath, chkNVPathPermInp->resc_hier_, 0, 0, 0 ); 
+        eirods::file_object_ptr file_obj( 
+                                    new eirods::file_object( 
+                                        rsComm, 
+                                        chkNVPathPermInp->objPath, 
+                                        tmpPath, 
+                                        chkNVPathPermInp->resc_hier_, 
+                                        0, 0, 0 ) ); 
         stat_err = fileStat( rsComm, file_obj, &myFileStat ); 
         if ( stat_err.code() >= 0) {
             break;

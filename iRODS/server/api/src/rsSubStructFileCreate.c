@@ -67,19 +67,21 @@ rodsServerHost_t *rodsServerHost)
 
 // =-=-=-=-=-=-=-
 // local function to handle sub file creation
-int _rsSubStructFileCreate( rsComm_t*  _comm,
-                            subFile_t* _sub_file ) {
+int _rsSubStructFileCreate( 
+    rsComm_t*  _comm,
+    subFile_t* _sub_file ) {
 
-    eirods::structured_object struct_obj( *_sub_file );
-    struct_obj.comm( _comm );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          *_sub_file ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     eirods::error err = fileCreate( _comm, struct_obj );
     if( !err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileCreate for [";
-        msg << struct_obj.sub_file_path();
+        msg << struct_obj->sub_file_path();
         eirods::log( PASSMSG( msg.str(), err ) );
         return 0;
 

@@ -287,6 +287,7 @@ LDADD+=-L$(WOS_DIR)/lib64 -lwos_cpp
 endif
 
 ifdef USE_SSL
+MY_CFLAG+= -I/usr/include/openssl
 MY_CFLAG+= -DUSE_SSL
 ifeq ($(OS_platform), linux_platform)
 LDADD+=-L/usr/lib/x86_64-linux-gnu/

@@ -16,7 +16,7 @@ namespace eirods {
     }
 
     error replicator::replicate(
-        resource_operation_context* _ctx,
+        resource_plugin_context& _ctx,
         const child_list_t& _siblings,
         object_list_t& _opers)
     {

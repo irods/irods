@@ -47,8 +47,12 @@ main(int argc, char **argv) {
         exit (1);
     }
 
-    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 0, &errMsg);
+    conn = rcConnect(
+               myEnv.rodsHost, 
+               myEnv.rodsPort, 
+               myEnv.rodsUserName,
+               myEnv.rodsZone, 
+               0, &errMsg );
 
     if (conn == NULL) {
         exit (2);

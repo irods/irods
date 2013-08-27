@@ -87,13 +87,16 @@ remoteFileRead (rsComm_t *rsComm, fileReadInp_t *fileReadInp,
 /* _rsFileRead - this the local version of rsFileRead.
  */
 
-int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileReadOutBBuf ) {
-    /* XXXX need to check resource permission and vault permission
-     * when RCAT is available 
-     */
+int _rsFileRead( 
+    rsComm_t*      _comm, 
+    fileReadInp_t* _read_inp, 
+    bytesBuf_t*    _read_bbuf ) {
+    // =-=-=-=-=-=-=-
+    // XXXX need to check resource permission and vault permission
+    // when RCAT is available 
 
-    if(FileDesc[fileReadInp->fileInx].objPath == NULL ||
-       FileDesc[fileReadInp->fileInx].objPath[0] == '\0') {
+    if(FileDesc[_read_inp->fileInx].objPath == NULL ||
+       FileDesc[_read_inp->fileInx].objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -103,29 +106,31 @@ int _rsFileRead( rsComm_t *rsComm, fileReadInp_t *fileReadInp, bytesBuf_t *fileR
     
     // =-=-=-=-=-=-=-
     // call resource plugin for POSIX read
-    eirods::file_object file_obj( rsComm,
-                                  FileDesc[fileReadInp->fileInx].objPath,
-                                  FileDesc[fileReadInp->fileInx].fileName,
-                                  FileDesc[fileReadInp->fileInx].rescHier,
-                                  FileDesc[fileReadInp->fileInx].fd,  
-                                  0, 0 );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm,
+                                    FileDesc[_read_inp->fileInx].objPath,
+                                    FileDesc[_read_inp->fileInx].fileName,
+                                    FileDesc[_read_inp->fileInx].rescHier,
+                                    FileDesc[_read_inp->fileInx].fd,  
+                                    0, 0 ) );
                                      
-    eirods::error ret = fileRead( rsComm, 
+    eirods::error ret = fileRead( _comm, 
                                   file_obj,  
-                                  fileReadOutBBuf->buf, 
-                                  fileReadInp->len );
+                                  _read_bbuf->buf, 
+                                  _read_inp->len );
     // =-=-=-=-=-=-=
     // log an error if the read failed, 
     // pass long read error
     if( !ret.ok() ) {
         std::stringstream msg;
         msg << "fileRead failed for ";
-        msg << file_obj.physical_path();
+        msg << file_obj->physical_path();
         msg << "]";
         eirods::error err = PASSMSG( msg.str(), ret );
         eirods::log( err );
     } else {
-        fileReadOutBBuf->len = ret.code();
+        _read_bbuf->len = ret.code();
     }
 
     return ret.code();

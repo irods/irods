@@ -5,6 +5,10 @@
 // eirods includes
 #include "eirods_log.h"
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rodsLog.h"
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-

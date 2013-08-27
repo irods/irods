@@ -112,8 +112,9 @@ remoteFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 
 // =-=-=-=-=-=-=-
 // _rsFileOpen - this the local version of rsFileOpen.
-int _rsFileOpen( rsComm_t*      _comm, 
-                 fileOpenInp_t* _open_inp ) {
+int _rsFileOpen( 
+    rsComm_t*      _comm, 
+    fileOpenInp_t* _open_inp ) {
     // =-=-=-=-=-=-=-
     // pointer check
     if( !_comm || !_open_inp ) {
@@ -139,9 +140,17 @@ int _rsFileOpen( rsComm_t*      _comm,
     
     // =-=-=-=-=-=-=-
     // call file open on the resource plugin 
-    eirods::file_object file_obj( _comm, _open_inp->objPath, _open_inp->fileName, _open_inp->resc_hier_, 0, _open_inp->mode, _open_inp->flags );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    _open_inp->objPath, 
+                                    _open_inp->fileName, 
+                                    _open_inp->resc_hier_, 
+                                    0, 
+                                    _open_inp->mode, 
+                                    _open_inp->flags ) );
     if(_open_inp->in_pdmo) {
-        file_obj.in_pdmo(true);
+        file_obj->in_pdmo(true);
     }
     
     eirods::error ret_err = fileOpen( _comm, file_obj );
@@ -157,7 +166,7 @@ int _rsFileOpen( rsComm_t*      _comm,
         eirods::log( out_err );
     } // if
 
-    return file_obj.file_descriptor();
+    return file_obj->file_descriptor();
 
 } // _rsFileOpen
 

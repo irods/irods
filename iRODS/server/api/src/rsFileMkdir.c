@@ -72,12 +72,19 @@ remoteFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp,
 
 // =-=-=-=-=-=-=-
 // local function to handle call to mkdir via resource plugin
-int _rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
+int _rsFileMkdir( 
+    rsComm_t*       _comm, 
+    fileMkdirInp_t* _mkdir_inp ) {
     // =-=-=-=-=-=-=-
     // make call to mkdir via resource plugin
 
-    eirods::collection_object coll_obj( fileMkdirInp->dirName, fileMkdirInp->rescHier, fileMkdirInp->mode, 0 );
-    eirods::error mkdir_err = fileMkdir( rsComm, coll_obj );
+    eirods::collection_object_ptr coll_obj( 
+                                      new eirods::collection_object( 
+                                          _mkdir_inp->dirName, 
+                                          _mkdir_inp->rescHier, 
+                                          _mkdir_inp->mode, 
+                                          0 ) );
+    eirods::error mkdir_err = fileMkdir( _comm, coll_obj );
 
     // =-=-=-=-=-=-=-
     // log error if necessary
@@ -85,7 +92,7 @@ int _rsFileMkdir( rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp ) {
         if( getErrno( mkdir_err.code() ) != EEXIST ) {
             std::stringstream msg;
             msg << "fileMkdir failed for ";
-            msg << fileMkdirInp->dirName;
+            msg << _mkdir_inp->dirName;
             msg << "]";
             eirods::error ret_err = PASSMSG( msg.str(), mkdir_err );
             eirods::log( ret_err );

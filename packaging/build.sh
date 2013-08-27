@@ -163,6 +163,11 @@ fi
 DETECTEDDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DETECTEDDIR/../
 
+# set up git commit hooks
+#if [ -d ".git" ] ; then
+#    cp ./packaging/pre-commit ./.git/hooks/pre-commit
+#fi
+
 MANDIR=man
 # check for clean
 if [ "$1" == "clean" ] ; then
@@ -174,6 +179,12 @@ if [ "$1" == "clean" ] ; then
     rm -f manual.pdf
     rm -f eirods-manual*.pdf
     rm -f libeirods.a
+    echo "Cleaning Network plugins..."
+    cd plugins/network
+    set +e
+    make clean > /dev/null 2>&1
+    set -e
+    cd ../..
     echo "Cleaning Resource plugins..."
     cd plugins/resources
     set +e
@@ -208,7 +219,7 @@ if [ "$1" == "clean" ] ; then
     exit 0
 fi
 
-
+# begin self-awareness
 echo "${text_green}${text_bold}Detecting Build Environment${text_reset}"
 echo "Detected Packaging Directory [$DETECTEDDIR]"
 GITDIR=`pwd`
@@ -253,6 +264,12 @@ if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
         exit 1
     fi
 fi
+
+################################################################################
+# housekeeping - update examples - keep them current
+cp $BUILDDIR/plugins/resources/unixfilesystem/libunixfilesystem.cpp /tmp/libunixfilesystem.cpp
+sed -e s,unix,example,g /tmp/libunixfilesystem.cpp > $BUILDDIR/examples/resources/libexamplefilesystem.cpp
+rm /tmp/libunixfilesystem.cpp
 
 
 ################################################################################
@@ -990,6 +1007,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     sed -e s,EIRODSMSVCPATH,$irods_msvc_home, ./lib/core/include/eirods_ms_home.h.src > /tmp/eirods_ms_home.h
     mv /tmp/eirods_ms_home.h ./lib/core/include/
     # =-=-=-=-=-=-=-
+    # modify the eirods_network_home.h file with the proper path to the binary directory
+    irods_network_home="$detected_irods_home/plugins/network/"
+    sed -e s,EIRODSNETWORKPATH,$irods_network_home, ./lib/core/include/eirods_network_home.h.src > /tmp/eirods_network_home.h
+    mv /tmp/eirods_network_home.h ./lib/core/include/
+    # =-=-=-=-=-=-=-
     # modify the eirods_resources_home.h file with the proper path to the binary directory
     irods_resources_home="$detected_irods_home/plugins/resources/"
     sed -e s,EIRODSRESOURCESPATH,$irods_resources_home, ./lib/core/include/eirods_resources_home.h.src > /tmp/eirods_resources_home.h
@@ -1029,8 +1051,13 @@ if [ "$BUILDEIRODS" == "1" ] ; then
 
     # =-=-=-=-=-=-=-
     # build resource plugins
-
 	cd $BUILDDIR/plugins/resources/
+	make
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
+    # build network plugins
+	cd $BUILDDIR/plugins/network/
 	make
 	cd $BUILDDIR
 

@@ -28,7 +28,7 @@ namespace eirods {
         std::string&         _out_resc_hier ) {
         // =-=-=-=-=-=-=-
         // flag to skip redirect for spec coll
-        bool skip_redir_for_spec_coll = false;
+        //bool skip_redir_for_spec_coll = false;
 
         // =-=-=-=-=-=-=-
         // cache the operation, as we may need to modify it
@@ -37,7 +37,8 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // if this is a put operation then we do not have a first class object
         resource_ptr resc;
-        eirods::file_object file_obj;
+        eirods::file_object_ptr file_obj( 
+                                    new eirods::file_object( ) );
 
         // =-=-=-=-=-=-=-
         // if this is a special collection then we need to get the hier
@@ -46,7 +47,7 @@ namespace eirods {
         // processing the operation, as this may be a create op
         rodsObjStat_t *rodsObjStatOut = NULL;
         int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );
-        file_obj.logical_path( _data_obj_inp->objPath );
+        file_obj->logical_path( _data_obj_inp->objPath );
         if( spec_stat >= 0 ) {
             if( rodsObjStatOut->specColl != NULL ) {
                 _out_resc_hier = rodsObjStatOut->specColl->rescHier;
@@ -87,7 +88,7 @@ namespace eirods {
             } else {
                 // =-=-=-=-=-=-=-
                 // we have a kw present, compare against all the repls for a match
-                std::vector< physical_object > repls = file_obj.replicas();
+                std::vector< physical_object > repls = file_obj->replicas();
                 for( size_t i = 0; i < repls.size(); ++i ) {
                     // =-=-=-=-=-=-=-
                     // extract the root resource from the hierarchy
@@ -123,7 +124,7 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // resolve a resc ptr for the given file_object 
-            eirods::error err = file_obj.resolve( resc_mgr, resc );
+            eirods::error err = file_obj->resolve( resc_mgr, resc );
             if( !err.ok() ) {
                     return PASS( err );
             }
@@ -147,10 +148,10 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // if this is a spec coll, we need to short circuit the create
             // as everything needs to be in the same resource for a spec coll
-            file_obj.logical_path( _data_obj_inp->objPath );
+            file_obj->logical_path( _data_obj_inp->objPath );
             if( spec_stat >= 0 && rodsObjStatOut->specColl != NULL ) {
                 std::string resc_hier = rodsObjStatOut->specColl->rescHier;
-                file_obj.resc_hier( resc_hier );
+                file_obj->resc_hier( resc_hier );
                 skip_redir_for_spec_coll = true; 
 
             } else 
@@ -202,7 +203,7 @@ namespace eirods {
 
                 // =-=-=-=-=-=-=-
                 // set the resc hier given the root resc name 
-                file_obj.resc_hier( resc_name );
+                file_obj->resc_hier( resc_name );
 
             } // else
 
@@ -227,8 +228,9 @@ namespace eirods {
             // will determine the host
             hierarchy_parser parser;
             float            vote = 0.0;
+            eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( file_obj );
             error err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                _comm, eirods::RESOURCE_OP_RESOLVE_RESC_HIER, file_obj, &oper, &host_name, &parser, &vote );
+                _comm, eirods::RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &oper, &host_name, &parser, &vote );
             
             // =-=-=-=-=-=-=-
             // extract the hier string from the parser, politely.
@@ -242,7 +244,7 @@ namespace eirods {
             }
         
         //} else {
-        //    _out_resc_hier = file_obj.resc_hier();
+        //    _out_resc_hier = file_obj->resc_hier();
 
         //}
 

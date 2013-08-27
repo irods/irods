@@ -20,9 +20,14 @@
 #endif
 #endif
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_stacktrace.h"
-#include "sslSockComm.h"
+#include "eirods_network_factory.h"
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "sslSockComm.h"
 
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
@@ -107,7 +112,6 @@ int reconnFlag)
 	free (conn);
         return NULL;
     }
-
     status = connectToRhost (conn, connectCnt, reconnFlag);
 
     if (status < 0) {
@@ -133,19 +137,20 @@ int reconnFlag)
     }
 
 #ifndef windows_platform
-    if (reconnFlag == RECONN_TIMEOUT && conn->svrVersion != NULL &&
-       conn->svrVersion->reconnPort > 0) {
+    if( reconnFlag == RECONN_TIMEOUT && 
+        conn->svrVersion != NULL &&
+        conn->svrVersion->reconnPort > 0) {
         if (strcmp ( conn->svrVersion->reconnAddr, "127.0.0.1") == 0 || 
-	  strcmp ( conn->svrVersion->reconnAddr , "0.0.0.0") == 0 ||
-	  strcmp ( conn->svrVersion->reconnAddr , "localhost")) { 
-	    /* localhost. just use conn->host */
-	    rstrcpy (conn->svrVersion->reconnAddr, conn->host, NAME_LEN);
-	}
+	        strcmp ( conn->svrVersion->reconnAddr , "0.0.0.0") == 0 ||
+	        strcmp ( conn->svrVersion->reconnAddr , "localhost")) { 
+	        /* localhost. just use conn->host */
+	        rstrcpy (conn->svrVersion->reconnAddr, conn->host, NAME_LEN);
+        }
 #ifdef USE_BOOST
-	conn->exit_flg = false;
-	conn->lock = new boost::mutex;
-	conn->cond = new boost::condition_variable;
-	conn->reconnThr = new boost::thread( cliReconnManager, conn );
+        conn->exit_flg = false;
+        conn->lock = new boost::mutex;
+        conn->cond = new boost::condition_variable;
+        conn->reconnThr = new boost::thread( cliReconnManager, conn );
 #else
         pthread_mutex_init (&conn->lock, NULL);
         pthread_cond_init (&conn->cond, NULL);
@@ -260,59 +265,75 @@ setSockAddr (struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort)
     return (0);
 }
 
-int
-rcDisconnect (rcComm_t *conn)
-{
-    int status;
+// =-=-=-=-=-=-=-
+// request shut down client-server connection
+int rcDisconnect( 
+    rcComm_t* _conn ) {
+    // =-=-=-=-=-=-=-
+    // check for invalid param
+    if(  _conn == NULL ) {
+	    return (0);
+    }
 
-    if (conn == NULL) {
-	return (0);
+    // =-=-=-=-=-=-=-
+    // create network object to pass to plugin interface
+    eirods::network_object_ptr net_obj;
+    eirods::error ret = eirods::network_factory(  _conn, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
     }
 
     /* send disconnect msg to agent */
-    status = sendRodsMsg (conn->sock, RODS_DISCONNECT_T, NULL, NULL, NULL, 0,
-      conn->irodsProt);
+    ret = sendRodsMsg( 
+              net_obj, 
+              RODS_DISCONNECT_T, 
+              NULL, NULL, NULL, 0,
+               _conn->irodsProt );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+    }
 
     // =-=-=-=-=-=-=-
     // disable SSL if previously requested
-    if( conn->ssl_on ) {
+    if(  _conn->ssl_on ) {
         printf( "DISABLE SSL\n" );
-        // JMC - this is off until we have network plugins :: sslEnd( conn );
+        // JMC - this is off until we have network plugins :: sslEnd(  _conn );
     
     }
 
     /* need to call asio close if USE_BOOST_ASIO */
-    close (conn->sock);
+    close ( _conn->sock);
 
 #ifdef USE_BOOST
 // FIXME:: Address Sockets Here As Well
 
-    conn->exit_flg = true; //  
-    if( conn->reconnThr ) {
-        //conn->reconnThr->interrupt(); // terminate at next interruption point
+     _conn->exit_flg = true; //  
+    if(  _conn->reconnThr ) {
+        // _conn->reconnThr->interrupt(); // terminate at next interruption point
         boost::system_time until = boost::get_system_time() + boost::posix_time::seconds(2);
-        conn->reconnThr->timed_join( until );    // force an interruption point
+         _conn->reconnThr->timed_join( until );    // force an interruption point
     }
-    delete conn->reconnThr;
-    delete conn->lock;
-    delete conn->cond;
+    delete  _conn->reconnThr;
+    delete  _conn->lock;
+    delete  _conn->cond;
 #else
 //#ifdef windows_platform
-//	closesocket(conn->sock);
+//	closesocket( _conn->sock);
 //#else
-    if (conn->svrVersion->reconnPort > 0 && conn->reconnThr != 0) {
-	pthread_cancel (conn->reconnThr);
-	pthread_detach (conn->reconnThr);
-        pthread_mutex_destroy (&conn->lock);
-        pthread_cond_destroy (&conn->cond);
+    if ( _conn->svrVersion->reconnPort > 0 &&  _conn->reconnThr != 0) {
+	pthread_cancel ( _conn->reconnThr);
+	pthread_detach ( _conn->reconnThr);
+        pthread_mutex_destroy (& _conn->lock);
+        pthread_cond_destroy (& _conn->cond);
     }
 //#endif
 #endif
 
-    status = freeRcComm (conn);
-
+    int status = freeRcComm( _conn );
     return (status);
-}
+
+} // rcDisconnect
 
 int
 freeRcComm (rcComm_t *conn)
@@ -373,7 +394,6 @@ rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg)
 void
 cliReconnManager (rcComm_t *conn)
 {
-    int status;
     struct sockaddr_in remoteAddr;
     struct hostent *myHostent;
     reconnMsg_t reconnMsg;
@@ -452,49 +472,60 @@ cliReconnManager (rcComm_t *conn)
             continue;
         }
 
-        bzero (&reconnMsg, sizeof (procState_t));
+        bzero( &reconnMsg, sizeof (procState_t) );
         reconnMsg.procState = conn->clientState;
-	reconnMsg.cookie = conn->svrVersion->cookie;
-        status = sendReconnMsg (conn->reconnectedSock, &reconnMsg);
+	    reconnMsg.cookie    = conn->svrVersion->cookie;
 
-        if (status < 0) {
-	    close (conn->reconnectedSock);
-	    conn->reconnectedSock = 0;
-#ifdef USE_BOOST
-            conn->cond->notify_all();
-	    boost_lock.unlock();
-#else
-	    pthread_cond_signal (&conn->cond);
-            pthread_mutex_unlock (&conn->lock);
-#endif
-            rodsLog (LOG_ERROR,
-              "cliReconnManager: sendReconnMsg to host %s failed, status = %d",
-              conn->svrVersion->reconnAddr, status);
-            rodsSleep (RECONNECT_SLEEP_TIME, 0);
-            continue;
+        // =-=-=-=-=-=-=-
+        // create network object, need to override the socket
+        // with the reconn socket.  no way to infer this in the
+        // factory for the client comm
+        eirods::network_object_ptr net_obj;
+        eirods::error ret = eirods::network_factory( conn, net_obj );
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );
         }
 
-        if ((status = readReconMsg (conn->reconnectedSock, &reconnMsgOut)) 
-	  < 0) {
+        net_obj->socket_handle( conn->reconnectedSock ); // repave w/ recon socket
+        ret = sendReconnMsg( net_obj, &reconnMsg );
+        if( !ret.ok() ) {
             close (conn->reconnectedSock);
             conn->reconnectedSock = 0;
 #ifdef USE_BOOST
             conn->cond->notify_all();
-	    boost_lock.unlock();
+	        boost_lock.unlock();
 #else
-	    pthread_cond_signal (&conn->cond);
+	        pthread_cond_signal (&conn->cond);
+            pthread_mutex_unlock (&conn->lock);
+#endif
+            rodsLog (LOG_ERROR,
+              "cliReconnManager: sendReconnMsg to host %s failed, status = %d",
+              conn->svrVersion->reconnAddr, ret.code() );
+            rodsSleep (RECONNECT_SLEEP_TIME, 0);
+            continue;
+        }
+
+        ret = readReconMsg( net_obj, &reconnMsgOut );
+        if( !ret.ok() ) {
+            close (conn->reconnectedSock);
+            conn->reconnectedSock = 0;
+#ifdef USE_BOOST
+            conn->cond->notify_all();
+	        boost_lock.unlock();
+#else
+	        pthread_cond_signal (&conn->cond);
             pthread_mutex_unlock (&conn->lock);
 #endif
             rodsLog (LOG_ERROR,
               "cliReconnManager: readReconMsg to host %s failed, status = %d",
-              conn->svrVersion->reconnAddr, status);
+              conn->svrVersion->reconnAddr, ret.code() );
             rodsSleep (RECONNECT_SLEEP_TIME, 0);
             continue;
         }
 
         conn->agentState = reconnMsgOut->procState;
-	free (reconnMsgOut);
-	reconnMsgOut = NULL;
+        free (reconnMsgOut);
+        reconnMsgOut = NULL;
         conn->reconnTime = time (0) + RECONN_TIMEOUT_TIME;
         if (conn->clientState == PROCESSING_STATE) {
             rodsLog (LOG_DEBUG,
@@ -505,12 +536,12 @@ cliReconnManager (rcComm_t *conn)
             rodsLog (LOG_DEBUG,
               "cliReconnManager: Not calling svrSwitchConnect,  clientState = %d", 
               conn->clientState);
-	}
+        }
 #ifdef USE_BOOST
         conn->cond->notify_all();
-	boost_lock.unlock();
+        boost_lock.unlock();
 #else
-	pthread_cond_signal (&conn->cond);
+        pthread_cond_signal (&conn->cond);
         pthread_mutex_unlock (&conn->lock);
 #endif
     }

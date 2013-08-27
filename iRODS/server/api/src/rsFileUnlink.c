@@ -79,10 +79,9 @@ remoteFileUnlink (rsComm_t *rsComm, fileUnlinkInp_t *fileUnlinkInp,
 // =-=-=-=-=-=-=-
 // local function for calling unlink via resource plugin
 int _rsFileUnlink(
-    rsComm_t *rsComm,
-    fileUnlinkInp_t *fileUnlinkInp )
-{
-    if(fileUnlinkInp->objPath[0] == '\0') {
+    rsComm_t*        _comm,
+    fileUnlinkInp_t* _unlink_inp ) {
+    if(_unlink_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - empty logical path.";
@@ -92,21 +91,27 @@ int _rsFileUnlink(
     
     // =-=-=-=-=-=-=-
     // call unlink via resource plugin
-    eirods::file_object file_obj( rsComm, fileUnlinkInp->objPath, fileUnlinkInp->fileName, fileUnlinkInp->rescHier, 0, 0, 0 );
-    if(fileUnlinkInp->in_pdmo) {
-        file_obj.in_pdmo(true);
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    _unlink_inp->objPath, 
+                                    _unlink_inp->fileName, 
+                                    _unlink_inp->rescHier, 
+                                    0, 0, 0 ) );
+    if(_unlink_inp->in_pdmo) {
+        file_obj->in_pdmo(true);
     } else {
-        file_obj.in_pdmo(false);
+        file_obj->in_pdmo(false);
     }
     
-    eirods::error unlink_err = fileUnlink( rsComm, file_obj );
+    eirods::error unlink_err = fileUnlink( _comm, file_obj );
      
     // =-=-=-=-=-=-=-
     // log potential error message
     if( unlink_err.code() < 0 ) {
         std::stringstream msg;
         msg << "fileRead failed for [";
-        msg << fileUnlinkInp->fileName;
+        msg << _unlink_inp->fileName;
         msg << "]";
         msg << unlink_err.code();
         eirods::error ret_err = PASSMSG( msg.str(), unlink_err );

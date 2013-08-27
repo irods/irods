@@ -44,131 +44,235 @@ connToutHandler (int sig)
 // eirods includes
 #include "eirods_stacktrace.h"
 #include "eirods_client_server_negotiation.h"
-
-#ifdef USE_BOOST_ASIO
+#include "eirods_network_plugin.h"
+#include "eirods_network_manager.h"
+#include "eirods_network_factory.h"
+#include "eirods_network_constants.h"
 
 // =-=-=-=-=-=-=-
-// open socket for incoming connection
-int sockOpenForInConn ( rsComm_t* _rsComm, int* _portNum, char** _addr, int _proto ) {
+//
+eirods::error sockClientStart( 
+    eirods::network_object_ptr _ptr ) {
     // =-=-=-=-=-=-=-
-    // get rid of alot of namespace references
-    using namespace boost::asio::ip;
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
 
-    // =-=-=-=-=-=-=-
-    // return value
-    int status = 0;
- 
-    // =-=-=-=-=-=-=-
-    // value check incoming protocol
-    if( proto != SOCK_DGRAM && proto != SOCK_STREAM ) {
-        rodsLog( LOG_ERROR, "sockOpenForInConn() -- invalid input protocol %d", proto );
-        return SYS_INVALID_PROTOCOL_TYPE;
-    } // if proto
-
-    // =-=-=-=-=-=-=-
-    // based on protocol, create either tcp or udp flavored socket wrapper
-    if( SOCK_STREAM == _proto ) {
-        _rsComm->sock =  new socket_wrapper_tcp;
-    } else if( SOCK_DGRAM == _proto ) {
-        _rsComm->sock = new socket_wrapper_udp;
-        // FIXME rodsSetSockOpt (sock, rsComm->windowSize);
-    } // if/else proto
-    
-    // =-=-=-=-=-=-=-
-    // trap failed socket creation
-    if( !_rsComm->sock ) {
-        status = SYS_SOCK_OPEN_ERR - errno;
-        rodsLogError( LOG_NOTICE, status, "sockOpenForInConn: open socket error. status = %d", status );
-        return status;
-    } // if !sock
-
-    // =-=-=-=-=-=-=-
-    // if portNum is <= 0 and env svrPortRangeStart is set, pick a port
-    // in the range.
-    char* tmpPtr = 0;
-    int svrPortRangeStart = 0;
-    int svrPortRangeEnd   = 0;
-
-    if( *portNum <= 0 && ( tmpPtr = getenv( "svrPortRangeStart" ) ) != NULL ) {
-        int portRangeCount = 0;
-        int bindCnt        = 0;
-        int myPortNum      = 0;
-
-        svrPortRangeStart = atoi( tmpPtr );
-
-        // =-=-=-=-=-=-=-
-        // test for env vars which describe the valid port range to scan
-        if( ( tmpPtr = getenv( "svrPortRangeEnd" ) ) != NULL ) { 
-            svrPortRangeEnd = atoi( tmpPtr );
-            if ( svrPortRangeEnd < svrPortRangeStart ) {
-                rodsLog( LOG_ERROR, "sockOpenForInConn: PortRangeStart %d > PortRangeEnd %d", 
-                         svrPortRangeStart, svrPortRangeEnd);
-                svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
-            }
-        } else {
-            svrPortRangeEnd = svrPortRangeStart + DEF_NUMBER_SVR_PORT - 1;
-        }
-        
-        portRangeCount = svrPortRangeEnd   - svrPortRangeStart + 1;
-        myPortNum      = svrPortRangeStart + random() % portRangeCount;
-
-        // =-=-=-=-=-=-=-
-        // loop through port range and find one that sticks
-        while( bindCnt < portRangeCount ) {
-            if( myPortNum > svrPortRangeEnd ) {
-                myPortNum = svrPortRangeStart;
-            }
-
-            if( _rsComm->sock->open( myPortNum, "" ) )  {
-                *portNum = myPortNum;
-                rodsLog( LOG_DEBUG, "sockOpenForInConn: port number = %d", myPortNum );
-                break;
-            } // if success
-            bindCnt ++;
-            myPortNum ++;
-        } // while bindCnd < portRangeCount
-    } else {
-        // =-=-=-=-=-=-=-
-        // else use the provided port number parameter
-        status = _rsComm->sock->open( _port, "" );
-    } // else port > 0
-
-    // =-=-=-=-=-=-=-
-    // error out if unsuccessful
-    if( status < 0 ) { 
-        status = SYS_SOCK_BIND_ERR - errno;
-        rodsLog( LOG_NOTICE, "sockOpenForInConn: bind socket error. portNum = %d, errno = %d", 
-                 *portNum, errno );
-        return ( status );
-    } // if status
-
-    if( addr != NULL ) {
-        struct sockaddr_in sin;
-#if defined(aix_platform)
-        socklen_t  length = sizeof (sin);
-#elif defined(windows_platform)
-        int length;
-#else
-        uint length = sizeof (sin);
-#endif
-        if (getsockname (sock, (struct sockaddr *) &sin, &length)) {
-            rodsLog (LOG_NOTICE,
-                     "sockOpenForInConn() -- getsockname() failed: errno=%d", errno);
-            return SYS_SOCK_BIND_ERR - errno;
-        }
-
-        *portNum = ntohs (sin.sin_port);
-        *addr =  strdup (rods_inet_ntoa (sin.sin_addr));
     }
 
-    return (sock);
+    // =-=-=-=-=-=-=-
+    // make the call to the "read" interface
+    ret_err = net->call( eirods::NETWORK_OP_CLIENT_START, _ptr );
 
-} // sockOpenForInConn
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'client start'", ret_err );
 
+    } else {
+        return CODE( ret_err.code() );
 
+    }
 
+} // sockClientStart
 
-#else
+// =-=-=-=-=-=-=-
+//
+eirods::error sockClientStop( 
+    eirods::network_object_ptr _ptr ) {                                                                                 
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "read" interface
+    ret_err = net->call( eirods::NETWORK_OP_CLIENT_STOP, _ptr );
+
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'client stop'", ret_err );
+ 
+    } else {
+        return CODE( ret_err.code() );
+  
+    }
+
+} // sockClientStop
+
+// =-=-=-=-=-=-=-
+//
+eirods::error sockAgentStart( 
+    eirods::network_object_ptr _ptr ) {                                                                                 
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "read" interface
+    ret_err = net->call( eirods::NETWORK_OP_AGENT_START, _ptr );
+
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'agent start'", ret_err );
+   
+    } else {
+        return CODE( ret_err.code() );
+    
+    }
+
+} // sockAgentStart
+
+// =-=-=-=-=-=-=-
+//
+eirods::error sockAgentStop( 
+    eirods::network_object_ptr _ptr ) {                                                                                 
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "read" interface
+    ret_err = net->call( eirods::NETWORK_OP_AGENT_STOP, _ptr );
+
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'agent stop'", ret_err );
+    } else {
+        return CODE( ret_err.code() );
+    }
+
+} // sockAgentStop
+
+// =-=-=-=-=-=-=-
+// 
+eirods::error readMsgHeader( 
+    eirods::network_object_ptr _ptr, 
+    msgHeader_t*               _header, 
+    struct timeval*            _time_val ) {
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "read" interface
+    char tmp_buf[ MAX_NAME_LEN ]; 
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    ret_err = net->call< void*, struct timeval* >( 
+                  eirods::NETWORK_OP_READ_HEADER, 
+                  ptr,
+                  tmp_buf, 
+                  _time_val );
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'read header'", ret_err );
+    } 
+    
+    // =-=-=-=-=-=-=-
+    // unpack the header message, always use XML_PROT for the header
+    msgHeader_t* out_header = 0;
+    int status = unpackStruct( 
+                     static_cast<void*>( tmp_buf ), 
+                     (void**) &out_header,
+                     "MsgHeader_PI", 
+                     RodsPackTable, 
+                     XML_PROT );
+    if( status < 0 ) {
+        return ERROR( status, "unpackStruct error" );
+    }
+
+    if( !out_header ) {
+        return ERROR( -1, "" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // need to do an assignment due to something potentially going out
+    // of scope from unpackStruct.
+    // NOTE :: look into why this is necessary
+    *_header = *out_header;
+
+    // =-=-=-=-=-=-=-
+    // win!
+    return SUCCESS();
+
+} // readMsgHeader
+
+// =-=-=-=-=-=-=-
+// 
+eirods::error readMsgBody(
+    eirods::network_object_ptr _ptr, 
+    msgHeader_t*        _header, 
+    bytesBuf_t*         _input_struct_buf, 
+    bytesBuf_t*         _bs_buf, 
+    bytesBuf_t*         _error_buf, 
+    irodsProt_t         _protocol,
+    struct timeval*     _time_val ) {
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
+
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "read" interface
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    ret_err = net->call< msgHeader_t*, 
+                         bytesBuf_t*, 
+                         bytesBuf_t*, 
+                         bytesBuf_t*, 
+                         irodsProt_t, 
+                         struct timeval* >( 
+                             eirods::NETWORK_OP_READ_BODY, 
+                             ptr,
+                             _header,
+                             _input_struct_buf,
+                             _bs_buf,
+                             _error_buf,
+                             _protocol,
+                             _time_val );
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'read message body'", ret_err );
+
+    } else {
+        return CODE( ret_err.code() );
+
+    }
+
+} // readMsgBody
+
 
 /* open sock for incoming connection */
 int 
@@ -304,127 +408,48 @@ rsAcceptConn (rsComm_t *svrComm)
     return (newSock);
 }
 
-int
-readMsgHeader (int sock, msgHeader_t *myHeader, struct timeval *tv)
-{
-    int nbytes;
-    int myLen;
-    char tmpBuf[MAX_NAME_LEN]; 
-    msgHeader_t *outHeader;
-    int status;
+// =-=-=-=-=-=-=-
+// 
+eirods::error writeMsgHeader(
+    eirods::network_object_ptr _ptr,
+    msgHeader_t*        _header ) {
+    // =-=-=-=-=-=-=-
+    // always use XML_PROT for the Header 
+    bytesBuf_t* header_buf = 0;
+    int status = packStruct( 
+                     static_cast<void *>( _header ), 
+                     &header_buf,
+                     "MsgHeader_PI", 
+                     RodsPackTable, 
+                     0, XML_PROT );
+    if( status < 0 || 
+        0 == header_buf ) {
+        return ERROR( status, "packstruct error" );
+    }
+
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret );
+    }
+  
+    // =-=-=-=-=-=-=-
+    // make the call to the plugin interface
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    ret = net->call< bytesBuf_t* >( 
+              eirods::NETWORK_OP_WRITE_HEADER,
+              ptr,
+              header_buf );
+    if( !ret.ok() ) {
+        return PASS( ret );
+    }
     
-    /* read the header length packet */
-
-    nbytes = myRead (sock, (void *) &myLen, sizeof (myLen), 
-                     SOCK_TYPE, NULL, tv);
-
-    if (nbytes != sizeof (myLen)) {
-        if (nbytes < 0) {
-            status = nbytes - errno;
-        } else {
-            status = SYS_HEADER_READ_LEN_ERR - errno;
-        }
-        rodsLog (LOG_ERROR,
-                 "readMsgHeader:header read- read %d bytes, expect %d, status = %d",
-                 nbytes, sizeof (myLen), status);
-        return (status);
-    }
-
-    myLen =  ntohl (myLen);
-
-    if (myLen > MAX_NAME_LEN || myLen <= 0) {
-        rodsLog (LOG_ERROR,
-                 "readMsgHeader: header length %d out of range",
-                 myLen);
-        return (SYS_HEADER_READ_LEN_ERR);
-    }
-
-    nbytes = myRead (sock, (void *) tmpBuf, myLen, SOCK_TYPE, NULL, tv);
-
-    if (nbytes != myLen) {
-        if (nbytes < 0) {
-            status = nbytes - errno;
-        } else {
-            status = SYS_HEADER_READ_LEN_ERR - errno;
-        }
-        rodsLog (LOG_ERROR,
-                 "readMsgHeader:header read- read %d bytes, expect %d, status = %d",
-                 nbytes, myLen, status);
-        return (status);
-    }
-
-    if (getRodsLogLevel () >= LOG_DEBUG3) {
-        printf ("received header: len = %d\n%s\n", myLen, tmpBuf);
-    }
-
-    /* always use XML_PROT for the startup pack */
-    status = unpackStruct ((void *) tmpBuf, (void **) &outHeader,
-                           "MsgHeader_PI", RodsPackTable, XML_PROT);
-
-    if (status < 0) {
-        rodsLogError (LOG_ERROR,  status,
-                      "readMsgHeader:unpackStruct error. status = %d",
-                      status);
-        return (status);
-    }
-
-    *myHeader = *outHeader;
-
-    free (outHeader);
-
-    return (0);
-}
-
-int
-writeMsgHeader (int sock, msgHeader_t *myHeader)
-{
-    int nbytes;
-    int status;
-    int myLen;
-    bytesBuf_t *headerBBuf = NULL;
-
-    /* always use XML_PROT for the Header */
-    status = packStruct ((void *) myHeader, &headerBBuf,
-                         "MsgHeader_PI", RodsPackTable, 0, XML_PROT);
-
-    if (status < 0 || NULL == headerBBuf ) { // JMC cppcheck - nullptr
-        rodsLogError (LOG_ERROR, status,
-                      "writeMsgHeader: packStruct error, status = %d", status);
-        return status;
-    }
-
-    if (getRodsLogLevel () >= LOG_DEBUG3) {
-        printf ("sending header: len = %d\n%s\n", headerBBuf->len, 
-                (char *) headerBBuf->buf);
-    }
-
-    myLen = htonl (headerBBuf->len);
-
-    nbytes = myWrite (sock, (void *) &myLen, sizeof (myLen), SOCK_TYPE, NULL);
-
-    if (nbytes != sizeof (myLen)) {
-        rodsLog (LOG_ERROR,
-                 "writeMsgHeader: wrote %d bytes for myLen , expect %d, status = %d",
-                 nbytes, sizeof (myLen), SYS_HEADER_WRITE_LEN_ERR - errno);
-        return (SYS_HEADER_WRITE_LEN_ERR - errno);
-    }
-
-    /* now send the header */
-
-    nbytes = myWrite (sock, headerBBuf->buf, headerBBuf->len, SOCK_TYPE, NULL);
-
-    if (headerBBuf->len != nbytes) {
-        rodsLog (LOG_ERROR,
-                 "writeMsgHeader: wrote %d bytes, expect %d, status = %d",
-                 nbytes, headerBBuf->len, SYS_HEADER_WRITE_LEN_ERR - errno);
-        freeBBuf (headerBBuf);
-        return (SYS_HEADER_WRITE_LEN_ERR - errno);
-    }
-
-    freeBBuf (headerBBuf);
-
-    return (0);
-}
+    return SUCCESS(); 
+   
+} // writeMsgHeader
 
 int 
 myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
@@ -534,85 +559,100 @@ myWrite (int sock, void *buf, int len, irodsDescType_t irodsDescType,
     return (len - toWrite);
 }
 
-int
-readVersion (int sock, version_t **myVersion)
-{
-    int status;
-    msgHeader_t myHeader;
-    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
+// =-=-=-=-=-=-=-
+//
+eirods::error readVersion(
+    eirods::network_object_ptr _ptr, 
+    version_t**         _version ) {
+    // =-=-=-=-=-=-=-
+    // init timval struct for header call
     struct timeval tv;
-
     tv.tv_sec = READ_VERSION_TOUT_SEC;
     tv.tv_usec = 0;
 
-    status = readMsgHeader (sock, &myHeader, &tv);
-
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "readVersion: readMsgHeader error. status = %d", status);
-        return (status);
+    // =-=-=-=-=-=-=-
+    // call inteface to read message header
+    msgHeader_t myHeader;
+    eirods::error ret = readMsgHeader( _ptr, &myHeader, &tv );
+    if( !ret.ok() ) {
+        return PASS( ret );
     }
 
+    // =-=-=-=-=-=-=-
+    // call inteface to read message body
+    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
     memset (&bsBBuf, 0, sizeof (bytesBuf_t));
-    status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf,
-                          &errorBBuf, XML_PROT, NULL);
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "readVersion: readMsgBody error. status = %d", status);
-        return (status);
+    ret = readMsgBody( _ptr, &myHeader, &inputStructBBuf, &bsBBuf,
+                       &errorBBuf, XML_PROT, NULL );
+    if( !ret.ok() ) {
+        return PASS( ret );
     }
 
-    /* some sanity check */
-
-    if (strcmp (myHeader.type, RODS_VERSION_T) != 0) {
+    // =-=-=-=-=-=-=-
+    // basic error checking of message type
+    if( strcmp (myHeader.type, RODS_VERSION_T ) != 0 ) {
         if (inputStructBBuf.buf != NULL)
             free (inputStructBBuf.buf);
         if (bsBBuf.buf != NULL)
             free (inputStructBBuf.buf);
         if (errorBBuf.buf != NULL)
             free (inputStructBBuf.buf);
-        rodsLog (LOG_NOTICE,
-                 "readVersion: wrong mag type - %s, expect %s",
-                 myHeader.type, RODS_VERSION_T);
-        return (SYS_HEADER_TPYE_LEN_ERR);
+        std::stringstream msg;
+        msg << "wrong msg type [" 
+            << myHeader.type
+            << " expected [" 
+            << RODS_VERSION_T 
+            << "]";
+        return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
     }
  
-    if (myHeader.bsLen != 0) {
-        if (bsBBuf.buf != NULL)
-            free (inputStructBBuf.buf);
-        rodsLog (LOG_NOTICE, "readVersion: myHeader.bsLen = %d is not 0",
-                 myHeader.bsLen);
+    // =-=-=-=-=-=-=-
+    // check length of byte stream buffer, should be 0
+    if( myHeader.bsLen != 0 ) {
+        if( bsBBuf.buf != NULL )
+            free( inputStructBBuf.buf );
+        rodsLog( LOG_NOTICE, "readVersion: myHeader.bsLen = %d is not 0",
+                 myHeader.bsLen );
     }
 
-    if (myHeader.errorLen != 0) {
+    // =-=-=-=-=-=-=-
+    // check length of error buffer, should be 0
+    if( myHeader.errorLen != 0 ) {
         if (errorBBuf.buf != NULL)
             free (inputStructBBuf.buf);
         rodsLog (LOG_NOTICE, "readVersion: myHeader.errorLen = %d is not 0",
                  myHeader.errorLen);
     }
 
+    // =-=-=-=-=-=-=-
+    // bounds check message size
     if (myHeader.msgLen > (int) sizeof (version_t) * 2 || myHeader.msgLen <= 0) {
         if (inputStructBBuf.buf != NULL)
             free (inputStructBBuf.buf);
-        rodsLog (LOG_NOTICE, 
-                 "readVersion: problem with myHeader.msgLen = %d",
-                 myHeader.msgLen);
-        return (SYS_HEADER_READ_LEN_ERR);
+        std::stringstream msg;
+        msg << "header length is not within bounds: "
+            << myHeader.msgLen;
+        return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
     }
 
-    /* alway use XML for version */
-    status = unpackStruct (inputStructBBuf.buf, (void **) myVersion, 
-                           "Version_PI", RodsPackTable, XML_PROT);
-
-    free (inputStructBBuf.buf);
-
-    if (status < 0) {
+    // =-=-=-=-=-=-=-
+    // unpack the message, always use XML for this message type
+    int status = unpackStruct( 
+                     inputStructBBuf.buf, 
+                     ( void** )( _version ),
+                     "Version_PI", 
+                     RodsPackTable, 
+                     XML_PROT );
+    free( inputStructBBuf.buf );
+    if( status < 0 ) {
         rodsLogError (LOG_NOTICE, status,
                       "readVersion:unpackStruct error. status = %d",
                       status);
     } 
-    return (status);
-}
+
+    return CODE( status );
+
+} // readVersion
 
 int
 rodsSetSockOpt (int sock, int windowSize)
@@ -745,7 +785,6 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     }
 
     setConnAddr (conn);
-
     status = sendStartupPack (conn, connectCnt, reconnFlag);
 
     if (status < 0) {
@@ -755,6 +794,15 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         close (conn->sock);
         return status;
     }
+    
+    // =-=-=-=-=-=-=-
+    // create a network object
+    eirods::network_object_ptr net_obj;
+    eirods::error ret = eirods::network_factory( conn, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();    
+    }
 
     // =-=-=-=-=-=-=-
     // if the client requests the connection negotiation then wait for a
@@ -763,10 +811,12 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         // =-=-=-=-=-=-=-
         // politely do the negotiation
         std::string results;
-        eirods::error err = eirods::client_server_negotiation_for_client( *conn, results ); 
-        if( !err.ok() ) {
-            //eirods::log( PASS( err ) ); 
-            return err.code();    
+        ret = eirods::client_server_negotiation_for_client( 
+                  net_obj, 
+                  results ); 
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) ); 
+            return ret.code();    
         }
         
         // =-=-=-=-=-=-=-
@@ -778,11 +828,8 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     
     }
     
-    // =-=-=-=-=-=-=-
-    // back to business as usual
-    status = readVersion (conn->sock, &conn->svrVersion);
-
-    if (status < 0) {
+    ret = readVersion( net_obj, &conn->svrVersion );
+    if( !ret.ok() ) {
         rodsLogError (LOG_ERROR, status,
                       "connectToRhost: readVersion to %s failed, status = %d",
                       conn->host, status);
@@ -1120,31 +1167,41 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
     /* always use XML_PROT for the startupPack */
     status = packStruct ((void *) &startupPack, &startupPackBBuf,
                          "StartupPack_PI", RodsPackTable, 0, XML_PROT);
-
     if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
                       "sendStartupPack: packStruct error, status = %d", status);
         return status;
     }
 
-    status = sendRodsMsg (conn->sock, RODS_CONNECT_T, startupPackBBuf, 
-                          NULL, NULL, 0, XML_PROT);
-
-    freeBBuf (startupPackBBuf);
-
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "sendStartupPack: sendRodsMsg error, status = %d", status);
-        return status;
+    eirods::network_object_ptr net_obj;
+    eirods::error ret = eirods::network_factory( conn, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+    
+    ret = sendRodsMsg(
+              net_obj, 
+              RODS_CONNECT_T, 
+              startupPackBBuf, 
+              NULL, NULL, 0, 
+              XML_PROT );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
     }
 
-    return (status);
-}
+    return ret.code();
 
-int
-sendVersion (int sock, int versionStatus, int reconnPort, 
-             char *reconnAddr, int cookie)
-{
+} // sendStartupPack
+
+
+eirods::error sendVersion (
+    eirods::network_object_ptr _ptr, 
+    int                 versionStatus, 
+    int                 reconnPort, 
+    char*               reconnAddr, 
+    int                 cookie ) {
     version_t myVersion;
     int status;
     bytesBuf_t *versionBBuf = NULL;
@@ -1165,95 +1222,70 @@ sendVersion (int sock, int versionStatus, int reconnPort,
     /* alway use XML for version */
     status = packStruct ((char *) &myVersion, &versionBBuf,
                          "Version_PI", RodsPackTable, 0, XML_PROT);
-
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "sendVersion: packStruct error, status = %d", status);
-        return status;
+    if( status < 0 ) {
+        return ERROR( status, "packStruct error" );
     }
 
-    status = sendRodsMsg (sock, RODS_VERSION_T, versionBBuf, NULL, NULL, 0,
-                          XML_PROT);
-
-    freeBBuf (versionBBuf);
-
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "sendVersion: sendRodsMsg error, status = %d", status);
-        return status;
+    eirods::error ret = sendRodsMsg( 
+                            _ptr, 
+                            RODS_VERSION_T, 
+                            versionBBuf, 
+                            NULL, NULL, 0,
+                            XML_PROT );
+    freeBBuf( versionBBuf );
+    if( !ret.ok() ) {
+        return PASS( ret );
     }
 
-    return (status);
-}
+    return SUCCESS();
+
+} // sendVersion
 
 
-int
-sendRodsMsg (int sock, char *msgType, bytesBuf_t *msgBBuf, 
-             bytesBuf_t *byteStreamBBuf, bytesBuf_t *errorBBuf, int intInfo, 
-             irodsProt_t irodsProt)
-{
-    int status;
-    msgHeader_t msgHeader;
-    int bytesWritten;
+eirods::error sendRodsMsg(
+    eirods::network_object_ptr _ptr,
+    char*               _msg_type, 
+    bytesBuf_t*         _msg_buf, 
+    bytesBuf_t*         _bs_buf, 
+    bytesBuf_t*         _error_buf, 
+    int                 _int_info, 
+    irodsProt_t         _protocol ) {
+    // =-=-=-=-=-=-=-
+    // resolve a network interface plugin from the
+    // network object
+    eirods::network_ptr net;
+    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve network interface", ret_err );
 
-    memset (&msgHeader, 0, sizeof (msgHeader));
+    }
 
-    rstrcpy (msgHeader.type, msgType, HEADER_TYPE_LEN);
+    // =-=-=-=-=-=-=-
+    // make the call to the "write body" interface
+    eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    ret_err = net->call< char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >( 
+                  eirods::NETWORK_OP_WRITE_BODY, 
+                  ptr,
+                  _msg_type,
+                  _msg_buf,
+                  _bs_buf,
+                  _error_buf,
+                  _int_info,
+                  _protocol );
 
-    if (msgBBuf == NULL) {
-        msgHeader.msgLen = 0;
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'write body'", ret_err );
+
     } else {
-        msgHeader.msgLen = msgBBuf->len;
+        return CODE( ret_err.code() );
+
     }
 
-    if (byteStreamBBuf == NULL) {
-        msgHeader.bsLen = 0;
-    } else {
-        msgHeader.bsLen = byteStreamBBuf->len;
-    }
- 
-    if (errorBBuf == NULL) {
-        msgHeader.errorLen = 0;
-    } else { 
-        msgHeader.errorLen = errorBBuf->len;
-    }
+    return SUCCESS();
 
-    msgHeader.intInfo = intInfo;
-
-    status = writeMsgHeader (sock, &msgHeader);
-
-    if (status < 0)
-        return (status);
-
-    /* send the rest */
-
-    if (msgHeader.msgLen > 0) {
-        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
-            printf ("sending msg: \n%s\n", (char *) msgBBuf->buf);
-        }
-        status = myWrite (sock, msgBBuf->buf, msgBBuf->len, SOCK_TYPE, NULL);
-        if (status < 0) 
-            return (status);
-    }
-
-    if (msgHeader.errorLen > 0) {
-        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
-            printf ("sending error msg: \n%s\n", (char *) errorBBuf->buf);
-        }
-        status = myWrite (sock, errorBBuf->buf, errorBBuf->len, SOCK_TYPE, 
-                          NULL);
-        if (status < 0)
-            return (status);
-    }
-    if (msgHeader.bsLen > 0) {
-        status = myWrite (sock, byteStreamBBuf->buf,
-                          byteStreamBBuf->len, SOCK_TYPE, &bytesWritten);
-        if (status < 0)
-            return (status);
-    }
-
-    return (0);
-}
+} // sendRodsMsg
 
 int
 rodsSleep (int sec, int microSec)
@@ -1268,100 +1300,6 @@ rodsSleep (int sec, int microSec)
     return 0;
 }
 
-int
-readMsgBody (int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf, 
-             bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt,
-             struct timeval *tv)
-{
-    int nbytes;
-    int bytesRead;
-
-    if (myHeader == NULL) {
-        return (SYS_READ_MSG_BODY_INPUT_ERR);
-    }
-    if (inputStructBBuf != NULL)
-        memset (inputStructBBuf, 0, sizeof (bytesBuf_t));
-
-    /* Don't memset bsBBuf because bsBBuf can be reused on the client side */
-
-    if (errorBBuf != NULL)
-        memset (errorBBuf, 0, sizeof (bytesBuf_t));
-
-    if (myHeader->msgLen > 0) {
-        if (inputStructBBuf == NULL) {
-            return (SYS_READ_MSG_BODY_INPUT_ERR);
-        }
-
-        inputStructBBuf->buf = malloc (myHeader->msgLen);
-
-        nbytes = myRead (sock, inputStructBBuf->buf, myHeader->msgLen, 
-                         SOCK_TYPE, NULL, tv);
-
-        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
-            printf ("received msg: \n%s\n", (char *) inputStructBBuf->buf);
-        }
-
-        if (nbytes != myHeader->msgLen) {
-            rodsLog (LOG_NOTICE, 
-                     "readMsgBody: inputStruct read error, read %d bytes, expect %d",
-                     nbytes, myHeader->msgLen);
-            free (inputStructBBuf->buf);
-            return (SYS_HEADER_READ_LEN_ERR);
-        }
-        inputStructBBuf->len = myHeader->msgLen;
-    }
- 
-    if (myHeader->errorLen > 0) {
-        if (errorBBuf == NULL) {
-            return (SYS_READ_MSG_BODY_INPUT_ERR);
-        }
-
-        errorBBuf->buf = malloc (myHeader->errorLen);
-
-        nbytes = myRead (sock, errorBBuf->buf, myHeader->errorLen,
-                         SOCK_TYPE, NULL, tv);
-
-        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
-            printf ("received error msg: \n%s\n", (char *) errorBBuf->buf);
-        }
-
-        if (nbytes != myHeader->errorLen) {
-            rodsLog (LOG_NOTICE,
-                     "readMsgBody: errorBbuf read error, read %d bytes, expect %d, errno = %d",
-                     nbytes, myHeader->msgLen, errno);
-            free (errorBBuf->buf);
-            return (SYS_READ_MSG_BODY_LEN_ERR - errno);
-        }
-        errorBBuf->len = myHeader->errorLen;
-    }
-
-    if (myHeader->bsLen > 0) {
-        if (bsBBuf == NULL) {
-            return (SYS_READ_MSG_BODY_INPUT_ERR);
-        }
-
-        if (bsBBuf->buf == NULL) {
-            bsBBuf->buf = malloc (myHeader->bsLen);
-        } else if (myHeader->bsLen > bsBBuf->len) {
-            free (bsBBuf->buf);
-            bsBBuf->buf = malloc (myHeader->bsLen);
-        }
-
-        nbytes = myRead (sock, bsBBuf->buf, myHeader->bsLen, SOCK_TYPE,
-                         &bytesRead, tv);
-
-        if (nbytes != myHeader->bsLen) {
-            rodsLog (LOG_NOTICE, 
-                     "readMsgBody: bsBBuf read error, read %d bytes, expect %d, errno = %d",
-                     nbytes, myHeader->bsLen, errno);
-            free (bsBBuf->buf);
-            return (SYS_READ_MSG_BODY_INPUT_ERR - errno);
-        }
-        bsBBuf->len = myHeader->bsLen;
-    }
-
-    return (0);
-}
 
 char *
 rods_inet_ntoa (struct in_addr in)
@@ -1384,39 +1322,33 @@ rods_inet_ntoa (struct in_addr in)
 
     return (clHostAddr);
 }
-#if 0 // JMC - UNUSED 
-int
-irodsCloseSock (int sock)
-{
-#ifdef _WIN32
-    return (closesocket (sock));
-#else
-    return (close (sock));
-#endif /* WIN32 */
-}
-#endif // JMC - UNUSED 
-int
-readReconMsg (int sock, reconnMsg_t **reconnMsg)
-{
+
+// =-=-=-=-=-=-=-
+// 
+eirods::error readReconMsg( 
+    eirods::network_object_ptr _ptr, 
+    reconnMsg_t**       _msg ){
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-
-    status = readMsgHeader (sock, &myHeader, NULL);
-
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "readReconMsg: readMsgHeader error. status = %d", status);
-        return (status);
+    // =-=-=-=-=-=-=-
+    //  
+    eirods::error ret = readMsgHeader( _ptr, &myHeader, NULL );
+    if( !ret.ok() ) {
+        return PASSMSG( "read msg header error", ret );
     }
 
     memset (&bsBBuf, 0, sizeof (bytesBuf_t));  
-    status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf, 
-                          &errorBBuf, XML_PROT, NULL);
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-                      "readReconMsg: readMsgBody error. status = %d", status);
-        return (status);
+    ret = readMsgBody( 
+              _ptr, 
+              &myHeader, 
+              &inputStructBBuf, 
+              &bsBBuf, 
+              &errorBBuf, 
+              XML_PROT, 
+              NULL );
+    if( !ret.ok() ) {
+        return PASS( ret );
     }
 
     /* some sanity check */
@@ -1428,10 +1360,13 @@ readReconMsg (int sock, reconnMsg_t **reconnMsg)
             free (inputStructBBuf.buf);
         if (errorBBuf.buf != NULL)
             free (inputStructBBuf.buf);
-        rodsLog (LOG_NOTICE,
-                 "readReconMsg: wrong mag type - %s, expect %s",
-                 myHeader.type, RODS_CONNECT_T);
-        return (SYS_HEADER_TPYE_LEN_ERR);
+        std::stringstream msg;
+        msg << "wrong msg type ["
+            << myHeader.type
+            << "] expected ["
+            << RODS_CONNECT_T
+            << "]";
+        return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
     }
  
     if (myHeader.bsLen != 0) {
@@ -1455,55 +1390,90 @@ readReconMsg (int sock, reconnMsg_t **reconnMsg)
         rodsLog (LOG_NOTICE, 
                  "readReconMsg: problem with myHeader.msgLen = %d",
                  myHeader.msgLen);
-        return (SYS_HEADER_READ_LEN_ERR);
+        std::stringstream msg;
+        msg << "message length is invalid: "
+            << myHeader.msgLen;
+        return ERROR( SYS_HEADER_READ_LEN_ERR, msg.str() );
     }
 
     /* always use XML_PROT for the startup pack */
-    status = unpackStruct (inputStructBBuf.buf, (void **) reconnMsg, 
-                           "ReconnMsg_PI", RodsPackTable, XML_PROT);
-
+    status = unpackStruct( 
+                 inputStructBBuf.buf, 
+                 ( void** )( _msg ), 
+                 "ReconnMsg_PI", 
+                 RodsPackTable, 
+                 XML_PROT );
     clearBBuf (&inputStructBBuf);
-
     if (status < 0) {
         rodsLogError (LOG_NOTICE,  status,
                       "readReconMsg:unpackStruct error. status = %d",
                       status);
     } 
-    return (status);
+
+    return CODE(status);
 }
 
-int
-sendReconnMsg (int sock, reconnMsg_t *reconnMsg)
-{
-    int status;
-    bytesBuf_t *reconnMsgBBuf = NULL;
+// =-=-=-=-=-=-=-
+// interface for requesting a reconnection
+eirods::error sendReconnMsg(
+    eirods::network_object_ptr _ptr, 
+    reconnMsg_t*        _msg ) {
+    // =-=-=-=-=-=-=-
+    // trap invalid param 
+    if( _msg == NULL ) {
+        return ERROR( USER__NULL_INPUT_ERR, "null msg buf" );
+    }
 
-    if (reconnMsg == NULL) return (USER__NULL_INPUT_ERR);
+    // =-=-=-=-=-=-=-
+    // pack outgoing message - alway use XML for version 
+    bytesBuf_t* recon_buf = NULL;
+    int status = packStruct( 
+                     static_cast<void*>( _msg ), 
+                     &recon_buf,
+                     "ReconnMsg_PI", 
+                     RodsPackTable, 
+                     0, XML_PROT );
+    if( status < 0 ) {
+        return ERROR( status, "failed to pack struct" );
+    }
 
-    /* alway use XML for version */
-    status = packStruct ((char *) reconnMsg, &reconnMsgBBuf,
-                         "ReconnMsg_PI", RodsPackTable, 0, XML_PROT);
-
-    status = sendRodsMsg (sock, RODS_RECONNECT_T, reconnMsgBBuf,
-                          NULL, NULL, 0, XML_PROT);
-
-    freeBBuf (reconnMsgBBuf);
-
-    if (status < 0) {
+    // =-=-=-=-=-=-=-
+    // pack outgoing message - alway use XML for version 
+    eirods::error ret = sendRodsMsg(
+                           _ptr, 
+                           RODS_RECONNECT_T, 
+                           recon_buf,
+                           NULL, 
+                           NULL, 
+                           0, 
+                           XML_PROT );
+    freeBBuf( recon_buf );
+    if( !ret.ok() ) {
         rodsLogError (LOG_ERROR, status,
                       "sendReconnMsg: sendRodsMsg of reconnect msg failed, status = %d",
                       status);
     }
-    return (status);
-}
 
-int svrSwitchConnect (rsComm_t *rsComm)
-{
+    return CODE( status );
+
+} // sendReconnMsg
+
+int svrSwitchConnect(
+    rsComm_t *rsComm ) {
+    // =-=-=-=-=-=-=-
+    // construct a network object from the comm
+    eirods::network_object_ptr net_obj;
+    eirods::error ret = eirods::network_factory( rsComm, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     if (rsComm->reconnectedSock > 0) {
         if (rsComm->clientState == RECEIVING_STATE) {
             reconnMsg_t reconnMsg;
             bzero (&reconnMsg, sizeof (reconnMsg));
-            sendReconnMsg (rsComm->sock, &reconnMsg);
+            sendReconnMsg( net_obj, &reconnMsg );
             rsComm->clientState = PROCESSING_STATE;
         }
         close (rsComm->sock); 
@@ -1519,11 +1489,20 @@ int svrSwitchConnect (rsComm_t *rsComm)
 
 int cliSwitchConnect (rcComm_t *conn)
 {
+    // =-=-=-=-=-=-=-
+    // construct a network object from the comm
+    eirods::network_object_ptr net_obj;
+    eirods::error ret = eirods::network_factory( conn, net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
     if (conn->reconnectedSock > 0) {
         if (conn->agentState == RECEIVING_STATE) {
             reconnMsg_t reconnMsg;
             bzero (&reconnMsg, sizeof (reconnMsg));
-            sendReconnMsg (conn->sock, &reconnMsg);
+            sendReconnMsg( net_obj, &reconnMsg );
             conn->agentState = PROCESSING_STATE;
         }
         close (conn->sock);
@@ -1682,4 +1661,3 @@ mySockClose (int sock)
     return status;
 }
 
-#endif // USE_BOOST_ASIO 

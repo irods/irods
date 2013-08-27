@@ -83,13 +83,16 @@ remoteFileWrite (rsComm_t *rsComm, fileWriteInp_t *fileWriteInp,
 
 // =-=-=-=-=-=-=-
 // _rsFileWrite - this the local version of rsFileWrite.
-int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fileWriteInpBBuf ) {
+int _rsFileWrite( 
+    rsComm_t*       _comm, 
+    fileWriteInp_t* _write_inp, 
+    bytesBuf_t*     _write_bbuf ) {
     // =-=-=-=-=-=-=-
     // XXXX need to check resource permission and vault permission
     // when RCAT is available 
 
-    if(FileDesc[fileWriteInp->fileInx].objPath == NULL ||
-       FileDesc[fileWriteInp->fileInx].objPath[0] == '\0') {
+    if(FileDesc[_write_inp->fileInx].objPath == NULL ||
+       FileDesc[_write_inp->fileInx].objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -99,23 +102,25 @@ int _rsFileWrite( rsComm_t *rsComm, fileWriteInp_t *fileWriteInp, bytesBuf_t *fi
     
     // =-=-=-=-=-=-=-
     // make a call to the resource write
-    eirods::file_object file_obj( rsComm,
-                                  FileDesc[fileWriteInp->fileInx].objPath,
-                                  FileDesc[fileWriteInp->fileInx].fileName,
-                                  FileDesc[fileWriteInp->fileInx].rescHier,
-                                  FileDesc[fileWriteInp->fileInx].fd,
-                                  0, 0 ); 
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm,
+                                    FileDesc[_write_inp->fileInx].objPath,
+                                    FileDesc[_write_inp->fileInx].fileName,
+                                    FileDesc[_write_inp->fileInx].rescHier,
+                                    FileDesc[_write_inp->fileInx].fd,
+                                    0, 0 ) ); 
  
-    eirods::error write_err = fileWrite( rsComm,
+    eirods::error write_err = fileWrite( _comm,
                                          file_obj,										 
-                                         fileWriteInpBBuf->buf,
-                                         fileWriteInp->len );
+                                         _write_bbuf->buf,
+                                         _write_inp->len );
     // =-=-=-=-=-=-=-
     // log error if necessary
     if( !write_err.ok() ) {
         std::stringstream msg;
         msg << "fileWrite for [";
-        msg << file_obj.physical_path();
+        msg << file_obj->physical_path();
         msg << "]";
         eirods::error err = PASSMSG( msg.str(), write_err );
         eirods::log( err ); 

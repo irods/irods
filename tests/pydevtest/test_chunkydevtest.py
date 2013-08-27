@@ -59,7 +59,7 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"ils -A "+irodshome+"/icmdtest/foo1", "LIST", testuser1+"#"+irodszone+":read" )
         # basic replica
         assertiCmd(s.adminsession,"irepl -B -R "+self.testresc+" --rlock "+irodshome+"/icmdtest/foo1" )
-        assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", "1 "+self.testresc )
+        assertiCmd(s.adminsession,"ils -l "+irodshome+"/icmdtest/foo1", "LIST", self.testresc )
     
         # overwrite a copy
         assertiCmd(s.adminsession,"itrim -S "+irodsdefresource+" -N1 "+irodshome+"/icmdtest/foo1" )

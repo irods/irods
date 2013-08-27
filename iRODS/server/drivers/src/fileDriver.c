@@ -8,7 +8,7 @@
 #include "fileDriver.h"
 #include "eirods_log.h"
 #include "eirods_resource_plugin.h"
-#include "eirods_first_class_object.h"
+#include "eirods_data_object.h"
 #include "eirods_stacktrace.h"
 
 #include "eirods_resource_constants.h"
@@ -17,19 +17,13 @@ extern eirods::resource_manager resc_mgr;
 
 // =-=-=-=-=-=-=-
 // Top Level Inteface for Resource Plugin POSIX create
-eirods::error fileCreate( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-      
+eirods::error fileCreate( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         eirods::log( ret_err );
         return PASSMSG( "failed to resolve resource", ret_err );
@@ -52,19 +46,13 @@ eirods::error fileCreate( rsComm_t* _comm, eirods::first_class_object& _object )
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX open
-eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-
+eirods::error fileOpen( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -79,7 +67,7 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
         return PASSMSG( "failed to call 'open'", ret_err );
     
     } else {
-        return CODE( _object.file_descriptor() );
+        return CODE( ret_err.code() );
 
     }
 
@@ -87,11 +75,15 @@ eirods::error fileOpen( rsComm_t* _comm, eirods::first_class_object& _object ) {
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX read
-eirods::error fileRead( rsComm_t* _comm, eirods::first_class_object& _object, void* _buf, int _len ) {
+eirods::error fileRead( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    void*                          _buf, 
+    int                            _len ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -112,11 +104,15 @@ eirods::error fileRead( rsComm_t* _comm, eirods::first_class_object& _object, vo
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX write
-eirods::error fileWrite( rsComm_t* _comm, eirods::first_class_object& _object, void* _buf, int  _len ) {
+eirods::error fileWrite( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    void*                          _buf, 
+    int                            _len ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -139,19 +135,13 @@ eirods::error fileWrite( rsComm_t* _comm, eirods::first_class_object& _object, v
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX close
-eirods::error fileClose( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileClose( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -172,19 +162,13 @@ eirods::error fileClose( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX unlink
-eirods::error fileUnlink( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileUnlink( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -205,19 +189,14 @@ eirods::error fileUnlink( rsComm_t* _comm, eirods::first_class_object& _object )
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX stat
-eirods::error fileStat( rsComm_t* _comm, eirods::first_class_object& _object, struct stat* _statbuf ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-   
+eirods::error fileStat( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    struct stat*                   _statbuf ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -238,19 +217,14 @@ eirods::error fileStat( rsComm_t* _comm, eirods::first_class_object& _object, st
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX fstat
-eirods::error fileFstat( rsComm_t* _comm, eirods::first_class_object& _object, struct stat* _statbuf ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileFstat( 
+    rsComm_t   *                   _comm, 
+    eirods::first_class_object_ptr _object, 
+    struct stat*                   _statbuf ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -271,19 +245,15 @@ eirods::error fileFstat( rsComm_t* _comm, eirods::first_class_object& _object, s
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX lseek
-eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, long long _offset, int _whence ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "file name is empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileLseek( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    long long                      _offset, 
+    int                            _whence ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -304,19 +274,13 @@ eirods::error fileLseek( rsComm_t* _comm, eirods::first_class_object& _object, l
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX fsync
-eirods::error fileFsync( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileFsync - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileFsync( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -337,19 +301,13 @@ eirods::error fileFsync( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX mkdir
-eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileMkdir - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileMkdir( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -370,19 +328,13 @@ eirods::error fileMkdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rmdir
-eirods::error fileRmdir( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileRmdir - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileRmdir( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -403,19 +355,13 @@ eirods::error fileRmdir( rsComm_t* _comm, eirods::first_class_object& _object ) 
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX opendir
-eirods::error fileOpendir( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileOpendir - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileOpendir( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -436,19 +382,13 @@ eirods::error fileOpendir( rsComm_t* _comm, eirods::first_class_object& _object 
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX closedir
-eirods::error fileClosedir( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    //if( _object.physical_path().empty() ) {
-    //      eirods::error ret_err = ERROR( false, SYS_INVALID_INPUT_PARAM, "fileClosedir - File Name is Empty." );
-    //      eirods::log( ret_err );
-    //      return ret_err;
-    //}
-    
+eirods::error fileClosedir( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -469,11 +409,14 @@ eirods::error fileClosedir( rsComm_t* _comm, eirods::first_class_object& _object
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX readdir
-eirods::error fileReaddir( rsComm_t* _comm, eirods::first_class_object& _object, struct rodsDirent** _dirent_ptr ) {
+eirods::error fileReaddir( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    struct rodsDirent**            _dirent_ptr ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -494,21 +437,14 @@ eirods::error fileReaddir( rsComm_t* _comm, eirods::first_class_object& _object,
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX rename
-eirods::error fileRename( rsComm_t*                   _comm, 
-                          eirods::first_class_object& _object, 
-                          const std::string&          _new_file_name ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() || _new_file_name.empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileRename - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileRename( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    const std::string&             _new_file_name ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -529,19 +465,13 @@ eirods::error fileRename( rsComm_t*                   _comm,
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin freespace
-eirods::error fileGetFsFreeSpace( rsComm_t* _comm, eirods::first_class_object& _object ) {
-    // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
-        eirods::error ret_err = ERROR( SYS_INVALID_INPUT_PARAM, "fileGetFsFreeSpace - File Name is Empty." );
-        eirods::log( ret_err );
-        return ret_err;
-    }
-    
+eirods::error fileGetFsFreeSpace( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -562,9 +492,10 @@ eirods::error fileGetFsFreeSpace( rsComm_t* _comm, eirods::first_class_object& _
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin StageToCache
-eirods::error fileStageToCache( rsComm_t*                   _comm, 
-                                eirods::first_class_object& _object, 
-                                const std::string&          _cache_file_name ) {
+eirods::error fileStageToCache( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    const std::string&             _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _cache_file_name.empty() ) {
@@ -576,7 +507,7 @@ eirods::error fileStageToCache( rsComm_t*                   _comm,
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc );
+    eirods::error ret_err = _object->resolve( resc_mgr, resc );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -597,9 +528,10 @@ eirods::error fileStageToCache( rsComm_t*                   _comm,
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin SyncToArch
-eirods::error fileSyncToArch( rsComm_t*                   _comm, 
-                              eirods::first_class_object& _object, 
-                              const std::string&          _cache_file_name ) {
+eirods::error fileSyncToArch( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object, 
+    const std::string&             _cache_file_name ) {
     // =-=-=-=-=-=-=-
     // trap empty file name
     if( _cache_file_name.empty() ) {
@@ -611,7 +543,7 @@ eirods::error fileSyncToArch( rsComm_t*                   _comm,
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the path
     eirods::resource_ptr resc;
-    eirods::error ret_err = _object.resolve( resc_mgr, resc );
+    eirods::error ret_err = _object->resolve( resc_mgr, resc );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve resource", ret_err );
     }
@@ -630,104 +562,86 @@ eirods::error fileSyncToArch( rsComm_t*                   _comm,
 
 } // fileSyncToArch
 
+// =-=-=-=-=-=-=-
 // File registered with the database
 eirods::error fileRegistered(
-    rsComm_t* _comm,
-    eirods::first_class_object& _object ) {
+    rsComm_t*                      _comm,
+    eirods::first_class_object_ptr _object ) {
     eirods::error result = SUCCESS();
     eirods::error ret;
-    
     // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
+    // retrieve the resource name given the object
+    eirods::resource_ptr resc;
+    ret = _object->resolve( resc_mgr, resc ); 
+    if( !ret.ok() ) {
         std::stringstream msg;
         msg << __FUNCTION__;
-        msg << " - File name is empty.";
-        result = ERROR(-1, msg.str());
+        msg << " - Failed to resolve resource.";
+        result = PASSMSG(msg.str(), ret);
 
     } else {
         // =-=-=-=-=-=-=-
-        // retrieve the resource name given the object
-        eirods::resource_ptr resc;
-        ret = _object.resolve( resc_mgr, resc ); 
+        // make the call to the "registered" interface
+        ret = resc->call( _comm, eirods::RESOURCE_OP_REGISTERED, _object );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " - Failed to resolve resource.";
+            msg << " - Failed to call registered interface.";
             result = PASSMSG(msg.str(), ret);
-
-        } else {
-            // =-=-=-=-=-=-=-
-            // make the call to the "registered" interface
-            ret = resc->call( _comm, eirods::RESOURCE_OP_REGISTERED, _object );
-            if( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to call registered interface.";
-                result = PASSMSG(msg.str(), ret);
-            }
         }
     }
+
     return result;
 } // fileRegistered
 
+// =-=-=-=-=-=-=-
 // File unregistered with the database
 eirods::error fileUnregistered(
-    rsComm_t* _comm,
-    eirods::first_class_object& _object )
-{
+    rsComm_t*                      _comm,
+    eirods::first_class_object_ptr _object ) {
     eirods::error result = SUCCESS();
     eirods::error ret;
-    
     // =-=-=-=-=-=-=-
-    // trap empty file name
-    if( _object.physical_path().empty() ) {
+    // retrieve the resource name given the object
+    eirods::resource_ptr resc;
+    ret = _object->resolve( resc_mgr, resc ); 
+    if( !ret.ok() ) {
         std::stringstream msg;
         msg << __FUNCTION__;
-        msg << " - File name is empty.";
-        result = ERROR(-1, msg.str());
+        msg << " - Failed to resolve resource.";
+        result = PASSMSG(msg.str(), ret);
     } else {
-
+    
         // =-=-=-=-=-=-=-
-        // retrieve the resource name given the object
-        eirods::resource_ptr resc;
-        ret = _object.resolve( resc_mgr, resc ); 
+        // make the call to the "open" interface
+        ret = resc->call( _comm, eirods::RESOURCE_OP_UNREGISTERED, _object );
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
-            msg << " - Failed to resolve resource.";
+            msg << " - Failed to call unregistered interface.";
             result = PASSMSG(msg.str(), ret);
-        } else {
-        
-            // =-=-=-=-=-=-=-
-            // make the call to the "open" interface
-            ret = resc->call( _comm, eirods::RESOURCE_OP_UNREGISTERED, _object );
-            if( !ret.ok() ) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to call unregistered interface.";
-                result = PASSMSG(msg.str(), ret);
-            }
         }
     }
+
     return result;
 } // fileUnregistered
 
+// =-=-=-=-=-=-=-
 // File modified with the database
 eirods::error fileModified(
-    rsComm_t* _comm,
-    eirods::first_class_object& _object )
-{
+    rsComm_t*                      _comm,
+    eirods::first_class_object_ptr _object ) {
     eirods::error result = SUCCESS();
     eirods::error ret;
-
-    std::string resc_hier = _object.resc_hier();
+    // =-=-=-=-=-=-=-
+    // downcast - this must be called on a decendant of data object
+    eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _object );
+    std::string resc_hier = data_obj->resc_hier();
     if(!resc_hier.empty()) {
-        
         // =-=-=-=-=-=-=-
         // retrieve the resource name given the object
         eirods::resource_ptr resc;
-        ret = _object.resolve( resc_mgr, resc ); 
+        ret = _object->resolve( resc_mgr, resc ); 
         if( !ret.ok() ) {
             std::stringstream msg;
             msg << __FUNCTION__;
@@ -748,5 +662,7 @@ eirods::error fileModified(
     } else {
         // NOOP okay for struct file objects
     }
+
     return result;
+
 } // fileModified

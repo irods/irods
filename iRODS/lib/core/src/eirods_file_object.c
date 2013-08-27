@@ -20,15 +20,13 @@
 #include <boost/asio/ip/host_name.hpp>
 
 namespace eirods {
-
     // =-=-=-=-=-=-=-
     // public - ctor
     file_object::file_object() :
-        first_class_object(),
+        data_object(),
         size_(0),
         repl_requested_( -1 ),
-        in_pdmo_(false)
-    {
+        in_pdmo_(false) {
         memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
@@ -36,12 +34,20 @@ namespace eirods {
     // public - cctor
     file_object::file_object(
         const file_object& _rhs ) : 
-        first_class_object( _rhs ) {
+        data_object( _rhs ) {
+        // =-=-=-=-=-=-=-
+        // explicit initialization
+        comm_           = _rhs.comm_;
+        logical_path_   = _rhs.logical_path_;
+        data_type_      = _rhs.data_type_;
+        file_descriptor_= _rhs.file_descriptor_;
+        l1_desc_idx_    = _rhs.l1_desc_idx_;
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
         in_pdmo_        = _rhs.in_pdmo_;
         memset(&cond_input_, 0, sizeof(keyValPair_t));
+
     } // cctor 
 
     // =-=-=-=-=-=-=-
@@ -54,32 +60,33 @@ namespace eirods {
         int _fd,
         int _m,
         int _f ) :
-        first_class_object(),
+        data_object(
+            _fn,
+            _resc_hier,
+            _m,
+            _f ),
         size_( -1 ),
-        in_pdmo_(false)
-    {
-        logical_path(_logical_path);
-        comm_            = _c;
-        physical_path_   = _fn;
-        resc_hier_       = _resc_hier;
-        file_descriptor_ = _fd;
-        mode_            = _m;
-        flags_           = _f;
-        repl_requested_  = -1;
+        in_pdmo_(false),
+        logical_path_(_logical_path),
+        comm_(_c),
+        file_descriptor_(_fd),
+        repl_requested_(-1) {
+        // =-=-=-=-=-=-=-
+        // explicit initialization
         replicas_.empty();
         memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
     // from dataObjInfo
     file_object::file_object(
-        rsComm_t* _rsComm,
-        const dataObjInfo_t* _dataObjInfo)
-    {
-        comm_ = _rsComm;
+        rsComm_t*            _rsComm,
+        const dataObjInfo_t* _dataObjInfo ) {
         logical_path(_dataObjInfo->objPath);
-        physical_path_ = _dataObjInfo->filePath;
-        resc_hier_ = _dataObjInfo->rescHier;
-        flags_ = _dataObjInfo->flags;
+
+        comm_           = _rsComm;
+        physical_path_  = _dataObjInfo->filePath;
+        resc_hier_      = _dataObjInfo->rescHier;
+        flags_          = _dataObjInfo->flags;
         repl_requested_ = _dataObjInfo->replNum;
         replicas_.empty();
         // should mode be set here? - hcj
@@ -98,8 +105,13 @@ namespace eirods {
         const file_object& _rhs ) {
         // =-=-=-=-=-=-=-
         // call base class assignment first
-        first_class_object::operator=( _rhs );
-
+        data_object::operator=( _rhs );
+        
+        comm_           = _rhs.comm_;
+        logical_path_   = _rhs.logical_path_;
+        data_type_      = _rhs.data_type_;
+        file_descriptor_= _rhs.file_descriptor_;
+        l1_desc_idx_    = _rhs.l1_desc_idx_;
         size_           = _rhs.size_;
         repl_requested_ = _rhs.repl_requested_;
         replicas_       = _rhs.replicas_;
@@ -169,10 +181,26 @@ namespace eirods {
     } // resolve
 
     // =-=-=-=-=-=-=-
+    // plugin - resolve resource plugin for this object
+    error file_object::resolve( 
+        network_manager&,
+        network_ptr& ) {
+        return ERROR( SYS_INVALID_INPUT_PARAM,
+                      "network_manage is not supported" );
+    } // resolve
+
+    // =-=-=-=-=-=-=-
+    // public - get vars from object for rule engine 
+    error file_object::get_re_vars( 
+        keyValPair_t& _vars ) {
+        return SUCCESS();
+    } // get_re_vars 
+
+    // =-=-=-=-=-=-=-
     // static factory to create file_object from dataobjinfo linked list
-    error file_object_factory( rsComm_t*     _comm,
-                               dataObjInp_t* _data_obj_inp,
-                               file_object&  _file_obj ) {
+    error file_object_factory( rsComm_t*        _comm,
+                               dataObjInp_t*    _data_obj_inp,
+                               file_object_ptr  _file_obj ) {
         // =-=-=-=-=-=-=-
         // make a call to build the linked list 
         dataObjInfo_t* head_ptr = 0;
@@ -199,22 +227,22 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // start populating file_object
-        _file_obj.comm( _comm );
-        _file_obj.logical_path( _data_obj_inp->objPath );
-        _file_obj.resc_hier( head_ptr->rescHier );
-        _file_obj.cond_input( _data_obj_inp->condInput );
+        _file_obj->comm( _comm );
+        _file_obj->logical_path( _data_obj_inp->objPath );
+        _file_obj->resc_hier( head_ptr->rescHier );
+        _file_obj->cond_input( _data_obj_inp->condInput );
         
         // =-=-=-=-=-=-=-
         // handle requested repl number
         char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
         if( repl_num ) {
-            _file_obj.repl_requested( atoi( repl_num ) );
+            _file_obj->repl_requested( atoi( repl_num ) );
         }
 
         // handle the case where we are being called as part of a pdmo
         char* in_pdmo = getValByKey(&_data_obj_inp->condInput, IN_PDMO_KW);
         if(in_pdmo) {
-            _file_obj.in_pdmo(true);
+            _file_obj->in_pdmo(true);
         }
         
         // =-=-=-=-=-=-=-
@@ -254,7 +282,7 @@ namespace eirods {
 
         } // while
 
-        _file_obj.replicas( objects );
+        _file_obj->replicas( objects );
 
         //delete head_ptr->rescInfo;
         //free( head_ptr );

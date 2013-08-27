@@ -9,12 +9,12 @@
 
 // =-=-=-=-=-=-=-
 // eirods includes
-#include "eirods_first_class_object.h"
+#include "eirods_file_object.h"
 #include "eirods_log.h"
 
 namespace eirods {
 
-    class structured_object : public first_class_object {
+    class structured_object : public file_object {
     public:
         // =-=-=-=-=-=-=-
         // Constructors
@@ -34,6 +34,10 @@ namespace eirods {
         // plugin resolution operation
         virtual error resolve( resource_manager&, resource_ptr& );
                 
+        // =-=-=-=-=-=-=-
+        // accessor for rule engine variables
+        virtual error get_re_vars( keyValPair_t& );
+         
         // =-=-=-=-=-=-=-
         // Accessors
         inline rodsHostAddr_t addr()          const { return addr_;          }
@@ -67,6 +71,10 @@ namespace eirods {
         int            opr_type_;
 
     }; // class structured_object
+
+    /// =-=-=-=-=-=-=-
+    /// @brief typedef for shared structured object pointer
+    typedef boost::shared_ptr< structured_object > structured_object_ptr;
 
 }; // namespace eirods
 

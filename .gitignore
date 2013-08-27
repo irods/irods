@@ -10,12 +10,15 @@ iRODS/config/config.mk
 iRODS/config/irods.config
 iRODS/config/platform.mk
 iRODS/lib/core/include/eirods_ms_home.h
+iRODS/lib/core/include/eirods_network_home.h
 iRODS/lib/core/include/eirods_resources_home.h
 iRODS/server/config/server.config
 iRODS/server/re/include/reAction.h
 packaging/eirods.list
 packaging/eirods-dev.list
 packaging/eirods-icommands.list
+plugins/network/*/.deps
+plugins/network/*/.objs
 plugins/resources/Makefile
 plugins/resources/*/.deps
 plugins/resources/*/.objs

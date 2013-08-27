@@ -32,7 +32,10 @@ char *__loc1;
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_stacktrace.h"
+#include "eirods_network_factory.h"
 
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
@@ -347,6 +350,7 @@ svrPortalPutGet (rsComm_t *rsComm)
 #endif
 
     size0 = dataOprInp->dataSize / numThreads;
+
     size1 = dataOprInp->dataSize - size0 * (numThreads - 1);
     offset0 = dataOprInp->offset;
 
@@ -374,106 +378,109 @@ svrPortalPutGet (rsComm_t *rsComm)
           0, size0, offset0, flags);
     }
 
-    if (numThreads == 1) {
-        if (oprType == PUT_OPR) {
-            partialDataPut (&myInput[0]);
-	} else {
-            partialDataGet (&myInput[0]);
-	}
+        if (numThreads == 1) {
+            if (oprType == PUT_OPR) {
+                partialDataPut (&myInput[0]);
+        } else {
+                partialDataGet (&myInput[0]);
+        }
         CLOSE_SOCK (lsock);
 
-	return (myInput[0].status);
+	    return (myInput[0].status);
     } else {
 #ifdef PARA_OPR
-	rodsLong_t mySize = 0;
-	rodsLong_t myOffset = 0;
+        rodsLong_t mySize = 0;
+        rodsLong_t myOffset = 0;
 
         for (i = 1; i < numThreads; i++) {
-	    int l3descInx;
+            int l3descInx;
 
-    	    portalFd = acceptSrvPortal (rsComm, thisPortList);
-    	    if (portalFd < 0) {
-        	rodsLog (LOG_NOTICE,
-          	"svrPortalPut: acceptSrvPortal error. errno = %d",
-          	 errno);
+            portalFd = acceptSrvPortal (rsComm, thisPortList);
+            if (portalFd < 0) {
+                rodsLog (LOG_NOTICE,
+                "svrPortalPut: acceptSrvPortal error. errno = %d",
+                 errno);
 
-        	CLOSE_SOCK (lsock);
+                CLOSE_SOCK (lsock);
 
-        	return (portalFd);
-    	    }
-	    myOffset += size0;
-	    if (i < numThreads - 1) {
-		mySize = size0;
-	    } else {
-		mySize = size1;
-	    }
+                return (portalFd);
+            }
 
-	    if (oprType == PUT_OPR) {
-	        /* open the file */ 
-	        l3descInx = l3OpenByHost (rsComm, dataOprInp->destRescTypeInx, 
-	         dataOprInp->destL3descInx, O_WRONLY); 
-    	        fillPortalTransferInp (&myInput[i], rsComm,
-		 portalFd, l3descInx, 0, dataOprInp->destRescTypeInx,
-	          i, mySize, myOffset, flags);
-		#ifdef USE_BOOST
-		tid[i] = new boost::thread( partialDataPut, &myInput[i] );
-		#else
-                pthread_create (&tid[i], pthread_attr_default,
-                 (void *(*)(void *)) partialDataPut, (void *) &myInput[i]);
-    		#endif             
+            myOffset += size0;
 
-	    } else {	/* a get */
-                l3descInx = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
-                 dataOprInp->srcL3descInx, O_RDONLY);
-                fillPortalTransferInp (&myInput[i], rsComm,
-		 l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
+            if (i < numThreads - 1) {
+                mySize = size0;
+            } else {
+                mySize = size1;
+            }
+
+            if (oprType == PUT_OPR) {
+                /* open the file */ 
+                l3descInx = l3OpenByHost (rsComm, dataOprInp->destRescTypeInx, 
+                 dataOprInp->destL3descInx, O_WRONLY); 
+                    fillPortalTransferInp (&myInput[i], rsComm,
+             portalFd, l3descInx, 0, dataOprInp->destRescTypeInx,
                   i, mySize, myOffset, flags);
-		#ifdef USE_BOOST
-		tid[i] = new boost::thread( partialDataGet, &myInput[i] );
-		#else
-                pthread_create (&tid[i], pthread_attr_default,
-                 (void *(*)(void *)) partialDataGet, (void *) &myInput[i]);
-		#endif
-	    }
-	}
+            #ifdef USE_BOOST
+            tid[i] = new boost::thread( partialDataPut, &myInput[i] );
+            #else
+                    pthread_create (&tid[i], pthread_attr_default,
+                     (void *(*)(void *)) partialDataPut, (void *) &myInput[i]);
+                #endif             
 
-        /* spawn the first thread. do this last so the file will not be
-	 * closed */
-	if (oprType == PUT_OPR) {
-	    #ifdef USE_BOOST
-	    tid[0] = new boost::thread( partialDataPut, &myInput[0] );
+            } else {	/* a get */
+                    l3descInx = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
+                     dataOprInp->srcL3descInx, O_RDONLY);
+                    fillPortalTransferInp (&myInput[i], rsComm,
+             l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
+                      i, mySize, myOffset, flags);
+            #ifdef USE_BOOST
+            tid[i] = new boost::thread( partialDataGet, &myInput[i] );
             #else
-            pthread_create (&tid[0], pthread_attr_default,
-             (void *(*)(void *)) partialDataPut, (void *) &myInput[0]);
-	    #endif
-	} else {
-	    #ifdef USE_BOOST
-	    tid[0] = new boost::thread( partialDataGet, &myInput[0] );
-            #else
-            pthread_create (&tid[0], pthread_attr_default,
-             (void *(*)(void *)) partialDataGet, (void *) &myInput[0]);
-	    #endif
+                    pthread_create (&tid[i], pthread_attr_default,
+                     (void *(*)(void *)) partialDataGet, (void *) &myInput[i]);
+            #endif
+            }
+        } // for i
+
+            /* spawn the first thread. do this last so the file will not be
+         * closed */
+        if (oprType == PUT_OPR) {
+            #ifdef USE_BOOST
+            tid[0] = new boost::thread( partialDataPut, &myInput[0] );
+                #else
+                pthread_create (&tid[0], pthread_attr_default,
+                 (void *(*)(void *)) partialDataPut, (void *) &myInput[0]);
+            #endif
+        } else {
+            #ifdef USE_BOOST
+            tid[0] = new boost::thread( partialDataGet, &myInput[0] );
+                #else
+                pthread_create (&tid[0], pthread_attr_default,
+                 (void *(*)(void *)) partialDataGet, (void *) &myInput[0]);
+            #endif
         }
 
-        for ( i = 0; i < numThreads; i++) {
-	    if (tid[i] != 0)
-		#ifdef USE_BOOST
-		tid[i]->join();
-		#else
-                pthread_join (tid[i], NULL);
-		#endif
+        for ( i = 0; i < numThreads; i++) { 
+            if (tid[i] != 0)
+            #ifdef USE_BOOST
+            tid[i]->join();
+            #else
+                    pthread_join (tid[i], NULL);
+            #endif
             if (myInput[i].status < 0) {
                 retVal = myInput[i].status;
             }
-        }
+        } // for i
         CLOSE_SOCK (lsock);
-	return (retVal);
+	    return (retVal);
 
 #else	/* PARA_OPR */
         CLOSE_SOCK (lsock);
-	return (SYS_PARA_OPR_NO_SUPPORT);
+	    return (SYS_PARA_OPR_NO_SUPPORT);
 #endif	/* PARA_OPR */
-    }
+
+    } // else
 }
 
 int
@@ -1816,7 +1823,7 @@ reconnManager (rsComm_t *rsComm)
     int nSockets, nSelected;
     struct sockaddr_in  remoteAddr;
     socklen_t len;
-    int newSock, status;
+    int newSock;
     reconnMsg_t *reconnMsg;
     int acceptFailCnt = 0;
 
@@ -1839,104 +1846,119 @@ reconnManager (rsComm_t *rsComm)
             } else {
                 rodsLog (LOG_ERROR, "reconnManager: select failed, errno = %d",
                   errno);
-#ifdef USE_BOOST
-		boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
-#else
-	        pthread_mutex_lock (&rsComm->lock); // JMC :: FIXME
-#endif
-	        close (rsComm->reconnSock);
-	        rsComm->reconnSock = 0;
-#ifdef USE_BOOST
-		boost_lock.unlock();
-#else
-	        pthread_mutex_unlock (&rsComm->lock); // JMC :: FIXME
-#endif	
-	return;
-	    }
-	}
-	/* don't lock it yet until we are done with establishing a connection */
-	len = sizeof (remoteAddr);
-	bzero (&remoteAddr, sizeof (remoteAddr));
-        newSock = accept (rsComm->reconnSock, (struct sockaddr *) &remoteAddr, 
-	  &len);
-	if (newSock < 0) {
-	    acceptFailCnt++;
-	    rodsLog (LOG_ERROR, 
-	      "reconnManager: accept for sock %d failed, errno = %d",
-              rsComm->reconnSock, errno);
-	    if (acceptFailCnt > MAX_RECON_ERROR_CNT) {
-	        rodsLog (LOG_ERROR, 
-		  "reconnManager: accept failed cnt > 10, reconnManager exit");
-		close (rsComm->reconnSock);
-		rsComm->reconnSock = -1;
-		rsComm->reconnPort = 0;
-		return;
-	    } else {
-	        continue;
-	    }
-	}
-        if ((status = readReconMsg (newSock, &reconnMsg)) < 0) {
-            rodsLog (LOG_ERROR,
-              "reconnManager: readReconMsg error, status = %d", status);
-	    close (newSock);
-	    continue;
+                #ifdef USE_BOOST
+		        boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
+                #else
+	            pthread_mutex_lock (&rsComm->lock); // JMC :: FIXME
+                #endif
+                close (rsComm->reconnSock);
+                rsComm->reconnSock = 0;
+                #ifdef USE_BOOST
+		        boost_lock.unlock();
+                #else
+	            pthread_mutex_unlock (&rsComm->lock); // JMC :: FIXME
+                #endif	
+                return;
+            
+            } // else
+
+        } // while select
+
+        /* don't lock it yet until we are done with establishing a connection */
+        len = sizeof (remoteAddr);
+        bzero (&remoteAddr, sizeof (remoteAddr));
+            newSock = accept (rsComm->reconnSock, (struct sockaddr *) &remoteAddr, 
+          &len);
+        if (newSock < 0) {
+            acceptFailCnt++;
+            rodsLog (LOG_ERROR, 
+              "reconnManager: accept for sock %d failed, errno = %d",
+                  rsComm->reconnSock, errno);
+            if (acceptFailCnt > MAX_RECON_ERROR_CNT) {
+                rodsLog (LOG_ERROR, 
+              "reconnManager: accept failed cnt > 10, reconnManager exit");
+            close (rsComm->reconnSock);
+            rsComm->reconnSock = -1;
+            rsComm->reconnPort = 0;
+            return;
+            } else {
+                continue;
+            }
+        }
+        
+        // =-=-=-=-=-=-=-
+        // create a network object
+        eirods::network_object_ptr net_obj;
+        eirods::error ret = eirods::network_factory( rsComm, net_obj );
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );
+            return; 
+        }
+
+        // =-=-=-=-=-=-=-
+        // repave sock handle with new socket
+        net_obj->socket_handle( newSock );
+ 
+        ret = readReconMsg( net_obj, &reconnMsg );
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );
+            close (newSock);
+            continue;
         } else if (reconnMsg->cookie != rsComm->cookie) {
             rodsLog (LOG_ERROR,
             "reconnManager: cookie mistach, got = %d vs %d",
               reconnMsg->cookie, rsComm->cookie);
-	    close (newSock);
+            close (newSock);
             free (reconnMsg);
-	    continue;
+            continue;
         } 
 
 #ifdef USE_BOOST
-	boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
+        boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
 #else
-	pthread_mutex_lock (&rsComm->lock);
+        pthread_mutex_lock (&rsComm->lock);
 #endif
-	rsComm->clientState = reconnMsg->procState;
-	rsComm->reconnectedSock = newSock;
-	/* need to check agentState */
-	while (rsComm->agentState == SENDING_STATE) {
-	    /* have to wait until the agent stop sending */
-	    rsComm->reconnThrState = CONN_WAIT_STATE;
+        rsComm->clientState = reconnMsg->procState;
+        rsComm->reconnectedSock = newSock;
+        /* need to check agentState */
+        while (rsComm->agentState == SENDING_STATE) {
+            /* have to wait until the agent stop sending */
+            rsComm->reconnThrState = CONN_WAIT_STATE;
 #ifdef USE_BOOST
-	    rsComm->cond->wait( boost_lock );
+            rsComm->cond->wait( boost_lock );
 #else
-	    pthread_cond_wait (&rsComm->cond, &rsComm->lock);
+            pthread_cond_wait (&rsComm->cond, &rsComm->lock);
 #endif
-	}
-
-	rsComm->reconnThrState = PROCESSING_STATE;
-	bzero (reconnMsg, sizeof (procState_t));
-	reconnMsg->procState = rsComm->agentState;
-        status = sendReconnMsg (newSock, reconnMsg);
-	free (reconnMsg);
-	if (status < 0) {
-            rodsLog (LOG_ERROR,
-            "reconnManager: sendReconnMsg error. status =  %d",
-              status);
-            close (newSock);
-	    rsComm->reconnectedSock = 0;
-#ifdef USE_BOOST
-	    boost_lock.unlock();
-#else
-	    pthread_mutex_unlock (&rsComm->lock);
-#endif
-            continue;
         }
-	if (rsComm->agentState == PROCESSING_STATE) {
-            rodsLog (LOG_NOTICE,
-              "reconnManager: svrSwitchConnect. cliState = %d,agState=%d",
-              rsComm->clientState, rsComm->agentState);
-	    svrSwitchConnect (rsComm);
-	}
+       
+        rsComm->reconnThrState = PROCESSING_STATE;
+        bzero (reconnMsg, sizeof (procState_t));
+        reconnMsg->procState = rsComm->agentState;
+        ret = sendReconnMsg ( net_obj, reconnMsg);
+        free (reconnMsg);
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );          
+            close (newSock);
+            rsComm->reconnectedSock = 0;
 #ifdef USE_BOOST
-	boost_lock.unlock();
+            boost_lock.unlock();
 #else
-	pthread_mutex_unlock (&rsComm->lock);
+            pthread_mutex_unlock (&rsComm->lock);
 #endif
-    }
+                continue;
+            }
+        if (rsComm->agentState == PROCESSING_STATE) {
+                rodsLog (LOG_NOTICE,
+                  "reconnManager: svrSwitchConnect. cliState = %d,agState=%d",
+                  rsComm->clientState, rsComm->agentState);
+            svrSwitchConnect (rsComm);
+        }
+#ifdef USE_BOOST
+        boost_lock.unlock();
+#else
+        pthread_mutex_unlock (&rsComm->lock);
+#endif
+    } // while 1
 }
 
 int
@@ -2325,18 +2347,17 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
  */
 
 int
-readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
-{
+readStartupPack(
+    eirods::network_object_ptr _ptr, 
+    startupPack_t**     startupPack, 
+    struct timeval*     tv ) {
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-
-    status = readMsgHeader (sock, &myHeader, tv);
-
-   if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-          "readStartupPack: readMsgHeader error. status = %d", status);
-        return (status);
+    eirods::error ret = readMsgHeader( _ptr, &myHeader, tv );
+   if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );  
+        return ret.code();
     }
 
     if (myHeader.msgLen > (int) sizeof (startupPack_t) * 2 || 
@@ -2348,12 +2369,17 @@ readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
     }
 
     memset (&bsBBuf, 0, sizeof (bytesBuf_t));
-    status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf,
-      &errorBBuf, XML_PROT, tv);
-    if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
-          "readStartupPack: readMsgBody error. status = %d", status);
-        return (status);
+    ret = readMsgBody( 
+              _ptr, 
+              &myHeader, 
+              &inputStructBBuf, 
+              &bsBBuf,
+              &errorBBuf, 
+              XML_PROT, 
+              tv );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) ); 
+        return ret.code();
     }
 
     /* some sanity check */
@@ -2368,7 +2394,7 @@ readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
         rodsLog (LOG_NOTICE,
           "readStartupPack: wrong mag type - %s, expect %s",
           myHeader.type, RODS_CONNECT_T);
-          return (SYS_HEADER_TPYE_LEN_ERR);
+          return (SYS_HEADER_TYPE_LEN_ERR);
     }
 
     if (myHeader.bsLen != 0) {

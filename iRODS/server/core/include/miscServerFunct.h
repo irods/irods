@@ -31,6 +31,8 @@
 
 #include "structFileSync.h" /* JMC */
 
+#include "eirods_network_object.h"
+
 #define MAX_RECON_ERROR_CNT	10
 
 typedef struct PortalTransferInp {
@@ -132,7 +134,7 @@ int
 setupSrvPortalForParaOpr (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 int oprType, portalOprOut_t **portalOprOut);
 int
-readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv);
+readStartupPack ( eirods::network_object_ptr, startupPack_t **startupPack, struct timeval *tv);
 #ifdef RUN_SERVER_AS_ROOT
 int 
 initServiceUser ();

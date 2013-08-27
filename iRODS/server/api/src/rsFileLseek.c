@@ -80,10 +80,13 @@ remoteFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp,
 
 // =-=-=-=-=-=-=-
 // local function to handle call to stat via resource plugin
-int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t **fileLseekOut) {
+int _rsFileLseek(
+    rsComm_t*        _comm, 
+    fileLseekInp_t*  _lseek_inp, 
+    fileLseekOut_t** _lseek_out ) {
 
-    if(FileDesc[fileLseekInp->fileInx].objPath == NULL ||
-       FileDesc[fileLseekInp->fileInx].objPath[0] == '\0') {
+    if(FileDesc[_lseek_inp->fileInx].objPath == NULL ||
+       FileDesc[_lseek_inp->fileInx].objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -93,32 +96,38 @@ int _rsFileLseek (rsComm_t *rsComm, fileLseekInp_t *fileLseekInp, fileLseekOut_t
     
     // =-=-=-=-=-=-=-
     // make call to lseek via resource plugin
-    eirods::file_object file_obj( rsComm,
-                                  FileDesc[fileLseekInp->fileInx].objPath,
-                                  FileDesc[fileLseekInp->fileInx].fileName,
-                                  FileDesc[fileLseekInp->fileInx].rescHier,
-                                  FileDesc[fileLseekInp->fileInx].fd,
-                                  0, 0 );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm,
+                                    FileDesc[_lseek_inp->fileInx].objPath,
+                                    FileDesc[_lseek_inp->fileInx].fileName,
+                                    FileDesc[_lseek_inp->fileInx].rescHier,
+                                    FileDesc[_lseek_inp->fileInx].fd,
+                                    0, 0 ) );
 
-    eirods::error lseek_err = fileLseek( rsComm, 
-                                         file_obj,
-                                         fileLseekInp->offset, 
-                                         fileLseekInp->whence );
+    eirods::error lseek_err = fileLseek( 
+                                  _comm, 
+                                  file_obj,
+                                  _lseek_inp->offset, 
+                                  _lseek_inp->whence );
     // =-=-=-=-=-=-=-
     // handle error conditions and log
     if( !lseek_err.ok() ) {
         std::stringstream msg;
         msg << "lseek failed for [";
-        msg << FileDesc[fileLseekInp->fileInx].fileName;
+        msg << FileDesc[_lseek_inp->fileInx].fileName;
         msg << "]"; 
         eirods::error ret_err = PASSMSG( msg.str(), lseek_err );
         eirods::log( ret_err );
+
         return lseek_err.code();
 
     } else {
-        *fileLseekOut = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
-        memset (*fileLseekOut, 0, sizeof (fileLseekOut_t));
-        (*fileLseekOut)->offset = lseek_err.code();
+        (*_lseek_out ) = (fileLseekOut_t*)malloc (sizeof (fileLseekOut_t));
+        memset( (*_lseek_out ), 0, sizeof( fileLseekOut_t ) );
+
+        (*_lseek_out )->offset = lseek_err.code();
+
         return 0;
     }
 

@@ -67,10 +67,11 @@ int _rsSubStructFileUnlink( rsComm_t*  _comm,
                             subFile_t* _sub_file ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj( *_sub_file );
-    struct_obj.comm( _comm );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                          *_sub_file ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to unlink
@@ -78,7 +79,7 @@ int _rsSubStructFileUnlink( rsComm_t*  _comm,
     if( !unlink_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileUnlink for [";
-        msg << struct_obj.physical_path();
+        msg << struct_obj->physical_path();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), unlink_err ) );
         return unlink_err.code();

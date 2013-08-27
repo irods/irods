@@ -80,14 +80,17 @@ remoteFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp,
 
 // =-=-=-=-=-=-=-
 // local function which makes the call to rename via the resource plugin
-int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerHost_t *rodsServerHost) {
+int _rsFileRename(
+    rsComm_t*         _comm, 
+    fileRenameInp_t*  _rename_inp, 
+    rodsServerHost_t* _server_host ) {
     // =-=-=-=-=-=-=-
     // FIXME: need to check resource permission and vault permission
     // when RCAT is available 
   
-    // mkDirForFilePath( rsComm, "/", fileRenameInp->newFileName, getDefDirMode () ); - The actual file path depends on the resource
+    // mkDirForFilePath( _comm, "/", _rename_inp->newFileName, getDefDirMode () ); - The actual file path depends on the resource
 
-    if(fileRenameInp->objPath[0] == '\0') {
+    if(_rename_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -97,17 +100,23 @@ int _rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp, rodsServerH
     
     // =-=-=-=-=-=-=-
     // make the call to rename via the resource plugin
-    eirods::file_object file_obj( rsComm, fileRenameInp->objPath, fileRenameInp->oldFileName, fileRenameInp->rescHier, 0, 0, 0 );
-    eirods::error rename_err = fileRename( rsComm, file_obj, fileRenameInp->newFileName );
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object( 
+                                    _comm, 
+                                    _rename_inp->objPath, 
+                                    _rename_inp->oldFileName, 
+                                    _rename_inp->rescHier, 
+                                    0, 0, 0 ) );
+    eirods::error rename_err = fileRename( _comm, file_obj, _rename_inp->newFileName );
 
     // =-=-=-=-=-=-=-
     // report errors if any
     if( !rename_err.ok() ) {
         std::stringstream msg;
         msg << "fileRename failed for [";
-        msg << fileRenameInp->oldFileName;
+        msg << _rename_inp->oldFileName;
         msg << "] to [";
-        msg << fileRenameInp->newFileName;
+        msg << _rename_inp->newFileName;
         msg << "]";
         eirods::error err = PASSMSG( msg.str(), rename_err );
         eirods::log ( err );

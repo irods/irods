@@ -21,17 +21,19 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
 	// public - ctor with opreation
-    operation_wrapper::operation_wrapper( const std::string& _inst_name,
-                                          const std::string& _op_name,
-                                          resource_operation _op ) : 
-                                          operation_( _op ),
-                                          instance_name_( _inst_name ),
-                                          operation_name_( _op_name ) {
+    operation_wrapper::operation_wrapper( 
+        const std::string& _inst_name,
+        const std::string& _op_name,
+        plugin_operation _op ) : 
+        operation_( _op ),
+        instance_name_( _inst_name ),
+        operation_name_( _op_name ) {
 	} // ctor
 
     // =-=-=-=-=-=-=-
 	// public - cctor
-    operation_wrapper::operation_wrapper( const operation_wrapper& _rhs ) {
+    operation_wrapper::operation_wrapper( 
+        const operation_wrapper& _rhs ) {
 		operation_      = _rhs.operation_;
 		instance_name_  = _rhs.instance_name_;
 		operation_name_ = _rhs.operation_name_;
@@ -44,7 +46,8 @@ namespace eirods {
    
     // =-=-=-=-=-=-=-
 	// public - assignment for stl container
-	operation_wrapper& operation_wrapper::operator=( const operation_wrapper& _rhs ) {
+	operation_wrapper& operation_wrapper::operator=( 
+        const operation_wrapper& _rhs ) {
 		operation_      = _rhs.operation_;
 		instance_name_  = _rhs.instance_name_;
 		operation_name_ = _rhs.operation_name_;

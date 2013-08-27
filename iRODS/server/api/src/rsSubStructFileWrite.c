@@ -66,25 +66,30 @@ bytesBuf_t *subStructFileWriteOutBBuf, rodsServerHost_t *rodsServerHost)
     return status;
 }
 
-int _rsSubStructFileWrite( rsComm_t*                _comm, 
-                           subStructFileFdOprInp_t* _write_inp,
-                           bytesBuf_t*              _out_buf ) {
+int _rsSubStructFileWrite( 
+    rsComm_t*                _comm, 
+    subStructFileFdOprInp_t* _write_inp,
+    bytesBuf_t*              _out_buf ) {
     // =-=-=-=-=-=-=-
     // create first class structured object 
-    eirods::structured_object struct_obj;
-    struct_obj.addr( _write_inp->addr );
-    struct_obj.file_descriptor( _write_inp->fd );
-    struct_obj.comm( _comm );
-
-    struct_obj.resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object(  ) );
+    struct_obj->comm( _comm );
+    struct_obj->resc_hier( eirods::EIRODS_LOCAL_USE_ONLY_RESOURCE );
+    struct_obj->file_descriptor( _write_inp->fd );
+    struct_obj->addr( _write_inp->addr );
 
     // =-=-=-=-=-=-=-
     // call abstrcated interface to write
-    eirods::error write_err = fileWrite( _comm, struct_obj, _out_buf->buf, _out_buf->len );
+    eirods::error write_err = fileWrite( 
+                                  _comm, 
+                                  struct_obj, 
+                                  _out_buf->buf, 
+                                  _out_buf->len );
     if( !write_err.ok() ) {
         std::stringstream msg;
         msg << "failed on call to fileWrite for [";
-        msg << struct_obj.physical_path();
+        msg << struct_obj->physical_path();
         msg << "]";
         eirods::log( PASSMSG( msg.str(), write_err ) );
         return write_err.code();

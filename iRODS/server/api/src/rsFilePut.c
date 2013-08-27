@@ -96,20 +96,23 @@ remoteFilePut (rsComm_t *rsComm, fileOpenInp_t *filePutInp,
 
 // =-=-=-=-=-=-=-
 // local implementation of put
-int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePutInpBBuf, 
-                rodsServerHost_t *rodsServerHost ) {
+int _rsFilePut( 
+    rsComm_t*         _comm, 
+    fileOpenInp_t*    _put_inp, 
+    bytesBuf_t*       _put_bbuf, 
+    rodsServerHost_t* _server_host ) {
     int fd = 0;
 
     // =-=-=-=-=-=-=-
     // NOTE:: this test does not seem to work for i86 solaris 
-    if( ( filePutInp->otherFlags & FORCE_FLAG ) != 0 ) {
+    if( ( _put_inp->otherFlags & FORCE_FLAG ) != 0 ) {
         // =-=-=-=-=-=-=-
         // create one if it does not exist */
-        filePutInp->flags |= O_CREAT;
-        fd = _rsFileOpen( rsComm, filePutInp );
+        _put_inp->flags |= O_CREAT;
+        fd = _rsFileOpen( _comm, _put_inp );
 
     } else {
-        fd = _rsFileCreate( rsComm, filePutInp, rodsServerHost );
+        fd = _rsFileCreate( _comm, _put_inp, _server_host );
 
     } // else
 
@@ -119,16 +122,16 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
         if (getErrno (fd) == EEXIST) {
             rodsLog (LOG_DEBUG1,
                      "_rsFilePut: filePut for %s, status = %d",
-                     filePutInp->fileName, fd);
+                     _put_inp->fileName, fd);
         } else {
             rodsLog (LOG_NOTICE, 
                      "_rsFilePut: filePut for %s, status = %d",
-                     filePutInp->fileName, fd);
+                     _put_inp->fileName, fd);
         }
         return (fd);
     }
 
-    if(filePutInp->objPath[0] == '\0') {
+    if(_put_inp->objPath[0] == '\0') {
         std::stringstream msg;
         msg << __FUNCTION__;
         msg << " - Empty logical path.";
@@ -138,27 +141,32 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
     
     // =-=-=-=-=-=-=-
     // call write for resource plugin
-    eirods::file_object file_obj( rsComm, filePutInp->objPath, filePutInp->fileName, filePutInp->resc_hier_, fd, 0, 0 );
-    if(filePutInp->in_pdmo != 0) {
-        file_obj.in_pdmo(true);
+    eirods::file_object_ptr file_obj( 
+                                new eirods::file_object(
+                                    _comm, 
+                                    _put_inp->objPath, 
+                                    _put_inp->fileName, 
+                                    _put_inp->resc_hier_, 
+                                    fd, 0, 0 ) );
+    if(_put_inp->in_pdmo != 0) {
+        file_obj->in_pdmo(true);
     } else {
-        file_obj.in_pdmo(false);
+        file_obj->in_pdmo(false);
     }
-    eirods::error write_err = fileWrite( rsComm,
+    eirods::error write_err = fileWrite( _comm,
                                          file_obj, 
-                                         filePutInpBBuf->buf, 
-                                         filePutInpBBuf->len );
+                                         _put_bbuf->buf, 
+                                         _put_bbuf->len );
     int write_code = write_err.code();
     // =-=-=-=-=-=-=-
     // log errors, if any
-    //if ( !write_code || write_code != filePutInpBBuf->len ) {
-    if ( write_code != filePutInpBBuf->len ) {
+    if ( write_code != _put_bbuf->len ) {
         if( write_code >= 0 ) {
             std::stringstream msg;
             msg << "fileWrite failed for [";
-            msg << filePutInp->fileName;
+            msg << _put_inp->fileName;
             msg << "] towrite [";
-            msg << filePutInpBBuf->len;
+            msg << _put_bbuf->len;
             msg << "]";
             eirods::error err = PASSMSG( msg.str(), write_err );
             eirods::log ( err );
@@ -166,7 +174,7 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
         } else {
             std::stringstream msg;
             msg << "fileWrite failed for [";
-            msg << filePutInp->fileName;
+            msg << _put_inp->fileName;
             msg << "]";
             eirods::error err = PASSMSG( msg.str(), write_err );
             eirods::log ( err );
@@ -175,7 +183,7 @@ int _rsFilePut( rsComm_t *rsComm, fileOpenInp_t *filePutInp, bytesBuf_t *filePut
    
     // =-=-=-=-=-=-=-
     // close up after ourselves 
-    eirods::error close_err = fileClose( rsComm,
+    eirods::error close_err = fileClose( _comm,
                                          file_obj );
     if( !close_err.ok() ) {
         eirods::error err = PASSMSG( "error on close", close_err );

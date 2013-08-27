@@ -128,24 +128,26 @@ int _rsStructFileExtract( rsComm_t*           _comm,
     // =-=-=-=-=-=-=-
     // create a structured fco and resolve a resource plugin
     // to handle the extract process
-    eirods::structured_object struct_obj;
-    struct_obj.spec_coll( _struct_inp->specColl );
-    struct_obj.addr( _struct_inp->addr );
-    struct_obj.flags( _struct_inp->flags );
-    struct_obj.comm( _comm );
-    struct_obj.opr_type( _struct_inp->oprType );
+    eirods::structured_object_ptr struct_obj( 
+                                      new eirods::structured_object( 
+                                           ) );
+    struct_obj->spec_coll( _struct_inp->specColl );
+    struct_obj->addr( _struct_inp->addr );
+    struct_obj->flags( _struct_inp->flags );
+    struct_obj->comm( _comm );
+    struct_obj->opr_type( _struct_inp->oprType );
 
     // =-=-=-=-=-=-=-
     // extract the data type
     char* data_type = getValByKey( &_struct_inp->condInput, DATA_TYPE_KW );
     if( data_type ) {
-        struct_obj.data_type( data_type );
+        struct_obj->data_type( data_type );
     } 
 
     // =-=-=-=-=-=-=-
 	// retrieve the resource name given the object
 	eirods::resource_ptr resc;
-    eirods::error ret_err = struct_obj.resolve( resc_mgr, resc ); 
+    eirods::error ret_err = struct_obj->resolve( resc_mgr, resc ); 
 	if( !ret_err.ok() ) {
 		eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
         eirods::log( err );
