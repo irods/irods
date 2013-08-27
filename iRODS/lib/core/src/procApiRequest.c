@@ -242,7 +242,13 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
         } // if svrVersion != NULL ...
 //#endif
 
-    } // if !ret.ok
+    } else {
+        // =-=-=-=-=-=-=-
+        // be sure to pass along the return code from the
+        // plugin call
+        status = ret.code();
+
+    }
 
     freeBBuf (inputStructBBuf);
 
