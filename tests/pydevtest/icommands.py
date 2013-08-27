@@ -276,6 +276,8 @@ class RodsSession(object):
                         # added for test_allrules.py
                         'irule',
                         'iqdel',
+                        # added for ticket_suite.py
+                        'iticket',
                      ]
 
         if icommand not in valid_cmds:
