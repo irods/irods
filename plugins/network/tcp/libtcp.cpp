@@ -18,6 +18,7 @@
 // stl includes
 #include <sstream>
 #include <string>
+#include <iostream>
 
 extern "C" {
     // =-=-=-=-=-=-=-

@@ -295,15 +295,18 @@ int rcDisconnect(
     }
 
     // =-=-=-=-=-=-=-
-    // disable SSL if previously requested
+    // shut down any network plugin activitiy
     if(  _conn->ssl_on ) {
-        printf( "DISABLE SSL\n" );
-        // JMC - this is off until we have network plugins :: sslEnd(  _conn );
-    
+        ret = sockClientStop( net_obj );
+        if( !ret.ok() ) {
+            eirods::log( PASS( ret ) );
+        }
+
+        net_obj->to_client( _conn ); 
     }
 
     /* need to call asio close if USE_BOOST_ASIO */
-    close ( _conn->sock);
+    close( _conn->sock );
 
 #ifdef USE_BOOST
 // FIXME:: Address Sockets Here As Well

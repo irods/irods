@@ -32,15 +32,15 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // table is indexed as[ CLIENT ][ SERVER ] 
-            client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL;      // REQ, REQ
-            client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL;      // REQ, DC
-            client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE;      // REQ, REF
-            client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL;      // DC,  REQ
-            client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL;      // DC,  DC
-            client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_DONT_USE_SSL; // DC,  REF
-            client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE;      // REF, REQ
-            client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_DONT_USE_SSL; // REF, DC
-            client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_DONT_USE_SSL; // REF, REF
+            client_server_negotiations_table[ 0 ][ 0 ] = CS_NEG_USE_SSL; // REQ, REQ
+            client_server_negotiations_table[ 0 ][ 1 ] = CS_NEG_USE_SSL; // REQ, DC
+            client_server_negotiations_table[ 0 ][ 2 ] = CS_NEG_FAILURE; // REQ, REF
+            client_server_negotiations_table[ 1 ][ 0 ] = CS_NEG_USE_SSL; // DC,  REQ
+            client_server_negotiations_table[ 1 ][ 1 ] = CS_NEG_USE_SSL; // DC,  DC
+            client_server_negotiations_table[ 1 ][ 2 ] = CS_NEG_USE_TCP; // DC,  REF
+            client_server_negotiations_table[ 2 ][ 0 ] = CS_NEG_FAILURE; // REF, REQ
+            client_server_negotiations_table[ 2 ][ 1 ] = CS_NEG_USE_TCP; // REF, DC
+            client_server_negotiations_table[ 2 ][ 2 ] = CS_NEG_USE_TCP; // REF, REF
            
         } // ctor
 
@@ -71,7 +71,7 @@ namespace eirods {
             // =-=-=-=-=-=-=-
             // politely ask for the SSL usage results
             _result = client_server_negotiations_table[ cli_idx ][ svr_idx ];
-std::cout << "client_server_negotiations_context - result [" << _result << "]" << std::endl;
+
             return SUCCESS();
 
         } // operator()
@@ -99,6 +99,8 @@ std::cout << "client_server_negotiations_context - result [" << _result << "]" <
         if( !opt_ptr || strlen( opt_ptr ) == 0 ) {
             return false;
         }
+        
+        std::cout << "opt_ptr [" << opt_ptr << "]" << std::endl;
 
         // =-=-=-=-=-=-=-
         // if it is set then check for our magic token which requests 

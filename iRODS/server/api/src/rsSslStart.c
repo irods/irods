@@ -9,7 +9,7 @@ int
 rsSslStart(rsComm_t *rsComm, sslStartInp_t *sslStartInp)
 {
 #if defined(USE_SSL)
-
+rodsLog( LOG_NOTICE, "XXXX - rsSslStart :: START" );
     /* if SSL is on already, just return success */
     if (rsComm->ssl_on) {
         return 0;
@@ -19,6 +19,7 @@ rsSslStart(rsComm_t *rsComm, sslStartInp_t *sslStartInp)
        setup SSL before the next API call */
     rsComm->ssl_do_accept = 1;
     
+rodsLog( LOG_NOTICE, "XXXX - rsSslStart :: DONE" );
     return 0;
 #else
     return SSL_NOT_BUILT_INTO_SERVER;

@@ -53,6 +53,7 @@ connToutHandler (int sig)
 //
 eirods::error sockClientStart( 
     eirods::network_object_ptr _ptr ) {
+printf( "XXXX - sockClientStart :: START\n" );
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -73,6 +74,7 @@ eirods::error sockClientStart(
         return PASSMSG( "failed to call 'client start'", ret_err );
 
     } else {
+printf( "XXXX - sockClientStart :: done %d\n", ret_err.code() );
         return CODE( ret_err.code() );
 
     }
@@ -112,7 +114,8 @@ eirods::error sockClientStop(
 // =-=-=-=-=-=-=-
 //
 eirods::error sockAgentStart( 
-    eirods::network_object_ptr _ptr ) {                                                                                 
+    eirods::network_object_ptr _ptr ) {
+printf( "XXXX - sockAgentStart :: START\n" );
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -124,7 +127,9 @@ eirods::error sockAgentStart(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+printf( "XXXX - sockAgentStart :: calling NETWORK_OP_AGENT_START\n" );
     ret_err = net->call( eirods::NETWORK_OP_AGENT_START, _ptr );
+printf( "XXXX - sockAgentStart :: calling NETWORK_OP_AGENT_START. done %d\n", ret_err.code() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -132,6 +137,7 @@ eirods::error sockAgentStart(
         return PASSMSG( "failed to call 'agent start'", ret_err );
    
     } else {
+printf( "XXXX - sockAgentStart :: done %d\n", ret_err.code() );
         return CODE( ret_err.code() );
     
     }
@@ -412,7 +418,7 @@ rsAcceptConn (rsComm_t *svrComm)
 // 
 eirods::error writeMsgHeader(
     eirods::network_object_ptr _ptr,
-    msgHeader_t*        _header ) {
+    msgHeader_t*               _header ) {
     // =-=-=-=-=-=-=-
     // always use XML_PROT for the Header 
     bytesBuf_t* header_buf = 0;
@@ -800,6 +806,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
     if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
         return ret.code();    
     }
 
@@ -814,18 +821,24 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
                   net_obj, 
                   results ); 
         if( !ret.ok() ) {
-            //eirods::log( PASS( err ) ); 
+            printf( "connectToRhost - client_server_negotiation_for_client failed. [%s]-[%d]",
+                    ret.result().c_str(), ret.code() );
             return ret.code();    
         }
+
         
         // =-=-=-=-=-=-=-
         // enable SSL if requested 
         // NOTE:: this is disabled in rcDisconnect if the conn->ssl_on flag is set
-        if( eirods::CS_NEG_USE_SSL == results ) {
-            // JMC - off until we have net plugins :: sslStart( conn );
+        if( eirods::CS_NEG_USE_SSL == eirods::CS_NEG_FAILURE ) {
+            printf( "connectToRhost - failed in client-server negotiations\n" );
         } 
     
+        // =-=-=-=-=-=-=-
+        // copy results to connection for network object factory
+        strncpy( conn->negotiation_results, results.c_str(), MAX_NAME_LEN );
     }
+
     
     ret = readVersion( net_obj, &conn->svrVersion );
     if( !ret.ok() ) {
@@ -846,9 +859,27 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         close (conn->sock);
         return conn->svrVersion->status;
     }
+    
+    // =-=-=-=-=-=-=-
+    // call initialization for network plugin as negotiated 
+    eirods::network_object_ptr new_net_obj;
+    ret = eirods::network_factory( conn, new_net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    ret = sockClientStart( new_net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    new_net_obj->to_client( conn );
 
     return 0;
-}
+
+} // connectToRhost
 
 int
 connectToRhostWithRaddr (struct sockaddr_in *remoteAddr, int windowSize, 

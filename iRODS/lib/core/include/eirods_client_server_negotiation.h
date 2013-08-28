@@ -43,7 +43,7 @@ namespace eirods {
     /// @brief constants for connection choices made by the negotiation
     const std::string CS_NEG_FAILURE( "CS_NEG_FAILURE" );
     const std::string CS_NEG_USE_SSL( "CS_NEG_USE_SSL" );
-    const std::string CS_NEG_DONT_USE_SSL( "CS_NEG_DONT_USE_SSL" );
+    const std::string CS_NEG_USE_TCP( "CS_NEG_USE_TCP" );
 
     const std::string CS_NEG_REQUIRE( "CS_NEG_REQUIRE" );     // index 0
     const std::string CS_NEG_REFUSE( "CS_NEG_REFUSE" );       // index 1

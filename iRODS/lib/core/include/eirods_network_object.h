@@ -36,6 +36,7 @@ namespace eirods {
         // Operators
         virtual network_object& operator=( const network_object& );
 
+        // =-=-=-=-=-=-=-
         /// @brief Comparison operator
         virtual bool operator==( const network_object& _rhs ) const;
         
@@ -44,6 +45,14 @@ namespace eirods {
         virtual error resolve( resource_manager&, resource_ptr& ) = 0;
         virtual error resolve( network_manager&,  network_ptr&  ) = 0;
         
+        // =-=-=-=-=-=-=-
+        // convertion to client comm ptr
+        virtual error to_client( rcComm_t* );
+         
+        // =-=-=-=-=-=-=-
+        // convertion to client comm ptr
+        virtual error to_server( rsComm_t* );
+
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables
         virtual error get_re_vars( keyValPair_t& );

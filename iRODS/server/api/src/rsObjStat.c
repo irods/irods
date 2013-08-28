@@ -40,36 +40,36 @@ rodsObjStat_t **rodsObjStatOut)
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     } else {
-	if (isLocalZone (dataObjInp->objPath)) {
-	    /* see if it is a sub path of a specColl cached locally. If it is,
-	     * it will save time resolving it */
-            status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1,
-              rodsObjStatOut);
-	    if (status >= 0) {
-		/* the path is in a specColl */
-		return status;
-	    } else if (status != SYS_SPEC_COLL_NOT_IN_CACHE) {
-		/* path is in the path of specColl cache but does not exist */
+        if (isLocalZone (dataObjInp->objPath)) {
+            /* see if it is a sub path of a specColl cached locally. If it is,
+             * it will save time resolving it */
+            status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1, rodsObjStatOut);
+                  
+            if (status >= 0) {
+                /* the path is in a specColl */
+                return status;
+            } else if (status != SYS_SPEC_COLL_NOT_IN_CACHE) {
+                /* path is in the path of specColl cache but does not exist */
                 if (linkCnt > 0 && *rodsObjStatOut != NULL) {
-		    /* a soft link - returns specColl */
+                    /* a soft link - returns specColl */
                     if ((*rodsObjStatOut)->specColl == NULL) {
-                        replSpecColl (&specCollCache->specColl,
-                          &(*rodsObjStatOut)->specColl);
+                            replSpecColl (&specCollCache->specColl,
+                              &(*rodsObjStatOut)->specColl);
                     }
-                    rstrcpy ((*rodsObjStatOut)->specColl->objPath, 
-		      dataObjInp->objPath, MAX_NAME_LEN);
+                    rstrcpy((*rodsObjStatOut)->specColl->objPath, 
+                             dataObjInp->objPath, MAX_NAME_LEN);
                 }
-		return status;
-	    }
-	    /* falls through if the path is not in a cached specColl */
-	}
-	/* not in cache, need to do a remote call */
-        status = rcObjStat (rodsServerHost->conn, dataObjInp, 
-	  rodsObjStatOut);
-	if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
-	    /* queue it in cache */
-	    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
-	}
+            
+                return status;
+            }
+            /* falls through if the path is not in a cached specColl */
+        }
+        /* not in cache, need to do a remote call */
+        status = rcObjStat (rodsServerHost->conn, dataObjInp, rodsObjStatOut);
+        if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
+            /* queue it in cache */
+            queueSpecCollCacheWithObjStat (*rodsObjStatOut);
+        }
     }
 
     if (linkCnt > 0 && *rodsObjStatOut != NULL) {
@@ -77,9 +77,9 @@ rodsObjStat_t **rodsObjStatOut)
         if ((*rodsObjStatOut)->specColl == NULL) {
             replSpecColl (&specCollCache->specColl,
               &(*rodsObjStatOut)->specColl);
-	}
-	rstrcpy ((*rodsObjStatOut)->specColl->objPath, dataObjInp->objPath, 
-	  MAX_NAME_LEN);
+	    }
+	    rstrcpy ((*rodsObjStatOut)->specColl->objPath, dataObjInp->objPath, MAX_NAME_LEN);
+	  
     }
     return (status);
 }

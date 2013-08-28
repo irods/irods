@@ -1,4 +1,5 @@
-BASEDIRS = tcp 
+BASEDIRS = tcp \
+           ssl
 
 ######################################################################
 # Configuration should occur above this line
