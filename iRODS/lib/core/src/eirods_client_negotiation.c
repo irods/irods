@@ -100,8 +100,6 @@ namespace eirods {
             return false;
         }
         
-        std::cout << "opt_ptr [" << opt_ptr << "]" << std::endl;
-
         // =-=-=-=-=-=-=-
         // if it is set then check for our magic token which requests 
         // the negotiation, if its not there then return success

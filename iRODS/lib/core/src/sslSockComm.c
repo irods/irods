@@ -49,9 +49,7 @@ sslStart(rcComm_t *rcComm)
 
     /* ask the server if we can start SSL */
     memset(&sslStartInp, 0, sizeof(sslStartInp));
-printf( "XXXX - sslStart :: calling rcSslStart\n" );
     status = rcSslStart(rcComm, &sslStartInp);
-printf( "XXXX - sslStart :: calling rcSslStart. done %d\n", status );
     if (status < 0) {
         rodsLogError(LOG_ERROR, status, "sslStart: server refused our request to start SSL");
         return (status);
@@ -72,9 +70,7 @@ printf( "XXXX - sslStart :: calling rcSslStart. done %d\n", status );
         return SSL_INIT_ERROR;
     }
 
-printf( "XXXX - sslStart :: calling SSL_connect\n" );
     status = SSL_connect(rcComm->ssl);
-printf( "XXXX - sslStart :: calling SSL_connect - %d\n", status );
     if (status < 1) {
         sslLogError("sslStart: error in SSL_connect");
         SSL_free(rcComm->ssl);
@@ -84,17 +80,14 @@ printf( "XXXX - sslStart :: calling SSL_connect - %d\n", status );
         return SSL_HANDSHAKE_ERROR;
     }
 
-printf( "XXXX - sslStart :: ssl_on !\n" );
     rcComm->ssl_on = 1;
 
-printf( "XXXX - sslStart :: calling sslPostConnectionCheck\n" );
     if (!sslPostConnectionCheck(rcComm->ssl, rcComm->host)) {
         rodsLog(LOG_ERROR, "sslStart: post connection certificate check failed");
         sslEnd(rcComm);
         return SSL_CERT_ERROR;
     }
     
-printf( "XXXX - sslStart :: WIN!\n" );
     return 0;
 }
 

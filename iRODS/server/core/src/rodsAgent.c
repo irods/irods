@@ -255,40 +255,7 @@ agentMain (rsComm_t *rsComm)
             status = ikrbServersideAuth(rsComm) ;
             rsComm->gsiRequest=0; 
         }
-#if 0
-        if (rsComm->ssl_do_accept) {
-            eirods::network_object_ptr new_net_obj;
-            eirods::error ret = eirods::network_factory( rsComm, new_net_obj );
-            if( !ret.ok() ) {
-                eirods::log( PASS( ret ) );
-                return ret.code();
-            }
 
-            // =-=-=-=-=-=-=-
-            // call initialization for network plugin as negotiated 
-            ret = sockAgentStart( new_net_obj );
-            if( !ret.ok() ) {
-                eirods::log( PASS( ret ) );
-                return ret.code();
-            }
-
-            new_net_obj->to_server( rsComm );
-            rsComm->ssl_do_accept = 0;
-        }
-#endif 
-
-
-
-#if 1 // USE_SSL
-        if (rsComm->ssl_do_accept) {
-            status = sslAccept(rsComm);
-            rsComm->ssl_do_accept = 0;
-        }
-        if (rsComm->ssl_do_shutdown) {
-            status = sslShutdown(rsComm);
-            rsComm->ssl_do_shutdown = 0;
-        }
-#endif
         status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
 
         if (status >= 0) {

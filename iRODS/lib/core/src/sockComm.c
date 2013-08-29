@@ -53,7 +53,6 @@ connToutHandler (int sig)
 //
 eirods::error sockClientStart( 
     eirods::network_object_ptr _ptr ) {
-printf( "XXXX - sockClientStart :: START\n" );
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -74,7 +73,6 @@ printf( "XXXX - sockClientStart :: START\n" );
         return PASSMSG( "failed to call 'client start'", ret_err );
 
     } else {
-printf( "XXXX - sockClientStart :: done %d\n", ret_err.code() );
         return CODE( ret_err.code() );
 
     }
@@ -115,7 +113,6 @@ eirods::error sockClientStop(
 //
 eirods::error sockAgentStart( 
     eirods::network_object_ptr _ptr ) {
-printf( "XXXX - sockAgentStart :: START\n" );
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -127,9 +124,7 @@ printf( "XXXX - sockAgentStart :: START\n" );
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-printf( "XXXX - sockAgentStart :: calling NETWORK_OP_AGENT_START\n" );
     ret_err = net->call( eirods::NETWORK_OP_AGENT_START, _ptr );
-printf( "XXXX - sockAgentStart :: calling NETWORK_OP_AGENT_START. done %d\n", ret_err.code() );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -137,7 +132,6 @@ printf( "XXXX - sockAgentStart :: calling NETWORK_OP_AGENT_START. done %d\n", re
         return PASSMSG( "failed to call 'agent start'", ret_err );
    
     } else {
-printf( "XXXX - sockAgentStart :: done %d\n", ret_err.code() );
         return CODE( ret_err.code() );
     
     }

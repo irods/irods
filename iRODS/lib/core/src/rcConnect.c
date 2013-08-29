@@ -284,7 +284,8 @@ int rcDisconnect(
         return ret.code();
     }
 
-    /* send disconnect msg to agent */
+    // =-=-=-=-=-=-=-
+    // send disconnect msg to agent 
     ret = sendRodsMsg( 
               net_obj, 
               RODS_DISCONNECT_T, 
@@ -296,14 +297,12 @@ int rcDisconnect(
 
     // =-=-=-=-=-=-=-
     // shut down any network plugin activitiy
-    if(  _conn->ssl_on ) {
-        ret = sockClientStop( net_obj );
-        if( !ret.ok() ) {
-            eirods::log( PASS( ret ) );
-        }
-
-        net_obj->to_client( _conn ); 
+    ret = sockClientStop( net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
     }
+
+    net_obj->to_client( _conn ); 
 
     /* need to call asio close if USE_BOOST_ASIO */
     close( _conn->sock );
