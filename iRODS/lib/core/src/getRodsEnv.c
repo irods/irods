@@ -292,6 +292,17 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
                 rodsLog( msgLevel, "irodsClientServerPolicy=%s",
                         rodsEnvArg->rodsClientServerPolicy );
             }
+ 
+            // =-=-=-=-=-=-=-
+            // variable to enable client - server negotiations 
+            key=strstr(buf, "irodsClientServerNegotiation");
+            if (key != NULL) {
+                rstrcpy( rodsEnvArg->rodsClientServerNegotiation,
+                         findNextTokenAndTerm( key + 29 ),
+                         LONG_NAME_LEN );
+                rodsLog( msgLevel, "irodsClientServerNegotiation=%s",
+                        rodsEnvArg->rodsClientServerNegotiation );
+            }
 
             key=strstr(buf, "irodsServerDn");
             if (key != NULL) {
@@ -456,6 +467,18 @@ getRodsEnvFromEnv(rodsEnv *rodsEnvArg) {
         rodsLog( LOG_NOTICE,
                  "environment variable set, irodsClientServerPolicy=%s",
                  rodsEnvArg->rodsClientServerPolicy );
+    }
+ 
+    // =-=-=-=-=-=-=-
+    // variable to enable client - server negotiations 
+    getVar = getenv("irodsClientServerNegotiation");
+    if( getVar != NULL ) {
+        rstrcpy( rodsEnvArg->rodsClientServerNegotiation, 
+                 findNextTokenAndTerm( getVar ),
+                 LONG_NAME_LEN );
+        rodsLog( LOG_NOTICE,
+                 "environment variable set, irodsClientServerNegotiation=%s",
+                 rodsEnvArg->rodsClientServerNegotiation );
     }
 
     getVar = getenv("irodsServerDn");

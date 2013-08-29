@@ -807,7 +807,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     // =-=-=-=-=-=-=-
     // if the client requests the connection negotiation then wait for a
     // response here from the Agent
-    if( eirods::do_client_server_negotiation() ) {
+    if( eirods::do_client_server_negotiation_for_client() ) {
         // =-=-=-=-=-=-=-
         // politely do the negotiation
         std::string results;
@@ -1183,8 +1183,16 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
         startupPack.option[0] = '\0';
     }
 
-    if( ( tmpStr = getenv( eirods::RODS_CS_NEG ) ) != NULL ) {
-        strncat( startupPack.option, tmpStr, strlen( tmpStr ) );
+    // =-=-=-=-=-=-=-
+    // if the advanced negotiation is requested from the irodsEnv,
+    // tack those results onto the startup pack option string
+    rodsEnv rods_env;
+    status = getRodsEnv( &rods_env );
+
+    if( status >= 0 && strlen( rods_env.rodsClientServerNegotiation ) > 0 ) {
+        strncat( startupPack.option, 
+                 rods_env.rodsClientServerNegotiation, 
+                 strlen( rods_env.rodsClientServerNegotiation ) );
     } 
 
     /* always use XML_PROT for the startupPack */

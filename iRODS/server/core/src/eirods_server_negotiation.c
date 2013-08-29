@@ -57,7 +57,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // check to see if a negoation was requested 
-        if( !do_client_server_negotiation() ) {
+        if( !do_client_server_negotiation_for_server() ) {
             // =-=-=-=-=-=-=-
             // if it was not but we require SSL then error out
             if( CS_NEG_REQUIRE == rule_result ) {
