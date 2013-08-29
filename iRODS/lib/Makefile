@@ -92,6 +92,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_network_plugin.o \
 		$(libCoreObjDir)/eirods_ssl_object.o \
 		$(libCoreObjDir)/eirods_tcp_object.o \
+		$(libCoreObjDir)/eirods_network_factory.o \
 		$(libCoreObjDir)/eirods_network_manager.o 
 
 ifdef USE_BOOST_ASIO

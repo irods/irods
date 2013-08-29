@@ -161,7 +161,7 @@ main(int argc, char *argv[])
     // handle negotiations with the client regarding TLS if requested
     std::string neg_results;
     ret = eirods::client_server_negotiation_for_server( net_obj, neg_results );
-    if( !ret.ok() ) {
+    if( !ret.ok() || neg_results == eirods::CS_NEG_FAILURE ) {
         eirods::log( PASS( ret ) );
         // =-=-=-=-=-=-=-
         // send a 'we failed to negotiate' message here??
@@ -169,14 +169,14 @@ main(int argc, char *argv[])
         sendVersion( net_obj, SYS_AGENT_INIT_ERR, 0, NULL, 0 );
         unregister_handlers();
         cleanupAndExit( ret.code() );
+    
+    } else {
+        // =-=-=-=-=-=-=-
+        // copy negotation results to comm for action by network objects
+        strncpy( rsComm.negotiation_results, neg_results.c_str(), MAX_NAME_LEN );
+        //rsComm.ssl_do_accept = 1;
+    
     }
-
-    // =-=-=-=-=-=-=-
-    // enable SSL if requested
-    if( eirods::CS_NEG_USE_SSL == neg_results ) {
-
-    }
-
 
     /* send the server version and atatus as part of the protocol. Put
      * rsComm.reconnPort as the status */
@@ -199,15 +199,36 @@ main(int argc, char *argv[])
     while(!done) {
         sleep(1);
     }
-   
-    status = agentMain( &rsComm );
- 
+#if 1 
     // =-=-=-=-=-=-=-
-    // disable SSL if previously requested
-    if( eirods::CS_NEG_USE_SSL == neg_results ) {
-
+    // call initialization for network plugin as negotiated 
+    eirods::network_object_ptr new_net_obj;
+    ret = eirods::network_factory( &rsComm, new_net_obj );
+    if( !ret.ok() ) {
+        return ret.code();
     }
-   
+
+    ret = sockAgentStart( new_net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    new_net_obj->to_server( &rsComm );
+#endif 
+    status = agentMain( &rsComm );
+
+#if 1 
+    // =-=-=-=-=-=-=-
+    // call initialization for network plugin as negotiated 
+    ret = sockAgentStop( new_net_obj );
+    if( !ret.ok() ) {
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+    new_net_obj->to_server( &rsComm );
+#endif
     unregister_handlers();
     cleanupAndExit (status);
 
@@ -235,16 +256,6 @@ agentMain (rsComm_t *rsComm)
             rsComm->gsiRequest=0; 
         }
 
-#ifdef USE_SSL
-        if (rsComm->ssl_do_accept) {
-            status = sslAccept(rsComm);
-            rsComm->ssl_do_accept = 0;
-        }
-        if (rsComm->ssl_do_shutdown) {
-            status = sslShutdown(rsComm);
-            rsComm->ssl_do_shutdown = 0;
-        }
-#endif
         status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
 
         if (status >= 0) {

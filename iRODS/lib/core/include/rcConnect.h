@@ -139,6 +139,8 @@ typedef struct {
     SSL *ssl;
 #endif
 
+    char negotiation_results[ MAX_NAME_LEN ];
+
 } rcComm_t;
 
 typedef struct {
@@ -200,6 +202,8 @@ typedef struct {
     int ssl_do_accept;
     int ssl_do_shutdown;
 #endif
+    
+    char negotiation_results[ MAX_NAME_LEN ];
 
 } rsComm_t;
 

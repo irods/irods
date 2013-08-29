@@ -21,9 +21,9 @@ namespace eirods {
         const rcComm_t& _comm ) : 
         network_object( _comm ),
         ssl_ctx_( _comm.ssl_ctx ), 
-        ssl_( _comm.ssl ) {
+        ssl_( _comm.ssl ),
+        host_( _comm.host ) {
     } // ctor
-
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -31,7 +31,8 @@ namespace eirods {
         const rsComm_t& _comm ) : 
         network_object( _comm ),
         ssl_ctx_( _comm.ssl_ctx ), 
-        ssl_( _comm.ssl ) {
+        ssl_( _comm.ssl ),
+        host_( "" ) {
     } // ctor
 
     // =-=-=-=-=-=-=-
@@ -87,6 +88,32 @@ namespace eirods {
     error ssl_object::resolve( 
         network_manager& _mgr,  
         network_ptr&     _ptr ) {
+        // =-=-=-=-=-=-=-
+        // ask the network manager for a SSL resource
+        error ret = _mgr.resolve( SSL_NETWORK_PLUGIN, _ptr );
+        if( !ret.ok() ) {
+            // =-=-=-=-=-=-=-
+            // attempt to load the plugin, in this case the type,
+            // instance name, key etc are all tcp as there is only
+            // the need for one instance of a tcp object, etc.
+            std::string empty_context( "" );
+            ret = _mgr.init_from_type( 
+                      SSL_NETWORK_PLUGIN,
+                      SSL_NETWORK_PLUGIN,
+                      SSL_NETWORK_PLUGIN,
+                      empty_context,
+                      _ptr );
+            if( !ret.ok() ) {
+                return PASS( ret );
+
+            } else {
+                return SUCCESS();
+
+            }
+
+        } // if !ok
+
+
         return SUCCESS();
     } // resolve
         
@@ -100,6 +127,39 @@ namespace eirods {
 
     } // get_re_vars
  
+    // =-=-=-=-=-=-=-
+    // convertion to client comm ptr
+    error ssl_object::to_client( rcComm_t* _comm ) {
+        if( !_comm ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+        }
+        
+        network_object::to_client( _comm );
+
+        _comm->ssl     = ssl_;
+        _comm->ssl_ctx = ssl_ctx_;
+        
+        return SUCCESS();
+
+    } // to_client
+     
+    // =-=-=-=-=-=-=-
+    // convertion to client comm ptr
+    error ssl_object::to_server( rsComm_t* _comm ) {
+        if( !_comm ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+        }
+
+        network_object::to_server( _comm );
+
+        _comm->ssl     = ssl_;
+        _comm->ssl_ctx = ssl_ctx_;
+        
+        return SUCCESS();
+
+    } // to_server
+
+
 }; // namespace eirods
 
 

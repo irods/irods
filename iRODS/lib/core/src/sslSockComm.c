@@ -34,6 +34,7 @@ static int sslPostConnectionCheck(SSL *ssl, char *peer);
 int
 sslStart(rcComm_t *rcComm)
 {
+    printf( "XXXX - sslStart :: START\n" );
     int status;
     sslStartInp_t sslStartInp;
 

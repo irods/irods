@@ -170,7 +170,7 @@ int mkFileDirR(
                 return (stat_err.code() );
             }
         } else {
-            eirods::log( stat_err );
+            // debug code only -- eirods::log( stat_err );
         }
 
         /* Go backward */

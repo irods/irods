@@ -67,6 +67,33 @@ namespace eirods {
         return SUCCESS();
     } // get_re_vars
 
+    // =-=-=-=-=-=-=-
+    // convertion to client comm ptr
+    error network_object::to_client( rcComm_t* _comm ) {
+        if( !_comm ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+        }
+
+        _comm->sock = socket_handle_;
+        
+        return SUCCESS();
+
+    } // to_client
+     
+    // =-=-=-=-=-=-=-
+    // convertion to client comm ptr
+    error network_object::to_server( rsComm_t* _comm ) {
+        if( !_comm ) {
+            return ERROR( SYS_INVALID_INPUT_PARAM, "null comm ptr" );
+        }
+
+        _comm->sock = socket_handle_;
+        
+        return SUCCESS();
+
+    } // to_server
+
+
 }; // namespace eirods
 
 
