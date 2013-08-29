@@ -9,6 +9,8 @@ import sys
 
 '''Originally written by Antoine de Torcy'''
 
+RODSLOGDIR = "/var/lib/eirods/iRODS/server/log"
+
 class RodsEnv(object):
     '''Contains Env/Auth variables.
 
@@ -150,7 +152,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- interrupt icommand ["+' '.join(argList)+"] --- \n")
@@ -204,7 +207,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- interrupt icommand delay("+str(delay)+") ["+' '.join(argList)+"] --- \n")
@@ -276,6 +280,8 @@ class RodsSession(object):
                         # added for test_allrules.py
                         'irule',
                         'iqdel',
+                        # added for ticket_suite.py
+                        'iticket',
                      ]
 
         if icommand not in valid_cmds:
@@ -291,7 +297,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
             myrodslog.write(" --- icommand ["+' '.join(argList)+"] --- \n")
@@ -327,7 +334,8 @@ class RodsSession(object):
         cmdStr = "%s/%s" % (self.icommandsDir, icommand)
         argList = [cmdStr] + argList
 
-        proc = subprocess.Popen('ls -t /var/lib/eirods/iRODS/server/log/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
+        global RODSLOGDIR
+        proc = subprocess.Popen('ls -t '+RODSLOGDIR+'/rodsLog* | head -n1', stdout=subprocess.PIPE, shell=True)
         (myrodslogfile, err) = proc.communicate()
         with open(myrodslogfile.rstrip(),"a") as myrodslog:
            myrodslog.write(" --- iadmin ["+' '.join(argList)+"] --- \n")

@@ -128,14 +128,14 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // public - return the status of this error object
-    bool error::status(  ) {
+    bool error::status(  ) const {
         return status_;
 
     } // status
 
     // =-=-=-=-=-=-=-
     // public - return the code of this error object
-    long long error::code(  ) {
+    long long error::code(  ) const {
         return code_;
 
     } // code
@@ -187,6 +187,55 @@ namespace eirods {
 
     } // ok
 
+
+    error assert_error(
+        bool expr_,
+        long long code_,
+        const std::string& file_,
+        const std::string& function_,
+        int line_,
+        const std::string& format_,
+        ...)
+    {
+        error result = SUCCESS();
+        if(!expr_) {
+            va_list ap;
+            va_start(ap, format_);
+            const int buffer_size = 4096;
+            char buffer[buffer_size];
+            vsnprintf(buffer, buffer_size, format_.c_str(), ap);
+            va_end(ap);
+            std::stringstream msg;
+            msg << buffer;
+            result = error(false, code_, msg.str(), file_, line_, function_);
+        }
+        return result;
+    }
+
+    error assert_pass(
+        bool expr_,
+        const error& prev_error_,
+        const std::string& file_,
+        const std::string& function_,
+        int line_,
+        const std::string& format_,
+        ...)
+    {
+        error result = SUCCESS();
+        if(!expr_) {
+            va_list ap;
+            va_start(ap, format_);
+            const int buffer_size = 4096;
+            char buffer[buffer_size];
+            vsnprintf(buffer, buffer_size, format_.c_str(), ap);
+            va_end(ap);
+            std::stringstream msg;
+            msg << buffer;
+            result = error(prev_error_.status(), prev_error_.code(), msg.str(), file_, line_, function_, prev_error_);
+        }
+        return result;
+    }
+    
 }; // namespace eirods
 
 
