@@ -51,7 +51,13 @@ namespace eirods {
 
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
-    bool do_client_server_negotiation(  );
+    ///        on the server side
+    bool do_client_server_negotiation_for_server(  );
+    
+    /// =-=-=-=-=-=-=-
+    /// @brief function which determines if a client/server negotiation is needed
+    ///        on the client side
+    bool do_client_server_negotiation_for_client(  );
 
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client

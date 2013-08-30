@@ -54,6 +54,7 @@ namespace eirods {
         std::string result();
         bool        ok();
 
+        // =-=-=-=-=-=-=-
         // Mutators
         void code(long long _code) { code_ = _code; }
         

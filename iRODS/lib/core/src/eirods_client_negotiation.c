@@ -89,7 +89,41 @@ namespace eirods {
 
     /// =-=-=-=-=-=-=-
     /// @brief function which determines if a client/server negotiation is needed
-    bool do_client_server_negotiation(  ) {
+    ///        on the client side
+    bool do_client_server_negotiation_for_client(  ) {
+        // =-=-=-=-=-=-=-
+        // get the irods environment so we can compare the 
+        // flag for negotiation of policy 
+        rodsEnv rods_env;
+        int status = getRodsEnv( &rods_env );
+        if( status < 0 ) {
+            return false;
+        }
+
+        // =-=-=-=-=-=-=-
+        // if it is not set then move on
+        std::string neg_policy( rods_env.rodsClientServerNegotiation );
+        if( neg_policy.empty() ) {
+            return false;
+        }
+
+        // =-=-=-=-=-=-=-
+        // if it is set then check for our magic token which requests 
+        // the negotiation, if its not there then return success
+        if( std::string::npos == neg_policy.find( REQ_SVR_NEG ) ) { 
+            return false;
+        }
+
+        // =-=-=-=-=-=-=-
+        // otherwise, its a failure.
+        return true;
+
+    } // do_client_server_negotiation_for_client
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief function which determines if a client/server negotiation is needed
+    ///        on the server side
+    bool do_client_server_negotiation_for_server(  ) {
         // =-=-=-=-=-=-=-
         // check the SP_OPTION for the string stating a negotiation is requested
         char* opt_ptr = getenv( RODS_CS_NEG );
@@ -112,8 +146,8 @@ namespace eirods {
         // otherwise, its a go.
         return true;
 
-    } // do_client_server_negotiation
- 
+    } // do_client_server_negotiation_for_server
+
     /// =-=-=-=-=-=-=-
     /// @brief function which manages the TLS and Auth negotiations with the client
     error client_server_negotiation_for_client( 
@@ -177,8 +211,7 @@ namespace eirods {
             // send CS_NEG_CLI_1_MSG, failure message to the server
             cs_neg_t send_cs_neg;
             send_cs_neg.status_ = CS_NEG_STATUS_FAILURE;
-            strncpy( send_cs_neg.result_, CS_NEG_FAILURE.c_str(), CS_NEG_FAILURE.size() );
-            
+            strncpy( send_cs_neg.result_, CS_NEG_FAILURE.c_str(), MAX_NAME_LEN );
             error send_err = send_client_server_negotiation_message( 
                                  _ptr, 
                                  send_cs_neg );
@@ -197,7 +230,7 @@ namespace eirods {
         // send CS_NEG_CLI_1_MSG, success message to the server with our choice 
         cs_neg_t send_cs_neg;
         send_cs_neg.status_ = CS_NEG_STATUS_SUCCESS;
-        strncpy( send_cs_neg.result_, result.c_str(), result.size() );
+        strncpy( send_cs_neg.result_, result.c_str(), MAX_NAME_LEN );
         err = send_client_server_negotiation_message( 
                   _ptr, 
                   send_cs_neg );
@@ -208,7 +241,6 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // set the out variable and return 
         _result = result;
-
         return SUCCESS();
 
     } // client_server_negotiation_for_client
@@ -340,7 +372,6 @@ namespace eirods {
             return ERROR( status, "unpackStruct failed" );
                           
         } 
-
          _cs_neg_msg.reset( tmp_cs_neg );
 
         // =-=-=-=-=-=-=-

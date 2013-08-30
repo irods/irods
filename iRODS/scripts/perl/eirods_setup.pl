@@ -1774,8 +1774,10 @@ sub configureIrodsUser
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
 			"irodsZone '$ZONE_NAME'\n" .
+			"# Enable Advanced Client-Server negotation:\n" .
+			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
 			"# Client-Server connection policy:\n" .
-			"irodsClientServerPolicy 'CS_NEG_DONT_CARE'\n" );
+			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" );
 
 	} else {
 		# this is an instance of a Resource Server installation as
