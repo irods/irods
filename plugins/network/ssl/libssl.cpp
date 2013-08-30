@@ -213,7 +213,6 @@ static SSL_CTX* ssl_init_context(
     /* in our test programs we set up a null signal 
        handler for SIGPIPE */
     /* signal(SIGPIPE, sslSigpipeHandler); */
-
     ctx = SSL_CTX_new(SSLv23_method());
     
     /* no SSLv2 */
