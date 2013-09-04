@@ -37,7 +37,7 @@ clean:
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
+	${GCC} ${INC} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ${EXTRALIBS}
 
 ${DEPFILE}: ${DEPS}
 	@-rm -f ${DEPFILE} > /dev/null 2>&1

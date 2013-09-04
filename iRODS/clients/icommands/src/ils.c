@@ -6,6 +6,14 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "lsUtil.h"
+
+
+#include "eirods_buffer_encryption.h"
+#include <string>
+#include <iostream>
+
+
+
 void usage ();
 
 int
@@ -17,8 +25,7 @@ main(int argc, char **argv) {
     rodsArguments_t myRodsArgs;
     char *optStr;
     rodsPathInp_t rodsPathInp;
-    
-
+   
     optStr = "hArlLvVZ"; // JMC - backport 4536
     status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);// JMC - backport 4536
 

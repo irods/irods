@@ -371,11 +371,11 @@ svrPortalPutGet (rsComm_t *rsComm)
     if (oprType == PUT_OPR) {
         fillPortalTransferInp (&myInput[0], rsComm,
          portalFd, dataOprInp->destL3descInx, 0, dataOprInp->destRescTypeInx,
-          0, size0, offset0, flags);
+          0, size0, offset0, flags, thisPortList->cookie );
     } else {
         fillPortalTransferInp (&myInput[0], rsComm,
          dataOprInp->srcL3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
-          0, size0, offset0, flags);
+          0, size0, offset0, flags, thisPortList->cookie );
     }
 
         if (numThreads == 1) {
@@ -416,11 +416,12 @@ svrPortalPutGet (rsComm_t *rsComm)
 
             if (oprType == PUT_OPR) {
                 /* open the file */ 
-                l3descInx = l3OpenByHost (rsComm, dataOprInp->destRescTypeInx, 
-                 dataOprInp->destL3descInx, O_WRONLY); 
-                    fillPortalTransferInp (&myInput[i], rsComm,
-             portalFd, l3descInx, 0, dataOprInp->destRescTypeInx,
-                  i, mySize, myOffset, flags);
+                l3descInx = l3OpenByHost( rsComm, dataOprInp->destRescTypeInx, 
+                                          dataOprInp->destL3descInx, O_WRONLY); 
+                fillPortalTransferInp(&myInput[i], rsComm,
+                                      portalFd, l3descInx, 0, 
+                                      dataOprInp->destRescTypeInx,
+                                      i, mySize, myOffset, flags, thisPortList->cookie );
             #ifdef USE_BOOST
             tid[i] = new boost::thread( partialDataPut, &myInput[i] );
             #else
@@ -433,7 +434,7 @@ svrPortalPutGet (rsComm_t *rsComm)
                      dataOprInp->srcL3descInx, O_RDONLY);
                     fillPortalTransferInp (&myInput[i], rsComm,
              l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
-                      i, mySize, myOffset, flags);
+                      i, mySize, myOffset, flags, thisPortList->cookie );
             #ifdef USE_BOOST
             tid[i] = new boost::thread( partialDataGet, &myInput[i] );
             #else
@@ -486,12 +487,13 @@ svrPortalPutGet (rsComm_t *rsComm)
 int
 fillPortalTransferInp (portalTransferInp_t *myInput, rsComm_t *rsComm,
 int srcFd, int destFd, int srcRescTypeInx, int destRescTypeInx,
-int threadNum, rodsLong_t size, rodsLong_t offset, int flags)
+int threadNum, rodsLong_t size, rodsLong_t offset, int flags, int cookie )
 {
     if (myInput == NULL) 
         return (SYS_INTERNAL_NULL_INPUT_ERR);
 
     myInput->rsComm = rsComm;
+    myInput->cookie = cookie;
     myInput->destFd = destFd;
     myInput->srcFd = srcFd;
     myInput->destRescTypeInx = destRescTypeInx;
@@ -1048,11 +1050,11 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     if (oprType == COPY_TO_LOCAL_OPR) {
         fillPortalTransferInp (&myInput[0], rsComm,
          sock, dataOprInp->destL3descInx, 0, dataOprInp->destRescTypeInx,
-          0, 0, 0, 0);
+          0, 0, 0, 0, myPortList->cookie );
     } else {
         fillPortalTransferInp (&myInput[0], rsComm,
          dataOprInp->srcL3descInx, sock, dataOprInp->srcRescTypeInx, 0,
-          0, 0, 0, 0);
+          0, 0, 0, 0, myPortList->cookie );
     }
 
    if (numThreads == 1) {
@@ -1101,7 +1103,7 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
                 fillPortalTransferInp (&myInput[i], rsComm,
                  sock, myFd, 0, dataOprInp->destRescTypeInx,
-                 i, 0, 0, 0);
+                 i, 0, 0, 0, myPortList->cookie );
 
                 #ifdef USE_BOOST
                 tid[i] = new boost::thread( remToLocPartialCopy, &myInput[i] );
@@ -1123,7 +1125,7 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
                 fillPortalTransferInp (&myInput[i], rsComm,
                  myFd, sock, dataOprInp->destRescTypeInx, 0,
-                 i, 0, 0, 0);
+                 i, 0, 0, 0, myPortList->cookie );
 
                 #ifdef USE_BOOST
                 tid[i] = new boost::thread( locToRemPartialCopy, &myInput[i] );
@@ -1233,11 +1235,15 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     size0 = dataOprInp->dataSize / numThreads;
     size1 = dataOprInp->dataSize - size0 * (numThreads - 1);
     offset0 = dataOprInp->offset;
-
+    
+    // =-=-=-=-=-=-=- 
+    // JMC :: since this is a local to local xfer and there is no
+    //     :: cookie to share it is set to 0, this may *possibly* be
+    //     :: a security issue.
     fillPortalTransferInp (&myInput[0], rsComm,
      dataOprInp->srcL3descInx, dataOprInp->destL3descInx, 
      dataOprInp->srcRescTypeInx, dataOprInp->destRescTypeInx,
-      0, size0, offset0, 0);
+      0, size0, offset0, 0, 0 );
 
     if (numThreads == 1) {
 	if (getValByKey (&dataOprInp->condInput,
@@ -1278,10 +1284,16 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                  "sameHostCopy: cannot open src file, status = %d", in_fd);
                 continue;
             }
-            fillPortalTransferInp (&myInput[i], rsComm,
-             in_fd, out_fd, 
-	     dataOprInp->srcRescTypeInx, dataOprInp->destRescTypeInx,
-              i, mySize, myOffset, 0);
+            // =-=-=-=-=-=-=- 
+            // JMC :: since this is a local to local xfer and there is no
+            //     :: cookie to share it is set to 0, this may *possibly* be
+            //     :: a security issue.
+            fillPortalTransferInp( 
+                &myInput[i], rsComm,
+                in_fd, out_fd, 
+	            dataOprInp->srcRescTypeInx, 
+                dataOprInp->destRescTypeInx,
+                i, mySize, myOffset, 0, 0 ); 
 
             #ifdef USE_BOOST
 	    tid[i] = new boost::thread( sameHostPartialCopy, &myInput[i] );
