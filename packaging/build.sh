@@ -178,6 +178,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf $MANDIR
     rm -f manual.pdf
     rm -f eirods-manual*.pdf
+    rm -f examples/microservices/*.pdf
     rm -f libeirods.a
     echo "Cleaning Network plugins..."
     cd plugins/network
@@ -1116,6 +1117,18 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
+
+    # generate microservice developers tutorial in pdf format
+    echo "${text_green}${text_bold}Building E-iRODS Microservice Developers Tutorial${text_reset}"
+    cd $BUILDDIR/examples/microservices
+    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
+    if [ "$?" != "0" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+
     # generate doxygen for microservices
     echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
     cd $BUILDDIR/iRODS
