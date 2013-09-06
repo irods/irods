@@ -9,7 +9,7 @@ DB_NAME=$6
 DB_HOST=$7
 DB_PORT=$8
 DB_USER=$9
-DB_PASS=${10}
+DB_PASS=`cat /dev/urandom | base64 | head -c16`
 
 IRODS_HOME=$EIRODS_HOME_DIR/iRODS
 
@@ -47,7 +47,7 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
 
   if [ "$DB_TYPE" == "postgres" ] ; then
     # =-=-=-=-=-=-=-
-    # trap possible errors where db, user, etc exist before making any 
+    # trap possible errors where db, user, etc exist before making any
     # changes to the system
 
     # =-=-=-=-=-=-=-
@@ -132,6 +132,11 @@ if [ "$SERVER_TYPE" == "icat" ] ; then
     EIRODSPOSTGRESDIR="$PGPATH/"
     echo "Detecting PostgreSQL Path: [$EIRODSPOSTGRESDIR]"
     sed -e "\,^\$DATABASE_HOME,s,^.*$,\$DATABASE_HOME = '$EIRODSPOSTGRESDIR';," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
+    mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
+
+    # =-=-=-=-=-=-=-
+    # update config/irods.config with new generated password
+    sed -e "s,TEMPLATE_DB_PASS,$DB_PASS," $IRODS_HOME/config/irods.config > /tmp/irods.config.tmp
     mv /tmp/irods.config.tmp $IRODS_HOME/config/irods.config
 
     # =-=-=-=-=-=-=-

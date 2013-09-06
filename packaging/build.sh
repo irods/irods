@@ -898,10 +898,6 @@ else
 fi
 
 
-# =-=-=-=-=-=-=-
-# generate random password for database
-RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
-
 if [ "$BUILDEIRODS" == "1" ] ; then
 
     if [ "$COVERAGE" == "1" ] ; then
@@ -927,11 +923,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     ./scripts/configure
     # again to reset IRODS_HOME
     cp $TMPCONFIGFILE ./config/irods.config
-
-    # change password for database to be consistent with that within the eirods.list file
-    # for installation
-    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
-    mv /tmp/irods.config ./config/irods.config
 
     # handle issue with IRODS_HOME being overwritten by the configure script
     irodsctl_irods_home=`./scripts/find_irods_home.sh`
@@ -1080,9 +1071,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     #   database port
     NEW_DB_PORT=`awk -F\' '/^\\$DATABASE_PORT/ {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
-    #   database password
-    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
 
 
