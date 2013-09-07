@@ -1099,59 +1099,6 @@ extern "C" {
     } // tar_file_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error tar_file_fstat_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // check incoming parameters
-        eirods::error chk_err = tar_check_params( _ctx );
-        if( !chk_err.ok() ) {
-            return PASSMSG( "tar_file_fstat_plugin", chk_err );
-        }
-        
-        // =-=-=-=-=-=-=-
-        // cast down the chain to our understood object type
-        eirods::structured_object_ptr fco = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
-
-        // =-=-=-=-=-=-=-
-        // check range on the sub file index
-        if( fco->file_descriptor() < 1                      || 
-            fco->file_descriptor() >= NUM_TAR_SUB_FILE_DESC ||
-            PluginTarSubFileDesc[ fco->file_descriptor() ].inuseFlag == 0 ) {
-            std::stringstream msg;
-            msg << "tar_file_fstat_plugin - sub file index ";
-            msg << fco->file_descriptor();
-            msg << " is out of range.";
-            return ERROR( SYS_STRUCT_FILE_DESC_ERR, msg.str() );
-        }
-
-        // =-=-=-=-=-=-=-
-        // extract and check the comm pointer
-        rsComm_t* comm = fco->comm();
-        if( !comm ) {
-            return ERROR( -1, "tar_file_fstat_plugin - null comm pointer in structure_object" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // build a fstat structure and make the rs call
-        fileFstatInp_t fileFstatInp;
-        memset( &fileFstatInp, 0, sizeof( fileFstatInp ) );
-        fileFstatInp.fileInx = PluginTarSubFileDesc[ fco->file_descriptor() ].fd;
-        
-        rodsStat_t* rods_stat;
-        int status = rsFileFstat( comm, &fileFstatInp, &rods_stat );
-        if( status >= 0 ) {
-            rodsStatToStat( _statbuf, rods_stat );
-        } else {
-            return ERROR( status, "tar_file_fstat_plugin - rsFileFstat failed." );
-        }
-
-        return CODE( status );
-
-    } // tar_file_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error tar_file_lseek_plugin( 
         eirods::resource_plugin_context& _ctx, 
@@ -1207,16 +1154,6 @@ extern "C" {
         }
 
     } // tar_file_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error tar_file_fsync_plugin(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Not Implemented for this plugin
-        return ERROR( SYS_NOT_SUPPORTED, "tar_file_fsync_plugin is not implemented." );
-
-    } // tar_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -2356,9 +2293,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "tar_file_close_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "tar_file_unlink_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "tar_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "tar_file_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "tar_file_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "tar_file_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "tar_file_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "tar_file_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "tar_file_opendir_plugin" );

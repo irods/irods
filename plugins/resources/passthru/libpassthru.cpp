@@ -287,30 +287,6 @@ extern "C" {
     } // pass_thru_file_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error pass_thru_file_fstat_plugin(  
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_fstat_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_fstat_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call<struct stat*>( _ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf);
-                result = PASSMSG("pass_thru_file_fstat_plugin - failed calling child fstat.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error pass_thru_file_lseek_plugin(
         eirods::resource_plugin_context& _ctx,
@@ -334,29 +310,6 @@ extern "C" {
         }
         return result;
     } // pass_thru_file_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error pass_thru_file_fsync_plugin(  
-        eirods::resource_plugin_context& _ctx ) {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = pass_thru_check_params( _ctx );
-        if(!ret.ok()) {
-            result = PASSMSG( "pass_thru_file_fsync_plugin - bad params.", ret);
-        } else {
-            eirods::resource_ptr resc;
-            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
-            if(!ret.ok()) {
-                result = PASSMSG( "pass_thru_file_fsync_plugin - failed getting the first child resource pointer.", ret);
-            } else {
-                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco());
-                result = PASSMSG("pass_thru_file_fsync_plugin - failed calling child fsync.", ret);
-            }
-        }
-        return result;
-    } // pass_thru_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -765,8 +718,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "pass_thru_file_close_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "pass_thru_file_unlink_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "pass_thru_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "pass_thru_file_fstat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "pass_thru_file_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "pass_thru_file_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "pass_thru_file_opendir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "pass_thru_file_readdir_plugin" );

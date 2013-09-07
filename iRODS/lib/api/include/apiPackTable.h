@@ -41,8 +41,6 @@ packInstructArray_t ApiPackTable[] = {
         {"fileUnlinkInp_PI", fileUnlinkInp_PI},
         {"fileReadInp_PI", fileReadInp_PI},
         {"fileCloseInp_PI", fileCloseInp_PI},
-        {"fileFstatInp_PI", fileFstatInp_PI},
-        {"fileFsyncInp_PI", fileFsyncInp_PI},
         {"fileGetFsFreeSpaceInp_PI", fileGetFsFreeSpaceInp_PI},
         {"fileGetFsFreeSpaceOut_PI", fileGetFsFreeSpaceOut_PI},
         {"fileMkdirInp_PI", fileMkdirInp_PI},

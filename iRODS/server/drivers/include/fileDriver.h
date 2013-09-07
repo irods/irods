@@ -29,9 +29,7 @@ eirods::error fileWrite   ( rsComm_t*, eirods::first_class_object_ptr, void*, in
 eirods::error fileClose   ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileUnlink  ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileStat    ( rsComm_t*, eirods::first_class_object_ptr, struct stat* );
-eirods::error fileFstat   ( rsComm_t*, eirods::first_class_object_ptr, struct stat* );
 eirods::error fileLseek   ( rsComm_t*, eirods::first_class_object_ptr, long long, int ); 
-eirods::error fileFsync   ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileMkdir   ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileRmdir   ( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileOpendir ( rsComm_t*, eirods::first_class_object_ptr );

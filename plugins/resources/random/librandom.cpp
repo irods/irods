@@ -337,28 +337,6 @@ extern "C" {
     } // random_file_stat
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX Fstat
-    eirods::error random_file_fstat(
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call fstat on the child 
-        return resc->call< struct stat* >( _ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf );
- 
-    } // random_file_fstat
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error random_file_lseek(
         eirods::resource_plugin_context& _ctx,
@@ -380,27 +358,6 @@ extern "C" {
         return resc->call< long long, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
  
     } // random_file_lseek
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX fsync
-    eirods::error random_file_fsync(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = random_get_resc_for_call< eirods::file_object >( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call fsync on the child 
-        return resc->call( _ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco() );
- 
-    } // random_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
@@ -826,8 +783,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "random_file_close" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "random_file_unlink" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "random_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "random_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "random_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "random_file_mkdir" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "random_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "random_file_readdir" );

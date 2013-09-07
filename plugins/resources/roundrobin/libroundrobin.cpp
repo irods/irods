@@ -541,28 +541,6 @@ extern "C" {
     } // round_robin_file_stat
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX Fstat
-    eirods::error round_robin_file_fstat(
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                     _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call< eirods::file_object >( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call fstat on the child 
-        return resc->call< struct stat* >( _ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf );
- 
-    } // round_robin_file_fstat
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error round_robin_file_lseek(
         eirods::resource_plugin_context& _ctx,
@@ -584,27 +562,6 @@ extern "C" {
         return resc->call< long long, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
  
     } // round_robin_file_lseek
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX fsync
-    eirods::error round_robin_file_fsync(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // get the child resc to call
-        eirods::resource_ptr resc; 
-        eirods::error err = round_robin_get_resc_for_call< eirods::file_object >( _ctx, resc );
-        if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
-        }
-
-        // =-=-=-=-=-=-=-
-        // call fsync on the child 
-        return resc->call( _ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco() );
- 
-    } // round_robin_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
@@ -1193,8 +1150,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "round_robin_file_close" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "round_robin_file_unlink" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "round_robin_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "round_robin_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "round_robin_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "round_robin_file_mkdir" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "round_robin_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "round_robin_file_readdir" );

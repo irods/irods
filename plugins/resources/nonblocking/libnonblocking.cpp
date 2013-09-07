@@ -637,56 +637,6 @@ extern "C" {
     } // nonblocking_file_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error nonblocking_file_fstat_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                     _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
-        // =-=-=-=-=-=-=-
-        // make the call to fstat
-        int status = fstat( fco->file_descriptor(), _statbuf );
-
-        // =-=-=-=-=-=-=-
-        // if the file can't be accessed due to permission denied 
-        // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-        if (status < 0 && errno == EACCES && isServiceUserSet()) {
-            if (changeToRootUser() == 0) {
-                status = fstat( fco->file_descriptor(), statbuf );
-                changeToServiceUser();
-            }
-        }
-#endif
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_STAT_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "fstat error for: ";
-            msg << fco->file_descriptor(); 
-            return ERROR( status, msg.str() );
-
-        } // if
-           
-        return CODE( status );
-
-    } // nonblocking_file_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error nonblocking_file_lseek_plugin( 
         eirods::resource_plugin_context& _ctx,
@@ -727,47 +677,6 @@ extern "C" {
         return CODE( status );
 
     } // nonblocking_file_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error nonblocking_file_fsync_plugin( 
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << "Invalid parameters or physical path.";
-            return PASSMSG(msg.str(), ret);
-        }
-        
-        // =-=-=-=-=-=-=-
-        // get ref to fco
-        eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
-        // =-=-=-=-=-=-=-
-        // make the call to fsync       
-        int status = fsync( fco->file_descriptor() );
-
-        // =-=-=-=-=-=-=-
-        // return an error if necessary
-        if( status < 0 ) {
-            status = UNIX_FILE_LSEEK_ERR - errno;
- 
-            std::stringstream msg;
-            msg << "fsync error for ";
-            msg << fco->file_descriptor();
-            msg << ", errno = '";
-            msg << strerror( errno );
-            msg << "', status = ";
-            msg << status;
-                        
-            return ERROR( status, msg.str() );
-        }
-
-        return CODE( status );
-
-    } // nonblocking_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -1683,9 +1592,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "nonblocking_file_close_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "nonblocking_file_unlink_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "nonblocking_file_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "nonblocking_file_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "nonblocking_file_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "nonblocking_file_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "nonblocking_file_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "nonblocking_file_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "nonblocking_file_opendir_plugin" );

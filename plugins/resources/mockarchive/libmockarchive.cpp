@@ -415,17 +415,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     } // mock_archive_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error mock_archive_fstat_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "fstat not supported" );
-
-    } // mock_archive_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error mock_archive_lseek_plugin( 
         eirods::resource_plugin_context& _ctx,
@@ -436,16 +425,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         return ERROR( SYS_NOT_SUPPORTED, "lseek not supported" );
 
     } // mock_archive_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error mock_archive_fsync_plugin( 
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // operation not supported
-        return ERROR( SYS_NOT_SUPPORTED, "fsync not supported" );
-
-    } // mock_archive_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -1139,9 +1118,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "mock_archive_close_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "mock_archive_unlink_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "mock_archive_stat_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "mock_archive_fstat_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "mock_archive_lseek_plugin" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "mock_archive_fsync_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "mock_archive_mkdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "mock_archive_rmdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "mock_archive_opendir_plugin" );

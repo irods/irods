@@ -579,50 +579,6 @@ extern "C" {
     } // unix_file_stat_plugin
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error unix_file_fstat_plugin( 
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
-        
-            // =-=-=-=-=-=-=-
-            // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
-            // =-=-=-=-=-=-=-
-            // make the call to fstat
-            int status = fstat( fco->file_descriptor(), _statbuf );
-
-            // =-=-=-=-=-=-=-
-            // if the file can't be accessed due to permission denied 
-            // try again using root credentials.
-#ifdef RUN_SERVER_AS_ROOT
-            if (status < 0 && errno == EACCES && isServiceUserSet()) {
-                if (changeToRootUser() == 0) {
-                    status = fstat( fco->file_descriptor(), statbuf );
-                    changeToServiceUser();
-                }
-            }
-#endif
-
-            // =-=-=-=-=-=-=-
-            // return an error if necessary
-            int err_status = UNIX_FILE_STAT_ERR - errno;
-            result = ASSERT_ERROR(status >= 0, err_status, "Fstat error for \"%s\", errno = \"%s\", status = %d.",
-                                  fco->physical_path().c_str(), strerror(errno), err_status); 
-        }
-        
-        return result;
-
-    } // unix_file_fstat_plugin
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error unix_file_lseek_plugin( 
         eirods::resource_plugin_context& _ctx,
@@ -656,37 +612,6 @@ extern "C" {
         return result;
 
     } // unix_file_lseek_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error unix_file_fsync_plugin( 
-        eirods::resource_plugin_context& _ctx )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
-        
-            // =-=-=-=-=-=-=-
-            // get ref to fco
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
-            // =-=-=-=-=-=-=-
-            // make the call to fsync       
-            int status = fsync( fco->file_descriptor() );
-
-            // =-=-=-=-=-=-=-
-            // return an error if necessary
-            int err_status = UNIX_FILE_LSEEK_ERR - errno;
-            result = ASSERT_ERROR(status >= 0, err_status, "Fsync error for \"%s\", errno = \"%s\", status = %d.",
-                                  fco->physical_path().c_str(), strerror(errno), err_status); 
-        }
-        
-        return result;
-
-    } // unix_file_fsync_plugin
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir
@@ -1480,9 +1405,7 @@ extern "C" {
             resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "unix_file_close_plugin" );
             resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "unix_file_unlink_plugin" );
             resc->add_operation( eirods::RESOURCE_OP_STAT,         "unix_file_stat_plugin" );
-            resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "unix_file_fstat_plugin" );
             resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "unix_file_lseek_plugin" );
-            resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "unix_file_fsync_plugin" );
             resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "unix_file_mkdir_plugin" );
             resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "unix_file_rmdir_plugin" );
             resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "unix_file_opendir_plugin" );

@@ -662,32 +662,6 @@ extern "C" {
     } // compound_file_stat
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX Fstat
-    eirods::error compound_file_fstat(
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                     _statbuf ) {
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param< eirods::data_object >(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next child resource
-        eirods::resource_ptr resc;
-        ret = get_next_child< eirods::data_object >( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // forward the call
-        return resc->call< struct stat* >( _ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf );
- 
-    } // compound_file_fstat
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error compound_file_lseek(
         eirods::resource_plugin_context& _ctx,
@@ -713,31 +687,6 @@ extern "C" {
         return resc->call< long long, int >( _ctx.comm(), eirods::RESOURCE_OP_LSEEK, _ctx.fco(), _offset, _whence );
  
     } // compound_file_lseek
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX fsync
-    eirods::error compound_file_fsync(
-        eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
-
-        // =-=-=-=-=-=-=-
-        // get the next child resource
-        eirods::resource_ptr resc;
-        ret = get_next_child< eirods::file_object >( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // forward the call
-        return resc->call( _ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco() );
- 
-    } // compound_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX mkdir
@@ -1417,8 +1366,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "compound_file_close" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "compound_file_unlink" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "compound_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "compound_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "compound_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "compound_file_mkdir" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "compound_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "compound_file_readdir" );
