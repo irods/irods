@@ -1143,9 +1143,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # generate development package archive file
-    echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
-    cd $BUILDDIR
-    ./packaging/make_eirods_dev_archive.sh
+    if [ "$1" == "icat" ] ; then
+        echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
+        cd $BUILDDIR
+        ./packaging/make_eirods_dev_archive.sh
+    fi
 
 fi # if $BUILDEIRODS
 
@@ -1289,7 +1291,9 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
         epmosversion="NOTCENTOS6"
     fi
     ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true $epmosversion=true ./packaging/eirods.list
-    ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
@@ -1297,7 +1301,9 @@ elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true ./packaging/eirods.list
-    ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
@@ -1305,7 +1311,9 @@ elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
     ./epm/epm $EPMOPTS -a $arch -f deb eirods $epmvar=true ./packaging/eirods.list
-    ./epm/epm $EPMOPTS -a $arch -f deb eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -a $arch -f deb eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -a $arch -f deb eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
@@ -1313,7 +1321,9 @@ elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f pkg eirods $epmvar=true ./packaging/eirods.list
-    ./epm/epm $EPMOPTS -f pkg eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f pkg eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f pkg eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
@@ -1321,7 +1331,9 @@ elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f osx eirods $epmvar=true ./packaging/eirods.list
-    ./epm/epm $EPMOPTS -f osx eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f osx eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f osx eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
     fi
@@ -1386,10 +1398,12 @@ if [ "$RELEASE" == "1" ] ; then
     echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
     mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
 fi
-echo ""
-echo "renaming    [$RENAME_SOURCE_DEV]"
-echo "         to [$RENAME_DESTINATION_DEV]"
-mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+if [ "$1" == "icat" ] ; then
+    echo ""
+    echo "renaming    [$RENAME_SOURCE_DEV]"
+    echo "         to [$RENAME_DESTINATION_DEV]"
+    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+fi
 echo ""
 echo "renaming    [$RENAME_SOURCE]"
 echo "         to [$RENAME_DESTINATION]"
