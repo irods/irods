@@ -376,7 +376,7 @@ filePathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     dataObjInfo_t dataObjInfo;
     int status;
     char *rescGroupName = NULL;
-    char *chksum;
+    char *chksum = NULL;
 
     initDataObjInfoWithInp (&dataObjInfo, phyPathRegInp);
     if ((rescGroupName = getValByKey (&phyPathRegInp->condInput, 
@@ -782,7 +782,6 @@ int structFileReg(
     int              len            = 0;
     char*            collType       = NULL;
     char*            structFilePath = NULL;
-    rescInfo_t*      rescInfo       = NULL;
     dataObjInfo_t*   dataObjInfo    = NULL;
     rodsObjStat_t*   rodsObjStatOut = NULL;
     specCollCache_t* specCollCache  = NULL;
@@ -864,12 +863,9 @@ int structFileReg(
         } else {
             openedDataObjInp_t dataObjCloseInp;
             bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
-            rescInfo = L1desc[myStatus].dataObjInfo->rescInfo;
             dataObjCloseInp.l1descInx = myStatus;
             rsDataObjClose (rsComm, &dataObjCloseInp);
         }
-    } else {
-        rescInfo = dataObjInfo->rescInfo;
     }
 
     char* tmp_hier = getValByKey( &phyPathRegInp->condInput, RESC_HIER_STR_KW );

@@ -165,11 +165,7 @@ int _rsFileStageToCache(
                 eirods::log ( err );
             }
         } else {
-            std::stringstream msg;
-            msg << "fileStageTocache failed for [";
-            msg << _stage_inp->filename;
-            msg << "]";
-            eirods::error err = PASSMSG( msg.str(), stage_err );
+            eirods::error err = ASSERT_PASS(stage_err, "Failed for \"%s\".", _stage_inp->filename);
             eirods::log ( err );
         }
 

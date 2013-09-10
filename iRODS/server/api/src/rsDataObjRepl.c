@@ -215,9 +215,10 @@ _rsDataObjRepl (
         return (status);
     }
     
+    char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
+    char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
+
     if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
-        char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
-        char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
         status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
 
         if (status < 0) {
@@ -245,7 +246,7 @@ _rsDataObjRepl (
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
     // char* resc_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, NULL, NULL );
+    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, resc_hier, dest_hier );
  
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
