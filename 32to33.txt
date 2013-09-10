@@ -1,0 +1,2121 @@
+------------------------------------------------------------------------
+JMC - Done :: r5240 | csmith | 2012-10-03 17:20:23 -0400 (Wed, 03 Oct 2012) | 5 lines
+
+rcAuthCheck must talk to a MASTER_RCAT
+
+Since the chlCheckAuth function called from rsAuthCheck modifies the ICAT, it is no longer possible to perform this function on a SLAVE_RCAT machine.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5241 | mwan | 2012-10-03 20:09:26 -0400 (Wed, 03 Oct 2012) | 2 lines
+
+Prototype of netcdf aggregation work. It is not complete
+
+------------------------------------------------------------------------
+r5242 | jeanyves | 2012-10-04 11:28:23 -0400 (Thu, 04 Oct 2012) | 2 lines
+
+Fix makefiles for the GSI part which does not work on 3.2
+
+------------------------------------------------------------------------
+r5243 | schroede | 2012-10-04 12:16:41 -0400 (Thu, 04 Oct 2012) | 7 lines
+
+Post release, we (Jean-Yves) noticed a problem with the patch file for
+Oracle.  I've added a note on the Downloads page on irods.org and
+decided to add comments to this file for it.  We should have had
+separate patch files for each DBMS type for this one 'bigint' but at
+this point it's probably best to leave it as is, with these comments
+to explain it.
+
+------------------------------------------------------------------------
+r5244 | mwan | 2012-10-05 18:04:01 -0400 (Fri, 05 Oct 2012) | 2 lines
+
+Add documentation based on tech transfer session
+
+------------------------------------------------------------------------
+r5245 | csmith | 2012-10-05 19:46:13 -0400 (Fri, 05 Oct 2012) | 6 lines
+
+Fixed two issues with storageadmin role support
+
+- Fixed a problem in the master/slave ICAT model where the storageadmin userType was not being passed when the interaction was client -> slave ICAT -> master ICAT. chlCheckAuth now sets a bit in the returned privilege level that is checked in rsAuthResponse allowing the setting of userType there.
+- Add a check that the client user exists in chlCheckAuth
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5246 | mwan | 2012-10-05 19:50:25 -0400 (Fri, 05 Oct 2012) | 2 lines
+
+Get genNcAggrInfo() working to generate aggregate info for an netcdf object.
+
+------------------------------------------------------------------------
+r5247 | schroede | 2012-10-05 19:52:57 -0400 (Fri, 05 Oct 2012) | 6 lines
+
+Add a 'make clean' before building with boost so if it completely
+fails to build, the previous non-booost executables will not be
+available and the test will fail.  This may have been happening for
+quite a while, giving us a false positive on our nightly boost build
+tests.
+
+------------------------------------------------------------------------
+r5248 | schroede | 2012-10-08 11:45:02 -0400 (Mon, 08 Oct 2012) | 7 lines
+
+Correct the test which indicates if UNICODE is selected or not.
+
+When UNICODE was selected, it would still indicate that it was not.  I
+believe configuring with UNICODE otherwise was working fine.  See
+irods-chat.
+
+
+------------------------------------------------------------------------
+r5249 | mwan | 2012-10-09 18:40:19 -0400 (Tue, 09 Oct 2012) | 2 lines
+
+Handle '/' char in the folder name or file name for data stored in TDS resource
+
+------------------------------------------------------------------------
+r5250 | mwan | 2012-10-10 15:33:40 -0400 (Wed, 10 Oct 2012) | 2 lines
+
+Error code correction
+
+------------------------------------------------------------------------
+r5251 | mwan | 2012-10-10 16:47:34 -0400 (Wed, 10 Oct 2012) | 2 lines
+
+Add rcNcGetAggElement to get aggregate info on a single NETCDF file
+
+------------------------------------------------------------------------
+r5252 | mwan | 2012-10-10 19:42:21 -0400 (Wed, 10 Oct 2012) | 2 lines
+
+Add dependent type "%" packing instruction
+
+------------------------------------------------------------------------
+r5253 | mwan | 2012-10-11 12:42:25 -0400 (Thu, 11 Oct 2012) | 2 lines
+
+add comment of caching info for tar struct file
+
+------------------------------------------------------------------------
+r5254 | mwan | 2012-10-11 14:33:55 -0400 (Thu, 11 Oct 2012) | 2 lines
+
+remove duplicate functiion getFileDriverTypeByResc. Use getRescType.
+
+------------------------------------------------------------------------
+r5255 | mwan | 2012-10-16 14:09:53 -0400 (Tue, 16 Oct 2012) | 3 lines
+
+Stress that NETCDF4_API is needed in most cases.
+
+
+------------------------------------------------------------------------
+r5256 | mwan | 2012-10-16 16:55:18 -0400 (Tue, 16 Oct 2012) | 2 lines
+
+Correct error from last check in
+
+------------------------------------------------------------------------
+r5257 | mwan | 2012-10-16 19:59:11 -0400 (Tue, 16 Oct 2012) | 2 lines
+
+Add rcNcGetAggInfo API
+
+------------------------------------------------------------------------
+r5258 | mwan | 2012-10-17 12:06:45 -0400 (Wed, 17 Oct 2012) | 2 lines
+
+Fix a compiling bug of switich TDS on without switching OOI_CI on.
+
+------------------------------------------------------------------------
+r5259 | mwan | 2012-10-17 14:33:09 -0400 (Wed, 17 Oct 2012) | 3 lines
+
+Add NC_WRITE mode to rcNcGetAggInfo to pack the ncAggInfo and write it to
+a file with name .aggInfo in the collection.
+
+------------------------------------------------------------------------
+r5260 | xuh | 2012-10-17 16:17:43 -0400 (Wed, 17 Oct 2012) | 1 line
+
+refactor foreach into a general iterator framework; refactor language integrated gen query; path literal; refactor type checking logic for foreach;
+------------------------------------------------------------------------
+r5261 | xuh | 2012-10-17 16:36:43 -0400 (Wed, 17 Oct 2012) | 1 line
+
+add some test rules for path literals
+------------------------------------------------------------------------
+r5262 | mwan | 2012-10-17 16:49:44 -0400 (Wed, 17 Oct 2012) | 2 lines
+
+Mod rcNcOpen to handle aggregate collection.
+
+------------------------------------------------------------------------
+r5263 | mwan | 2012-10-18 13:26:45 -0400 (Thu, 18 Oct 2012) | 2 lines
+
+Doc on federation
+
+------------------------------------------------------------------------
+r5264 | mwan | 2012-10-18 19:23:59 -0400 (Thu, 18 Oct 2012) | 2 lines
+
+Modify rcNcInq to handle aggregate collection. Not working yet.
+
+------------------------------------------------------------------------
+r5265 | schroede | 2012-10-19 14:14:22 -0400 (Fri, 19 Oct 2012) | 25 lines
+
+Additions so that admins can insert multiple host names for certain
+resources (WOS).  New iadmin sub-options to 'modresc': host-add and
+host-rm to add or remove hosts from the list.  
+
+This is in support development being done at RENCI for DDN WOS
+resources which have multiple network addresses.  The Agent will need
+to parse these and choose an appropriate one to connect to (one that
+is near).
+
+ilsresc and 'iadmin lr' needed no changes to display what is now
+optionally a command-separated list.
+
+Tests were added to icatTest.pl to exercise the new SQL so that
+'devtest' can still succeed.
+
+Added host names are checked to see if they are valid DNS entries (as
+is done for the 'iadmin mkresc' host namew).  If it is not valid, a
+warning is returned but it is still used.
+
+The column used is currently 250 characters.  For Postgres, the SQL
+to increase this to 2700 is:
+alter table R_RESC_MAIN alter column resc_net type varchar(2700);
+
+See the iadmin help text for more.
+
+------------------------------------------------------------------------
+r5266 | mwan | 2012-10-23 15:00:45 -0400 (Tue, 23 Oct 2012) | 2 lines
+
+Fix a bug from last checkin to get ncNcInq to work with aggr collection
+
+------------------------------------------------------------------------
+r5267 | mwan | 2012-10-23 17:37:11 -0400 (Tue, 23 Oct 2012) | 2 lines
+
+Mod so that inc will accept aggr collection as input.
+
+------------------------------------------------------------------------
+r5268 | mwan | 2012-10-23 19:41:25 -0400 (Tue, 23 Oct 2012) | 2 lines
+
+Add code for aggr collection subsetting. Not done yet.
+
+------------------------------------------------------------------------
+r5269 | mwan | 2012-10-24 20:37:06 -0400 (Wed, 24 Oct 2012) | 2 lines
+
+Mod rsNcGetVarsByType to handle aggr collection. code done but not tested.
+
+------------------------------------------------------------------------
+r5270 | schroede | 2012-10-25 17:48:27 -0400 (Thu, 25 Oct 2012) | 3 lines
+
+Fix some error log messages to have the correct function name matching
+where it occurred; noticed by Hao.
+
+------------------------------------------------------------------------
+r5271 | mwan | 2012-10-26 19:04:14 -0400 (Fri, 26 Oct 2012) | 4 lines
+
+Fix a bug discovered by Howard with "iget -n1" where n==1 is a compound 
+resource copy and a cache copy already exists. There is a problem with the 
+replication logic such that the cache copy is mistaken to have zero length. 
+
+------------------------------------------------------------------------
+r5272 | schroede | 2012-10-30 17:04:52 -0400 (Tue, 30 Oct 2012) | 7 lines
+
+Implement an iadmin sub-command to allow 'ils /' to work properly even
+when strict ACLs are enabled.  The new 'iadmin modzonecollacl'
+sub-command is used to set the local ICAT ACLs for the collection that
+corresponds to the zone at the root ('/') level.  See the iadmin help
+text for more information.
+
+
+------------------------------------------------------------------------
+r5273 | mwan | 2012-10-30 19:01:10 -0400 (Tue, 30 Oct 2012) | 2 lines
+
+Get ncGetVarsByType to work with multiple files.
+
+------------------------------------------------------------------------
+r5274 | mwan | 2012-10-30 20:39:23 -0400 (Tue, 30 Oct 2012) | 2 lines
+
+Add code to handle multi-addresses for resources.
+
+------------------------------------------------------------------------
+r5275 | mwan | 2012-10-31 13:59:08 -0400 (Wed, 31 Oct 2012) | 2 lines
+
+Take out test for rcRuleExecDel.
+
+------------------------------------------------------------------------
+r5276 | mwan | 2012-10-31 16:13:17 -0400 (Wed, 31 Oct 2012) | 2 lines
+
+A fix for last checkin to update the resLoc after resolveMultiHost
+
+------------------------------------------------------------------------
+r5277 | mwan | 2012-10-31 19:24:03 -0400 (Wed, 31 Oct 2012) | 2 lines
+
+Modify rsNcClose to handle aggr collection
+
+------------------------------------------------------------------------
+r5278 | schroede | 2012-11-01 13:29:05 -0400 (Thu, 01 Nov 2012) | 25 lines
+
+In general-query, handle the case where the client is requesting both
+uppercase (case insensitive) and numeric compares.
+
+Avoid invalid SQL where the code was doing both upper() and and a
+cast.  The cast is done on a per-column basis (users enter 'n<', 'n='
+or 'n>') and the uppercase is for all 'where' columns (except now for
+these).
+
+Note that the user must use the 'n<' etc forms when using uppercase to
+get this.  For example:
+
+iquest uppercase "select DATA_NAME WHERE DATA_NAME like 'FX' and DATA_SIZE n< '1000'"
+
+Now works correctly.
+
+But:
+
+iquest uppercase "select DATA_NAME WHERE DATA_NAME like 'FX' and DATA_SIZE < '1000'"
+
+still gives a CAT_SQL_ERR.
+
+This is because the code can't tell that the '<' in this case is
+intended as a numeric compare.
+
+
+------------------------------------------------------------------------
+r5279 | mwan | 2012-11-01 16:45:22 -0400 (Thu, 01 Nov 2012) | 3 lines
+
+Take resLoc from addr.hostAddr instead of from RodsServerHost for
+resolveMultiHost because we want host name instead of ip address.
+
+------------------------------------------------------------------------
+r5280 | mwan | 2012-11-01 18:14:34 -0400 (Thu, 01 Nov 2012) | 2 lines
+
+Always use no staging
+
+------------------------------------------------------------------------
+r5281 | mwan | 2012-11-01 19:18:18 -0400 (Thu, 01 Nov 2012) | 2 lines
+
+Add --agginfo to inc to list and set .aggInfo of a aggregate collection
+
+------------------------------------------------------------------------
+r5282 | mwan | 2012-11-01 20:07:37 -0400 (Thu, 01 Nov 2012) | 2 lines
+
+Add documentation for 'aggregate collection'
+
+------------------------------------------------------------------------
+r5283 | mwan | 2012-11-01 20:15:28 -0400 (Thu, 01 Nov 2012) | 2 lines
+
+Better error msg
+
+------------------------------------------------------------------------
+r5284 | mwan | 2012-11-02 18:18:52 -0400 (Fri, 02 Nov 2012) | 5 lines
+
+Return NETCDF_INVALID_DATA_TYPE error if a file in the aggregate collection
+is not 'netcdf' datatype. Also add documentation to the 'inc' command on
+this error.
+
+
+------------------------------------------------------------------------
+r5285 | mwan | 2012-11-02 19:53:49 -0400 (Fri, 02 Nov 2012) | 3 lines
+
+Add the framework for a new API - rcNcArchTimeSeries.c to archive time series
+NETCDF data. The implementation for this API  is not done yet.
+
+------------------------------------------------------------------------
+r5286 | schroede | 2012-11-05 17:01:04 -0500 (Mon, 05 Nov 2012) | 57 lines
+
+Un-do much of r5242 (committed soon after the 3.2 release) and correct
+some GSI-related Makefile bugs that were in the 3.2 release.  With
+this, I believe it will build with either old or new style GSI
+installations (but not lib64 yet).  Still needs to be tested for older
+GSI types but does work for newer type 'none' again.  The 3.2 bug
+affected older GSI types.  Thanks to Jean-Yves and Agnes Ansari for
+help in resolving this.
+
+The following are the diffs compared to the 3.2 versions:
+
+schroeder@pivo:~$ diff ~/irods3.2/iRODS/server/Makefile /tbox/IRODS_BUILD/iRODS/server/Makefile
+394c394
+<   $GSI_INSTALL_TYPE2=
+---
+> GSI_INSTALL_TYPE2=
+396c396
+<   $GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+---
+> GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+
+
+schroeder@pivo:~$ diff ~/irods3.2/iRODS/clients/icommands/Makefile /tbox/IRODS_BUILD/iRODS/clients/icommands/Makefile
+177c177
+<   $GSI_INSTALL_TYPE2=
+---
+> GSI_INSTALL_TYPE2=
+179c179
+<   $GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+---
+> GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+195,196c195,196
+<         -L$(GLOBUS_LOCATION)/lib \
+<         -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
+---
+>       -L$(GLOBUS_LOCATION)/lib \
+>       -lglobus_gss_assist$(GSI_INSTALL_TYPE2) \
+198,199c198,199
+<         -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
+<         -lglobus_gsi_proxy_core$(GSI_INSTALL_TYPE2) \
+---
+>       -lglobus_gsi_credential$(GSI_INSTALL_TYPE2) \
+>       -lglobus_gsi_proxy_core$(GSI_INSTALL_TYPE2) \
+
+
+schroeder@pivo:~$ diff ~/irods3.2/iRODS/clients/fuse/Makefile /tbox/IRODS_BUILD/iRODS/clients/fuse/Makefile
+84c84
+<   $GSI_INSTALL_TYPE2=
+---
+> GSI_INSTALL_TYPE2=
+86c86
+<   $GSI_INSTALL_TYPE2=$(GSI_INSTALL_TYPE)
+---
+> GSI_INSTALL_TYPE2=_$(GSI_INSTALL_TYPE)
+schroeder@pivo:~$ 
+
+
+
+------------------------------------------------------------------------
+r5287 | mwan | 2012-11-05 18:43:13 -0500 (Mon, 05 Nov 2012) | 2 lines
+
+Add code to handle the rsNcArchTimeSeries call. Not done yet.
+
+------------------------------------------------------------------------
+r5288 | mwan | 2012-11-06 11:26:06 -0500 (Tue, 06 Nov 2012) | 2 lines
+
+set NC_NETCDF4 mode for all operations
+
+------------------------------------------------------------------------
+r5289 | mwan | 2012-11-06 11:44:29 -0500 (Tue, 06 Nov 2012) | 2 lines
+
+Add asci time to the ncAggElement_t to make 'time' easier to read.
+
+------------------------------------------------------------------------
+r5290 | mwan | 2012-11-06 18:59:27 -0500 (Tue, 06 Nov 2012) | 2 lines
+
+More development on rsNcArchTimeSeries. Not done yet.
+
+------------------------------------------------------------------------
+r5291 | schroede | 2012-11-07 12:14:29 -0500 (Wed, 07 Nov 2012) | 12 lines
+
+Fix an apparent bug in msiChkHostAccessControl; set the error status
+so the Agent will exit if the check fails (user/host not configured).
+
+This fix seems to be necessary to actually reject connections from
+user-host combinations that are configured out in the
+server/config/HostAccessControl file (see acChkHostAccessControl in
+core.re).  Without it, a reject message is logged but the connection
+is allowed.  Jean-Yves concurs that this may be an error, altho we
+believe this had been working at some time.  I noticed this in testing
+this morning related to a question on irods-chat.  
+
+
+------------------------------------------------------------------------
+r5292 | mwan | 2012-11-07 14:19:18 -0500 (Wed, 07 Nov 2012) | 2 lines
+
+Minor fixes of last checkin
+
+------------------------------------------------------------------------
+r5293 | schroede | 2012-11-07 17:18:05 -0500 (Wed, 07 Nov 2012) | 4 lines
+
+Add a comment about a new iadmin command relevant when running with
+Strict ACLS.
+
+
+------------------------------------------------------------------------
+r5294 | mwan | 2012-11-07 20:01:27 -0500 (Wed, 07 Nov 2012) | 2 lines
+
+More work on ncArchTimeSeries. Almost working.
+
+------------------------------------------------------------------------
+r5295 | mwan | 2012-11-07 20:41:24 -0500 (Wed, 07 Nov 2012) | 2 lines
+
+check for NULL optionStr in setDefaultResc
+
+------------------------------------------------------------------------
+r5296 | mwan | 2012-11-08 16:06:03 -0500 (Thu, 08 Nov 2012) | 2 lines
+
+Get the ncArchTimeSeries API to work.
+
+------------------------------------------------------------------------
+r5297 | mwan | 2012-11-08 18:11:01 -0500 (Thu, 08 Nov 2012) | 2 lines
+
+Add incarch command to archive NETCDF time series data
+
+------------------------------------------------------------------------
+r5298 | mwan | 2012-11-09 12:28:50 -0500 (Fri, 09 Nov 2012) | 2 lines
+
+Fix for last checkin
+
+------------------------------------------------------------------------
+r5299 | mwan | 2012-11-09 15:32:31 -0500 (Fri, 09 Nov 2012) | 2 lines
+
+Add help page for this command.
+
+------------------------------------------------------------------------
+r5300 | mwan | 2012-11-09 18:32:27 -0500 (Fri, 09 Nov 2012) | 2 lines
+
+Documentation.
+
+------------------------------------------------------------------------
+r5301 | mwan | 2012-11-13 13:43:43 -0500 (Tue, 13 Nov 2012) | 2 lines
+
+Minor dcumentation changes
+
+------------------------------------------------------------------------
+r5302 | schroede | 2012-11-13 14:05:47 -0500 (Tue, 13 Nov 2012) | 11 lines
+
+Add a rule to check on the strength of a new password, with an example
+rule to check the length (but default is still to have no checks).
+Micro-services could also be written to make more checks.  This is
+called for users setting passwords (ipasswd) and when the admin sets
+user passwords (iadmin moduser User password Password).
+
+ICAT test programs have a new dummy function, icatApplyRule, to avoid
+having to link in all the rule-engine functions (which we don't want
+to execute for these tests either).
+
+
+------------------------------------------------------------------------
+r5303 | xuh | 2012-11-13 15:51:30 -0500 (Tue, 13 Nov 2012) | 1 line
+
+python scripts for sending and receiving simple amqp messages; tested on rabbitmq 2.8.7 and pika 0.9.5; rules for interfacing between amqp and the rule language; the xmsg amqp bidirectional bridge.
+------------------------------------------------------------------------
+r5304 | xuh | 2012-11-13 15:52:23 -0500 (Tue, 13 Nov 2012) | 1 line
+
+test rule for amqp
+------------------------------------------------------------------------
+r5305 | xuh | 2012-11-13 15:54:38 -0500 (Tue, 13 Nov 2012) | 1 line
+
+add two microservices
+------------------------------------------------------------------------
+r5306 | xuh | 2012-11-13 16:12:43 -0500 (Tue, 13 Nov 2012) | 1 line
+
+Add common test rules as a rule file in reConfigs
+------------------------------------------------------------------------
+r5307 | mwan | 2012-11-13 17:34:30 -0500 (Tue, 13 Nov 2012) | 2 lines
+
+Mod rsNcInqWithId and rsNcInqId to work with aggregate collection
+
+------------------------------------------------------------------------
+r5308 | mwan | 2012-11-13 18:03:55 -0500 (Tue, 13 Nov 2012) | 2 lines
+
+Fixes to last checkin
+
+------------------------------------------------------------------------
+r5309 | mwan | 2012-11-13 18:19:55 -0500 (Tue, 13 Nov 2012) | 3 lines
+
+Take out the libcf configuration since it is used to implement only 1 API -
+rcNccfGetVara and this API can be replaced with rcNcGetVarsByType 
+
+------------------------------------------------------------------------
+r5310 | mwan | 2012-11-14 12:48:29 -0500 (Wed, 14 Nov 2012) | 2 lines
+
+Add option to 'unmount' a collection in msiPhyPathReg
+
+------------------------------------------------------------------------
+r5311 | mwan | 2012-11-14 16:58:00 -0500 (Wed, 14 Nov 2012) | 4 lines
+
+Add "-N numThreads" option to irepl to allow the specification of the
+number of threads for the replication. Also fixed the server replication
+handler to allow numThreads==0 to transfer large files (> 32 MB).
+
+------------------------------------------------------------------------
+r5312 | schroede | 2012-11-15 13:13:27 -0500 (Thu, 15 Nov 2012) | 6 lines
+
+Additions to support building with GSI on 64-bit hosts; modify
+Makefiles to use the Globus lib64 installation directory.  This seems
+to be how GSI is installed, at least in some cases.  Changes like
+these were tested on a DFC server.
+
+
+------------------------------------------------------------------------
+r5313 | mwan | 2012-11-15 15:14:53 -0500 (Thu, 15 Nov 2012) | 2 lines
+
+ifdef out ncInq ... for NETCDF_CLIENT to pevent compile error
+
+------------------------------------------------------------------------
+r5314 | mwan | 2012-11-15 17:33:01 -0500 (Thu, 15 Nov 2012) | 5 lines
+
+Add svrToSvrReConnect for server to reconnect to remote server.
+Modify rsUnregDataObj, rsRegReplica, rsRegDataObj and rsModDataObjMeta
+to reconnect to the iCAT enabled server because it is or network
+timeout. 
+
+------------------------------------------------------------------------
+r5315 | mwan | 2012-11-15 20:35:25 -0500 (Thu, 15 Nov 2012) | 2 lines
+
+Make ERDDAP to link with -ljansson
+
+------------------------------------------------------------------------
+r5316 | mwan | 2012-11-15 23:28:51 -0500 (Thu, 15 Nov 2012) | 2 lines
+
+Replace ifdef OOI with TDS and minor changes
+
+------------------------------------------------------------------------
+r5317 | mwan | 2012-11-16 13:21:02 -0500 (Fri, 16 Nov 2012) | 2 lines
+
+Better error msg
+
+------------------------------------------------------------------------
+r5318 | mwan | 2012-11-16 19:51:38 -0500 (Fri, 16 Nov 2012) | 2 lines
+
+Documentation for some NETCDF micro-services. Not done yet.
+
+------------------------------------------------------------------------
+r5319 | xuh | 2012-11-18 15:04:40 -0500 (Sun, 18 Nov 2012) | 1 line
+
+fix amqp.re bug
+------------------------------------------------------------------------
+r5320 | xuh | 2012-11-18 15:06:18 -0500 (Sun, 18 Nov 2012) | 1 line
+
+fix bugs in test rule file testsuiteAMQP.r
+------------------------------------------------------------------------
+r5321 | xuh | 2012-11-18 16:41:46 -0500 (Sun, 18 Nov 2012) | 1 line
+
+fix inconsistencies in the previous changes to LIGQ
+------------------------------------------------------------------------
+r5322 | xuh | 2012-11-18 16:45:57 -0500 (Sun, 18 Nov 2012) | 1 line
+
+change the type of LIGQ microservice
+------------------------------------------------------------------------
+r5323 | schroede | 2012-11-19 18:43:30 -0500 (Mon, 19 Nov 2012) | 5 lines
+
+Fix an 'icd' stack corruption problem as the current directory
+approaches the max.  I noticed this in testing related to better
+handling of reaching limits like these.
+
+
+------------------------------------------------------------------------
+r5324 | mwan | 2012-11-19 19:47:05 -0500 (Mon, 19 Nov 2012) | 2 lines
+
+Add Doxygen document
+
+------------------------------------------------------------------------
+r5325 | mwan | 2012-11-20 18:20:57 -0500 (Tue, 20 Nov 2012) | 2 lines
+
+More documentation
+
+------------------------------------------------------------------------
+r5326 | schroede | 2012-11-21 12:10:09 -0500 (Wed, 21 Nov 2012) | 5 lines
+
+Add more comments in irods.config.template (which is used to form
+irods.config) to further explain how it is used.  This is based on
+follow-on discussion related to bugzilla item 157.
+
+
+------------------------------------------------------------------------
+r5327 | schroede | 2012-11-21 13:35:18 -0500 (Wed, 21 Nov 2012) | 13 lines
+
+In the i-command source files, change all the sprintfs to the snprintf
+form (with length limits) to avoid possible stack corruptions.
+
+I don't think any of these were actual problems but the snprintf form
+is safer.  There was a case in icd (fixed Monday and probably present
+for years) in which a buffer could be written beyond the end causing a
+stack corruption.  For this i-command code (particularly non-library
+functions) this isn't too serious as it will just cause a client abort
+which makes the problem apparent.  With snprint, the string will be
+truncated which will cause problems later (but shouldn't happen
+anyway); but snprintf is stll better form.
+
+
+------------------------------------------------------------------------
+r5328 | mwan | 2012-11-21 17:04:30 -0500 (Wed, 21 Nov 2012) | 2 lines
+
+Move ifdef NETCDF4 a bit so that doxygen will work
+
+------------------------------------------------------------------------
+r5329 | mwan | 2012-11-21 17:34:01 -0500 (Wed, 21 Nov 2012) | 4 lines
+
+Add a "-G destRescGrp" option to iphymv to allow the specification of
+a target resource group to make it easier to phymv between compound 
+resources.
+
+------------------------------------------------------------------------
+r5330 | sheauc | 2012-11-26 16:03:00 -0500 (Mon, 26 Nov 2012) | 1 line
+
+for newer Ruby version, if then
+------------------------------------------------------------------------
+r5331 | sheauc | 2012-11-26 16:20:32 -0500 (Mon, 26 Nov 2012) | 1 line
+
+add msiSplitPathByKey 
+------------------------------------------------------------------------
+r5332 | sheauc | 2012-11-26 16:28:06 -0500 (Mon, 26 Nov 2012) | 1 line
+
+for msiSplitPathByKey
+------------------------------------------------------------------------
+r5333 | mwan | 2012-11-26 19:14:06 -0500 (Mon, 26 Nov 2012) | 3 lines
+
+Add a "-S srcResource" option to iphybun to bundle only files stored in the
+specified resource
+
+------------------------------------------------------------------------
+r5334 | jeanyves | 2012-11-27 04:27:11 -0500 (Tue, 27 Nov 2012) | 2 lines
+
+fix a small bug for the "-l" option
+
+------------------------------------------------------------------------
+r5335 | mwan | 2012-11-27 12:54:28 -0500 (Tue, 27 Nov 2012) | 3 lines
+
+Add a check for NULL for conn->svrVersion in rcDisconnect to prevent
+segfault
+
+------------------------------------------------------------------------
+r5336 | mwan | 2012-11-27 20:56:19 -0500 (Tue, 27 Nov 2012) | 2 lines
+
+Handle replication of resource group "all" properly in msiSysReplDataObj
+
+------------------------------------------------------------------------
+r5337 | mwan | 2012-11-27 22:07:05 -0500 (Tue, 27 Nov 2012) | 2 lines
+
+fix last checkin with freeRescGrpInfo to avoid a small mem leak
+
+------------------------------------------------------------------------
+r5338 | xuh | 2012-11-28 13:16:12 -0500 (Wed, 28 Nov 2012) | 1 line
+
+Fix a bug where '@' is not allowed in email address in mailMS
+------------------------------------------------------------------------
+r5339 | xuh | 2012-11-28 13:25:14 -0500 (Wed, 28 Nov 2012) | 1 line
+
+
+------------------------------------------------------------------------
+r5340 | xuh | 2012-11-28 13:34:25 -0500 (Wed, 28 Nov 2012) | 2 lines
+
+r5339 message:
+Code refactoring: rename rule engine macros to more accurately represent their usage; move a function used in standalone rule engine to debug.c; expand macros that do not match their intended usage; allocate array using an array type in the macros
+------------------------------------------------------------------------
+r5341 | xuh | 2012-11-28 14:15:35 -0500 (Wed, 28 Nov 2012) | 1 line
+
+add one file to the set of committed files in r5339
+------------------------------------------------------------------------
+r5342 | xuh | 2012-11-28 14:30:21 -0500 (Wed, 28 Nov 2012) | 1 line
+
+fix an inaccurate error message in the rule engine
+------------------------------------------------------------------------
+r5343 | schroede | 2012-11-29 18:15:55 -0500 (Thu, 29 Nov 2012) | 29 lines
+
+Implement a set of PAM auth extensions/configuration options as
+requested by the Swedish National Supercomputer Centre.
+
+There is now a --ttl option on iinit for PAM mode to set the time to
+live of the pam-derived irods password (within limits set by the
+admin).
+
+There's a config option, PAM_AUTH_NO_EXTEND, to disallow extensions to
+the time that an existing pam-derived password is valid.  Without this
+set they can still be extended but only before they expire
+(previously, they were not usable but could be extended).
+
+Pam-derived passwords are removed when expired (for all users) when
+one is added.  This is especially useful when the PAM_AUTH_NO_EXTEND
+is enabled as each user can create multiple passwords.
+
+Multiple SQL changes were made in the icat code to handle these
+changes.  This got fairly involved but I think it's better than
+restructuring the ICAT password table at this point.
+
+There is a change in a protocol message to include the TTL, but it is
+only for iinit in PAM mode.
+
+This was done in collaboration with Andreas Lindqvist of the Swedish
+National Supercomputer Centre.
+
+See notes and comments in the updated files for more information.
+
+
+------------------------------------------------------------------------
+r5344 | schroede | 2012-11-30 14:18:35 -0500 (Fri, 30 Nov 2012) | 6 lines
+
+Add a configuration option, used with IRODS_SYSLOG, to optionally set an
+alternative facitly code (instead of LOG_DAEMON).
+
+This was requested by Gregory Jansen of UNC and Robert Verkerk.
+
+
+------------------------------------------------------------------------
+r5345 | xuh | 2012-12-02 13:09:09 -0500 (Sun, 02 Dec 2012) | 1 line
+
+Refactor iFuseLib.c: abstract all boost/pthread dependent locking logic with #ifdef's away from the main program logic. This version should be semantically equivalent to the original version.
+------------------------------------------------------------------------
+r5346 | xuh | 2012-12-02 13:21:34 -0500 (Sun, 02 Dec 2012) | 1 line
+
+More refactoring which consolidates #ifdefs in iFuseLib.c
+------------------------------------------------------------------------
+r5347 | xuh | 2012-12-06 16:46:00 -0500 (Thu, 06 Dec 2012) | 1 line
+
+fuse client refactoring and fix a potential double disconnect by mutliple thread error.
+------------------------------------------------------------------------
+r5348 | xuh | 2012-12-12 20:13:21 -0500 (Wed, 12 Dec 2012) | 1 line
+
+Fix a problem that core.fnm is no longer working after a performance optimization in release 3.2
+------------------------------------------------------------------------
+r5349 | schroede | 2012-12-13 12:02:55 -0500 (Thu, 13 Dec 2012) | 11 lines
+
+Add a check for the server side to avoid problems if the irods
+protocol type is set incorrectly (which should happen only in debug).
+
+I noticed this while doing some testing related to some protocol
+extensions.
+
+With this change, the error is logged and the client just gets
+disconnected (as is typical for these types of errors).  There may be
+some additional checks that would be useful, but this avoids the
+particular case.
+
+------------------------------------------------------------------------
+r5350 | schroede | 2012-12-14 14:24:52 -0500 (Fri, 14 Dec 2012) | 17 lines
+
+Improve the handling of an ICAT AVU metadata concurrency case.
+
+When setting user-defined meta-data (AVUs), if two Agents try to
+modify the the same metadata (which exists with different values in
+R_META_MAIN), one of the chlSetAVUMetadata fails.  These changes allow
+the agent to retry a second time.
+
+Since this is in the case of "delete then add", the
+chlDeleteAVUMetadata is called with noCommit=1, but the delete fails
+(since the AVU was changed by the other agent), so in this case
+(noCommit set) it should not do the rollback.  And then the caller,
+chlSetAVUMetadata, can try a second time to modify the AVU.
+
+Thanks to Thomas Ledoux of the National Library of France for these
+improvements.
+
+
+------------------------------------------------------------------------
+r5351 | schroede | 2012-12-14 18:40:57 -0500 (Fri, 14 Dec 2012) | 5 lines
+
+Minor update (copyright date) and test of the svn email.
+
+This is mostly to test the email from svn commits as I didn't 
+receive the log from a commit I made earlier today.
+
+------------------------------------------------------------------------
+r5352 | xuh | 2012-12-16 14:15:13 -0500 (Sun, 16 Dec 2012) | 1 line
+
+changes to rule engine files so that hashtable and list can be reused by fuse client
+------------------------------------------------------------------------
+r5353 | xuh | 2012-12-16 14:17:11 -0500 (Sun, 16 Dec 2012) | 1 line
+
+Partial rewrite of fuse client for stricter handling of concurrency.
+------------------------------------------------------------------------
+r5354 | schroede | 2012-12-17 12:18:39 -0500 (Mon, 17 Dec 2012) | 5 lines
+
+A correction for the previous commit (r5350): Improve the handling of
+an ICAT AVU metadata concurrency case.
+
+
+
+------------------------------------------------------------------------
+r5355 | schroede | 2012-12-19 13:32:12 -0500 (Wed, 19 Dec 2012) | 4 lines
+
+Bug fix for readRodsLog.py to handle paths that contain a ".",
+provided by Adil.
+
+
+------------------------------------------------------------------------
+r5356 | schroede | 2012-12-19 18:40:57 -0500 (Wed, 19 Dec 2012) | 2 lines
+
+Minor change to test an SVN email config change
+
+------------------------------------------------------------------------
+r5357 | schroede | 2012-12-19 19:19:10 -0500 (Wed, 19 Dec 2012) | 2 lines
+
+Another minor change to test SVN email config changes
+
+------------------------------------------------------------------------
+r5358 | xuh | 2012-12-20 12:14:40 -0500 (Thu, 20 Dec 2012) | 1 line
+
+Fix a bug: server function does not provide enough info in rei when calling policy enforcement point rule, causing segfault in admin microservices
+------------------------------------------------------------------------
+r5359 | xuh | 2012-12-20 13:18:43 -0500 (Thu, 20 Dec 2012) | 1 line
+
+fix a typing error in the previous bug fix
+------------------------------------------------------------------------
+r5360 | schroede | 2012-12-20 16:37:12 -0500 (Thu, 20 Dec 2012) | 2 lines
+
+Minor change to test svn email config update
+
+------------------------------------------------------------------------
+r5361 | xuh | 2012-12-23 15:33:32 -0500 (Sun, 23 Dec 2012) | 1 line
+
+fix a memery management bug in the rule engine
+------------------------------------------------------------------------
+r5362 | xuh | 2012-12-26 22:16:32 -0500 (Wed, 26 Dec 2012) | 1 line
+
+fix UnixSendMail does not allow valid email address
+------------------------------------------------------------------------
+r5363 | mconway | 2012-12-31 10:08:42 -0500 (Mon, 31 Dec 2012) | 1 line
+
+ [#998] client user name and source clean up and format
+------------------------------------------------------------------------
+r5365 | mconway | 2012-12-31 10:40:49 -0500 (Mon, 31 Dec 2012) | 1 line
+
+[#998] client user name
+------------------------------------------------------------------------
+r5366 | antoine | 2013-01-02 14:05:27 -0500 (Wed, 02 Jan 2013) | 2 lines
+
+FlickHarvester microservice and related code
+
+------------------------------------------------------------------------
+r5367 | antoine | 2013-01-02 14:10:29 -0500 (Wed, 02 Jan 2013) | 2 lines
+
+Added website link
+
+------------------------------------------------------------------------
+r5368 | antoine | 2013-01-03 16:22:02 -0500 (Thu, 03 Jan 2013) | 2 lines
+
+Fixed comment
+
+------------------------------------------------------------------------
+r5369 | antoine | 2013-01-03 16:26:51 -0500 (Thu, 03 Jan 2013) | 2 lines
+
+Added invocation rules
+
+------------------------------------------------------------------------
+r5370 | antoine | 2013-01-06 23:43:51 -0500 (Sun, 06 Jan 2013) | 2 lines
+
+code rearranging
+
+------------------------------------------------------------------------
+r5371 | schroede | 2013-01-07 10:54:30 -0500 (Mon, 07 Jan 2013) | 3 lines
+
+Minor update to test svn mailer.conf update (removing
+irods-cvs@irods.org).
+
+------------------------------------------------------------------------
+r5372 | xuh | 2013-01-08 12:11:05 -0500 (Tue, 08 Jan 2013) | 1 line
+
+Fix a bug: returning a variable which has not been assigned in a rule causes segfault.
+------------------------------------------------------------------------
+r5373 | xuh | 2013-01-08 12:18:19 -0500 (Tue, 08 Jan 2013) | 1 line
+
+fix a small bug in the previous checkin
+------------------------------------------------------------------------
+r5374 | xuh | 2013-01-08 13:01:58 -0500 (Tue, 08 Jan 2013) | 1 line
+
+Fix a bug: substr function provided by the rule language generates segfault when index is out of range.
+------------------------------------------------------------------------
+r5375 | xuh | 2013-01-08 14:01:22 -0500 (Tue, 08 Jan 2013) | 1 line
+
+update test rule for substr
+------------------------------------------------------------------------
+r5376 | schroede | 2013-01-10 12:48:27 -0500 (Thu, 10 Jan 2013) | 9 lines
+
+Implement the use of tickets in ils.  A read (or write) ticket can now
+be used to access collection information.
+
+In addition to setting up the session ticket for 'ils', an extension
+was made in the general-query code to handle queries on
+parent-collections.  This was needed so that listing a collection with
+a ticket will not only list the data-objects but also the sub-collections.
+
+
+------------------------------------------------------------------------
+r5377 | xuh | 2013-01-11 14:14:04 -0500 (Fri, 11 Jan 2013) | 1 line
+
+fix: the rewritten part of the fuse client does not perform operations on the same directory concurrently
+------------------------------------------------------------------------
+r5378 | antoine | 2013-01-11 15:36:56 -0500 (Fri, 11 Jan 2013) | 2 lines
+
+Fix for the writeBytesBuf function
+
+------------------------------------------------------------------------
+r5379 | antoine | 2013-01-11 17:06:00 -0500 (Fri, 11 Jan 2013) | 2 lines
+
+Fixed doxygen
+
+------------------------------------------------------------------------
+r5380 | xuh | 2013-01-13 15:12:18 -0500 (Sun, 13 Jan 2013) | 1 line
+
+add conversion from the double type or the int type to the datetime type
+------------------------------------------------------------------------
+r5381 | xuh | 2013-01-13 15:46:17 -0500 (Sun, 13 Jan 2013) | 1 line
+
+fix: rule engine does not reload after deleting a rule base from the config file
+------------------------------------------------------------------------
+r5382 | xuh | 2013-01-13 16:00:37 -0500 (Sun, 13 Jan 2013) | 1 line
+
+log rule base set changes
+------------------------------------------------------------------------
+r5383 | xuh | 2013-01-13 18:41:52 -0500 (Sun, 13 Jan 2013) | 1 line
+
+update variable initialization to match data structure change in one previous revision
+------------------------------------------------------------------------
+r5384 | xuh | 2013-01-13 19:35:27 -0500 (Sun, 13 Jan 2013) | 1 line
+
+add a rule metadata attribute "logging" which when set of "false" turns auditing off for the rule and all the rules called inside it.
+------------------------------------------------------------------------
+r5385 | xuh | 2013-01-13 20:12:10 -0500 (Sun, 13 Jan 2013) | 1 line
+
+fix a problem in r5381 where the rule base is reload even if the rule base set is not changed.
+------------------------------------------------------------------------
+r5386 | schroede | 2013-01-14 13:51:15 -0500 (Mon, 14 Jan 2013) | 3 lines
+
+Explain why ilocate -h does not specify a version (close
+bugzilla item 156)
+
+------------------------------------------------------------------------
+r5387 | schroede | 2013-01-18 11:28:59 -0500 (Fri, 18 Jan 2013) | 2 lines
+
+Add more clarification on how to use the HostAccessControl
+
+------------------------------------------------------------------------
+r5388 | antoine | 2013-01-20 03:19:09 -0500 (Sun, 20 Jan 2013) | 2 lines
+
+Rearranged URL module with new code and examples
+
+------------------------------------------------------------------------
+r5389 | schroede | 2013-01-23 11:51:23 -0500 (Wed, 23 Jan 2013) | 6 lines
+
+Fix bug in ichmod for multiple files in admin (-M) mode.
+This is bugzilla bug 160, reported earlier today.
+
+Need to set the admin indication only on the first iteration.
+
+
+------------------------------------------------------------------------
+r5390 | xuh | 2013-01-23 13:02:06 -0500 (Wed, 23 Jan 2013) | 1 line
+
+Rule engine code refactoring encapsulate ifdef code
+------------------------------------------------------------------------
+r5391 | xuh | 2013-01-23 13:09:49 -0500 (Wed, 23 Jan 2013) | 1 line
+
+One more file for r5390
+------------------------------------------------------------------------
+r5392 | schroede | 2013-01-25 10:50:45 -0500 (Fri, 25 Jan 2013) | 8 lines
+
+Fix an iquest bug when displaying formatted results from a
+specific-query when more than 256 lines are returned.  The trailing
+CR/LF was not being included.
+
+This was recently reported by Robert Verkerk on irods-chat "iquery
+output with more than 256 lines looses cr/lf in lines after the
+256th".
+
+------------------------------------------------------------------------
+r5393 | schroede | 2013-01-25 17:42:50 -0500 (Fri, 25 Jan 2013) | 4 lines
+
+Correct some comments concerning the reHost as discussed on the
+irods-list.  Two lines of comments added in r3035 (2010-07-06) broke
+up a previous sentence.
+
+------------------------------------------------------------------------
+r5394 | csmith | 2013-01-28 16:45:21 -0500 (Mon, 28 Jan 2013) | 3 lines
+
+For operations where there is both a source and destination resource, set the number of transfer threads to the smaller number as defined by the acSetNumThreads policy.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5395 | xuh | 2013-02-07 16:46:33 -0500 (Thu, 07 Feb 2013) | 1 line
+
+fix a gcc compiler error for using c99 syntax
+------------------------------------------------------------------------
+r5396 | xuh | 2013-02-07 16:52:07 -0500 (Thu, 07 Feb 2013) | 1 line
+
+fix another gcc compiler error
+------------------------------------------------------------------------
+r5397 | schroede | 2013-02-07 17:39:29 -0500 (Thu, 07 Feb 2013) | 33 lines
+
+Changes so iRODS can be built with HPSS again (post 3.0).
+
+It looks like one cannot link HPSS client libraries using g++, at
+least on some platforms.  Since we changed to building with g++ in
+iRODS 3.0, this may have been a problem since then.  We experimented
+with various ways to try to link (using -fPIC and -shared) but that
+created incompatibilities with other libraries.  I believe that an
+HPSS bug report been submitted so it may be fixed in a future HPSS
+version.
+
+To work around this, we've modified platform.mk.template (platform.mk)
+so that if HPSS is selected, gcc will be used instead of g++ (for both
+compiling and linking).
+
+The change in config.mk.in (config.mk) is needed when building on
+64-bit hosts.  I'm not sure why there was a line there to unset
+ADDR_64BITS= as that variable is set (or not) elsewhere (near the top
+in config.mk).  But it was a problem for us.
+
+The mod in hpssFileDriver.h is enabled with g++ so it is not currently
+active but will be needed if/when g++ can be used.  The need for this
+was discovered in some of our testing so I'm putting it in now.
+
+The mod in hpssFileDriver.c is also needed for g++, but not with gcc,
+but is still a useful change.
+
+This is for HPSS 7.3.x.  For HPSS 7.4 it is believed that the iRODS
+driver will need to change to using the HPSS PIO API as the current
+hpss_writelist API is deprecated.
+
+This work was done in collaboration with Jeffrey Cox at Indiana
+University.
+
+------------------------------------------------------------------------
+r5398 | antoine | 2013-02-07 21:46:08 -0500 (Thu, 07 Feb 2013) | 2 lines
+
+Updates to CURL-based microservices
+
+------------------------------------------------------------------------
+r5399 | xuh | 2013-02-08 12:54:15 -0500 (Fri, 08 Feb 2013) | 1 line
+
+make str work with BUF_LEN_MS_T
+------------------------------------------------------------------------
+r5400 | antoine | 2013-02-08 14:02:54 -0500 (Fri, 08 Feb 2013) | 2 lines
+
+More error logging
+
+------------------------------------------------------------------------
+r5401 | schroede | 2013-02-15 17:19:29 -0500 (Fri, 15 Feb 2013) | 7 lines
+
+Correct the default location of the PamAuthCheck program in the
+config.mk{.in] files (and compile parameters)
+
+I believe we moved the location later on in the development process
+but but forgot to adjust this.
+
+
+------------------------------------------------------------------------
+r5402 | jeanyves | 2013-03-06 04:10:45 -0500 (Wed, 06 Mar 2013) | 2 lines
+
+Add some extra comments in iquest help menu for numeric comparison.
+
+------------------------------------------------------------------------
+r5403 | xuh | 2013-03-06 14:40:07 -0500 (Wed, 06 Mar 2013) | 2 lines
+
+Yoshimi Iida's patch on the msiExecStrCondQueryWithOptions
+microservice. This patch makes the microservice return an empty result set instead of the string "emptySet" when "zeroOK" is set. To ensure backward compatibility, the old microservice is left unchanged and the patched one is named "msiExecStrCondQueryWithOptionsNew."
+------------------------------------------------------------------------
+r5404 | xuh | 2013-03-08 14:23:03 -0500 (Fri, 08 Mar 2013) | 1 line
+
+enable unreg keyword in msiDataObjUnlink
+------------------------------------------------------------------------
+r5405 | xuh | 2013-03-11 22:54:01 -0400 (Mon, 11 Mar 2013) | 1 line
+
+Fix locking problems and variable initialization bugs; remove redundant code
+------------------------------------------------------------------------
+r5406 | xuh | 2013-03-15 15:10:33 -0400 (Fri, 15 Mar 2013) | 1 line
+
+Fix more fuse client concurrency bugs; add some standalone test cases for fuse client
+------------------------------------------------------------------------
+r5407 | xuh | 2013-03-15 15:17:04 -0400 (Fri, 15 Mar 2013) | 1 line
+
+remove unused test script
+------------------------------------------------------------------------
+r5408 | xuh | 2013-03-15 15:29:53 -0400 (Fri, 15 Mar 2013) | 1 line
+
+add readme file
+------------------------------------------------------------------------
+r5409 | xuh | 2013-03-15 15:34:15 -0400 (Fri, 15 Mar 2013) | 1 line
+
+combine test scripts
+------------------------------------------------------------------------
+r5410 | xuh | 2013-03-17 16:38:20 -0400 (Sun, 17 Mar 2013) | 1 line
+
+add a -s switch which shows only the first nonempty line of a rule. This helps make large rules more readable.
+------------------------------------------------------------------------
+r5411 | xuh | 2013-03-18 14:49:20 -0400 (Mon, 18 Mar 2013) | 1 line
+
+rename -s of iqstat to --showFirstLine.
+------------------------------------------------------------------------
+r5412 | schroede | 2013-03-21 13:52:47 -0400 (Thu, 21 Mar 2013) | 8 lines
+
+This is the freeware version of sha-1 provided by Paul E. Jones (see
+license.txt), with minor modifications to fit into iRODS.  Where I've
+modified a .h or .c file, I've kept the original in a _.h.orig or
+_.c.orig file.  The sha.c and shatest.c are test programs in the
+original that can be linked in with it.  sha1.c contains the sha
+library functions used in iRODS.
+
+
+------------------------------------------------------------------------
+r5413 | schroede | 2013-03-21 14:01:45 -0400 (Thu, 21 Mar 2013) | 78 lines
+
+Optionally use SHA-1 instead of MD5 in iRODS password authentication
+and obfuscation.
+
+This is for sites that have a security policy requiring software to
+not use MD5 due to weaknesses discovered in it.  However, the
+weaknesses found do not actually affect iRODS authentication as the
+primary property needed for iRODS is simply the one-way aspect of the
+hash (i.e. one can't derive the password from its hash (so that
+monitoring the network traffic doesn't reveal the password)), and MD5
+is quite strong in this regard.  The MD5 flaw is that it is not as
+collision resistant as previously thought; it is possible for one to
+design a file that has different content but the same MD5 hash as
+another file.
+
+In the iRODS authentication protocol a challenge value is hashed with
+the password, which is returned to the server as proof that the
+password is known.  As long as this hash is one-way and collisions are
+rare, this is fine.  Even with the MD5 limitations, collisions are
+extremely rare.  And since the challenge is unique (64 pseudo-random
+bytes), one cannot attack the authentication sub-system with prepared
+responses.
+
+SHA-1 has since been found to be vulnerable in this manner as well,
+altho it, like MD5, is still completely sufficient for iRODS
+authentication.
+
+----
+
+Currently, to enable SHA-1 as the default authentication/obfuscation
+hash edit the lib/core/src/obf.c and change the line:
+static int defaultHashType=HASH_TYPE_MD5;
+to:
+static int defaultHashType=HASH_TYPE_SHA1;
+
+I may add a micro-service/rule so that this can be set by updating a
+rule but, for now, you can edit this setting.  There's also a
+function, obfSetDefaultHashType, that can used to set this (this is
+used in iadmin for some tests).
+
+To maintain good backward compatability, and well as between the
+various clients and servers and for inter-zone operations, the iRODS
+system and protocol will determine which hash is available and fall
+back to MD5 when needed.  For example, for a site that configures
+SHA-1 as preferred, the servers will indicate to clients that SHA-1 is
+preferred and if the client is SHA-1 enabled, it will recognize this
+and return to the server a SHA-1 hash.  The server is able to tell if
+the client actually used SHA-1 in the returned values.  This
+complicates the implementation (actually represents most of the
+development effort), but is critical for this SHA-1 capability to be
+available and reliable.
+
+For iRODS obfuscation capabilities, many various cases also now use
+SHA-1 instead for MD5 when SHA-1 is preferred.  As for authetication,
+the system is able to determine if SHA-1 was used and switch back to
+MD5 if not.  This is only obfucation though, and with the iRODS source
+code one can de-scramble obfuscated values.  It does avoid completely
+plain text tho, and avoids inadvertant disclosure of values.  But it
+is not critical that SHA1 is used in all cases, as both are fine.
+
+The obfEncodeByKey function will now add the string 'sha1' at the
+beginning of the output string and the obfDecodeByKey function will
+look for this at the beginning of the input string and if found, will
+skip past it use sha1 to decode.
+
+A open-source version of sha-1 has been added to the iRODS source tree
+under lib/sha1 and is now built with iRODS in a manner similar to how
+MD5 is.  See lib/sha1/README.txt for more.
+
+There is a new iadmin sub-commands to test SHA-1: 'sethash', 'md5',
+and 'sha1'.  See the diffs and code for how these work. I didn't add
+them to the help text since they are just for test.
+
+I also plan to modify the DICE continuous build/test system to
+configure an instance with SHA-1 enabled occasional (probably daily).
+Since there are no new ICAT SQL forms with this, no new SQL-specific
+tests were needed.
+
+
+------------------------------------------------------------------------
+r5414 | schroede | 2013-03-21 17:33:53 -0400 (Thu, 21 Mar 2013) | 3 lines
+
+Add a daily test for tinderbox (continuous build/test) with SHA1 as
+the default hash.  
+
+------------------------------------------------------------------------
+r5415 | schroede | 2013-03-21 18:16:01 -0400 (Thu, 21 Mar 2013) | 6 lines
+
+Improve an error message and the error return code for an 'ichmod
+inherit' case.  The error return is now CAT_NO_ACCESS_PERMISSION,
+which is likely (but not certain). This problem was noticed by
+Jean-Yves.
+
+
+------------------------------------------------------------------------
+r5416 | jeanyves | 2013-03-29 06:10:05 -0400 (Fri, 29 Mar 2013) | 3 lines
+
+Add option "-s" to iphybun: maximum size for a tar bundle file (default is 4).
+Implement this option and the newly created "-R" option to the corresponding msi: msiPhyBundleColl.
+
+------------------------------------------------------------------------
+r5417 | schroede | 2013-04-01 16:44:42 -0400 (Mon, 01 Apr 2013) | 24 lines
+
+The following changes allow iRODS to be built with Boost enabled again
+on Linux systems using the system-installed Boost instead of the
+version included in the iRODS release/repository.  Next steps will be
+to remove the boost library source code and support from the
+repository.
+
+Previously, in collaboration with RENCI, supoort for Boost was added
+in iRODS 3.0, primarily to make the Windows version immediately
+available.  For Linux/Unix, Boost was a build-time option but has not
+been working recently (3.2 and probably 3.1).  The DICE continuous
+test system (tinderbox) builds with Boost enabled daily, but the test
+was inadvertently not failing when the (re) make failed (this was
+fixed a few weeks ago).  Windows support also became a lower priority
+effort (altho DICE and RENCI do still support it, and this commit is
+in support of that effort).
+
+Additional changes made in the iRODS code post-3.0 make the current
+iRODS code incompatible with the version of Boost in the iRODS
+repository.  But boost can now be easily installed as a system library
+using standard package managers and the version available with recent
+Linux releases is sufficient.  This is being tested under Ubuntu
+12.04.2 which includes Boost 1.46.1.
+
+
+------------------------------------------------------------------------
+r5418 | schroede | 2013-04-01 19:21:16 -0400 (Mon, 01 Apr 2013) | 40 lines
+
+ICAT performance improvements provided by Thomas Ledoux, adding 
+'limit 1' when one row is expected (Postgres or MySQL).
+
+These changes add a 'limit 1' string to SQL being run from ICAT
+functions in which only one row should be returned which, in some
+cases, can significantly improve performance.  Thomas found this
+analysing a findAVU call which took several minutes on his large
+Postgres instance but with this change took only 36ms! In addition to
+that, this change applies to other cases where one row is expected so
+there are likely other performance improvements as part of this.
+
+I believe this is safe as the ICAT code is expecting one row and if
+something is wrong and multiple rows are returned, it will discard
+them anyway.  So the 'limit 1' should do no harm.  In the local
+testing I've done (mostly 'devtest') everything still seems to work
+fine.
+
+In general, one wouldn't add 'limit 1' in a case like this because it
+may be a bit unclear (a reader might wonder why the SQL writer needed
+to limit the results to only 1).  But apparently, the DMBS (at least
+Postgres) uses this to return once a result is found (reasonably
+enough) and so can be much faster.  In local testing on a very small
+instance, there is no noticable slow-down using 'limit 1' so it is
+likely preferrable in all cases.
+
+Oracle does not support 'limit' but uses a 'where rownum <' construct
+so it would need to be done differently and I'm not sure it would be
+faster (probably is though).  So this update does not change Oracle
+SQL.
+
+This has been tested with Postgres but has not yet been tested with
+MySQ (it will later tho and should be fine).
+
+Thanks to Thomas Ledoux of the French National Library for this.
+(These are largely Thomas' updates with a couple minor changes made by
+me.)
+
+See the irod-chat thread 'Heavy selects for findAVU' for more.
+
+
+------------------------------------------------------------------------
+r5419 | schroede | 2013-04-03 13:48:25 -0400 (Wed, 03 Apr 2013) | 7 lines
+
+Remove boost compressed source file and build script, make an
+additional update to a test script to remove a now unneeded setting.
+
+This is a continuation of r5417 making changes to use system installed
+boost instead of the included version of boost (boost_irods.tar.bz2)
+which was no longer compatible.
+
+------------------------------------------------------------------------
+r5420 | schroede | 2013-04-04 17:21:42 -0400 (Thu, 04 Apr 2013) | 12 lines
+
+Add logic so the admin can alias as other users when using GSI.  Also
+add a log message (LOG_NOTICE level) for GSI logins similar to those
+done for password logins.
+
+Allowing the admin using GSI authentication to be able to alias as
+other users via the clientUserName environment variable (as is
+available with password authentication) was requested recently on
+irod-chat as the 'Operations that require password authentication
+(iCommands)' thread.  After checking into it, I found it wasn't too
+difficult to implement and so went ahead and did so.
+
+
+------------------------------------------------------------------------
+r5421 | csmith | 2013-04-08 01:37:38 -0400 (Mon, 08 Apr 2013) | 5 lines
+
+Check for data to read in the openssl buffer before calling select on the network connection.
+
+Occasionally there is data left in the openssl buffers when the data read by the application doesn't match with the openssl encryption block sizes. In this case, calling select on the read file descriptor caused a hang because the data the application was waiting for was already in the buffer (this problem was observed when using SSL from the Prods API). The SSL_pending() call checks to see if data is in the openssl buffer, so we will only select() on the read if there is no data available.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5422 | schroede | 2013-04-09 18:13:24 -0400 (Tue, 09 Apr 2013) | 17 lines
+
+Corrections for MySQL for some of the PAM-related operations (user
+acquiring a PAM-derived password, and iadmin rpp(remove PAM password))
+
+Without these fixes those PAM operations would fail if the ICAT is
+MySQL.
+
+I discovered this problem after correcting a problem in the tinderbox
+continuous test system so the MySQL test would run again (the Boost
+runs take so long it threw off the scheme).  The 'irodsctl devtest'
+(and so tinderbox) does detect this problem; MySQL issues a SQL error
+so a CAT_SQL_ERR is returned when success is expected.
+
+I'm looking at MySQL again because I'm working on integrating some
+additional improvements in the iCAT (iPlant-provided) and wanted to
+test them in MySQL too.
+
+
+------------------------------------------------------------------------
+r5424 | schroede | 2013-04-10 17:58:51 -0400 (Wed, 10 Apr 2013) | 23 lines
+
+ICAT SQL performance improvement for very large scale sets of ACLs and
+users with Postgresql.
+
+These are changes to the SQL text for two SQL statements in the
+chlModAccessControl function (used in, for example, ichmod) when
+recursively updating the access-permissions rows (informally, 'ACL's)
+on collections.  These changes were found to signficantly improve
+peformance of these two statements in the iPlant instance where these
+became slow due to there being a very large number of users and many
+individual ACLs (rows) per collection.
+
+The modification is to change IN to ANY and add a ARRAY( ) around an
+expression for PostgreSQL (i.e. iPlant).
+
+For Oracle and MySQL the ARRAY construct is not supported, so for them
+I'm including the IN change but not the ARRAY.  I'm not sure if this
+will improve performance for Oracle or MySQL under load, or not, but
+it seems it might.  These pass tests for Postgres, MySQL, and Oracle.
+
+These (for Postgres) were developed by iPlant staff, primarily Nirav
+Merchant (with a little assistance from DICE).  Thanks!
+
+
+------------------------------------------------------------------------
+r5425 | antoine | 2013-04-11 23:52:35 -0400 (Thu, 11 Apr 2013) | 2 lines
+
+Added file/collection detection on the fly (at the cost of an extra query)
+
+------------------------------------------------------------------------
+r5426 | schroede | 2013-04-19 12:19:40 -0400 (Fri, 19 Apr 2013) | 3 lines
+
+Make some corrections to the Tinderbox test description in preparation
+for an addition.
+
+------------------------------------------------------------------------
+r5427 | schroede | 2013-04-19 15:31:42 -0400 (Fri, 19 Apr 2013) | 10 lines
+
+Add a Tinderbox test for FUSE, run once a day.  Runs the test scripts
+in clients/fuse/test developed by Hao. Assumes FUSE has been installed.
+
+Also added one script, clients/fuse/test/test2.1.cleanup.sh, also run
+by this, to remove some test files created by test2.1.sh.  This also
+uses FUSE to do this.
+
+As with all Tinderbox tests, if anything fails the test should
+indicate an overall failure.
+
+------------------------------------------------------------------------
+r5428 | schroede | 2013-04-23 14:20:18 -0400 (Tue, 23 Apr 2013) | 27 lines
+
+In strict access-control mode, extend the checks made in the
+general-query to handle items being checked (not just returned).
+
+That is, in the general-query, when in strict access-control mode,
+also add the access-check SQL when the where clause contains checks
+using collection or data-object information.
+
+The strict mode for access-control is when the core rule 'acAclPolicy'
+is set to call 'msiAclPolicy("STRICT")'.  See core.re for a
+description.  Default is not strict.
+
+The previous strict-mode logic in the general-query code would add
+access checks if columns in R_DATA_MAIN or R_COLLECTION_MAIN were
+being returned.  This worked fine for queries done, for example, by
+'ils' and many other internal general-queries, and many forms done by
+users via 'iquest', 'imeta' and micro-services.
+
+But, without the changes in this commit, users could find out if a 
+data-object exists by name via queries like these:
+  iquest "select USER_NAME where DATA_NAME = 'myfile'"
+
+With this addition, queries like these, in strict mode, will return
+only rows to which the user has read access.
+
+This was noticed by Reagan in one of the classes he teaches.
+
+
+------------------------------------------------------------------------
+r5429 | antoine | 2013-04-24 16:20:59 -0400 (Wed, 24 Apr 2013) | 2 lines
+
+Added support for MSO objects in msiPhyPathReg
+
+------------------------------------------------------------------------
+r5430 | csmith | 2013-04-24 19:19:12 -0400 (Wed, 24 Apr 2013) | 7 lines
+
+Fixed race conditions in the directAccessFileDriver code.
+
+When a transfer is done in parallel threads, the various calls to changeToRootUser()/changeToUser()/changeToServiceUser() might start happening in different threads at different times. Since the uid/gid of a process is shared by all threads, this would have the effect of a switch to root in one function be followed by a switch to a user in another, which would then cause the desired "root" operation to fail.
+
+The fix is to use a mutex to sequence the operations that are done with switched context.
+
+Signed-off-by: Chris Smith <chris@distributedbio.com>
+------------------------------------------------------------------------
+r5431 | schroede | 2013-04-25 11:25:27 -0400 (Thu, 25 Apr 2013) | 9 lines
+
+Change default Postgres from 9.0.3 to 9.2.4.  Besides being the
+latest, this also includes some security patches (see their web site)
+
+I'm currently testing with the various Postgres versions that include
+their security fixes, 9.2.4, 9.1.9, 9.0.13, and 8.4.17, and will post
+to iRODS chat about this shortly.  So far I've confirmed that iRODS
+works fine with 9.2.4 and 9.1.9.
+
+
+------------------------------------------------------------------------
+r5432 | schroede | 2013-05-02 12:25:38 -0400 (Thu, 02 May 2013) | 26 lines
+
+Check that a user has write (or better) permission on a source
+collection before allowing a move out of it. This fixes the case where
+users could remove their home collections (and not be able to restore
+them).
+
+The fix is to add another check in the chlMoveObject function in the
+case of dealing with collections.  This comes into play with the 'irm
+-r COLLECTION_NAME' command, where the Agent code is doing a move into
+the trash collection.  A point of confusion in understanding this
+problem was that with a -f ('irm -rf COLLECTION_NAME'), this problem
+did not (and does not) exist as the Agent code is doing a remove
+instead of a move and the checks are different.
+
+This will also fix the case where users can also remove the
+/zone/home/public collection.  Users 'own' that collection, but do not
+have write access to /zone/home.
+
+Other cases, using a direct 'imv' command for example, and working
+with data-objects, is handled by somewhat differently and seems to
+have been working fine.
+
+Thanks to Michael Keller of the University of Canterbury New Zealand
+for finding, reporting, and tracking this problem.  See the irod-chat
+thread 'Default ACL on home directories issue' for more.
+
+
+------------------------------------------------------------------------
+r5433 | schroede | 2013-05-08 11:19:08 -0400 (Wed, 08 May 2013) | 3 lines
+
+Resync the SVN version of this tinderbox script with the one
+used on the tinderbox test host.
+
+------------------------------------------------------------------------
+r5434 | schroede | 2013-05-09 11:48:42 -0400 (Thu, 09 May 2013) | 27 lines
+
+Add to a script (irods2.sh) used in the tinderbox (~hourly) testing to
+include the major options for the run on the summary line.  This is
+useful in monitoring the system and confirming that particular tests
+are being run.
+
+The major options are:
+  PG : Reuse an existing postgres instance 
+  NewPG: Download and install a new Postgres
+  MySQL: Use MySQL as the ICAT DBMS instead of Postgres
+  Boost: Build and test iRODS using Boost
+  FUSE: Build and test FUSE
+  Pound: run the Pound (load/concurrency) test
+PG is used most the time but alternates with NewPG and MySQL.
+
+These are set to run at different hours of the day so that each should
+be run in a 24 hour period.
+
+The summaries can be easily checked via the ch.pl -r command which
+greps thru the tinderbox.out for the recent summary lines.
+
+Also, change the time for the FUSE test as the NewPG run can sometimes
+run long and so the hour could be missed.  
+
+Also, update the SVN version of ch.pl with an option added a while ago
+on the tinderbox host.  Add a -o option to run one-time to show the
+current step/state and then exit.
+
+------------------------------------------------------------------------
+r5441 | schroede | 2013-05-13 13:00:53 -0400 (Mon, 13 May 2013) | 19 lines
+
+Disable the new gcc warning for unused-but-set-variable (now included
+with -Wall) as it generates more false positives than useful warnings.
+
+Actually, for iRODS code, none of these warnings seemed to be true
+positives (and a typical build had 186 of them).
+
+The fix is to just add -Wno-unused-but-set-variable to the gcc command
+line.  Hopefully, this will also be OK with older versions of gcc.
+
+In the iRODS coding style, we'd typically call functions and hold the
+return code in a variable even if not using that value later.  This
+makes the code easier to read (in our opinions) and makes the value
+readily available to the debugger when stepping through some
+processing.  There are various cases where the caller may 'care' about
+the function return code, but some when it does not.
+
+I noticed these warnings when moving from Ubuntu 10.04 to 12.04.  The
+new gcc is version 4.6.3.
+
+------------------------------------------------------------------------
+r5442 | xuh | 2013-05-13 17:55:43 -0400 (Mon, 13 May 2013) | 1 line
+
+fix compiler warnings
+------------------------------------------------------------------------
+r5443 | xuh | 2013-05-13 18:38:43 -0400 (Mon, 13 May 2013) | 1 line
+
+fix compiler warnings
+------------------------------------------------------------------------
+r5444 | schroede | 2013-05-14 12:39:42 -0400 (Tue, 14 May 2013) | 3 lines
+
+Add some documentation on the release procedure: two checklists of
+tasks and steps that are done.
+
+------------------------------------------------------------------------
+r5445 | xuh | 2013-05-15 14:32:18 -0400 (Wed, 15 May 2013) | 1 line
+
+make oprType available to the rule engine
+------------------------------------------------------------------------
+r5446 | jeanyves | 2013-05-16 11:32:46 -0400 (Thu, 16 May 2013) | 4 lines
+
+Add a acPreProcForExecCmd hook. 
+It will be trigerred before executing a binary or script stored in server/bin/cmd through
+iexecmd, msiExecCmd or the corresponding APIs.
+
+------------------------------------------------------------------------
+r5447 | xuh | 2013-05-17 15:21:54 -0400 (Fri, 17 May 2013) | 1 line
+
+move error message generated from microservices to a rule engine managed error buffer so that they can be obtained using the errormsg microservice
+------------------------------------------------------------------------
+r5448 | xuh | 2013-05-17 15:37:16 -0400 (Fri, 17 May 2013) | 1 line
+
+add a failmsg microservice which takes in an error code and an error msg and generate an error with that error code and that error message
+------------------------------------------------------------------------
+r5449 | xuh | 2013-05-17 15:56:10 -0400 (Fri, 17 May 2013) | 1 line
+
+add a failmsg microservice which takes in an error code and an error msg and generate an error with that error code and that error message
+------------------------------------------------------------------------
+r5450 | xuh | 2013-05-17 16:01:37 -0400 (Fri, 17 May 2013) | 1 line
+
+correct message for r5449: add a parameter containing the command to the pre proc rule for msiExecCmd
+------------------------------------------------------------------------
+r5451 | xuh | 2013-05-17 18:08:28 -0400 (Fri, 17 May 2013) | 1 line
+
+Remove unused code
+------------------------------------------------------------------------
+r5452 | xuh | 2013-05-17 18:17:08 -0400 (Fri, 17 May 2013) | 1 line
+
+replace commenting with #ifdefs to keep code backward compatible with the old rule engine.
+------------------------------------------------------------------------
+r5453 | xuh | 2013-05-17 18:32:49 -0400 (Fri, 17 May 2013) | 1 line
+
+add nre.ruleAdminMS.c
+------------------------------------------------------------------------
+r5454 | schroede | 2013-05-17 18:51:22 -0400 (Fri, 17 May 2013) | 3 lines
+
+Include SHA1 as one of the optional tests noted on the summary line
+(forgot to include in the commit a few days ago).
+
+------------------------------------------------------------------------
+r5455 | xuh | 2013-05-18 15:25:57 -0400 (Sat, 18 May 2013) | 1 line
+
+Add a "." operator which can be used to create, modify, and access keyValPair_t within the rule language. See testKV.r for examples.
+------------------------------------------------------------------------
+r5456 | antoine | 2013-05-21 17:38:47 -0400 (Tue, 21 May 2013) | 2 lines
+
+Fixed a bug in matchVaultPath() and matchCliVaultPath() that made msiSetChkFilePathPerm("chkNonVaultPathPerm") block registration of files in the user's own vault directory, instead of allowing it as described. Also fixed incorrect comments in the code (zone name is not used in physical paths).
+
+------------------------------------------------------------------------
+r5457 | schroede | 2013-05-24 12:26:40 -0400 (Fri, 24 May 2013) | 14 lines
+
+Add a log message for the case where an empty regParam is provided to
+rsModDataObjMeta and so is being ignored.
+
+This can happen in some situations when 3.1 and 3.2 servers are mixed
+due to some changes in how the packing/unpacking functions work.
+
+The case noticed was when a 3.1 IES was being used and a 3.2 non-IES
+was being installed.  As a last step in this 'irodssetup' does a iput,
+iget, and diff and it was the diff that was failing.  The iput
+silently failed too as this call (from agent to agent) failed and so
+the size was still 0.  This does not fix that, but at least there
+would something in the server log to indicate something unusual.
+
+
+------------------------------------------------------------------------
+r5458 | schroede | 2013-05-24 17:00:35 -0400 (Fri, 24 May 2013) | 12 lines
+
+Avoid generating PAM-derived passwords for which the scrambled form
+contains a single quote (') as this causes issues on some platforms
+(Suse 12 and perhaps others).  
+
+The logic is to just retry (generate a new password) if there is a
+single quote in the scrambled form.  It will retry up to 10 times, if
+needed (retries should be rare tho).  It will log the retry as a
+Notice level message and if they all fail, as an Error.
+
+This was provided in large part by the E-iRODS folks (Jason C),
+thanks!
+
+------------------------------------------------------------------------
+r5459 | xuh | 2013-05-27 17:22:33 -0400 (Mon, 27 May 2013) | 1 line
+
+fix memory leaks in the rule engine code
+------------------------------------------------------------------------
+r5460 | xuh | 2013-05-27 17:47:09 -0400 (Mon, 27 May 2013) | 1 line
+
+fix a compiler error
+------------------------------------------------------------------------
+r5461 | schroede | 2013-05-28 17:24:12 -0400 (Tue, 28 May 2013) | 4 lines
+
+Extension of previous commit, only use -Wno-unused-but-set-variable if
+GCC version is greater than or equal to 4.5.  This is needed on some
+platforms (such as my iMac) to avoid fatal build (gcc) errors.
+
+------------------------------------------------------------------------
+r5462 | schroede | 2013-05-29 11:58:55 -0400 (Wed, 29 May 2013) | 10 lines
+
+Change the check added yesterday to use gcc/g++ 4.6 instead of 4.5 to
+be more fail-safe.  g++ 4.6 has this new command line option but I'm
+not sure 4.5 does.
+
+If the option is used but the compiler doesn't support it, the build
+will fail.  But the other way around the only problem is that extra
+warnings are produced.
+
+
+
+------------------------------------------------------------------------
+r5463 | schroede | 2013-05-31 14:31:00 -0400 (Fri, 31 May 2013) | 30 lines
+
+Implement a TTL (Time To Live) option for regular iRODS passwords.
+
+This was on the list of requests from the Garching iRODS user group
+meeting, fairly high, and not too difficult to do.
+
+Added an API function, rc/rsGetLimitedPassword, which operates much
+like the one-time passwords but with broader (but limited) min and max
+times that are specificed by the user (via iinit).  A password is
+securely returned to the client as the value that is returned is
+hashed with hashed with the user's main password to form the actual
+time-limited password.  This is then scrambled and stored in the
+.irodsA file for use by the other i-commands and into the ICAT (also
+in a scrambled form) as a password with an expiration time in the near
+future.  
+
+Passwords that are expired are ignored by the authentication code.
+When a new password of this type is created, any expired ones are
+removed.
+
+Made changes to iinit.c handle TTL in this mode and added some help
+text.
+
+Added a test in icatTest.pl to exercise the new SQL (by simply using
+--ttl in init) so that 'devtest' (and tinderbox) can succeed.
+
+Also added a hashToStr function (which is the same as md5ToStr) since
+these can now be SHA-1 hashes (matching the new (post 3.2)
+obfMakeOneWayHash better).
+
+
+------------------------------------------------------------------------
+r5464 | schroede | 2013-05-31 15:13:04 -0400 (Fri, 31 May 2013) | 3 lines
+
+Remove an unused variable from the last commit to avoid a compiler
+warning.
+
+------------------------------------------------------------------------
+r5465 | schroede | 2013-06-05 14:23:48 -0400 (Wed, 05 Jun 2013) | 47 lines
+
+New version of some SQL used with quota enforcement that performs much
+better at scale.
+
+This new SQL and supporting mods in the ICAT function
+(generateSpecialQuery) were provided by Giacomo Mariani and colleagues
+at SuperComputing Applications and Innovation Department CINECA,
+Bologna, Italy, after investigating SQL that was running very slowly.
+
+I also checked the new SQL by hand to convince myself that the old and
+new SQL statements are logically equivalent, although both of them are
+a bit complicated.  It helps to work with the statements with a text
+editor, breaking them up into components (for the new, by the UNIONs).
+The new SQL is doing a UNION of 3 selects, the first of which is
+handling group quotas on specific-resources, the second is group
+quotas on total use, and the third is for both specific-resources and
+total-usage for the particular user.  It seems to be logically
+equivalent to the old version where the old had two OR conditions in
+some nested conditions (the new form there's one OR, and it's in the
+last select of the three).  One minor change from that provided is
+removing a trailing ';' on the SQL; this is not an issue with Postgres
+but may be with others.
+
+The two queries in this ICAT function are used when quotas are being
+enforced (i.e. by enabling quotas via the acRescQuotaPolicy rule in
+the core.re file).  There's a setRescQuota function that is called
+from the rsDataObjCreate API function, that calls chlGenQuery with
+this special option (QUOTA_QUERY).
+
+There are two SQL forms, but it's the second one, quotaQuery2, that is
+used in practice (as called by the rsDataObjCreate API function).
+
+I also made some minor changes to logging in the function, changing
+some rodsLog calls that were LOG_ERROR to LOG_DEBUG and I added some
+(also only at LOG_DEBUG (i.e. normally not logged)).
+
+As part of this commit, I've also updated the quotaTest.pl script to
+test this SQL.  See the instructions at the start of the script.  One
+needs to enable the enforcement via core.re first, and then run
+'quotaTest.pl enabled'.  But this test confirms that that SQL runs OK
+and that that quotas are enforced in the various modes (for users or
+groups, on particular resources or for total storage).  It's still
+worthwhile to run 'quotaTest.pl' without the 'enabled' option (with it
+off in core.re) to perform other tests.
+
+Thanks to Giacomo Mariani and colleagues for this improvement.
+
+
+------------------------------------------------------------------------
+r5466 | schroede | 2013-06-05 15:13:44 -0400 (Wed, 05 Jun 2013) | 17 lines
+
+A couple minor changes for building with a C compiler (gcc).
+We use a C compiler on AIX and whenever HPSS is included.
+
+These C++'isms crept into code recently.
+
+There are other issues C++/C issues we need to fix before the release.
+
+
+I was able to easily test this on linux by just editing
+config/plaform.mk, replacing g++ with gcc near the top:
+CC=/usr/bin/gcc
+CC_IS_GCC=1
+#CCFLAGS=
+LDR=/usr/bin/gcc
+
+
+
+------------------------------------------------------------------------
+r5467 | xuh | 2013-06-06 13:44:15 -0400 (Thu, 06 Jun 2013) | 1 line
+
+databook rules
+------------------------------------------------------------------------
+r5468 | xuh | 2013-06-06 19:23:54 -0400 (Thu, 06 Jun 2013) | 1 line
+
+fix a gcc compiler warning
+------------------------------------------------------------------------
+r5469 | xuh | 2013-06-06 19:33:41 -0400 (Thu, 06 Jun 2013) | 1 line
+
+prevent redefinition of macros
+------------------------------------------------------------------------
+r5470 | sheauc | 2013-06-07 20:30:46 -0400 (Fri, 07 Jun 2013) | 3 lines
+
+For HDFS (Hadoop File System" Support, the following files
+
+
+------------------------------------------------------------------------
+r5471 | sheauc | 2013-06-07 20:36:53 -0400 (Fri, 07 Jun 2013) | 2 lines
+
+Also need to modify for HDFS
+
+------------------------------------------------------------------------
+r5472 | xuh | 2013-06-09 01:44:10 -0400 (Sun, 09 Jun 2013) | 4 lines
+
+struct definition parser; xml struct representation converter; code generation tool (requires libxslt and libxml4); generated code for session variables from struct definition; dynamic type checking for session variables; future coercion kind for session variable type backward compatibility; typechecker code refactoring; re debugger refactoring: new rule engine debugger data structures; rule engine events; AVU based attribute which turns on and off rule engine logging and microservices for setting and getting this attribute
+
+
+
+------------------------------------------------------------------------
+r5473 | xuh | 2013-06-09 02:09:05 -0400 (Sun, 09 Jun 2013) | 1 line
+
+Add a ms param type for data obj info struct
+------------------------------------------------------------------------
+r5474 | xuh | 2013-06-09 17:12:11 -0400 (Sun, 09 Jun 2013) | 1 line
+
+fix an imcoll error that Jean-Yves found
+------------------------------------------------------------------------
+r5475 | schroede | 2013-06-10 13:03:40 -0400 (Mon, 10 Jun 2013) | 14 lines
+
+New i-command scripts, iTicket, iGet, and iDel for working with
+tickets and directory trees, provided by Giacomo.
+
+These work-around some ticket limitations when working with directory
+trees.  The idea is to generate a ticket for each subdirectory and use
+them instead of the top-level collection ticket when needed.  See the
+scripts and their help text for more.  Also see the irod-chat thread
+'Problem with iticket for iget subdirectories.'  Thanks to Giacomo
+Mariani of the SuperComputing Applications and Innovation Department
+CINECA, Bologna, Italy, for these.
+
+See the README.txt and its references for more.
+
+
+------------------------------------------------------------------------
+r5476 | xuh | 2013-06-10 15:22:31 -0400 (Mon, 10 Jun 2013) | 1 line
+
+Fix gcc compiler error and other errors
+------------------------------------------------------------------------
+r5477 | xuh | 2013-06-10 15:59:30 -0400 (Mon, 10 Jun 2013) | 1 line
+
+Update the code generation tool makefile
+------------------------------------------------------------------------
+r5478 | xuh | 2013-06-10 16:44:46 -0400 (Mon, 10 Jun 2013) | 1 line
+
+One more template for code generation tool
+------------------------------------------------------------------------
+r5479 | schroede | 2013-06-11 13:44:50 -0400 (Tue, 11 Jun 2013) | 17 lines
+
+Add compatibility with OpenSSL on Centos5 (openssl pre version 1.0 in
+Enterprise Linux 5) as a build-time option. Thanks to by Andreas
+Lindqvist (Swedish NSC-SNIC) for this fix.
+
+For those distributions that include an older version of OpenSSL,
+previous to 1.0, such as Centos5, there are some compatibility issues
+that we believe are safely resolved with these changes.  This is
+ifdef-controlled, and is not enabled by default.
+
+To enable this, uncomment the following line in config/config.mk:
+# EL5_SSL = 1
+This is below the # USE_SSL = 1 line which you uncomment to enable SSL.
+
+Thanks to Andreas Lindqvist of the National Supercomputer Centre
+(NSC), Swedish National Infrastructure for Computing (SNIC) for this
+improvement.
+
+------------------------------------------------------------------------
+r5480 | xuh | 2013-06-11 18:00:48 -0400 (Tue, 11 Jun 2013) | 1 line
+
+macro based annotation support for code generation tool; clean up code generation template; reduce repeated template code in generation templates;
+------------------------------------------------------------------------
+r5481 | schroede | 2013-06-12 12:32:41 -0400 (Wed, 12 Jun 2013) | 14 lines
+
+Add a test to build iRODS with gcc instead of g++.  This is run once a
+day via the Tinderbox system (other modes run at different hours of
+the day).  This is a resync with the script in use (on pivo.ucsd.edu
+under /tbox).
+
+Also, changed some times for some of the tests and fixed a minor bug.
+
+To avoid certain problems, the C complier is used on AIX, Solaris, and
+whenever HPSS is used.  With this change in this tinderbox test
+script, we can also test building with C on other platforms, such as
+our Ubuntu test host, catching C++isms (such as // comments) if/when
+they are added.
+
+
+------------------------------------------------------------------------
+r5482 | schroede | 2013-06-12 18:08:34 -0400 (Wed, 12 Jun 2013) | 5 lines
+
+Update a recent change to handle systems where awk is not gawk (such
+as Ubuntu 13.04 where awk is mawk by default).  Sigh...  Check on the
+g++ version by using cut and expr instead of awk.
+
+
+------------------------------------------------------------------------
+r5483 | xuh | 2013-06-13 01:41:50 -0400 (Thu, 13 Jun 2013) | 1 line
+
+Fix an non-IES compiler error Wayne found
+------------------------------------------------------------------------
+r5484 | mconway | 2013-06-13 09:47:09 -0400 (Thu, 13 Jun 2013) | 1 line
+
+remove old PRODS and web contents (which were the PHP libraries) and inserted README files that point to the GForge/git versions
+------------------------------------------------------------------------
+r5485 | mconway | 2013-06-13 10:21:24 -0400 (Thu, 13 Jun 2013) | 1 line
+
+remove old PRODS and web contents (which were the PHP libraries) and inserted README files that point to the GForge/git versions
+------------------------------------------------------------------------
+r5486 | schroede | 2013-06-17 15:31:21 -0400 (Mon, 17 Jun 2013) | 3 lines
+
+Resync svn version with tindebox one to use newer Postgres;
+this svn input file is used in the NMI BaTLab testing.
+
+------------------------------------------------------------------------
+r5487 | schroede | 2013-06-17 17:46:34 -0400 (Mon, 17 Jun 2013) | 8 lines
+
+For the TTL option, allow the admin to set a default in iinit.c and
+use that if TTL is required but not provided.  Also, add a comment about 
+etting possibly large limits for batch jobs in icatHighLevelRoutines.c.
+
+These improvements were provided by Andreas Lindqvist of the National
+Supercomputer Centre (NSC) Swedish National Infrastructure for
+Computing (SNIC).
+
+------------------------------------------------------------------------
+r5488 | antoine | 2013-06-19 10:31:17 -0400 (Wed, 19 Jun 2013) | 2 lines
+
+Added include header (for C++ compilers)
+
+------------------------------------------------------------------------
+r5489 | schroede | 2013-06-21 11:52:10 -0400 (Fri, 21 Jun 2013) | 5 lines
+
+Add another check to prevent an admin from accidentially creating a
+group (or user perhaps) with a blank name.
+
+This bug was reported by Michael Keller, University of Canterbury.
+
+------------------------------------------------------------------------
+r5490 | antoine | 2013-06-25 16:30:26 -0400 (Tue, 25 Jun 2013) | 2 lines
+
+Added example rule for msiLoadMetadataFromXml (existing one used old rule syntax)
+
+------------------------------------------------------------------------
+r5491 | antoine | 2013-06-29 22:30:03 -0400 (Sat, 29 Jun 2013) | 12 lines
+
+Extension of Wayne's commit r5489 to reject blank usernames (as in made of space type chars only), e.g:
+
+pho27:iRODS antoine$ iadmin mkuser "   " rodsuser
+pho27:iRODS antoine$ 
+pho27:iRODS antoine$ 
+pho27:iRODS antoine$ iadmin lu
+rodsBoot#pho27
+rods#pho27
+   #pho27
+pho27:iRODS antoine$ 
+ 
+
+------------------------------------------------------------------------
+r5492 | antoine | 2013-07-01 17:21:23 -0400 (Mon, 01 Jul 2013) | 2 lines
+
+removed unused nre.genQueryMS.c (to avoid potential confusion)
+
+------------------------------------------------------------------------
+r5493 | xuh | 2013-07-03 12:30:52 -0400 (Wed, 03 Jul 2013) | 1 line
+
+change error messages to be more specific; fix bugs in pattern mattching; allow expansion of constants in pattern matching
+------------------------------------------------------------------------
+r5494 | xuh | 2013-07-03 12:39:57 -0400 (Wed, 03 Jul 2013) | 1 line
+
+global session id supported which is used in rules in databook
+------------------------------------------------------------------------
+r5495 | xuh | 2013-07-03 12:43:54 -0400 (Wed, 03 Jul 2013) | 1 line
+
+some update to databook and amqp rules
+------------------------------------------------------------------------
+r5496 | schroede | 2013-07-03 17:22:58 -0400 (Wed, 03 Jul 2013) | 3 lines
+
+Update a comment to be correct for the new rule engine (using core.re)
+as per a discussion on irod-chat this week.
+
+------------------------------------------------------------------------
+r5497 | xuh | 2013-07-08 16:14:10 -0400 (Mon, 08 Jul 2013) | 1 line
+
+comment out microservices that need more security checks
+------------------------------------------------------------------------
+r5498 | schroede | 2013-07-08 16:42:40 -0400 (Mon, 08 Jul 2013) | 3 lines
+
+Add the new (for 3.3) incarch command to the list of i-commands
+described by ihelp.
+
+------------------------------------------------------------------------
+r5499 | schroede | 2013-07-10 18:49:20 -0400 (Wed, 10 Jul 2013) | 4 lines
+
+Patch script for 3.3 updates, new specific queries provided by the iPlant
+folks.  I need to check more, but if there are no other ICAT updates
+for 3.3 we might leave it as a sh script like this.
+
+------------------------------------------------------------------------
+r5500 | terrell | 2013-07-10 23:32:41 -0400 (Wed, 10 Jul 2013) | 1 line
+
+comment tweaks for Patch script for 3.3 updates
+------------------------------------------------------------------------
+r5501 | sekar | 2013-07-11 12:38:45 -0400 (Thu, 11 Jul 2013) | 4 lines
+
+a massive upgrade with additionalfeature for the Workflow to perform
+call to other workflows. many tests are added.
+
+
+------------------------------------------------------------------------
+r5502 | sekar | 2013-07-11 13:10:19 -0400 (Thu, 11 Jul 2013) | 2 lines
+
+small compile bug because tinderbox needs cohersion - line 1529 in msiBytesBufToStr
+
+------------------------------------------------------------------------
+r5503 | schroede | 2013-07-11 14:22:56 -0400 (Thu, 11 Jul 2013) | 9 lines
+
+Correct the irodsHost config file inadvertantly updated earlier today.
+
+The irodsHost file is manually configured in situations where it is
+needed and should only include examples by default.  The localhost
+definition accidentially included with r5501 update causes failures in
+certain types of commands (iput would hang).  This was noticed under
+the tinderbox build/test system.
+
+
+------------------------------------------------------------------------
+r5504 | schroede | 2013-07-11 16:28:37 -0400 (Thu, 11 Jul 2013) | 3 lines
+
+Update the version (date) on the one script in scripts/perl that has
+been revised since the 3.2 release: irodsprompt.pl.  
+
+------------------------------------------------------------------------
+r5505 | schroede | 2013-07-11 16:31:52 -0400 (Thu, 11 Jul 2013) | 2 lines
+
+Update the version and release date for releasing 3.3 next week.
+
+------------------------------------------------------------------------
+r5506 | schroede | 2013-07-12 10:44:25 -0400 (Fri, 12 Jul 2013) | 2 lines
+
+Change the upgrade notice for the ICAT patch file for 3.3.
+
+------------------------------------------------------------------------
+r5507 | schroede | 2013-07-12 10:55:43 -0400 (Fri, 12 Jul 2013) | 2 lines
+
+More changes to go with previous commit for 3.3 for 'irodsupgrade'
+
+------------------------------------------------------------------------
+r5508 | schroede | 2013-07-15 12:34:31 -0400 (Mon, 15 Jul 2013) | 13 lines
+
+Make additional checks on imeta user input for queries.
+This was recently reported as bugzilla item 162.
+
+Add checks after parsing the user input to make sure that no extraeous
+input was provided.  Particularly confusing would be an AND clause
+which would just be ignored (if what lead up to that was OK) since it
+looks for 'and'.  Other strings that the user might input and expect
+to be parsed could also be ignored.
+
+Now, after parsing the various query options, the code now checks
+that the next argument is blank/null, and if not returns an
+error.
+
+------------------------------------------------------------------------
+r5509 | schroede | 2013-07-15 16:59:10 -0400 (Mon, 15 Jul 2013) | 2 lines
+
+Updates for 3.3
+
+------------------------------------------------------------------------
+r5510 | csmith | 2013-07-15 20:16:15 -0400 (Mon, 15 Jul 2013) | 2 lines
+
+Changed sslSockComm.c to use GENERAL_NAME instead of GENERAL_NAMES
+to allow for compilation on RHEL/CentOS 5.x based hosts.
+------------------------------------------------------------------------
+r5511 | csmith | 2013-07-16 01:24:16 -0400 (Tue, 16 Jul 2013) | 3 lines
+
+Revert "Changed sslSockComm.c to use GENERAL_NAME instead of GENERAL_NAMES"
+
+This reverts commit b79ab5e22afd21b5ae5c21442bef0d8247b6e4d6.
+------------------------------------------------------------------------
+r5512 | schroede | 2013-07-16 12:21:34 -0400 (Tue, 16 Jul 2013) | 2 lines
+
+Bump doxygen version numbers for upcoming release (3.3)
+
+------------------------------------------------------------------------
+r5513 | schroede | 2013-07-16 12:42:43 -0400 (Tue, 16 Jul 2013) | 2 lines
+
+Update the release checklist now that prods has been moved out of svn.
+
+------------------------------------------------------------------------
+r5514 | schroede | 2013-07-16 16:50:52 -0400 (Tue, 16 Jul 2013) | 3 lines
+
+Add some checks on reaching the limit on the number command tokens and
+increase the limit.  Fixes bugzilla item 163.
+
+------------------------------------------------------------------------
+r5515 | schroede | 2013-07-16 17:48:39 -0400 (Tue, 16 Jul 2013) | 5 lines
+
+Add the specific-query Mike Conway developed for use with Jargon for
+the 3.3 release patch set.  This one for checking access permissions
+in a manner that includes groups.  See irod-chat thread: 'Jargon-core
+permissions issue' for more information.
+
+------------------------------------------------------------------------
+r5516 | sekar | 2013-07-17 10:17:19 -0400 (Wed, 17 Jul 2013) | 3 lines
+
+change the HTTP to be disabled by default.
+this helps if someone does not have libcurl
+
+------------------------------------------------------------------------
+r5517 | schroede | 2013-07-17 10:38:26 -0400 (Wed, 17 Jul 2013) | 3 lines
+
+Un-do the previous update to this (r5515) as the
+feature/specific-query is not completed yet.
+
+------------------------------------------------------------------------
+r5518 | sekar | 2013-07-17 10:53:16 -0400 (Wed, 17 Jul 2013) | 3 lines
+
+the line for msiExecStrCondQueryWithOptionsNew was stuck with msiExecStrCondQueryWithOptions
+this mae the msiExecStrCondQueryWithOptions unknown to irods. Reagan foun it using the rule showMSs.r
+
+------------------------------------------------------------------------
