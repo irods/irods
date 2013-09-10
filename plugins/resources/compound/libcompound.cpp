@@ -1,5 +1,4 @@
-
-
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -529,7 +528,7 @@ extern "C" {
         eirods::resource_ptr resc;
         ret = get_cache( _ctx, resc );
         if( !ret.ok() ) {
-            return PASS( ret );
+            return PASSMSG("Unable to get cache resource.", ret );
         }
 
         // =-=-=-=-=-=-=-
@@ -1065,10 +1064,10 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // ask the cache if it is willing to accept a new file, politely
         ret = resc->call< const std::string*, const std::string*, 
-                  eirods::hierarchy_parser*, float* >( 
-                  _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                  &eirods::EIRODS_CREATE_OPERATION, _curr_host, 
-                  _out_parser, _out_vote );
+            eirods::hierarchy_parser*, float* >( 
+                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                &eirods::EIRODS_CREATE_OPERATION, _curr_host, 
+                _out_parser, _out_vote );
 
         return ret;
 
@@ -1106,9 +1105,9 @@ extern "C" {
         float                    cache_check_vote   = 0.0;
         eirods::hierarchy_parser cache_check_parser = (*_out_parser);
         ret = cache_resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                &cache_check_parser, &cache_check_vote );
+            _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+            &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+            &cache_check_parser, &cache_check_vote );
 
         // =-=-=-=-=-=-=-
         // if the vote is 0 then we do a wholesale stage, not an update
@@ -1123,9 +1122,9 @@ extern "C" {
         // now that the file is staged we will once again get the vote 
         // from the cache
         ret = cache_resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                  _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                  &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                  _out_parser, _out_vote );
+            _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+            &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+            _out_parser, _out_vote );
 
         if( !ret.ok() ) {
             return PASS( ret );
@@ -1175,10 +1174,10 @@ extern "C" {
         float                    cache_check_vote   = 0.0;
         eirods::hierarchy_parser cache_check_parser = (*_out_parser);
         ret = cache_resc->call< const std::string*, const std::string*, 
-                                eirods::hierarchy_parser*, float* >( 
-                                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                    &cache_check_parser, &cache_check_vote );
+            eirods::hierarchy_parser*, float* >( 
+                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                &cache_check_parser, &cache_check_vote );
 
         // =-=-=-=-=-=-=-
         // if the vote is 0 then the cache doesnt have it so it will need be staged
@@ -1188,10 +1187,10 @@ extern "C" {
             float                    arch_check_vote   = 0.0;
             eirods::hierarchy_parser arch_check_parser = (*_out_parser);
             ret = arch_resc->call< const std::string*, const std::string*, 
-                                   eirods::hierarchy_parser*, float* >( 
-                                       _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                                       &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                       &arch_check_parser, &arch_check_vote );
+                eirods::hierarchy_parser*, float* >( 
+                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                    &arch_check_parser, &arch_check_vote );
             if( !ret.ok() || 0.0 == arch_check_vote ) {
                 return PASS( ret );    
             }
@@ -1207,10 +1206,10 @@ extern "C" {
             // now that the file is staged we will once again get the vote 
             // from the cache resouce
             ret = cache_resc->call< const std::string*, const std::string*, 
-                                    eirods::hierarchy_parser*, float* >( 
-                                        _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                                        &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                                        _out_parser, _out_vote );
+                eirods::hierarchy_parser*, float* >( 
+                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                    _out_parser, _out_vote );
             if( !ret.ok() ) {
                 return PASS( ret );    
             }

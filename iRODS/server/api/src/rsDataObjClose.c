@@ -55,8 +55,10 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 }
 
 int
-irsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp,
-                 dataObjInfo_t **outDataObjInfo)
+irsDataObjClose (
+    rsComm_t *rsComm,
+    openedDataObjInp_t *dataObjCloseInp,
+    dataObjInfo_t **outDataObjInfo)
 {
     int status;
     int srcL1descInx;
@@ -283,7 +285,9 @@ logTransfer (char *oprType, char *objPath, rodsLong_t fileSize,
 #endif
 
 int
-_rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
+_rsDataObjClose (
+    rsComm_t *rsComm,
+    openedDataObjInp_t *dataObjCloseInp)
 {
     int status = 0;
     int l1descInx, l3descInx;
@@ -395,7 +399,9 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
     if (noChkCopyLenFlag == 0) {
         status = procChksumForClose (rsComm, l1descInx, &chksumStr);
-        if (status < 0) return status;
+        if (status < 0) {
+            return status;
+        }
     }
 
     memset (&regParam, 0, sizeof (regParam));
@@ -475,13 +481,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	    if (chksumStr != NULL) {
 		addKeyVal (&regParam, CHKSUM_KW, chksumStr);
 	    } 
-       #if 0 // JMC legacy resource 
-        else if (getRescClass (destDataObjInfo->rescInfo) == 
-	      COMPOUND_CL) {
-		/* can't chksum for compound resc */
-                addKeyVal (&regParam, CHKSUM_KW, "");
-	    }
-       #endif // JMC legacy resource 
 
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
                              IRODS_ADMIN_KW) != NULL) {
@@ -839,7 +838,10 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
  * chksumStr if it needs to be registered.
  */
 int
-procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
+procChksumForClose (
+    rsComm_t *rsComm,
+    int l1descInx,
+    char **chksumStr)
 {
     int status = 0;
     dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -863,7 +865,10 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
 
             if (status < 0) {
+                dataObjInfo->chksum[0] = '\0';
                 if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
+                    *chksumStr = strdup(srcDataObjInfo->chksum);
+                    rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                     return 0;
                 } else {
                     rodsLog (LOG_NOTICE,
@@ -874,6 +879,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             } else {
                 rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
+                    
                     free (*chksumStr);
                     *chksumStr = NULL;
                     rodsLog (LOG_NOTICE,
@@ -895,7 +901,9 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
         return 0;
     } else if (L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM) {
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
-        if (status < 0)  return (status);
+        if (status < 0) {
+            return (status);
+        }
 
         if (strlen (L1desc[l1descInx].chksum) > 0) {
             /* from a put type operation */
@@ -958,7 +966,9 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
 	}
     } else {	/* REG_CHKSUM */
         status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
-        if (status < 0)  return (status);
+        if (status < 0) {
+            return (status);
+        }
 
         if (strlen (L1desc[l1descInx].chksum) > 0) {
             /* from a put type operation */

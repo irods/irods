@@ -388,6 +388,7 @@ extern "C" {
         int                                 _len )
     {
         eirods::error result = SUCCESS();
+        int status = 0;
         
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
@@ -400,7 +401,7 @@ extern "C" {
         
             // =-=-=-=-=-=-=-
             // make the call to read
-            int status = read( fco->file_descriptor(), _buf, _len );
+            status = read( fco->file_descriptor(), _buf, _len );
 
             // =-=-=-=-=-=-=-
             // pass along an error if it was not successful
