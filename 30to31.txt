@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------
-r4461 | xuh | 2011-09-29 22:01:36 -0400 (Thu, 29 Sep 2011) | 1 line
+JMC - NO OP :: r4461 | xuh | 2011-09-29 22:01:36 -0400 (Thu, 29 Sep 2011) | 1 line
 
 Fix a type error in a rule example
 ------------------------------------------------------------------------
@@ -578,7 +578,7 @@ JMC - NO OP :: r4551 | mwan | 2011-11-02 19:31:17 -0400 (Wed, 02 Nov 2011) | 2 l
 Add test for --purgec option of iget/iput/irepl
 
 ------------------------------------------------------------------------
-JMC - NO OP :: r4552 | mwan | 2011-11-03 16:48:56 -0400 (Thu, 03 Nov 2011) | 2 lines
+JMC - DONE :: r4552 | mwan | 2011-11-03 16:48:56 -0400 (Thu, 03 Nov 2011) | 2 lines
 
 add --empty option to irm to remove only empty bundle files
 
@@ -785,7 +785,7 @@ Fix a iphybun hang problem cause by bundlleAndRegSubFiles freeing the
 wrong tmpBunReplCache as reported by Jean-Yves.
 
 ------------------------------------------------------------------------
-JMC - NOT DONE :: r4580 | jeanyves | 2011-11-17 11:28:38 -0500 (Thu, 17 Nov 2011) | 3 lines
+JMC - DONE :: r4580 | jeanyves | 2011-11-17 11:28:38 -0500 (Thu, 17 Nov 2011) | 3 lines
 
 add index to improve performance for the iscan command.
 For an iRODS instance with 400000 entries, a "iscan -r" on a given directory, without the index will take 30 minutes on my setting. After using this index, it goes down to 2 seconds.
