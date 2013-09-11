@@ -40,7 +40,6 @@ char *__loc1;
 #include "eirods_network_factory.h"
 #include "eirods_buffer_encryption.h"
 #include "eirods_client_server_negotiation.h"
-#include "eirods_rbudp.h"
 
 #include <iomanip>
 
@@ -2070,15 +2069,10 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
 
         rbudpReceiver.rbudpBase.udpServerAddr.sin_port = htons (rbudpReceiver.rbudpBase.udpRemotePort);
           
-        status = eirods::encrypted_rbudp_get_file_by_fd( 
+        status = getfileByFd( 
                      &rbudpReceiver, 
                      FileDesc[destL3descInx].fd,  
-                     packetSize,
-                     rsComm->shared_secret,
-                     rsComm->key_size,
-                     rsComm->salt_size,
-                     rsComm->num_hash_rounds,
-                     rsComm->encryption_algorithm );
+                     packetSize );
         
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -2120,16 +2114,11 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
             sendRate = DEF_UDP_SEND_RATE;
         }
 
-        status = eirods::encrypted_rbudp_send_file_by_fd( 
+        status = sendfileByFd( 
                      &rbudpSender, 
                      sendRate, 
                      packetSize, 
-                     FileDesc[srcL3descInx].fd,
-                     rsComm->shared_secret,
-                     rsComm->key_size,
-                     rsComm->salt_size,
-                     rsComm->num_hash_rounds,
-                     rsComm->encryption_algorithm );
+                     FileDesc[srcL3descInx].fd );
 
         if (status < 0) {
             rodsLog (LOG_ERROR,

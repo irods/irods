@@ -15,7 +15,6 @@
 // eirods includes
 #include "eirods_stacktrace.h"
 #include "eirods_buffer_encryption.h"
-#include "eirods_rbudp.h"
 
 #ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
