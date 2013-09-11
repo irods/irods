@@ -898,65 +898,65 @@ JMC - DONE :: r4599 | mwan | 2011-11-29 12:55:27 -0500 (Tue, 29 Nov 2011) | 2 li
 Add the rcDataObjLock API for locking
 
 ------------------------------------------------------------------------
-r4600 | mwan | 2011-11-29 12:57:46 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - NO OP :: r4600 | mwan | 2011-11-29 12:57:46 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 add the directory to contain locked files
 
 ------------------------------------------------------------------------
-r4601 | mwan | 2011-11-29 13:15:47 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - DONE :: r4601 | mwan | 2011-11-29 13:15:47 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 code cleanup before lock implementation
 
 ------------------------------------------------------------------------
-r4602 | mwan | 2011-11-29 16:52:11 -0500 (Tue, 29 Nov 2011) | 3 lines
+JMC - NO OP :: r4602 | mwan | 2011-11-29 16:52:11 -0500 (Tue, 29 Nov 2011) | 3 lines
 
 Wrong place
 
 
 ------------------------------------------------------------------------
-r4603 | mwan | 2011-11-29 16:53:27 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - NO OP :: r4603 | mwan | 2011-11-29 16:53:27 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 lock file directory
 
 ------------------------------------------------------------------------
-r4604 | mwan | 2011-11-29 18:46:50 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - DONE :: r4604 | mwan | 2011-11-29 18:46:50 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 Implement read lock (--rlock) for iget and write lock (--wlock) for iput.
 
 ------------------------------------------------------------------------
-r4605 | mwan | 2011-11-29 19:13:24 -0500 (Tue, 29 Nov 2011) | 3 lines
+JMC - DONE :: r4605 | mwan | 2011-11-29 19:13:24 -0500 (Tue, 29 Nov 2011) | 3 lines
 
 Make rcDataObjLock a server-server call only by setting proxyUser to 
 remote priv user.
 
 ------------------------------------------------------------------------
-r4606 | mwan | 2011-11-29 19:37:03 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - DONE :: r4606 | mwan | 2011-11-29 19:37:03 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 Documentation for rcDataObjLock API
 
 ------------------------------------------------------------------------
-r4607 | mwan | 2011-11-29 19:40:12 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - DONE :: r4607 | mwan | 2011-11-29 19:40:12 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 Minor doc change
 
 ------------------------------------------------------------------------
-r4608 | mwan | 2011-11-30 19:13:10 -0500 (Wed, 30 Nov 2011) | 3 lines
+JMC - DONE :: r4608 | mwan | 2011-11-30 19:13:10 -0500 (Wed, 30 Nov 2011) | 3 lines
 
 Fix a problem where 2 processes iget the same file store in a compound
 resource and two independent staging of the same file to cache resource.
 
 ------------------------------------------------------------------------
-r4609 | mwan | 2011-11-30 20:04:27 -0500 (Wed, 30 Nov 2011) | 2 lines
+JMC - DONE :: r4609 | mwan | 2011-11-30 20:04:27 -0500 (Wed, 30 Nov 2011) | 2 lines
 
 Add read lock (--rlock) to irepl
 
 ------------------------------------------------------------------------
-r4610 | mwan | 2011-11-30 20:40:23 -0500 (Wed, 30 Nov 2011) | 2 lines
+JMC - DONE :: r4610 | mwan | 2011-11-30 20:40:23 -0500 (Wed, 30 Nov 2011) | 2 lines
 
 Lock documnetation
 
 ------------------------------------------------------------------------
-r4611 | schroede | 2011-12-01 17:08:38 -0500 (Thu, 01 Dec 2011) | 11 lines
+JMC - NOT DONE :: r4611 | schroede | 2011-12-01 17:08:38 -0500 (Thu, 01 Dec 2011) | 11 lines
 
 Some initial changes for write tickets.  Add iput -t option, putUtil
 sets the session ticket, new ticket_type column in table (read or
@@ -970,74 +970,74 @@ from ticket sub-tables.  And use NAME_LEN for some strings as
 MAX_NAME_LEN is much more than needed.
 
 ------------------------------------------------------------------------
-r4612 | mwan | 2011-12-01 17:41:05 -0500 (Thu, 01 Dec 2011) | 3 lines
+JMC- DONE :: r4612 | mwan | 2011-12-01 17:41:05 -0500 (Thu, 01 Dec 2011) | 3 lines
 
 Add a server thread to purge lock files every 2 hours
 
 
 ------------------------------------------------------------------------
-r4613 | mwan | 2011-12-01 18:08:13 -0500 (Thu, 01 Dec 2011) | 2 lines
+JMC- DONE :: r4613 | mwan | 2011-12-01 18:08:13 -0500 (Thu, 01 Dec 2011) | 2 lines
 
 Minor changes in error msg
 
 ------------------------------------------------------------------------
-r4614 | mwan | 2011-12-01 18:30:25 -0500 (Thu, 01 Dec 2011) | 2 lines
+JMC - DONE :: r4614 | mwan | 2011-12-01 18:30:25 -0500 (Thu, 01 Dec 2011) | 2 lines
 
 Handle O_TRUNC for osx_platform in rcFilePut
 
 ------------------------------------------------------------------------
-r4615 | mwan | 2011-12-01 23:05:15 -0500 (Thu, 01 Dec 2011) | 2 lines
+JMC - DONE :: r4615 | mwan | 2011-12-01 23:05:15 -0500 (Thu, 01 Dec 2011) | 2 lines
 
 Fix a problem that listenfd is not open for client
 
 ------------------------------------------------------------------------
-r4616 | mwan | 2011-12-01 23:10:34 -0500 (Thu, 01 Dec 2011) | 2 lines
+JMC - DONE :: r4616 | mwan | 2011-12-01 23:10:34 -0500 (Thu, 01 Dec 2011) | 2 lines
 
 Better chect of the lock Fd.
 
 ------------------------------------------------------------------------
-r4617 | mwan | 2011-12-01 23:20:07 -0500 (Thu, 01 Dec 2011) | 2 lines
+JMC - NO OP :: r4617 | mwan | 2011-12-01 23:20:07 -0500 (Thu, 01 Dec 2011) | 2 lines
 
 add test for lock
 
 ------------------------------------------------------------------------
-r4618 | terrell | 2011-12-02 14:56:28 -0500 (Fri, 02 Dec 2011) | 1 line
+JMC - NO OP :: r4618 | terrell | 2011-12-02 14:56:28 -0500 (Fri, 02 Dec 2011) | 1 line
 
 make sure new empty lockFileDir propagates to git cleanly - adding .gitignore file
 ------------------------------------------------------------------------
-r4619 | sekar | 2011-12-02 15:17:39 -0500 (Fri, 02 Dec 2011) | 1 line
+JMC - DONE :: r4619 | sekar | 2011-12-02 15:17:39 -0500 (Fri, 02 Dec 2011) | 1 line
 
 added option in writeStrng to appen to an existing iRODS file
 ------------------------------------------------------------------------
-r4620 | schroede | 2011-12-02 18:14:41 -0500 (Fri, 02 Dec 2011) | 4 lines
+JMC - NO OP :: r4620 | schroede | 2011-12-02 18:14:41 -0500 (Fri, 02 Dec 2011) | 4 lines
 
 Change some printf text, comments, and variable names from 'cvs' to
 'svn' for clarity.  The script has been working fine but the advice to
 use cvs was incorrect.  Also corrected a directory path in a comment.
 
 ------------------------------------------------------------------------
-r4621 | schroede | 2011-12-02 18:18:50 -0500 (Fri, 02 Dec 2011) | 4 lines
+JMC - NOT DONE :: r4621 | schroede | 2011-12-02 18:18:50 -0500 (Fri, 02 Dec 2011) | 4 lines
 
 Add a new iRODS API client/server call for ticket administration and
 use and switch from the temporary use of rc/rsUserAdmin.  Change
 rsUserAdmin back to previous form and use the new call where needed.
 
 ------------------------------------------------------------------------
-r4622 | mwan | 2011-12-02 18:57:38 -0500 (Fri, 02 Dec 2011) | 2 lines
+JMC - NO OP :: r4622 | mwan | 2011-12-02 18:57:38 -0500 (Fri, 02 Dec 2011) | 2 lines
 
 A first cut at a cross zone test script. It is not close to finish yet.
 
 ------------------------------------------------------------------------
-r4623 | mwan | 2011-12-02 19:22:48 -0500 (Fri, 02 Dec 2011) | 2 lines
+JMC - DONE :: r4623 | mwan | 2011-12-02 19:22:48 -0500 (Fri, 02 Dec 2011) | 2 lines
 
 Add acPostProcForRepl rule
 
 ------------------------------------------------------------------------
-r4624 | terrell | 2011-12-05 12:53:42 -0500 (Mon, 05 Dec 2011) | 1 line
+JMC - DONE :: r4624 | terrell | 2011-12-05 12:53:42 -0500 (Mon, 05 Dec 2011) | 1 line
 
 -h cleanup for itrim, no functional changes
 ------------------------------------------------------------------------
-r4625 | schroede | 2011-12-05 17:20:48 -0500 (Mon, 05 Dec 2011) | 5 lines
+JMC - NO OP :: r4625 | schroede | 2011-12-05 17:20:48 -0500 (Mon, 05 Dec 2011) | 5 lines
 
 Change the default ftp site for downloading postgres and ODBC as both
 the others that are sometimes used are down today.  This is needed for
@@ -1045,23 +1045,23 @@ the tinderbox continuous test to complete (it trys to download and
 rebuild postgres and odbc once a day).
 
 ------------------------------------------------------------------------
-r4626 | mwan | 2011-12-06 12:20:40 -0500 (Tue, 06 Dec 2011) | 4 lines
+JMC - DONE :: r4626 | mwan | 2011-12-06 12:20:40 -0500 (Tue, 06 Dec 2011) | 4 lines
 
 Change the vault path of bundleResc from /tmp to /bundle so that
 usinfg this resource directly will fail.
 
 
 ------------------------------------------------------------------------
-r4627 | terrell | 2011-12-06 14:14:10 -0500 (Tue, 06 Dec 2011) | 1 line
+JMC - NO OP :: r4627 | terrell | 2011-12-06 14:14:10 -0500 (Tue, 06 Dec 2011) | 1 line
 
 the MSO examples in icommands/test/rules3.0 were largely being used backwards - filepaths are now local and not within iRODS
 ------------------------------------------------------------------------
-r4628 | antoine | 2011-12-07 04:30:08 -0500 (Wed, 07 Dec 2011) | 2 lines
+JMC - NO OP :: r4628 | antoine | 2011-12-07 04:30:08 -0500 (Wed, 07 Dec 2011) | 2 lines
 
 Unescape target strings
 
 ------------------------------------------------------------------------
-r4629 | schroede | 2011-12-07 12:48:43 -0500 (Wed, 07 Dec 2011) | 6 lines
+JMC - DONE :: r4629 | schroede | 2011-12-07 12:48:43 -0500 (Wed, 07 Dec 2011) | 6 lines
 
 Don't allow bundleResc to be deleted or modified and don't display it
 via 'ilsresc' (but still do via 'iadmin lr'), since it's a built-in
@@ -1070,27 +1070,27 @@ suggestions from Terrell.
 
 
 ------------------------------------------------------------------------
-r4630 | xuh | 2011-12-08 17:10:08 -0500 (Thu, 08 Dec 2011) | 1 line
+JMC - NO OP :: r4630 | xuh | 2011-12-08 17:10:08 -0500 (Thu, 08 Dec 2011) | 1 line
 
 Fix bugs that cause msiGetStdoutFromExecCmdOut and msiGetStderrFromExecCmdOut to show random characters at the end of the string
 ------------------------------------------------------------------------
-r4631 | antoine | 2011-12-08 19:32:31 -0500 (Thu, 08 Dec 2011) | 2 lines
+JMC - NO OP :: r4631 | antoine | 2011-12-08 19:32:31 -0500 (Thu, 08 Dec 2011) | 2 lines
 
 Example of a stylesheet to turn an iTunes playlist file to iRODS AVUs, as used in the Lifetime Library.
 
 ------------------------------------------------------------------------
-r4632 | mwan | 2011-12-09 19:35:05 -0500 (Fri, 09 Dec 2011) | 2 lines
+JMC - DONE :: r4632 | mwan | 2011-12-09 19:35:05 -0500 (Fri, 09 Dec 2011) | 2 lines
 
 Add support for gzip an bzip2 tar files for ibun
 
 ------------------------------------------------------------------------
-r4633 | mwan | 2011-12-12 19:34:53 -0500 (Mon, 12 Dec 2011) | 3 lines
+JMC - DONE :: r4633 | mwan | 2011-12-12 19:34:53 -0500 (Mon, 12 Dec 2011) | 3 lines
 
 Add gzipTar, bzip2Tar and zipFile to data type supported for the target file 
 of ibun. 
 
 ------------------------------------------------------------------------
-r4634 | schroede | 2011-12-13 12:00:59 -0500 (Tue, 13 Dec 2011) | 32 lines
+JMC - NOT DONE :: r4634 | schroede | 2011-12-13 12:00:59 -0500 (Tue, 13 Dec 2011) | 32 lines
 
 More support for write tickets; this is largely working now so I want
 to get it into svn, but it still needs more testing and development.
@@ -1125,23 +1125,23 @@ noticed by Jean-Yves.  g++ allows it but an 'and' should be '&&'.
 
 
 ------------------------------------------------------------------------
-r4635 | mwan | 2011-12-13 15:27:29 -0500 (Tue, 13 Dec 2011) | 2 lines
+JMC - DONE :: r4635 | mwan | 2011-12-13 15:27:29 -0500 (Tue, 13 Dec 2011) | 2 lines
 
 Get ibun -c for gzipTar and bzip2Tar format working
 
 ------------------------------------------------------------------------
-r4636 | mwan | 2011-12-13 17:48:35 -0500 (Tue, 13 Dec 2011) | 3 lines
+JMC - DONE :: r4636 | mwan | 2011-12-13 17:48:35 -0500 (Tue, 13 Dec 2011) | 3 lines
 
 Add dataType to be listed by "ils -L" since ibun now supports difference
 zip formats.
 
 ------------------------------------------------------------------------
-r4637 | mwan | 2011-12-13 20:33:08 -0500 (Tue, 13 Dec 2011) | 2 lines
+JMC - DONE :: r4637 | mwan | 2011-12-13 20:33:08 -0500 (Tue, 13 Dec 2011) | 2 lines
 
 get ibun to work for zipFile data type for both -c and -x.
 
 ------------------------------------------------------------------------
-r4638 | schroede | 2011-12-14 14:30:02 -0500 (Wed, 14 Dec 2011) | 22 lines
+JMC - NOT DONE :: r4638 | schroede | 2011-12-14 14:30:02 -0500 (Wed, 14 Dec 2011) | 22 lines
 
 Add a client/server call and ICAT support to allow an admin user to
 create a temporary one-time password for another user, which can then
@@ -1166,17 +1166,17 @@ Other than this test, the 'C' clients (i-commands) do not make use of
 this.
 
 ------------------------------------------------------------------------
-r4639 | mwan | 2011-12-14 16:05:15 -0500 (Wed, 14 Dec 2011) | 2 lines
+JMC - NO OP :: r4639 | mwan | 2011-12-14 16:05:15 -0500 (Wed, 14 Dec 2011) | 2 lines
 
 Prevent compile error if ZIP_EXEC_PATH is not defined
 
 ------------------------------------------------------------------------
-r4640 | mwan | 2011-12-14 16:21:42 -0500 (Wed, 14 Dec 2011) | 2 lines
+JMC - DONE :: r4640 | mwan | 2011-12-14 16:21:42 -0500 (Wed, 14 Dec 2011) | 2 lines
 
 More flexible input for dataType
 
 ------------------------------------------------------------------------
-r4641 | schroede | 2011-12-14 18:38:32 -0500 (Wed, 14 Dec 2011) | 5 lines
+JMC - NO OP :: r4641 | schroede | 2011-12-14 18:38:32 -0500 (Wed, 14 Dec 2011) | 5 lines
 
 Add more tests to increase 'devtest' code coverage a little.  In
 icatTest.pl, exercise 'iquota' in various modes and use/test ipasswd
@@ -1184,49 +1184,49 @@ functionality.  In testiCommands.pl add a simple call to cover ihelp a
 little more.
 
 ------------------------------------------------------------------------
-r4642 | mwan | 2011-12-14 19:59:23 -0500 (Wed, 14 Dec 2011) | 2 lines
+JMC - NO OP :: r4642 | mwan | 2011-12-14 19:59:23 -0500 (Wed, 14 Dec 2011) | 2 lines
 
 Add GNU_TAR
 
 ------------------------------------------------------------------------
-r4643 | mwan | 2011-12-14 20:12:13 -0500 (Wed, 14 Dec 2011) | 3 lines
+JMC - DONE :: r4643 | mwan | 2011-12-14 20:12:13 -0500 (Wed, 14 Dec 2011) | 3 lines
 
 Add a --add option to ibun to enable appending additional collections to
 an existing tar file
 
 ------------------------------------------------------------------------
-r4644 | mwan | 2011-12-14 21:21:33 -0500 (Wed, 14 Dec 2011) | 3 lines
+JMC - DONE :: r4644 | mwan | 2011-12-14 21:21:33 -0500 (Wed, 14 Dec 2011) | 3 lines
 
 Change the behavior of ibun -c such that the last entry of the collection
 being tarred is preserved in the tar file
 
 ------------------------------------------------------------------------
-r4645 | mwan | 2011-12-15 12:57:09 -0500 (Thu, 15 Dec 2011) | 2 lines
+JMC - DONE :: r4645 | mwan | 2011-12-15 12:57:09 -0500 (Thu, 15 Dec 2011) | 2 lines
 
 get --add option to work for non GNU_TAR and some code cleanup
 
 ------------------------------------------------------------------------
-r4646 | xuh | 2011-12-15 15:52:34 -0500 (Thu, 15 Dec 2011) | 1 line
+JMC - DONE :: r4646 | xuh | 2011-12-15 15:52:34 -0500 (Thu, 15 Dec 2011) | 1 line
 
 cppcheck couldn't parse a for loop in parser.c, which compiles fine under gcc and g++; rewrite a for loop into a while loop.
 ------------------------------------------------------------------------
-r4647 | mwan | 2011-12-15 16:55:27 -0500 (Thu, 15 Dec 2011) | 2 lines
+JMC - NO OP :: r4647 | mwan | 2011-12-15 16:55:27 -0500 (Thu, 15 Dec 2011) | 2 lines
 
 make ibun -c to work with change in coll path
 
 ------------------------------------------------------------------------
-r4648 | mwan | 2011-12-15 17:23:33 -0500 (Thu, 15 Dec 2011) | 2 lines
+JMC - DONE :: r4648 | mwan | 2011-12-15 17:23:33 -0500 (Thu, 15 Dec 2011) | 2 lines
 
 better warning msg for unsupported dataType
 
 ------------------------------------------------------------------------
-r4649 | mwan | 2011-12-15 17:52:38 -0500 (Thu, 15 Dec 2011) | 3 lines
+JMC - NO OP :: r4649 | mwan | 2011-12-15 17:52:38 -0500 (Thu, 15 Dec 2011) | 3 lines
 
 add gzip and bzip2 ibun test. But don't turn it on for now since the
 gzipTar and bzip2Tar dataTypes are not yet defined in iCAT
 
 ------------------------------------------------------------------------
-r4650 | schroede | 2011-12-15 18:00:26 -0500 (Thu, 15 Dec 2011) | 5 lines
+JMC - DONE :: r4650 | schroede | 2011-12-15 18:00:26 -0500 (Thu, 15 Dec 2011) | 5 lines
 
 Warn the user (admin) if they are using 'localhost' as the resource
 host when creating or modifying a resource.  Like an entry that is not
@@ -1234,12 +1234,12 @@ in DNS, it will be allowed but iadmin will display a warning as this is
 normally not correct (but might be valid in some test situations).
 
 ------------------------------------------------------------------------
-r4651 | mwan | 2011-12-15 20:24:53 -0500 (Thu, 15 Dec 2011) | 2 lines
+JMC - NO OP :: r4651 | mwan | 2011-12-15 20:24:53 -0500 (Thu, 15 Dec 2011) | 2 lines
 
 Run with no error
 
 ------------------------------------------------------------------------
-r4652 | schroede | 2011-12-15 21:19:36 -0500 (Thu, 15 Dec 2011) | 6 lines
+JMC - DONE :: r4652 | schroede | 2011-12-15 21:19:36 -0500 (Thu, 15 Dec 2011) | 6 lines
 
 Add some new data_types associated with some of Mike Wan's recentl
 development.  May need some revision.  This file is used by irodssetup
@@ -1248,36 +1248,36 @@ dropping the ICAT db before a run).  These and other changes will be
 used later in making the ICAT patch file for the next release.
 
 ------------------------------------------------------------------------
-r4653 | schroede | 2011-12-16 11:25:59 -0500 (Fri, 16 Dec 2011) | 2 lines
+JMC - DONE :: r4653 | schroede | 2011-12-16 11:25:59 -0500 (Fri, 16 Dec 2011) | 2 lines
 
 Correction for the previous commit
 
 ------------------------------------------------------------------------
-r4654 | mwan | 2011-12-16 19:48:59 -0500 (Fri, 16 Dec 2011) | 2 lines
+JMC - NO OP :: r4654 | mwan | 2011-12-16 19:48:59 -0500 (Fri, 16 Dec 2011) | 2 lines
 
 Add cross zone rbudp test and some bug fixes
 
 ------------------------------------------------------------------------
-r4655 | mwan | 2011-12-19 12:30:50 -0500 (Mon, 19 Dec 2011) | 2 lines
+JMC - DONE :: r4655 | mwan | 2011-12-19 12:30:50 -0500 (Mon, 19 Dec 2011) | 2 lines
 
 change gzipFile bundle to zipFile bundle
 
 ------------------------------------------------------------------------
-r4656 | terrell | 2011-12-19 15:56:25 -0500 (Mon, 19 Dec 2011) | 1 line
+JMC - DONE :: r4656 | terrell | 2011-12-19 15:56:25 -0500 (Mon, 19 Dec 2011) | 1 line
 
 Provide an additional possible solution when logging a routing error during federation
 ------------------------------------------------------------------------
-r4657 | mwan | 2011-12-19 18:34:19 -0500 (Mon, 19 Dec 2011) | 2 lines
+JMC - DONE :: r4657 | mwan | 2011-12-19 18:34:19 -0500 (Mon, 19 Dec 2011) | 2 lines
 
 Allow ibun --add to add collections to gzip end bzip2 tar files
 
 ------------------------------------------------------------------------
-r4658 | mwan | 2011-12-19 20:35:43 -0500 (Mon, 19 Dec 2011) | 2 lines
+JMC - DONE :: r4658 | mwan | 2011-12-19 20:35:43 -0500 (Mon, 19 Dec 2011) | 2 lines
 
 get gzip and bzip2 to work with iphybun
 
 ------------------------------------------------------------------------
-r4659 | schroede | 2011-12-20 12:00:17 -0500 (Tue, 20 Dec 2011) | 7 lines
+JMC - DONE :: r4659 | schroede | 2011-12-20 12:00:17 -0500 (Tue, 20 Dec 2011) | 7 lines
 
 Use MAX_NAME_LEN (1024+64) instead of LONG_NAME_LEN (256) as the size
 of various temporary strings as some collection/file path names can
@@ -1287,56 +1287,56 @@ Lappalainen on irods-chat.
 
 
 ------------------------------------------------------------------------
-r4660 | mwan | 2011-12-20 13:45:35 -0500 (Tue, 20 Dec 2011) | 2 lines
+JMC - DONE :: r4660 | mwan | 2011-12-20 13:45:35 -0500 (Tue, 20 Dec 2011) | 2 lines
 
 Add a new rule for resource selection for replication
 
 ------------------------------------------------------------------------
-r4661 | schroede | 2011-12-20 13:56:22 -0500 (Tue, 20 Dec 2011) | 2 lines
+JMC - NO OP :: r4661 | schroede | 2011-12-20 13:56:22 -0500 (Tue, 20 Dec 2011) | 2 lines
 
 Add a couple more notes based on recent testing.
 
 ------------------------------------------------------------------------
-r4662 | mwan | 2011-12-20 14:05:41 -0500 (Tue, 20 Dec 2011) | 2 lines
+JMC - DONE :: r4662 | mwan | 2011-12-20 14:05:41 -0500 (Tue, 20 Dec 2011) | 2 lines
 
 fix a warning msg
 
 ------------------------------------------------------------------------
-r4663 | schroede | 2011-12-20 14:24:30 -0500 (Tue, 20 Dec 2011) | 2 lines
+JMC - NO OP :: r4663 | schroede | 2011-12-20 14:24:30 -0500 (Tue, 20 Dec 2011) | 2 lines
 
 Clarify a comment in the previous commit
 
 ------------------------------------------------------------------------
-r4664 | mwan | 2011-12-20 16:50:02 -0500 (Tue, 20 Dec 2011) | 3 lines
+JMC - DONE :: r4664 | mwan | 2011-12-20 16:50:02 -0500 (Tue, 20 Dec 2011) | 3 lines
 
 get zipFile format to work for ibun and iphybun due to "zip" automatically
 appends ".zip" to the file name when a zip file is created.
 
 ------------------------------------------------------------------------
-r4665 | mwan | 2011-12-20 17:08:14 -0500 (Tue, 20 Dec 2011) | 2 lines
+JMC - NO OP :: r4665 | mwan | 2011-12-20 17:08:14 -0500 (Tue, 20 Dec 2011) | 2 lines
 
 get ibun --add to work for zipFile format
 
 ------------------------------------------------------------------------
-r4666 | mwan | 2011-12-20 21:26:34 -0500 (Tue, 20 Dec 2011) | 3 lines
+JMC - DONE :: r4666 | mwan | 2011-12-20 21:26:34 -0500 (Tue, 20 Dec 2011) | 3 lines
 
 add a age limit to rmUnlinkedFilesInUnixDir because this ruoutine
 is dangerous
 
 ------------------------------------------------------------------------
-r4667 | schroede | 2011-12-21 12:17:52 -0500 (Wed, 21 Dec 2011) | 3 lines
+JMC - NO OP :: r4667 | schroede | 2011-12-21 12:17:52 -0500 (Wed, 21 Dec 2011) | 3 lines
 
 Extend the coverage in 'devtest' by adding some isysmeta tests and
 some additional iticket ones.
 
 ------------------------------------------------------------------------
-r4668 | mwan | 2011-12-21 16:05:13 -0500 (Wed, 21 Dec 2011) | 3 lines
+JMC - DONE :: r4668 | mwan | 2011-12-21 16:05:13 -0500 (Wed, 21 Dec 2011) | 3 lines
 
 Handle new error CAT_SUCCESS_BUT_WITH_NO_INFO when registering a repl
 with an existing copy with the same resource and phyPath
 
 ------------------------------------------------------------------------
-r4669 | schroede | 2011-12-21 16:17:53 -0500 (Wed, 21 Dec 2011) | 6 lines
+JMC - DONE :: r4669 | schroede | 2011-12-21 16:17:53 -0500 (Wed, 21 Dec 2011) | 6 lines
 
 In chlRegReplica, extend the SQL so that replicas cannot be registered
 with the same resource name, physical path, and data-object id as an
@@ -1345,86 +1345,86 @@ developed in collaboration with Mike Wan.
 
 
 ------------------------------------------------------------------------
-r4670 | mwan | 2011-12-21 17:03:49 -0500 (Wed, 21 Dec 2011) | 3 lines
+JMC - DONE :: r4670 | mwan | 2011-12-21 17:03:49 -0500 (Wed, 21 Dec 2011) | 3 lines
 
 Include checking for CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME too for
 duplicate resource and phyFile
 
 ------------------------------------------------------------------------
-r4671 | mwan | 2011-12-21 17:44:04 -0500 (Wed, 21 Dec 2011) | 3 lines
+JMC - NO OP :: r4671 | mwan | 2011-12-21 17:44:04 -0500 (Wed, 21 Dec 2011) | 3 lines
 
 Use collection name that is more distinguish in the test so it is
 not likely to have conflict with user's existing collection
 
 ------------------------------------------------------------------------
-r4672 | mwan | 2011-12-21 17:53:15 -0500 (Wed, 21 Dec 2011) | 3 lines
+JMC - NO OP :: r4672 | mwan | 2011-12-21 17:53:15 -0500 (Wed, 21 Dec 2011) | 3 lines
 
 use more distinguish collection name "icmdtest" rather than "test" to
 avoid name conflict with existing collections.
 
 ------------------------------------------------------------------------
-r4673 | mwan | 2011-12-21 17:54:33 -0500 (Wed, 21 Dec 2011) | 2 lines
+JMC - NO OP :: r4673 | mwan | 2011-12-21 17:54:33 -0500 (Wed, 21 Dec 2011) | 2 lines
 
 remove local setting for test
 
 ------------------------------------------------------------------------
-r4674 | mwan | 2011-12-21 18:08:08 -0500 (Wed, 21 Dec 2011) | 2 lines
+JMC - NO OP :: r4674 | mwan | 2011-12-21 18:08:08 -0500 (Wed, 21 Dec 2011) | 2 lines
 
 spelling
 
 ------------------------------------------------------------------------
-r4675 | mwan | 2011-12-21 19:03:11 -0500 (Wed, 21 Dec 2011) | 2 lines
+JMC - NO OP :: r4675 | mwan | 2011-12-21 19:03:11 -0500 (Wed, 21 Dec 2011) | 2 lines
 
 turn on ibun gzip test
 
 ------------------------------------------------------------------------
-r4676 | mwan | 2011-12-21 20:49:21 -0500 (Wed, 21 Dec 2011) | 2 lines
+JMC - NO OP :: r4676 | mwan | 2011-12-21 20:49:21 -0500 (Wed, 21 Dec 2011) | 2 lines
 
 First attempt to improve server/api LCOV coverage (to rsDataObjLseek.c) 
 
 ------------------------------------------------------------------------
-r4677 | mwan | 2011-12-22 12:57:32 -0500 (Thu, 22 Dec 2011) | 2 lines
+JMC - DONE :: r4677 | mwan | 2011-12-22 12:57:32 -0500 (Thu, 22 Dec 2011) | 2 lines
 
 change the gzipTar and bzip2Tar data types
 
 ------------------------------------------------------------------------
-r4678 | mwan | 2011-12-22 19:50:05 -0500 (Thu, 22 Dec 2011) | 2 lines
+JMC - NO OP :: r4678 | mwan | 2011-12-22 19:50:05 -0500 (Thu, 22 Dec 2011) | 2 lines
 
 Attempt to improve server/api LCOV coverage (to rsStructFileBundle.c)
 
 ------------------------------------------------------------------------
-r4679 | mwan | 2011-12-23 13:52:56 -0500 (Fri, 23 Dec 2011) | 3 lines
+JMC - NO OP :: r4679 | mwan | 2011-12-23 13:52:56 -0500 (Fri, 23 Dec 2011) | 3 lines
 
 more test to fill out server/api coverage. went through all files except
 rsSubStructFileXXXX.c
 
 ------------------------------------------------------------------------
-r4680 | mwan | 2011-12-23 18:36:44 -0500 (Fri, 23 Dec 2011) | 3 lines
+JMC - DONE :: r4680 | mwan | 2011-12-23 18:36:44 -0500 (Fri, 23 Dec 2011) | 3 lines
 
 Fix a problem of syncing a tar struct file does not work because
 speccoll->phyPath is not defined
 
 ------------------------------------------------------------------------
-r4681 | mwan | 2011-12-23 20:05:02 -0500 (Fri, 23 Dec 2011) | 2 lines
+JMC - NO OP :: r4681 | mwan | 2011-12-23 20:05:02 -0500 (Fri, 23 Dec 2011) | 2 lines
 
 Add more test to the end of server/api coverage
 
 ------------------------------------------------------------------------
-r4682 | mwan | 2011-12-23 22:26:56 -0500 (Fri, 23 Dec 2011) | 2 lines
+JMC - DONE :: r4682 | mwan | 2011-12-23 22:26:56 -0500 (Fri, 23 Dec 2011) | 2 lines
 
 get put/get of large files (>32 mb) to work with mounted tar struct file
 
 ------------------------------------------------------------------------
-r4683 | mwan | 2011-12-23 22:53:24 -0500 (Fri, 23 Dec 2011) | 2 lines
+JMC - NO OP :: r4683 | mwan | 2011-12-23 22:53:24 -0500 (Fri, 23 Dec 2011) | 2 lines
 
 add test for put/get of large files in mounted tar structFile
 
 ------------------------------------------------------------------------
-r4684 | terrell | 2011-12-23 23:06:48 -0500 (Fri, 23 Dec 2011) | 1 line
+JMC - NO OP :: r4684 | terrell | 2011-12-23 23:06:48 -0500 (Fri, 23 Dec 2011) | 1 line
 
 capitalization in ips.c
 ------------------------------------------------------------------------
-r4685 | schroede | 2012-01-03 18:57:04 -0500 (Tue, 03 Jan 2012) | 12 lines
+JMC - DONE :: r4685 | schroede | 2012-01-03 18:57:04 -0500 (Tue, 03 Jan 2012) | 12 lines
 
 In chlRegReplica, for MySQL and Oracle, use the SQL form previous to a
 recent change (r4669) as it only works properly in Postgres.  This
@@ -1439,31 +1439,31 @@ alternatives for MySQL but was unable to find something that
 completely worked.
 
 ------------------------------------------------------------------------
-r4686 | mwan | 2012-01-05 18:13:44 -0500 (Thu, 05 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4686 | mwan | 2012-01-05 18:13:44 -0500 (Thu, 05 Jan 2012) | 2 lines
 
 Add NETCDF to API type
 
 ------------------------------------------------------------------------
-r4687 | mwan | 2012-01-05 20:15:25 -0500 (Thu, 05 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4687 | mwan | 2012-01-05 20:15:25 -0500 (Thu, 05 Jan 2012) | 2 lines
 
 Add rcNcOpen API for NETCDF nc_open
 
 ------------------------------------------------------------------------
-r4688 | terrell | 2012-01-06 11:25:17 -0500 (Fri, 06 Jan 2012) | 1 line
+JMC - NO OP :: r4688 | terrell | 2012-01-06 11:25:17 -0500 (Fri, 06 Jan 2012) | 1 line
 
 two comment typos
 ------------------------------------------------------------------------
-r4689 | mwan | 2012-01-06 12:12:13 -0500 (Fri, 06 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4689 | mwan | 2012-01-06 12:12:13 -0500 (Fri, 06 Jan 2012) | 2 lines
 
 ifdef out netcdf.h to avoid compile error
 
 ------------------------------------------------------------------------
-r4690 | mwan | 2012-01-06 15:35:05 -0500 (Fri, 06 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4690 | mwan | 2012-01-06 15:35:05 -0500 (Fri, 06 Jan 2012) | 2 lines
 
 More work on rsNcOpen. Not done yet
 
 ------------------------------------------------------------------------
-r4691 | schroede | 2012-01-06 17:11:09 -0500 (Fri, 06 Jan 2012) | 5 lines
+JMC - NOT DONE :: r4691 | schroede | 2012-01-06 17:11:09 -0500 (Fri, 06 Jan 2012) | 5 lines
 
 In icatSysTables.sql.pp, move the comments out of the main ticket
 table definition so it will be accepted when using Oracle.  In
@@ -1471,7 +1471,7 @@ icatDropSysTables.sql, add the new ticket tables to the list of tables
 to be dropped.
 
 ------------------------------------------------------------------------
-r4692 | schroede | 2012-01-06 17:18:06 -0500 (Fri, 06 Jan 2012) | 6 lines
+JMC - NOT DONE :: r4692 | schroede | 2012-01-06 17:18:06 -0500 (Fri, 06 Jan 2012) | 6 lines
 
 In chlRegReplica, change the SQL form used with Oracle and MySQL so
 it, as for Postgres, will operate with additional 'where not exists'
@@ -1480,7 +1480,7 @@ does seem to be accepted by all 3 DBMSes, altho with slightly differ
 form.  Oracle and MySQL use a special 'DUAL' table.
 
 ------------------------------------------------------------------------
-r4693 | schroede | 2012-01-06 17:24:07 -0500 (Fri, 06 Jan 2012) | 5 lines
+JMC - NO OP :: r4693 | schroede | 2012-01-06 17:24:07 -0500 (Fri, 06 Jan 2012) | 5 lines
 
 Avoid a	fatal error on some file systems when 'mv' can give an error
 about 'preserving permissions for [file]: Operation not supported'
@@ -1488,93 +1488,93 @@ about 'preserving permissions for [file]: Operation not supported'
 'mv' errors since in this case,	it does	actually move the file.
 
 ------------------------------------------------------------------------
-r4694 | xuh | 2012-01-06 18:12:51 -0500 (Fri, 06 Jan 2012) | 1 line
+JMC - NOT DONE :: r4694 | xuh | 2012-01-06 18:12:51 -0500 (Fri, 06 Jan 2012) | 1 line
 
 Add a command line switch "s" to the irule command for enabling string mode; in the string mode, command line arguments are processed as strings even without quotes.
 ------------------------------------------------------------------------
-r4695 | mwan | 2012-01-06 21:12:12 -0500 (Fri, 06 Jan 2012) | 2 lines
+JMC - DONE :: r4695 | mwan | 2012-01-06 21:12:12 -0500 (Fri, 06 Jan 2012) | 2 lines
 
 Add code to handle core dump of forked proccess so they won't be rerun.
 
 ------------------------------------------------------------------------
-r4696 | schroede | 2012-01-09 11:40:01 -0500 (Mon, 09 Jan 2012) | 4 lines
+JMC - NO OP :: r4696 | schroede | 2012-01-09 11:40:01 -0500 (Mon, 09 Jan 2012) | 4 lines
 
 Another small change so that 'devtest' using an Oracle ICAT can
 succeed.  In Oracle, a zero length string is null so we have to set
 the test row/column for the 'IS NOT NULL' test to succeed.
 
 ------------------------------------------------------------------------
-r4697 | mwan | 2012-01-09 17:45:46 -0500 (Mon, 09 Jan 2012) | 2 lines
+JMC - NO OP :: r4697 | mwan | 2012-01-09 17:45:46 -0500 (Mon, 09 Jan 2012) | 2 lines
 
 change noSupportMSSFileRename to univMSSFileRename
 
 ------------------------------------------------------------------------
-r4698 | mwan | 2012-01-10 14:17:57 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4698 | mwan | 2012-01-10 14:17:57 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 complete implementation of rsNcOpen
 
 ------------------------------------------------------------------------
-r4699 | mwan | 2012-01-10 15:13:29 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4699 | mwan | 2012-01-10 15:13:29 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 Add rcNcCreate API
 
 ------------------------------------------------------------------------
-r4700 | mwan | 2012-01-10 15:16:52 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4700 | mwan | 2012-01-10 15:16:52 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 Add NETCDF_CREATE_ERR code
 
 ------------------------------------------------------------------------
-r4701 | mwan | 2012-01-10 17:04:20 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4701 | mwan | 2012-01-10 17:04:20 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 Call svrRegDataObj to register the object
 
 ------------------------------------------------------------------------
-r4702 | mwan | 2012-01-10 17:09:38 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4702 | mwan | 2012-01-10 17:09:38 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 Add rcNcClose API
 
 ------------------------------------------------------------------------
-r4703 | mwan | 2012-01-10 20:03:53 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4703 | mwan | 2012-01-10 20:03:53 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 Minor change
 
 ------------------------------------------------------------------------
-r4704 | mwan | 2012-01-10 20:20:40 -0500 (Tue, 10 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4704 | mwan | 2012-01-10 20:20:40 -0500 (Tue, 10 Jan 2012) | 2 lines
 
 include file for ncInqGenId API
 
 ------------------------------------------------------------------------
-r4705 | mwan | 2012-01-11 15:15:24 -0500 (Wed, 11 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4705 | mwan | 2012-01-11 15:15:24 -0500 (Wed, 11 Jan 2012) | 2 lines
 
 rename ncInqGenId to ncInqId
 
 ------------------------------------------------------------------------
-r4706 | mwan | 2012-01-11 18:12:38 -0500 (Wed, 11 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4706 | mwan | 2012-01-11 18:12:38 -0500 (Wed, 11 Jan 2012) | 2 lines
 
 Modify the way remote calls are made
 
 ------------------------------------------------------------------------
-r4707 | mwan | 2012-01-11 20:13:45 -0500 (Wed, 11 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4707 | mwan | 2012-01-11 20:13:45 -0500 (Wed, 11 Jan 2012) | 2 lines
 
 Add the rcNcInqId API plus some fixes for rsNcOpen, rsNcClose and rsNcCreate
 
 ------------------------------------------------------------------------
-r4708 | mwan | 2012-01-12 19:21:00 -0500 (Thu, 12 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4708 | mwan | 2012-01-12 19:21:00 -0500 (Thu, 12 Jan 2012) | 2 lines
 
 Add rcNcInqWithId API
 
 ------------------------------------------------------------------------
-r4709 | mwan | 2012-01-12 19:41:13 -0500 (Thu, 12 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4709 | mwan | 2012-01-12 19:41:13 -0500 (Thu, 12 Jan 2012) | 2 lines
 
 change the output of the API from *outId to **outId
 
 ------------------------------------------------------------------------
-r4710 | schroede | 2012-01-13 12:17:20 -0500 (Fri, 13 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4710 | schroede | 2012-01-13 12:17:20 -0500 (Fri, 13 Jan 2012) | 2 lines
 
 Remove a debug log message.
 
 ------------------------------------------------------------------------
-r4711 | schroede | 2012-01-13 19:00:21 -0500 (Fri, 13 Jan 2012) | 7 lines
+JMC - NOT DONE :: r4711 | schroede | 2012-01-13 19:00:21 -0500 (Fri, 13 Jan 2012) | 7 lines
 
 Fix a problem where, for write-tickets on collections, it was
 double-counting for ticket-uses and for written-files counts.  For the
@@ -1584,7 +1584,7 @@ of the id, and if there is than one on the same object (without
 others in between), skip the later count update(s).
 
 ------------------------------------------------------------------------
-r4712 | schroede | 2012-01-17 13:31:17 -0500 (Tue, 17 Jan 2012) | 5 lines
+JMC - NO OP :: r4712 | schroede | 2012-01-17 13:31:17 -0500 (Tue, 17 Jan 2012) | 5 lines
 
 A fix for installing on Ubuntu 11.10.  Need to initialize the database
 type value at the cllTest level similar to what is done when
@@ -1592,11 +1592,11 @@ chlOpen/cmlOpen are called (i.e. in the normal, non-low-level test
 mode).
 
 ------------------------------------------------------------------------
-r4713 | xuh | 2012-01-17 16:06:14 -0500 (Tue, 17 Jan 2012) | 1 line
+JMC - DONE :: r4713 | xuh | 2012-01-17 16:06:14 -0500 (Tue, 17 Jan 2012) | 1 line
 
 add msiCloseGenQuery
 ------------------------------------------------------------------------
-r4714 | schroede | 2012-01-17 16:41:45 -0500 (Tue, 17 Jan 2012) | 5 lines
+JMC - DONE :: r4714 | schroede | 2012-01-17 16:41:45 -0500 (Tue, 17 Jan 2012) | 5 lines
 
 Fix fatal compile errors when UNI_CODE is defined; move the include of
 locale.h to be done with the other include files instead of inline
@@ -1604,36 +1604,36 @@ with other code.  This is needed since we are now (since 3.0) using
 g++ to compile.  This build problem was reported by Jean-Yves.
 
 ------------------------------------------------------------------------
-r4715 | xuh | 2012-01-17 16:49:26 -0500 (Tue, 17 Jan 2012) | 1 line
+JMC - NO OP :: r4715 | xuh | 2012-01-17 16:49:26 -0500 (Tue, 17 Jan 2012) | 1 line
 
 Merge doxygen from nre.genQueryMS.c to genQueryMS.c; update doxygen configuration file to generate docs for genQueryMS.c; update gcov script to exclude nre.genQueryMS.c. Unlike other .c files starting with nre, nre.genQueryMS.c is not in use and will be deleted.
 ------------------------------------------------------------------------
-r4716 | xuh | 2012-01-17 21:41:10 -0500 (Tue, 17 Jan 2012) | 1 line
+JMC - DONE :: r4716 | xuh | 2012-01-17 21:41:10 -0500 (Tue, 17 Jan 2012) | 1 line
 
 Revert an error in a previous update which reverted a c++ mod that renamed a variable named "operator" which only compiles under gcc.
 ------------------------------------------------------------------------
-r4717 | terrell | 2012-01-17 23:37:34 -0500 (Tue, 17 Jan 2012) | 1 line
+JMC - NO OP :: r4717 | terrell | 2012-01-17 23:37:34 -0500 (Tue, 17 Jan 2012) | 1 line
 
 add links to main doxygen output to new msiCloseGenQuery.  clean up msi entry itself.
 ------------------------------------------------------------------------
-r4718 | mwan | 2012-01-18 16:28:42 -0500 (Wed, 18 Jan 2012) | 2 lines
+JMC - DONE :: r4718 | mwan | 2012-01-18 16:28:42 -0500 (Wed, 18 Jan 2012) | 2 lines
 
 Take out conflicting procCacheDir declaration
 
 ------------------------------------------------------------------------
-r4719 | schroede | 2012-01-19 11:40:44 -0500 (Thu, 19 Jan 2012) | 4 lines
+JMC - NO OP :: r4719 | schroede | 2012-01-19 11:40:44 -0500 (Thu, 19 Jan 2012) | 4 lines
 
 Add doxygen documentation to a few more client/server calls and
 correct some of the information in some of the previous ones I had
 done.
 
 ------------------------------------------------------------------------
-r4720 | schroede | 2012-01-19 13:05:50 -0500 (Thu, 19 Jan 2012) | 2 lines
+JMC - NO OP :: r4720 | schroede | 2012-01-19 13:05:50 -0500 (Thu, 19 Jan 2012) | 2 lines
 
 A few changes so isio will build under 3.0 (using g++)
 
 ------------------------------------------------------------------------
-r4721 | schroede | 2012-01-19 13:46:49 -0500 (Thu, 19 Jan 2012) | 18 lines
+JMC - NOT DONE :: r4721 | schroede | 2012-01-19 13:46:49 -0500 (Thu, 19 Jan 2012) | 18 lines
 
 More updates for tickets.
 
@@ -1654,12 +1654,12 @@ Add a new error code for this.
 
 
 ------------------------------------------------------------------------
-r4722 | mwan | 2012-01-19 16:02:39 -0500 (Thu, 19 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4722 | mwan | 2012-01-19 16:02:39 -0500 (Thu, 19 Jan 2012) | 2 lines
 
 Add variable (NC_VAR_T) to rsNcInqWithId
 
 ------------------------------------------------------------------------
-r4723 | schroede | 2012-01-19 16:48:19 -0500 (Thu, 19 Jan 2012) | 8 lines
+JMC - NOT DONE :: r4723 | schroede | 2012-01-19 16:48:19 -0500 (Thu, 19 Jan 2012) | 8 lines
 
 Update source code and a test script to test all the SQL forms used
 for tickets now.  Previous version had a few commented out (without
@@ -1670,28 +1670,28 @@ covered so that 'irodsctl devtest' can still succeed.
 
 
 ------------------------------------------------------------------------
-r4724 | mwan | 2012-01-19 21:13:39 -0500 (Thu, 19 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4724 | mwan | 2012-01-19 21:13:39 -0500 (Thu, 19 Jan 2012) | 2 lines
 
 Add rcNcGetVarsByType API
 
 ------------------------------------------------------------------------
-r4725 | mwan | 2012-01-19 21:50:56 -0500 (Thu, 19 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4725 | mwan | 2012-01-19 21:50:56 -0500 (Thu, 19 Jan 2012) | 2 lines
 
 Add rsNcGetVarsByType code for float
 
 ------------------------------------------------------------------------
-r4726 | mwan | 2012-01-20 12:22:24 -0500 (Fri, 20 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4726 | mwan | 2012-01-20 12:22:24 -0500 (Fri, 20 Jan 2012) | 2 lines
 
 A fix for the calcutaion of array length
 
 ------------------------------------------------------------------------
-r4727 | mwan | 2012-01-20 15:09:10 -0500 (Fri, 20 Jan 2012) | 3 lines
+JMC - NOT DONE :: r4727 | mwan | 2012-01-20 15:09:10 -0500 (Fri, 20 Jan 2012) | 3 lines
 
 Add support for NC_BYTE, NC_CHAR, NC_INT, ... all dataType except 
 NC_SHORT and NC_USHORT
 
 ------------------------------------------------------------------------
-r4728 | schroede | 2012-01-20 19:22:20 -0500 (Fri, 20 Jan 2012) | 14 lines
+JMC - NOT DONE :: r4728 | schroede | 2012-01-20 19:22:20 -0500 (Fri, 20 Jan 2012) | 14 lines
 
 More updates for tickets.
 
@@ -1708,16 +1708,16 @@ there's no matching collection or data-object rows).
 
 
 ------------------------------------------------------------------------
-r4729 | terrell | 2012-01-23 13:48:28 -0500 (Mon, 23 Jan 2012) | 1 line
+JMC - NO OP :: r4729 | terrell | 2012-01-23 13:48:28 -0500 (Mon, 23 Jan 2012) | 1 line
 
 remove redundant sentence
 ------------------------------------------------------------------------
-r4730 | mwan | 2012-01-23 14:28:07 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NO OP :: r4730 | mwan | 2012-01-23 14:28:07 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Compile with c++ with no error
 
 ------------------------------------------------------------------------
-r4731 | schroede | 2012-01-23 14:54:25 -0500 (Mon, 23 Jan 2012) | 14 lines
+JMC - NOT DONE :: r4731 | schroede | 2012-01-23 14:54:25 -0500 (Mon, 23 Jan 2012) | 14 lines
 
 Add audit calls for tickets: create, modify, delete, and use.  
 
@@ -1734,57 +1734,57 @@ first call so this seems to be the best solution).
 
 
 ------------------------------------------------------------------------
-r4732 | mwan | 2012-01-23 15:40:12 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4732 | mwan | 2012-01-23 15:40:12 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Fix a ncClose packing instruction error
 
 ------------------------------------------------------------------------
-r4733 | mwan | 2012-01-23 15:55:52 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4733 | mwan | 2012-01-23 15:55:52 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Take out the extra rsDataObjClose call
 
 ------------------------------------------------------------------------
-r4734 | mwan | 2012-01-23 16:19:21 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4734 | mwan | 2012-01-23 16:19:21 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Fix error in packing instruction definition
 
 ------------------------------------------------------------------------
-r4735 | mwan | 2012-01-23 17:07:22 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4735 | mwan | 2012-01-23 17:07:22 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 add break
 
 ------------------------------------------------------------------------
-r4736 | mwan | 2012-01-23 18:13:32 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4736 | mwan | 2012-01-23 18:13:32 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Add break
 
 ------------------------------------------------------------------------
-r4737 | mwan | 2012-01-23 18:57:55 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4737 | mwan | 2012-01-23 18:57:55 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 fix packing instruction for NcInqWithIdInp_PI
 
 ------------------------------------------------------------------------
-r4738 | mwan | 2012-01-23 19:41:21 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4738 | mwan | 2012-01-23 19:41:21 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Fix packing instruction
 
 ------------------------------------------------------------------------
-r4739 | mwan | 2012-01-23 20:53:57 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4739 | mwan | 2012-01-23 20:53:57 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Packing fixes
 
 ------------------------------------------------------------------------
-r4740 | mwan | 2012-01-23 20:54:38 -0500 (Mon, 23 Jan 2012) | 2 lines
+JMC - NO OP :: r4740 | mwan | 2012-01-23 20:54:38 -0500 (Mon, 23 Jan 2012) | 2 lines
 
 Add testing for nercdf
 
 ------------------------------------------------------------------------
-r4741 | mwan | 2012-01-24 13:04:56 -0500 (Tue, 24 Jan 2012) | 2 lines
+JMC - NO OP :: r4741 | mwan | 2012-01-24 13:04:56 -0500 (Tue, 24 Jan 2012) | 2 lines
 
 set irodsLogLevel to 9 to print xml packing
 
 ------------------------------------------------------------------------
-r4742 | schroede | 2012-01-24 14:09:48 -0500 (Tue, 24 Jan 2012) | 5 lines
+JMC - DONE :: r4742 | schroede | 2012-01-24 14:09:48 -0500 (Tue, 24 Jan 2012) | 5 lines
 
 Modify iadmin lg (showGroup function) to call general-query, instead
 of simple-query, so that all users (groupadmins, in particular) can
@@ -1792,18 +1792,18 @@ use it.  This is part of some suggestions of John Floan's (ntnu.no)
 which we discussed on irods-chat in September/October.
 
 ------------------------------------------------------------------------
-r4743 | mwan | 2012-01-24 15:56:05 -0500 (Tue, 24 Jan 2012) | 4 lines
+JMC - NOT DONE :: r4743 | mwan | 2012-01-24 15:56:05 -0500 (Tue, 24 Jan 2012) | 4 lines
 
 get rcNcGetVarsByType to work. Modified the ncGetVarOut_t and adding 
 strBytesBuf_PI, IntBytesBuf_PI and Int64BytesBuf_PI packing instruction
 to pack different type of arrays returned by the call.
 
 ------------------------------------------------------------------------
-r4744 | terrell | 2012-01-24 15:56:35 -0500 (Tue, 24 Jan 2012) | 1 line
+JMC - NO OP :: r4744 | terrell | 2012-01-24 15:56:35 -0500 (Tue, 24 Jan 2012) | 1 line
 
 svn ignore the iticket binary
 ------------------------------------------------------------------------
-r4745 | schroede | 2012-01-24 16:19:56 -0500 (Tue, 24 Jan 2012) | 6 lines
+JMC - NO OP :: r4745 | schroede | 2012-01-24 16:19:56 -0500 (Tue, 24 Jan 2012) | 6 lines
 
 Add two tests on simple queries that are no longer used in iadmin
 (since earlier today) so that 'devtest' (on tinderbox, etc) can still
@@ -1812,18 +1812,18 @@ defined in the ICAT code but the way I have the testing system set up,
 if SQL forms are defined they need to be tested.
 
 ------------------------------------------------------------------------
-r4746 | mwan | 2012-01-24 17:21:52 -0500 (Tue, 24 Jan 2012) | 2 lines
+JMC - DONE :: r4746 | mwan | 2012-01-24 17:21:52 -0500 (Tue, 24 Jan 2012) | 2 lines
 
 Add suport for cross-zone redirection
 
 ------------------------------------------------------------------------
-r4747 | mwan | 2012-01-24 18:57:35 -0500 (Tue, 24 Jan 2012) | 3 lines
+JMC - NOT DONE :: r4747 | mwan | 2012-01-24 18:57:35 -0500 (Tue, 24 Jan 2012) | 3 lines
 
 change dataArray in ncGetVarOut_t to pointer to make it easier to move
 to other struct
 
 ------------------------------------------------------------------------
-r4748 | schroede | 2012-01-25 13:19:42 -0500 (Wed, 25 Jan 2012) | 6 lines
+JMC - NOT DONE :: r4748 | schroede | 2012-01-25 13:19:42 -0500 (Wed, 25 Jan 2012) | 6 lines
 
 Add a policy rule for ticket-based access so the admin can allow
 ticket use by all users, no users, only certain users, or not certain
@@ -1832,12 +1832,12 @@ finer control, if needed, but this should be sufficient for the 3.1
 release and was stright-forward to implement.
 
 ------------------------------------------------------------------------
-r4749 | mwan | 2012-01-25 16:31:10 -0500 (Wed, 25 Jan 2012) | 2 lines
+JMC - NOT DONE :: r4749 | mwan | 2012-01-25 16:31:10 -0500 (Wed, 25 Jan 2012) | 2 lines
 
 Use dataArray_t instead of bytesBuf_t in ncGetVarOut_t to store data array.
 
 ------------------------------------------------------------------------
-r4750 | schroede | 2012-01-25 17:09:36 -0500 (Wed, 25 Jan 2012) | 6 lines
+JMC - NOT DONE :: r4750 | schroede | 2012-01-25 17:09:36 -0500 (Wed, 25 Jan 2012) | 6 lines
 
 Handle some cases for ticket updates to make sure a commit is done,
 unless a commit or rollback is done otherwise, before the disconnect.
@@ -1846,61 +1846,61 @@ this morning with a read ticket and ticket uses_count failing to get
 updated).
 
 ------------------------------------------------------------------------
-r4751 | mwan | 2012-01-25 20:32:06 -0500 (Wed, 25 Jan 2012) | 2 lines
+JMC - NO OP :: r4751 | mwan | 2012-01-25 20:32:06 -0500 (Wed, 25 Jan 2012) | 2 lines
 
 add iput -I to test rsGetHostForPut
 
 ------------------------------------------------------------------------
-r4752 | mwan | 2012-01-25 20:39:47 -0500 (Wed, 25 Jan 2012) | 3 lines
+JMC - DONE :: r4752 | mwan | 2012-01-25 20:39:47 -0500 (Wed, 25 Jan 2012) | 3 lines
 
 
 Mark routines that are not currently used with YYYY
 
 ------------------------------------------------------------------------
-r4753 | mwan | 2012-01-26 19:09:33 -0500 (Thu, 26 Jan 2012) | 4 lines
+JMC - DONE :: r4753 | mwan | 2012-01-26 19:09:33 -0500 (Thu, 26 Jan 2012) | 4 lines
 
 Fix a problem that if there is a subfile of zero size, iphybun does
 not work because of a bug in rsDataObjPut.c such that replstatus is
 0 if the data size is zero.
 
 ------------------------------------------------------------------------
-r4754 | mwan | 2012-01-26 19:19:44 -0500 (Thu, 26 Jan 2012) | 3 lines
+JMC - DONE :: r4754 | mwan | 2012-01-26 19:19:44 -0500 (Thu, 26 Jan 2012) | 3 lines
 
 set dataObjInfo->replStatus = NEWLY_CREATED_COPY in rsDataObjCreate.c
 rather than rsDataObjPut.c because it is more generic
 
 ------------------------------------------------------------------------
-r4755 | mwan | 2012-01-26 19:52:41 -0500 (Thu, 26 Jan 2012) | 2 lines
+JMC - DONE :: r4755 | mwan | 2012-01-26 19:52:41 -0500 (Thu, 26 Jan 2012) | 2 lines
 
 A better fix than the last one
 
 ------------------------------------------------------------------------
-r4756 | mwan | 2012-01-27 15:15:18 -0500 (Fri, 27 Jan 2012) | 2 lines
+JMC - DONE :: r4756 | mwan | 2012-01-27 15:15:18 -0500 (Fri, 27 Jan 2012) | 2 lines
 
 Mark routines that are not used with YYYY
 
 ------------------------------------------------------------------------
-r4757 | mwan | 2012-01-27 15:16:38 -0500 (Fri, 27 Jan 2012) | 2 lines
+JMC - NO OP :: r4757 | mwan | 2012-01-27 15:16:38 -0500 (Fri, 27 Jan 2012) | 2 lines
 
 Add more test to increase coverage listed by lcov
 
 ------------------------------------------------------------------------
-r4758 | mwan | 2012-01-27 19:50:32 -0500 (Fri, 27 Jan 2012) | 3 lines
+JMC - DONE :: r4758 | mwan | 2012-01-27 19:50:32 -0500 (Fri, 27 Jan 2012) | 3 lines
 
 switch the value of DO_CHK_PATH_PERM and NO_CHK_PATH_PERM so that 
 the acNoChkFilePathPerm rule will work
 
 ------------------------------------------------------------------------
-r4759 | mwan | 2012-01-27 19:51:49 -0500 (Fri, 27 Jan 2012) | 2 lines
+JMC - NO OP :: r4759 | mwan | 2012-01-27 19:51:49 -0500 (Fri, 27 Jan 2012) | 2 lines
 
 Add ireg and irm -U test for normal irodsuser.
 
 ------------------------------------------------------------------------
-r4760 | xuh | 2012-01-30 12:08:44 -0500 (Mon, 30 Jan 2012) | 1 line
+JMC - DONE :: r4760 | xuh | 2012-01-30 12:08:44 -0500 (Mon, 30 Jan 2012) | 1 line
 
 Fix a bug related to index building of user submitted rules with new data type definitions; add test suites for new rule engine.
 ------------------------------------------------------------------------
-r4761 | schroede | 2012-01-30 12:23:55 -0500 (Mon, 30 Jan 2012) | 6 lines
+JMC - NO OP :: r4761 | schroede | 2012-01-30 12:23:55 -0500 (Mon, 30 Jan 2012) | 6 lines
 
 Make a fix so that 'devtest' on tinderbox can succeed again; have the
 script get one more digit on an output line (which is an object-id
@@ -1909,58 +1909,58 @@ the additional tests we've added to the various test scripts.
 
 
 ------------------------------------------------------------------------
-r4762 | mwan | 2012-01-30 19:37:41 -0500 (Mon, 30 Jan 2012) | 4 lines
+JMC - DONE :: r4762 | mwan | 2012-01-30 19:37:41 -0500 (Mon, 30 Jan 2012) | 4 lines
 
 Call bulkRegUnbunSubfiles instead of regUnbunSubfiles to do bulk
 registration. This seems to solve the -K problem of chksum not
 registered.
 
 ------------------------------------------------------------------------
-r4763 | mwan | 2012-01-30 20:14:54 -0500 (Mon, 30 Jan 2012) | 2 lines
+JMC - NO OP :: r4763 | mwan | 2012-01-30 20:14:54 -0500 (Mon, 30 Jan 2012) | 2 lines
 
 clean file foo100
 
 ------------------------------------------------------------------------
-r4764 | mwan | 2012-01-31 15:55:38 -0500 (Tue, 31 Jan 2012) | 2 lines
+JMC - NO OP :: r4764 | mwan | 2012-01-31 15:55:38 -0500 (Tue, 31 Jan 2012) | 2 lines
 
 Add -N0 test
 
 ------------------------------------------------------------------------
-r4765 | mwan | 2012-01-31 19:54:49 -0500 (Tue, 31 Jan 2012) | 2 lines
+JMC - NO OP :: r4765 | mwan | 2012-01-31 19:54:49 -0500 (Tue, 31 Jan 2012) | 2 lines
 
 Add "-N0 put/get", imcoll tests. 
 
 ------------------------------------------------------------------------
-r4766 | mwan | 2012-02-01 19:19:17 -0500 (Wed, 01 Feb 2012) | 3 lines
+JMC - DONE :: r4766 | mwan | 2012-02-01 19:19:17 -0500 (Wed, 01 Feb 2012) | 3 lines
 
 Fix Wisc IRODS-2011-0003 by adding a check for path that ends with 
 "/..".
 
 ------------------------------------------------------------------------
-r4767 | mwan | 2012-02-01 20:57:02 -0500 (Wed, 01 Feb 2012) | 4 lines
+JMC - DONE :: r4767 | mwan | 2012-02-01 20:57:02 -0500 (Wed, 01 Feb 2012) | 4 lines
 
 Address Wisc IRODS-2011-0004, IRODS-2011-0005 and IRODS-2011-0006 by 
 disallowing registering in vault path with a  new subroutine:
 chkFilePathPermForReg
 
 ------------------------------------------------------------------------
-r4768 | mwan | 2012-02-01 23:23:48 -0500 (Wed, 01 Feb 2012) | 3 lines
+JMC - DONE :: r4768 | mwan | 2012-02-01 23:23:48 -0500 (Wed, 01 Feb 2012) | 3 lines
 
 Call chkFilePathPermForReg instead of chkFilePathPerm in _rsFileCreate.
 
 
 ------------------------------------------------------------------------
-r4769 | mwan | 2012-02-01 23:33:38 -0500 (Wed, 01 Feb 2012) | 2 lines
+JMC - NO OP :: r4769 | mwan | 2012-02-01 23:33:38 -0500 (Wed, 01 Feb 2012) | 2 lines
 
 Minor change to eliminate error in log file
 
 ------------------------------------------------------------------------
-r4770 | mwan | 2012-02-02 00:26:13 -0500 (Thu, 02 Feb 2012) | 2 lines
+JMC - NO OP :: r4770 | mwan | 2012-02-02 00:26:13 -0500 (Thu, 02 Feb 2012) | 2 lines
 
 Add a test script for normal irods user
 
 ------------------------------------------------------------------------
-r4771 | jeanyves | 2012-02-02 09:47:49 -0500 (Thu, 02 Feb 2012) | 5 lines
+JMC - DONE :: r4771 | jeanyves | 2012-02-02 09:47:49 -0500 (Thu, 02 Feb 2012) | 5 lines
 
 Add the '-N' option for iphybun.
 -N  numOfSubFiles - maximum number of subfiles that are contained in the
@@ -1968,7 +1968,7 @@ Add the '-N' option for iphybun.
 Some warning messages about the drawbacks of using this option are given in the iphybun help.
 
 ------------------------------------------------------------------------
-r4772 | schroede | 2012-02-02 16:57:18 -0500 (Thu, 02 Feb 2012) | 9 lines
+JMC - DONE :: r4772 | schroede | 2012-02-02 16:57:18 -0500 (Thu, 02 Feb 2012) | 9 lines
 
 Implement group-admin features suggested by john Floan (ntnu.no) on
 irods-chat back in September-October.  Added this as a igroupadmin
@@ -1980,13 +1980,13 @@ unrestricted.  Group-admins can, as before, add and remove users
 to/from the groups that the group-admin is a member of.
 
 ------------------------------------------------------------------------
-r4773 | schroede | 2012-02-02 17:40:35 -0500 (Thu, 02 Feb 2012) | 3 lines
+JMC - DONE :: r4773 | schroede | 2012-02-02 17:40:35 -0500 (Thu, 02 Feb 2012) | 3 lines
 
 Correction for previous commit for group-admin; logic wasn't allowing
 rodsadmin access for setting passwords.
 
 ------------------------------------------------------------------------
-r4774 | mwan | 2012-02-02 17:54:59 -0500 (Thu, 02 Feb 2012) | 5 lines
+JMC - DONE :: r4774 | mwan | 2012-02-02 17:54:59 -0500 (Thu, 02 Feb 2012) | 5 lines
 
 Replace rule acNoChkFilePathPerm with acSetChkFilePathPerm and a new
 micro-service msiSetChkFilePathPerm to set the check type to one of
@@ -1994,19 +1994,19 @@ the 4 types: DO_CHK_PATH_PERM, NO_CHK_PATH_PERM, CHK_NON_VAULT_PATH_PERM,
 DISALLOW_PATH_REG.
 
 ------------------------------------------------------------------------
-r4775 | mwan | 2012-02-02 17:56:37 -0500 (Thu, 02 Feb 2012) | 2 lines
+JMC - DONE :: r4775 | mwan | 2012-02-02 17:56:37 -0500 (Thu, 02 Feb 2012) | 2 lines
 
 Minor comment change
 
 ------------------------------------------------------------------------
-r4776 | mwan | 2012-02-02 20:07:08 -0500 (Thu, 02 Feb 2012) | 4 lines
+JMC - NO OP :: r4776 | mwan | 2012-02-02 20:07:08 -0500 (Thu, 02 Feb 2012) | 4 lines
 
 
 Get the test to run with no error under the condition that the UNIX ID is
 the same as the irods user ID. 
 
 ------------------------------------------------------------------------
-r4777 | schroede | 2012-02-03 18:13:12 -0500 (Fri, 03 Feb 2012) | 8 lines
+JMC - NOT DONE :: r4777 | schroede | 2012-02-03 18:13:12 -0500 (Fri, 03 Feb 2012) | 8 lines
 
 Add support for FreeBSD.  Extend configure.pl to recognize FreeBSD and
 set the platform type to OSX (close enough).  Extend utils_platform.pl
@@ -2017,27 +2017,27 @@ Utzinger of the U of Arizona for providing a test platform.
 
 
 ------------------------------------------------------------------------
-r4778 | mwan | 2012-02-06 15:22:30 -0500 (Mon, 06 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4778 | mwan | 2012-02-06 15:22:30 -0500 (Mon, 06 Feb 2012) | 2 lines
 
 minor change in naming
 
 ------------------------------------------------------------------------
-r4779 | mwan | 2012-02-06 15:41:35 -0500 (Mon, 06 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4779 | mwan | 2012-02-06 15:41:35 -0500 (Mon, 06 Feb 2012) | 2 lines
 
 Minor comment change in comment
 
 ------------------------------------------------------------------------
-r4780 | mwan | 2012-02-06 15:58:44 -0500 (Mon, 06 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4780 | mwan | 2012-02-06 15:58:44 -0500 (Mon, 06 Feb 2012) | 2 lines
 
 minor comment change
 
 ------------------------------------------------------------------------
-r4781 | mwan | 2012-02-06 16:10:30 -0500 (Mon, 06 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4781 | mwan | 2012-02-06 16:10:30 -0500 (Mon, 06 Feb 2012) | 2 lines
 
 minor change to dataArray_t
 
 ------------------------------------------------------------------------
-r4782 | schroede | 2012-02-06 17:40:56 -0500 (Mon, 06 Feb 2012) | 12 lines
+JMC - NOT DONE :: r4782 | schroede | 2012-02-06 17:40:56 -0500 (Mon, 06 Feb 2012) | 12 lines
 
 Prevent sensitive files from being writable by 'other' even if the
 user building irods has a 'umask' set to be unrestricted (e.g.
@@ -2052,7 +2052,7 @@ sure files are not writeable by 'other' (again, not needed under
 open).
 
 ------------------------------------------------------------------------
-r4783 | schroede | 2012-02-06 19:29:32 -0500 (Mon, 06 Feb 2012) | 12 lines
+JMC - NOT DONE :: r4783 | schroede | 2012-02-06 19:29:32 -0500 (Mon, 06 Feb 2012) | 12 lines
 
 More improvements for previous commit for handlinge user umask 0 or
 similar.
@@ -2067,29 +2067,29 @@ target, not just a 'make').
 
 
 ------------------------------------------------------------------------
-r4784 | mwan | 2012-02-06 20:04:53 -0500 (Mon, 06 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4784 | mwan | 2012-02-06 20:04:53 -0500 (Mon, 06 Feb 2012) | 2 lines
 
 Add rcNccfGetVara API for libcf subsetting function nccf_get_vara.
 
 ------------------------------------------------------------------------
-r4785 | mwan | 2012-02-07 18:34:58 -0500 (Tue, 07 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4785 | mwan | 2012-02-07 18:34:58 -0500 (Tue, 07 Feb 2012) | 2 lines
 
 Add the server code for the rcNccfGetVara API
 
 ------------------------------------------------------------------------
-r4786 | mwan | 2012-02-07 18:51:47 -0500 (Tue, 07 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4786 | mwan | 2012-02-07 18:51:47 -0500 (Tue, 07 Feb 2012) | 2 lines
 
 set and check the returned length
 
 ------------------------------------------------------------------------
-r4787 | schroede | 2012-02-09 11:38:25 -0500 (Thu, 09 Feb 2012) | 4 lines
+JMC - NO OP :: r4787 | schroede | 2012-02-09 11:38:25 -0500 (Thu, 09 Feb 2012) | 4 lines
 
 New test script for ticket operations, incomplete.  See the chart in
 the comments for a description of what tests are currently covered.
 
 
 ------------------------------------------------------------------------
-r4788 | schroede | 2012-02-09 18:55:41 -0500 (Thu, 09 Feb 2012) | 10 lines
+JMC - NO OP :: r4788 | schroede | 2012-02-09 18:55:41 -0500 (Thu, 09 Feb 2012) | 10 lines
 
 Fix some bugs and add code to test write-file and write-byte limits,
 and enable the tests for collection write-tickets.  This now covers
@@ -2102,7 +2102,7 @@ for a problem of counting the 'uses', as it isn't always one to one
 
 
 ------------------------------------------------------------------------
-r4789 | schroede | 2012-02-10 10:08:54 -0500 (Fri, 10 Feb 2012) | 9 lines
+JMC - NO OP :: r4789 | schroede | 2012-02-10 10:08:54 -0500 (Fri, 10 Feb 2012) | 9 lines
 
 Update this ticket test script to remove a work-around and check the
 'write' usage tracking properly.  The ticket code is counting 'uses'
@@ -2114,21 +2114,21 @@ is fine (close enough) and fixing it is not worth the complication.
 
 
 ------------------------------------------------------------------------
-r4790 | terrell | 2012-02-10 14:58:40 -0500 (Fri, 10 Feb 2012) | 1 line
+JMC - NO OP :: r4790 | terrell | 2012-02-10 14:58:40 -0500 (Fri, 10 Feb 2012) | 1 line
 
 add a sleep for two seconds after writing initial .irodsEnv file.  i was seeing occasional failures, always at this point, in the install script when running across an NFS mount.  the auth file is never created and the startup connection fails (due to the server not being started properly).  the sleep may give the filesystem to catch up.
 ------------------------------------------------------------------------
-r4791 | mwan | 2012-02-13 16:10:47 -0500 (Mon, 13 Feb 2012) | 2 lines
+JMC - NO OP :: r4791 | mwan | 2012-02-13 16:10:47 -0500 (Mon, 13 Feb 2012) | 2 lines
 
 Documentation changes
 
 ------------------------------------------------------------------------
-r4792 | mwan | 2012-02-13 16:30:39 -0500 (Mon, 13 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4792 | mwan | 2012-02-13 16:30:39 -0500 (Mon, 13 Feb 2012) | 2 lines
 
 Add test for the rcNccfGetVara API
 
 ------------------------------------------------------------------------
-r4793 | schroede | 2012-02-13 16:30:39 -0500 (Mon, 13 Feb 2012) | 9 lines
+JMC - DONE :: r4793 | schroede | 2012-02-13 16:30:39 -0500 (Mon, 13 Feb 2012) | 9 lines
 
 Changes so that environment variable logfilePattern can be set to
 change the server log file name pattern via strftime.  Default is as
@@ -2140,12 +2140,12 @@ Thanks to Thomas Ledoux for this enhancement, via an irods-chat post.
 
 
 ------------------------------------------------------------------------
-r4794 | mwan | 2012-02-13 16:33:09 -0500 (Mon, 13 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4794 | mwan | 2012-02-13 16:33:09 -0500 (Mon, 13 Feb 2012) | 2 lines
 
 Add #ifdef LIB_CF for the rcNccfGetVara API
 
 ------------------------------------------------------------------------
-r4795 | schroede | 2012-02-13 17:16:22 -0500 (Mon, 13 Feb 2012) | 10 lines
+JMC - DONE :: r4795 | schroede | 2012-02-13 17:16:22 -0500 (Mon, 13 Feb 2012) | 10 lines
 
 Add an option in iquest and other query-interfaces to request order
 (order_by) or order_desc (descending, order_by_desc).  Add description
@@ -2158,93 +2158,93 @@ particular instance.
 
 
 ------------------------------------------------------------------------
-r4796 | mwan | 2012-02-13 18:26:30 -0500 (Mon, 13 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4796 | mwan | 2012-02-13 18:26:30 -0500 (Mon, 13 Feb 2012) | 2 lines
 
 Minor mode to the libcf lib and include path
 
 ------------------------------------------------------------------------
-r4797 | mwan | 2012-02-13 20:14:00 -0500 (Mon, 13 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4797 | mwan | 2012-02-13 20:14:00 -0500 (Mon, 13 Feb 2012) | 2 lines
 
 Add netcdf microservice module
 
 ------------------------------------------------------------------------
-r4798 | mwan | 2012-02-14 19:50:00 -0500 (Tue, 14 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4798 | mwan | 2012-02-14 19:50:00 -0500 (Tue, 14 Feb 2012) | 2 lines
 
 add 3 more netcdf micro-services - msiNcClose, msiNcInqId, msiNcInqWithId
 
 ------------------------------------------------------------------------
-r4799 | xuh | 2012-02-15 22:29:52 -0500 (Wed, 15 Feb 2012) | 1 line
+JMC - DONE :: r4799 | xuh | 2012-02-15 22:29:52 -0500 (Wed, 15 Feb 2012) | 1 line
 
 Fix a bug in a hash table related function
 ------------------------------------------------------------------------
-r4800 | terrell | 2012-02-20 11:58:48 -0500 (Mon, 20 Feb 2012) | 1 line
+JMC - NO OP :: r4800 | terrell | 2012-02-20 11:58:48 -0500 (Mon, 20 Feb 2012) | 1 line
 
 fix typo in icommand test output
 ------------------------------------------------------------------------
-r4801 | terrell | 2012-02-20 12:01:49 -0500 (Mon, 20 Feb 2012) | 1 line
+JMC - NO OP :: r4801 | terrell | 2012-02-20 12:01:49 -0500 (Mon, 20 Feb 2012) | 1 line
 
 fix typo in irodsctl output
 ------------------------------------------------------------------------
-r4802 | jeanyves | 2012-02-21 09:19:18 -0500 (Tue, 21 Feb 2012) | 3 lines
+JMC - DONE :: r4802 | jeanyves | 2012-02-21 09:19:18 -0500 (Tue, 21 Feb 2012) | 3 lines
 
 The possibility to modify the max number of subfiles has been added to msiPhyBunColl.
 This was previously added for the iphybun command which is doing the same job.
 
 ------------------------------------------------------------------------
-r4803 | jeanyves | 2012-02-21 09:27:30 -0500 (Tue, 21 Feb 2012) | 2 lines
+JMC - DONE :: r4803 | jeanyves | 2012-02-21 09:27:30 -0500 (Tue, 21 Feb 2012) | 2 lines
 
 add an extra protection in msiSysMetaModify.
 
 ------------------------------------------------------------------------
-r4804 | terrell | 2012-02-21 15:55:37 -0500 (Tue, 21 Feb 2012) | 1 line
+JMC - NO OP :: r4804 | terrell | 2012-02-21 15:55:37 -0500 (Tue, 21 Feb 2012) | 1 line
 
 typo police
 ------------------------------------------------------------------------
-r4805 | mwan | 2012-02-21 19:38:39 -0500 (Tue, 21 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4805 | mwan | 2012-02-21 19:38:39 -0500 (Tue, 21 Feb 2012) | 2 lines
 
 Add msiNcGetVarsByType microservice for the rsNcGetVarsByType api
 
 ------------------------------------------------------------------------
-r4806 | terrell | 2012-02-22 11:46:03 -0500 (Wed, 22 Feb 2012) | 1 line
+JMC - NO OP :: r4806 | terrell | 2012-02-22 11:46:03 -0500 (Wed, 22 Feb 2012) | 1 line
 
 add link to msiGetObjectPath to doxygen front page
 ------------------------------------------------------------------------
-r4807 | terrell | 2012-02-22 13:24:19 -0500 (Wed, 22 Feb 2012) | 1 line
+JMC - NO OP :: r4807 | terrell | 2012-02-22 13:24:19 -0500 (Wed, 22 Feb 2012) | 1 line
 
 fix syntax error in example xml rule
 ------------------------------------------------------------------------
-r4808 | terrell | 2012-02-22 16:25:07 -0500 (Wed, 22 Feb 2012) | 1 line
+JMC - NO OP :: r4808 | terrell | 2012-02-22 16:25:07 -0500 (Wed, 22 Feb 2012) | 1 line
 
 fix typo
 ------------------------------------------------------------------------
-r4809 | mwan | 2012-02-22 20:22:32 -0500 (Wed, 22 Feb 2012) | 2 lines
+JMC - DONE :: r4809 | mwan | 2012-02-22 20:22:32 -0500 (Wed, 22 Feb 2012) | 2 lines
 
 fix a compile error on some platform of using rodsLong_t instead of int64_t
 
 ------------------------------------------------------------------------
-r4810 | mwan | 2012-02-22 21:03:32 -0500 (Wed, 22 Feb 2012) | 4 lines
+JMC - DONE :: r4810 | mwan | 2012-02-22 21:03:32 -0500 (Wed, 22 Feb 2012) | 4 lines
 
 
 Get the driver to work with the latest version 3-2.0 where there is a 
 change in a struct
 
 ------------------------------------------------------------------------
-r4811 | mwan | 2012-02-23 13:22:11 -0500 (Thu, 23 Feb 2012) | 2 lines
+JMC - DONE :: r4811 | mwan | 2012-02-23 13:22:11 -0500 (Thu, 23 Feb 2012) | 2 lines
 
 Fix compile warning 
 
 ------------------------------------------------------------------------
-r4812 | mwan | 2012-02-23 15:58:02 -0500 (Thu, 23 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4812 | mwan | 2012-02-23 15:58:02 -0500 (Thu, 23 Feb 2012) | 2 lines
 
 Add microservice msiNccfGetVara for the rsNccfGetVara API
 
 ------------------------------------------------------------------------
-r4813 | mwan | 2012-02-23 18:57:04 -0500 (Thu, 23 Feb 2012) | 2 lines
+JMC - NOT DONE :: r4813 | mwan | 2012-02-23 18:57:04 -0500 (Thu, 23 Feb 2012) | 2 lines
 
 Put the 7 Netcdf micro-service altogether
 
 ------------------------------------------------------------------------
-r4814 | mwan | 2012-02-23 19:04:53 -0500 (Thu, 23 Feb 2012) | 2 lines
+JMC - NO OP :: r4814 | mwan | 2012-02-23 19:04:53 -0500 (Thu, 23 Feb 2012) | 2 lines
 
 Add the test file for nctest.c
 
@@ -2254,13 +2254,13 @@ r4815 | mwan | 2012-02-23 19:23:26 -0500 (Thu, 23 Feb 2012) | 2 lines
 add comment
 
 ------------------------------------------------------------------------
-r4816 | mwan | 2012-02-23 22:07:25 -0500 (Thu, 23 Feb 2012) | 3 lines
+JMC - NO OP :: r4816 | mwan | 2012-02-23 22:07:25 -0500 (Thu, 23 Feb 2012) | 3 lines
 
 Add netcdf micro-service testing script netcdfTest.r plus fixes to
 get the script working.
 
 ------------------------------------------------------------------------
-r4817 | schroede | 2012-02-24 18:01:15 -0500 (Fri, 24 Feb 2012) | 7 lines
+JMC - DONE :: r4817 | schroede | 2012-02-24 18:01:15 -0500 (Fri, 24 Feb 2012) | 7 lines
 
 Fix a configure problem on some Solaris-PC platforms.  The perl
 POSIX::uname function (or possibly the uname utility) is now sometimes
@@ -2270,56 +2270,56 @@ match and configure.pl will set the "OS_platform" to
 helped resolve the problem.
 
 ------------------------------------------------------------------------
-r4818 | mwan | 2012-02-24 18:48:52 -0500 (Fri, 24 Feb 2012) | 4 lines
+JMC - NOT DONE :: r4818 | mwan | 2012-02-24 18:48:52 -0500 (Fri, 24 Feb 2012) | 4 lines
 
 Add 5 micro-services msiNcGetArrayLen, msiNcGetNumDim, msiNcGetDataType,
 msiNcGetElementInArray and msiFloatToString to handle data and arrays
 produced by the netcdf micro-services.
 
 ------------------------------------------------------------------------
-r4819 | mwan | 2012-02-24 19:09:33 -0500 (Fri, 24 Feb 2012) | 4 lines
+JMC - DONE :: r4819 | mwan | 2012-02-24 19:09:33 -0500 (Fri, 24 Feb 2012) | 4 lines
 
 
 Eliminate CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME error from rsMkCollR
 since it is harmless. 
 
 ------------------------------------------------------------------------
-r4820 | mwan | 2012-02-24 19:58:17 -0500 (Fri, 24 Feb 2012) | 2 lines
+JMC - NO OP :: r4820 | mwan | 2012-02-24 19:58:17 -0500 (Fri, 24 Feb 2012) | 2 lines
 
 Minor change
 
 ------------------------------------------------------------------------
-r4821 | antoine | 2012-02-27 16:17:38 -0500 (Mon, 27 Feb 2012) | 2 lines
+JMC - NO OP :: r4821 | antoine | 2012-02-27 16:17:38 -0500 (Mon, 27 Feb 2012) | 2 lines
 
 Updates to msiGetCollectionACL and underlying queries
 
 ------------------------------------------------------------------------
-r4822 | antoine | 2012-02-27 20:51:14 -0500 (Mon, 27 Feb 2012) | 2 lines
+JMC - NO OP :: r4822 | antoine | 2012-02-27 20:51:14 -0500 (Mon, 27 Feb 2012) | 2 lines
 
 Forgot an error check on return
 
 ------------------------------------------------------------------------
-r4823 | antoine | 2012-02-27 21:05:21 -0500 (Mon, 27 Feb 2012) | 2 lines
+JMC - NO OP :: r4823 | antoine | 2012-02-27 21:05:21 -0500 (Mon, 27 Feb 2012) | 2 lines
 
 Better error handling
 
 ------------------------------------------------------------------------
-r4824 | mwan | 2012-02-27 21:39:58 -0500 (Mon, 27 Feb 2012) | 3 lines
+JMC - NO OP :: r4824 | mwan | 2012-02-27 21:39:58 -0500 (Mon, 27 Feb 2012) | 3 lines
 
 add examples to modules
 
 
 ------------------------------------------------------------------------
-r4825 | mwan | 2012-02-27 23:00:31 -0500 (Mon, 27 Feb 2012) | 2 lines
+JMC - NO OP :: r4825 | mwan | 2012-02-27 23:00:31 -0500 (Mon, 27 Feb 2012) | 2 lines
 
 iUse the new rule language
 
 ------------------------------------------------------------------------
-r4826 | xuh | 2012-02-28 00:04:35 -0500 (Tue, 28 Feb 2012) | 1 line
+JMC - DONE :: r4826 | xuh | 2012-02-28 00:04:35 -0500 (Tue, 28 Feb 2012) | 1 line
 
 Fix a problem in error message generation from the rule engine
 ------------------------------------------------------------------------
-r4827 | schroede | 2012-02-28 14:11:33 -0500 (Tue, 28 Feb 2012) | 24 lines
+JMC - DONE :: r4827 | schroede | 2012-02-28 14:11:33 -0500 (Tue, 28 Feb 2012) | 24 lines
 
 Fix a bug in ICAT user-defined meta-data logic that was preventing the
 reuse of some AVU definitions when the units were not used (the AVU
@@ -2346,22 +2346,22 @@ inclusion into svn.  They need to handle both shared and unshared
 AVUs.
 
 ------------------------------------------------------------------------
-r4828 | antoine | 2012-03-01 15:43:08 -0500 (Thu, 01 Mar 2012) | 2 lines
+JMC - NO OP :: r4828 | antoine | 2012-03-01 15:43:08 -0500 (Thu, 01 Mar 2012) | 2 lines
 
 fixed a bug in msiGetCollectionACL where no files or subcolls in recursive mode would trigger a cat no rows error
 
 ------------------------------------------------------------------------
-r4829 | xuh | 2012-03-02 04:33:49 -0500 (Fri, 02 Mar 2012) | 1 line
+JMC - DONE :: r4829 | xuh | 2012-03-02 04:33:49 -0500 (Fri, 02 Mar 2012) | 1 line
 
 Fix memory leaks.
 ------------------------------------------------------------------------
-r4830 | jeanyves | 2012-03-03 20:48:16 -0500 (Sat, 03 Mar 2012) | 3 lines
+JMC - NOT DONE :: r4830 | jeanyves | 2012-03-03 20:48:16 -0500 (Sat, 03 Mar 2012) | 3 lines
 
 Improve code to take into account server hosts running a Unix OS installed in a language different than english.
 Before that fix, the amount of disk space left was not reported correctly for OS not using english language.
 
 ------------------------------------------------------------------------
-r4831 | schroede | 2012-03-05 17:06:04 -0500 (Mon, 05 Mar 2012) | 11 lines
+JMC - NO OP :: r4831 | schroede | 2012-03-05 17:06:04 -0500 (Mon, 05 Mar 2012) | 11 lines
 
 Move the --purgec option to the right place on two iget commands lines
 in testiCommands.pl so that 'devtest' can succeed on Mac OS X.
@@ -2375,27 +2375,27 @@ ERROR: getUtil: resolveRodsTarget status = -317000 USER_INPUT_PATH_ERR
 
 
 ------------------------------------------------------------------------
-r4832 | mwan | 2012-03-06 13:35:51 -0500 (Tue, 06 Mar 2012) | 2 lines
+JMC - DONE :: r4832 | mwan | 2012-03-06 13:35:51 -0500 (Tue, 06 Mar 2012) | 2 lines
 
 Fix wisc 2012-0001 by making "imcoll -m filesystem" a privileged call. 
 
 ------------------------------------------------------------------------
-r4833 | mwan | 2012-03-06 17:35:32 -0500 (Tue, 06 Mar 2012) | 2 lines
+JMC - DONE :: r4833 | mwan | 2012-03-06 17:35:32 -0500 (Tue, 06 Mar 2012) | 2 lines
 
 Fiz wisc 2012-0002 by not allowing "ibun -x" of soft-linked subfiles
 
 ------------------------------------------------------------------------
-r4834 | mwan | 2012-03-06 18:03:50 -0500 (Tue, 06 Mar 2012) | 2 lines
+JMC - DONE :: r4834 | mwan | 2012-03-06 18:03:50 -0500 (Tue, 06 Mar 2012) | 2 lines
 
 Fix bug #148 by checking for EEXIST in mkFileDirR
 
 ------------------------------------------------------------------------
-r4835 | mwan | 2012-03-07 21:43:00 -0500 (Wed, 07 Mar 2012) | 2 lines
+JMC - DONE :: r4835 | mwan | 2012-03-07 21:43:00 -0500 (Wed, 07 Mar 2012) | 2 lines
 
 Fix a memory leak
 
 ------------------------------------------------------------------------
-r4836 | schroede | 2012-03-08 13:54:05 -0500 (Thu, 08 Mar 2012) | 8 lines
+JMC - DONE :: r4836 | schroede | 2012-03-08 13:54:05 -0500 (Thu, 08 Mar 2012) | 8 lines
 
 Add the new 'imeta set' feature developed by Thomas Ledoux and me.  A
 previous bug in an ICAT function lead to some confusion (what Thomas
@@ -2406,65 +2406,65 @@ chlSetAVUMetadata logic and the help text.  I also added the tests in
 testIcat.pl so that 'devtest' can succeed (testing all SQL forms).
 
 ------------------------------------------------------------------------
-r4837 | schroede | 2012-03-09 09:38:28 -0500 (Fri, 09 Mar 2012) | 2 lines
+JMC - NO OP :: r4837 | schroede | 2012-03-09 09:38:28 -0500 (Fri, 09 Mar 2012) | 2 lines
 
 Update the version (date) for scripts/perl scripts updated since 3.0.
 
 ------------------------------------------------------------------------
-r4838 | schroede | 2012-03-09 09:39:37 -0500 (Fri, 09 Mar 2012) | 2 lines
+JMC - NOT DONE :: r4838 | schroede | 2012-03-09 09:39:37 -0500 (Fri, 09 Mar 2012) | 2 lines
 
 Add the new igroupadmin and iticket to ihelp.
 
 ------------------------------------------------------------------------
-r4839 | schroede | 2012-03-09 09:40:59 -0500 (Fri, 09 Mar 2012) | 2 lines
+JMC - NOT DONE :: r4839 | schroede | 2012-03-09 09:40:59 -0500 (Fri, 09 Mar 2012) | 2 lines
 
 Add the Postgres ICAT DB patches for 3.1
 
 ------------------------------------------------------------------------
-r4840 | schroede | 2012-03-09 10:59:39 -0500 (Fri, 09 Mar 2012) | 2 lines
+JMC - NOT DONE :: r4840 | schroede | 2012-03-09 10:59:39 -0500 (Fri, 09 Mar 2012) | 2 lines
 
 Update the patch messages for 3.1.
 
 ------------------------------------------------------------------------
-r4841 | mwan | 2012-03-09 11:29:12 -0500 (Fri, 09 Mar 2012) | 4 lines
+JMC - DONE :: r4841 | mwan | 2012-03-09 11:29:12 -0500 (Fri, 09 Mar 2012) | 4 lines
 
 Make DefFileMode and DefDirMode input value must be an octal value and start
 with a "0"
 
 
 ------------------------------------------------------------------------
-r4842 | schroede | 2012-03-09 12:19:11 -0500 (Fri, 09 Mar 2012) | 3 lines
+JMC - NOT DONE :: r4842 | schroede | 2012-03-09 12:19:11 -0500 (Fri, 09 Mar 2012) | 3 lines
 
 Correct a couple of mistakes in the version of this ICAT DB patch file
 committed earlier today.
 
 ------------------------------------------------------------------------
-r4843 | antoine | 2012-03-09 15:22:49 -0500 (Fri, 09 Mar 2012) | 2 lines
+JMC - NO OP :: r4843 | antoine | 2012-03-09 15:22:49 -0500 (Fri, 09 Mar 2012) | 2 lines
 
 Rule example to get true file timestamp (st_mtime) of registered object.
 
 ------------------------------------------------------------------------
-r4844 | antoine | 2012-03-09 15:28:11 -0500 (Fri, 09 Mar 2012) | 2 lines
+JMC - NO OP :: r4844 | antoine | 2012-03-09 15:28:11 -0500 (Fri, 09 Mar 2012) | 2 lines
 
 Formatting gone wrong...
 
 ------------------------------------------------------------------------
-r4845 | mwan | 2012-03-10 10:51:01 -0500 (Sat, 10 Mar 2012) | 2 lines
+JMC - NOT DONE :: r4845 | mwan | 2012-03-10 10:51:01 -0500 (Sat, 10 Mar 2012) | 2 lines
 
 iNo need to resolve symlink when register a collection
 
 ------------------------------------------------------------------------
-r4846 | schroede | 2012-03-12 16:31:59 -0400 (Mon, 12 Mar 2012) | 2 lines
+JMC - NOT DONE :: r4846 | schroede | 2012-03-12 16:31:59 -0400 (Mon, 12 Mar 2012) | 2 lines
 
 Add the MySQL and Oracle ICAT DB patches for 3.1.
 
 ------------------------------------------------------------------------
-r4847 | schroede | 2012-03-12 18:40:00 -0400 (Mon, 12 Mar 2012) | 2 lines
+JMC - NO OP :: r4847 | schroede | 2012-03-12 18:40:00 -0400 (Mon, 12 Mar 2012) | 2 lines
 
 Fix a couple compiler warning messages related to recent changes.
 
 ------------------------------------------------------------------------
-r4848 | schroede | 2012-03-12 19:23:40 -0400 (Mon, 12 Mar 2012) | 12 lines
+JMC - DONE :: r4848 | schroede | 2012-03-12 19:23:40 -0400 (Mon, 12 Mar 2012) | 12 lines
 
 Significantly increase the length allowed for SQL statements in the
 general-query functions, increase the max number of bind variables,
@@ -2479,22 +2479,22 @@ calls at this time to avoid more substantial changes just before a
 release.
 
 ------------------------------------------------------------------------
-r4849 | antoine | 2012-03-13 03:22:03 -0400 (Tue, 13 Mar 2012) | 2 lines
+JMC - NO OP :: r4849 | antoine | 2012-03-13 03:22:03 -0400 (Tue, 13 Mar 2012) | 2 lines
 
 First batch of cppcheck mods
 
 ------------------------------------------------------------------------
-r4850 | schroede | 2012-03-13 12:12:43 -0400 (Tue, 13 Mar 2012) | 3 lines
+JMC - NO OP :: r4850 | schroede | 2012-03-13 12:12:43 -0400 (Tue, 13 Mar 2012) | 3 lines
 
 Update version and release date in preparation for releasing 3.1 later
 this week.
 
 ------------------------------------------------------------------------
-r4851 | jeanyves | 2012-03-13 12:18:13 -0400 (Tue, 13 Mar 2012) | 1 line
+JMC - NO OP :: r4851 | jeanyves | 2012-03-13 12:18:13 -0400 (Tue, 13 Mar 2012) | 1 line
 
 Creating scripts/admin directory
 ------------------------------------------------------------------------
-r4852 | jeanyves | 2012-03-13 12:27:05 -0400 (Tue, 13 Mar 2012) | 5 lines
+JMC - NOT DONE :: r4852 | jeanyves | 2012-03-13 12:27:05 -0400 (Tue, 13 Mar 2012) | 5 lines
 
 Add the killAgent script.
 It kills irodsAgent process older than a certain wall clock time (default: 7 days).
@@ -2502,48 +2502,48 @@ This is useful to clean up irodsAgent which are idle since a long time (eg: dead
 For more information, please refer to the script itself, the help menu and the config file.
 
 ------------------------------------------------------------------------
-r4853 | schroede | 2012-03-13 12:47:29 -0400 (Tue, 13 Mar 2012) | 2 lines
+JMC - NO OP :: r4853 | schroede | 2012-03-13 12:47:29 -0400 (Tue, 13 Mar 2012) | 2 lines
 
 Updates for 3.1
 
 ------------------------------------------------------------------------
-r4854 | schroede | 2012-03-13 13:20:10 -0400 (Tue, 13 Mar 2012) | 2 lines
+JMC - NO OP :: r4854 | schroede | 2012-03-13 13:20:10 -0400 (Tue, 13 Mar 2012) | 2 lines
 
 bump doxygen version numbers for upcoming release (3.1)
 
 ------------------------------------------------------------------------
-r4855 | schroede | 2012-03-13 13:49:37 -0400 (Tue, 13 Mar 2012) | 2 lines
+JMC - NO OP :: r4855 | schroede | 2012-03-13 13:49:37 -0400 (Tue, 13 Mar 2012) | 2 lines
 
 Update the api Doxygen project number to 3.1 for the upcoming release.
 
 ------------------------------------------------------------------------
-r4856 | schroede | 2012-03-13 20:22:26 -0400 (Tue, 13 Mar 2012) | 3 lines
+JMC - NO OP :: r4856 | schroede | 2012-03-13 20:22:26 -0400 (Tue, 13 Mar 2012) | 3 lines
 
 Correction for a recent change; need to use the defined size of the
 array.
 
 ------------------------------------------------------------------------
-r4857 | antoine | 2012-03-13 23:48:19 -0400 (Tue, 13 Mar 2012) | 2 lines
+JMC - NO OP :: r4857 | antoine | 2012-03-13 23:48:19 -0400 (Tue, 13 Mar 2012) | 2 lines
 
 More cppchecks
 
 ------------------------------------------------------------------------
-r4858 | antoine | 2012-03-14 00:25:03 -0400 (Wed, 14 Mar 2012) | 2 lines
+JMC - NO OP :: r4858 | antoine | 2012-03-14 00:25:03 -0400 (Wed, 14 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4859 | antoine | 2012-03-14 02:47:19 -0400 (Wed, 14 Mar 2012) | 2 lines
+JMC - NO OP :: r4859 | antoine | 2012-03-14 02:47:19 -0400 (Wed, 14 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4860 | antoine | 2012-03-14 03:12:48 -0400 (Wed, 14 Mar 2012) | 2 lines
+JMC - NO OP :: r4860 | antoine | 2012-03-14 03:12:48 -0400 (Wed, 14 Mar 2012) | 2 lines
 
 Merged Jason's mods with the current version
 
 ------------------------------------------------------------------------
-r4861 | schroede | 2012-03-14 11:58:22 -0400 (Wed, 14 Mar 2012) | 5 lines
+JMC - NOT DONE :: r4861 | schroede | 2012-03-14 11:58:22 -0400 (Wed, 14 Mar 2012) | 5 lines
 
 Add another library when using Oracle.  This is needed now, at least
 on srbbrick15 using Oracle-ce, to avoid link errors.  It wasn't
@@ -2551,18 +2551,18 @@ required previously and I'm not sure why it is now, but it seems to
 work fine with this addition.
 
 ------------------------------------------------------------------------
-r4862 | schroede | 2012-03-14 13:15:31 -0400 (Wed, 14 Mar 2012) | 3 lines
+JMC - NO OP :: r4862 | schroede | 2012-03-14 13:15:31 -0400 (Wed, 14 Mar 2012) | 3 lines
 
 Remove a check since it was getting a compiler warning (because
 the variable is an int).  We believe the check is unneeded.
 
 ------------------------------------------------------------------------
-r4863 | antoine | 2012-03-14 16:33:20 -0400 (Wed, 14 Mar 2012) | 2 lines
+JMC - NO OP :: r4863 | antoine | 2012-03-14 16:33:20 -0400 (Wed, 14 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4864 | schroede | 2012-03-14 16:38:04 -0400 (Wed, 14 Mar 2012) | 6 lines
+JMC - NOT DONE :: r4864 | schroede | 2012-03-14 16:38:04 -0400 (Wed, 14 Mar 2012) | 6 lines
 
 Improve this morning's correction for building with Oracle XE.  Remove
 the change made to server/Makefile and update config.mk.in to include
@@ -2571,117 +2571,117 @@ the needed nnz10 library only if this is Oracle XE (looking for the
 
 
 ------------------------------------------------------------------------
-r4865 | mwan | 2012-03-14 22:12:44 -0400 (Wed, 14 Mar 2012) | 2 lines
+JMC - DONE :: r4865 | mwan | 2012-03-14 22:12:44 -0400 (Wed, 14 Mar 2012) | 2 lines
 
 Enforce the number of thread specification for irods to irods sync
 
 ------------------------------------------------------------------------
-r4866 | antoine | 2012-03-15 00:23:48 -0400 (Thu, 15 Mar 2012) | 2 lines
+JMC - NO OP :: r4866 | antoine | 2012-03-15 00:23:48 -0400 (Thu, 15 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4867 | antoine | 2012-03-15 00:37:50 -0400 (Thu, 15 Mar 2012) | 2 lines
+JMC - NO OP :: r4867 | antoine | 2012-03-15 00:37:50 -0400 (Thu, 15 Mar 2012) | 2 lines
 
 Added a comment and undid an unwanted setting change
 
 ------------------------------------------------------------------------
-r4868 | antoine | 2012-03-15 01:51:52 -0400 (Thu, 15 Mar 2012) | 2 lines
+JMC - NO OP :: r4868 | antoine | 2012-03-15 01:51:52 -0400 (Thu, 15 Mar 2012) | 2 lines
 
 More cppcheck fixes
 
 ------------------------------------------------------------------------
-r4869 | mwan | 2012-03-15 10:23:17 -0400 (Thu, 15 Mar 2012) | 2 lines
+JMC - DONE :: r4869 | mwan | 2012-03-15 10:23:17 -0400 (Thu, 15 Mar 2012) | 2 lines
 
 re-fix the Wisc 2011-0003
 
 ------------------------------------------------------------------------
-r4870 | mwan | 2012-03-15 10:31:15 -0400 (Thu, 15 Mar 2012) | 3 lines
+JMC - DONE :: r4870 | mwan | 2012-03-15 10:31:15 -0400 (Thu, 15 Mar 2012) | 3 lines
 
 Set acSetChkFilePathPerm to "disallowPathReg" as default to address Wisc
 2011-0007
 
 ------------------------------------------------------------------------
-r4871 | mwan | 2012-03-15 11:23:44 -0400 (Thu, 15 Mar 2012) | 2 lines
+JMC - DONE :: r4871 | mwan | 2012-03-15 11:23:44 -0400 (Thu, 15 Mar 2012) | 2 lines
 
 Make mounting struct file a privileged call for now
 
 ------------------------------------------------------------------------
-r4872 | schroede | 2012-03-15 13:06:06 -0400 (Thu, 15 Mar 2012) | 3 lines
+JMC - NO OP :: r4872 | schroede | 2012-03-15 13:06:06 -0400 (Thu, 15 Mar 2012) | 3 lines
 
 Minor change so the whole irods core will still compile with a C
 compiler, which is still used on Solaris platforms.
 
 ------------------------------------------------------------------------
-r4873 | antoine | 2012-03-15 17:25:56 -0400 (Thu, 15 Mar 2012) | 2 lines
+JMC - NO OP :: r4873 | antoine | 2012-03-15 17:25:56 -0400 (Thu, 15 Mar 2012) | 2 lines
 
 More cppcheck fixes
 
 ------------------------------------------------------------------------
-r4874 | schroede | 2012-03-15 18:52:33 -0400 (Thu, 15 Mar 2012) | 3 lines
+JMC - DONE :: r4874 | schroede | 2012-03-15 18:52:33 -0400 (Thu, 15 Mar 2012) | 3 lines
 
 Update the description for the acSetChkFilePathPerm rule, explaining
 that we recommend the default for 3.1.
 
 ------------------------------------------------------------------------
-r4875 | antoine | 2012-03-16 00:32:40 -0400 (Fri, 16 Mar 2012) | 2 lines
+JMC - NO OP :: r4875 | antoine | 2012-03-16 00:32:40 -0400 (Fri, 16 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4876 | antoine | 2012-03-16 03:59:34 -0400 (Fri, 16 Mar 2012) | 2 lines
+JMC - NO OP :: r4876 | antoine | 2012-03-16 03:59:34 -0400 (Fri, 16 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4877 | antoine | 2012-03-16 04:32:42 -0400 (Fri, 16 Mar 2012) | 2 lines
+JMC - NO OP :: r4877 | antoine | 2012-03-16 04:32:42 -0400 (Fri, 16 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4878 | antoine | 2012-03-16 04:53:11 -0400 (Fri, 16 Mar 2012) | 2 lines
+JMC - NO OP :: r4878 | antoine | 2012-03-16 04:53:11 -0400 (Fri, 16 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4879 | antoine | 2012-03-16 05:09:12 -0400 (Fri, 16 Mar 2012) | 2 lines
+JMC - NO OP :: r4879 | antoine | 2012-03-16 05:09:12 -0400 (Fri, 16 Mar 2012) | 2 lines
 
 cppcheck fixes
 
 ------------------------------------------------------------------------
-r4880 | terrell | 2012-03-16 12:40:45 -0400 (Fri, 16 Mar 2012) | 1 line
+JMC - NO OP :: r4880 | terrell | 2012-03-16 12:40:45 -0400 (Fri, 16 Mar 2012) | 1 line
 
 update doxygen for 3.1 release with 12 NetCDF microservices (need doxygen entries), msiSetChkFilePathPerm, and msiGetFormattedSystemTime
 ------------------------------------------------------------------------
-r4881 | terrell | 2012-03-16 13:02:11 -0400 (Fri, 16 Mar 2012) | 1 line
+JMC - NO OP :: r4881 | terrell | 2012-03-16 13:02:11 -0400 (Fri, 16 Mar 2012) | 1 line
 
 clean up a bit more, prep for later additional doxygen comments
 ------------------------------------------------------------------------
-r4882 | terrell | 2012-03-16 13:10:13 -0400 (Fri, 16 Mar 2012) | 1 line
+JMC - NO OP :: r4882 | terrell | 2012-03-16 13:10:13 -0400 (Fri, 16 Mar 2012) | 1 line
 
 add igroupadmin to svn:ignore properties
 ------------------------------------------------------------------------
-r4883 | schroede | 2012-03-16 16:08:00 -0400 (Fri, 16 Mar 2012) | 2 lines
+JMC - NO OP :: r4883 | schroede | 2012-03-16 16:08:00 -0400 (Fri, 16 Mar 2012) | 2 lines
 
 Update the year for the license
 
 ------------------------------------------------------------------------
-r4884 | antoine | 2012-03-19 12:47:04 -0400 (Mon, 19 Mar 2012) | 2 lines
+JMC - NO OP :: r4884 | antoine | 2012-03-19 12:47:04 -0400 (Mon, 19 Mar 2012) | 2 lines
 
 Undid a troublesome free() on Solaris
 
 ------------------------------------------------------------------------
-r4885 | antoine | 2012-03-19 12:54:44 -0400 (Mon, 19 Mar 2012) | 2 lines
+JMC - NO OP :: r4885 | antoine | 2012-03-19 12:54:44 -0400 (Mon, 19 Mar 2012) | 2 lines
 
 Undid a troublesome free() on Solaris
 
 ------------------------------------------------------------------------
-r4886 | antoine | 2012-03-19 17:52:57 -0400 (Mon, 19 Mar 2012) | 2 lines
+JMC - NO OP :: r4886 | antoine | 2012-03-19 17:52:57 -0400 (Mon, 19 Mar 2012) | 2 lines
 
 Undid trouble free() on Solaris
 
 ------------------------------------------------------------------------
-JMC - Done :: r4887 | antoine | 2012-03-19 17:54:31 -0400 (Mon, 19 Mar 2012) | 2 lines
+JMC - NO OP :: r4887 | antoine | 2012-03-19 17:54:31 -0400 (Mon, 19 Mar 2012) | 2 lines
 
 Undid troublesome free() on Solaris
 
