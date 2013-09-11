@@ -53,66 +53,12 @@ portalOprOut_t **portalOprOut)
 {
     int status;
 
-    status = setupSrvPortalForParaOpr (rsComm, dataOprInp, GET_OPR,
-      portalOprOut);
+    return setupSrvPortalForParaOpr(
+               rsComm, 
+               dataOprInp, 
+               GET_OPR,
+               portalOprOut );
 
-    return status;
-#if 0
-   portalOprOut_t *myDataObjGetOut;
-    int portalSock;
-    int proto;
-
-#ifdef RBUDP_TRANSFER
-    if (getValByKey (&dataOprInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
-        proto = SOCK_DGRAM;
-    } else {
-        proto = SOCK_STREAM;
-    }
-#else
-    proto = SOCK_STREAM;
-#endif  /* RBUDP_TRANSFER */
-
-    myDataObjGetOut = (portalOprOut_t *) malloc (sizeof (portalOprOut_t));
-    memset (myDataObjGetOut, 0, sizeof (portalOprOut_t));
-
-    *portalOprOut = myDataObjGetOut;
-
-    if (getValByKey (&dataOprInp->condInput, STREAMING_KW) != NULL ||
-      proto == SOCK_DGRAM) {
-	/* streaming or udp - use only one thread */
-        myDataObjGetOut->numThreads = 1;
-    } else {
-        myDataObjGetOut->numThreads =
-          myDataObjGetOut->numThreads = getNumThreads (rsComm,
-	  dataOprInp->dataSize, dataOprInp->numThreads,  
-	  &dataOprInp->condInput);
-    }
-
-    
-    if (myDataObjGetOut->numThreads == 0) {
-        return 0;
-    } else {
-        portalOpr_t *myPortalOpr;
-
-        /* setup the portal */
-        portalSock = createSrvPortal (rsComm, &myDataObjGetOut->portList,
-	  proto);
-        if (portalSock < 0) {
-            rodsLog (LOG_NOTICE,
-              "_rsDataGet: createSrvPortal error, ststus = %d", portalSock);
-              myDataObjGetOut->status = portalSock;
-              return portalSock;
-        }
-        myPortalOpr = rsComm->portalOpr =
-          (portalOpr_t *) malloc (sizeof (portalOpr_t));
-        myPortalOpr->oprType = GET_OPR;
-        myPortalOpr->portList = myDataObjGetOut->portList;
-        myPortalOpr->dataOprInp = *dataOprInp;
-        memset (&dataOprInp->condInput, 0, sizeof (dataOprInp->condInput));
-        myPortalOpr->dataOprInp.numThreads = myDataObjGetOut->numThreads;
-    }
-    return (0);
-#endif
 }
 
 int

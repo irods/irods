@@ -25,14 +25,17 @@
 #include "eirods_stacktrace.h"
 #include "eirods_network_factory.h"
 
-// =-=-=-=-=-=-=-
-// irods includes
-#include "sslSockComm.h"
-
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
 int reconnFlag, rErrMsg_t *errMsg)
 {
+   if( strlen( rodsHost ) == 0 ) {
+       eirods::stacktrace st;
+       st.trace();
+       st.dump();
+   }
+
+
 
     rcComm_t *conn;
 
@@ -249,12 +252,15 @@ int
 setSockAddr (struct sockaddr_in *remoteAddr, char *rodsHost, int rodsPort)
 {
     struct hostent *myHostent;
-
     myHostent = gethostbyname (rodsHost);
 
     if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
-	rodsLog (LOG_ERROR, "unknown hostname: %s", rodsHost);
-	return (USER_RODS_HOSTNAME_ERR - errno);
+        eirods::stacktrace st;
+        st.trace();
+        st.dump();
+
+        rodsLog (LOG_ERROR, "unknown hostname: [%s]", rodsHost);
+        return (USER_RODS_HOSTNAME_ERR - errno);
     }
 
     memcpy (&remoteAddr->sin_addr, myHostent->h_addr, 
@@ -296,8 +302,13 @@ int rcDisconnect(
     }
 
     // =-=-=-=-=-=-=-
+    // get rods env to pass to client start for policy decisions
+    rodsEnv rods_env;
+    int status = getRodsEnv( &rods_env );
+
+    // =-=-=-=-=-=-=-
     // shut down any network plugin activitiy
-    ret = sockClientStop( net_obj );
+    ret = sockClientStop( net_obj, &rods_env );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
     }
@@ -332,7 +343,7 @@ int rcDisconnect(
 //#endif
 #endif
 
-    int status = freeRcComm( _conn );
+    status = freeRcComm( _conn );
     return (status);
 
 } // rcDisconnect

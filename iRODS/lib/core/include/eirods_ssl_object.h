@@ -59,20 +59,40 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // Accessors
-        virtual SSL_CTX*    ssl_ctx() { return ssl_ctx_; }
-        virtual SSL*        ssl()     { return ssl_;     }
-        virtual std::string host()    { return host_;    }
+        virtual SSL_CTX*    ssl_ctx()       { return ssl_ctx_;       }
+        virtual SSL*        ssl()           { return ssl_;           }
+        virtual std::string host()          { return host_;          }
+        virtual std::string shared_secret() { return shared_secret_; }
+        
+        virtual int         key_size()             { return key_size_;             }
+        virtual int         salt_size()            { return salt_size_;            }
+        virtual int         num_hash_rounds()      { return num_hash_rounds_;      }
+        virtual std::string encryption_algorithm() { return encryption_algorithm_; }
 
         // =-=-=-=-=-=-=-
         // mutators
-        virtual void ssl_ctx( SSL_CTX* _c )        { ssl_ctx_ = _c; }
-        virtual void ssl( SSL* _s )                { ssl_     = _s; }
-        virtual void host( const std::string& _h ) { host_    = _h; }
+        virtual void ssl_ctx( SSL_CTX* _c )                 { ssl_ctx_       = _c; }
+        virtual void ssl( SSL* _s )                         { ssl_           = _s; }
+        virtual void host( const std::string& _h )          { host_          = _h; }
+        virtual void shared_secret( const std::string& _s ) { 
+                         shared_secret_.assign( _s.c_str(), _s.size() ); }
+        
+        virtual void key_size( int _s )                            { key_size_             = _s; }
+        virtual void salt_size( int _s )                           { salt_size_            = _s; }
+        virtual void num_hash_rounds( int _h )                     { num_hash_rounds_      = _h; }
+        virtual void encryption_algorithm( const std::string& _a ) { encryption_algorithm_ = _a; }
 
     private:
         SSL_CTX*    ssl_ctx_;
         SSL*        ssl_;
         std::string host_;        
+        std::string shared_secret_;        
+
+        int         key_size_;
+        int         salt_size_;
+        int         num_hash_rounds_;
+        std::string encryption_algorithm_;
+
     }; // class ssl_object
 
     /// =-=-=-=-=-=-=-

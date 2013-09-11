@@ -68,7 +68,7 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/scanUtil.o \
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
-        $(libCoreObjDir)/sslSockComm.o \
+		$(libCoreObjDir)/sslSockComm.o \
         $(libCoreObjDir)/eirods_assert.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
 		$(libCoreObjDir)/eirods_string_tokenize.o \
@@ -94,7 +94,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_tcp_object.o \
 		$(libCoreObjDir)/eirods_network_factory.o \
 		$(libCoreObjDir)/eirods_network_manager.o \
-        $(libCoreObjDir)/eirods_buffer_encryption.o
+        $(libCoreObjDir)/eirods_buffer_encryption.o \
+        $(libCoreObjDir)/eirods_rbudp.o 
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

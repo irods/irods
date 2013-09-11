@@ -303,6 +303,41 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
                 rodsLog( msgLevel, "irodsClientServerNegotiation=%s",
                         rodsEnvArg->rodsClientServerNegotiation );
             }
+ 
+            // =-=-=-=-=-=-=-
+            // variable to define encryption parameters
+            key = strstr( buf, "irodsEncryptionKeySize" );
+            if( key != NULL ) {
+                rodsEnvArg->rodsEncryptionKeySize=atoi( findNextTokenAndTerm( key+22 ) );
+                rodsLog( msgLevel, "irodsEncryptionKeySize=%d", rodsEnvArg->rodsEncryptionKeySize );
+            }
+ 
+            // =-=-=-=-=-=-=-
+            // variable to define encryption parameters
+            key = strstr( buf, "irodsEncryptionSaltSize" );
+            if( key != NULL ) {
+                rodsEnvArg->rodsEncryptionSaltSize = atoi( findNextTokenAndTerm( key+23 ) );
+                rodsLog( msgLevel, "irodsEncryptionSaltSize=%d", rodsEnvArg->rodsEncryptionSaltSize );
+            }
+ 
+            // =-=-=-=-=-=-=-
+            // variable to define encryption parameters
+            key = strstr( buf, "irodsEncryptionNumHashRounds" );
+            if( key != NULL ) {
+                rodsEnvArg->rodsEncryptionNumHashRounds = atoi( findNextTokenAndTerm( key+28 ) );
+                rodsLog( msgLevel, "irodsEncryptionNumHashRounds=%d", rodsEnvArg->rodsEncryptionNumHashRounds );
+            }
+
+            // =-=-=-=-=-=-=-
+            // variable to define encryption parameters
+            key = strstr( buf, "irodsEncryptionAlgorithm" );
+            if( key != NULL ) {
+                rstrcpy( rodsEnvArg->rodsEncryptionAlgorithm,
+                         findNextTokenAndTerm( key + 24 ),
+                         LONG_NAME_LEN );
+                rodsLog( msgLevel, "irodsEncryptionAlgorithm=%s",
+                         rodsEnvArg->rodsEncryptionAlgorithm );
+            }
 
             key=strstr(buf, "irodsServerDn");
             if (key != NULL) {
@@ -479,6 +514,44 @@ getRodsEnvFromEnv(rodsEnv *rodsEnvArg) {
         rodsLog( LOG_NOTICE,
                  "environment variable set, irodsClientServerNegotiation=%s",
                  rodsEnvArg->rodsClientServerNegotiation );
+    }
+ 
+    // =-=-=-=-=-=-=-
+    // variable to define encryption parameters
+    getVar = getenv( "irodsEncryptionKeySize" );
+    if( getVar != NULL ) {
+        rodsEnvArg->rodsEncryptionKeySize = atoi( findNextTokenAndTerm( getVar ) );
+        rodsLog( LOG_NOTICE, "irodsEncryptionKeySize=%d", 
+                 rodsEnvArg->rodsEncryptionKeySize );
+    }
+
+    // =-=-=-=-=-=-=-
+    // variable to define encryption parameters
+    getVar = getenv( "irodsEncryptionSaltSize" );
+    if( getVar != NULL ) {
+        rodsEnvArg->rodsEncryptionSaltSize = atoi( findNextTokenAndTerm( getVar ) );
+        rodsLog( LOG_NOTICE, "irodsEncryptionSaltSize=%d", 
+                 rodsEnvArg->rodsEncryptionSaltSize );
+    }
+
+    // =-=-=-=-=-=-=-
+    // variable to define encryption parameters
+    getVar = getenv( "irodsEncryptionNumHashRounds" );
+    if( getVar != NULL ) {
+        rodsEnvArg->rodsEncryptionNumHashRounds = atoi( findNextTokenAndTerm( getVar ) );
+        rodsLog( LOG_NOTICE, "irodsEncryptionNumHashRounds=%d", 
+                 rodsEnvArg->rodsEncryptionNumHashRounds );
+    }
+
+    // =-=-=-=-=-=-=-
+    // variable to define encryption parameters
+    getVar = getenv( "irodsEncryptionAlgorithm" );
+    if( getVar != NULL ) {
+        rstrcpy( rodsEnvArg->rodsEncryptionAlgorithm,
+                 findNextTokenAndTerm( getVar ),
+                 LONG_NAME_LEN );
+        rodsLog( LOG_NOTICE, "irodsEncryptionAlgorithm=%s",
+                 rodsEnvArg->rodsEncryptionAlgorithm );
     }
 
     getVar = getenv("irodsServerDn");

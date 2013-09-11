@@ -140,6 +140,12 @@ typedef struct {
 #endif
 
     char negotiation_results[ MAX_NAME_LEN ];
+    char shared_secret      [ NAME_LEN ];
+    
+    int  key_size;
+    int  salt_size;
+    int  num_hash_rounds;
+    char encryption_algorithm[ NAME_LEN ];
 
 } rcComm_t;
 
@@ -204,6 +210,12 @@ typedef struct {
 #endif
     
     char negotiation_results[ MAX_NAME_LEN ];
+    char shared_secret      [ NAME_LEN ];
+
+    int  key_size;
+    int  salt_size;
+    int  num_hash_rounds;
+    char encryption_algorithm[ NAME_LEN ];
 
 } rsComm_t;
 

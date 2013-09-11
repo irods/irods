@@ -13,6 +13,7 @@
 #include "eirods_network_constants.h"
 #include "eirods_ssl_object.h"
 #include "eirods_stacktrace.h"
+#include "eirods_buffer_encryption.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -42,6 +43,9 @@
 // 
 #define SSL_CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
+// =-=-=-=-=-=-=-
+// key for ssl shared secret property
+const std::string SHARED_KEY( "ssl_network_plugin_shared_key" );
 
 static void get_time( std::string& _str ) {
     time_t timeValue;
@@ -650,7 +654,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // 
     eirods::error ssl_client_stop(
-        eirods::plugin_context& _ctx ) {
+        eirods::plugin_context& _ctx,
+        rodsEnv*                _env ) {
         // =-=-=-=-=-=-=-
         // check the context
         eirods::error ret = _ctx.valid< eirods::ssl_object >();
@@ -690,7 +695,8 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // 
     eirods::error ssl_client_start( 
-        eirods::plugin_context& _ctx ) {
+        eirods::plugin_context& _ctx,
+        rodsEnv*                _env ) {
         // =-=-=-=-=-=-=-
         // check the context
         eirods::error ret = _ctx.valid< eirods::ssl_object >();
@@ -737,7 +743,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // 
         if( !ssl_post_connection_check( ssl, ssl_obj->host().c_str() ) ) {
-            ssl_client_stop( _ctx );
+            ssl_client_stop( _ctx, _env );
             std::string err_str = "post connection certificate check failed";
             ssl_build_error_string( err_str );
             return ERROR( SSL_CERT_ERROR, err_str );
@@ -746,9 +752,95 @@ extern "C" {
         ssl_obj->ssl( ssl );
         ssl_obj->ssl_ctx( ctx );
 
+        // =-=-=-=-=-=-=-
+        // check to see if a key has already been placed
+        // in the property map
+        std::string key;
+        ret = _ctx.prop_map().get< std::string >( SHARED_KEY, key );
+        if( !ret.ok() ) {
+            // =-=-=-=-=-=-=-
+            // if no key exists then ship a new key and set the
+            // property
+            eirods::buffer_crypt crypt(
+                                     _env->rodsEncryptionKeySize,
+                                     _env->rodsEncryptionSaltSize,
+                                     _env->rodsEncryptionNumHashRounds,
+                                     _env->rodsEncryptionAlgorithm );
+            crypt.generate_key( key );
+            ret = _ctx.prop_map().set< std::string >( SHARED_KEY, key );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+            }
+        }
+
+        // =-=-=-=-=-=-=-
+        // send a message to the agent containing the shared secret
+        msgHeader_t msg_header;
+        memset( &msg_header, 0, sizeof( msg_header ) ); 
+        msg_header.msgLen = key.size();
+        memcpy( msg_header.type, key.c_str(), key.size() );  
+ 
+        // =-=-=-=-=-=-=-
+        // use a message header to contain the key
+        ret = writeMsgHeader( 
+                  ssl_obj,
+                  &msg_header ); 
+        if( !ret.ok() ) {
+           return PASSMSG( "writeMsgHeader failed", ret ); 
+        }
+
+        // =-=-=-=-=-=-=-
+        // send a message to the agent containing the client
+        // size encryption environment variables
+        memset( &msg_header, 0, sizeof( msg_header ) ); 
+        memcpy( msg_header.type, _env->rodsEncryptionAlgorithm, HEADER_TYPE_LEN );
+        msg_header.msgLen   = _env->rodsEncryptionKeySize;
+        msg_header.errorLen = _env->rodsEncryptionSaltSize;
+        msg_header.bsLen    = _env->rodsEncryptionNumHashRounds;
+
+        // =-=-=-=-=-=-=-
+        // error check the encryption envrionment
+        if( 0 == msg_header.msgLen ) {
+            return ERROR( -1, "irodsEncryptionKeySize is 0" );
+        }
+ 
+        if( 0 == msg_header.errorLen ) {
+            return ERROR( -1, "irodsEncryptionSaltSize is 0" );
+        }
+  
+        if( 0 == msg_header.bsLen ) {
+            return ERROR( -1, "irodsEncryptionNumHashRounds is 0" );
+        }
+        
+        if( !EVP_get_cipherbyname( msg_header.type ) ) {
+            std::string msg;
+            msg += "irodsEncryptionAlgorithm [";
+            msg += msg_header.type;
+            msg += "] is invalid";
+            return ERROR( -1, msg );
+
+        }
+ 
+        // =-=-=-=-=-=-=-
+        // use a message header to contain the key
+        ret = writeMsgHeader( 
+                  ssl_obj,
+                  &msg_header ); 
+        if( !ret.ok() ) {
+           return PASSMSG( "writeMsgHeader failed", ret ); 
+        }
+        
+        // =-=-=-=-=-=-=-
+        // set the key and env for this ssl object
+        ssl_obj->shared_secret( key );
+        ssl_obj->key_size( _env->rodsEncryptionKeySize );
+        ssl_obj->salt_size( _env->rodsEncryptionSaltSize );
+        ssl_obj->num_hash_rounds( _env->rodsEncryptionNumHashRounds );
+        ssl_obj->encryption_algorithm( _env->rodsEncryptionAlgorithm );
+
         return SUCCESS();
 
-    } // ssl client start
+    } // ssl_client_start
 
     // =-=-=-=-=-=-=-
     // 
@@ -807,6 +899,50 @@ extern "C" {
         ssl_obj->ssl_ctx( ctx );
         
         rodsLog(LOG_DEBUG, "sslAccept: accepted SSL connection");
+
+        // =-=-=-=-=-=-=-
+        // wait for a message header containing a shared secret
+        struct timeval tv;
+        tv.tv_sec = READ_VERSION_TOUT_SEC;
+        tv.tv_usec = 0;
+
+        msgHeader_t msg_header;
+        bzero( &msg_header, sizeof( msg_header ) );
+        ret = readMsgHeader( ssl_obj, &msg_header, &tv );
+        if( !ret.ok() ) {
+            return PASSMSG( "read message header failed", ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // check to see if the key property has been set, if so
+        // then this is a terrible, terrible error.
+        std::string key;
+        ret = _ctx.prop_map().get< std::string >( SHARED_KEY, key );
+        if( ret.ok() ) {
+            return ERROR( -1, "shared secret already exists" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // set the incoming shared secret
+        key.assign( msg_header.type, msg_header.msgLen );
+        ssl_obj->shared_secret( key );
+        ret = _ctx.prop_map().set< std::string >( SHARED_KEY, key );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // wait for a message header containing the encryption environment
+        bzero( &msg_header, sizeof( msg_header ) );
+        ret = readMsgHeader( ssl_obj, &msg_header, &tv );
+        if( !ret.ok() ) {
+            return PASSMSG( "read message header failed", ret );
+        }
+
+        ssl_obj->key_size( msg_header.msgLen );
+        ssl_obj->salt_size( msg_header.errorLen );
+        ssl_obj->num_hash_rounds( msg_header.bsLen );
+        ssl_obj->encryption_algorithm( msg_header.type );
 
         return SUCCESS();
 

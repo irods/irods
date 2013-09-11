@@ -27,12 +27,17 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // con/de structors
         buffer_crypt();
+        buffer_crypt( 
+            int,           // key size in bytes
+            int,           // salt size in bytes
+            int,           // num hash rounds
+            const char* ); // algorithm
         ~buffer_crypt();
         
         /// =-=-=-=-=-=-=-
         /// @brief given a string, encrypt it
         eirods::error encrypt( 
-            const std::string&, // hashed key
+            const std::string&, // key
             const std::string&, // initialization vector
             const std::string&, // plaintext buffer
             std::string& );     // encrypted buffer
@@ -40,7 +45,7 @@ namespace eirods {
         /// =-=-=-=-=-=-=-
         /// @brief given a string, decrypt it
         eirods::error decrypt( 
-            const std::string&, // hashed key
+            const std::string&, // key
             const std::string&, // initialization vector
             const std::string&, // encrypted buffer
             std::string& );     // plaintext buffer
@@ -53,13 +58,24 @@ namespace eirods {
             std::string& );     // intialization vector
 
         /// =-=-=-=-=-=-=-
-        /// @brief generate a random 32 byte key
+        /// @brief generate a random byte key
         eirods::error generate_key(
-            std::string& ); // random 32 byte key
+            std::string& ); // random byte key
+        
+        /// =-=-=-=-=-=-=-
+        /// @brief accessors for attributes
+        int         key_size()        { return key_size_;        };
+        int         salt_size()       { return salt_size_;       };
+        int         num_hash_rounds() { return num_hash_rounds_; };
+        std::string algorithm()       { return algorithm_;       };
 
     private:
         // =-=-=-=-=-=-=-
         // attributes
+        int         key_size_;
+        int         salt_size_;
+        int         num_hash_rounds_;
+        std::string algorithm_;
 
     }; // class buffer_crypt
 

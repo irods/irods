@@ -32,10 +32,17 @@ char *__loc1;
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+#include "md5.h"
+
 // =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_stacktrace.h"
 #include "eirods_network_factory.h"
+#include "eirods_buffer_encryption.h"
+#include "eirods_client_server_negotiation.h"
+#include "eirods_rbudp.h"
+
+#include <iomanip>
 
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
@@ -158,6 +165,7 @@ int oprType, portalOprOut_t **portalOprOut)
         memset (&dataOprInp->condInput, 0, sizeof (dataOprInp->condInput));
         myPortalOpr->dataOprInp.numThreads = myDataObjPutOut->numThreads;
     }
+
     return (0);
 }
 
@@ -176,18 +184,18 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
     int udpport = 0;
     char *udpaddr = NULL;
 
-    
+
     if (proto != SOCK_DGRAM && proto != SOCK_STREAM) {
         rodsLog (LOG_ERROR,
-         "createSrvPortal: invalid input protocol %d", proto);
+                "createSrvPortal: invalid input protocol %d", proto);
         return SYS_INVALID_PROTOCOL_TYPE;
     }
 
     if ((lsock = svrSockOpenForInConn (rsComm, &lport, &laddr, 
-      SOCK_STREAM)) < 0) {
+                    SOCK_STREAM)) < 0) {
         rodsLog (LOG_ERROR,
-         "createSrvPortal: svrSockOpenForInConn failed: status=%d",
-          lsock);
+                "createSrvPortal: svrSockOpenForInConn failed: status=%d",
+                lsock);
         return lsock;
     }
 
@@ -199,11 +207,11 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
         struct hostent *hostEnt;
         /* server. try to use what is configured */
         if (LocalServerHost != NULL &&
-	 strcmp (LocalServerHost->hostName->name, "localhost") != 0 &&
-         (hostEnt = gethostbyname (LocalServerHost->hostName->name)) != NULL){
+                strcmp (LocalServerHost->hostName->name, "localhost") != 0 &&
+                (hostEnt = gethostbyname (LocalServerHost->hostName->name)) != NULL){
             rstrcpy (thisPortList->hostAddr, hostEnt->h_name, LONG_NAME_LEN);
         } else {
-             rstrcpy (thisPortList->hostAddr, laddr, LONG_NAME_LEN);
+            rstrcpy (thisPortList->hostAddr, laddr, LONG_NAME_LEN);
         }
     }
     free (laddr);
@@ -214,19 +222,19 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
 
     if (proto == SOCK_DGRAM) {
         if ((udpsock = svrSockOpenForInConn (rsComm, &udpport, &udpaddr, 
-          SOCK_DGRAM)) < 0) {
+                        SOCK_DGRAM)) < 0) {
             rodsLog (LOG_ERROR,
-             "setupSrvPortal- sockOpenForInConn of SOCK_DGRAM failed: stat=%d",
-              udpsock);
-	    CLOSE_SOCK (lsock);
+                    "setupSrvPortal- sockOpenForInConn of SOCK_DGRAM failed: stat=%d",
+                    udpsock);
+            CLOSE_SOCK (lsock);
             return udpsock;
-	} else {
+        } else {
             addUdpPortToPortList (thisPortList, udpport);
             addUdpSockToPortList (thisPortList, udpsock);
-	}
+        }
     }
     free (udpaddr);
- 
+
     return (lsock);
 }
 
@@ -371,22 +379,23 @@ svrPortalPutGet (rsComm_t *rsComm)
     if (oprType == PUT_OPR) {
         fillPortalTransferInp (&myInput[0], rsComm,
          portalFd, dataOprInp->destL3descInx, 0, dataOprInp->destRescTypeInx,
-          0, size0, offset0, flags, thisPortList->cookie );
+          0, size0, offset0, flags );
     } else {
         fillPortalTransferInp (&myInput[0], rsComm,
          dataOprInp->srcL3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
-          0, size0, offset0, flags, thisPortList->cookie );
+          0, size0, offset0, flags );
     }
 
-        if (numThreads == 1) {
-            if (oprType == PUT_OPR) {
-                partialDataPut (&myInput[0]);
+    if (numThreads == 1) {
+        if (oprType == PUT_OPR) {
+            partialDataPut (&myInput[0]);
         } else {
-                partialDataGet (&myInput[0]);
+            partialDataGet (&myInput[0]);
         }
+        
         CLOSE_SOCK (lsock);
 
-	    return (myInput[0].status);
+        return (myInput[0].status);
     } else {
 #ifdef PARA_OPR
         rodsLong_t mySize = 0;
@@ -421,7 +430,7 @@ svrPortalPutGet (rsComm_t *rsComm)
                 fillPortalTransferInp(&myInput[i], rsComm,
                                       portalFd, l3descInx, 0, 
                                       dataOprInp->destRescTypeInx,
-                                      i, mySize, myOffset, flags, thisPortList->cookie );
+                                      i, mySize, myOffset, flags);
             #ifdef USE_BOOST
             tid[i] = new boost::thread( partialDataPut, &myInput[i] );
             #else
@@ -434,7 +443,7 @@ svrPortalPutGet (rsComm_t *rsComm)
                      dataOprInp->srcL3descInx, O_RDONLY);
                     fillPortalTransferInp (&myInput[i], rsComm,
              l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
-                      i, mySize, myOffset, flags, thisPortList->cookie );
+                      i, mySize, myOffset, flags);
             #ifdef USE_BOOST
             tid[i] = new boost::thread( partialDataGet, &myInput[i] );
             #else
@@ -484,26 +493,50 @@ svrPortalPutGet (rsComm_t *rsComm)
     } // else
 }
 
-int
-fillPortalTransferInp (portalTransferInp_t *myInput, rsComm_t *rsComm,
-int srcFd, int destFd, int srcRescTypeInx, int destRescTypeInx,
-int threadNum, rodsLong_t size, rodsLong_t offset, int flags, int cookie )
-{
-    if (myInput == NULL) 
+int fillPortalTransferInp(
+    portalTransferInp_t* myInput, 
+    rsComm_t*            rsComm,
+    int                  srcFd, 
+    int                  destFd, 
+    int                  srcRescTypeInx, 
+    int                  destRescTypeInx,
+    int                  threadNum, 
+    rodsLong_t           size, 
+    rodsLong_t           offset, 
+    int                  flags ) {
+    
+    if (myInput == NULL) {
         return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
 
-    myInput->rsComm = rsComm;
-    myInput->cookie = cookie;
-    myInput->destFd = destFd;
-    myInput->srcFd = srcFd;
+    myInput->rsComm          = rsComm;
+    myInput->destFd          = destFd;
+    myInput->srcFd           = srcFd;
     myInput->destRescTypeInx = destRescTypeInx;
-    myInput->srcRescTypeInx = srcRescTypeInx;
+    myInput->srcRescTypeInx  = srcRescTypeInx;
+    myInput->threadNum       = threadNum;
+    myInput->size            = size;
+    myInput->offset          = offset;
+    myInput->flags           = flags;
 
-    myInput->threadNum = threadNum;
-    myInput->size = size;
-    myInput->offset = offset;
-    myInput->flags = flags;
+    // =-=-=-=-=-=-=-
+    // copy the encryption key over to the
+    // portal input
+    strncpy( 
+        myInput->shared_secret, 
+        rsComm->shared_secret, 
+        NAME_LEN );
 
+    // =-=-=-=-=-=-=-
+    // copy the encryption environment over to the
+    // portal input
+    myInput->key_size        = rsComm->key_size;
+    myInput->salt_size       = rsComm->salt_size;
+    myInput->num_hash_rounds = rsComm->num_hash_rounds;
+    strncpy( 
+        myInput->encryption_algorithm,
+        rsComm->encryption_algorithm, 
+        NAME_LEN ); 
     return (0);
 }
 
@@ -511,23 +544,27 @@ int threadNum, rodsLong_t size, rodsLong_t offset, int flags, int cookie )
 void
 partialDataPut (portalTransferInp_t *myInput)
 {
-    int destL3descInx, srcFd, destRescTypeInx;
-    char *buf;
-    int bytesWritten;
-    rodsLong_t bytesToGet;
+    int destL3descInx = 0, srcFd = 0, destRescTypeInx = 0;
+    char *buf = 0;
+    int bytesWritten = 0;
+    rodsLong_t bytesToGet = 0;
     rodsLong_t myOffset = 0;
+
+    // =-=-=-=-=-=-=-
+    // flag to determine if we need to use encryption
+    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
 
 #ifdef PARA_TIMING
     time_t startTime, afterSeek, afterTransfer,
-      endTime;
+           endTime;
     startTime=time (0);
 #endif
 
     if (myInput == NULL) {
-	rodsLog (LOG_SYS_FATAL, "partialDataPut: NULL myInput");
-	return;
+        rodsLog (LOG_SYS_FATAL, "partialDataPut: NULL myInput");
+        return;
     }
- 
+
     myInput->status = 0;
     destL3descInx = myInput->destFd;
     srcFd = myInput->srcFd;
@@ -535,25 +572,42 @@ partialDataPut (portalTransferInp_t *myInput)
 
     if (myInput->offset != 0) {
         myOffset = _l3Lseek (myInput->rsComm, destRescTypeInx, 
-	  destL3descInx, myInput->offset, SEEK_SET);
+                destL3descInx, myInput->offset, SEEK_SET);
         if (myOffset < 0) {
-	    myInput->status = myOffset;
+            myInput->status = myOffset;
             rodsLog (LOG_NOTICE,
-	      "_partialDataPut: _objSeek error, status = %d ",
-              myInput->status);
-	    if (myInput->threadNum > 0)
+                    "_partialDataPut: _objSeek error, status = %d ",
+                    myInput->status);
+            if (myInput->threadNum > 0)
                 _l3Close (myInput->rsComm, destRescTypeInx, destL3descInx);
             CLOSE_SOCK (srcFd);
             return;
         }
     }
-    buf = (char*)malloc (TRANS_BUF_SZ);
 
 #ifdef PARA_TIMING
     afterSeek=time(0);
 #endif
 
     bytesToGet = myInput->size;
+
+    // =-=-=-=-=-=-=-
+    // create an encryption context, initialization vector
+    eirods::buffer_crypt crypt( 
+                             myInput->key_size,
+                             myInput->salt_size,
+                             myInput->num_hash_rounds,
+                             myInput->encryption_algorithm );
+  
+    // =-=-=-=-=-=-=-
+    // compute an iv to determine how large it 
+    // is for this implementation
+    int iv_size = 0;
+    if( use_encryption_flg ) {
+        iv_size = myInput->key_size;
+    } 
+       
+    buf = (char*)malloc ( TRANS_BUF_SZ + iv_size );
 
     while (bytesToGet > 0) {
         int toread0;
@@ -563,47 +617,85 @@ partialDataPut (portalTransferInp_t *myInput)
         time_t tstart, tafterRead, tafterWrite;
         tstart=time(0);
 #endif
-	if (myInput->flags & STREAMING_FLAG) {
-	    toread0 = bytesToGet;
-	} else if (bytesToGet > TRANS_SZ) {
-	    toread0 = TRANS_SZ;
+        if (myInput->flags & STREAMING_FLAG) {
+            toread0 = bytesToGet;
+        } else if (bytesToGet > TRANS_SZ) {
+            toread0 = TRANS_SZ;
         } else {
             toread0 = bytesToGet;
         }
 
-	myInput->status = sendTranHeader (srcFd, PUT_OPR, myInput->flags,
-	  myOffset, toread0);
+        myInput->status = sendTranHeader (srcFd, PUT_OPR, myInput->flags,
+                myOffset, toread0);
 
-	if (myInput->status < 0) {
-	    rodsLog (LOG_NOTICE, 
-	      "partialDataPut: sendTranHeader error. status = %d", 
-	      myInput->status);
-	    if (myInput->threadNum > 0)
+        if (myInput->status < 0) {
+            rodsLog (LOG_NOTICE, 
+                    "partialDataPut: sendTranHeader error. status = %d", 
+                    myInput->status);
+            if (myInput->threadNum > 0)
                 _l3Close (myInput->rsComm, destRescTypeInx, destL3descInx);
             CLOSE_SOCK (srcFd);
-	    free (buf);
-	    return;
-	} 
+            free (buf);
+            return;
+        } 
 
-	while (toread0 > 0) {
-	    int toread1;
+        while (toread0 > 0) {
+            int toread1 = 0;
 
-	    if (toread0 > TRANS_BUF_SZ) {
-		toread1 = TRANS_BUF_SZ;
-	    } else {
-		toread1 = toread0;
-	    }
-            bytesRead = myRead (srcFd, buf, toread1, SOCK_TYPE, NULL, NULL);
+            if (toread0 > TRANS_BUF_SZ) {
+                toread1 = TRANS_BUF_SZ;
+            } else {
+                toread1 = toread0;
+            }
 
+            // =-=-=-=-=-=-=-
+            // read the incoming size as it might differ due to encryption
+            int new_size = toread1;
+            if( use_encryption_flg ) {
+                bytesRead = myRead (srcFd, &new_size, sizeof( int ), SOCK_TYPE, NULL, NULL);
+                if( bytesRead != sizeof( int ) ) {
+                    rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
+                    break;
+                }
+            }
+
+            // =-=-=-=-=-=-=-
+            // now read the provided number of bytes as suggested by the incoming size
+            bytesRead = myRead ( srcFd, buf, new_size, SOCK_TYPE, NULL, NULL );
+            
 #ifdef PARA_TIMING
             tafterRead=time(0);
 #endif
-            if (bytesRead == toread1) {
+
+            if( bytesRead == new_size ) {
+                // =-=-=-=-=-=-=-
+                // if using encryption, strip off the iv
+                // and decrypt before writing
+                int plain_size = bytesRead;
+                if( use_encryption_flg ) {
+                    std::string new_buf, this_iv, cipher, plain;
+                    new_buf.assign( buf, new_size );
+
+                    this_iv = new_buf.substr( 0, iv_size );
+                    cipher  = new_buf.substr( iv_size, new_size-iv_size ); 
+
+                    eirods::error ret = crypt.decrypt( myInput->shared_secret, this_iv, cipher, plain );
+                    if( !ret.ok() ) {
+                        eirods::log( PASS( ret ) );
+                        myInput->status = SYS_COPY_LEN_ERR;
+                        break;
+                    }
+
+                    memcpy( buf, plain.c_str(), plain.size() );
+                    plain_size = plain.size();
+                    
+                }
+
                 if ((bytesWritten = _l3Write (myInput->rsComm, destRescTypeInx,
-		  destL3descInx, buf, bytesRead)) != bytesRead) {
-		    rodsLog (LOG_NOTICE,
-                     "_partialDataPut:Bytes written %d don't match read %d",
-                      bytesWritten, bytesRead);
+                                destL3descInx, buf, plain_size )) != ( plain_size ) ) {
+                    rodsLog (LOG_NOTICE,
+                            "_partialDataPut:Bytes written %d don't match read %d",
+                            bytesWritten, bytesRead);
 
                     if (bytesWritten < 0) {
                         myInput->status = bytesWritten;
@@ -613,27 +705,28 @@ partialDataPut (portalTransferInp_t *myInput)
                     break;
                 }
                 bytesToGet -= bytesWritten;
-		toread0 -= bytesWritten;
-                myOffset += bytesWritten;
+                toread0    -= bytesWritten;
+                myOffset   += bytesWritten;
+
             } else if (bytesRead < 0) {
                 myInput->status = bytesRead;
                 break;
             } else {        /* toread > 0 */
-		rodsLog (LOG_NOTICE,
-                 "_partialDataPut: toread %d bytes, %d bytes read, errno = %d",
-                   toread1, bytesRead, errno);
-		myInput->status = SYS_COPY_LEN_ERR;
+                rodsLog (LOG_NOTICE,
+                        "_partialDataPut: toread %d bytes, %d bytes read, errno = %d",
+                        toread1, bytesRead, errno);
+                myInput->status = SYS_COPY_LEN_ERR;
                 break;
             }
 #ifdef PARA_TIMING
             tafterWrite=time(0);
-	    rodsLog (LOG_NOTICE,
-              "Thr %d: sz=%d netReadTm=%d diskWriteTm=%d",
-              myInput->threadNum, bytesWritten, tafterRead-tstart,
-              tafterWrite-tafterRead);
+            rodsLog (LOG_NOTICE,
+                    "Thr %d: sz=%d netReadTm=%d diskWriteTm=%d",
+                    myInput->threadNum, bytesWritten, tafterRead-tstart,
+                    tafterWrite-tafterRead);
 #endif
-	}	/* while loop toread0 */
-	if (myInput->status < 0)
+        }	/* while loop toread0 */
+        if (myInput->status < 0)
             break;
     }           /* while loop bytesToGet */
 #ifdef PARA_TIMING
@@ -647,16 +740,17 @@ partialDataPut (portalTransferInp_t *myInput)
 #ifdef PARA_TIMING
     endTime=time(0);
     rodsLog (LOG_NOTICE,
-      "Thr %d: seekTm=%d transTm=%d endTm=%d",
-      myInput->threadInx,
-      afterSeek-afterConn, afterTransfer-afterSeek, endTime-afterTransfer);
+            "Thr %d: seekTm=%d transTm=%d endTm=%d",
+            myInput->threadInx,
+            afterSeek-afterConn, afterTransfer-afterSeek, endTime-afterTransfer);
 #endif
     return;
 }
 
-void
-partialDataGet (portalTransferInp_t *myInput)
-{
+void partialDataGet(
+    portalTransferInp_t* myInput ) {
+    // =-=-=-=-=-=-=-
+    // 
     int srcL3descInx, destFd, srcRescTypeInx;
     char *buf;
     int bytesWritten;
@@ -693,7 +787,29 @@ partialDataGet (portalTransferInp_t *myInput)
             return;
         }
     }
-    buf = (char*)malloc (TRANS_BUF_SZ);
+
+    // =-=-=-=-=-=-=-
+    // flag to determine if we need to use encryption
+    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    
+    // =-=-=-=-=-=-=-
+    // create an encryption context
+    int                  iv_size = 0;
+    std::string          iv;
+    std::string          hash_key;
+    eirods::buffer_crypt crypt( 
+                             myInput->key_size,
+                             myInput->salt_size,
+                             myInput->num_hash_rounds,
+                             myInput->encryption_algorithm );
+
+    // =-=-=-=-=-=-=-
+    // set iv size
+    if( use_encryption_flg ) {
+        iv_size = crypt.key_size(); 
+    }  
+           
+    buf = (char*)malloc ( TRANS_BUF_SZ + iv_size );
 
 #ifdef PARA_TIMING
     afterSeek=time(0);
@@ -739,16 +855,69 @@ partialDataGet (portalTransferInp_t *myInput)
             } else {
                 toread1 = toread0;
             }
-	    bytesRead = _l3Read (myInput->rsComm, srcRescTypeInx,
-             srcL3descInx, buf, toread1);
+	    
+            bytesRead = _l3Read( myInput->rsComm, srcRescTypeInx,srcL3descInx, buf, toread1 );
 
 #ifdef PARA_TIMING
             tafterRead=time(0);
 #endif
             if (bytesRead == toread1) {
-                if ((bytesWritten = myWrite (destFd, buf, bytesRead,
-		  SOCK_TYPE, NULL))
-                  != bytesRead) {
+                // =-=-=-=-=-=-=-
+                // compute an iv for this particular transmission and use
+                // it to encrypt this buffer
+                int new_size = bytesRead;
+                if( use_encryption_flg ) {
+                    eirods::error ret = crypt.initialization_vector( 
+                        myInput->shared_secret,
+                        hash_key,
+                        iv );
+                    if( !ret.ok() ) {
+                        ret = PASS( ret );
+                        printf( "%s", ret.result().c_str() );
+                        break;
+                    }
+
+                    // =-=-=-=-=-=-=-
+                    // encrypt
+                    std::string cipher;
+                    std::string in_buf;
+                    in_buf.assign( (char*)buf, bytesRead );
+
+                    ret = crypt.encrypt( myInput->shared_secret, iv, in_buf, cipher );
+                    if( !ret.ok() ) {
+                        ret = PASS( ret );
+                        printf( "%s", ret.result().c_str() );
+                        break;
+                    }
+
+                    // =-=-=-=-=-=-=-
+                    // capture the iv with the cipher text
+                    memcpy( buf, iv.c_str(), iv.size() );
+                    memcpy( buf+iv.size(), cipher.c_str(), cipher.size() );
+               
+                    new_size = iv.size() + cipher.size();
+                    
+                    // =-=-=-=-=-=-=-
+                    // need to send the incoming size as encryption might change
+                    // the size of the data from the writen values
+                    bytesWritten = myWrite(
+                                       destFd, 
+                                       &new_size,
+                                       sizeof( int ),
+                                       SOCK_TYPE,
+                                       &bytesWritten );
+                }
+
+                // =-=-=-=-=-=-=-
+                // then write the actual buffer
+                bytesWritten = myWrite(
+                                   destFd, 
+                                   buf, 
+                                   new_size, 
+                                   SOCK_TYPE,
+                                   &bytesWritten );
+
+                if( bytesWritten != new_size ) {
                     rodsLog (LOG_NOTICE,
                      "_partialDataGet:Bytes written %d don't match read %d",
                       bytesWritten, bytesRead);
@@ -760,12 +929,18 @@ partialDataGet (portalTransferInp_t *myInput)
                     }
                     break;
                 }
-                bytesToGet -= bytesWritten;
-                toread0 -= bytesWritten;
-                myOffset += bytesWritten;
+               
+                // =-=-=-=-=-=-=-
+                // had to change to bytesRead as bytesWritten
+                // may have changed due to encryption 
+                bytesToGet -= bytesRead;
+                toread0    -= bytesRead;
+                myOffset   += bytesRead;
+
             } else if (bytesRead < 0) {
                 myInput->status = bytesRead;
                 break;
+            
             } else {        /* toread > 0 */
                 rodsLog (LOG_NOTICE,
                  "_partialDataGet: toread %d bytes, %d bytes read",
@@ -814,7 +989,7 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
 
     if (myInput == NULL) {
         rodsLog (LOG_NOTICE,
-         "remToLocPartialCopy: NULL input");
+                "remToLocPartialCopy: NULL input");
         return;
     }
 #ifdef PARA_DEBUG
@@ -827,7 +1002,27 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
     destRescTypeInx = myInput->destRescTypeInx;
     myInput->bytesWritten = 0;
 
-    buf = malloc (TRANS_BUF_SZ);
+    // =-=-=-=-=-=-=-
+    // flag to determine if we need to use encryption
+    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+
+    // =-=-=-=-=-=-=-
+    // create an encryption context, initialization vector
+    eirods::buffer_crypt crypt( 
+                             myInput->key_size,
+                             myInput->salt_size,
+                             myInput->num_hash_rounds,
+                             myInput->encryption_algorithm );
+  
+    // =-=-=-=-=-=-=-
+    // compute an iv to determine how large it 
+    // is for this implementation
+    int iv_size = 0;
+    if( use_encryption_flg ) {
+        iv_size = myInput->key_size;
+    } 
+
+    buf = malloc( TRANS_BUF_SZ + iv_size );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;
@@ -836,9 +1031,9 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
 
 #ifdef PARA_DEBUG
         printf ("remToLocPartialCopy: thread %d after rcvTranHeader\n",
-          myInput->threadNum);
+                myInput->threadNum);
         printf ("remToLocPartialCopy: thread %d header offset %lld, len %lld\n",
-          myInput->threadNum, myHeader.offset, myHeader.length);
+                myInput->threadNum, myHeader.offset, myHeader.length);
 
 #endif
 
@@ -852,14 +1047,14 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
         if (myHeader.offset != curOffset) {
             curOffset = myHeader.offset;
             myOffset = _l3Lseek (myInput->rsComm, destRescTypeInx,
-              destL3descInx, myHeader.offset, SEEK_SET);
+                    destL3descInx, myHeader.offset, SEEK_SET);
             if (myOffset < 0) {
                 myInput->status = myOffset;
                 rodsLog (LOG_NOTICE,
-                  "remToLocPartialCopy: _objSeek error, status = %d ",
-                  myInput->status);
+                        "remToLocPartialCopy: _objSeek error, status = %d ",
+                        myInput->status);
                 break;
-	    }
+            }
         }
 
         toGet = myHeader.length;
@@ -871,29 +1066,65 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
                 toRead = toGet;
             }
 
-            bytesRead = myRead (srcFd, buf, toRead,
-		  SOCK_TYPE, NULL, NULL);
+            // =-=-=-=-=-=-=-
+            // read the incoming size as it might differ due to encryption
+            int new_size = toRead;
+            if( use_encryption_flg ) {
+                bytesRead = myRead (srcFd, &new_size, sizeof( int ), SOCK_TYPE, NULL, NULL);
+                if( bytesRead != sizeof( int ) ) {
+                    rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
+                    break;
+                }
+            }
+
+            // =-=-=-=-=-=-=-
+            // now read the provided number of bytes as suggested by the incoming size
+            bytesRead = myRead ( srcFd, buf, new_size, SOCK_TYPE, NULL, NULL );
+
             if (bytesRead != toRead) {
-		if (bytesRead < 0) {
-		    myInput->status = bytesRead;
-		    rodsLogError (LOG_ERROR, bytesRead,
-                  "remToLocPartialCopy: copy error for %lld", bytesRead);
-		} else if ((myInput->flags & NO_CHK_COPY_LEN_FLAG) == 0) {
+                if (bytesRead < 0) {
+                    myInput->status = bytesRead;
+                    rodsLogError (LOG_ERROR, bytesRead,
+                            "remToLocPartialCopy: copy error for %lld", bytesRead);
+                } else if ((myInput->flags & NO_CHK_COPY_LEN_FLAG) == 0) {
                     myInput->status = SYS_COPY_LEN_ERR - errno;
                     rodsLog (LOG_ERROR,
-                      "remToLocPartialCopy: toGet %lld, bytesRead %d",
-                      toGet, bytesRead);
-		}
+                            "remToLocPartialCopy: toGet %lld, bytesRead %d",
+                            toGet, bytesRead);
+                }
                 break;
             }
 
-	    bytesWritten = _l3Write (myInput->rsComm, destRescTypeInx,
-              destL3descInx, buf, bytesRead);
+            // =-=-=-=-=-=-=-
+            // if using encryption, strip off the iv
+            // and decrypt before writing
+            int plain_size = bytesRead;
+            if( use_encryption_flg ) {
+                std::string new_buf, this_iv, cipher, plain;
+                new_buf.assign( (char*)buf, new_size );
 
-            if (bytesWritten != bytesRead) {
+                this_iv = new_buf.substr( 0, iv_size );
+                cipher  = new_buf.substr( iv_size, new_size-iv_size ); 
+
+                eirods::error ret = crypt.decrypt( myInput->shared_secret, this_iv, cipher, plain );
+                if( !ret.ok() ) {
+                    eirods::log( PASS( ret ) );
+                    myInput->status = SYS_COPY_LEN_ERR;
+                    break;
+                }
+
+                memcpy( buf, plain.c_str(), plain.size() );
+                plain_size = plain.size();
+                
+            }
+
+            bytesWritten = _l3Write( myInput->rsComm, destRescTypeInx,
+                    destL3descInx, buf, plain_size );
+
+            if ( bytesWritten != plain_size ) {
                 rodsLog (LOG_NOTICE,
-                 "_partialDataPut:Bytes written %d don't match read %d",
-                  bytesWritten, bytesRead);
+                        "_partialDataPut:Bytes written %d don't match read %d",
+                        bytesWritten, bytesRead);
 
                 if (bytesWritten < 0) {
                     myInput->status = bytesWritten;
@@ -932,7 +1163,7 @@ rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     if (dataCopyInp == NULL) {
         rodsLog (LOG_NOTICE,
-          "rbudpRemLocCopy: NULL dataCopyInp input");
+                "rbudpRemLocCopy: NULL dataCopyInp input");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     portalOprOut = &dataCopyInp->portalOprOut;
@@ -947,30 +1178,32 @@ rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     }
 
     if ((tmpStr = getValByKey (&dataOprInp->condInput,
-      RBUDP_PACK_SIZE_KW)) != NULL) {
+                    RBUDP_PACK_SIZE_KW)) != NULL) {
         packetSize = atoi (tmpStr);
     } else {
         packetSize = DEF_UDP_PACKET_SIZE;
     }
 
     if (oprType == COPY_TO_LOCAL_OPR) {
-	int destL3descInx = dataOprInp->destL3descInx;
+        int destL3descInx = dataOprInp->destL3descInx;
 
         status = getFileToPortalRbudp (portalOprOut, NULL, 
-	  FileDesc[destL3descInx].fd, dataSize, 
-	  veryVerbose, packetSize);
+                FileDesc[destL3descInx].fd, dataSize, 
+                veryVerbose, packetSize,
+                rsComm->shared_secret );
     } else {
-	int srcL3descInx = dataOprInp->srcL3descInx;
+        int srcL3descInx = dataOprInp->srcL3descInx;
 
         if ((tmpStr = getValByKey (&dataOprInp->condInput,
-          RBUDP_SEND_RATE_KW)) != NULL) {
+                        RBUDP_SEND_RATE_KW)) != NULL) {
             sendRate = atoi (tmpStr);
         } else {
             sendRate = DEF_UDP_SEND_RATE;
         }
         status = putFileToPortalRbudp (portalOprOut, NULL, NULL,
-	  FileDesc[srcL3descInx].fd, dataSize, 
-	  veryVerbose, sendRate, packetSize);
+                FileDesc[srcL3descInx].fd, dataSize, 
+                veryVerbose, sendRate, packetSize,
+                rsComm->shared_secret );
     }
     return (status);
 }
@@ -989,11 +1222,11 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifndef windows_platform
-    #ifdef USE_BOOST
+#ifdef USE_BOOST
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-    #else
+#else
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
-    #endif
+#endif
 #endif
     int retVal = 0;
     rodsLong_t dataSize;
@@ -1001,15 +1234,15 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     if (dataCopyInp == NULL) {
         rodsLog (LOG_NOTICE,
-          "remLocCopy: NULL dataCopyInp input");
+                "remLocCopy: NULL dataCopyInp input");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     portalOprOut = &dataCopyInp->portalOprOut;
     numThreads = portalOprOut->numThreads;
     if (numThreads == 0) {
-	retVal = singleRemLocCopy (rsComm, dataCopyInp);
-	return retVal;
+        retVal = singleRemLocCopy (rsComm, dataCopyInp);
+        return retVal;
     }
 
     dataOprInp = &dataCopyInp->dataOprInp;
@@ -1019,17 +1252,17 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
         /* rbudp transfer */
 #ifdef RBUDP_TRANSFER
-	retVal = rbudpRemLocCopy (rsComm, dataCopyInp);
-	return (retVal);
+        retVal = rbudpRemLocCopy (rsComm, dataCopyInp);
+        return (retVal);
 #else
-	return (SYS_UDP_NO_SUPPORT_ERR);
+        return (SYS_UDP_NO_SUPPORT_ERR);
 #endif
     }
 
     if (numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0) {
-       rodsLog (LOG_NOTICE,
-         "remLocCopy: numThreads %d out of range",
-         numThreads);
+        rodsLog (LOG_NOTICE,
+                "remLocCopy: numThreads %d out of range",
+                numThreads);
         return (SYS_INVALID_PORTAL_OPR);
     }
 
@@ -1042,31 +1275,31 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     memset (myInput, 0, sizeof (myInput));
 
     sock = connectToRhostPortal (myPortList->hostAddr,
-      myPortList->portNum, myPortList->cookie, rsComm->windowSize);
+            myPortList->portNum, myPortList->cookie, rsComm->windowSize);
     if (sock < 0) {
         return (sock);
     }
 
     if (oprType == COPY_TO_LOCAL_OPR) {
         fillPortalTransferInp (&myInput[0], rsComm,
-         sock, dataOprInp->destL3descInx, 0, dataOprInp->destRescTypeInx,
-          0, 0, 0, 0, myPortList->cookie );
+                sock, dataOprInp->destL3descInx, 0, dataOprInp->destRescTypeInx,
+                0, 0, 0, 0 );
     } else {
         fillPortalTransferInp (&myInput[0], rsComm,
-         dataOprInp->srcL3descInx, sock, dataOprInp->srcRescTypeInx, 0,
-          0, 0, 0, 0, myPortList->cookie );
+                dataOprInp->srcL3descInx, sock, dataOprInp->srcRescTypeInx, 0,
+                0, 0, 0, 0 );
     }
 
-   if (numThreads == 1) {
+    if (numThreads == 1) {
         if (getValByKey (&dataOprInp->condInput,
-          NO_CHK_COPY_LEN_KW) != NULL) {
+                    NO_CHK_COPY_LEN_KW) != NULL) {
             myInput[0].flags = NO_CHK_COPY_LEN_FLAG;
         }
-	if (oprType == COPY_TO_LOCAL_OPR) {
+        if (oprType == COPY_TO_LOCAL_OPR) {
             remToLocPartialCopy (&myInput[0]);
-	} else {
-	    locToRemPartialCopy (&myInput[0]);
-	}
+        } else {
+            locToRemPartialCopy (&myInput[0]);
+        }
         if (myInput[0].status < 0) {
             return (myInput[0].status);
         } else {
@@ -1074,8 +1307,8 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                 return (0);
             } else {
                 rodsLog (LOG_NOTICE,
-                  "remLocCopy:bytesWritten %lld dataSize %lld mismatch",
-                  myInput[0].bytesWritten, dataSize);
+                        "remLocCopy:bytesWritten %lld dataSize %lld mismatch",
+                        myInput[0].bytesWritten, dataSize);
                 return (SYS_COPY_LEN_ERR);
             }
         }
@@ -1085,72 +1318,72 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
         for (i = 1; i < numThreads; i++) {
             sock = connectToRhostPortal (myPortList->hostAddr,
-              myPortList->portNum, myPortList->cookie, rsComm->windowSize);
+                    myPortList->portNum, myPortList->cookie, rsComm->windowSize);
             if (sock < 0) {
                 return (sock);
             }
-	    if (oprType == COPY_TO_LOCAL_OPR) {
+            if (oprType == COPY_TO_LOCAL_OPR) {
                 myFd = l3OpenByHost (rsComm, dataOprInp->destRescTypeInx,
-                 dataOprInp->destL3descInx, O_WRONLY);
+                        dataOprInp->destL3descInx, O_WRONLY);
                 if (myFd < 0) {    /* error */
                     retVal = myFd;
                     rodsLog (LOG_NOTICE,
-                    "remLocCopy: cannot open file, status = %d", 
-	             myFd);
+                            "remLocCopy: cannot open file, status = %d", 
+                            myFd);
                     CLOSE_SOCK (sock);
                     continue;
                 }
 
                 fillPortalTransferInp (&myInput[i], rsComm,
-                 sock, myFd, 0, dataOprInp->destRescTypeInx,
-                 i, 0, 0, 0, myPortList->cookie );
+                        sock, myFd, 0, dataOprInp->destRescTypeInx,
+                        i, 0, 0, 0 );
 
-                #ifdef USE_BOOST
+#ifdef USE_BOOST
                 tid[i] = new boost::thread( remToLocPartialCopy, &myInput[i] );
-                #else
+#else
                 pthread_create (&tid[i], pthread_attr_default,
-                 (void *(*)(void *)) remToLocPartialCopy, (void *) &myInput[i]);
-                #endif
-	    } else {
+                        (void *(*)(void *)) remToLocPartialCopy, (void *) &myInput[i]);
+#endif
+            } else {
                 myFd = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
-                 dataOprInp->srcL3descInx, O_RDONLY);
+                        dataOprInp->srcL3descInx, O_RDONLY);
                 if (myFd < 0) {    /* error */
                     retVal = myFd;
                     rodsLog (LOG_NOTICE,
-                    "remLocCopy: cannot open file, status = %d",
-                     myFd);
+                            "remLocCopy: cannot open file, status = %d",
+                            myFd);
                     CLOSE_SOCK (sock);
                     continue;
                 }
 
                 fillPortalTransferInp (&myInput[i], rsComm,
-                 myFd, sock, dataOprInp->destRescTypeInx, 0,
-                 i, 0, 0, 0, myPortList->cookie );
+                        myFd, sock, dataOprInp->destRescTypeInx, 0,
+                        i, 0, 0, 0 );
 
-                #ifdef USE_BOOST
+#ifdef USE_BOOST
                 tid[i] = new boost::thread( locToRemPartialCopy, &myInput[i] );
-                #else
+#else
                 pthread_create (&tid[i], pthread_attr_default,
-                 (void *(*)(void *)) locToRemPartialCopy, (void *) &myInput[i]);
-                #endif
+                        (void *(*)(void *)) locToRemPartialCopy, (void *) &myInput[i]);
+#endif
             }
-	}
+        }
 
-	if (oprType == COPY_TO_LOCAL_OPR) {
-	    #ifdef USE_BOOST
-	    tid[0] = new boost::thread( remToLocPartialCopy,&myInput[0] );
-	    #else
+        if (oprType == COPY_TO_LOCAL_OPR) {
+#ifdef USE_BOOST
+            tid[0] = new boost::thread( remToLocPartialCopy,&myInput[0] );
+#else
             pthread_create (&tid[0], pthread_attr_default,
-             (void *(*)(void *)) remToLocPartialCopy, (void *) &myInput[0]);
-            #endif
-	} else {
-	    #ifdef USE_BOOST
-	    tid[0] = new boost::thread( locToRemPartialCopy, &myInput[0] );
-	    #else
+                    (void *(*)(void *)) remToLocPartialCopy, (void *) &myInput[0]);
+#endif
+        } else {
+#ifdef USE_BOOST
+            tid[0] = new boost::thread( locToRemPartialCopy, &myInput[0] );
+#else
             pthread_create (&tid[0], pthread_attr_default,
-             (void *(*)(void *)) locToRemPartialCopy, (void *) &myInput[0]);
-            #endif
-	}
+                    (void *(*)(void *)) locToRemPartialCopy, (void *) &myInput[0]);
+#endif
+        }
 
 
         if (retVal < 0) {
@@ -1159,11 +1392,11 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
-    		#ifdef USE_BOOST
+#ifdef USE_BOOST
                 tid[i]->join();
-                #else
+#else
                 pthread_join (tid[i], NULL);
-                #endif
+#endif
             }
             totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
@@ -1177,8 +1410,8 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                 return (0);
             } else {
                 rodsLog (LOG_NOTICE,
-                 "remLocCopy: totalWritten %lld dataSize %lld mismatch",
-                  totalWritten, dataSize);
+                        "remLocCopy: totalWritten %lld dataSize %lld mismatch",
+                        totalWritten, dataSize);
                 return (SYS_COPY_LEN_ERR);
             }
         }
@@ -1243,7 +1476,7 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     fillPortalTransferInp (&myInput[0], rsComm,
      dataOprInp->srcL3descInx, dataOprInp->destL3descInx, 
      dataOprInp->srcRescTypeInx, dataOprInp->destRescTypeInx,
-      0, size0, offset0, 0, 0 );
+      0, size0, offset0, 0 );
 
     if (numThreads == 1) {
 	if (getValByKey (&dataOprInp->condInput,
@@ -1293,7 +1526,7 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                 in_fd, out_fd, 
 	            dataOprInp->srcRescTypeInx, 
                 dataOprInp->destRescTypeInx,
-                i, mySize, myOffset, 0, 0 ); 
+                i, mySize, myOffset, 0 ); 
 
             #ifdef USE_BOOST
 	    tid[i] = new boost::thread( sameHostPartialCopy, &myInput[i] );
@@ -1461,7 +1694,7 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
 {
     transferHeader_t myHeader;
     int srcL3descInx, destFd, srcRescTypeInx;
-    void *buf;
+    char *buf;
     rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
     int toRead, bytesRead, bytesWritten;
@@ -1481,7 +1714,28 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
     srcRescTypeInx = myInput->srcRescTypeInx;
     myInput->bytesWritten = 0;
 
-    buf = malloc (TRANS_BUF_SZ);
+    // =-=-=-=-=-=-=-
+    // flag to determine if we need to use encryption
+    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    
+    // =-=-=-=-=-=-=-
+    // create an encryption context
+    int                  iv_size = 0;
+    std::string          iv;
+    std::string          hash_key;
+    eirods::buffer_crypt crypt( 
+                             myInput->key_size,
+                             myInput->salt_size,
+                             myInput->num_hash_rounds,
+                             myInput->encryption_algorithm );
+
+    // =-=-=-=-=-=-=-
+    // set iv size
+    if( use_encryption_flg ) {
+        iv_size = crypt.key_size(); 
+    }
+
+    buf = (char*)malloc( TRANS_BUF_SZ + iv_size );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;
@@ -1527,8 +1781,8 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
                 toRead = toGet;
             }
 
-	    bytesRead = _l3Read (myInput->rsComm, srcRescTypeInx,
-              srcL3descInx, buf, toRead);
+	        bytesRead = _l3Read ( myInput->rsComm, srcRescTypeInx,
+                                  srcL3descInx, buf, toRead);
 
             if (bytesRead != toRead) {
                 if (bytesRead < 0) {
@@ -1544,11 +1798,56 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
                 break;
             }
 
-	    bytesWritten = myWrite (destFd, buf, bytesRead,
-		  SOCK_TYPE, NULL);
+            // =-=-=-=-=-=-=-
+            // compute an iv for this particular transmission and use
+            // it to encrypt this buffer
+            int new_size = bytesRead;
+            if( use_encryption_flg ) {
+                eirods::error ret = crypt.initialization_vector( 
+                    myInput->shared_secret,
+                    hash_key,
+                    iv );
+                if( !ret.ok() ) {
+                    ret = PASS( ret );
+                    printf( "%s", ret.result().c_str() );
+                    break;
+                }
 
+                // =-=-=-=-=-=-=-
+                // encrypt
+                std::string cipher;
+                std::string in_buf;
+                in_buf.assign( buf, bytesRead );
 
-            if (bytesWritten != bytesRead) {
+                ret = crypt.encrypt( myInput->shared_secret, iv, in_buf, cipher );
+                if( !ret.ok() ) {
+                    ret = PASS( ret );
+                    printf( "%s", ret.result().c_str() );
+                    break;
+                }
+
+                // =-=-=-=-=-=-=-
+                // capture the iv with the cipher text
+                memcpy( buf, iv.c_str(), iv.size() );
+                memcpy( buf+iv.size(), cipher.c_str(), cipher.size() );
+           
+                new_size = iv.size() + cipher.size();
+                
+                // =-=-=-=-=-=-=-
+                // need to send the incoming size as encryption might change
+                // the size of the data from the writen values
+                bytesWritten = myWrite(
+                                   destFd, 
+                                   &new_size,
+                                   sizeof( int ),
+                                   SOCK_TYPE,
+                                   &bytesWritten );
+            }
+
+            bytesWritten = myWrite( destFd, buf, new_size,
+		                            SOCK_TYPE, NULL );
+
+            if( bytesWritten != new_size ) {
                 rodsLog (LOG_NOTICE,
                  "_partialDataPut:Bytes written %d don't match read %d",
                   bytesWritten, bytesRead);
@@ -1561,8 +1860,9 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
                 break;
             }
 
-            toGet -= bytesWritten;
+            toGet -= bytesRead;
         }
+
         curOffset += myHeader.length;
         myInput->bytesWritten += myHeader.length;
     }
@@ -1770,7 +2070,15 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
 
         rbudpReceiver.rbudpBase.udpServerAddr.sin_port = htons (rbudpReceiver.rbudpBase.udpRemotePort);
           
-        status = getfileByFd (&rbudpReceiver, FileDesc[destL3descInx].fd,  packetSize);
+        status = eirods::encrypted_rbudp_get_file_by_fd( 
+                     &rbudpReceiver, 
+                     FileDesc[destL3descInx].fd,  
+                     packetSize,
+                     rsComm->shared_secret,
+                     rsComm->key_size,
+                     rsComm->salt_size,
+                     rsComm->num_hash_rounds,
+                     rsComm->encryption_algorithm );
         
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -1812,8 +2120,16 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
             sendRate = DEF_UDP_SEND_RATE;
         }
 
-        status = sendfileByFd( &rbudpSender, sendRate, packetSize, FileDesc[srcL3descInx].fd );
-          
+        status = eirods::encrypted_rbudp_send_file_by_fd( 
+                     &rbudpSender, 
+                     sendRate, 
+                     packetSize, 
+                     FileDesc[srcL3descInx].fd,
+                     rsComm->shared_secret,
+                     rsComm->key_size,
+                     rsComm->salt_size,
+                     rsComm->num_hash_rounds,
+                     rsComm->encryption_algorithm );
 
         if (status < 0) {
             rodsLog (LOG_ERROR,

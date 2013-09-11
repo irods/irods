@@ -36,7 +36,6 @@
 #define MAX_RECON_ERROR_CNT	10
 
 typedef struct PortalTransferInp {
-    int cookie; // JMC - shared secret for each portal thread
     rsComm_t *rsComm;
     int destFd;
     int srcFd;
@@ -49,6 +48,13 @@ typedef struct PortalTransferInp {
     int flags;
     int status;
     dataOprInp_t *dataOprInp;
+    
+    int  key_size;
+    int  salt_size;
+    int  num_hash_rounds;
+    char encryption_algorithm[ NAME_LEN ]; 
+    char shared_secret[ NAME_LEN ]; // JMC - shared secret for each portal thread
+
 } portalTransferInp_t;
 
 int
@@ -70,7 +76,7 @@ partialDataGet (portalTransferInp_t *myInput);
 int
 fillPortalTransferInp (portalTransferInp_t *myInput, rsComm_t *rsComm,
 int srcFd, int destFd, int destRescTypeInx, int srcRescTypeInx,
-int threadNum, rodsLong_t size, rodsLong_t offset, int flags, int cookie);
+int threadNum, rodsLong_t size, rodsLong_t offset, int flags);
 int
 sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
 void

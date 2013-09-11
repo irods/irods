@@ -173,8 +173,15 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         } else {
             veryVerbose = 0;
         }
-        status = putFileToPortalRbudp (portalOprOut, locFilePath, 
-                                       dataObjInp->objPath, -1, dataObjInp->dataSize, veryVerbose, 0, 0);
+        status = putFileToPortalRbudp( 
+                     portalOprOut, 
+                     locFilePath, 
+                     dataObjInp->objPath, 
+                     -1, dataObjInp->dataSize, 
+                     veryVerbose, 
+                     0, 0, 
+                     conn->shared_secret );
+
 #endif  /* RBUDP_TRANSFER */
     } else {
         if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {

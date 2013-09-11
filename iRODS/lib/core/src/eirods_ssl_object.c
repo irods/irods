@@ -138,7 +138,13 @@ namespace eirods {
 
         _comm->ssl     = ssl_;
         _comm->ssl_ctx = ssl_ctx_;
-        
+        strncpy( _comm->shared_secret, shared_secret_.c_str(), NAME_LEN );
+
+        _comm->key_size        = key_size_;
+        _comm->salt_size       = salt_size_;
+        _comm->num_hash_rounds = num_hash_rounds_;
+        strncpy( _comm->encryption_algorithm, encryption_algorithm_.c_str(), NAME_LEN );
+
         return SUCCESS();
 
     } // to_client
@@ -154,7 +160,14 @@ namespace eirods {
 
         _comm->ssl     = ssl_;
         _comm->ssl_ctx = ssl_ctx_;
-        
+        strncpy( _comm->shared_secret, shared_secret_.c_str(), NAME_LEN );
+ 
+        _comm->key_size        = key_size_;
+        _comm->salt_size       = salt_size_;
+        _comm->num_hash_rounds = num_hash_rounds_;
+        strncpy( _comm->encryption_algorithm, encryption_algorithm_.c_str(), NAME_LEN );
+
+       
         return SUCCESS();
 
     } // to_server
