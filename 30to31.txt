@@ -3,73 +3,73 @@ r4461 | xuh | 2011-09-29 22:01:36 -0400 (Thu, 29 Sep 2011) | 1 line
 
 Fix a type error in a rule example
 ------------------------------------------------------------------------
-r4462 | mwan | 2011-10-03 16:12:11 -0400 (Mon, 03 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4462 | mwan | 2011-10-03 16:12:11 -0400 (Mon, 03 Oct 2011) | 2 lines
 
 Doxygen documentation
 
 ------------------------------------------------------------------------
-r4463 | mwan | 2011-10-03 16:38:20 -0400 (Mon, 03 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4463 | mwan | 2011-10-03 16:38:20 -0400 (Mon, 03 Oct 2011) | 2 lines
 
 Spelling
 
 ------------------------------------------------------------------------
-r4464 | mwan | 2011-10-03 19:26:11 -0400 (Mon, 03 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4464 | mwan | 2011-10-03 19:26:11 -0400 (Mon, 03 Oct 2011) | 2 lines
 
 doxygen documentation
 
 ------------------------------------------------------------------------
-r4465 | mwan | 2011-10-03 20:19:52 -0400 (Mon, 03 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4465 | mwan | 2011-10-03 20:19:52 -0400 (Mon, 03 Oct 2011) | 2 lines
 
 doxygen documentation
 
 ------------------------------------------------------------------------
-r4466 | mwan | 2011-10-03 20:20:40 -0400 (Mon, 03 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4466 | mwan | 2011-10-03 20:20:40 -0400 (Mon, 03 Oct 2011) | 2 lines
 
 doxygen documentation
 
 ------------------------------------------------------------------------
-r4467 | schroede | 2011-10-04 16:46:12 -0400 (Tue, 04 Oct 2011) | 3 lines
+JMC - NO OP :: r4467 | schroede | 2011-10-04 16:46:12 -0400 (Tue, 04 Oct 2011) | 3 lines
 
 Additions to some ICAT test scripts and a test program to increase the
 ICAT code coverage via 'irodsctl devtest' a little.
 
 ------------------------------------------------------------------------
-r4468 | schroede | 2011-10-04 16:51:34 -0400 (Tue, 04 Oct 2011) | 3 lines
+JMC - DONE ::r4468 | schroede | 2011-10-04 16:51:34 -0400 (Tue, 04 Oct 2011) | 3 lines
 
 Improve some ICAT-ODBC debug messages by including the SQL statement
 numbers (I noticed the need during some recent testing).
 
 ------------------------------------------------------------------------
-r4469 | mwan | 2011-10-04 17:18:05 -0400 (Tue, 04 Oct 2011) | 2 lines
+JMC - DONE :: r4469 | mwan | 2011-10-04 17:18:05 -0400 (Tue, 04 Oct 2011) | 2 lines
 
 Change to compile with c++ on linux
 
 ------------------------------------------------------------------------
-r4470 | schroede | 2011-10-04 17:23:25 -0400 (Tue, 04 Oct 2011) | 3 lines
+JMC - DONE :: r4470 | schroede | 2011-10-04 17:23:25 -0400 (Tue, 04 Oct 2011) | 3 lines
 
 Some initial manual test procedure descriptions.  
 See the README.txt for more.
 
 ------------------------------------------------------------------------
-r4471 | mwan | 2011-10-04 19:11:01 -0400 (Tue, 04 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4471 | mwan | 2011-10-04 19:11:01 -0400 (Tue, 04 Oct 2011) | 2 lines
 
 Doxygen documentation. Rearrange the directories
 
 ------------------------------------------------------------------------
-r4472 | mwan | 2011-10-04 19:56:31 -0400 (Tue, 04 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4472 | mwan | 2011-10-04 19:56:31 -0400 (Tue, 04 Oct 2011) | 2 lines
 
 documentation readme file
 
 ------------------------------------------------------------------------
-r4473 | mconway | 2011-10-05 15:31:16 -0400 (Wed, 05 Oct 2011) | 1 line
+JMC - NOT DONE :: r4473 | mconway | 2011-10-05 15:31:16 -0400 (Wed, 05 Oct 2011) | 1 line
 
 Prepare for release 3.0.0
 ------------------------------------------------------------------------
-r4475 | mconway | 2011-10-05 15:33:24 -0400 (Wed, 05 Oct 2011) | 1 line
+JMC - NOT DONE :: r4475 | mconway | 2011-10-05 15:33:24 -0400 (Wed, 05 Oct 2011) | 1 line
 
 prepare for 3.0.x iteration
 ------------------------------------------------------------------------
-r4476 | schroede | 2011-10-06 16:48:07 -0400 (Thu, 06 Oct 2011) | 9 lines
+JMC - NO OP :: r4476 | schroede | 2011-10-06 16:48:07 -0400 (Thu, 06 Oct 2011) | 9 lines
 
 Corrections and additions to allow 'irodssetup' to configure a remote
 (to the iCAT-Enabled Server) Postgres or MySQL DBMS system in addition
@@ -81,33 +81,33 @@ existing ODBC and a Postgres server on another host) and should still
 run the default case (to the local host) without problems.
 
 ------------------------------------------------------------------------
-r4477 | mwan | 2011-10-06 20:00:06 -0400 (Thu, 06 Oct 2011) | 2 lines
+JMC - NO OP :: r4477 | mwan | 2011-10-06 20:00:06 -0400 (Thu, 06 Oct 2011) | 2 lines
 
 script to run gcov - test code coverage
 
 ------------------------------------------------------------------------
-r4478 | terrell | 2011-10-07 09:34:25 -0400 (Fri, 07 Oct 2011) | 1 line
+JMC - NO OP :: r4478 | terrell | 2011-10-07 09:34:25 -0400 (Fri, 07 Oct 2011) | 1 line
 
 usage tweaks to new gcov scripts, no functional changes
 ------------------------------------------------------------------------
-r4479 | schroede | 2011-10-10 11:33:00 -0400 (Mon, 10 Oct 2011) | 2 lines
+JMC - NO OP :: r4479 | schroede | 2011-10-10 11:33:00 -0400 (Mon, 10 Oct 2011) | 2 lines
 
 Include the current file count and size in the notification message.
 
 ------------------------------------------------------------------------
-r4480 | mwan | 2011-10-10 19:27:14 -0400 (Mon, 10 Oct 2011) | 2 lines
+JMC - DONE :: r4480 | mwan | 2011-10-10 19:27:14 -0400 (Mon, 10 Oct 2011) | 2 lines
 
 Increase MAX_SUB_FILE_CNT from 512 50 5210 as requested by Jean-Yves
 
 ------------------------------------------------------------------------
-r4481 | mwan | 2011-10-10 20:52:52 -0400 (Mon, 10 Oct 2011) | 4 lines
+JMC - NOT DONE :: r4481 | mwan | 2011-10-10 20:52:52 -0400 (Mon, 10 Oct 2011) | 4 lines
 
 Change the logic of "forced" in msiSetDefaultResc so that admin user
 (LOCAL_PRIV_USER_AUTH privilege) can ovrride it as recommended by
 Jean-Yves.
 
 ------------------------------------------------------------------------
-r4482 | schroede | 2011-10-11 11:48:57 -0400 (Tue, 11 Oct 2011) | 21 lines
+JMC - NO OP :: r4482 | schroede | 2011-10-11 11:48:57 -0400 (Tue, 11 Oct 2011) | 21 lines
 
 Additional correction needed for allowing 'irodssetup' to configure a
 remote Postgres committed a few days ago (Aug 6).  
@@ -131,17 +131,17 @@ stage, the pg security config has not be set to allow this.
 
 
 ------------------------------------------------------------------------
-r4483 | mwan | 2011-10-11 17:28:41 -0400 (Tue, 11 Oct 2011) | 2 lines
+JMC - NO OP :: r4483 | mwan | 2011-10-11 17:28:41 -0400 (Tue, 11 Oct 2011) | 2 lines
 
 add script to handle test coverage using lcov
 
 ------------------------------------------------------------------------
-r4484 | mwan | 2011-10-11 17:30:17 -0400 (Tue, 11 Oct 2011) | 2 lines
+JMC - NO OP :: r4484 | mwan | 2011-10-11 17:30:17 -0400 (Tue, 11 Oct 2011) | 2 lines
 
 script to run gcov for the clients directory
 
 ------------------------------------------------------------------------
-r4485 | schroede | 2011-10-11 18:00:45 -0400 (Tue, 11 Oct 2011) | 6 lines
+JMC - NO OP :: r4485 | schroede | 2011-10-11 18:00:45 -0400 (Tue, 11 Oct 2011) | 6 lines
 
 Fix for bugzilla item 141.  For irodsupgrade, don't override the
 site's setting for the start/stop the DB question so that all the
@@ -150,58 +150,58 @@ irodsupgrade w/o prompts.
 
 
 ------------------------------------------------------------------------
-r4486 | mwan | 2011-10-11 18:23:44 -0400 (Tue, 11 Oct 2011) | 2 lines
+JMC - NO OP :: r4486 | mwan | 2011-10-11 18:23:44 -0400 (Tue, 11 Oct 2011) | 2 lines
 
 README file to run lcov
 
 ------------------------------------------------------------------------
-r4487 | mwan | 2011-10-11 19:25:00 -0400 (Tue, 11 Oct 2011) | 2 lines
+JMC - DONE :: r4487 | mwan | 2011-10-11 19:25:00 -0400 (Tue, 11 Oct 2011) | 2 lines
 
 Minor change
 
 ------------------------------------------------------------------------
-r4488 | xuh | 2011-10-11 22:15:11 -0400 (Tue, 11 Oct 2011) | 1 line
+JMC - NOT DONE :: r4488 | xuh | 2011-10-11 22:15:11 -0400 (Tue, 11 Oct 2011) | 1 line
 
 Fix a rule file used in test rules so that rulemsiCollCreate.r can be run even after rulemsiAdmChangeCoreRE.r is run
 ------------------------------------------------------------------------
-r4489 | terrell | 2011-10-11 23:22:00 -0400 (Tue, 11 Oct 2011) | 1 line
+JMC - NO OP :: r4489 | terrell | 2011-10-11 23:22:00 -0400 (Tue, 11 Oct 2011) | 1 line
 
 gcov clients - comment correction
 ------------------------------------------------------------------------
-r4490 | mwan | 2011-10-13 14:34:27 -0400 (Thu, 13 Oct 2011) | 2 lines
+JMC - NO OP :: r4490 | mwan | 2011-10-13 14:34:27 -0400 (Thu, 13 Oct 2011) | 2 lines
 
 Add list of test scripts run by tinderbox
 
 ------------------------------------------------------------------------
-r4491 | terrell | 2011-10-13 15:54:11 -0400 (Thu, 13 Oct 2011) | 1 line
+JMC - NO OP :: r4491 | terrell | 2011-10-13 15:54:11 -0400 (Thu, 13 Oct 2011) | 1 line
 
 minor gcov and lcov script cleanup
 ------------------------------------------------------------------------
-r4492 | terrell | 2011-10-13 17:21:24 -0400 (Thu, 13 Oct 2011) | 1 line
+JMC - NO OP :: r4492 | terrell | 2011-10-13 17:21:24 -0400 (Thu, 13 Oct 2011) | 1 line
 
 fix small iput helptext typo
 ------------------------------------------------------------------------
-r4493 | terrell | 2011-10-13 17:22:17 -0400 (Thu, 13 Oct 2011) | 1 line
+JMC - NO OP :: r4493 | terrell | 2011-10-13 17:22:17 -0400 (Thu, 13 Oct 2011) | 1 line
 
 fix small iput helptext typo
 ------------------------------------------------------------------------
-r4494 | terrell | 2011-10-13 17:25:08 -0400 (Thu, 13 Oct 2011) | 1 line
+JMC - DONE :: r4494 | terrell | 2011-10-13 17:25:08 -0400 (Thu, 13 Oct 2011) | 1 line
 
 a small iput helptext upcase
 ------------------------------------------------------------------------
-r4495 | antoine | 2011-10-13 17:39:06 -0400 (Thu, 13 Oct 2011) | 2 lines
+JMC - NO OP :: r4495 | antoine | 2011-10-13 17:39:06 -0400 (Thu, 13 Oct 2011) | 2 lines
 
 A little utility to remove extraneous local files after an irsync (as in rsync --delete)
 
 ------------------------------------------------------------------------
-r4496 | mwan | 2011-10-14 16:34:55 -0400 (Fri, 14 Oct 2011) | 4 lines
+JMC - NO OP :: r4496 | mwan | 2011-10-14 16:34:55 -0400 (Fri, 14 Oct 2011) | 4 lines
 
 Add noprompt_flag to bypass path and password input. Add two subroutines to
 create a directory containing small files and a directory containing large
 files.
 
 ------------------------------------------------------------------------
-r4497 | mwan | 2011-10-14 18:20:36 -0400 (Fri, 14 Oct 2011) | 5 lines
+JMC - DONE :: r4497 | mwan | 2011-10-14 18:20:36 -0400 (Fri, 14 Oct 2011) | 5 lines
 
 Add a routune checkDupReplica to check if a given object with a given rescName
  and physical path already exist. This routine is used by rsRegReplica
@@ -209,60 +209,60 @@ for checking if two staging to cache happened at the same time resulting
 in 2 registered replica of the same thing as discovered by Jean-Yves.
 
 ------------------------------------------------------------------------
-r4498 | xuh | 2011-10-17 08:58:24 -0400 (Mon, 17 Oct 2011) | 2 lines
+JMC - NOT DONE :: r4498 | xuh | 2011-10-17 08:58:24 -0400 (Mon, 17 Oct 2011) | 2 lines
 
 Rename error codes newly added for v3.0 rule engine to include RE_ prefix; add some new error codes; replace some generic error codes such as UNKNOWN_ERROR with specific error codes; 
 add support for converting bytesBuf_t to string in the rule language.
 ------------------------------------------------------------------------
-r4499 | terrell | 2011-10-17 13:07:37 -0400 (Mon, 17 Oct 2011) | 1 line
+JMC - NO OP :: r4499 | terrell | 2011-10-17 13:07:37 -0400 (Mon, 17 Oct 2011) | 1 line
 
 correct the comment
 ------------------------------------------------------------------------
-r4500 | mwan | 2011-10-17 15:58:59 -0400 (Mon, 17 Oct 2011) | 2 lines
+JMC - NO OP :: r4500 | mwan | 2011-10-17 15:58:59 -0400 (Mon, 17 Oct 2011) | 2 lines
 
 Change input to the script to accept "debug", "noprompt" and "help"
 
 ------------------------------------------------------------------------
-r4501 | antoine | 2011-10-17 16:18:22 -0400 (Mon, 17 Oct 2011) | 2 lines
+JMC - NO OP :: r4501 | antoine | 2011-10-17 16:18:22 -0400 (Mon, 17 Oct 2011) | 2 lines
 
 Turned on by default
 
 ------------------------------------------------------------------------
-r4502 | schroede | 2011-10-17 16:19:49 -0400 (Mon, 17 Oct 2011) | 3 lines
+JMC - DONE :: r4502 | schroede | 2011-10-17 16:19:49 -0400 (Mon, 17 Oct 2011) | 3 lines
 
 An auto-completion script for Bash, contributed by Bruno Bzeznik of
 the French CIMENT project OAR Team on irods-chat.
 
 ------------------------------------------------------------------------
-r4503 | mwan | 2011-10-17 16:23:00 -0400 (Mon, 17 Oct 2011) | 2 lines
+JMC - NO OP :: r4503 | mwan | 2011-10-17 16:23:00 -0400 (Mon, 17 Oct 2011) | 2 lines
 
 Accpet irodsEnvFile env variable
 
 ------------------------------------------------------------------------
-r4504 | antoine | 2011-10-17 18:56:33 -0400 (Mon, 17 Oct 2011) | 2 lines
+JMC - NO OP :: r4504 | antoine | 2011-10-17 18:56:33 -0400 (Mon, 17 Oct 2011) | 2 lines
 
 Experitmental code for twitter access.
 
 ------------------------------------------------------------------------
-r4505 | xuh | 2011-10-18 09:16:07 -0400 (Tue, 18 Oct 2011) | 1 line
+JMC - NO OP :: r4505 | xuh | 2011-10-18 09:16:07 -0400 (Tue, 18 Oct 2011) | 1 line
 
 Fix type error in one rule example; fix a bug in ovStrcpy
 ------------------------------------------------------------------------
-r4506 | xuh | 2011-10-18 09:20:25 -0400 (Tue, 18 Oct 2011) | 1 line
+JMC - NO OP :: r4506 | xuh | 2011-10-18 09:20:25 -0400 (Tue, 18 Oct 2011) | 1 line
 
 Minor formatting
 ------------------------------------------------------------------------
-r4507 | antoine | 2011-10-18 10:45:47 -0400 (Tue, 18 Oct 2011) | 2 lines
+JMC - NO OP :: r4507 | antoine | 2011-10-18 10:45:47 -0400 (Tue, 18 Oct 2011) | 2 lines
 
 Sample input file for msiLoadMetadataFromXml
 
 ------------------------------------------------------------------------
-r4508 | mwan | 2011-10-18 18:01:07 -0400 (Tue, 18 Oct 2011) | 2 lines
+JMC - NO OP :: r4508 | mwan | 2011-10-18 18:01:07 -0400 (Tue, 18 Oct 2011) | 2 lines
 
 add bulk iput and better checking of results
 
 ------------------------------------------------------------------------
-r4509 | schroede | 2011-10-18 18:22:24 -0400 (Tue, 18 Oct 2011) | 13 lines
+JMC - DONE :: r4509 | schroede | 2011-10-18 18:22:24 -0400 (Tue, 18 Oct 2011) | 13 lines
 
 In chlGeneralUpdate, perform a rollback after an error so that the
 transaction is closed out and subsequent updates can succeed.  The
@@ -278,22 +278,22 @@ chlRollback at the caller's level but for a function like this it is
 probably better to handle it here.
 
 ------------------------------------------------------------------------
-r4510 | mwan | 2011-10-18 18:55:47 -0400 (Tue, 18 Oct 2011) | 2 lines
+JMC - NO OP :: r4510 | mwan | 2011-10-18 18:55:47 -0400 (Tue, 18 Oct 2011) | 2 lines
 
 Exercise more iput/iget options
 
 ------------------------------------------------------------------------
-r4511 | mwan | 2011-10-19 20:08:17 -0400 (Wed, 19 Oct 2011) | 2 lines
+JMC - NO OP :: r4511 | mwan | 2011-10-19 20:08:17 -0400 (Wed, 19 Oct 2011) | 2 lines
 
 Add large files and UBUDP tests
 
 ------------------------------------------------------------------------
-r4512 | mwan | 2011-10-20 12:49:30 -0400 (Thu, 20 Oct 2011) | 2 lines
+JMC - NO OP :: r4512 | mwan | 2011-10-20 12:49:30 -0400 (Thu, 20 Oct 2011) | 2 lines
 
 Fix a path problem in mkldir where dir_w is not .
 
 ------------------------------------------------------------------------
-r4513 | schroede | 2011-10-20 16:36:30 -0400 (Thu, 20 Oct 2011) | 21 lines
+JMC - NOT DONE :: r4513 | schroede | 2011-10-20 16:36:30 -0400 (Thu, 20 Oct 2011) | 21 lines
 
 First set of additions for ticket-based-access including an
 preliminary iticket command and ICAT operations to update ticket
@@ -317,19 +317,19 @@ will be changed to a new client/server call in a later step.
 
 
 ------------------------------------------------------------------------
-r4514 | schroede | 2011-10-20 17:03:16 -0400 (Thu, 20 Oct 2011) | 3 lines
+JMC - NOT DONE :: r4514 | schroede | 2011-10-20 17:03:16 -0400 (Thu, 20 Oct 2011) | 3 lines
 
 Initial iticket.c; part of the previous commit for the
 first set of ticket-based-access additions.
 
 ------------------------------------------------------------------------
-r4515 | mwan | 2011-10-20 17:24:40 -0400 (Thu, 20 Oct 2011) | 3 lines
+JMC - NO OP :: r4515 | mwan | 2011-10-20 17:24:40 -0400 (Thu, 20 Oct 2011) | 3 lines
 
 add test for ienv, icd, ipwd, ihelp, ierror, iexecmd, ips, iqstat, ireg and
 imcoll
 
 ------------------------------------------------------------------------
-r4516 | schroede | 2011-10-20 18:28:32 -0400 (Thu, 20 Oct 2011) | 12 lines
+JMC - DONE :: r4516 | schroede | 2011-10-20 18:28:32 -0400 (Thu, 20 Oct 2011) | 12 lines
 
 Fix a problem in showing ACLS in a different zone (ils -A).  The base
 query would go to the correct zone IES (by using the beginning of the
@@ -344,22 +344,22 @@ notice by Jean-Yves and Mike W and I developed the fix.
 Also corrected some log messages (name of function) in printLsShort.
 
 ------------------------------------------------------------------------
-r4517 | mwan | 2011-10-20 19:41:04 -0400 (Thu, 20 Oct 2011) | 2 lines
+JMC - DONE :: r4517 | mwan | 2011-10-20 19:41:04 -0400 (Thu, 20 Oct 2011) | 2 lines
 
 A bug fix for ils of tar struct file failed.
 
 ------------------------------------------------------------------------
-r4518 | mwan | 2011-10-20 20:00:57 -0400 (Thu, 20 Oct 2011) | 2 lines
+JMC - NO OP :: r4518 | mwan | 2011-10-20 20:00:57 -0400 (Thu, 20 Oct 2011) | 2 lines
 
 add mounted struct file test
 
 ------------------------------------------------------------------------
-r4519 | mwan | 2011-10-21 15:17:17 -0400 (Fri, 21 Oct 2011) | 2 lines
+JMC - NO OP :: r4519 | mwan | 2011-10-21 15:17:17 -0400 (Fri, 21 Oct 2011) | 2 lines
 
 Add compound resource test
 
 ------------------------------------------------------------------------
-r4520 | schroede | 2011-10-21 19:02:49 -0400 (Fri, 21 Oct 2011) | 5 lines
+JMC - DONE :: r4520 | schroede | 2011-10-21 19:02:49 -0400 (Fri, 21 Oct 2011) | 5 lines
 
 This is a fix developed with Jean-Yves last week for a problem he
 occasionally sees after an Oracle outage.  See the comments for more
@@ -367,56 +367,56 @@ information.  He'll be testing it later, but I thought I'd commit to
 make sure it isn't forgotten.
 
 ------------------------------------------------------------------------
-r4521 | mwan | 2011-10-23 20:08:44 -0400 (Sun, 23 Oct 2011) | 3 lines
+JMC - NO OP :: r4521 | mwan | 2011-10-23 20:08:44 -0400 (Sun, 23 Oct 2011) | 3 lines
 
 Add unixStageToCache and unixSyncToArch to UNIX_FILE_TYPE so that it is 
 easier to config compound resource for testing in testiCommands.pl.
 
 ------------------------------------------------------------------------
-r4522 | mwan | 2011-10-23 21:06:48 -0400 (Sun, 23 Oct 2011) | 2 lines
+JMC - NO OP :: r4522 | mwan | 2011-10-23 21:06:48 -0400 (Sun, 23 Oct 2011) | 2 lines
 
 minor change in the expected resource of ilsresc
 
 ------------------------------------------------------------------------
-r4523 | mwan | 2011-10-23 23:43:58 -0400 (Sun, 23 Oct 2011) | 2 lines
+JMC - NO OP :: r4523 | mwan | 2011-10-23 23:43:58 -0400 (Sun, 23 Oct 2011) | 2 lines
 
 take out space when comparing LIST
 
 ------------------------------------------------------------------------
-r4524 | mwan | 2011-10-24 17:53:57 -0400 (Mon, 24 Oct 2011) | 2 lines
+JMC - NO OP :: r4524 | mwan | 2011-10-24 17:53:57 -0400 (Mon, 24 Oct 2011) | 2 lines
 
 Add xml protocol to the test
 
 ------------------------------------------------------------------------
-r4525 | mwan | 2011-10-24 17:59:03 -0400 (Mon, 24 Oct 2011) | 2 lines
+JMC - NO OP :: r4525 | mwan | 2011-10-24 17:59:03 -0400 (Mon, 24 Oct 2011) | 2 lines
 
 Add mkresc to the xml test
 
 ------------------------------------------------------------------------
-r4526 | mwan | 2011-10-25 13:11:46 -0400 (Tue, 25 Oct 2011) | 4 lines
+JMC - NO OP :: r4526 | mwan | 2011-10-25 13:11:46 -0400 (Tue, 25 Oct 2011) | 4 lines
 
 Rearrange the LDFLAGS so that it will load with Ubuntu 11 as suggested by
 Adil Hassan.
 
 
 ------------------------------------------------------------------------
-r4527 | mwan | 2011-10-25 19:03:48 -0400 (Tue, 25 Oct 2011) | 3 lines
+JMC - DONE :: r4527 | mwan | 2011-10-25 19:03:48 -0400 (Tue, 25 Oct 2011) | 3 lines
 
 Compute checksum for COMPOUND_CL object by staging it to cache and them
 compute the checksum of the staged object
 
 ------------------------------------------------------------------------
-r4528 | mwan | 2011-10-26 19:57:27 -0400 (Wed, 26 Oct 2011) | 3 lines
+JMC - DONE :: r4528 | mwan | 2011-10-26 19:57:27 -0400 (Wed, 26 Oct 2011) | 3 lines
 
 Add -K option to iphybun to compute and register checksum value for the 
 bundled subfiles and the bundle file.
 
 ------------------------------------------------------------------------
-r4529 | xuh | 2011-10-26 21:19:23 -0400 (Wed, 26 Oct 2011) | 1 line
+JMC - NOT DONE :: r4529 | xuh | 2011-10-26 21:19:23 -0400 (Wed, 26 Oct 2011) | 1 line
 
 Fix a problem of insufficient memory allocation for string
 ------------------------------------------------------------------------
-r4530 | terrell | 2011-10-27 11:39:33 -0400 (Thu, 27 Oct 2011) | 44 lines
+JMC - NO OP :: r4530 | terrell | 2011-10-27 11:39:33 -0400 (Thu, 27 Oct 2011) | 44 lines
 
 Added .gitignore files to all empty directories.
 These are needed to compile iRODS from the git trunk.
@@ -463,18 +463,18 @@ Each .gitignore file has the following two lines:
 
 
 ------------------------------------------------------------------------
-r4531 | antoine | 2011-10-27 12:34:23 -0400 (Thu, 27 Oct 2011) | 2 lines
+JMC - NO OP :: r4531 | antoine | 2011-10-27 12:34:23 -0400 (Thu, 27 Oct 2011) | 2 lines
 
 Type casts for g++
 
 ------------------------------------------------------------------------
-r4532 | schroede | 2011-10-27 13:18:00 -0400 (Thu, 27 Oct 2011) | 3 lines
+JMC - NOT DONE :: r4532 | schroede | 2011-10-27 13:18:00 -0400 (Thu, 27 Oct 2011) | 3 lines
 
 Add Doxygen documentation to a few of the ICAT client/server calls
 (API).
 
 ------------------------------------------------------------------------
-r4533 | schroede | 2011-10-27 13:42:32 -0400 (Thu, 27 Oct 2011) | 6 lines
+JMC - NOT DONE ::r4533 | schroede | 2011-10-27 13:42:32 -0400 (Thu, 27 Oct 2011) | 6 lines
 
 More ticket development: allow the use of some 'read' tickets in
 various modes, add error codes, add tests, change the tables some,
@@ -483,129 +483,129 @@ chlGenQueryAccessControlSetup, add arguments to cmlCheckDataObjId,
 etc.
 
 ------------------------------------------------------------------------
-r4534 | schroede | 2011-10-27 14:17:02 -0400 (Thu, 27 Oct 2011) | 3 lines
+JMC - NOT DONE ::r4534 | schroede | 2011-10-27 14:17:02 -0400 (Thu, 27 Oct 2011) | 3 lines
 
 Need one more test to cover all the new SQL forms in the previous
 commit for tickets (noticed on tinderbox).
 
 ------------------------------------------------------------------------
-r4535 | schroede | 2011-10-27 19:33:38 -0400 (Thu, 27 Oct 2011) | 4 lines
+JMC - NO OP :: r4535 | schroede | 2011-10-27 19:33:38 -0400 (Thu, 27 Oct 2011) | 4 lines
 
 Small changes to improve ICAT test coverage slightly.  ifdef out 
 (#if 0) unused functions and add some (very partial) tests of
 GeneralUpdate.
 
 ------------------------------------------------------------------------
-r4536 | mwan | 2011-10-27 20:08:36 -0400 (Thu, 27 Oct 2011) | 2 lines
+JMC - DONE :: r4536 | mwan | 2011-10-27 20:08:36 -0400 (Thu, 27 Oct 2011) | 2 lines
 
 Add --bundle option to ils to list subfiles in a bundle file
 
 ------------------------------------------------------------------------
-r4537 | mwan | 2011-10-28 19:36:49 -0400 (Fri, 28 Oct 2011) | 4 lines
+JMC - DONE :: r4537 | mwan | 2011-10-28 19:36:49 -0400 (Fri, 28 Oct 2011) | 4 lines
 
 Add --purgec option to iget/iput to purge the staged cache copy after 
 downloading/uploading a COMPOUND object.
 
 
 ------------------------------------------------------------------------
-r4538 | xuh | 2011-10-29 14:35:00 -0400 (Sat, 29 Oct 2011) | 1 line
+JMC - DONE :: r4538 | xuh | 2011-10-29 14:35:00 -0400 (Sat, 29 Oct 2011) | 1 line
 
 Add a new function that applies rule and updates inMsParamArray
 ------------------------------------------------------------------------
-r4539 | xuh | 2011-10-29 14:45:07 -0400 (Sat, 29 Oct 2011) | 1 line
+JMC - DONE :: r4539 | xuh | 2011-10-29 14:45:07 -0400 (Sat, 29 Oct 2011) | 1 line
 
 Update a microservice for mso z3950 to use applyRuleUpdateParams instead of applyRule when the new rule engine is used.
 ------------------------------------------------------------------------
-r4540 | xuh | 2011-10-29 15:01:46 -0400 (Sat, 29 Oct 2011) | 1 line
+JMC - DONE :: r4540 | xuh | 2011-10-29 15:01:46 -0400 (Sat, 29 Oct 2011) | 1 line
 
 Renaming a parameter to more accurately reflect its semantics
 ------------------------------------------------------------------------
-r4541 | antoine | 2011-10-31 13:37:18 -0400 (Mon, 31 Oct 2011) | 2 lines
+JMC - NO OP :: r4541 | antoine | 2011-10-31 13:37:18 -0400 (Mon, 31 Oct 2011) | 2 lines
 
 Use of Hao's new apply rule function
 
 ------------------------------------------------------------------------
-r4542 | mwan | 2011-10-31 17:08:59 -0400 (Mon, 31 Oct 2011) | 2 lines
+JMC - DONE :: r4542 | mwan | 2011-10-31 17:08:59 -0400 (Mon, 31 Oct 2011) | 2 lines
 
 Clean up code a bit to prevent possible mem leak
 
 ------------------------------------------------------------------------
-r4543 | mwan | 2011-10-31 19:58:24 -0400 (Mon, 31 Oct 2011) | 3 lines
+JMC - NO OP :: r4543 | mwan | 2011-10-31 19:58:24 -0400 (Mon, 31 Oct 2011) | 3 lines
 
 Fix a problem when overwriting a data object using a resource group
 as input can produce 2 copies in the same resource.
 
 ------------------------------------------------------------------------
-r4544 | mwan | 2011-10-31 20:15:29 -0400 (Mon, 31 Oct 2011) | 4 lines
+JMC - DONE :: r4544 | mwan | 2011-10-31 20:15:29 -0400 (Mon, 31 Oct 2011) | 4 lines
 
 Modify rsDataObjCreate so that when creating a data object with a compound
 resource group will replicate to a compound resource and purge the
 cache copy if --purgec option is used.
 
 ------------------------------------------------------------------------
-r4545 | xuh | 2011-11-01 15:45:07 -0400 (Tue, 01 Nov 2011) | 1 line
+JMC - NO OP :: r4545 | xuh | 2011-11-01 15:45:07 -0400 (Tue, 01 Nov 2011) | 1 line
 
 group together backward compatibility microservices in functions.c; add a macro that can be used to enable or disable them altogether; add a new entry to the group for backward compatibility
 ------------------------------------------------------------------------
-r4546 | xuh | 2011-11-01 16:18:02 -0400 (Tue, 01 Nov 2011) | 1 line
+JMC - NO OP :: r4546 | xuh | 2011-11-01 16:18:02 -0400 (Tue, 01 Nov 2011) | 1 line
 
 Update icommands help messages changing core.irb to core.re.
 ------------------------------------------------------------------------
-r4547 | mwan | 2011-11-01 18:12:09 -0400 (Tue, 01 Nov 2011) | 3 lines
+JMC - DONE :: r4547 | mwan | 2011-11-01 18:12:09 -0400 (Tue, 01 Nov 2011) | 3 lines
 
 Get --purgec to stage and purge cache for iget/iput where there is 
 existing copies in cache and/or compound resources.
 
 ------------------------------------------------------------------------
-r4548 | terrell | 2011-11-01 18:30:13 -0400 (Tue, 01 Nov 2011) | 1 line
+JMC - NO OP :: r4548 | terrell | 2011-11-01 18:30:13 -0400 (Tue, 01 Nov 2011) | 1 line
 
 add GCOV logic to platform.mk.template - this turned out to be position dependent, and this location should be correct
 ------------------------------------------------------------------------
-r4549 | mwan | 2011-11-01 20:10:55 -0400 (Tue, 01 Nov 2011) | 3 lines
+JMC - DONE :: r4549 | mwan | 2011-11-01 20:10:55 -0400 (Tue, 01 Nov 2011) | 3 lines
 
 Add --purgec option to irepl so that the cache copy will be purged once
 it is replicated to the COMPOUND resource.
 
 ------------------------------------------------------------------------
-r4550 | mwan | 2011-11-02 18:43:13 -0400 (Wed, 02 Nov 2011) | 3 lines
+JMC - DONE :: r4550 | mwan | 2011-11-02 18:43:13 -0400 (Wed, 02 Nov 2011) | 3 lines
 
 mod so that --purgec will work even when no replication is done because
 of existing copy. The cache copy will be removed anyway.
 
 ------------------------------------------------------------------------
-r4551 | mwan | 2011-11-02 19:31:17 -0400 (Wed, 02 Nov 2011) | 2 lines
+JMC - NO OP :: r4551 | mwan | 2011-11-02 19:31:17 -0400 (Wed, 02 Nov 2011) | 2 lines
 
 Add test for --purgec option of iget/iput/irepl
 
 ------------------------------------------------------------------------
-r4552 | mwan | 2011-11-03 16:48:56 -0400 (Thu, 03 Nov 2011) | 2 lines
+JMC - NO OP :: r4552 | mwan | 2011-11-03 16:48:56 -0400 (Thu, 03 Nov 2011) | 2 lines
 
 add --empty option to irm to remove only empty bundle files
 
 ------------------------------------------------------------------------
-r4553 | sekar | 2011-11-03 17:18:52 -0400 (Thu, 03 Nov 2011) | 1 line
+JMC - NOT DONE :: r4553 | sekar | 2011-11-03 17:18:52 -0400 (Thu, 03 Nov 2011) | 1 line
 
 added code to gracefully return from reDebug if srvComm is NULL
 ------------------------------------------------------------------------
-r4554 | mwan | 2011-11-03 18:11:29 -0400 (Thu, 03 Nov 2011) | 2 lines
+JMC - NO OP :: r4554 | mwan | 2011-11-03 18:11:29 -0400 (Thu, 03 Nov 2011) | 2 lines
 
 add test for iphybun and --empty option of irm
 
 ------------------------------------------------------------------------
-r4555 | xuh | 2011-11-03 21:00:07 -0400 (Thu, 03 Nov 2011) | 1 line
+JMC - NOT DONE :: r4555 | xuh | 2011-11-03 21:00:07 -0400 (Thu, 03 Nov 2011) | 1 line
 
 Add Raja's mod for checking if srvComm is null in rule debugger to the new rule engine code.
 ------------------------------------------------------------------------
-r4556 | xuh | 2011-11-05 13:16:24 -0400 (Sat, 05 Nov 2011) | 1 line
+JMC - DONE :: r4556 | xuh | 2011-11-05 13:16:24 -0400 (Sat, 05 Nov 2011) | 1 line
 
 Add param srComm to getMutiCopyPerRes so that when it calls applyRule it will be able to pass the server info into the rule debugger.
 ------------------------------------------------------------------------
-r4557 | mwan | 2011-11-07 12:59:37 -0500 (Mon, 07 Nov 2011) | 2 lines
+JMC - DONE :: r4557 | mwan | 2011-11-07 12:59:37 -0500 (Mon, 07 Nov 2011) | 2 lines
 
 put out better error msg when reiFile does not exist.
 
 ------------------------------------------------------------------------
-r4558 | schroede | 2011-11-07 13:57:20 -0500 (Mon, 07 Nov 2011) | 5 lines
+JMC - NO OP :: r4558 | schroede | 2011-11-07 13:57:20 -0500 (Mon, 07 Nov 2011) | 5 lines
 
 Simple changes to increase coverage of the i-commands via 'devtest';
 add -a to ihelp to run each i-command with -h and add a 'ihelp -a'
@@ -613,7 +613,7 @@ to testiCommands.pl.  Also, fix iinit and ipasswd to output help text
 to stdout instead of stderr to match all the other i-commands.
 
 ------------------------------------------------------------------------
-r4559 | schroede | 2011-11-07 18:29:05 -0500 (Mon, 07 Nov 2011) | 22 lines
+JMC - NOT DONE :: r4559 | schroede | 2011-11-07 18:29:05 -0500 (Mon, 07 Nov 2011) | 22 lines
 
 More support for tickets: read-access tickets by user anonymous and
 strict ACL mode and read tickets on collections.
@@ -638,12 +638,12 @@ Fixed a couple bugs in the previously committed ticket code.
 
 
 ------------------------------------------------------------------------
-r4560 | mwan | 2011-11-07 19:40:47 -0500 (Mon, 07 Nov 2011) | 2 lines
+JMC - NO OP :: r4560 | mwan | 2011-11-07 19:40:47 -0500 (Mon, 07 Nov 2011) | 2 lines
 
 fix a warning msg
 
 ------------------------------------------------------------------------
-r4561 | mwan | 2011-11-07 20:01:31 -0500 (Mon, 07 Nov 2011) | 2 lines
+JMC - DONE :: r4561 | mwan | 2011-11-07 20:01:31 -0500 (Mon, 07 Nov 2011) | 2 lines
 
 Better fix of last mod
 
@@ -653,7 +653,7 @@ r4562 | mwan | 2011-11-08 20:20:03 -0500 (Tue, 08 Nov 2011) | 2 lines
 Mod to allow multiple icat server to run on the same host
 
 ------------------------------------------------------------------------
-r4563 | schroede | 2011-11-10 11:34:29 -0500 (Thu, 10 Nov 2011) | 6 lines
+JMC - NO OP :: r4563 | schroede | 2011-11-10 11:34:29 -0500 (Thu, 10 Nov 2011) | 6 lines
 
 In irods2.sh (tinderbox test), run a daily test using MySQL as the
 ICAT DBMS.  In icatTest.pl, add a test verify that files with only
@@ -662,12 +662,12 @@ is upper/lower case sensitive), as this can be a problem with some
 MySQL configurations (see irods.org MySQL page).
 
 ------------------------------------------------------------------------
-r4564 | antoine | 2011-11-10 12:37:11 -0500 (Thu, 10 Nov 2011) | 2 lines
+JMC - NO OP :: r4564 | antoine | 2011-11-10 12:37:11 -0500 (Thu, 10 Nov 2011) | 2 lines
 
 Removed empty module
 
 ------------------------------------------------------------------------
-r4565 | schroede | 2011-11-10 12:53:03 -0500 (Thu, 10 Nov 2011) | 9 lines
+JMC - NOT DONE :: r4565 | schroede | 2011-11-10 12:53:03 -0500 (Thu, 10 Nov 2011) | 9 lines
 
 Improvements for ticket queries.  In icatGeneralQuery.c, if the
 ticket-string is being requested, for non-admin accounts restrict the
@@ -679,17 +679,17 @@ More options can be done for 'iticket ls' but this is sufficient for
 now.
 
 ------------------------------------------------------------------------
-r4566 | schroede | 2011-11-10 13:31:02 -0500 (Thu, 10 Nov 2011) | 2 lines
+JMC - NOT DONE :: r4566 | schroede | 2011-11-10 13:31:02 -0500 (Thu, 10 Nov 2011) | 2 lines
 
 Fix a bug in the previous commit for the 'ls' output.
 
 ------------------------------------------------------------------------
-r4567 | mwan | 2011-11-10 15:12:58 -0500 (Thu, 10 Nov 2011) | 2 lines
+JMC - NO OP :: r4567 | mwan | 2011-11-10 15:12:58 -0500 (Thu, 10 Nov 2011) | 2 lines
 
 Add multi-host test
 
 ------------------------------------------------------------------------
-r4568 | schroede | 2011-11-10 17:45:32 -0500 (Thu, 10 Nov 2011) | 7 lines
+JMC - NOT DONE :: r4568 | schroede | 2011-11-10 17:45:32 -0500 (Thu, 10 Nov 2011) | 7 lines
 
 A few more additions for ticket queries.  Add a way to get the
 data-object collection from a ticket via general-query (as long as the
@@ -699,7 +699,7 @@ and gets the associated irods file (if any); this was one of the
 iplant requests.
 
 ------------------------------------------------------------------------
-r4569 | schroede | 2011-11-10 17:48:17 -0500 (Thu, 10 Nov 2011) | 9 lines
+JMC - NOT DONE :: r4569 | schroede | 2011-11-10 17:48:17 -0500 (Thu, 10 Nov 2011) | 9 lines
 
 The rest of the previous commit:
 A few more additions for ticket queries.  Add a way to get the
@@ -711,7 +711,7 @@ iplant requests.
 
 
 ------------------------------------------------------------------------
-r4570 | schroede | 2011-11-14 11:53:41 -0500 (Mon, 14 Nov 2011) | 10 lines
+JMC - NO OP :: r4570 | schroede | 2011-11-14 11:53:41 -0500 (Mon, 14 Nov 2011) | 10 lines
 
 For 'devtest', handle the case where irodsEnvFile is set and where
 irodsAuthFileName is set within the env file.  This is needed by
@@ -724,31 +724,31 @@ suite.  In icatTest.pl, get the irodsAuthFileName from the 'ienv'
 changing it for certain tests.
 
 ------------------------------------------------------------------------
-r4571 | mwan | 2011-11-14 20:12:53 -0500 (Mon, 14 Nov 2011) | 2 lines
+JMC - NO OP :: r4571 | mwan | 2011-11-14 20:12:53 -0500 (Mon, 14 Nov 2011) | 2 lines
 
 add more debugging
 
 ------------------------------------------------------------------------
-r4572 | mwan | 2011-11-14 20:13:35 -0500 (Mon, 14 Nov 2011) | 2 lines
+JMC - NO OP :: r4572 | mwan | 2011-11-14 20:13:35 -0500 (Mon, 14 Nov 2011) | 2 lines
 
 Get it working with no error
 
 ------------------------------------------------------------------------
-r4573 | jeanyves | 2011-11-15 05:02:48 -0500 (Tue, 15 Nov 2011) | 2 lines
+JMC - DONE :: r4573 | jeanyves | 2011-11-15 05:02:48 -0500 (Tue, 15 Nov 2011) | 2 lines
 
 msiSysMetaModify update: allow the possibility to choose the replica number object for which the system metadata has to be modified.
 
 ------------------------------------------------------------------------
-r4574 | mwan | 2011-11-15 16:09:16 -0500 (Tue, 15 Nov 2011) | 2 lines
+JMC - NO OP :: r4574 | mwan | 2011-11-15 16:09:16 -0500 (Tue, 15 Nov 2011) | 2 lines
 
 Fix a UNIX_FILE_LINK_ERR with ibun for cross linking FS.
 
 ------------------------------------------------------------------------
-r4575 | terrell | 2011-11-15 16:20:19 -0500 (Tue, 15 Nov 2011) | 1 line
+JMC - NO OP :: r4575 | terrell | 2011-11-15 16:20:19 -0500 (Tue, 15 Nov 2011) | 1 line
 
 fix two comment typos
 ------------------------------------------------------------------------
-r4576 | schroede | 2011-11-15 17:39:15 -0500 (Tue, 15 Nov 2011) | 17 lines
+JMC - NOT DONE :: r4576 | schroede | 2011-11-15 17:39:15 -0500 (Tue, 15 Nov 2011) | 17 lines
 
 Add ticket optional restrictions to groups and handle client host
 address better.
@@ -768,115 +768,115 @@ The old logic is still partially in place which I will clean up after
 I am sure this works fine in all cases.
 
 ------------------------------------------------------------------------
-r4577 | mwan | 2011-11-15 19:28:28 -0500 (Tue, 15 Nov 2011) | 3 lines
+JMC - DONE :: r4577 | mwan | 2011-11-15 19:28:28 -0500 (Tue, 15 Nov 2011) | 3 lines
 
 Fixed a BAD_INPUT_DESC_INDEX error from iget of a mounted collection
 when the number of directory is greater than 100.
 
 ------------------------------------------------------------------------
-r4578 | jeanyves | 2011-11-16 12:08:26 -0500 (Wed, 16 Nov 2011) | 2 lines
+JMC - DONE :: r4578 | jeanyves | 2011-11-16 12:08:26 -0500 (Wed, 16 Nov 2011) | 2 lines
 
 Fix core dump if source path doesn't have '/'
 
 ------------------------------------------------------------------------
-r4579 | mwan | 2011-11-16 15:24:27 -0500 (Wed, 16 Nov 2011) | 3 lines
+JMC - DONE :: r4579 | mwan | 2011-11-16 15:24:27 -0500 (Wed, 16 Nov 2011) | 3 lines
 
 Fix a iphybun hang problem cause by bundlleAndRegSubFiles freeing the
 wrong tmpBunReplCache as reported by Jean-Yves.
 
 ------------------------------------------------------------------------
-r4580 | jeanyves | 2011-11-17 11:28:38 -0500 (Thu, 17 Nov 2011) | 3 lines
+JMC - NOT DONE :: r4580 | jeanyves | 2011-11-17 11:28:38 -0500 (Thu, 17 Nov 2011) | 3 lines
 
 add index to improve performance for the iscan command.
 For an iRODS instance with 400000 entries, a "iscan -r" on a given directory, without the index will take 30 minutes on my setting. After using this index, it goes down to 2 seconds.
 
 ------------------------------------------------------------------------
-r4581 | antoine | 2011-11-17 12:37:05 -0500 (Thu, 17 Nov 2011) | 2 lines
+JMC - DONE :: r4581 | antoine | 2011-11-17 12:37:05 -0500 (Thu, 17 Nov 2011) | 2 lines
 
 Moved Romain Guinot's msiGetFormattedSystemTime to core
 
 ------------------------------------------------------------------------
-r4582 | antoine | 2011-11-17 12:39:14 -0500 (Thu, 17 Nov 2011) | 2 lines
+JMC - NO OP :: r4582 | antoine | 2011-11-17 12:39:14 -0500 (Thu, 17 Nov 2011) | 2 lines
 
 Removed module after moving its sole microservice to core source
 
 ------------------------------------------------------------------------
-r4583 | antoine | 2011-11-17 12:46:16 -0500 (Thu, 17 Nov 2011) | 2 lines
+JMC - NO OP :: r4583 | antoine | 2011-11-17 12:46:16 -0500 (Thu, 17 Nov 2011) | 2 lines
 
 Forgot to update module info...
 
 ------------------------------------------------------------------------
-r4584 | mwan | 2011-11-17 15:54:26 -0500 (Thu, 17 Nov 2011) | 3 lines
+JMC - NO OP :: r4584 | mwan | 2011-11-17 15:54:26 -0500 (Thu, 17 Nov 2011) | 3 lines
 
 Code cleanup. Add option to allow the 3 server addresses to be input on
 command line. Add printUage function to print help messages.
 
 ------------------------------------------------------------------------
-r4585 | mwan | 2011-11-17 16:42:46 -0500 (Thu, 17 Nov 2011) | 2 lines
+JMC - DONE :: r4585 | mwan | 2011-11-17 16:42:46 -0500 (Thu, 17 Nov 2011) | 2 lines
 
 Better help msg and documentation
 
 ------------------------------------------------------------------------
-r4586 | schroede | 2011-11-17 17:04:52 -0500 (Thu, 17 Nov 2011) | 4 lines
+JMC - DONE :: r4586 | schroede | 2011-11-17 17:04:52 -0500 (Thu, 17 Nov 2011) | 4 lines
 
 In chlSimpleQuery (used extensively by iadmin), avoid unneeded
 trailing single blanks in the output lines in form 1 and 3, to 
 make parsing by scripts easier.  Suggested by Terrell.
 
 ------------------------------------------------------------------------
-r4587 | antoine | 2011-11-18 12:03:20 -0500 (Fri, 18 Nov 2011) | 2 lines
+JMC - NOT DONE :: r4587 | antoine | 2011-11-18 12:03:20 -0500 (Fri, 18 Nov 2011) | 2 lines
 
 Added suggestion to avoid breaking the web browser's navigation tree with strict ACLs
 
 ------------------------------------------------------------------------
-r4588 | mwan | 2011-11-18 22:07:48 -0500 (Fri, 18 Nov 2011) | 2 lines
+JMC - NO OP :: r4588 | mwan | 2011-11-18 22:07:48 -0500 (Fri, 18 Nov 2011) | 2 lines
 
 replicate to compound only for write operation
 
 ------------------------------------------------------------------------
-r4589 | mwan | 2011-11-21 14:20:38 -0500 (Mon, 21 Nov 2011) | 2 lines
+JMC - DONE :: r4589 | mwan | 2011-11-21 14:20:38 -0500 (Mon, 21 Nov 2011) | 2 lines
 
 Mod recommended by Gene Soudlenkov
 
 ------------------------------------------------------------------------
-r4590 | mwan | 2011-11-21 19:01:56 -0500 (Mon, 21 Nov 2011) | 2 lines
+JMC - DONE :: r4590 | mwan | 2011-11-21 19:01:56 -0500 (Mon, 21 Nov 2011) | 2 lines
 
 Refactor rsDataObjOpen to make the program flow better and easier to understand
 
 ------------------------------------------------------------------------
-r4591 | mwan | 2011-11-21 19:23:11 -0500 (Mon, 21 Nov 2011) | 2 lines
+JMC - NO OP :: r4591 | mwan | 2011-11-21 19:23:11 -0500 (Mon, 21 Nov 2011) | 2 lines
 
 Minor comment
 
 ------------------------------------------------------------------------
-r4592 | mwan | 2011-11-22 13:15:08 -0500 (Tue, 22 Nov 2011) | 2 lines
+JMC - NO OP :: r4592 | mwan | 2011-11-22 13:15:08 -0500 (Tue, 22 Nov 2011) | 2 lines
 
 Code cleanup. Take out "#if 0"
 
 ------------------------------------------------------------------------
-r4593 | mwan | 2011-11-22 16:44:39 -0500 (Tue, 22 Nov 2011) | 3 lines
+JMC - NO OP :: r4593 | mwan | 2011-11-22 16:44:39 -0500 (Tue, 22 Nov 2011) | 3 lines
 
 Fix a problem with replicating to a compound resouce with the ALL option where the
 cache copy may be replicated twice.
 
 ------------------------------------------------------------------------
-r4594 | mwan | 2011-11-22 20:32:20 -0500 (Tue, 22 Nov 2011) | 2 lines
+JMC - DONE :: r4594 | mwan | 2011-11-22 20:32:20 -0500 (Tue, 22 Nov 2011) | 2 lines
 
 More refactoring 
 
 ------------------------------------------------------------------------
-r4595 | mwan | 2011-11-22 20:34:30 -0500 (Tue, 22 Nov 2011) | 2 lines
+JMC - NO OP :: r4595 | mwan | 2011-11-22 20:34:30 -0500 (Tue, 22 Nov 2011) | 2 lines
 
 Minor change
 
 ------------------------------------------------------------------------
-r4596 | mwan | 2011-11-28 13:43:32 -0500 (Mon, 28 Nov 2011) | 3 lines
+JMC - NO OP :: r4596 | mwan | 2011-11-28 13:43:32 -0500 (Mon, 28 Nov 2011) | 3 lines
 
 Add TAR_EXTENDED_HDR option for extended header of tar to allow individual
 file size larger than 8 Gb.
 
 ------------------------------------------------------------------------
-r4597 | schroede | 2011-11-28 16:45:52 -0500 (Mon, 28 Nov 2011) | 9 lines
+JMC - DONE :: r4597 | schroede | 2011-11-28 16:45:52 -0500 (Mon, 28 Nov 2011) | 9 lines
 
 When creating or modifying a resource, warn the user if the host name
 is not a valid DNS entry (but go ahead and create it).  This was
@@ -888,12 +888,12 @@ this operation, print the error stack when provided (and so this
 warning) even if there was no error.
 
 ------------------------------------------------------------------------
-r4598 | mwan | 2011-11-28 18:12:39 -0500 (Mon, 28 Nov 2011) | 2 lines
+JMC - DONE :: r4598 | mwan | 2011-11-28 18:12:39 -0500 (Mon, 28 Nov 2011) | 2 lines
 
 Add local file system locking routines for locking data object.
 
 ------------------------------------------------------------------------
-r4599 | mwan | 2011-11-29 12:55:27 -0500 (Tue, 29 Nov 2011) | 2 lines
+JMC - DONE :: r4599 | mwan | 2011-11-29 12:55:27 -0500 (Tue, 29 Nov 2011) | 2 lines
 
 Add the rcDataObjLock API for locking
 
