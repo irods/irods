@@ -1079,8 +1079,7 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
             // =-=-=-=-=-=-=-
             // now read the provided number of bytes as suggested by the incoming size
             bytesRead = myRead ( srcFd, buf, new_size, SOCK_TYPE, NULL, NULL );
-
-            if (bytesRead != toRead) {
+            if( bytesRead != new_size ) {
                 if (bytesRead < 0) {
                     myInput->status = bytesRead;
                     rodsLogError (LOG_ERROR, bytesRead,
@@ -1117,8 +1116,12 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
                 
             }
 
-            bytesWritten = _l3Write( myInput->rsComm, destRescTypeInx,
-                    destL3descInx, buf, plain_size );
+            bytesWritten = _l3Write( 
+                               myInput->rsComm, 
+                               destRescTypeInx,
+                               destL3descInx, 
+                               buf, 
+                               plain_size );
 
             if ( bytesWritten != plain_size ) {
                 rodsLog (LOG_NOTICE,
@@ -1843,8 +1846,12 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
                                    &bytesWritten );
             }
 
-            bytesWritten = myWrite( destFd, buf, new_size,
-		                            SOCK_TYPE, NULL );
+            bytesWritten = myWrite( 
+                               destFd, 
+                               buf, 
+                               new_size,
+		                       SOCK_TYPE, 
+                               NULL );
 
             if( bytesWritten != new_size ) {
                 rodsLog (LOG_NOTICE,

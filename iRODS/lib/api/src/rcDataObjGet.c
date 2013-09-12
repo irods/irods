@@ -159,8 +159,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         /* just send a complete msg */
         if (status < 0) {
             rcOprComplete (conn, status);
-printf( "XXXX - get file status %d\n", status );
-fflush( stdout );
+
         } else {
             status = rcOprComplete (conn, portalOprOut->l1descInx);
         }

@@ -183,7 +183,7 @@ static int ssl_verify_callback(
     if (!ok) {
         X509 *cert = X509_STORE_CTX_get_current_cert(store);
         int  depth = X509_STORE_CTX_get_error_depth(store);
-        int  err = X509_STORE_CTX_get_error(store);
+        int  err   = X509_STORE_CTX_get_error(store);
         
         rodsLog(LOG_NOTICE, "ssl_verify_callback: problem with certificate at depth: %i", depth);
         X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
@@ -914,13 +914,16 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // check to see if the key property has been set, if so
-        // then this is a terrible, terrible error.
-        std::string key;
-        ret = _ctx.prop_map().get< std::string >( SHARED_KEY, key );
-        if( ret.ok() ) {
-            return ERROR( -1, "shared secret already exists" );
-        }
+        // we cannot check to see if the key property has been set, 
+        // as the resource servers connect to the icat and init the
+        // the key first, so we need to repave it with the client
+        // connection.  leaving this here for debugging if necessary
+        //std::string key;
+        //ret = _ctx.prop_map().get< std::string >( SHARED_KEY, key );
+        //if( ret.ok() ) {
+        //    std::stringstream msg;
+        //    return ERROR( -1, "shared secret already exists" );
+        //}
 
         // =-=-=-=-=-=-=-
         // set the incoming shared secret
