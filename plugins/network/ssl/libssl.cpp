@@ -927,6 +927,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // set the incoming shared secret
+        std::string key;
         key.assign( msg_header.type, msg_header.msgLen );
         ssl_obj->shared_secret( key );
         ret = _ctx.prop_map().set< std::string >( SHARED_KEY, key );
