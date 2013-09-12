@@ -259,7 +259,7 @@ int
 readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct, 
                      bytesBuf_t *outBsBBuf)
 {
-    int status;
+    int status = 0;
     msgHeader_t myHeader;
     /* bytesBuf_t outStructBBuf, errorBBuf, myOutBsBBuf; */
     bytesBuf_t outStructBBuf, errorBBuf;

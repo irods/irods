@@ -104,12 +104,12 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
   char myhdr[HEADER_TYPE_LEN];
   char mymsg[MAX_NAME_LEN];
   char *outStr = NULL;
-  char *ptr;
-  int i,n;
-  int iLevel, wCnt;
+  char *ptr = 0;
+  int i = 0,n = 0;
+  int iLevel = 0, wCnt = 0;
   int  ruleInx = 0;
-  Region *r;
-    Res *res;
+  Region *r = 0;
+    Res *res = 0;
     rError_t errmsg;
 	errmsg.len = 0;
 	errmsg.errMsg = NULL;
@@ -117,9 +117,9 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 	ParserContext *context = newParserContext(&errmsg, r);
 	Pointer *e = newPointer2(readmsg);
 	int rulegen = 1;
-    int found;
+    int found = 0;
     int grdf[2];
-    int cmd;
+    int cmd = 0;
     snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
     PARSER_BEGIN(DbgCmd)
 		TRY(DbgCmd)

@@ -145,8 +145,8 @@ static DH* ssl_get_dh2048() {
 static int ssl_load_hd_params(
     SSL_CTX* ctx, 
     char*    file ) {
-    DH *dhparams;
-    BIO *bio;
+    DH*  dhparams = 0;
+    BIO* bio      = 0;
 
     if (file) { 
         bio = BIO_new_file(file, "r");
