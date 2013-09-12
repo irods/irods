@@ -16,6 +16,7 @@ c
 c++
 perl
 boost
+libarchive
 doxygen
 restructuredtext
 postgresql
@@ -47,6 +48,7 @@ Mac OS X
 
 DEVELOPMENT FOSS
 ----------------
+git
 hudson
 gforge
 cppcheck
@@ -56,5 +58,6 @@ ubuntu
 centos
 ssh
 gcc
+g++
 python
 openstack

@@ -268,15 +268,6 @@ extern "C" {
     } // univ_mss_file_stat
 
     /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX Fstat
-    eirods::error univ_mss_file_fstat(
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                        _statbuf ) {
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
-    } // univ_mss_file_fstat
-
-    /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX lseek
     eirods::error univ_mss_file_lseek(
         eirods::resource_plugin_context& _ctx,
@@ -285,14 +276,6 @@ extern "C" {
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
  
     } // univ_mss_file_lseek
-
-    /// =-=-=-=-=-=-=-
-    /// @brief interface for POSIX fsync
-    eirods::error univ_mss_file_fsync(
-        eirods::resource_plugin_context& _ctx ) { 
-        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
- 
-    } // univ_mss_file_fsync
 
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX chmod
@@ -1017,8 +1000,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "univ_mss_file_close" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "univ_mss_file_unlink" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,              "univ_mss_file_stat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,             "univ_mss_file_fstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,             "univ_mss_file_fsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "univ_mss_file_mkdir" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "univ_mss_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,           "univ_mss_file_readdir" );

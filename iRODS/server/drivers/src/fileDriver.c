@@ -216,34 +216,6 @@ eirods::error fileStat(
 } // fileStat
 
 // =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX fstat
-eirods::error fileFstat( 
-    rsComm_t   *                   _comm, 
-    eirods::first_class_object_ptr _object, 
-    struct stat*                   _statbuf ) {
-    // =-=-=-=-=-=-=-
-    // retrieve the resource name given the path
-    eirods::resource_ptr resc;
-    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to resolve resource", ret_err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // make the call to the "fstat" interface
-    ret_err = resc->call< struct stat* >( _comm, eirods::RESOURCE_OP_FSTAT, _object, _statbuf );
-
-    // =-=-=-=-=-=-=-
-    // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to call 'fstat'", ret_err );
-    } else {
-        return CODE( ret_err.code() );
-    }
-
-} // fileFstat
-
-// =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX lseek
 eirods::error fileLseek( 
     rsComm_t*                      _comm, 
@@ -271,33 +243,6 @@ eirods::error fileLseek(
     }
 
 } // fileLseek
-
-// =-=-=-=-=-=-=-
-// Top Level Interface for Resource Plugin POSIX fsync
-eirods::error fileFsync( 
-    rsComm_t*                      _comm, 
-    eirods::first_class_object_ptr _object ) {
-    // =-=-=-=-=-=-=-
-    // retrieve the resource name given the path
-    eirods::resource_ptr resc;
-    eirods::error ret_err = _object->resolve( resc_mgr, resc ); 
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to resolve resource", ret_err );
-    }
-
-    // =-=-=-=-=-=-=-
-    // make the call to the "fsync" interface
-    ret_err = resc->call( _comm, eirods::RESOURCE_OP_FSYNC, _object );
-
-    // =-=-=-=-=-=-=-
-    // pass along an error from the interface or return SUCCESS
-    if( !ret_err.ok() ) {
-        return PASSMSG( "failed to call 'fsync'", ret_err );
-    } else {
-        return CODE( ret_err.code() );
-    }
-
-} // fileFsync
 
 // =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin POSIX mkdir

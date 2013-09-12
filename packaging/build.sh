@@ -178,6 +178,7 @@ if [ "$1" == "clean" ] ; then
     rm -rf $MANDIR
     rm -f manual.pdf
     rm -f eirods-manual*.pdf
+    rm -f examples/microservices/*.pdf
     rm -f libeirods.a
     echo "Cleaning Network plugins..."
     cd plugins/network
@@ -897,10 +898,6 @@ else
 fi
 
 
-# =-=-=-=-=-=-=-
-# generate random password for database
-RANDOMDBPASS=`cat /dev/urandom | base64 | head -c15`
-
 if [ "$BUILDEIRODS" == "1" ] ; then
 
     if [ "$COVERAGE" == "1" ] ; then
@@ -926,11 +923,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     ./scripts/configure
     # again to reset IRODS_HOME
     cp $TMPCONFIGFILE ./config/irods.config
-
-    # change password for database to be consistent with that within the eirods.list file
-    # for installation
-    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./config/irods.config > /tmp/irods.config
-    mv /tmp/irods.config ./config/irods.config
 
     # handle issue with IRODS_HOME being overwritten by the configure script
     irodsctl_irods_home=`./scripts/find_irods_home.sh`
@@ -1080,9 +1072,6 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     NEW_DB_PORT=`awk -F\' '/^\\$DATABASE_PORT/ {print $2}' iRODS/config/irods.config`
     sed -e "s,TEMPLATE_DB_PORT,$NEW_DB_PORT," ./packaging/eirods.list > /tmp/eirodslist.tmp
     mv /tmp/eirodslist.tmp ./packaging/eirods.list
-    #   database password
-    sed -e "s,TEMPLATE_DB_PASS,$RANDOMDBPASS," ./packaging/eirods.list > /tmp/eirodslist.tmp
-    mv /tmp/eirodslist.tmp ./packaging/eirods.list
 
 
     # =-=-=-=-=-=-=-
@@ -1116,6 +1105,18 @@ if [ "$BUILDEIRODS" == "1" ] ; then
         echo "#######################################################${text_reset}" 1>&2
         exit 1
     fi
+
+    # generate microservice developers tutorial in pdf format
+    echo "${text_green}${text_bold}Building E-iRODS Microservice Developers Tutorial${text_reset}"
+    cd $BUILDDIR/examples/microservices
+    rst2pdf microservice_tutorial.rst -o microservice_tutorial.pdf
+    if [ "$?" != "0" ] ; then
+        echo "${text_red}#######################################################" 1>&2
+        echo "ERROR :: Failed generating microservice_tutorial.pdf" 1>&2
+        echo "#######################################################${text_reset}" 1>&2
+        exit 1
+    fi
+
     # generate doxygen for microservices
     echo "${text_green}${text_bold}Building E-iRODS Doxygen Output${text_reset}"
     cd $BUILDDIR/iRODS
@@ -1142,12 +1143,11 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # generate development package archive file
-    if [ "$RELEASE" == "1" ] ; then
+    if [ "$1" == "icat" ] ; then
         echo "${text_green}${text_bold}Building development package archive file...${text_reset}"
         cd $BUILDDIR
         ./packaging/make_eirods_dev_archive.sh
     fi
-
 
 fi # if $BUILDEIRODS
 
@@ -1291,41 +1291,51 @@ if [ "$DETECTEDOS" == "RedHatCompatible" ] ; then # CentOS and RHEL and Fedora
         epmosversion="NOTCENTOS6"
     fi
     ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true $epmosversion=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
-        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "SuSE" ] ; then # SuSE
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS RPMs${text_reset}"
     epmvar="SUSERPM$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f rpm eirods $epmvar=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f rpm eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
-        ./epm/epm $EPMOPTS -f rpm eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then  # Ubuntu
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DEBs${text_reset}"
     epmvar="DEB$SERVER_TYPE"
     ./epm/epm $EPMOPTS -a $arch -f deb eirods $epmvar=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -a $arch -f deb eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -a $arch -f deb eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
-        ./epm/epm $EPMOPTS -a $arch -f deb eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "Solaris" ] ; then  # Solaris
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS PKGs${text_reset}"
     epmvar="PKG$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f pkg eirods $epmvar=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f pkg eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f pkg eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
-        ./epm/epm $EPMOPTS -f pkg eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 elif [ "$DETECTEDOS" == "MacOSX" ] ; then  # MacOSX
     echo "${text_green}${text_bold}Running EPM :: Generating $DETECTEDOS DMGs${text_reset}"
     epmvar="OSX$SERVER_TYPE"
     ./epm/epm $EPMOPTS -f osx eirods $epmvar=true ./packaging/eirods.list
+    if [ "$1" == "icat" ] ; then
+        ./epm/epm $EPMOPTS -f osx eirods-dev $epmvar=true ./packaging/eirods-dev.list
+    fi
     if [ "$RELEASE" == "1" ] ; then
         ./epm/epm $EPMOPTS -f osx eirods-icommands $epmvar=true ./packaging/eirods-icommands.list
-        ./epm/epm $EPMOPTS -f osx eirods-dev $epmvar=true ./packaging/eirods-dev.list
     fi
 else
     echo "${text_red}#######################################################" 1>&2
@@ -1381,23 +1391,22 @@ fi
 if [ "$COVERAGE" == "1" ] ; then
     RENAME_DESTINATION=${RENAME_DESTINATION/-64bit/-64bit-coverage}
 fi
-# show me the money
-echo ""
-echo "renaming    [$RENAME_SOURCE]"
-echo "         to [$RENAME_DESTINATION]"
+# rename and tell me
 if [ "$RELEASE" == "1" ] ; then
-    echo ""
-    echo "renaming    [$RENAME_SOURCE_DEV]"
-    echo "         to [$RENAME_DESTINATION_DEV]"
     echo ""
     echo "renaming    [$RENAME_SOURCE_ICOMMANDS]"
     echo "         to [$RENAME_DESTINATION_ICOMMANDS]"
-fi
-# move into e-irods/build directory
-if [ "$RELEASE" == "1" ] ; then
-    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
     mv $RENAME_SOURCE_ICOMMANDS $RENAME_DESTINATION_ICOMMANDS
 fi
+if [ "$1" == "icat" ] ; then
+    echo ""
+    echo "renaming    [$RENAME_SOURCE_DEV]"
+    echo "         to [$RENAME_DESTINATION_DEV]"
+    mv $RENAME_SOURCE_DEV $RENAME_DESTINATION_DEV
+fi
+echo ""
+echo "renaming    [$RENAME_SOURCE]"
+echo "         to [$RENAME_DESTINATION]"
 mv $RENAME_SOURCE $RENAME_DESTINATION
 # list new result set
 echo ""

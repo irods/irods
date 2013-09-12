@@ -32,6 +32,7 @@ default: ${FULLTARGET}
 clean:
 	@-rm -f ${FULLTARGET} > /dev/null 2>&1
 	@-rm -f ${OBJS} > /dev/null 2>&1
+	@-rm -f ${DEPS} > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}

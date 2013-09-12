@@ -26,7 +26,6 @@ This documentation is generated from the iRODS code.
   - #rcDataObjRead
   - #rcDataObjWrite
   - #rcDataObjLseek
-  - #rcDataObjFsync
   - #rcDataObjClose
   - #rcDataObjPut
   - #rcDataObjGet
@@ -116,8 +115,6 @@ This documentation is generated from the iRODS code.
   - #rcFileClose
   - #rcFileClosedir
   - #rcFileCreate
-  - #rcFileFstat
-  - #rcFileFsync
   - #rcFileGet
   - #rcFileGetFsFreeSpace
   - #rcFileLseek
@@ -145,7 +142,6 @@ This documentation is generated from the iRODS code.
   - #rcSubStructFileClose
   - #rcSubStructFileClosedir
   - #rcSubStructFileCreate
-  - #rcSubStructFileFstat
   - #rcSubStructFileGet
   - #rcSubStructFileLseek
   - #rcSubStructFileMkdir

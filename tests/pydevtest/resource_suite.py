@@ -10,6 +10,7 @@ import os
 import shlex
 import datetime
 import time
+import psutil
 
 class ResourceBase(object):
 
@@ -186,6 +187,32 @@ class ResourceSuite(ResourceBase):
     ###################
     # iput
     ###################
+
+    @unittest.skipIf( psutil.disk_usage('/').free < 6000000000 , "not enough free space for 2.3GB local file + iput" )
+    def test_local_iput_with_really_big_file__ticket_1623(self):
+        # regression test against ticket [#1623]
+        # bigfilesize = [2287636992] is just under 'int' threshold
+        # bigfilesize = [2297714688] is just big enough to trip 'int' size error buffers
+
+        # local setup
+        big = "reallybigfile.txt"
+        bigger = "tmp.txt"
+        f = open(big,'wb')
+        f.write("skjfhrq274fkjhvifqp92348fuho3uigho4iulqf2h3foq3i47fuhqof9q834fyhoq3iufhq34f8923fhoq348fhurferfwheere")
+        f.write("skjfhrq274fkjhvifqp92348fuho3uigho4iulqf2h3foq3i47fuhqof9q834fyhoq3iufhq34f8923fhoq348fhurferfwheere")
+        f.write("skjfhrq274fkjhvg34eere----2")
+        f.close()
+        for i in range(9):
+            commands.getstatusoutput( "cat "+big+" "+big+" "+big+" "+big+" "+big+" "+big+" > "+bigger )
+            os.rename ( bigger, big )
+        datafilename = big
+        # assertions
+        print "bigfilesize = ["+str(os.stat(datafilename).st_size)+"]"
+        assertiCmd(s.adminsession,"ils -L "+datafilename,"ERROR",[datafilename,"does not exist"]) # should not be listed
+        assertiCmd(s.adminsession,"iput "+datafilename) # iput
+        assertiCmd(s.adminsession,"ils -L "+datafilename,"LIST",datafilename) # should be listed
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+datafilename )
 
     def test_local_iput(self):
         '''also needs to count and confirm number of replicas after the put'''

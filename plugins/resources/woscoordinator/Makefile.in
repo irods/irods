@@ -1,9 +1,0 @@
-TARGET = libwoscoordinator.so
-
-SRCS = libwoscoordinator.cpp
-
-HEADERS = 
-
-EXTRALIBS =
-
-include ../Makefile.base

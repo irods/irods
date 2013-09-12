@@ -18,8 +18,10 @@
 #define SVR_MD5_BUF_SZ (1024*1024)
 
 int
-rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp, 
-              char **chksumStr)
+rsFileChksum (
+    rsComm_t *rsComm,
+    fileChksumInp_t *fileChksumInp, 
+    char **chksumStr)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -81,8 +83,10 @@ remoteFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
 }
 
 int
-_rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
-               char **chksumStr)
+_rsFileChksum (
+    rsComm_t *rsComm,
+    fileChksumInp_t *fileChksumInp,
+    char **chksumStr)
 {
     int status;
 
@@ -97,7 +101,6 @@ _rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp,
                  fileChksumInp->fileName, status);
         free (*chksumStr);
         *chksumStr = NULL;
-        return (status);
     }
 
     return (status);
@@ -163,7 +166,19 @@ int fileChksum (
         MD5Update (&context, buffer, bytes_read);
     
         read_err = fileRead( rsComm, file_obj, buffer, SVR_MD5_BUF_SZ );
-        bytes_read = read_err.code();
+        if(read_err.ok()) {
+            bytes_read = read_err.code();
+        }
+        else {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - Failed to read buffer from file: \"";
+            msg << fileName;
+            msg << "\"";
+            eirods::error result = PASSMSG(msg.str(), ret);
+            eirods::log(result);
+            return result.code();
+        }
 
     } // while
 

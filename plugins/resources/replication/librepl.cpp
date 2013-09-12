@@ -853,47 +853,6 @@ extern "C" {
     } // replFileStat
 
     // =-=-=-=-=-=-=-
-    // interface for POSIX Fstat
-    eirods::error replFileFstat(
-        eirods::resource_plugin_context& _ctx,
-        struct stat*                   _statbuf )
-    { 
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = replCheckParams< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-            eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
-            eirods::resource_ptr child;
-            ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call<struct stat*>(_ctx.comm(), eirods::RESOURCE_OP_FSTAT, _ctx.fco(), _statbuf);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.ok());
-                }
-            }
-        }
-        return result;
-    } // replFileFstat
-
-    // =-=-=-=-=-=-=-
     // interface for POSIX lseek
     eirods::error replFileLseek(
         eirods::resource_plugin_context& _ctx,
@@ -934,46 +893,6 @@ extern "C" {
         }
         return result;
     } // replFileLseek
-
-    // =-=-=-=-=-=-=-
-    // interface for POSIX fsync
-    eirods::error replFileFsync(
-        eirods::resource_plugin_context& _ctx)
-    {
-        eirods::error result = SUCCESS();
-        eirods::error ret;
-        
-        ret = replCheckParams< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-            eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
-            eirods::resource_ptr child;
-            ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_FSYNC, _ctx.fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
-            }
-        }
-        return result;
-    } // replFileFsync
 
     // =-=-=-=-=-=-=-
     // interface for POSIX mkdir

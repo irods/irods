@@ -392,7 +392,10 @@ getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 }
 
 int 
-_dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumStr) // JMC - backport 4527
+_dataObjChksum (
+    rsComm_t *rsComm,
+    dataObjInfo_t *inpDataObjInfo,
+    char **chksumStr) // JMC - backport 4527
 {
     fileChksumInp_t fileChksumInp;
     int rescClass = 0;
@@ -482,6 +485,7 @@ _dataObjChksum ( rsComm_t *rsComm, dataObjInfo_t *inpDataObjInfo, char **chksumS
             msg << dataObjInfo->filePath;
             msg << "\" is located in an archive resource. Ignoring its checksum.";
             eirods::log(LOG_NOTICE, msg.str());
+
         }
         break;
     default:
