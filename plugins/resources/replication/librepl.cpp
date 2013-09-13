@@ -197,8 +197,19 @@ extern "C" {
                 result = ERROR(-1, msg.str());
             }
         } else {
-            oper.object() = (*file_obj.get());
+            oper.object() = *(file_obj.get());
             oper.operation() = _oper;
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - File object physical path: \"";
+                msg << oper.object().physical_path();
+                msg << "\" and operation: \"";
+                msg << oper.operation();
+                msg << "\"";
+                DEBUGMSG(msg.str());
+            }
+
             object_list.push_back(oper);
             ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
             if(!ret.ok()) {
@@ -342,7 +353,8 @@ extern "C" {
                     msg << __FUNCTION__;
                     msg << " - Failed to determine the root resource and selected hierarchy.";
                     result = PASSMSG(msg.str(), ret);
-                } else {
+                } else if(false) { // We no longer replicate unlink operations. Too dangerous deleting user data. Plus hopefully the
+                                   // API handles this. - harry
                     // create an unlink replicator
                     eirods::unlink_replicator oper_repl;
                     
@@ -765,9 +777,9 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast<eirods::file_object >(_ctx.fco());
+            eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast<eirods::data_object >(_ctx.fco());
             eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
+            parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -784,7 +796,7 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else {
                     result = CODE(ret.code());
-                    if(false && !file_obj->in_pdmo()) { // dont replicate unlink as it automagically deletes everything
+                    if(false) { // dont replicate unlink as it automagically deletes everything
                         ret = replUpdateObjectAndOperProperties(_ctx, unlink_oper);
                         if(!ret.ok()) {
                             std::stringstream msg;
@@ -792,13 +804,13 @@ extern "C" {
                             msg << " - Failed to update the object and operation properties.";
                             result = PASSMSG(msg.str(), ret);
                         } else {
-                            if(!file_obj->in_pdmo()) {
+                            if(false) {
                                 ret = replReplicateUnlink(_ctx);
                                 if(!ret.ok()) {
                                     std::stringstream msg;
                                     msg << __FUNCTION__;
                                     msg << " - Failed to replicate the unlink operation for file \"";
-                                    msg << file_obj->logical_path();
+                                    msg << data_obj->physical_path();
                                     msg << "\"";
                                     result = PASSMSG(msg.str(), ret);
                                 }
@@ -827,9 +839,9 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
+            parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -909,9 +921,16 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
+
+            if(data_obj.get() == NULL) {
+                std::stringstream msg;
+                msg << "qqq - Data object is null.";
+                DEBUGMSG(msg.str());
+            }
+
+            parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -989,9 +1008,9 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
+            parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1029,9 +1048,9 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
+            parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1070,9 +1089,9 @@ extern "C" {
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
-            eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(file_obj->resc_hier());
+            parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1404,7 +1423,7 @@ extern "C" {
         try {
             eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast<eirods::file_object >(_ctx.fco());
              // if the file object has a requested replica then fail since that circumvents the coordinating nodes management.
-            if(file_obj->repl_requested() >= 0) {
+            if(false && file_obj->repl_requested() >= 0) { // For migration we no longer have this restriction but will be added back later - harry
                 std::stringstream msg;
                 msg << __FUNCTION__;
                 msg << " - Requesting replica: " << file_obj->repl_requested();
@@ -1415,7 +1434,7 @@ extern "C" {
             else {
                 // if the api commands involve replication we have to error out since managing replicas is our job
                 char* in_repl = getValByKey(&file_obj->cond_input(), IN_REPL_KW);
-                if(in_repl != NULL) {
+                if(false && in_repl != NULL) { // For migration we no longer have this restriction but might be added later. - harry
                     std::stringstream msg;
                     msg << __FUNCTION__;
                     msg << " - Using repl or trim commands on a replication resource is not allowed. ";
