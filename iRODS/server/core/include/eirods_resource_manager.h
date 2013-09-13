@@ -9,6 +9,9 @@
 #include "eirods_first_class_object.h"
 
 namespace eirods {
+    // =-=-=-=-=-=-=-
+    /// @brief definition of the resource interface
+    const std::string RESOURCE_INTERFACE( "eirods_resource_interface" );
 
     // =-=-=-=-=-=-=-
     /// @brief special resource for local file system operations only

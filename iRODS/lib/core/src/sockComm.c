@@ -57,8 +57,8 @@ eirods::error sockClientStart(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -66,6 +66,7 @@ eirods::error sockClientStart(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call< rodsEnv* >( eirods::NETWORK_OP_CLIENT_START, _ptr, _env );
 
     // =-=-=-=-=-=-=-
@@ -88,8 +89,8 @@ eirods::error sockClientStop(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -97,6 +98,7 @@ eirods::error sockClientStop(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call< rodsEnv* >( eirods::NETWORK_OP_CLIENT_STOP, _ptr, _env );
 
     // =-=-=-=-=-=-=-
@@ -118,14 +120,15 @@ eirods::error sockAgentStart(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call( eirods::NETWORK_OP_AGENT_START, _ptr );
 
     // =-=-=-=-=-=-=-
@@ -147,14 +150,15 @@ eirods::error sockAgentStop(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+    eirods::network_ptr net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call( eirods::NETWORK_OP_AGENT_STOP, _ptr );
 
     // =-=-=-=-=-=-=-
@@ -176,8 +180,8 @@ eirods::error readMsgHeader(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
     }
@@ -186,6 +190,7 @@ eirods::error readMsgHeader(
     // make the call to the "read" interface
     char tmp_buf[ MAX_NAME_LEN ]; 
     eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call< void*, struct timeval* >( 
                   eirods::NETWORK_OP_READ_HEADER, 
                   ptr,
@@ -239,8 +244,8 @@ eirods::error readMsgBody(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
@@ -249,6 +254,7 @@ eirods::error readMsgBody(
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
     eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call< msgHeader_t*, 
                          bytesBuf_t*, 
                          bytesBuf_t*, 
@@ -432,8 +438,8 @@ eirods::error writeMsgHeader(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret );
     }
@@ -441,6 +447,7 @@ eirods::error writeMsgHeader(
     // =-=-=-=-=-=-=-
     // make the call to the plugin interface
     eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret = net->call< bytesBuf_t* >( 
               eirods::NETWORK_OP_WRITE_HEADER,
               ptr,
@@ -1291,16 +1298,17 @@ eirods::error sendRodsMsg(
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
-    eirods::network_ptr net;
-    eirods::error ret_err = _ptr->resolve( eirods::netwk_mgr, net );
+    eirods::plugin_ptr p_ptr;
+    eirods::error ret_err = _ptr->resolve( eirods::NETWORK_INTERFACE, p_ptr );
     if( !ret_err.ok() ) {
         return PASSMSG( "failed to resolve network interface", ret_err );
 
     }
-
+    
     // =-=-=-=-=-=-=-
     // make the call to the "write body" interface
     eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( _ptr );
+    eirods::network_ptr            net = boost::dynamic_pointer_cast< eirods::network >( p_ptr );
     ret_err = net->call< char*, bytesBuf_t*, bytesBuf_t*, bytesBuf_t*, int, irodsProt_t >( 
                   eirods::NETWORK_OP_WRITE_BODY, 
                   ptr,

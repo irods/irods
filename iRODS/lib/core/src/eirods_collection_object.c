@@ -8,6 +8,7 @@
 #include "eirods_stacktrace.h"
 
 namespace eirods {
+    extern resource_manager resc_mgr;
 
     // =-=-=-=-=-=-=-
     // public - ctor
@@ -63,9 +64,19 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
     error collection_object::resolve(
-        resource_manager& _mgr,
-        resource_ptr& _ptr )
-    {
+        const std::string& _interface,
+        plugin_ptr&        _ptr ) {
+        // =-=-=-=-=-=-=-
+        // check to see if this is for a resource plugin
+        // resolution, otherwise it is an error
+        if( RESOURCE_INTERFACE != _interface ) {
+            std::stringstream msg;
+            msg << "collection_object does not support a [";
+            msg << _interface;
+            msg << "] for plugin resolution";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+        }
+ 
         error result = SUCCESS();
         error ret;
     
@@ -96,25 +107,21 @@ namespace eirods {
                     return ERROR( EIRODS_HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
                 }
     
-                ret = _mgr.resolve(resc, _ptr);
+                resource_ptr resc_ptr; 
+                ret = resc_mgr.resolve( resc, resc_ptr );
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
                     result = PASSMSG(msg.str(), ret);
                 } 
+                
+                _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
             }
         }
         return result;
 
     } // resolve
  
-    error collection_object::resolve( 
-        network_manager&,  
-        network_ptr&  ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM,
-                      "resolve not supported for network_manager" );
-    } // resolve
-
     // =-=-=-=-=-=-=-
     // public - get vars from object for rule engine 
     error collection_object::get_re_vars( 

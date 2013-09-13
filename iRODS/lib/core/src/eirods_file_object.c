@@ -65,12 +65,14 @@ namespace eirods {
             _resc_hier,
             _m,
             _f ),
-        size_( -1 ),
-        in_pdmo_(false),
-        logical_path_(_logical_path),
         comm_(_c),
+        logical_path_(_logical_path),
+        data_type_(""),
         file_descriptor_(_fd),
-        repl_requested_(-1) {
+        l1_desc_idx_( -1 ),
+        size_( -1 ),
+        repl_requested_(-1),
+        in_pdmo_(false) {
         // =-=-=-=-=-=-=-
         // explicit initialization
         replicas_.empty();
@@ -137,8 +139,18 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
     error file_object::resolve(
-        resource_manager& _mgr,
-        resource_ptr& _ptr ) {
+        const std::string& _interface,
+        plugin_ptr&        _ptr ) {
+        // =-=-=-=-=-=-=-
+        // check to see if this is for a resource plugin
+        // resolution, otherwise it is an error
+        if( RESOURCE_INTERFACE != _interface ) {
+            std::stringstream msg;
+            msg << "file_object does not support a [";
+            msg << _interface;
+            msg << "] for plugin resolution";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+        }
         
         error result = SUCCESS();
         error ret;
@@ -168,25 +180,21 @@ namespace eirods {
                 } else if(resc.empty()) {
                     return ERROR( EIRODS_HIERARCHY_ERROR, "Hierarchy string is not empty but first resource is!");
                 }
-    
-                ret = _mgr.resolve(resc, _ptr);
+   
+                resource_ptr resc_ptr; 
+                ret = resc_mgr.resolve( resc, resc_ptr );
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__ << " - ERROR resolving resource \"" << resc << "\"";
                     result = PASSMSG(msg.str(), ret);
                 } 
+
+                _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
             }
         }
+        
         return result;
-    } // resolve
 
-    // =-=-=-=-=-=-=-
-    // plugin - resolve resource plugin for this object
-    error file_object::resolve( 
-        network_manager&,
-        network_ptr& ) {
-        return ERROR( SYS_INVALID_INPUT_PARAM,
-                      "network_manage is not supported" );
     } // resolve
 
     // =-=-=-=-=-=-=-

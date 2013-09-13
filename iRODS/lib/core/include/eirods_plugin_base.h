@@ -98,6 +98,10 @@ namespace eirods {
 
     }; // class plugin_base
 
+    // =-=-=-=-=-=-=-
+    // helpful typedef for sock comm interface & factory
+    typedef boost::shared_ptr< plugin_base > plugin_ptr;
+
 }; // namespace eirods
 
 #endif // __EIRODS_PLUGIN_BASE_H__

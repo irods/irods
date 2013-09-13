@@ -37,8 +37,8 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // if this is a put operation then we do not have a first class object
         resource_ptr resc;
-        eirods::file_object_ptr file_obj( 
-                                    new eirods::file_object( ) );
+        file_object_ptr file_obj( 
+                            new file_object( ) );
 
         // =-=-=-=-=-=-=-
         // if this is a special collection then we need to get the hier
@@ -75,7 +75,7 @@ namespace eirods {
         // on the existence of a resource keyword and / or a match with a physical
         // object within the list 
         if( fac_err.ok() && 
-            eirods::EIRODS_CREATE_OPERATION == oper ) {
+            EIRODS_CREATE_OPERATION == oper ) {
             // =-=-=-=-=-=-=-
             // if this is a create operation, and a data object
             // already exists, then we should compare the resc
@@ -83,7 +83,7 @@ namespace eirods {
             // we open, otherwise it is a create in keeping with
             // original irods semantics
             if( 0 == kw_resc_name ) {
-                oper = eirods::EIRODS_OPEN_OPERATION;
+                oper = EIRODS_OPEN_OPERATION;
 
             } else {
                 // =-=-=-=-=-=-=-
@@ -93,14 +93,14 @@ namespace eirods {
                     // =-=-=-=-=-=-=-
                     // extract the root resource from the hierarchy
                     std::string              root_resc;
-                    eirods::hierarchy_parser parser;
+                    hierarchy_parser parser;
                     parser.set_string( repls[ i ].resc_hier() );
                     parser.first_resc( root_resc );
 
                     // =-=-=-=-=-=-=-
                     // if we have a match then set open & break, otherwise continue
                     if( root_resc == kw_resc_name ) {
-                        oper = eirods::EIRODS_OPEN_OPERATION;
+                        oper = EIRODS_OPEN_OPERATION;
                         break; 
                     }
 
@@ -112,7 +112,7 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specificied ( thats all we have for now ) 
-        if( eirods::EIRODS_CREATE_OPERATION != oper ) {
+        if( EIRODS_CREATE_OPERATION != oper ) {
             // =-=-=-=-=-=-=-
             // factory has already been called, test for 
             // success before proceeding
@@ -124,15 +124,17 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // resolve a resc ptr for the given file_object 
-            eirods::error err = file_obj->resolve( resc_mgr, resc );
+            plugin_ptr ptr;
+            error err = file_obj->resolve( RESOURCE_INTERFACE, ptr );
             if( !err.ok() ) {
                     return PASS( err );
             }
+            resc = boost::dynamic_pointer_cast< resource >( ptr );
 
         } else {
             // =-=-=-=-=-=-=-
             // handle the create operation
-#if 0 // i believe this is handled above now
+            #if 0 // i believe this is handled above now
             std::string orig_path = _data_obj_inp->objPath;
             std::string path      = _data_obj_inp->objPath;
             size_t pos = path.find_last_of( '/' );
@@ -155,7 +157,7 @@ namespace eirods {
                 skip_redir_for_spec_coll = true; 
 
             } else 
-#endif 
+            #endif 
             
             
             {
@@ -228,9 +230,9 @@ namespace eirods {
             // will determine the host
             hierarchy_parser parser;
             float            vote = 0.0;
-            eirods::first_class_object_ptr ptr = boost::dynamic_pointer_cast< eirods::first_class_object >( file_obj );
-            error err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                _comm, eirods::RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &oper, &host_name, &parser, &vote );
+            first_class_object_ptr ptr = boost::dynamic_pointer_cast< first_class_object >( file_obj );
+            error err = resc->call< const std::string*, const std::string*, hierarchy_parser*, float* >( 
+                _comm, RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &oper, &host_name, &parser, &vote );
             
             // =-=-=-=-=-=-=-
             // extract the hier string from the parser, politely.
@@ -297,7 +299,7 @@ namespace eirods {
         // get the host property from the last resc and get the
         // host name from that host
         rodsServerHost_t* last_resc_host = 0;
-        eirods::error err = get_resource_property< rodsServerHost_t* >( 
+        error err = get_resource_property< rodsServerHost_t* >( 
                                 last_resc, 
                                 RESOURCE_HOST,
                                 last_resc_host ); 

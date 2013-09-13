@@ -11,6 +11,10 @@
 
 namespace eirods {
     /// =-=-=-=-=-=-=-
+    /// @brief definition of the network interface
+    const std::string NETWORK_INTERFACE( "eirods_network_interface" );
+
+    /// =-=-=-=-=-=-=-
     /// @brief singleton class which manages the lifetime of
     ///        network plugins
     class network_manager {
