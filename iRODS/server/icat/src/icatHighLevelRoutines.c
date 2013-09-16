@@ -10494,3 +10494,59 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
     return(0);
 
 }
+
+
+/*
+ * chlSubstituteResourceHierarchies - Given an old resource hierarchy string and a new one,
+ * replaces all r_data_main.resc_hier rows that match the old string with the new one.
+ *
+ */
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newHier) {
+	int status = 0;
+	char oldHier_partial[MAX_NAME_LEN];
+    eirods::sql_logger logger("chlSubstituteResourceHierarchies", logSQL);
+
+    logger.log();
+
+    // =-=-=-=-=-=-=-
+    // Sanity and permission checks
+	if (!icss.status) {
+		return(CATALOG_NOT_CONNECTED);
+	}
+    if (!rsComm || !oldHier || !newHier) {
+    	return(SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+	}
+
+	// =-=-=-=-=-=-=-
+	// String to match partial hierarchies
+	snprintf(oldHier_partial, MAX_NAME_LEN, "%s;%%", oldHier);
+
+	// =-=-=-=-=-=-=-
+	// Update r_data_main
+	cllBindVars[cllBindVarCount++]=newHier;
+	cllBindVars[cllBindVarCount++]=oldHier;
+	cllBindVars[cllBindVarCount++]=oldHier;
+	cllBindVars[cllBindVarCount++]=oldHier_partial;
+#if ORA_ICAT // Oracle
+	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
+#else // Postgres and MySQL
+	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
+#endif
+
+	// =-=-=-=-=-=-=-
+	// Roll back if error
+	if (status) {
+		std::stringstream ss;
+		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		_rollback("chlSubstituteResourceHierarchies");
+	}
+	else {
+		status =  cmlExecuteNoAnswerSql("commit", &icss);
+	}
+
+	return status;
+}
