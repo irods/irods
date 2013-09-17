@@ -150,11 +150,16 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         } else {
             veryVerbose = 0;
         }
-        status = getFileToPortalRbudp (portalOprOut, locFilePath, 0,
-                                       dataObjInp->dataSize, veryVerbose, 0);
+        status = getFileToPortalRbudp( 
+                     portalOprOut, 
+                     locFilePath, 0,
+                     dataObjInp->dataSize, 
+                     veryVerbose, 0,
+                     conn->shared_secret );
         /* just send a complete msg */
         if (status < 0) {
             rcOprComplete (conn, status);
+
         } else {
             status = rcOprComplete (conn, portalOprOut->l1descInx);
         }

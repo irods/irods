@@ -31,6 +31,7 @@ typedef struct RcPortalTransferInp {
     int threadNum;
     int status;
     rodsLong_t	bytesWritten;
+    char shared_secret[ NAME_LEN ];
 } rcPortalTransferInp_t;
     
 typedef enum {
@@ -70,13 +71,13 @@ getFile (rcComm_t *conn, int l1descInx, char *locFilePath, char *objPath,
 rodsLong_t dataSize);
 #ifdef RBUDP_TRANSFER
 int
-putFileToPortalRbudp (portalOprOut_t *portalOprOut,                
+putFileToPortalRbudp ( portalOprOut_t *portalOprOut,                
 char *locFilePath, char *objPath, int locFd, rodsLong_t dataSize, 
-int veryVerbose, int sendRate, int packetSize);
+int veryVerbose, int sendRate, int packetSize, const char* shared_secret );
 int
-getFileToPortalRbudp (portalOprOut_t *portalOprOut,                
+getFileToPortalRbudp ( portalOprOut_t *portalOprOut,                
 char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
-int packetSize);
+int packetSize, const char* shared_secret );
 int
 initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList);
 #endif  /* RBUDP_TRANSFER */

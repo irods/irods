@@ -1773,11 +1773,20 @@ sub configureIrodsUser
 			"# Account name:\n" .
 			"irodsUserName '$IRODS_ADMIN_NAME'\n" .
 			"# Zone:\n" .
-			"irodsZone '$ZONE_NAME'\n" .
+			"irodsZone '$ZONE_NAME'\n\n" .
 			"# Enable Advanced Client-Server negotation:\n" .
-			"irodsClientServerNegotiation 'request_server_negotiation'\n" .
+			"irodsClientServerNegotiation 'request_server_negotiation'\n\n" .
 			"# Client-Server connection policy:\n" .
-			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n" );
+			"irodsClientServerPolicy 'CS_NEG_REFUSE'\n\n" .
+			"# Client-Server Encryption Key Size In Bytes:\n" .
+			"irodsEncryptionKeySize '32'\n\n" .
+			"# Client-Server Encryption Salt Size In Bytes:\n" .
+			"irodsEncryptionSaltSize '8'\n\n" .
+			"# Client-Server Encryption Number of Hash Rounds:\n" .
+			"irodsEncryptionNumHashRounds '16'\n\n" .
+			"# Client-Server Encryption Algorithm:\n" .
+			"irodsEncryptionAlgorithm 'AES-256-CBC'\n\n" 
+             );
 
 	} else {
 		# this is an instance of a Resource Server installation as

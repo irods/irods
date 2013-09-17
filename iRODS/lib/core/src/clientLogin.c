@@ -7,6 +7,7 @@
  */
 
 #include "rodsClient.h"
+#include "sslSockComm.h"
 
 static char prevChallengeSignitureClient[200];
 

@@ -221,6 +221,7 @@ typedef struct PortalOpr {
     int oprType;
     dataOprInp_t dataOprInp;
     portList_t portList;
+    char shared_secret[ NAME_LEN ]; // shared secret for encryption
 } portalOpr_t;
 
 /* definition for flags */

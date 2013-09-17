@@ -9,7 +9,12 @@
 #include "dataObjOpr.h"
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
+#include "md5.h"
+
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_stacktrace.h"
+#include "eirods_buffer_encryption.h"
 
 #ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
@@ -21,6 +26,7 @@
 #endif
 #endif // BOOST
 
+#include <iomanip>
 int
 sendTranHeader (int sock, int oprType, int flags, rodsLong_t offset,
 rodsLong_t length)
@@ -83,33 +89,33 @@ rodsLong_t dataSize)
     int in_fd, status;
 
     if (dataSize > 10 * MAX_SZ_FOR_SINGLE_BUF) {
-	rodsLog (LOG_ERROR,
-	  "fillBBufWithFile: dataSize %lld too large", dataSize);
-	return (USER_FILE_TOO_LARGE);
+        rodsLog (LOG_ERROR,
+                "fillBBufWithFile: dataSize %lld too large", dataSize);
+        return (USER_FILE_TOO_LARGE);
     } else if (dataSize > MAX_SZ_FOR_SINGLE_BUF) {
         rodsLog (LOG_NOTICE,
-          "fillBBufWithFile: dataSize %lld too large", dataSize);
+                "fillBBufWithFile: dataSize %lld too large", dataSize);
     }
 
 #ifdef windows_platform
-	in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
+    in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
 #else
     in_fd = open (locFilePath, O_RDONLY, 0);
 #endif
     if (in_fd < 0) { /* error */
-	status = USER_FILE_DOES_NOT_EXIST - errno;
-	rodsLogError (LOG_ERROR, status,
-	"cannot open file %s, status = %d", locFilePath, status);
-	return (status);
+        status = USER_FILE_DOES_NOT_EXIST - errno;
+        rodsLogError (LOG_ERROR, status,
+                "cannot open file %s, status = %d", locFilePath, status);
+        return (status);
     }
-    
+
 
     myBBuf->buf = malloc (dataSize);
     myBBuf->len = dataSize;
     conn->transStat.bytesWritten = dataSize;
 
     status = myRead (in_fd, myBBuf->buf, (int) dataSize, FILE_DESC_TYPE,
-      NULL, NULL);
+            NULL, NULL);
 
     close (in_fd);
 
@@ -135,7 +141,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 
     if (portalOprOut == NULL || portalOprOut->numThreads <= 0) {
         rodsLog (LOG_ERROR,
-         "putFileToPortal: invalid portalOprOut");
+                "putFileToPortal: invalid portalOprOut");
         return (SYS_INVALID_PORTAL_OPR);
     }
 
@@ -146,67 +152,69 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
     if (portalOprOut->numThreads > MAX_NUM_CONFIG_TRAN_THR) {
         for (i = 0; i < portalOprOut->numThreads; i++) {
             sock = connectToRhostPortal (myPortList->hostAddr,
-              myPortList->portNum, myPortList->cookie, myPortList->windowSize);
+                    myPortList->portNum, myPortList->cookie, myPortList->windowSize);
             if (sock > 0) {
                 close (sock);
             }
         }
-       rodsLog (LOG_ERROR,
-         "putFileToPortal: numThreads %d too large", 
-	 portalOprOut->numThreads);
+        rodsLog (LOG_ERROR,
+                "putFileToPortal: numThreads %d too large", 
+                portalOprOut->numThreads);
         return (SYS_INVALID_PORTAL_OPR);
     }
 
     initFileRestart (conn, locFilePath, objPath, dataSize, 
-      portalOprOut->numThreads);
+            portalOprOut->numThreads);
 #ifdef PARA_OPR
     memset (tid, 0, sizeof (tid));
 #endif
     memset (myInput, 0, sizeof (myInput));
 
-   if (numThreads == 1) {
+    if (numThreads == 1) {
         sock = connectToRhostPortal (myPortList->hostAddr, 
-	  myPortList->portNum, myPortList->cookie, myPortList->windowSize);
+                myPortList->portNum, myPortList->cookie, myPortList->windowSize);
         if (sock < 0) {
-	    return (sock);
+            return (sock);
         }
 #ifdef windows_platform
-		in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
+        in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
 #else
         in_fd = open (locFilePath, O_RDONLY, 0);
 #endif
         if (in_fd < 0) { /* error */
             retVal = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError (LOG_ERROR, retVal,
-             "cannot open file %s, status = %d", locFilePath, retVal);
+                    "cannot open file %s, status = %d", locFilePath, retVal);
             return (retVal);
         }
-	fillRcPortalTransferInp (conn, &myInput[0], sock, in_fd, 0);
-	rcPartialDataPut (&myInput[0]);
-	if (myInput[0].status < 0) {
-	    return (myInput[0].status);
-	} else {
-	    if (dataSize <= 0 || myInput[0].bytesWritten == dataSize) {
+
+        fillRcPortalTransferInp (conn, &myInput[0], sock, in_fd, 0);
+        
+        rcPartialDataPut (&myInput[0]);
+        if (myInput[0].status < 0) {
+            return (myInput[0].status);
+        } else {
+            if (dataSize <= 0 || myInput[0].bytesWritten == dataSize) {
 #if 0
                 if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
                     clearLfRestartFile (&conn->fileRestart);
                 }
 #endif
-		return (0);
-	    } else {
-		rodsLog (LOG_ERROR,
-		  "putFileToPortal: bytesWritten %lld dataSize %lld mismatch",
-		  myInput[0].bytesWritten, dataSize);
-	        return (SYS_COPY_LEN_ERR);
-	    }
-	}
+                return (0);
+            } else {
+                rodsLog (LOG_ERROR,
+                        "putFileToPortal: bytesWritten %lld dataSize %lld mismatch",
+                        myInput[0].bytesWritten, dataSize);
+                return (SYS_COPY_LEN_ERR);
+            }
+        }
     } else {
 #ifdef PARA_OPR
         rodsLong_t totalWritten = 0;
 
-	for (i = 0; i < numThreads; i++) {
+        for (i = 0; i < numThreads; i++) {
             sock = connectToRhostPortal (myPortList->hostAddr,
-              myPortList->portNum, myPortList->cookie, myPortList->windowSize);
+                    myPortList->portNum, myPortList->cookie, myPortList->windowSize);
             if (sock < 0) {
                 return (sock);
             }
@@ -214,50 +222,50 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
             if (in_fd < 0) { 	/* error */
                 retVal = USER_FILE_DOES_NOT_EXIST - errno;
                 rodsLogError (LOG_ERROR, retVal,
-                 "cannot open file %s, status = %d", locFilePath, retVal);
-		continue;
+                        "cannot open file %s, status = %d", locFilePath, retVal);
+                continue;
             }
             fillRcPortalTransferInp (conn, &myInput[i], sock, in_fd, i);
 #ifdef USE_BOOST
             tid[i] = new boost::thread( rcPartialDataPut, &myInput[i] );
 #else
             pthread_create (&tid[i], pthread_attr_default, 
-	     (void *(*)(void *)) rcPartialDataPut, (void *) &myInput[i]);
+                    (void *(*)(void *)) rcPartialDataPut, (void *) &myInput[i]);
 #endif /* BOOST */
         }
-	if (retVal < 0)
-	    return (retVal);
+        if (retVal < 0)
+            return (retVal);
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
 
 #ifdef USE_BOOST
-		tid[i]->join();
+                tid[i]->join();
 #else
                 pthread_join (tid[i], NULL);
 #endif
-	    }
-	    totalWritten += myInput[i].bytesWritten;
+            }
+            totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
                 retVal = myInput[i].status;
-	    }
+            }
         }
         if (retVal < 0) {
-	    return (retVal);
+            return (retVal);
         } else {
-	    if (dataSize <= 0 || totalWritten == dataSize) { 
+            if (dataSize <= 0 || totalWritten == dataSize) { 
 #if 0
                 if (conn->fileRestart.info.numSeg > 0) {     /* file restart */
                     clearLfRestartFile (&conn->fileRestart);
                 }
 #endif
                 if (gGuiProgressCB != NULL) 
-		    gGuiProgressCB (&conn->operProgress);
+                    gGuiProgressCB (&conn->operProgress);
                 return (0);
             } else {
                 rodsLog (LOG_ERROR,
-                  "putFileToPortal: totalWritten %lld dataSize %lld mismatch",
-                  totalWritten, dataSize);
+                        "putFileToPortal: totalWritten %lld dataSize %lld mismatch",
+                        totalWritten, dataSize);
                 return (SYS_COPY_LEN_ERR);
             }
         }
@@ -278,6 +286,7 @@ int destFd, int srcFd, int threadNum)
     myInput->destFd = destFd;
     myInput->srcFd = srcFd;
     myInput->threadNum = threadNum;
+    strncpy( myInput->shared_secret, conn->shared_secret, NAME_LEN );
 
     return (0);
 }
@@ -288,7 +297,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     transferHeader_t myHeader;
     int destFd;
     int srcFd;
-    void *buf;
+    char *buf;
     transferStat_t *myTransStat;
     rodsLong_t curOffset = 0;
     rcComm_t *conn;
@@ -296,9 +305,9 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     int threadNum;
 
     if (myInput == NULL) {
-	rodsLog (LOG_ERROR,
-	 "rcPartialDataPut: NULL input");
-	return;
+        rodsLog (LOG_ERROR,
+                "rcPartialDataPut: NULL input");
+        return;
     }
 #ifdef PARA_DEBUG
     printf ("rcPartialDataPut: thread %d at start\n", myInput->threadNum);
@@ -312,96 +321,185 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     destFd = myInput->destFd;
     srcFd = myInput->srcFd;
 
-    buf = malloc (TRANS_BUF_SZ);
-
     myInput->bytesWritten = 0;
 
     if (gGuiProgressCB != NULL) {
         conn->operProgress.flag = 1;
     }
 
+    // =-=-=-=-=-=-=-
+    // flag to determine if we need to use encryption
+    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    
+    // =-=-=-=-=-=-=-
+    // get the client side Env to determine
+    // encryption parameters
+    rodsEnv rods_env;
+    int status = getRodsEnv( &rods_env ); 
+    if( status < 0 ) {
+        printf( "Failed to get irodsEnv" );
+        return;
+    }
+
+    // =-=-=-=-=-=-=-
+    // create an encryption context
+    int                  iv_size = 0;
+    std::string          iv;
+    std::string          hash_key;
+    eirods::buffer_crypt crypt( 
+                             rods_env.rodsEncryptionKeySize,
+                             rods_env.rodsEncryptionSaltSize,
+                             rods_env.rodsEncryptionNumHashRounds,
+                             rods_env.rodsEncryptionAlgorithm );
+
+    // =-=-=-=-=-=-=-
+    // set iv size
+    if( use_encryption_flg ) {
+        iv_size = crypt.key_size(); 
+    }  
+           
+    buf = (char*)malloc ( TRANS_BUF_SZ + iv_size );
+
     while (myInput->status >= 0) {
-	rodsLong_t toPut;
+        rodsLong_t toPut;
 
         myInput->status = rcvTranHeader (destFd, &myHeader);
 
 #ifdef PARA_DEBUG
         printf ("rcPartialDataPut: thread %d after rcvTranHeader\n", 
-          myInput->threadNum);
+                myInput->threadNum);
 #endif
 
         if (myInput->status < 0) {
-	    break;
+            break;
         }
 
-	if (myHeader.oprType == DONE_OPR) {
-	    break;
+        if (myHeader.oprType == DONE_OPR) {
+            break;
         }
-	if (myHeader.offset != curOffset) {
-	    curOffset = myHeader.offset;
-	    if (lseek (srcFd, curOffset, SEEK_SET) < 0) {
-		myInput->status = UNIX_FILE_LSEEK_ERR - errno;
-		rodsLogError (LOG_ERROR, myInput->status,
-		  "rcPartialDataPut: lseek to %lld error, status = %d",
-		  curOffset, myInput->status);
-		break;
-	    }
-	    if (info->numSeg > 0)       /* file restart */
-                info->dataSeg[threadNum].offset = curOffset;
-	}
-
-	toPut = myHeader.length;
-	while (toPut > 0) {
-	    int toRead, bytesRead, bytesWritten;
-
-	    if (toPut > TRANS_BUF_SZ) {
-		toRead = TRANS_BUF_SZ;
-	    } else {
-		toRead = toPut;
-	    } 
-
-	    bytesRead = myRead (srcFd, buf, toRead, FILE_DESC_TYPE, 
-	      &bytesRead, NULL);
-	    if (bytesRead != toRead) {
-		myInput->status = SYS_COPY_LEN_ERR - errno;
-		rodsLogError (LOG_ERROR, myInput->status,
-		  "rcPartialDataPut: toPut %lld, bytesRead %d",
-		  toPut, bytesRead);   
-		break;
-	    }
-	    bytesWritten = myWrite (destFd, buf, bytesRead, SOCK_TYPE,
-	      &bytesWritten);
-
-	    if (bytesWritten != bytesRead) {
-                myInput->status = SYS_COPY_LEN_ERR - errno;
-		rodsLogError (LOG_ERROR, myInput->status,
-                  "rcPartialDataPut: toWrite %d, bytesWritten %d, errno = %d",
-                  bytesRead, bytesWritten, errno);
+        if (myHeader.offset != curOffset) {
+            curOffset = myHeader.offset;
+            if (lseek (srcFd, curOffset, SEEK_SET) < 0) {
+                myInput->status = UNIX_FILE_LSEEK_ERR - errno;
+                rodsLogError (LOG_ERROR, myInput->status,
+                        "rcPartialDataPut: lseek to %lld error, status = %d",
+                        curOffset, myInput->status);
                 break;
-	    }
-	    toPut -= bytesWritten;
-	    if (info->numSeg > 0) {     /* file restart */
-		info->dataSeg[threadNum].len += bytesWritten;
-		conn->fileRestart.writtenSinceUpdated += bytesWritten;
+            }
+            if (info->numSeg > 0)       /* file restart */
+                info->dataSeg[threadNum].offset = curOffset;
+        }
+
+        toPut = myHeader.length;
+        while (toPut > 0) {
+            int toRead, bytesRead, bytesWritten;
+
+            if (toPut > TRANS_BUF_SZ) {
+                toRead = TRANS_BUF_SZ;
+            } else {
+                toRead = toPut;
+            } 
+
+            bytesRead = myRead (srcFd, buf, toRead, FILE_DESC_TYPE, 
+                    &bytesRead, NULL);
+
+            if (bytesRead != toRead) {
+                myInput->status = SYS_COPY_LEN_ERR - errno;
+                rodsLogError (LOG_ERROR, myInput->status,
+                        "rcPartialDataPut: toPut %lld, bytesRead %d",
+                        toPut, bytesRead);   
+                break;
+            }
+            
+            // =-=-=-=-=-=-=-
+            // compute an iv for this particular transmission and use
+            // it to encrypt this buffer
+            int new_size = bytesRead;
+            if( use_encryption_flg ) {
+                eirods::error ret = crypt.initialization_vector( 
+                    myInput->shared_secret,
+                    hash_key,
+                    iv );
+                if( !ret.ok() ) {
+                    ret = PASS( ret );
+                    printf( "%s", ret.result().c_str() );
+                    break;
+                }
+
+                // =-=-=-=-=-=-=-
+                // encrypt
+                std::string cipher;
+                std::string in_buf;
+                in_buf.assign( (char*)buf, bytesRead );
+
+                ret = crypt.encrypt( myInput->shared_secret, iv, in_buf, cipher );
+                if( !ret.ok() ) {
+                    ret = PASS( ret );
+                    printf( "%s", ret.result().c_str() );
+                    break;
+                }
+
+                // =-=-=-=-=-=-=-
+                // capture the iv with the cipher text
+                memcpy( buf, iv.c_str(), iv.size() );
+                memcpy( buf+iv.size(), cipher.c_str(), cipher.size() );
+           
+                new_size = iv.size() + cipher.size();
+
+                // =-=-=-=-=-=-=-
+                // need to send the incoming size as encryption might change
+                // the size of the data from the writen values
+                bytesWritten = myWrite(
+                                   destFd, 
+                                   &new_size,
+                                   sizeof( int ),
+                                   SOCK_TYPE,
+                                   &bytesWritten );
+
+            }
+
+            // =-=-=-=-=-=-=-
+            // then write the actual buffer
+            bytesWritten = myWrite(
+                               destFd, 
+                               buf, 
+                               new_size, 
+                               SOCK_TYPE,
+                               &bytesWritten );
+
+            if (bytesWritten != new_size) {
+                myInput->status = SYS_COPY_LEN_ERR - errno;
+                rodsLogError (LOG_ERROR, myInput->status,
+                        "rcPartialDataPut: toWrite %d, bytesWritten %d, errno = %d",
+                        bytesRead, bytesWritten, errno);
+                break;
+            }
+
+            toPut -= bytesRead;
+            if (info->numSeg > 0) {     /* file restart */
+                info->dataSeg[threadNum].len += bytesRead;
+                conn->fileRestart.writtenSinceUpdated += bytesRead;
                 if (threadNum == 0 && conn->fileRestart.writtenSinceUpdated >= 
-		  RESTART_FILE_UPDATE_SIZE) {
-		    int status;
+                        RESTART_FILE_UPDATE_SIZE) {
+                    int status;
                     /* time to write to the restart file */
                     status = writeLfRestartFile (conn->fileRestart.infoFile,
-                      &conn->fileRestart.info);
+                            &conn->fileRestart.info);
                     if (status < 0) {
                         rodsLog (LOG_ERROR,
-                         "rcPartialDataPut: writeLfRestartFile for %s, status = %d",
-                         conn->fileRestart.info.fileName, status);
+                                "rcPartialDataPut: writeLfRestartFile for %s, status = %d",
+                                conn->fileRestart.info.fileName, status);
                     }
                     conn->fileRestart.writtenSinceUpdated = 0;
                 }
-	    }
-	}
-	curOffset += myHeader.length;
-	myInput->bytesWritten += myHeader.length;
-	/* should lock this. But window browser is the only one using it */ 
-	myTransStat->bytesWritten += myHeader.length;
+            }
+        
+        } // while
+
+        curOffset += myHeader.length;
+        myInput->bytesWritten += myHeader.length;
+        /* should lock this. But window browser is the only one using it */ 
+        myTransStat->bytesWritten += myHeader.length;
         /* should lock this. but it is info only */
         if (gGuiProgressCB != NULL) {
             conn->operProgress.curFileSizeDone += myHeader.length;
@@ -870,7 +968,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 #ifdef PARA_DEBUG
     printf ("rcPartialDataGet: thread %d at start\n", myInput->threadNum);
 #endif
-   conn = myInput->conn;
+    conn = myInput->conn;
     info = &conn->fileRestart.info;
     threadNum = myInput->threadNum;
 
@@ -879,7 +977,6 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     destFd = myInput->destFd;
     srcFd = myInput->srcFd;
 
-    buf = malloc (TRANS_BUF_SZ);
 
     myInput->bytesWritten = 0;
 
@@ -887,6 +984,39 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 	conn = myInput->conn;
 	conn->operProgress.flag = 1;
     }
+
+    // =-=-=-=-=-=-=-
+    // flag to determine if we need to use encryption
+    bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
+    
+    // =-=-=-=-=-=-=-
+    // get the client side Env to determine
+    // encryption parameters
+    rodsEnv rods_env;
+    int status = getRodsEnv( &rods_env ); 
+    if( status < 0 ) {
+        printf( "Failed to get irodsEnv" );
+        return;
+    }
+
+    // =-=-=-=-=-=-=-
+    // create an encryption context
+    int                  iv_size = 0;
+    std::string          iv;
+    std::string          hash_key;
+    eirods::buffer_crypt crypt( 
+                             rods_env.rodsEncryptionKeySize,
+                             rods_env.rodsEncryptionSaltSize,
+                             rods_env.rodsEncryptionNumHashRounds,
+                             rods_env.rodsEncryptionAlgorithm );
+
+    // =-=-=-=-=-=-=-
+    // set iv size
+    if( use_encryption_flg ) {
+        iv_size = crypt.key_size(); 
+    }  
+    
+    buf = malloc( TRANS_BUF_SZ + iv_size );
 
     while (myInput->status >= 0) {
         rodsLong_t toGet;
@@ -928,26 +1058,62 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                 toRead = toGet;
             }
 
-            bytesRead = myRead (srcFd, buf, toRead, SOCK_TYPE, &bytesRead, 
-	      NULL);
-            if (bytesRead != toRead) {
+            // =-=-=-=-=-=-=-
+            // read the incoming size as it might differ due to encryption
+            int new_size = toRead;
+            if( use_encryption_flg ) {
+                bytesRead = myRead( srcFd, &new_size, sizeof( int ), SOCK_TYPE, NULL, NULL );
+                if( bytesRead != sizeof( int ) ) {
+                    rodsLog( LOG_ERROR, "_partialDataPut:Bytes Read != %d", sizeof( int ) );
+                    break;
+                }
+            }
+
+            // =-=-=-=-=-=-=-
+            // now read the provided number of bytes as suggested by the incoming size
+            bytesRead = myRead( srcFd, buf, new_size, SOCK_TYPE, &bytesRead, NULL );
+            if( bytesRead != new_size ) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError (LOG_ERROR, myInput->status,
                   "rcPartialDataGet: toGet %lld, bytesRead %d",
                   toGet, bytesRead);
                 break;
             }
-            bytesWritten = myWrite (destFd, buf, bytesRead, FILE_DESC_TYPE,
-	      &bytesWritten);
+            
+            // =-=-=-=-=-=-=-
+            // if using encryption, strip off the iv
+            // and decrypt before writing
+            int plain_size = bytesRead;
+            if( use_encryption_flg ) {
+                std::string new_buf, this_iv, cipher, plain;
+                new_buf.assign( (char*)buf, new_size );
 
-            if (bytesWritten != bytesRead) {
+                this_iv = new_buf.substr( 0, iv_size );
+                cipher  = new_buf.substr( iv_size, new_size-iv_size ); 
+
+                eirods::error ret = crypt.decrypt( myInput->shared_secret, this_iv, cipher, plain );
+                if( !ret.ok() ) {
+                    eirods::log( PASS( ret ) );
+                    myInput->status = SYS_COPY_LEN_ERR;
+                    break;
+                }
+
+                memcpy( buf, plain.c_str(), plain.size() );
+                plain_size = plain.size();
+                
+            }
+
+            bytesWritten = myWrite( destFd, buf, plain_size, FILE_DESC_TYPE, &bytesWritten );
+            if (bytesWritten != plain_size) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError (LOG_ERROR, myInput->status,
                   "rcPartialDataGet: toWrite %d, bytesWritten %d",
-                  bytesRead, bytesWritten);
+                  plain_size, bytesWritten);
                 break;
             }
+            
             toGet -= bytesWritten;
+
             if (info->numSeg > 0) {     /* file restart */
                 info->dataSeg[threadNum].len += bytesWritten;
                 conn->fileRestart.writtenSinceUpdated += bytesWritten;
@@ -988,16 +1154,35 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
  * and locFd should be used. If sendRate and packetSize are 0, it will 
  * try to set it based on env and default.
  */
-int
-putFileToPortalRbudp (portalOprOut_t *portalOprOut, char *locFilePath, 
-char *objPath, int locFd, rodsLong_t dataSize, int veryVerbose,
-int sendRate, int packetSize)
-{
+int putFileToPortalRbudp( 
+    portalOprOut_t* portalOprOut, 
+    char*           locFilePath, 
+    char*           objPath, 
+    int             locFd, 
+    rodsLong_t      dataSize, 
+    int             veryVerbose,
+    int             sendRate, 
+    int             packetSize,
+    const char*     shared_secret ) {
+
     portList_t *myPortList;
     int status;
     rbudpSender_t rbudpSender;
     int mysendRate, mypacketSize;
     char *tmpStr;
+
+    // =-=-=-=-=-=-=-
+    // if a secret has been negotiated then we must be using
+    // encryption.  given that RBUDP is not supported in an
+    // encrypted capacity this is considered an error
+    if( 0 != strlen( shared_secret ) ) {
+        rodsLog( 
+            LOG_ERROR,
+            "putFileToPortal: Encryption is not supported with RBUDP" );
+        return SYS_INVALID_PORTAL_OPR;
+
+    }
+
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
         rodsLog (LOG_ERROR,
@@ -1036,11 +1221,17 @@ int sendRate, int packetSize)
     }
 
     if (locFilePath == NULL) {
-        status = sendfileByFd (&rbudpSender, mysendRate, mypacketSize,
-          locFd);
+        status = sendfileByFd(
+                     &rbudpSender, 
+                     mysendRate, 
+                     mypacketSize,
+                     locFd );
     } else {
-        status = rbSendfile (&rbudpSender, mysendRate, mypacketSize, 
-          locFilePath);
+        status = rbSendfile(
+                     &rbudpSender, 
+                     mysendRate, 
+                     mypacketSize, 
+                     locFilePath );
     }
 
     sendClose (&rbudpSender);
@@ -1057,16 +1248,32 @@ int sendRate, int packetSize)
  * and locFd should be used. If sendRate and packetSize are 0, it will 
  * try to set it based on env and default.
  */
-int
-getFileToPortalRbudp (portalOprOut_t *portalOprOut, 
-char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
-int packetSize)
-{
+int getFileToPortalRbudp(
+    portalOprOut_t* portalOprOut, 
+    char*           locFilePath, 
+    int             locFd, 
+    rodsLong_t      dataSize, 
+    int             veryVerbose,
+    int             packetSize,
+    const char*     shared_secret ) {
+
     portList_t *myPortList;
     int status;
     rbudpReceiver_t rbudpReceiver;
     int mypacketSize;
     char *tmpStr;
+
+    // =-=-=-=-=-=-=-
+    // if a secret has been negotiated then we must be using
+    // encryption.  given that RBUDP is not supported in an
+    // encrypted capacity this is considered an error
+    if( 0 != strlen( shared_secret ) ) {
+        rodsLog( 
+            LOG_ERROR,
+            "getFileToPortal: Encryption is not supported with RBUDP" );
+        return SYS_INVALID_PORTAL_OPR;
+
+    }
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
         rodsLog (LOG_ERROR,
@@ -1084,6 +1291,7 @@ int packetSize)
 	  myPortList->hostAddr);
         return (status);
     }
+
     rbudpReceiver.rbudpBase.verbose = veryVerbose;
 
     if (packetSize <= 0) {
@@ -1096,10 +1304,24 @@ int packetSize)
         mypacketSize = packetSize;
     }
 
+    rodsEnv rods_env;
+    status = getRodsEnv( &rods_env );
+    if( status < 0 ) {
+        return status;
+    }
+
     if (locFilePath == NULL) {
-        status = getfileByFd (&rbudpReceiver, locFd, mypacketSize);
+        status = getfileByFd(
+                     &rbudpReceiver, 
+                     locFd, 
+                     mypacketSize );
+                    
     } else {
-        status = getfile (&rbudpReceiver, NULL, locFilePath, mypacketSize);
+        status = getfile(
+                     &rbudpReceiver, 
+                     NULL, 
+                     locFilePath, 
+                     mypacketSize );
     }
 
     recvClose (&rbudpReceiver);

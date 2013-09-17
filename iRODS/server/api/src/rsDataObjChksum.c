@@ -118,7 +118,7 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
             }
         } else {
             while (tmpDataObjInfo != NULL) {
-                if (tmpDataObjInfo->replStatus > 0 &&strlen (tmpDataObjInfo->chksum) > 0) {
+                if (tmpDataObjInfo->replStatus > 0 && strlen(tmpDataObjInfo->chksum) > 0) {
                     if (verifyFlag == 0 && forceFlag == 0) {
                         *outChksumStr = strdup (tmpDataObjInfo->chksum);
                         return (0);
@@ -139,7 +139,6 @@ _rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                          outChksumStr);
         } else {
             status = dataObjChksumAndRegInfo (rsComm, tmpDataObjInfo,outChksumStr);
-                  
         }
 
         return (status);

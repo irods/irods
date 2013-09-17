@@ -52,7 +52,8 @@ connToutHandler (int sig)
 // =-=-=-=-=-=-=-
 //
 eirods::error sockClientStart( 
-    eirods::network_object_ptr _ptr ) {
+    eirods::network_object_ptr _ptr,
+    rodsEnv*                   _env ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -65,7 +66,7 @@ eirods::error sockClientStart(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = net->call( eirods::NETWORK_OP_CLIENT_START, _ptr );
+    ret_err = net->call< rodsEnv* >( eirods::NETWORK_OP_CLIENT_START, _ptr, _env );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -82,7 +83,8 @@ eirods::error sockClientStart(
 // =-=-=-=-=-=-=-
 //
 eirods::error sockClientStop( 
-    eirods::network_object_ptr _ptr ) {                                                                                 
+    eirods::network_object_ptr _ptr,
+    rodsEnv*                   _env ) {
     // =-=-=-=-=-=-=-
     // resolve a network interface plugin from the
     // network object
@@ -95,7 +97,7 @@ eirods::error sockClientStop(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
-    ret_err = net->call( eirods::NETWORK_OP_CLIENT_STOP, _ptr );
+    ret_err = net->call< rodsEnv* >( eirods::NETWORK_OP_CLIENT_STOP, _ptr, _env );
 
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
@@ -862,7 +864,12 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         return ret.code();
     }
 
-    ret = sockClientStart( new_net_obj );
+    // =-=-=-=-=-=-=-
+    // get rods env to pass to client start for policy decisions
+    rodsEnv rods_env;
+    status = getRodsEnv( &rods_env );
+
+    ret = sockClientStart( new_net_obj, &rods_env );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
         return ret.code();

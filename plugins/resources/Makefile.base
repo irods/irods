@@ -32,11 +32,12 @@ default: ${FULLTARGET}
 clean:
 	@-rm -f ${FULLTARGET} > /dev/null 2>&1
 	@-rm -f ${OBJS} > /dev/null 2>&1
+	@-rm -f ${DEPS} > /dev/null 2>&1
 	@-rm -f *.o > /dev/null 2>&1
 
 ${FULLTARGET}: ${OBJS} ${DEPFILE}
 	@-mkdir -p ${SODIR} > /dev/null 2>&1
-	${GCC} ${INC} -D${OS_platform} -fPIC -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/eirods_plugin_base.o ${EXTRALIBS}
+	${GCC} ${INC} -D${OS_platform} -fPIC "-Wl,-E" -shared -o ${FULLTARGET} ${OBJS} ../../../iRODS/lib/core/obj/eirods_plugin_base.o ${EXTRALIBS}
 
 ${DEPFILE}: ${DEPS}
 	@-rm -f ${DEPFILE} > /dev/null 2>&1
