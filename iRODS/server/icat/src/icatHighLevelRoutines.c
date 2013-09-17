@@ -10516,7 +10516,7 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newH
     if (!rsComm || !oldHier || !newHier) {
     	return(SYS_INTERNAL_NULL_INPUT_ERR);
     }
-	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
 		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
 	}
 
