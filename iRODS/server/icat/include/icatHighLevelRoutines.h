@@ -176,4 +176,6 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm, char *userName,
 
 eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
 
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newHier);
+
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */
