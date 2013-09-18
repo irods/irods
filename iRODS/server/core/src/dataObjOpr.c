@@ -991,10 +991,10 @@ sortObjInfoForRepl (
     }
 
     // =-=-=-=-=-=-=-
-    // short circuit sort for the case where a dst resc hier is provided
-    // which means the choice for to which repl to update is made already
+    // short circuit sort for the case where a dst resc hier is provided which means the choice for to which repl to update is made
+    // already. However, we have to handle the case where the resc_hier and dst_resc_hier are the same.
     *oldDataObjInfoHead = NULL;
-    if( dst_resc_hier ) {
+    if( dst_resc_hier && strcmp(dst_resc_hier, resc_hier) != 0) {
         dataObjInfo_t* tmp_info = *dataObjInfoHead;
         dataObjInfo_t* prev_info = NULL;
         while( tmp_info ) {
@@ -1045,23 +1045,9 @@ sortObjInfoForRepl (
         queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
     }
     if (*dataObjInfoHead == NULL) {
-
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - Returning here.";
-            DEBUGMSG(msg.str());
-        }
-
         return SYS_RESC_IS_DOWN;
     }
     else {
-
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - No, returning here.";
-            DEBUGMSG(msg.str());
-        }
-
         return (0);
     }
 }
