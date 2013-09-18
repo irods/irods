@@ -34,7 +34,9 @@ namespace eirods {
         } else {
             file_object object = _object_oper.object();
             child_list_t::const_iterator it;
+            int sibling_count = 0;
             for(it = _siblings.begin(); result.ok() && it != _siblings.end(); ++it) {
+                ++sibling_count;
                 hierarchy_parser sibling = *it;
                 std::string hierarchy_string;
                 error ret = sibling.str(hierarchy_string);

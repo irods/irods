@@ -199,17 +199,6 @@ extern "C" {
         } else {
             oper.object() = *(file_obj.get());
             oper.operation() = _oper;
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - File object physical path: \"";
-                msg << oper.object().physical_path();
-                msg << "\" and operation: \"";
-                msg << oper.operation();
-                msg << "\"";
-                DEBUGMSG(msg.str());
-            }
-
             object_list.push_back(oper);
             ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
             if(!ret.ok()) {
@@ -923,13 +912,6 @@ extern "C" {
         } else {
             eirods::data_object_ptr data_obj = boost::dynamic_pointer_cast< eirods::data_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-
-            if(data_obj.get() == NULL) {
-                std::stringstream msg;
-                msg << "qqq - Data object is null.";
-                DEBUGMSG(msg.str());
-            }
-
             parser.set_string(data_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
