@@ -1561,8 +1561,6 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "replFileClose" );
         resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "replFileUnlink" );
         resc->add_operation( eirods::RESOURCE_OP_STAT,         "replFileStat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSTAT,        "replFileFstat" );
-        resc->add_operation( eirods::RESOURCE_OP_FSYNC,        "replFileFsync" );
         resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "replFileMkdir" );
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "replFileOpendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "replFileReaddir" );

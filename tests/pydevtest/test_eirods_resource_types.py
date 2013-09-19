@@ -349,7 +349,10 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["0 ",self.testfile]) # should be listed 3x
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["1 ",self.testfile]) # should be listed 3x
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["2 ",self.testfile]) # should be listed 3x
-        assertiCmd(s.adminsession,"irm -n 2 "+self.testfile, "ERROR", "-1811000 EIRODS_INVALID_OPERATION") # try to remove one of the managed replicas
+        assertiCmd(s.adminsession,"irm -n 1 "+self.testfile) # try to remove one of the managed replicas
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["0 ",self.testfile]) # should be listed 2x
+        assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",["1 ",self.testfile]) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["2 ",self.testfile]) # should be listed 2x
 
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
