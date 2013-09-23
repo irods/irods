@@ -379,8 +379,6 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // make the call to stat
-rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]", 
-         fco->physical_path().c_str() );
         int status = stat( fco->physical_path().c_str(), _statbuf );
 
         // =-=-=-=-=-=-=-
@@ -603,10 +601,7 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
     mockArchiveCopyPlugin(
         int         mode, 
         const char* srcFileName, 
-        const char* destFileName )
-    {
-        rodsLog( LOG_NOTICE, "XXXX - mockArchiveCopyPlugin copy from src [%s] to dst [%s]", srcFileName, destFileName );
-
+        const char* destFileName ) {
         int inFd, outFd;
         char myBuf[TRANS_BUF_SZ];
         rodsLong_t bytesCopied = 0;
@@ -757,9 +752,6 @@ rodsLog( LOG_NOTICE, "XXXX - mock_archive_stat_plugin :: calling stat on [%s]",
         for(int i = 0; i < 16; ++i) {
             ins << std::setfill('0') << std::setw(2) << std::hex << (int)hash[i];
         }
-
-        rodsLog( LOG_NOTICE, "XXXX - mock_archive :: buf [%s]   hash [%s]", md5Buf, ins.str().c_str() );
-
 
         // =-=-=-=-=-=-=-
         // get the vault path for the resource

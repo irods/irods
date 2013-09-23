@@ -32,7 +32,9 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( resource_manager&, resource_ptr& );
+        virtual error resolve( 
+                          const std::string&, // plugin interface name
+                          plugin_ptr& );      // resolved plugin instance
                 
         // =-=-=-=-=-=-=-
         // accessor for rule engine variables

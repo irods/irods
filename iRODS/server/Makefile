@@ -51,7 +51,12 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/physPath.o \
 		$(svrCoreObjDir)/eirods_resource_manager.o \
 		$(svrCoreObjDir)/eirods_resource_backport.o \
-		$(svrCoreObjDir)/eirods_server_negotiation.o 
+		$(svrCoreObjDir)/eirods_server_negotiation.o \
+		$(svrCoreObjDir)/eirods_collection_object.o \
+		$(svrCoreObjDir)/eirods_structured_object.o \
+		$(svrCoreObjDir)/eirods_physical_object.o \
+		$(svrCoreObjDir)/eirods_data_object.o \
+		$(svrCoreObjDir)/eirods_file_object.o 
 
 INCLUDES +=	-I$(svrCoreIncDir)
 

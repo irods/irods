@@ -5,6 +5,8 @@
 #include "eirods_structured_object.h"
 #include "eirods_resource_manager.h"
 
+extern eirods::resource_manager resc_mgr;
+
 namespace eirods {
 
     // =-=-=-=-=-=-=-
@@ -90,18 +92,39 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     // plugin - resolve resource plugin for this object
-    error structured_object::resolve( resource_manager& _mgr, resource_ptr& _ptr ) {
-
+    error structured_object::resolve( 
+        const std::string& _interface, 
+        plugin_ptr&        _ptr ) {
+        // =-=-=-=-=-=-=-
+        // check to see if this is for a resource plugin
+        // resolution, otherwise it is an error
+        if( RESOURCE_INTERFACE != _interface ) {
+            std::stringstream msg;
+            msg << "structured_object does not support a [";
+            msg << _interface;
+            msg << "] for plugin resolution";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+        }
+ 
         // =-=-=-=-=-=-=-
         // try to find the resource based on the type 
-        eirods::error err = _mgr.resolve( "struct file", _ptr );
+        resource_ptr resc_ptr;
+        eirods::error err = resc_mgr.resolve( 
+                                         "struct file", 
+                                         resc_ptr );
         if( err.ok() ) {
+            _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
             return SUCCESS();
 
         } else {
             // =-=-=-=-=-=-=-
             // otherwise create a resource and add properties from this object
-            error init_err = _mgr.init_from_type( "structfile", "struct file", "struct_file_inst", "empty context", _ptr );
+            error init_err = resc_mgr.init_from_type( 
+                                          "structfile", 
+                                          "struct file", 
+                                          "struct_file_inst", 
+                                          "empty context", 
+                                          resc_ptr );
             if( !init_err.ok() ) {
                 return PASSMSG( "failed to load resource plugin", init_err );
             
@@ -120,25 +143,26 @@ namespace eirods {
             return ERROR( status, msg.str() );
         }
         
-        _ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
+        resc_ptr->set_property< rodsServerHost_t* >( RESOURCE_HOST, tmpRodsServerHost );
 
-        _ptr->set_property<long>( RESOURCE_ID, -1 );
-        _ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
-        _ptr->set_property<long>( RESOURCE_QUOTA, -1 );
+        resc_ptr->set_property<long>( RESOURCE_ID, -1 );
+        resc_ptr->set_property<long>( RESOURCE_FREESPACE, -1 );
+        resc_ptr->set_property<long>( RESOURCE_QUOTA, -1 );
         
-        _ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
+        resc_ptr->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );
         
-        _ptr->set_property<std::string>( RESOURCE_ZONE,      addr_.zoneName );
-        _ptr->set_property<std::string>( RESOURCE_NAME,      "structfile" );
-        _ptr->set_property<std::string>( RESOURCE_LOCATION,  addr_.hostAddr );
-        _ptr->set_property<std::string>( RESOURCE_TYPE,      "structfile" );
-        _ptr->set_property<std::string>( RESOURCE_CLASS,     "cache" );
-        _ptr->set_property<std::string>( RESOURCE_PATH,      physical_path_ );
-        _ptr->set_property<std::string>( RESOURCE_INFO,      "blank info" );
-        _ptr->set_property<std::string>( RESOURCE_COMMENTS,  "blank comments" );
-        _ptr->set_property<std::string>( RESOURCE_CREATE_TS, "create?" );
-        _ptr->set_property<std::string>( RESOURCE_MODIFY_TS, "modify?" );
+        resc_ptr->set_property<std::string>( RESOURCE_ZONE,      addr_.zoneName );
+        resc_ptr->set_property<std::string>( RESOURCE_NAME,      "structfile" );
+        resc_ptr->set_property<std::string>( RESOURCE_LOCATION,  addr_.hostAddr );
+        resc_ptr->set_property<std::string>( RESOURCE_TYPE,      "structfile" );
+        resc_ptr->set_property<std::string>( RESOURCE_CLASS,     "cache" );
+        resc_ptr->set_property<std::string>( RESOURCE_PATH,      physical_path_ );
+        resc_ptr->set_property<std::string>( RESOURCE_INFO,      "blank info" );
+        resc_ptr->set_property<std::string>( RESOURCE_COMMENTS,  "blank comments" );
+        resc_ptr->set_property<std::string>( RESOURCE_CREATE_TS, "create?" );
+        resc_ptr->set_property<std::string>( RESOURCE_MODIFY_TS, "modify?" );
 
+        _ptr = boost::dynamic_pointer_cast< resource >( resc_ptr );
         return SUCCESS();
 
     } // resolve

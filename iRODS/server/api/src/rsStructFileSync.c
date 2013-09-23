@@ -103,13 +103,15 @@ int _rsStructFileSync( rsComm_t*           _comm,
 
     // =-=-=-=-=-=-=-
     // retrieve the resource name given the object
-    eirods::resource_ptr resc;
-    eirods::error ret_err = struct_obj->resolve( resc_mgr, resc ); 
+    eirods::plugin_ptr ptr;
+    eirods::error ret_err = struct_obj->resolve( eirods::RESOURCE_INTERFACE, ptr ); 
     if( !ret_err.ok() ) {
         eirods::error err = PASSMSG( "failed to resolve resource", ret_err );
         eirods::log( err );
         return ret_err.code();
     }
+    
+    eirods::resource_ptr resc = boost::dynamic_pointer_cast< eirods::resource >( ptr );
  
     // =-=-=-=-=-=-=-
     // make the call to the "extract" interface

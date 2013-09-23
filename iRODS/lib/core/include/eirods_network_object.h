@@ -42,8 +42,9 @@ namespace eirods {
         
         // =-=-=-=-=-=-=-
         // plugin resolution operation
-        virtual error resolve( resource_manager&, resource_ptr& ) = 0;
-        virtual error resolve( network_manager&,  network_ptr&  ) = 0;
+        virtual error resolve( 
+                          const std::string&, // plugin interface
+                          plugin_ptr& ) = 0;  // resolved plugin
         
         // =-=-=-=-=-=-=-
         // convertion to client comm ptr
