@@ -108,13 +108,12 @@ namespace eirods {
                       empty_context,
                       net_ptr );
             if( !ret.ok() ) {
-                // =-=-=-=-=-=-=-
-                // upcast for out variable
-                _ptr = boost::dynamic_pointer_cast< plugin_base >( net_ptr );
-               
                 return PASS( ret );
 
             } else {
+                // =-=-=-=-=-=-=-
+                // upcast for out variable
+                _ptr = boost::dynamic_pointer_cast< plugin_base >( net_ptr );
                 return SUCCESS();
 
             }

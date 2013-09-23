@@ -196,6 +196,7 @@ eirods::error readMsgHeader(
                   ptr,
                   tmp_buf, 
                   _time_val );
+    
     // =-=-=-=-=-=-=-
     // pass along an error from the interface or return SUCCESS
     if( !ret_err.ok() ) {
@@ -782,10 +783,8 @@ int
 connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
 {
     int status;
-
     conn->sock = connectToRhostWithRaddr (&conn->remoteAddr, 
                                           conn->windowSize, 1);
-
     if (conn->sock < 0) {
         rodsLogError (LOG_NOTICE, conn->sock,
                       "connectToRhost: connect to host %s on port %d failed, status = %d",
@@ -841,7 +840,6 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         strncpy( conn->negotiation_results, results.c_str(), MAX_NAME_LEN );
     }
 
-    
     ret = readVersion( net_obj, &conn->svrVersion );
     if( !ret.ok() ) {
         rodsLogError (LOG_ERROR, status,

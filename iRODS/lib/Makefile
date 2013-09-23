@@ -75,16 +75,11 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_plugin_base.o \
 		$(libCoreObjDir)/eirods_resource_plugin.o \
 		$(libCoreObjDir)/eirods_error.o  \
-		$(libCoreObjDir)/eirods_data_object.o \
-		$(libCoreObjDir)/eirods_file_object.o \
-		$(libCoreObjDir)/eirods_collection_object.o \
 		$(libCoreObjDir)/eirods_log.o \
-		$(libCoreObjDir)/eirods_structured_object.o \
 		$(libCoreObjDir)/eirods_children_parser.o \
 		$(libCoreObjDir)/eirods_hierarchy_parser.o \
 		$(libCoreObjDir)/eirods_stacktrace.o \
 		$(libCoreObjDir)/eirods_signal.o \
-		$(libCoreObjDir)/eirods_physical_object.o \
 		$(libCoreObjDir)/eirods_resource_redirect.o \
 		$(libCoreObjDir)/eirods_plugin_name_generator.o \
 		$(libCoreObjDir)/eirods_client_negotiation.o \
@@ -214,6 +209,9 @@ libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
 	@true
 
 $(LIBRARY): $(OBJS)
+	@echo "Building lib$(LIBRARY_NAME).a"
+#	@rm -f $(LIBRARY)
+#	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS) 
 	@echo "Building lib$(LIBRARY_NAME).a"
 	@rm -f $(LIBRARY)
 	@$(AR) $(AROPT) $(LIBRARY) $^

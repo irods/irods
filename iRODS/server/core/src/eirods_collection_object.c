@@ -7,8 +7,9 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_stacktrace.h"
 
+extern eirods::resource_manager resc_mgr;
+
 namespace eirods {
-    extern resource_manager resc_mgr;
 
     // =-=-=-=-=-=-=-
     // public - ctor

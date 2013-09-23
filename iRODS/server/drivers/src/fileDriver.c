@@ -94,6 +94,7 @@ eirods::error fileRead(
 
     // =-=-=-=-=-=-=-
     // make the call to the "read" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< void*, int >( _comm, eirods::RESOURCE_OP_READ, _object, _buf, _len );
 
     // =-=-=-=-=-=-=-
@@ -124,6 +125,7 @@ eirods::error fileWrite(
     
     // =-=-=-=-=-=-=-
     // make the call to the "write" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< void*, int >( _comm, eirods::RESOURCE_OP_WRITE, _object, _buf, _len );
 
     // =-=-=-=-=-=-=-
@@ -213,6 +215,7 @@ eirods::error fileStat(
 
     // =-=-=-=-=-=-=-
     // make the call to the "stat" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< struct stat* >( _comm, eirods::RESOURCE_OP_STAT, _object, _statbuf );
 
     // =-=-=-=-=-=-=-
@@ -243,6 +246,7 @@ eirods::error fileLseek(
 
     // =-=-=-=-=-=-=-
     // make the call to the "lseek" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< long long, int >( _comm, eirods::RESOURCE_OP_LSEEK, _object, _offset, _whence );
 
     // =-=-=-=-=-=-=-
@@ -388,6 +392,7 @@ eirods::error fileReaddir(
 
     // =-=-=-=-=-=-=-
     // make the call to the "readdir" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< struct rodsDirent** >( _comm, eirods::RESOURCE_OP_READDIR, _object, _dirent_ptr );
 
     // =-=-=-=-=-=-=-
@@ -417,6 +422,7 @@ eirods::error fileRename(
 
     // =-=-=-=-=-=-=-
     // make the call to the "rename" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call<  const char* >( _comm, eirods::RESOURCE_OP_RENAME,  _object, _new_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
@@ -483,6 +489,7 @@ eirods::error fileStageToCache(
 
     // =-=-=-=-=-=-=-
     // make the call to the "stagetocache" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< const char* >( _comm, eirods::RESOURCE_OP_STAGETOCACHE, _object, _cache_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
@@ -520,6 +527,7 @@ eirods::error fileSyncToArch(
 
     // =-=-=-=-=-=-=-
     // make the call to the "synctoarch" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
     ret_err = resc->call< const char* >( _comm, eirods::RESOURCE_OP_SYNCTOARCH, _object, _cache_file_name.c_str() );
 
     // =-=-=-=-=-=-=-
