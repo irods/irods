@@ -188,7 +188,7 @@ class ResourceSuite(ResourceBase):
     # iput
     ###################
 
-    @unittest.skipIf( psutil.disk_usage('/').free < 6000000000 , "not enough free space for 2.3GB local file + iput" )
+    @unittest.skipIf( psutil.disk_usage('/').free < 20000000000 , "not enough free space for 5 x 2.3GB file ( local + iput + 3 repl children )" )
     def test_local_iput_with_really_big_file__ticket_1623(self):
         # regression test against ticket [#1623]
         # bigfilesize = [2287636992] is just under 'int' threshold
