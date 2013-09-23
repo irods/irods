@@ -140,4 +140,8 @@ namespace eirods {
         return *this;
     }
 
+    const std::string& hierarchy_parser::delimiter(void) {
+        return DELIM;
+    }
+
 }; // namespace eirods

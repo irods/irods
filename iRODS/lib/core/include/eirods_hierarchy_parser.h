@@ -56,6 +56,9 @@ namespace eirods {
         /// @brief Returns an iterator to the end of the list
         const_iterator end(void) const;
 
+        /// @brief Returns the delimiter used for hierarchy strings.
+        static const std::string& delimiter(void);
+
     private:
         resc_list_t resc_list_;
     };

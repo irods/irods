@@ -331,6 +331,16 @@ extern "C" {
         eirods::error ret = example_check_params_and_path( _ctx );
         if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
         
+
+            if(true) {
+                std::string delimiter = eirods::hierarchy_parser::delimiter();
+                std::stringstream msg;
+                msg << "qqq - Hierarchy delimiter: \"";
+                msg << delimiter;
+                msg << "\"";
+                DEBUGMSG(msg.str());
+            }
+
             // =-=-=-=-=-=-=-
             // get ref to fco
             eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
