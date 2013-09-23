@@ -549,6 +549,11 @@ partialDataPut (portalTransferInp_t *myInput)
     rodsLong_t bytesToGet = 0;
     rodsLong_t myOffset = 0;
 
+    if (myInput == NULL) {
+        rodsLog (LOG_SYS_FATAL, "partialDataPut: NULL myInput");
+        return;
+    }
+
     // =-=-=-=-=-=-=-
     // flag to determine if we need to use encryption
     bool use_encryption_flg = ( strlen( myInput->shared_secret ) != 0 );
@@ -558,11 +563,6 @@ partialDataPut (portalTransferInp_t *myInput)
            endTime;
     startTime=time (0);
 #endif
-
-    if (myInput == NULL) {
-        rodsLog (LOG_SYS_FATAL, "partialDataPut: NULL myInput");
-        return;
-    }
 
     myInput->status = 0;
     destL3descInx = myInput->destFd;
