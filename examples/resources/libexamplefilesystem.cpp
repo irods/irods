@@ -872,25 +872,29 @@ extern "C" {
 
             // =-=-=-=-=-=-=-
             // handle error cases
-            if((result = ASSERT_ERROR(tmp_dirent != NULL || errno != 0, -1, "End of directory list reached.")).ok()) {
+            if((result = ASSERT_ERROR(tmp_dirent != NULL, -1, "End of directory list reached.")).ok()) {
+                
+                // =-=-=-=-=-=-=-
+                // alloc dirent as necessary
+                if( !( *_dirent_ptr ) ) {
+                    (*_dirent_ptr ) = new rodsDirent_t;
+                }
+
+                // =-=-=-=-=-=-=-
+                // convert standard dirent to rods dirent struct
+                int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
+
+#if defined(solaris_platform)
+                rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
+#endif
+            }
+            else {
                 // =-=-=-=-=-=-=-
                 // cache status in out variable
                 int status = UNIX_FILE_READDIR_ERR - errno;
-                if((result = ASSERT_ERROR(tmp_dirent != NULL, status, "Readdir error, status = %d, errno= \"%s\".",
+                if((result = ASSERT_ERROR(errno == 0, status, "Readdir error, status = %d, errno= \"%s\".",
                                           status, strerror(errno))).ok()) {
-                    // =-=-=-=-=-=-=-
-                    // alloc dirent as necessary
-                    if( !( *_dirent_ptr ) ) {
-                        (*_dirent_ptr ) = new rodsDirent_t;
-                    }
-
-                    // =-=-=-=-=-=-=-
-                    // convert standard dirent to rods dirent struct
-                    int status = direntToRodsDirent( (*_dirent_ptr), tmp_dirent );
-
-#if defined(solaris_platform)
-                    rstrcpy( (*_dirent_ptr)->d_name, tmp_dirent->d_name, MAX_NAME_LEN );
-#endif
+                    result.code(-1);
                 }
             }
         }
