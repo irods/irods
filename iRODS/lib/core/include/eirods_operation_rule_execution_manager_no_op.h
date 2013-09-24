@@ -18,10 +18,12 @@ namespace eirods {
         /// @brief Constructor
         operation_rule_execution_manager_no_op( 
             const std::string& _inst,   // plugin name 
-            const std::string& _op ) :  // operation name
+            const std::string& _op,     // operation name
+            keyValPair_t&      _kvp ) : // fco vars
             operation_rule_execution_manager_base(
                 _inst,
-                _op ) {  
+                _op,
+                _kvp ) {  
         } // ctor
         
         /// =-=-=-=-=-=-=-

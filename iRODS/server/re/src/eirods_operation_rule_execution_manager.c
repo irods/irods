@@ -14,10 +14,12 @@ namespace eirods {
         // public - Constructor
         operation_rule_execution_manager::operation_rule_execution_manager( 
             const std::string& _instance,
-            const std::string& _op_name ) :
+            const std::string& _op_name,
+            keyValPair_t&      _kvp ) :
             operation_rule_execution_manager_base( 
                _instance, 
-               _op_name ) {
+               _op_name,
+               _kvp ) {
             rule_name_ = "pep_" + op_name_;
 
         } // ctor
@@ -66,8 +68,9 @@ namespace eirods {
             // manufacture an rei for the applyRule
             ruleExecInfo_t rei;
             memset ((char*)&rei, 0, sizeof (ruleExecInfo_t));
+            rei.condInputData = &kvp_;
             rstrcpy( rei.pluginInstanceName, instance_.c_str(), MAX_NAME_LEN );
-
+            
             // =-=-=-=-=-=-=-
             // add the output parameter     
             msParamArray_t params;

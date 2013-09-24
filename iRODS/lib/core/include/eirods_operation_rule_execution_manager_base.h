@@ -27,9 +27,11 @@ namespace eirods {
         /// @brief Constructor
         operation_rule_execution_manager_base( 
             const std::string& _inst,   // plugin name 
-            const std::string& _op ) :  // operation name
+            const std::string& _op,     // operation name
+            keyValPair_t&      _kvp ) : // vars from fco
             instance_( _inst ),
-            op_name_( _op ) {
+            op_name_( _op ),
+            kvp_( _kvp ) {
         }
         
         /// =-=-=-=-=-=-=-
@@ -55,6 +57,7 @@ namespace eirods {
         protected:
             std::string instance_; // instance name of the plugin
             std::string op_name_;  // operation name
+            keyValPair_t& kvp_;    // vars from fco to pass to pep
 
     }; // class operation_rule_execution_manager_base
 

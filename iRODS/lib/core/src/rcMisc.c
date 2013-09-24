@@ -780,6 +780,19 @@ replKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput)
     return (0);
 }
 
+int copyKeyVal (
+    const keyValPair_t* _src, 
+    keyValPair_t*       _dst ) {
+    // =-=-=-=-=-=-=-
+    // blatantly copy the src kvp to the dst
+    for( int i = 0; i < _src->len; ++i ) {
+        addKeyVal( _dst, _src->keyWord[i], _src->value[i] );
+
+    }
+
+    return (0);
+}
+
 int
 replDataObjInp (dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp)
 {

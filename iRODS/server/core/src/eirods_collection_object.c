@@ -126,7 +126,8 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - get vars from object for rule engine 
     error collection_object::get_re_vars( 
-        keyValPair_t& _vars ) {
+        keyValPair_t& _kvp ) {
+        data_object::get_re_vars( _kvp );
         return SUCCESS();
 
     } // get_re_vars 

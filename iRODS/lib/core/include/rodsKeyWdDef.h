@@ -217,4 +217,71 @@
 #define SYNC_OBJ_KW                  "sync_object"
 #define IN_REPL_KW                   "in_repl"
 
+// =-=-=-=-=-=-=-
+// eirods tcp keyword definitions
+#define SOCKET_HANDLE_KW             "tcp_socket_handle"
+
+// =-=-=-=-=-=-=-
+// eirods ssl keyword definitions
+#define SSL_HOST_KW                  "ssl_host"
+#define SSL_SHARED_SECRET_KW         "ssl_shared_secret"
+#define SSL_KEY_SIZE_KW              "ssl_key_size"
+#define SSL_SALT_SIZE_KW             "ssl_salt_size"
+#define SSL_NUM_HASH_ROUNDS_KW       "ssl_num_hash_rounds"
+#define SSL_ALGORITHM_KW             "ssl_algorithm"
+
+// =-=-=-=-=-=-=-
+// eirods data_object keyword definitions
+#define PHYSICAL_PATH_KW             "do_physical_path"
+#define MODE_KW                      "do_mode_kw"
+#define FLAGS_KW                     "do_flags_kw"
+// borrowed RESC_HIER_STR_KW
+
+// =-=-=-=-=-=-=-
+// eirods file_object keyword definitions
+#define LOGICAL_PATH_KW              "fo_logical_path"
+#define FILE_DESCRIPTOR_KW           "fo_file_descriptor"
+#define L1_DESC_IDX_KW               "fo_l1_desc_idx"
+#define SIZE_KW                      "fo_size"
+#define REPL_REQUESTED_KW            "fo_repl_requested"
+// borrowed IN_PDMO_KW
+
+// =-=-=-=-=-=-=-
+// eirods structured_object keyword definitions
+#define HOST_ADDR_KW                 "so_host_addr"
+#define ZONE_NAME_KW                 "so_zone_name"
+#define PORT_NUM_KW                  "so_port_num"
+#define SUB_FILE_PATH_KW             "so_sub_file_path"
+// borrowed OFFSET_KW
+// borrowed DATA_TYPE_KW 
+// borrowed OPR_TYPE_KW      
+
+// =-=-=-=-=-=-=-
+// eirods spec coll keyword definitions
+#define SPEC_COLL_CLASS_KW           "sc_class"
+#define SPEC_COLL_TYPE_KW            "sc_type"
+#define SPEC_COLL_OBJ_PATH_KW        "sc_obj_path"
+#define SPEC_COLL_RESOURCE_KW        "sc_resource"
+#define SPEC_COLL_RESC_HIER_KW       "sc_resc_hier"
+#define SPEC_COLL_PHY_PATH_KW        "sc_phy_path"
+#define SPEC_COLL_CACHE_DIR_KW       "sc_cache_dir"
+#define SPEC_COLL_CACHE_DIRTY        "sc_cache_dirty"
+#define SPEC_COLL_REPL_NUM           "sc_repl_num"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif	/* RODS_KEYWD_DEF */

@@ -70,6 +70,8 @@ getValByInx (inxValPair_t *inxValPair, int inx);
 int
 replKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
 int
+copyKeyVal (const keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
+int
 replDataObjInp (dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp);
 int
 replSpecColl (specColl_t *inSpecColl, specColl_t **outSpecColl);

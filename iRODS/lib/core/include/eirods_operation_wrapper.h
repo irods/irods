@@ -68,13 +68,20 @@ namespace eirods {
 		// =-=-=-=-=-=-=-
 		// public - single parameter template, there will be more...
 		error call( 
-                  plugin_context& _ctx ) {
-                   
+            plugin_context& _ctx ) {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
+
+               // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
- 
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -89,8 +96,12 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+            
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
-              return op_err;
+               return op_err;
 
 		   } else {
 			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
@@ -103,13 +114,21 @@ namespace eirods {
 		// public - single parameter template, there will be more...
 		template< typename T1 >
 		error call( 
-                  plugin_context& _ctx,
-                  T1                          _t1 ) {
+            plugin_context& _ctx,
+            T1              _t1 ) {
             if( operation_ ) {
                // =-=-=-=-=-=-=-
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
+
+               // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
-               
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -124,8 +143,12 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+ 
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
-              return op_err;
+               return op_err;
 
 		   } else {
 			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
@@ -137,14 +160,22 @@ namespace eirods {
 		// public - two parameter template, there will be more...
 		template< typename T1, typename T2 >
 		error call( 
-                  plugin_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2 ) {
+           plugin_context& _ctx,
+           T1              _t1, 
+           T2              _t2 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
 
+               // =-=-=-=-=-=-=-
+               // instantiate a rule executor
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -159,6 +190,10 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+ 
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
                return op_err;
 
@@ -172,14 +207,23 @@ namespace eirods {
 		// public - three parameter template, there will be more...
 		template< typename T1, typename T2, typename T3 >
 		error call( 
-                  plugin_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2, 
-                  T3                          _t3 ) {
+           plugin_context& _ctx,
+           T1              _t1, 
+           T2              _t2, 
+           T3              _t3 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
+
+               // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
 
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
@@ -195,6 +239,10 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+ 
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
                return op_err;
 
@@ -208,16 +256,24 @@ namespace eirods {
 		// public - four parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4 >
 		error call( 
-                  plugin_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2, 
-                  T3                          _t3, 
-                  T4                          _t4 ) {
+           plugin_context& _ctx,
+           T1              _t1, 
+           T2              _t2, 
+           T3              _t3, 
+           T4              _t4 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
 
+               // =-=-=-=-=-=-=-
+               // instantiate a rule executor
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -232,6 +288,10 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+ 
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
                return op_err;
 
@@ -246,17 +306,25 @@ namespace eirods {
 		// public - five parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5 >
 		error call( 
-                  plugin_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2, 
-                  T3                          _t3, 
-                  T4                          _t4, 
-                  T5                          _t5 ) {
+           plugin_context& _ctx,
+           T1              _t1, 
+           T2              _t2, 
+           T3              _t3, 
+           T4              _t4, 
+           T5              _t5 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
+
+               // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
- 
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -271,6 +339,10 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+ 
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
                return op_err;
 
@@ -284,18 +356,26 @@ namespace eirods {
 		// public - six parameter template, there will be more...
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6 >
 		error call( 
-                  plugin_context& _ctx,
-                  T1                          _t1, 
-                  T2                          _t2, 
-                  T3                          _t3, 
-                  T4                          _t4, 
-                  T5                          _t5, 
-                  T6                          _t6 ) {
+           plugin_context& _ctx,
+           T1              _t1, 
+           T2              _t2, 
+           T3              _t3, 
+           T4              _t4, 
+           T5              _t5, 
+           T6              _t6 ) {
 		   if( operation_ ) {
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
 
+               // =-=-=-=-=-=-=-
+               // instantiate a rule executor
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -310,6 +390,10 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+ 
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
                return op_err;
 
@@ -324,18 +408,26 @@ namespace eirods {
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7 >
 		error call( 
             plugin_context& _ctx,
-            T1                          _t1, 
-            T2                          _t2, 
-            T3                          _t3, 
-            T4                          _t4, 
-            T5                          _t5, 
-            T6                          _t6, 
-            T7                          _t7 ) {
-		    if( operation_ ) {
+            T1              _t1, 
+            T2              _t2, 
+            T3              _t3, 
+            T4              _t4, 
+            T5              _t5, 
+            T6              _t6, 
+            T7              _t7 ) {
+            if( operation_ ) {
+                // =-=-=-=-=-=-=-
+                // get vars from fco
+                keyValPair_t kvp;
+                bzero( &kvp, sizeof( kvp ) );
+                _ctx.fco()->get_re_vars( kvp );
+
                 // =-=-=-=-=-=-=-
                 // instantiate a rule executor
-                oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
-
+                oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                       instance_name_, 
+                                                       operation_name_,
+                                                       kvp );
                 // =-=-=-=-=-=-=-
                 // call the pre-rule for this op
                 std::string pre_results;
@@ -351,6 +443,10 @@ namespace eirods {
                 std::string post_results;
                 rule_exec->exec_post_op( post_results );
 
+                // =-=-=-=-=-=-=-
+                // clean up kvp struct
+                clearKeyVal( &kvp );
+
                 return op_err;
 
             } else {
@@ -365,19 +461,27 @@ namespace eirods {
 		template< typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8 >
         error call( 
             plugin_context& _ctx,
-            T1                          _t1, 
-            T2                          _t2, 
-            T3                          _t3, 
-            T4                          _t4, 
-            T5                          _t5, 
-            T6                          _t6, 
-            T7                          _t7,
-            T8                          _t8 ) {
-		   if( operation_ ) {
+            T1              _t1, 
+            T2              _t2, 
+            T3              _t3, 
+            T4              _t4, 
+            T5              _t5, 
+            T6              _t6, 
+            T7              _t7,
+            T8              _t8 ) {
+            if( operation_ ) {
+               // =-=-=-=-=-=-=-
+               // get vars from fco
+               keyValPair_t kvp;
+               bzero( &kvp, sizeof( kvp ) );
+               _ctx.fco()->get_re_vars( kvp );
+
                // =-=-=-=-=-=-=-
                // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( instance_name_, operation_name_ );
-
+               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
+                                                      instance_name_, 
+                                                      operation_name_,
+                                                      kvp );
                // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
@@ -392,6 +496,10 @@ namespace eirods {
                // call the poste-rule for this op
                std::string post_results;
                rule_exec->exec_post_op( post_results );
+
+               // =-=-=-=-=-=-=-
+               // clean up kvp struct
+               clearKeyVal( &kvp );
 
                return op_err;
 

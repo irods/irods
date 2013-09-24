@@ -17,8 +17,9 @@ namespace eirods {
 
     static oper_rule_exec_mgr_ptr operation_rule_execution_manager_factory(
         const std::string& _inst,
-        const std::string& _op ) {
-        return oper_rule_exec_mgr_ptr( new MANAGER_TYPE( _inst, _op ) );
+        const std::string& _op,
+        keyValPair_t&      _kvp ) {
+        return oper_rule_exec_mgr_ptr( new MANAGER_TYPE( _inst, _op, _kvp ) );
 
     } // operation_rule_execution_manager_factory
 

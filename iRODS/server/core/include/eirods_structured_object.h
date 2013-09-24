@@ -44,7 +44,6 @@ namespace eirods {
         // Accessors
         inline rodsHostAddr_t addr()          const { return addr_;          }
         inline std::string    sub_file_path() const { return sub_file_path_; }
-        inline int            mode()          const { return mode_;          }
         inline size_t         offset()        const { return offset_;        }
         inline specColl_t*    spec_coll()     const { return spec_coll_;     }
         inline std::string    data_type()     const { return data_type_;     }
@@ -65,8 +64,6 @@ namespace eirods {
         //      :: higher in the original design
         rodsHostAddr_t addr_;
         std::string    sub_file_path_;
-        int            mode_;
-        int            flags_;
         rodsLong_t     offset_;
         specColl_t*    spec_coll_;
         std::string    data_type_;

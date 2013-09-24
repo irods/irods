@@ -14,8 +14,6 @@ namespace eirods {
     structured_object::structured_object() :
         file_object(),
         sub_file_path_(""),
-        mode_(0),
-        flags_(0),
         offset_(0),
         spec_coll_(0),
         data_type_(""),
@@ -28,8 +26,6 @@ namespace eirods {
         file_object( _rhs ) {
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
-        mode_          = _rhs.mode_;
-        flags_         = _rhs.flags_;
         offset_        = _rhs.offset_;
         spec_coll_     = _rhs.spec_coll_;
         data_type_     = _rhs.data_type_;
@@ -42,8 +38,6 @@ namespace eirods {
     structured_object::structured_object( subFile_t& _sub ) :
         file_object(),
         sub_file_path_(""),
-        mode_(0),
-        flags_(0),
         offset_(0),
         spec_coll_(0),
         data_type_(""),
@@ -53,10 +47,10 @@ namespace eirods {
         // pull out subFile attributes
         addr_          = _sub.addr;
         sub_file_path_ = _sub.subFilePath;
-        mode_          = _sub.mode;
-        flags_         = _sub.flags;
         offset_        = _sub.offset;
         spec_coll_     = _sub.specColl;
+        mode( _sub.mode );
+        flags( _sub.flags );
 
         // =-=-=-=-=-=-=-
         // file* functions will fail with an empty physical_path_
@@ -79,8 +73,6 @@ namespace eirods {
 
         addr_          = _rhs.addr_;
         sub_file_path_ = _rhs.sub_file_path_;
-        mode_          = _rhs.mode_;
-        flags_         = _rhs.flags_;
         offset_        = _rhs.offset_;
         spec_coll_     = _rhs.spec_coll_;
         data_type_     = _rhs.data_type_;
@@ -170,7 +162,58 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - get vars from object for rule engine 
     error structured_object::get_re_vars( 
-        keyValPair_t& _vars ) {
+        keyValPair_t& _kvp ) {
+        file_object::get_re_vars( _kvp );
+        // =-=-=-=-=-=-=-
+        // host addr
+        addKeyVal( &_kvp, HOST_ADDR_KW, addr_.hostAddr );
+        addKeyVal( &_kvp, ZONE_NAME_KW, addr_.zoneName );
+     
+        std::stringstream pn;
+        pn << addr_.portNum;
+        addKeyVal( &_kvp, PORT_NUM_KW, pn.str().c_str() );
+
+        // =-=-=-=-=-=-=-
+        // misc attributes
+        addKeyVal( &_kvp, SUB_FILE_PATH_KW, sub_file_path_.c_str() );
+
+        std::stringstream off;
+        off << offset_;
+        addKeyVal( &_kvp, OFFSET_KW, off.str().c_str() );
+        
+        addKeyVal( &_kvp, DATA_TYPE_KW,     data_type_.c_str() );
+
+        std::stringstream opr;
+        opr << opr_type_;
+        addKeyVal( &_kvp, OPR_TYPE_KW, opr.str().c_str() );
+
+        // =-=-=-=-=-=-=-
+        // spec coll 
+        if( spec_coll_ ) {
+            std::stringstream coll_class;
+            coll_class << spec_coll_->collClass;
+            addKeyVal( &_kvp, SPEC_COLL_CLASS_KW, coll_class.str().c_str() );
+
+            std::stringstream type;
+            type << spec_coll_->type;
+            addKeyVal( &_kvp, SPEC_COLL_TYPE_KW, type.str().c_str() );
+
+            addKeyVal( &_kvp, SPEC_COLL_OBJ_PATH_KW,  spec_coll_->objPath  );
+            addKeyVal( &_kvp, SPEC_COLL_RESOURCE_KW,  spec_coll_->resource );
+            addKeyVal( &_kvp, SPEC_COLL_RESC_HIER_KW, spec_coll_->rescHier );
+            addKeyVal( &_kvp, SPEC_COLL_PHY_PATH_KW,  spec_coll_->phyPath  );
+            addKeyVal( &_kvp, SPEC_COLL_CACHE_DIR_KW, spec_coll_->cacheDir );
+
+            std::stringstream dirty;
+            dirty << spec_coll_->cacheDirty;
+            addKeyVal( &_kvp, SPEC_COLL_CACHE_DIRTY, dirty.str().c_str() );
+            
+            std::stringstream repl;
+            repl << spec_coll_->replNum;
+            addKeyVal( &_kvp, SPEC_COLL_REPL_NUM, repl.str().c_str() );
+       
+        }
+         
         return SUCCESS();
 
     } // get_re_vars 

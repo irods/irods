@@ -93,20 +93,21 @@ namespace eirods {
         std::string                    data_type_;       // data type as described in objInfo.h:32
         int                            file_descriptor_; // file descriptor, if the file is in flight
         int                            l1_desc_idx_;     // index into irods L1 file decriptor table
-        size_t                         size_;           // size of the file in bytes
-        int                            repl_requested_; // requested replica number
-        bool                           in_pdmo_;        // flag indicating the current operations are occurring from within a pdmo
-                                                        // call
-        std::vector< physical_object > replicas_;       // structures holding replica info initialized by factory fcn from
-                                                        // dataObjInfoHead
-        keyValPair_t                  cond_input_;      // input keywords
+        size_t                         size_;            // size of the file in bytes
+        int                            repl_requested_;  // requested replica number
+        bool                           in_pdmo_;         // flag indicating the current operations are 
+                                                         // occurring from within a pdmo
+                                                         // call
+        std::vector< physical_object > replicas_;        // structures holding replica info initialized 
+                                                         // by factory fcn from
+                                                         // dataObjInfoHead
+        keyValPair_t                  cond_input_;       // input keywords
         
     }; // class file_object
     
     /// =-=-=-=-=-=-=-
     /// @brief typedef for managed file object ptr
     typedef boost::shared_ptr< file_object > file_object_ptr;
-     
 
     // =-=-=-=-=-=-=-
     // factory function which will take a dataObjInfo pointer and create a file_object
@@ -119,9 +120,8 @@ namespace eirods {
                              rsComm_t*,            // server network connection  
                              dataObjInp_t*,        // incoming data object request struct
                              std::string&,         // chosen resource hierarchy string
-                             rodsServerHost_t*&  , // svr2svr conn if redirecting
+                             rodsServerHost_t*&,   // svr2svr conn if redirecting
                              int& );               // local / remote flag
-
 
 }; // namespace eirods
 

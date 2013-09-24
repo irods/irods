@@ -57,6 +57,26 @@ namespace eirods {
         return *this;
     } // operator=
 
+    // =-=-=-=-=-=-=-
+    // public - copy attributes to irods kvp
+    error data_object::get_re_vars( 
+        keyValPair_t& _kvp ) {
+
+        addKeyVal( &_kvp, PHYSICAL_PATH_KW, physical_path_.c_str() );
+        addKeyVal( &_kvp, RESC_HIER_STR_KW, resc_hier_.c_str() );
+
+        std::stringstream mode_str;
+        mode_str << mode_;
+        addKeyVal( &_kvp, MODE_KW, mode_str.str().c_str() );
+
+        std::stringstream flags_str;
+        flags_str << flags_;
+        addKeyVal( &_kvp, FLAGS_KW, flags_str.str().c_str() );
+
+        return SUCCESS();
+
+    } // get_re_vars
+
 }; // namespace eirods
 
 

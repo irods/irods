@@ -34,7 +34,8 @@ namespace eirods {
         /// @brief Constructor
         operation_rule_execution_manager( 
             const std::string&,   // name of the plugin
-            const std::string& ); // operation name
+            const std::string&,   // operation name
+            keyValPair_t& );      // vars from fco
 
         /// =-=-=-=-=-=-=-
         /// @brief necessary virtual dtor

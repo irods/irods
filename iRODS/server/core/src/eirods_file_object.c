@@ -200,8 +200,36 @@ namespace eirods {
     // =-=-=-=-=-=-=-
     // public - get vars from object for rule engine 
     error file_object::get_re_vars( 
-        keyValPair_t& _vars ) {
+        keyValPair_t& _kvp ) {
+        data_object::get_re_vars( _kvp );
+        
+        copyKeyVal( &cond_input_, &_kvp );
+
+        addKeyVal( &_kvp, LOGICAL_PATH_KW, logical_path_.c_str() );
+        addKeyVal( &_kvp, DATA_TYPE_KW,    data_type_.c_str()    );
+
+        std::stringstream fd;
+        fd << file_descriptor_;
+        addKeyVal( &_kvp, FILE_DESCRIPTOR_KW, fd.str().c_str() );
+
+        std::stringstream idx;
+        idx << l1_desc_idx_;
+        addKeyVal( &_kvp, L1_DESC_IDX_KW, idx.str().c_str() );
+
+        std::stringstream sz;
+        sz << size_;
+        addKeyVal( &_kvp, SIZE_KW, sz.str().c_str() );
+
+        std::stringstream repl;
+        repl << repl_requested_;
+        addKeyVal( &_kvp, REPL_REQUESTED_KW, repl.str().c_str() );
+
+        std::stringstream pdmo;
+        pdmo << in_pdmo_;
+        addKeyVal( &_kvp, IN_PDMO_KW, pdmo.str().c_str() );
+
         return SUCCESS();
+
     } // get_re_vars 
 
     // =-=-=-=-=-=-=-
