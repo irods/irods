@@ -274,15 +274,6 @@ extern "C" {
             eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
             size_t found = fco->physical_path().find_last_of("/");
             std::string path = fco->physical_path().substr(0, found);
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Path: \"";
-                msg << path;
-                msg << "\"";
-                DEBUGMSG(msg.str());
-            }
-
             int status = -1;
             rodsLong_t fssize = USER_NO_SUPPORT_ERR;
 #if defined(solaris_platform)
@@ -295,32 +286,11 @@ extern "C" {
     defined(aix_platform)     || defined(linux_platform) ||     \
     defined(osx_platform)
 #if defined(solaris_platform)
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Called here.";
-                DEBUGMSG(msg.str());
-            }
-
             status = statvfs( path.c_str(), &statbuf );
 #else
 #if defined(sgi_platform)
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Called here.";
-                DEBUGMSG(msg.str());
-            }
-
             status = statfs( path.c_str(), &statbuf, sizeof (struct statfs), 0 );
 #else
-
-            if(true) {
-                std::stringstream msg;
-                msg << "qqq - Called here.";
-                DEBUGMSG(msg.str());
-            }
-
             status = statfs( path.c_str(), &statbuf );
 #endif
 #endif
