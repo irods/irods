@@ -790,7 +790,7 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // make the call to readdir
             struct dirent * tmp_dirent = readdir( fco->directory_pointer() );
-rodsLog( LOG_NOTICE, "XXXX - unix_file_readdir_plugin :: tmp_dirent %d, errno %d", tmp_dirent, errno );
+
             // =-=-=-=-=-=-=-
             // handle error cases
             if((result = ASSERT_ERROR(tmp_dirent != NULL || errno != 0, -1, "End of directory list reached.")).ok()) {
