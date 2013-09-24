@@ -42,6 +42,13 @@ if [ "$1" != "ci" ] ; then
     OPTS="$OPTS -c "
 fi
 
+# pass any other parameters to the test framework
+if [ "$1" == "ci" ] ; then
+    shift
+    PYTESTS=$@
+else
+    PYTESTS=$@
+fi
 
 #########################
 # run tests
@@ -67,7 +74,11 @@ if [ "$PYTHONVERSION" \< "2.7" ] ; then
     cp -r ../$UNITTEST2VERSION/unittest2 .
     cp ../$UNITTEST2VERSION/unit2 .
 fi
-$PYTHONCMD $OPTS test_eirods_resource_types iadmin_suite catalog_suite
+if [ "$PYTESTS" != "" ] ; then
+    $PYTHONCMD $OPTS $PYTESTS
+else
+    $PYTHONCMD $OPTS test_eirods_resource_types iadmin_suite catalog_suite
+fi
 nosetests -v test_allrules.py
 
 # run DICE developed perl-based devtest suite
