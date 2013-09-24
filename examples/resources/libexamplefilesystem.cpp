@@ -273,7 +273,7 @@ extern "C" {
             // cast down the hierarchy to the desired object
             eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
             size_t found = fco->physical_path().find_last_of("/");
-            std::string path = fco->physical_path().substr(0, found);
+            std::string path = fco->physical_path().substr(0, found + 1);
             int status = -1;
             rodsLong_t fssize = USER_NO_SUPPORT_ERR;
 #if defined(solaris_platform)
