@@ -258,6 +258,107 @@ extern "C" {
     }
     
     // =-=-=-=-=-=-=-
+    // interface to determine free space on a device given a path
+    eirods::error unix_file_get_fsfreespace_plugin( 
+        eirods::resource_plugin_context& _ctx )
+    {
+        eirods::error result = SUCCESS();
+        
+        // =-=-=-=-=-=-=-
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path( _ctx );
+        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
+        
+            // =-=-=-=-=-=-=-
+            // cast down the hierarchy to the desired object
+            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            size_t found = fco->physical_path().find_last_of("/");
+            std::string path = fco->physical_path().substr(0, found);
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Path: \"";
+                msg << path;
+                msg << "\"";
+                DEBUGMSG(msg.str());
+            }
+
+            int status = -1;
+            rodsLong_t fssize = USER_NO_SUPPORT_ERR;
+#if defined(solaris_platform)
+            struct statvfs statbuf;
+#else
+            struct statfs statbuf;
+#endif
+
+#if defined(solaris_platform) || defined(sgi_platform)   ||     \
+    defined(aix_platform)     || defined(linux_platform) ||     \
+    defined(osx_platform)
+#if defined(solaris_platform)
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Called here.";
+                DEBUGMSG(msg.str());
+            }
+
+            status = statvfs( path.c_str(), &statbuf );
+#else
+#if defined(sgi_platform)
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Called here.";
+                DEBUGMSG(msg.str());
+            }
+
+            status = statfs( path.c_str(), &statbuf, sizeof (struct statfs), 0 );
+#else
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Called here.";
+                DEBUGMSG(msg.str());
+            }
+
+            status = statfs( path.c_str(), &statbuf );
+#endif
+#endif
+
+            // =-=-=-=-=-=-=-
+            // handle error, if any
+            int err_status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
+            if((result = ASSERT_ERROR(status >= 0, err_status, "Statfs error for \"%s\", status = %d.",
+                                      path.c_str(), err_status)).ok()) {
+
+#if defined(sgi_platform)
+                if (statbuf.f_frsize > 0) {
+                    fssize = statbuf.f_frsize;
+                } else {
+                    fssize = statbuf.f_bsize;
+                }
+                fssize *= statbuf.f_bavail;
+#endif
+
+#if defined(aix_platform) || defined(osx_platform) ||   \
+    defined(linux_platform)
+                fssize = statbuf.f_bavail * statbuf.f_bsize;
+#endif
+ 
+#if defined(sgi_platform)
+                fssize = statbuf.f_bfree * statbuf.f_bsize;
+#endif
+                result.code(fssize);
+            }
+
+#endif /* solaris_platform, sgi_platform .... */
+        }
+        
+        return result;
+
+    } // unix_file_get_fsfreespace_plugin
+
+    // =-=-=-=-=-=-=-
     // interface for POSIX create
     eirods::error unix_file_create_plugin( 
         eirods::resource_plugin_context& _ctx )
@@ -272,44 +373,52 @@ extern "C" {
             // =-=-=-=-=-=-=-
             // get ref to fco
             eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-        
-            // =-=-=-=-=-=-=-
-            // make call to umask & open for create
-            mode_t myMask = umask((mode_t) 0000);
-            int    fd     = open( fco->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco->mode() );
 
-            // =-=-=-=-=-=-=-
-            // reset the old mask 
-            (void) umask((mode_t) myMask);
-                
-            // =-=-=-=-=-=-=-
-            // if we got a 0 descriptor, try again
-            if( fd == 0 ) {
-        
-                close (fd);
-                rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
-                open ("/dev/null", O_RDWR, 0);
-                fd = open( fco->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco->mode() );
-            }
-
-            // =-=-=-=-=-=-=-
-            // cache file descriptor in out-variable
-            fco->file_descriptor( fd );
-                        
-            // =-=-=-=-=-=-=-
-            // trap error case with bad fd
-            if( fd < 0 ) {
-                int status = UNIX_FILE_CREATE_ERR - errno;
-                if(!(result = ASSERT_ERROR(fd >= 0, UNIX_FILE_CREATE_ERR - errno, "create error for \"%s\", errno = \"%s\", status = %d",
-                                           fco->physical_path().c_str(), strerror(errno), status)).ok()) {
+            ret = unix_file_get_fsfreespace_plugin(_ctx);
+            if((result = ASSERT_PASS(ret, "Error determining freespace on system.")).ok()) {
+                rodsLong_t file_size = fco->size();
+                if((result = ASSERT_ERROR(file_size < 0 || ret.code() >= file_size, USER_FILE_TOO_LARGE, "File size: %ld is greater than space left on device: %ld",
+                                          file_size, ret.code())).ok()) {
+                    
+                    // =-=-=-=-=-=-=-
+                    // make call to umask & open for create
+                    mode_t myMask = umask((mode_t) 0000);
+                    int    fd     = open( fco->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco->mode() );
 
                     // =-=-=-=-=-=-=-
-                    // WARNING :: Major Assumptions are made upstream and use the FD also as a
-                    //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
-                    fco->file_descriptor( status );
-                    result.code(status);
-                } else {
-                    result.code(fd);
+                    // reset the old mask 
+                    (void) umask((mode_t) myMask);
+                
+                    // =-=-=-=-=-=-=-
+                    // if we got a 0 descriptor, try again
+                    if( fd == 0 ) {
+        
+                        close (fd);
+                        rodsLog( LOG_NOTICE, "unix_file_create_plugin: 0 descriptor" );
+                        open ("/dev/null", O_RDWR, 0);
+                        fd = open( fco->physical_path().c_str(), O_RDWR|O_CREAT|O_EXCL, fco->mode() );
+                    }
+
+                    // =-=-=-=-=-=-=-
+                    // cache file descriptor in out-variable
+                    fco->file_descriptor( fd );
+                        
+                    // =-=-=-=-=-=-=-
+                    // trap error case with bad fd
+                    if( fd < 0 ) {
+                        int status = UNIX_FILE_CREATE_ERR - errno;
+                        if(!(result = ASSERT_ERROR(fd >= 0, UNIX_FILE_CREATE_ERR - errno, "create error for \"%s\", errno = \"%s\", status = %d",
+                                                   fco->physical_path().c_str(), strerror(errno), status)).ok()) {
+
+                            // =-=-=-=-=-=-=-
+                            // WARNING :: Major Assumptions are made upstream and use the FD also as a
+                            //         :: Status, if this is not done EVERYTHING BREAKS!!!!111one
+                            fco->file_descriptor( status );
+                            result.code(status);
+                        } else {
+                            result.code(fd);
+                        }
+                    }
                 }
             }
         }
@@ -889,78 +998,6 @@ extern "C" {
         return result;
 
     } // unix_file_rename_plugin
-
-    // =-=-=-=-=-=-=-
-    // interface to determine free space on a device given a path
-    eirods::error unix_file_get_fsfreespace_plugin( 
-        eirods::resource_plugin_context& _ctx )
-    {
-        eirods::error result = SUCCESS();
-        
-        // =-=-=-=-=-=-=-
-        // Check the operation parameters and update the physical path
-        eirods::error ret = unix_check_params_and_path( _ctx );
-        if((result = ASSERT_PASS(ret, "Invalid parameters or physical path.")).ok()) {
-        
-            // =-=-=-=-=-=-=-
-            // cast down the hierarchy to the desired object
-            eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-
-            int status = -1;
-            rodsLong_t fssize = USER_NO_SUPPORT_ERR;
-#if defined(solaris_platform)
-            struct statvfs statbuf;
-#else
-            struct statfs statbuf;
-#endif
-
-#if defined(solaris_platform) || defined(sgi_platform)   ||     \
-    defined(aix_platform)     || defined(linux_platform) ||     \
-    defined(osx_platform)
-#if defined(solaris_platform)
-            status = statvfs( fco->physical_path().c_str(), &statbuf );
-#else
-#if defined(sgi_platform)
-            status = statfs( fco->physical_path().c_str(), 
-                             &statbuf, sizeof (struct statfs), 0 );
-#else
-            status = statfs( fco->physical_path().c_str(), 
-                             &statbuf );
-#endif
-#endif
-
-            // =-=-=-=-=-=-=-
-            // handle error, if any
-            int err_status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
-            if((result = ASSERT_ERROR(status >= 0, err_status, "Statfs error for \"%s\", status = %d.",
-                                      fco->physical_path().c_str(), err_status)).ok()) {
-
-#if defined(sgi_platform)
-                if (statbuf.f_frsize > 0) {
-                    fssize = statbuf.f_frsize;
-                } else {
-                    fssize = statbuf.f_bsize;
-                }
-                fssize *= statbuf.f_bavail;
-#endif
-
-#if defined(aix_platform) || defined(osx_platform) ||   \
-    defined(linux_platform)
-                fssize = statbuf.f_bavail * statbuf.f_bsize;
-#endif
- 
-#if defined(sgi_platform)
-                fssize = statbuf.f_bfree * statbuf.f_bsize;
-#endif
-
-            }
-
-#endif /* solaris_platform, sgi_platform .... */
-        }
-        
-        return result;
-
-    } // unix_file_get_fsfreespace_plugin
 
     eirods::error
     unixFileCopyPlugin( int         mode, 
