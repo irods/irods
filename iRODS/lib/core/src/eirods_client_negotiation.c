@@ -321,10 +321,32 @@ namespace eirods {
                 free( data_buf.buf );
             if( error_buf.buf )
                 free( error_buf.buf );
-            std::stringstream msg;
-            msg << "wrong message type [" << msg_header.type << "] ";
-            msg << "expected [" << RODS_CS_NEG_T << "]";
-            return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
+
+            // =-=-=-=-=-=-=-
+            // trap potential case where server does not support
+            // advanced negotation.  a version msg would be sent
+            // back instead.
+            if( strcmp( msg_header.type, RODS_VERSION_T ) == 0 ) {
+                // =-=-=-=-=-=-=-
+                // if no negoation is allowed then provide a readable
+                // error for the client
+                std::stringstream msg;
+                msg << "received [" << msg_header.type << "] ";
+                msg << "but expected [" << RODS_CS_NEG_T << "]\n\n";
+                msg << "\t*** Advanced negotiation is enabled in this E-iRODS environment ***\n"; 
+                msg << "\t*** which is most likely not supported by the server.           ***\n";
+                msg << "\t*** Comment out irodsClientServerNegotiation in the irodsEnv    ***\n";
+                msg << "\t*** file to disable.                                            ***\n"; 
+                return ERROR( EIRODS_ADVANCED_NEGOTIATION_NOT_SUPPORTED, msg.str() );
+               
+            } else {
+                // =-=-=-=-=-=-=-
+                // something entirely unexpected happened
+                std::stringstream msg;
+                msg << "wrong message type [" << msg_header.type << "] ";
+                msg << "expected [" << RODS_CS_NEG_T << "]";
+                return ERROR( SYS_HEADER_TYPE_LEN_ERR, msg.str() );
+            }
         }
      
         // =-=-=-=-=-=-=-
@@ -372,7 +394,8 @@ namespace eirods {
             return ERROR( status, "unpackStruct failed" );
                           
         } 
-         _cs_neg_msg.reset( tmp_cs_neg );
+        
+        _cs_neg_msg.reset( tmp_cs_neg );
 
         // =-=-=-=-=-=-=-
         // win!!!111one
