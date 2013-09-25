@@ -746,8 +746,9 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class random_resource : public eirods::resource {
     public:
-        random_resource( const std::string& _inst_name, 
-                             const std::string& _context ) : 
+        random_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
             //set_start_operation( "random_start_operation" );
         }

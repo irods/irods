@@ -1500,7 +1500,7 @@ extern "C" {
 
     public:
         repl_resource(
-            const std::string _inst_name,
+            const std::string& _inst_name,
             const std::string& _context ) : 
             eirods::resource( _inst_name, _context )
             {

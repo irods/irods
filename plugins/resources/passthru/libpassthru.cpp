@@ -668,8 +668,12 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class passthru_resource : public eirods::resource {
     public:
-        passthru_resource( const std::string _inst_name, const std::string& _context ) : 
-            eirods::resource( _inst_name, _context ) {
+        passthru_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) : 
+                eirods::resource( 
+                    _inst_name, 
+                    _context ) {
             // =-=-=-=-=-=-=-
             // parse context string into property pairs assuming a ; as a separator
             std::vector< std::string > props;

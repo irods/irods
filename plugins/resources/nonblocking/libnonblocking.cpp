@@ -1482,7 +1482,7 @@ extern "C" {
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class unixfilesystem_resource : public eirods::resource {
+    class non_blocking_resource : public eirods::resource {
         // =-=-=-=-=-=-=-
         // 3a. create a class to provide maintenance operations, this is only for example
         //     and will not be called.
@@ -1501,7 +1501,7 @@ extern "C" {
             }
 
             eirods::error operator()( rcComm_t* ) {
-                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
+                rodsLog( LOG_NOTICE, "non_blocking_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
                 return SUCCESS();
             }
 
@@ -1511,8 +1511,8 @@ extern "C" {
         }; // class maintenance_operation
 
     public:
-        unixfilesystem_resource( const std::string& _inst_name, 
-                                 const std::string& _context ) : 
+        non_blocking_resource( const std::string& _inst_name, 
+                               const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
 
             if( !context_.empty() ) {
@@ -1560,21 +1560,11 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-#if 0
-            std::string name;
-            eirods::error err = get_property< std::string >( "name", name );
-            if( !err.ok() ) {
-                return PASSMSG( "unixfilesystem_resource::post_disconnect_maintenance_operation failed.", err );
-            }
-
-            _op = maintenance_operation( name );
-            return SUCCESS();
-#else
             return ERROR( -1, "nop" );
-#endif
+
         }
 
-    }; // class unixfilesystem_resource
+    }; // class non_blocking_resource
   
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
@@ -1586,8 +1576,8 @@ extern "C" {
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
-        // 4a. create unixfilesystem_resource
-        unixfilesystem_resource* resc = new unixfilesystem_resource( _inst_name, _context );
+        // 4a. create non_blocking_resource
+        non_blocking_resource* resc = new non_blocking_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load

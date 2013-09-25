@@ -2266,7 +2266,9 @@ extern "C" {
     //    operations.  semicolon is the preferred delimiter
     class tarfilesystem_resource : public eirods::resource {
     public:
-        tarfilesystem_resource( const std::string& _inst_name, const std::string& _context ) :
+        tarfilesystem_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) :
             eirods::resource( _inst_name, _context ) {
         } // ctor
 
