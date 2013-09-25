@@ -16,8 +16,8 @@
 
 **************************************************************************/
 
-#include "rods.h"
-#include "rcMisc.h"
+// =-=-=-=-=-=-=-
+// eirods includes
 #include "eirods_error.h"
 #include "eirods_zone_info.h"
 #include "eirods_sql_logger.h"
@@ -28,11 +28,17 @@
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
 
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rods.h"
+#include "rcMisc.h"
 #include "icatMidLevelRoutines.h"
 #include "icatMidLevelHelpers.h"
 #include "icatHighLevelRoutines.h"
 #include "icatLowLevel.h"
 
+// =-=-=-=-=-=-=-
+// stl includes
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -1868,7 +1874,6 @@ eirods::error chlRescObjCount(
 {
     eirods::error result = SUCCESS();
     rodsLong_t obj_count = 0;
-    char obj_count_string[MAX_NAME_LEN];
     int status;
     
     if((status = cmlGetIntegerValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
@@ -1894,7 +1899,6 @@ _rescHasData(
     bool result = false;
     eirods::sql_logger logger("_rescHasData", logSQL);
     int status;
-    char obj_count_string[MAX_NAME_LEN];
     static const char* func_name = "_rescHasData";
     rodsLong_t obj_count;
     
@@ -5266,9 +5270,11 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 }
 
 /* Modify a Resource (certain fields) */
-int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
-               char *optionValue) {
-
+int chlModResc(
+    rsComm_t* rsComm, 
+    char*     rescName, 
+    char*     option,
+    char*     optionValue ) {
     int status, OK;
     char myTime[50];
     char rescId[MAX_NAME_LEN];
@@ -5299,8 +5305,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     if (strncmp(rescName, BUNDLE_RESC, strlen(BUNDLE_RESC))==0) {
         char errMsg[155];
         snprintf(errMsg, 150, 
-                 "%s is a built-in resource needed for bundle operations.", 
-                 BUNDLE_RESC);
+                "%s is a built-in resource needed for bundle operations.", 
+                BUNDLE_RESC);
         addRErrorMsg (&rsComm->rError, 0, errMsg);
         return(CAT_PSEUDO_RESC_MODIFY_DISALLOWED);
     }
@@ -5311,8 +5317,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     rescId[0]='\0';
     if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 1 ");
     status = cmlGetStringValueFromSql(
-        "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
-        rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
+            "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
+            rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
     if (status != 0) {
         if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
         _rollback("chlModResc");
@@ -5327,8 +5333,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 2");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_info=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_info=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5344,8 +5350,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 3");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5372,39 +5378,39 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 4");
         if (inType==0) {
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
         }
         if (inType==1) {
 #if ORA_ICAT
             /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as integer) + cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #elif MY_ICAT
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = free_space + ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #else
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as bigint) + cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #endif
         }
         if (inType==2) {
 #if ORA_ICAT
             /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as integer) - cast(? as integer), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #elif MY_ICAT
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = free_space - ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #else
             status =  cmlExecuteNoAnswerSql(
-                "update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
-                &icss);
+                    "update R_RESC_MAIN set free_space = cast(free_space as bigint) - cast(? as bigint), free_space_ts = ?, modify_ts=? where resc_id=?",
+                    &icss);
 #endif
         }
         if (status != 0) {
@@ -5423,13 +5429,13 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (myHostEnt <= 0) {
             char errMsg[155];
             snprintf(errMsg, 150, 
-                     "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
-                     optionValue);
+                    "Warning, resource host address '%s' is not a valid DNS entry, gethostbyname failed.", 
+                    optionValue);
             addRErrorMsg (&rsComm->rError, 0, errMsg);
         }
         if (strcmp(optionValue, "localhost") == 0) { // JMC - backport 4650
             addRErrorMsg (&rsComm->rError, 0, 
-                          "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
+                    "Warning, resource host address 'localhost' will not work properly as it maps to the local host from each client.");
         }
 
         // =-=-=-=-=-=-=-
@@ -5438,8 +5444,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 5");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5451,23 +5457,23 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     }
     if (strcmp(option, "type")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 6");
-        #if 0 // JMC :: resource type is now dynamic
+#if 0 // JMC :: resource type is now dynamic
         status = cmlCheckNameToken("resc_type", optionValue, &icss);
         if (status !=0 ) {
             char errMsg[105];
             snprintf(errMsg, 100, "resource_type '%s' is not valid", 
-                     optionValue);
+                    optionValue);
             addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_TYPE);
         }
-        #endif
+#endif
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 7");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_type_name = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_type_name = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5485,7 +5491,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         if (status !=0 ) {
             char errMsg[105];
             snprintf(errMsg, 100, "resource_class '%s' is not valid", 
-                     optionValue);
+                    optionValue);
             addRErrorMsg (&rsComm->rError, 0, errMsg);
             return(CAT_INVALID_RESOURCE_CLASS);
         }
@@ -5495,8 +5501,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=rescId;
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc S---Q---L 9");
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5509,25 +5515,25 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 #endif
     if (strcmp(option, "path")==0) {
         if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 10");
-      status = cmlGetStringValueFromSql(
-         "select resc_def_path from R_RESC_MAIN where resc_id=?",
-        rescPath, MAX_NAME_LEN, rescId, 0, 0, &icss);
-      if (status != 0) {
-        rodsLog(LOG_NOTICE,
-                "chlModResc cmlGetStringValueFromSql query failure %d",
-                status);
-        _rollback("chlModResc");
-        return(status);
-      }
+        status = cmlGetStringValueFromSql(
+                "select resc_def_path from R_RESC_MAIN where resc_id=?",
+                rescPath, MAX_NAME_LEN, rescId, 0, 0, &icss);
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc cmlGetStringValueFromSql query failure %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
 
-      if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 11");
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 11");
 
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_def_path=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_def_path=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5544,8 +5550,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_status=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_status=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5561,10 +5567,10 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
-/*    If the new name is not unique, this will return an error */
+        /*    If the new name is not unique, this will return an error */
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_name=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_name=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
@@ -5577,8 +5583,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
-            "update R_DATA_MAIN set resc_name=? where resc_name=?",
-            &icss);
+                "update R_DATA_MAIN set resc_name=? where resc_name=?",
+                &icss);
         if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
         if (status != 0) {
             rodsLog(LOG_NOTICE,
@@ -5592,8 +5598,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
-            "update R_SERVER_LOAD set resc_name=? where resc_name=?",
-            &icss);
+                "update R_SERVER_LOAD set resc_name=? where resc_name=?",
+                &icss);
         if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
         if (status != 0) {
             rodsLog(LOG_NOTICE,
@@ -5607,8 +5613,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=optionValue;
         cllBindVars[cllBindVarCount++]=rescName;
         status =  cmlExecuteNoAnswerSql(
-            "update R_SERVER_LOAD_DIGEST set resc_name=? where resc_name=?",
-            &icss);
+                "update R_SERVER_LOAD_DIGEST set resc_name=? where resc_name=?",
+                &icss);
         if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
         if (status != 0) {
             rodsLog(LOG_NOTICE,
@@ -5617,7 +5623,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
             _rollback("chlModResc");
             return(status);
         }
-      
+
         OK=1;
     }
 
@@ -5626,8 +5632,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         cllBindVars[cllBindVarCount++]=myTime;
         cllBindVars[cllBindVarCount++]=rescId;
         status =  cmlExecuteNoAnswerSql(
-            "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
-            &icss);
+                "update R_RESC_MAIN set resc_context=?, modify_ts=? where resc_id=?",
+                &icss);
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure for resc context %d",
@@ -5645,11 +5651,11 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     /* Audit */
     snprintf(commentStr, sizeof commentStr, "%s %s", option, optionValue);
     status = cmlAudit3(AU_MOD_RESC,  
-                       rescId,
-                       rsComm->clientUser.userName,
-                       rsComm->clientUser.rodsZone,
-                       commentStr,
-                       &icss);
+            rescId,
+            rsComm->clientUser.userName,
+            rsComm->clientUser.rodsZone,
+            commentStr,
+            &icss);
     if (status != 0) {
         rodsLog(LOG_NOTICE,
                 "chlModResc cmlAudit3 failure %d",
@@ -5666,13 +5672,13 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
         return(status);
     }
 
-   if (rescPath[0]!='\0') {
-      /* if the path was gotten, return it */
+    if (rescPath[0]!='\0') {
+        /* if the path was gotten, return it */
 
-       snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
-              rescPath);
-      addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
-   }
+        snprintf(rescPathMsg, sizeof(rescPathMsg), "Previous resource path: %s", 
+                rescPath);
+        addRErrorMsg (&rsComm->rError, 0, rescPathMsg);
+    }
 
     return(0);
 }

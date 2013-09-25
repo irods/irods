@@ -1035,7 +1035,7 @@ extern "C" {
     // is not used.
     eirods::error unix_file_stagetocache_plugin( 
         eirods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name )
+        const char*                      _cache_file_name )
     {
         eirods::error result = SUCCESS();
         
@@ -1060,7 +1060,7 @@ extern "C" {
     // is not used.
     eirods::error unix_file_synctoarch_plugin( 
         eirods::resource_plugin_context& _ctx,
-        char*                               _cache_file_name )
+        char*                            _cache_file_name )
     {
         eirods::error result = SUCCESS();
         
@@ -1076,7 +1076,9 @@ extern "C" {
             ret = unixFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
             result = ASSERT_PASS(ret, "Failed");
         }
+
         return result;
+
     } // unix_file_synctoarch_plugin
 
     // =-=-=-=-=-=-=-
@@ -1292,8 +1294,18 @@ extern "C" {
                 }
             }
         }
+
         return result;
+
     } // unix_file_redirect_plugin
+
+    // =-=-=-=-=-=-=-
+    // unix_file_rebalance - code which would rebalance the subtree
+    eirods::error unix_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // unix_file_rebalancec
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
@@ -1434,6 +1446,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "unix_file_modified_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "unix_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "unix_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

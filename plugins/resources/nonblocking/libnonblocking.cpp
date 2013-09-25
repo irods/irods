@@ -1423,6 +1423,14 @@ extern "C" {
 
     } // nonblocking_file_redirect_plugin
 
+    // =-=-=-=-=-=-=-
+    // nonblocking_file_rebalance - code which would rebalance the subtree
+    eirods::error nonblocking_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // nonblocking_file_rebalancec
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     eirods::error nonblocking_file_registered_plugin(
@@ -1607,6 +1615,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "nonblocking_file_modified_plugin" );
 
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "nonblocking_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "nonblocking_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -2252,6 +2252,14 @@ extern "C" {
     }
 
     // =-=-=-=-=-=-=-
+    // tar_file_rebalance - code which would rebalance the subtree
+    eirods::error tar_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // tar_file_rebalance
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle tar file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
@@ -2304,6 +2312,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "tar_file_registered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "tar_file_unregistered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "tar_file_modified_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,    "tar_file_rebalance" );
         
         // =-=-=-=-=-=-=-
         // struct file specific operations 

@@ -1034,7 +1034,16 @@ extern "C" {
     } // round_robin_redirect
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // round_robin_file_rebalance - code which would rebalance the subtree
+    eirods::error round_robin_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // round_robin_file_rebalancec
+
+
+    // =-=-=-=-=-=-=-
+    // 3. create derived class to handle round_robin file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
@@ -1136,7 +1145,7 @@ extern "C" {
     eirods::resource* plugin_factory( const std::string& _inst_name, 
                                       const std::string& _context  ) {
         // =-=-=-=-=-=-=-
-        // 4a. create unixfilesystem_resource
+        // 4a. create round_robinfilesystem_resource
         roundrobin_resource* resc = new roundrobin_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
@@ -1165,6 +1174,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "round_robin_file_modified" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "round_robin_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "round_robin_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

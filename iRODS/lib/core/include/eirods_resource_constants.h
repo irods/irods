@@ -43,33 +43,34 @@ namespace eirods {
 
     // =-=-=-=-=-=-=-
     /// @brief constants for resource operation indexing
-    const std::string RESOURCE_OP_CREATE( "create" );
-    const std::string RESOURCE_OP_OPEN( "open" );
-    const std::string RESOURCE_OP_READ( "read" );
-    const std::string RESOURCE_OP_WRITE( "write" );
-    const std::string RESOURCE_OP_CLOSE( "close" );
-    const std::string RESOURCE_OP_UNLINK( "unlink" );
-    const std::string RESOURCE_OP_STAT( "stat" );
-    const std::string RESOURCE_OP_FSTAT( "fstat" );
-    const std::string RESOURCE_OP_FSYNC( "fsync" );
-    const std::string RESOURCE_OP_MKDIR( "mkdir" );
-    const std::string RESOURCE_OP_CHMOD( "chmod" );
-    const std::string RESOURCE_OP_OPENDIR( "opendir" );
-    const std::string RESOURCE_OP_READDIR( "readdir" );
-    const std::string RESOURCE_OP_STAGE( "stage" );
-    const std::string RESOURCE_OP_RENAME( "rename" );
-    const std::string RESOURCE_OP_FREESPACE( "freespace" );
-    const std::string RESOURCE_OP_LSEEK( "lseek" );
-    const std::string RESOURCE_OP_RMDIR( "rmdir" );
-    const std::string RESOURCE_OP_CLOSEDIR( "closedir" );
-    const std::string RESOURCE_OP_TRUNCATE( "truncate" );
-    const std::string RESOURCE_OP_STAGETOCACHE( "stagetocache" );
-    const std::string RESOURCE_OP_SYNCTOARCH( "synctoarch" );
+    const std::string RESOURCE_OP_CREATE( "eirods_resource_create" );
+    const std::string RESOURCE_OP_OPEN( "eirods_resource_open" );
+    const std::string RESOURCE_OP_READ( "eirods_resource_read" );
+    const std::string RESOURCE_OP_WRITE( "eirods_resource_write" );
+    const std::string RESOURCE_OP_CLOSE( "eirods_resource_close" );
+    const std::string RESOURCE_OP_UNLINK( "eirods_resource_unlink" );
+    const std::string RESOURCE_OP_STAT( "eirods_resource_stat" );
+    const std::string RESOURCE_OP_FSTAT( "eirods_resource_fstat" );
+    const std::string RESOURCE_OP_FSYNC( "eirods_resource_fsync" );
+    const std::string RESOURCE_OP_MKDIR( "eirods_resource_mkdir" );
+    const std::string RESOURCE_OP_CHMOD( "eirods_resource_chmod" );
+    const std::string RESOURCE_OP_OPENDIR( "eirods_resource_opendir" );
+    const std::string RESOURCE_OP_READDIR( "eirods_resource_readdir" );
+    const std::string RESOURCE_OP_STAGE( "eirods_resource_stage" );
+    const std::string RESOURCE_OP_RENAME( "eirods_resource_rename" );
+    const std::string RESOURCE_OP_FREESPACE( "eirods_resource_freespace" );
+    const std::string RESOURCE_OP_LSEEK( "eirods_resource_lseek" );
+    const std::string RESOURCE_OP_RMDIR( "eirods_resource_rmdir" );
+    const std::string RESOURCE_OP_CLOSEDIR( "eirods_resource_closedir" );
+    const std::string RESOURCE_OP_TRUNCATE( "eirods_resource_truncate" );
+    const std::string RESOURCE_OP_STAGETOCACHE( "eirods_resource_stagetocache" );
+    const std::string RESOURCE_OP_SYNCTOARCH( "eirods_resource_synctoarch" );
     
-    const std::string RESOURCE_OP_REGISTERED( "registered" );
-    const std::string RESOURCE_OP_UNREGISTERED( "unregistered" );
-    const std::string RESOURCE_OP_MODIFIED( "modified" );
-    const std::string RESOURCE_OP_RESOLVE_RESC_HIER( "resolve_resc_hier" );
+    const std::string RESOURCE_OP_REGISTERED( "eirods_resource_registered" );
+    const std::string RESOURCE_OP_UNREGISTERED( "eirods_resource_unregistered" );
+    const std::string RESOURCE_OP_MODIFIED( "eirods_resource_modified" );
+    const std::string RESOURCE_OP_RESOLVE_RESC_HIER( "eirods_resource_resolve_resc_hier" );
+    const std::string RESOURCE_OP_REBALANCE( "eirods_resource_rebalance" );
 
     // =-=-=-=-=-=-=-
     /// @brief constants for icat resource properties

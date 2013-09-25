@@ -937,6 +937,15 @@ extern "C" {
 
     } // univ_mss_file_redirect
 
+
+    // =-=-=-=-=-=-=-
+    // univ_mss__file_rebalance - code which would rebalance the subtree
+    eirods::error univ_mss__file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+    
+    } // univ_mss__file_rebalancec
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
@@ -1013,7 +1022,9 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "univ_mss_file_registered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "univ_mss_file_unregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "univ_mss_file_modified" );
+
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "univ_mss_file_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "univ_mss__file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

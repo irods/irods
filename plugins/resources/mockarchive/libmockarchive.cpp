@@ -987,7 +987,15 @@ extern "C" {
     } // mock_archive_redirect_plugin
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // mock_archive_file_rebalance - code which would rebalance the subtree
+    eirods::error mock_archive_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // mock_archive_file_rebalancec
+
+    // =-=-=-=-=-=-=-
+    // 3. create derived class to handle mock_archive file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
@@ -1125,6 +1133,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "mock_archive_modified_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -1314,6 +1314,15 @@ extern "C" {
     } // compound_file_redirect
 
     // =-=-=-=-=-=-=-
+    // compound_file_rebalance - code which would rebalance the subtree
+    eirods::error compound_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // compound_file_rebalancec
+
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
     class compound_resource : public eirods::resource {
@@ -1380,6 +1389,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "compound_file_modified" );
 
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "compound_file_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "compound_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

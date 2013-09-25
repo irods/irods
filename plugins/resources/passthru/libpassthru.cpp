@@ -653,15 +653,16 @@ extern "C" {
 
     } // pass_thru_redirect_plugin
 
+    // =-=-=-=-=-=-=-
+    // pass_thru_file_rebalance - code which would rebalance the subtree
+    eirods::error pass_thru_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
 
-
-
-
-
-
+    } // pass_thru_file_rebalancec
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // 3. create derived class to handle pass_thru file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
@@ -733,6 +734,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "pass_thru_file_modified" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "pass_thru_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "pass_thru_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -1484,6 +1484,14 @@ extern "C" {
     }
 
     // =-=-=-=-=-=-=-
+    // replRebalance - code which would rebalance the subtree
+    eirods::error replRebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // replRebalance
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
@@ -1575,6 +1583,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "replFileRegistered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "replFileUnregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "replFileModified" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,    "replRebalance" );
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
