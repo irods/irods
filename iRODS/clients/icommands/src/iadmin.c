@@ -1681,7 +1681,7 @@ usage(char *subOpt)
         ""};
 
     char *modrescMsgs[]={
-        " modresc Name [name, type, host, path, status, comment, info, or freespace] Value",
+        " modresc Name [name, type, host, path, status, comment, info, freespace, or rebalance] Value",
         "         (modify Resource)",
         "Change some attribute of a resource.  For example:",
         "    modresc demoResc comment 'test resource'",
@@ -1696,6 +1696,7 @@ usage(char *subOpt)
         " ",
         "The freespace value can be simply specified, or if it starts with + or -",
         "the freespace amount will be incremented or decremented by the value.",
+        "rebalance will trigger the rebalancing operation on a coordinating node.",
         ""};
 
     char *modrescDataPathsMsgs[]={
