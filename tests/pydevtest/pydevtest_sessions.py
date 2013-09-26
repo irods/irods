@@ -26,6 +26,9 @@ icommands_bin  = "/usr/bin"
 ######################################################
 
 def admin_up():
+    # restart server because overkill
+    os.system("/var/lib/eirods/iRODS/irodsctl restart")
+
     # set up admin session
     admin = users[0]
     sessionid      = "session-"+datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
