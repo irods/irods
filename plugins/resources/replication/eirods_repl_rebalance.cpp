@@ -37,7 +37,7 @@ namespace eirods {
         addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, _dst_hier.c_str() );
         addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          _src_resc.c_str() );
         addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     _dst_resc.c_str() );
-        addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            "" );
+        addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            "THIS IS SET" );
 
         // =-=-=-=-=-=-=-
         // process the actual call for replication

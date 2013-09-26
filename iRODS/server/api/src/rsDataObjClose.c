@@ -302,9 +302,7 @@ _rsDataObjClose (
     int noChkCopyLenFlag;
 
     l1descInx = dataObjCloseInp->l1descInx;
-
     l3descInx = L1desc[l1descInx].l3descInx;
-
 
     if (l3descInx > 2) {
         /* it could be -ive for parallel I/O */
@@ -512,6 +510,12 @@ _rsDataObjClose (
                                     IRODS_ADMIN_KW) != NULL) {
                 addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
             }
+
+            char* pdmo_kw = getValByKey(&dataObjCloseInp->condInput, IN_PDMO_KW);
+            if( pdmo_kw ) {
+                addKeyVal( &regReplicaInp.condInput, IN_PDMO_KW, pdmo_kw );
+            }
+
             status = rsRegReplica (rsComm, &regReplicaInp);
             clearKeyVal (&regReplicaInp.condInput);
             /* update quota overrun */
