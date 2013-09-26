@@ -11,6 +11,7 @@
 #include "reGlobalsExtern.h"
 #include "rodsLog.h"
 #include "icatHighLevelRoutines.h"
+#include "dataObjRepl.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -27,6 +28,9 @@
 #include "eirods_replicator.h"
 #include "eirods_create_write_replicator.h"
 #include "eirods_unlink_replicator.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.h"
+#include "eirods_repl_rebalance.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -36,6 +40,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -88,6 +93,10 @@ eirods::error replCheckParams(
 }
 
 extern "C" {
+    /// =-=-=-=-=-=-=-
+    /// @brief limit of the number of repls to operation upon during rebalance
+    const int DEFAULT_LIMIT = 500;
+
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
@@ -1487,6 +1496,102 @@ extern "C" {
     // replRebalance - code which would rebalance the subtree
     eirods::error replRebalance(
         eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children first, then
+        // rebalance ourselves.
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        // =-=-=-=-=-=-=-
+        // if our children had errors, then we bail
+        if( !result.ok() ) {
+            return result;
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the property 'name' of this resource
+        std::string resc_name;
+        eirods::error ret = _ctx.prop_map().get< std::string >( 
+                                eirods::RESOURCE_NAME, 
+                                resc_name );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the number of children -> num replicas
+        int num_children = _ctx.child_map().size();
+
+        // =-=-=-=-=-=-=-
+        // build a set of children for comparison
+        std::vector< std::string > children;
+        eirods::resource_child_map::iterator c_itr = _ctx.child_map().begin();
+        for( c_itr  = _ctx.child_map().begin();
+             c_itr != _ctx.child_map().end();
+             ++c_itr ) {
+            children.push_back( c_itr->first );
+        }
+
+        // =-=-=-=-=-=-=-
+        // determine limit size
+        int limit = DEFAULT_LIMIT;
+        if( !_ctx.rule_results().empty() ) {
+            limit = boost::lexical_cast<int>( _ctx.rule_results() );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // iterate over 'limit' results from icat until none are left
+        int status = 0;
+        while( 0 == status ) {
+            // =-=-=-=-=-=-=-
+            // request the list from the icat
+            repl_query_result_t results;
+            status = chlGetDataObjsOnResourceForLimitAndNumChildren(  
+                             resc_name,
+                             num_children,
+                             limit,
+                             results );
+            repl_query_result_t::iterator r_itr = results.begin();
+            for( ; r_itr != results.end(); ++r_itr ) {
+                // =-=-=-=-=-=-=-
+                // check object results for this entry, if empty continue
+                if( r_itr->second.empty() ) {
+                    // =-=-=-=-=-=-=-
+                    // no copies exist on the resource, error for sure
+                    std::stringstream msg;
+                    msg << "object results is empty for data object [";
+                    msg << r_itr->first << "]";
+                    return ERROR( -1, msg.str() );
+                }
+         
+                // =-=-=-=-=-=-=-
+                // if the results are not empty call our processing function
+                eirods::error ret = eirods::proc_result_for_rebalance(
+                                        _ctx.comm(),     // comm object
+                                        r_itr->first,    // object path
+                                        resc_name,       // this resc name
+                                        children,        // full child list
+                                        r_itr->second ); // obj results with 
+                                                         // hiers + modes
+                if( !ret.ok() ) {
+                    return PASS( ret );
+                }
+
+            } // for r_itr
+
+        } // while 
+
         return SUCCESS();
 
     } // replRebalance
@@ -1502,8 +1607,7 @@ extern "C" {
         repl_resource(
             const std::string& _inst_name,
             const std::string& _context ) : 
-            eirods::resource( _inst_name, _context )
-            {
+            eirods::resource( _inst_name, _context ) {
                 // =-=-=-=-=-=-=-
                 // parse context string into property pairs assuming a ; as a separator
                 std::vector< std::string > props;
@@ -1562,28 +1666,28 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "replFileCreate" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "replFileOpen" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "replFileRead" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "replFileWrite" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "replFileClose" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "replFileUnlink" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "replFileStat" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "replFileMkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "replFileOpendir" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "replFileReaddir" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "replFileRename" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "replFileGetFsFreeSpace" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "replFileLseek" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "replFileRmdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "replFileClosedir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "replStageToCache" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "replSyncToArch" );
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "replRedirect" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "replFileRegistered" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "replFileUnregistered" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "replFileModified" );
-        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,    "replRebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,            "replFileCreate" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,              "replFileOpen" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,              "replFileRead" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,             "replFileWrite" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "replFileClose" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "replFileUnlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,              "replFileStat" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "replFileMkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "replFileOpendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,           "replFileReaddir" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,            "replFileRename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "replFileGetFsFreeSpace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "replFileLseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "replFileRmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,          "replFileClosedir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE,      "replStageToCache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,        "replSyncToArch" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "replRedirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "replFileRegistered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "replFileUnregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "replFileModified" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "replRebalance" );
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -71,7 +71,8 @@ namespace eirods {
         /// @brief interface to add and remove children using the zone_name::resource_name
         virtual error add_child( const std::string&, const std::string&, resource_ptr );
         virtual error remove_child( const std::string& );
-       
+        virtual int   num_children() { return children_.size(); }
+         
         // =-=-=-=-=-=-=-
         /// @brief interface to get and set a resource's parent pointer
         virtual error set_parent( const resource_ptr& );

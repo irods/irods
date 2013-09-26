@@ -396,7 +396,7 @@ namespace eirods {
             std::string tmpRescContext   = &rescContext->value[ rescContext->len * i ];
             std::string tmpRescParent    = &rescParent->value[ rescParent->len * i ];
             std::string tmpRescObjCount  = &rescObjCount->value[ rescObjCount->len * i ];
-  
+ 
             // =-=-=-=-=-=-=-
             // create the resource and add properties for column values
             resource_ptr resc;

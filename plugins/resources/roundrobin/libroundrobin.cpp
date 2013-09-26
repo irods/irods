@@ -1037,7 +1037,22 @@ extern "C" {
     // round_robin_file_rebalance - code which would rebalance the subtree
     eirods::error round_robin_file_rebalance(
         eirods::resource_plugin_context& _ctx ) {
-        return SUCCESS();
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        return result;
 
     } // round_robin_file_rebalancec
 

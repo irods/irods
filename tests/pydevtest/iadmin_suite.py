@@ -153,3 +153,77 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # Invalid names with special characters
         assertiCmd(s.adminsession,r"iadmin mkuser hawai\'i rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
         assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
+
+    # REBALANCE
+    def test_rebalance_for_repl_node(self):
+        output = commands.getstatusoutput("hostname")
+        hostname = output[1]
+
+        # =-=-=-=-=-=-=-
+        # STANDUP
+        assertiCmd(s.adminsession,"iadmin mkresc pt passthru") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt_b passthru") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt_c1 passthru") 
+        assertiCmd(s.adminsession,"iadmin mkresc pt_c2 passthru") 
+        assertiCmd(s.adminsession,"iadmin mkresc repl replication") 
+
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_a unixfilesystem "+hostname+":/tmp/pydevtest_leaf_a") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_b unixfilesystem "+hostname+":/tmp/pydevtest_leaf_b") # unix
+        assertiCmd(s.adminsession,"iadmin mkresc leaf_c unixfilesystem "+hostname+":/tmp/pydevtest_leaf_c") # unix
+
+        assertiCmd(s.adminsession,"iadmin addchildtoresc pt repl" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc repl leaf_a" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc repl pt_b" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc repl pt_c1" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc pt_b leaf_b" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc pt_c1 pt_c2" )
+        assertiCmd(s.adminsession,"iadmin addchildtoresc pt_c2 leaf_c" )
+
+        # =-=-=-=-=-=-=-
+        # place data into the resource
+        for i in range(10):
+            assertiCmd(s.adminsession,"iput -R pt README foo"+i )
+       
+        # =-=-=-=-=-=-=-
+        # trim repls so we can rebalance
+        assertiCmd(s.adminsession,"itrim -n 0 foo0 foo3 foo5 foo6 foo7 foo8" );
+        assertiCmd(s.adminsession,"itrim -n 1 foo1 foo3 foo4 foo9" );
+        assertiCmd(s.adminsession,"itrim -n 2 foo2 foo4 foo5" );
+       
+        # =-=-=-=-=-=-=-
+        # check our work
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
+        
+        # =-=-=-=-=-=-=-
+        # TEARDOWN
+        for i in range(10):
+            assertiCmd(s.adminsession,"irm -f foo"+i )
+
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt repl" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl leaf_a" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl pt_b" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl pt_c1" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_b leaf_b" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_c1 pt_c2" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_c2 leaf_c" )
+
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_c" );
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_b" );
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_a" );
+        assertiCmd(s.adminsession,"iadmin rmresc pt_c2" );
+        assertiCmd(s.adminsession,"iadmin rmresc pt_c1" );
+        assertiCmd(s.adminsession,"iadmin rmresc pt_b" );
+        assertiCmd(s.adminsession,"iadmin rmresc repl" );
+        assertiCmd(s.adminsession,"iadmin rmresc pt" );
+
+
+
+
+
+
+
+
+
+
+
+

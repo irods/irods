@@ -658,8 +658,7 @@ _rsDataObjReplNewCopy (
         char* pdmo_kw = getValByKey(&dataObjInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
             addKeyVal(&dataObjCloseInp.condInput, IN_PDMO_KW, pdmo_kw);
-        }
-
+        } 
 
         status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
 

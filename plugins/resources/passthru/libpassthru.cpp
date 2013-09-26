@@ -648,8 +648,17 @@ extern "C" {
             return PASSMSG( "pass_thru_redirect_plugin - failed getting the first child resource pointer.", ret);
         } 
 
-        return resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                         _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
+        return resc->call< const std::string*, 
+                           const std::string*, 
+                           eirods::hierarchy_parser*, 
+                           float* >( 
+                   _ctx.comm(), 
+                   eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
+                   _ctx.fco(), 
+                   _opr, 
+                   _curr_host, 
+                   _out_parser, 
+                   _out_vote );
 
     } // pass_thru_redirect_plugin
 
@@ -657,7 +666,22 @@ extern "C" {
     // pass_thru_file_rebalance - code which would rebalance the subtree
     eirods::error pass_thru_file_rebalance(
         eirods::resource_plugin_context& _ctx ) {
-        return SUCCESS();
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        return result;
 
     } // pass_thru_file_rebalancec
 
