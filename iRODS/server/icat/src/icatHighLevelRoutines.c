@@ -10556,3 +10556,88 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newH
 
 	return status;
 }
+
+/// =-=-=-=-=-=-=-
+/// @brief return a map of children who do not have a repl count meeting
+///        the num_children limit based on object path whose payload is a
+///        vector of the valid repl resource hierarchies
+int chlGetDataObjsOnResourceForLimitAndNumChildren( 
+    const std::string&   _resc_name,
+    int                  _num_children,
+    int                  _limit,
+    repl_query_result_t& _results ) {
+    // =-=-=-=-=-=-=-
+    // clear the results
+    _results.clear();
+
+    // =-=-=-=-=-=-=-
+    // the basic query string
+    char query[ MAX_NAME_LEN ];
+    std::string base_query = "select data_name, coll_name, resc_hier, data_mode from r_data_main join r_coll_main using(coll_id) where data_id in (select data_id from r_data_main where resc_hier like '%s;%s;%s' or resc_hier like '%s%s;%s' group by data_id having (count(data_id)<%d)) limit %d";
+    sprintf( 
+        query, 
+        base_query.c_str(), 
+        "%", _resc_name.c_str(), 
+        "%", "%", 
+        _resc_name.c_str(), 
+        "%", _num_children, 
+        _limit );
+
+    // =-=-=-=-=-=-=-
+    // snag the first row from the resulting query
+    int statement_num = 0;
+
+    // =-=-=-=-=-=-=-
+    // iterate over resulting rows
+    for( int i = 0; ; i++ ) {
+        // =-=-=-=-=-=-=-
+        // extract either the first or next row
+        int status = 0;
+        if( 0 == i ) {
+            status = cmlGetFirstRowFromSql( 
+                             query, 
+                             &statement_num, 
+                             0, &icss );
+        } else {
+            status = cmlGetNextRowFromStatement( statement_num, &icss );
+        }
+
+        if ( status != 0 ) {
+            return status; 
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the results from the row
+        std::string data_name( icss.stmtPtr[ statement_num ]->resultValue[0] );
+        std::string coll_name( icss.stmtPtr[ statement_num ]->resultValue[1] );
+        std::string resc_hier( icss.stmtPtr[ statement_num ]->resultValue[2] );
+        int mode = atoi( icss.stmtPtr[ statement_num ]->resultValue[3] );
+
+        // =-=-=-=-=-=-=-
+        // build the obj path and add to the result set
+        coll_name += "/";
+        coll_name += data_name;
+
+        _results[ coll_name ].push_back( std::make_pair( resc_hier, mode ) );
+
+    } // for i
+               
+    cmlFreeStatement( statement_num, &icss );
+     
+    return 0;
+     
+} // chlGetDataObjsOnResourceForLimit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
