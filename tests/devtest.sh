@@ -67,7 +67,7 @@ set -x
 cd $EIRODSROOT
 $EIRODSROOT/iRODS/irodsctl restart
 
-# run RENCI developed python-based devtest suite
+# run RENCI developed python-based devtest suite (or just specified tests)
 # ( equivalent of original icommands and irules )
 cd $EIRODSROOT/tests/pydevtest
 if [ "$PYTHONVERSION" \< "2.7" ] ; then
@@ -78,12 +78,11 @@ if [ "$PYTESTS" != "" ] ; then
     $PYTHONCMD $OPTS $PYTESTS
 else
     $PYTHONCMD $OPTS test_eirods_resource_types iadmin_suite catalog_suite
+    nosetests -v test_allrules.py
+    # run DICE developed perl-based devtest suite
+    cd $EIRODSROOT
+    $EIRODSROOT/iRODS/irodsctl devtesty
 fi
-nosetests -v test_allrules.py
-
-# run DICE developed perl-based devtest suite
-cd $EIRODSROOT
-$EIRODSROOT/iRODS/irodsctl devtesty
 
 # clean up /tmp
 set +x
