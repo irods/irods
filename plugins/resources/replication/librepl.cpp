@@ -30,6 +30,7 @@
 #include "eirods_unlink_replicator.h"
 #include "eirods_hierarchy_parser.h"
 #include "eirods_resource_redirect.h"
+#include "eirods_repl_rebalance.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -92,6 +93,10 @@ eirods::error replCheckParams(
 }
 
 extern "C" {
+    /// =-=-=-=-=-=-=-
+    /// @brief limit of the number of repls to operation upon during rebalance
+    const int DEFAULT_LIMIT = 500;
+
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
@@ -1487,234 +1492,6 @@ extern "C" {
         return result;
     }
 
-    /// =-=-=-=-=-=-=-
-    /// @brief local function to replicate a new copy for proc_result_for_rebalance
-    static 
-    eirods::error repl_for_rebalance (
-        rsComm_t*          _comm,
-        const std::string& _obj_path,
-        const std::string& _src_hier,
-        const std::string& _dst_hier,
-        const std::string& _src_resc,
-        const std::string& _dst_resc,
-        int                _mode ) {
-
-rodsLog( LOG_NOTICE, "XXXX - repl_for_rebalance :: [%s] dst resc hier [%s]", 
-         _obj_path.c_str(), _dst_hier.c_str() );
-
-        // =-=-=-=-=-=-=-
-        // create a data obj input struct to call rsDataObjRepl which given
-        // the _stage_sync_kw will either stage or sync the data object 
-        dataObjInp_t data_obj_inp;
-        bzero( &data_obj_inp, sizeof( data_obj_inp ) );
-        rstrcpy( data_obj_inp.objPath, _obj_path.c_str(), MAX_NAME_LEN );
-        data_obj_inp.createMode = _mode;
-        addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      _src_hier.c_str() );
-        addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, _dst_hier.c_str() );
-        addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          _src_resc.c_str() );
-        addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     _dst_resc.c_str() );
-        addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            "" );
-
-        // =-=-=-=-=-=-=-
-        // process the actual call for replication
-        transferStat_t* trans_stat = NULL;
-        int repl_stat = rsDataObjRepl( _comm, &data_obj_inp, &trans_stat );
-        if( repl_stat < 0 ) {
-            char* sys_error;
-            char* rods_error = rodsErrorName( repl_stat, &sys_error );
-            std::stringstream msg;
-            msg << "Failed to replicate the data object [" 
-                << _obj_path
-                << "]";
-            return ERROR( repl_stat, msg.str() );
-        }
-
-        return SUCCESS();
-
-    } // repl_for_rebalance
-
-    /// =-=-=-=-=-=-=-
-    /// @brief local function to process a result set from the rebalancing operation
-    static 
-    eirods::error proc_result_for_rebalance(
-        rsComm_t*                         _comm,
-        const std::string&                _obj_path,
-        const std::string&                _this_resc_name,
-        const std::vector< std::string >& _children,
-        const repl_obj_result_t&          _results ) {
-        // =-=-=-=-=-=-=-
-        // check incoming params
-        if( !_comm ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "null comm pointer" );
-        } else if( _obj_path.empty() ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "empty obj path" );
-        } else if( _this_resc_name.empty() ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "empty this resc name" );
-        } else if( _children.empty() ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "empty child vector" );
-        } else if( _results.empty() ) {
-            return ERROR( 
-                       SYS_INVALID_INPUT_PARAM,
-                       "empty results vector" );
-        }
-
-        // =-=-=-=-=-=-=-
-        // given this entry in the results map
-        // compare the resc hiers to the full list of
-        // children.  repl any that are missing
-        vector< std::string >::const_iterator c_itr = _children.begin();
-        for( ; c_itr != _children.end(); ++c_itr ) {
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: begin c_itr [%s]", c_itr->c_str() );
-            // =-=-=-=-=-=-=-=-
-            // look for child in hier strs for this data obj
-            bool found = false;
-            repl_obj_result_t::const_iterator o_itr = _results.begin();
-            for( ; o_itr != _results.end(); ++o_itr ) {
-                if( std::string::npos != o_itr->first.find( *c_itr ) ) {
-                    //=-=-=-=-=-=-=-
-                    // set found flag and break
-                    found = true;
-                    break;
-                }
-            }
-
-            // =-=-=-=-=-=-=-=-
-            // if its not found we repl to it
-            if( !found ) {
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: rebalance [%s] to [%s]",
-         _obj_path.c_str(), c_itr->c_str() );
-
-                // =-=-=-=-=-=-=-
-                // create an fco in order to call the resolve operation
-                int dst_mode = _results.begin()->second;
-                eirods::file_object_ptr f_ptr( new eirods::file_object( 
-                                           _comm,
-                                           _obj_path,
-                                           "",
-                                           "",
-                                           0,
-                                           dst_mode,
-                                           0 ) );
-                // =-=-=-=-=-=-=-
-                // short circuit the magic re-repl
-                f_ptr->in_pdmo( true );
-
-                // =-=-=-=-=-=-=-
-                // pick a source hier from the existing list.  this could
-                // perhaps be done heuristically - optimize later
-                const std::string& src_hier = _results.begin()->first;
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: src_hier [%s]",
-         src_hier.c_str() );
-                
-                // =-=-=-=-=-=-=-
-                // init the parser with the fragment of the 
-                // upstream hierarchy not including the repl 
-                // node as it should add itself
-                eirods::hierarchy_parser parser;
-                size_t pos = src_hier.find( _this_resc_name );
-                if( std::string::npos == pos ) {
-                    std::stringstream msg;
-                    msg << "missing repl name ["
-                        << _this_resc_name 
-                        << "] in source hier string ["
-                        << src_hier 
-                        << "]";
-                    return ERROR( 
-                               SYS_INVALID_INPUT_PARAM, 
-                               msg.str() );
-                }
-
-                std::string src_frag = src_hier.substr( 0, pos+_this_resc_name.size()+1 );
-                parser.set_string( src_frag );
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: src_frag [%s]",
-         src_frag.c_str() );
-
-                // =-=-=-=-=-=-=-
-                // handy reference to root resc name
-                std::string root_resc;
-                parser.first_resc( root_resc );
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: root_resc [%s]",
-         root_resc.c_str() );
-
-                // =-=-=-=-=-=-=-
-                // resolve the target child resource plugin
-                eirods::resource_ptr dst_resc;
-                eirods::error r_err = resc_mgr.resolve( 
-                                          *c_itr, 
-                                          dst_resc );
-                if( !r_err.ok() ) {
-                    return PASS( r_err );
-                }
-
-                // =-=-=-=-=-=-=-
-                // then we need to query the target resource and ask
-                // it to determine a dest resc hier for the repl
-                std::string host_name;
-                float            vote = 0.0;
-                r_err = dst_resc->call< const std::string*, 
-                                        const std::string*, 
-                                        eirods::hierarchy_parser*, 
-                                        float* >(
-                            _comm, 
-                            eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
-                            f_ptr, 
-                            &eirods::EIRODS_CREATE_OPERATION,
-                            &host_name, 
-                            &parser, 
-                            &vote );
-                if( !r_err.ok() ) {
-                    return PASS( r_err );
-                }
-
-                // =-=-=-=-=-=-=-
-                // extract the hier from the parser
-                std::string dst_hier;
-                parser.str( dst_hier );
-
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: dst_hier [%s]",
-         dst_hier.c_str() );
-
-                // =-=-=-=-=-=-=-
-                // now that we have all the pieces in place, actually
-                // do the replication
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: call repl_for_rebalance" );
-                r_err = repl_for_rebalance(
-                            _comm,
-                            _obj_path,
-                            src_hier,
-                            dst_hier,
-                            root_resc,
-                            root_resc,
-                            dst_mode );
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: call repl_for_rebalance. done." );
-                if( !r_err.ok() ) {
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: call repl_for_rebalance FAILED." );
-                    return PASS( r_err );
-                }
-
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: call repl_for_rebalance SUCCEEDED." );
-                //=-=-=-=-=-=-=-
-                // reset found flag so things keep working
-                found = false; 
-
-            } // if !found
-
-rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: end for c_itr" );
-        
-        } // for c_itr
-
-        return SUCCESS();
-
-    } // proc_result_for_rebalance
-
     // =-=-=-=-=-=-=-
     // replRebalance - code which would rebalance the subtree
     eirods::error replRebalance(
@@ -1744,7 +1521,9 @@ rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: end for c_itr" );
         // =-=-=-=-=-=-=-
         // get the property 'name' of this resource
         std::string resc_name;
-        eirods::error ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
+        eirods::error ret = _ctx.prop_map().get< std::string >( 
+                                eirods::RESOURCE_NAME, 
+                                resc_name );
         if( !ret.ok() ) {
             return PASS( ret );
         }
@@ -1763,11 +1542,9 @@ rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: end for c_itr" );
             children.push_back( c_itr->first );
         }
 
-        std::sort( children.begin(), children.end() );
-
         // =-=-=-=-=-=-=-
         // determine limit size
-        int limit = 500;
+        int limit = DEFAULT_LIMIT;
         if( !_ctx.rule_results().empty() ) {
             limit = boost::lexical_cast<int>( _ctx.rule_results() );
 
@@ -1797,16 +1574,16 @@ rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: end for c_itr" );
                     msg << r_itr->first << "]";
                     return ERROR( -1, msg.str() );
                 }
-rodsLog( LOG_NOTICE, "XXXX - replRebalance :: calling proc_result_for_rebalance for [%s]",
-         r_itr->first.c_str() );
+         
                 // =-=-=-=-=-=-=-
                 // if the results are not empty call our processing function
-                eirods::error ret = proc_result_for_rebalance(
+                eirods::error ret = eirods::proc_result_for_rebalance(
                                         _ctx.comm(),     // comm object
                                         r_itr->first,    // object path
                                         resc_name,       // this resc name
                                         children,        // full child list
-                                        r_itr->second ); // obj results with hier + modes
+                                        r_itr->second ); // obj results with 
+                                                         // hiers + modes
                 if( !ret.ok() ) {
                     return PASS( ret );
                 }
@@ -1889,28 +1666,28 @@ rodsLog( LOG_NOTICE, "XXXX - replRebalance :: calling proc_result_for_rebalance 
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "replFileCreate" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "replFileOpen" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "replFileRead" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "replFileWrite" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "replFileClose" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "replFileUnlink" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "replFileStat" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "replFileMkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "replFileOpendir" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "replFileReaddir" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "replFileRename" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "replFileGetFsFreeSpace" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "replFileLseek" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "replFileRmdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "replFileClosedir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "replStageToCache" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "replSyncToArch" );
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "replRedirect" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "replFileRegistered" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "replFileUnregistered" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "replFileModified" );
-        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,    "replRebalance" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,            "replFileCreate" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,              "replFileOpen" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,              "replFileRead" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,             "replFileWrite" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "replFileClose" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "replFileUnlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,              "replFileStat" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "replFileMkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "replFileOpendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,           "replFileReaddir" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,            "replFileRename" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "replFileGetFsFreeSpace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "replFileLseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "replFileRmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,          "replFileClosedir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE,      "replStageToCache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,        "replSyncToArch" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "replRedirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "replFileRegistered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "replFileUnregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "replFileModified" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "replRebalance" );
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code
