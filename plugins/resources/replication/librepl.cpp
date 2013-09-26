@@ -1720,6 +1720,28 @@ rodsLog( LOG_NOTICE, "XXXX - proc_result_for_rebalance :: end for c_itr" );
     eirods::error replRebalance(
         eirods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
+        // forward request for rebalance to children first, then
+        // rebalance ourselves.
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        // =-=-=-=-=-=-=-
+        // if our children had errors, then we bail
+        if( !result.ok() ) {
+            return result;
+        }
+
+        // =-=-=-=-=-=-=-
         // get the property 'name' of this resource
         std::string resc_name;
         eirods::error ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
