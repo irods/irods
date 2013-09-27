@@ -107,10 +107,10 @@ showResc(char *name, int longOption)
    char v1[BIG_STR];
    int i, status;
    int printCount;
-   char *columnNames[]={"resource name", "resc id", "zone", "type", "class",
-			"location",  "vault", "free space", "status",
-			"info", "comment",
-			"create time", "modify time"};
+   char *columnNames[]={"resource name", "id", "zone", "type", "class",
+		   "location",  "vault", "free space", "free space time", "status",
+		   "info", "comment", "create time", "modify time", "children",
+		   "context", "parent", "object count"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
@@ -125,11 +125,17 @@ showResc(char *name, int longOption)
       i1a[i++]=COL_R_LOC;
       i1a[i++]=COL_R_VAULT_PATH;
       i1a[i++]=COL_R_FREE_SPACE;
+      i1a[i++]=COL_R_FREE_SPACE_TIME;
       i1a[i++]=COL_R_RESC_STATUS;
       i1a[i++]=COL_R_RESC_INFO;
       i1a[i++]=COL_R_RESC_COMMENT;
       i1a[i++]=COL_R_CREATE_TIME;
       i1a[i++]=COL_R_MODIFY_TIME;
+      i1a[i++]=COL_R_RESC_CHILDREN;
+      i1a[i++]=COL_R_RESC_CONTEXT;
+      i1a[i++]=COL_R_RESC_PARENT;
+      i1a[i++]=COL_R_RESC_OBJCOUNT;
+
    }
    else {
       columnNames[0]="";
@@ -292,7 +298,7 @@ showRescAcl(char *name)
 
 int
 main(int argc, char **argv) {
-   int status, status2;
+   int status;
    rErrMsg_t errMsg;
 
    rodsArguments_t myRodsArgs;
@@ -346,13 +352,15 @@ main(int argc, char **argv) {
       exit (3);
    }
 
-   status2=0;
    if (myRodsArgs.optind == argc) {  /* no resource name specified */
       status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
    }
    else {
       if (myRodsArgs.accessControl == True) {
 	      showRescAcl(argv[myRodsArgs.optind]);
+      }
+      else {
+    	  status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
       }
    }
 
@@ -361,7 +369,6 @@ main(int argc, char **argv) {
 
    /* Exit 0 if one or more items were displayed */
    if (status > 0) exit(0);
-   if (status2 > 0) exit(0);
    exit(4);
 }
 
@@ -380,7 +387,7 @@ void usage()
 " -v verbose",
 " -V Very verbose",
 " -z Zonename  list resources of specified Zone",
-" -A Rescname  list the access permisssions (applies to Database Resources only)",
+" -A Rescname  list the access permissions (applies to Database Resources only)",
 " -h This help",
 ""};
    int i;
