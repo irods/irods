@@ -99,11 +99,11 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication ContextString:Because:Colons") # replication
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" replication ContextString:Because:Multiple:Colons") # replication
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_net","EMPTY_RESC_HOST"]) # should have empty host
         assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_def_path","EMPTY_RESC_PATH"]) # should have empty path
-        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_context","ContextString:Because:Colons"]) # should have contextstring
+        assertiCmd(s.adminsession,"iadmin lr "+testresc1,"LIST",["resc_context","ContextString:Because:Multiple:Colons"]) # should have contextstring
         assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
 

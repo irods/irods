@@ -429,6 +429,7 @@ class ResourceSuite(ResourceBase):
 
         assert errorflag == False, "oops, had an error"
 
+    @unittest.skip("TODO: revisit later, not sure this is testing anything of interest")
     def test_local_iput_collision_without_wlock(self):
         # local setup
         datafilename = "collisionfile2.txt"
