@@ -181,40 +181,91 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
         # =-=-=-=-=-=-=-
         # place data into the resource
-        for i in range(10):
-            assertiCmd(s.adminsession,"iput -R pt README foo"+i )
+        num_children = 11
+        for i in range( num_children ):
+            assertiCmd(s.adminsession,"iput -R pt README foo%d" % i )
        
         # =-=-=-=-=-=-=-
-        # trim repls so we can rebalance
-        assertiCmd(s.adminsession,"itrim -n 0 foo0 foo3 foo5 foo6 foo7 foo8" );
-        assertiCmd(s.adminsession,"itrim -n 1 foo1 foo3 foo4 foo9" );
-        assertiCmd(s.adminsession,"itrim -n 2 foo2 foo4 foo5" );
-       
-        # =-=-=-=-=-=-=-
-        # check our work
-        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
+        # surgically trim repls so we can rebalance
+        assertiCmd(s.adminsession,"itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8" )
+        assertiCmd(s.adminsession,"itrim -N1 -n 1 foo1 foo3 foo4 foo9" )
+        assertiCmd(s.adminsession,"itrim -N1 -n 2 foo2 foo4 foo5" )
         
         # =-=-=-=-=-=-=-
-        # TEARDOWN
-        for i in range(10):
-            assertiCmd(s.adminsession,"irm -f foo"+i )
+        # visualize our pruning
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
 
-        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt repl" )
+        # =-=-=-=-=-=-=-
+        # call rebalance function - the thing were actually testing... finally.
+        assertiCmd(s.adminsession,"iadmin modresc pt rebalance" )
+
+        # =-=-=-=-=-=-=-
+        # assert that all the appropriate repl numbers exist for all the children
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 1 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 2 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 3 ", " foo0" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 0 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 2 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 3 ", " foo1" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 0 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 1 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 2 ", " foo2" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 2 ", " foo3" ] )
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 3 ", " foo3" ] )
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 4 ", " foo3" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 0 ", " foo4" ] )
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 1 ", " foo4" ] )
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 2 ", " foo4" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 1 ", " foo5" ] )
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 2 ", " foo5" ] )
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 3 ", " foo5" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 1 ", " foo6" ] )
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 2 ", " foo6" ] )
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 3 ", " foo6" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 1 ", " foo7" ] )
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 2 ", " foo7" ] )
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 3 ", " foo7" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 1 ", " foo8" ] )
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 2 ", " foo8" ] )
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 3 ", " foo8" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 0 ", " foo9" ] )
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 2 ", " foo9" ] )
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 3 ", " foo9" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 0 ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 1 ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 2 ", " foo10" ] )
+
+        # =-=-=-=-=-=-=-
+        # TEARDOWN
+        for i in range( num_children ):
+            assertiCmd(s.adminsession,"irm -f foo%d" % i )
+
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_c2 leaf_c" )
         assertiCmd(s.adminsession,"iadmin rmchildfromresc repl leaf_a" )
-        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl pt_b" )
-        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl pt_c1" )
         assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_b leaf_b" )
         assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_c1 pt_c2" )
-        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt_c2 leaf_c" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl pt_c1" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc repl pt_b" )
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc pt repl" )
 
-        assertiCmd(s.adminsession,"iadmin rmresc leaf_c" );
-        assertiCmd(s.adminsession,"iadmin rmresc leaf_b" );
-        assertiCmd(s.adminsession,"iadmin rmresc leaf_a" );
-        assertiCmd(s.adminsession,"iadmin rmresc pt_c2" );
-        assertiCmd(s.adminsession,"iadmin rmresc pt_c1" );
-        assertiCmd(s.adminsession,"iadmin rmresc pt_b" );
-        assertiCmd(s.adminsession,"iadmin rmresc repl" );
-        assertiCmd(s.adminsession,"iadmin rmresc pt" );
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_c" )
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_b" )
+        assertiCmd(s.adminsession,"iadmin rmresc leaf_a" )
+        assertiCmd(s.adminsession,"iadmin rmresc pt_c2" )
+        assertiCmd(s.adminsession,"iadmin rmresc pt_c1" )
+        assertiCmd(s.adminsession,"iadmin rmresc pt_b" )
+        assertiCmd(s.adminsession,"iadmin rmresc repl" )
+        assertiCmd(s.adminsession,"iadmin rmresc pt" )
 
 
 
