@@ -8,6 +8,8 @@ import pydevtest_sessions as s
 from resource_suite import ResourceSuite, ShortAndSuite
 from test_chunkydevtest import ChunkyDevTest
 import socket
+import os
+import commands
 
 class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
@@ -175,6 +177,62 @@ class Test_Compound_with_MockArchive_Resource(unittest.TestCase, ResourceSuite, 
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    def test_iput_with_purgec(self):
+        # local setup
+        filename = "purgecfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput --purgec "+filename) # put file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once - replica 1
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_iget_with_purgec(self):
+        # local setup
+        filename = "purgecgetfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file and purge 'cached' replica
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should not be listed
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_irepl_with_purgec(self):
+        # local setup
+        filename = "purgecreplfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice - 2 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed twice - 1 of 3
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
 class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
@@ -222,6 +280,62 @@ class Test_Compound_with_UniversalMSS_Resource(unittest.TestCase, ResourceSuite,
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    def test_iput_with_purgec(self):
+        # local setup
+        filename = "purgecfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput --purgec "+filename) # put file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once - replica 1
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_iget_with_purgec(self):
+        # local setup
+        filename = "purgecgetfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file and purge 'cached' replica
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should not be listed
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_irepl_with_purgec(self):
+        # local setup
+        filename = "purgecreplfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice - 2 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed twice - 1 of 3
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
 class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
     hostname = socket.gethostname()
@@ -268,6 +382,62 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
+
+    def test_iput_with_purgec(self):
+        # local setup
+        filename = "purgecfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput --purgec "+filename) # put file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once - replica 1
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_iget_with_purgec(self):
+        # local setup
+        filename = "purgecgetfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file and purge 'cached' replica
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should not be listed
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_irepl_with_purgec(self):
+        # local setup
+        filename = "purgecreplfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice - 2 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed twice - 1 of 3
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
 
 class Test_RoundRobin_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
@@ -357,6 +527,63 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
+
+    def test_iput_with_purgec(self):
+        # local setup
+        filename = "purgecfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput --purgec "+filename) # put file, but trim 'cache' copy (purgec) (backwards compatibility)
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed first replica)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice - replica 2 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed twice - replica 3 of 3
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_iget_with_purgec(self):
+        # local setup
+        filename = "purgecgetfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file and purge 'cached' replica
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice - 2 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed twice - 2 of 3
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    def test_irepl_with_purgec(self):
+        # local setup
+        filename = "purgecreplfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed 3x - 1 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed 3x - 3 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 ",filename]) # should be listed 3x - 3 of 3
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
 
 class Test_MultiLayered_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 

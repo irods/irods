@@ -157,6 +157,25 @@ class ResourceSuite(ResourceBase):
         # assertions
         assertiCmdFail(s.adminsession,"iget -z") # run iget with bad option
 
+    def test_iget_with_purgec(self):
+        # local setup
+        filename = "purgecgetfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be listed once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed only once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
     ###################
     # imv
     ###################
@@ -479,6 +498,25 @@ class ResourceSuite(ResourceBase):
 
         assert errorflag == True, "Expected ERRORs did not occur"
 
+
+    def test_iput_with_purgec(self):
+        # local setup
+        filename = "purgecfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput --purgec "+filename) # put file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be listed once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed only once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
     ###################
     # ireg
     ###################
@@ -536,6 +574,29 @@ class ResourceSuite(ResourceBase):
         assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
         assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
         assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
+
+        # local cleanup
+        output = commands.getstatusoutput( 'rm '+filepath )
+
+    ###################
+    # irepl
+    ###################
+
+    def test_irepl_with_purgec(self):
+        # local setup
+        filename = "purgecreplfile.txt"
+        filepath = os.path.abspath(filename)
+        f = open(filepath,'wb')
+        f.write("TESTFILE -- ["+filepath+"]")
+        f.close()
+
+        # assertions
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be listed twice
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only twice
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
