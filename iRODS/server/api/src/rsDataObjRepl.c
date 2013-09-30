@@ -245,7 +245,6 @@ _rsDataObjRepl (
     }
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
-    // char* resc_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, resc_hier, dest_hier );
  
     if (status < 0) {
@@ -930,11 +929,9 @@ _rsDataObjReplNewCopy (
             L1desc[srcL1descInx].oprType = REPLICATE_SRC;
         }
 
-        if( L1desc[destL1descInx].stageFlag == SYNC_DEST && // JMC - backport 4549
-            getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+        if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL ) {
             L1desc[srcL1descInx].purgeCacheFlag = 1;
         }
-
 
         if( l1DataObjInp->numThreads > 0 &&
             L1desc[destL1descInx].stageFlag == NO_STAGING) {
