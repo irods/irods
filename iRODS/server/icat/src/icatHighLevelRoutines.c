@@ -10629,6 +10629,101 @@ int chlGetDataObjsOnResourceForLimitAndNumChildren(
 } // chlGetDataObjsOnResourceForLimit
 
 
+/*
+ * @brief Given a resource, resolves the hierarchy down to said resource
+ */
+int chlResolveResourceHierarchy(const std::string& resc_name, const std::string& zone_name, std::string& hierarchy) {
+	char *current_node;
+	char parent[MAX_NAME_LEN];
+	int status;
+
+
+    eirods::sql_logger logger("chlResolveResourceHierarchy", logSQL);
+    logger.log();
+
+	if (!icss.status) {
+		return(CATALOG_NOT_CONNECTED);
+	}
+
+	hierarchy = resc_name; // Initialize hierarchy string with resource
+
+	current_node = (char *)resc_name.c_str();
+	while (current_node) {
+		// Ask for parent of current node
+		status = cmlGetStringValueFromSql("select resc_parent from R_RESC_MAIN where resc_name=? and zone_name=?",
+				parent, MAX_NAME_LEN, current_node, zone_name.c_str(), NULL, &icss);
+
+		if (status == CAT_NO_ROWS_FOUND) { // Resource doesn't exist
+			return CAT_INVALID_RESOURCE;
+		}
+
+		if (status < 0) { // Other error
+			return status;
+		}
+
+		if (parent && strlen(parent)) {
+			hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;	// Add parent to hierarchy string
+			current_node = parent;
+		}
+		else {
+			current_node = NULL;
+		}
+	}
+
+	return 0;
+}
+
+
+/*
+ * @brief Updates object count for resource and its parents
+ */
+int chlUpdateObjCountForRescAndUp(rsComm_t *rsComm, const std::string& resc_name, const std::string& zone_name, int delta) {
+	std::string resc_hier;
+	int status;
+
+    eirods::sql_logger logger("chlUpdateObjCountForRescAndUp", logSQL);
+    logger.log();
+
+    // =-=-=-=-=-=-=-
+    // Sanity and permission checks
+	if (!icss.status) {
+		return(CATALOG_NOT_CONNECTED);
+	}
+    if (!rsComm) {
+    	return(SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+	}
+
+    // =-=-=-=-=-=-=-
+    // Resolve resource hierarchy
+    status = chlResolveResourceHierarchy(resc_name, zone_name, resc_hier);
+
+    if (status < 0) {
+    	return status;
+    }
+
+    // =-=-=-=-=-=-=-
+    // Update object count for hierarchy
+    status = _updateObjCountOfResources(resc_hier, zone_name, delta);
+
+	// =-=-=-=-=-=-=-
+	// commit for _updateObjCountOfResources()
+	if (status < 0) {
+		std::stringstream ss;
+		ss << "chlUpdateObjCountForRescAndUp: _updateObjCountOfResources failed " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		_rollback("chlUpdateObjCountForRescAndUp");
+	}
+	else {
+		status =  cmlExecuteNoAnswerSql("commit", &icss);
+	}
+
+	return status;
+}
+
+
 
 
 
