@@ -3010,7 +3010,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
             if (status > 0) {
                 /* And then use it in the where clause for the update */
-                snprintf(newCollectionID, MAX_SQL_SIZE, "%lld", status);
+                snprintf(newCollectionID, MAX_NAME_LEN, "%lld", status);
                 cllBindVars[cllBindVarCount++]="1";
                 cllBindVars[cllBindVarCount++]=myTime;
                 cllBindVars[cllBindVarCount++]=newCollectionID;
