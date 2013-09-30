@@ -192,4 +192,15 @@ int chlGetDataObjsOnResourceForLimitAndNumChildren(
     int                  _limit,
     repl_query_result_t& _results );
 
+int chlResolveResourceHierarchy(
+		const std::string&	resc_name,
+		const std::string&	zone_name,
+		std::string& hierarchy);
+
+int chlUpdateObjCountForRescAndUp(
+		rsComm_t *rsComm,
+		const std::string& resc_name,
+		const std::string& zone_name,
+		int delta);
+
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */
