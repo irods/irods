@@ -179,10 +179,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         // JMC :: had to reformat this code to find a missing {
         //     :: i seriously hope its in the right place...
         status = procDataObjOpenForWrite (rsComm, dataObjInp, &dataObjInfoHead, &cacheDataObjInfo, &compDataObjInfo, &compRescInfo); 
-    } else {
-        // JMC - legacy resource :: status = procDataObjOpenForRead (rsComm, dataObjInp, &dataObjInfoHead, &cacheDataObjInfo, &compDataObjInfo, &compRescInfo);
-          
-    }
+    } 
 
     if (status < 0) {
         if (lockFd > 0) 
@@ -191,7 +188,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return status;
     }
 
-    // JMC - legacy resource ::   if (getRescClass (dataObjInfoHead->rescInfo) == BUNDLE_CL) [[
     std::string resc_class;
     eirods::error prop_err = eirods::get_resource_property<std::string>( 
         dataObjInfoHead->rescInfo->rescName, "class", resc_class );
@@ -225,24 +221,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
-#if 0 // JMC - legacy resource
-        if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
-            /* this check is not necessary but won't hurt */
-            if (compDataObjInfo != tmpDataObjInfo)  {
-                /* save it in otherDataObjInfo so no mem leak */ // JMC - backport 4590
-                queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
-            }
+        if ( writeFlag > 0 && cacheDataObjInfo != NULL && 
+             tmpDataObjInfo != cacheDataObjInfo) {
+            /* skip anything that does not match cacheDataObjInfo */
+            queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
             tmpDataObjInfo = nextDataObjInfo;
             continue;
-        } else 
-#endif // JMC - legacy resource 
-            if ( writeFlag > 0 && cacheDataObjInfo != NULL && 
-                 tmpDataObjInfo != cacheDataObjInfo) {
-                /* skip anything that does not match cacheDataObjInfo */
-                queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
-                tmpDataObjInfo = nextDataObjInfo;
-                continue;
-            }
+        }
 
         status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,phyOpenFlag, tmpDataObjInfo, cacheDataObjInfo);
 
@@ -306,10 +291,10 @@ _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
      * For copy and replicate, the calling routine should modify this
      * dataSize */
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, replStatus, -1);
-    if (dataObjInfo == cacheDataObjInfo &&  // JMC - backport 4537
-        getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+    if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
         L1desc[l1descInx].purgeCacheFlag = 1;
     }
+
     if (phyOpenFlag == DO_NOT_PHYOPEN) {
         /* don't actually physically open the file */
         status = 0;
@@ -395,43 +380,27 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     int l3descInx;
     fileOpenInp_t fileOpenInp;
 
-#if 0 // JMC legacy resource 
-    rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
-#endif // JMC legacy resource 
-
-        // =-=-=-=-=-=-=-
-        // extract the host location from the resource hierarchy
-        std::string location;
-        eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
-        if( !ret.ok() ) {
-            eirods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
-            return -1;
-        }
-
-        memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-        rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
-        rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
-        rstrcpy( fileOpenInp.objPath,    dataObjInfo->objPath, MAX_NAME_LEN );
-        fileOpenInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileOpenInp.addr.hostAddr,  location.c_str(), NAME_LEN);
-        rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-        fileOpenInp.mode = mode;
-        fileOpenInp.flags = flags;
-        fileOpenInp.in_pdmo = dataObjInfo->in_pdmo;
-        l3descInx = rsFileOpen (rsComm, &fileOpenInp);
-#if 0 // JMC legacy resource 
-        break;
-    default:
-        rodsLog (LOG_NOTICE,
-                 "l3Open: rescCat type %d is not recognized",
-                 RescTypeDef[rescTypeInx].rescCat);
-        l3descInx = SYS_INVALID_RESC_TYPE;
-        break;
+    // =-=-=-=-=-=-=-
+    // extract the host location from the resource hierarchy
+    std::string location;
+    eirods::error ret = eirods::get_loc_for_hier_string( dataObjInfo->rescHier, location );
+    if( !ret.ok() ) {
+        eirods::log( PASSMSG( "l3FilePutSingleBuf - failed in get_loc_for_hier_String", ret ) );
+        return -1;
     }
-#endif // JMC legacy resource 
+
+    memset (&fileOpenInp, 0, sizeof (fileOpenInp));
+    rstrcpy( fileOpenInp.resc_name_, dataObjInfo->rescInfo->rescName, MAX_NAME_LEN );
+    rstrcpy( fileOpenInp.resc_hier_, dataObjInfo->rescHier, MAX_NAME_LEN );
+    rstrcpy( fileOpenInp.objPath,    dataObjInfo->objPath, MAX_NAME_LEN );
+    fileOpenInp.fileType = static_cast< fileDriverType_t >( -1 );//RescTypeDef[rescTypeInx].driverType;
+    rstrcpy (fileOpenInp.addr.hostAddr,  location.c_str(), NAME_LEN);
+    rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+    fileOpenInp.mode = mode;
+    fileOpenInp.flags = flags;
+    fileOpenInp.in_pdmo = dataObjInfo->in_pdmo;
+    l3descInx = rsFileOpen (rsComm, &fileOpenInp);
+
     return (l3descInx);
 }
 
@@ -445,29 +414,16 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
     fileOpenInp_t fileOpenInp;
     int newL3descInx;
 
-#if 0 // JMC legacy resource 
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-    case FILE_CAT:
-#endif // JMC legacy resource 
-        memset (&fileOpenInp, 0, sizeof (fileOpenInp));
-        fileOpenInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
-        rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
-        rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN);
-        rstrcpy(fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN);
-        fileOpenInp.mode = FileDesc[l3descInx].mode;
-        fileOpenInp.flags = flags;
-        newL3descInx = rsFileOpenByHost (rsComm, &fileOpenInp, 
+    memset (&fileOpenInp, 0, sizeof (fileOpenInp));
+    fileOpenInp.fileType = static_cast< fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
+    rstrcpy( fileOpenInp.resc_hier_, FileDesc[l3descInx].rescHier, MAX_NAME_LEN );
+    rstrcpy (fileOpenInp.fileName, FileDesc[l3descInx].fileName, MAX_NAME_LEN);
+    rstrcpy(fileOpenInp.objPath, FileDesc[l3descInx].objPath, MAX_NAME_LEN);
+    fileOpenInp.mode = FileDesc[l3descInx].mode;
+    fileOpenInp.flags = flags;
+    newL3descInx = rsFileOpenByHost (rsComm, &fileOpenInp, 
                                          FileDesc[l3descInx].rodsServerHost);
-#if 0 // JMC legacy resource 
-        break;
-    default:
-        rodsLog (LOG_NOTICE,
-                 "l3OpenByHost: rescCat type %d is not recognized",
-                 RescTypeDef[rescTypeInx].rescCat);
-        l3descInx = SYS_INVALID_RESC_TYPE;
-        break;
-    }
-#endif // JMC legacy resource 
+
     return (newL3descInx);
 }
 
@@ -600,38 +556,18 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         /* we don't have a copy in the DEST_RESC_NAME */
         status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
         if (status < 0) return status;
-#if 0 // JMC - legacy resource
-        if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
-            /* get here because the comp object does not exist. Find
-             * a cache copy. If one does not exist, stage one to cache */
-            status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
-                                                 *dataObjInfoHead, NULL, myRescGrpInfo, NULL,
-                                                 cacheDataObjInfo);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                              "procDataObjForOpenWrite: getCacheDataInfo of %s failed",
-                              (*dataObjInfoHead)->objPath);
-                freeAllRescGrpInfo (myRescGrpInfo);
-                return status;
-            } else {
-                /* replicate to compRescInfo after write is done */
-                *compRescInfo = myRescGrpInfo->rescInfo;
-            }
-        } else 
-#endif // JMC - legacy resource
-        {     /* dest resource is not a compound resource */
-            /* we don't have a copy, so create an empty dataObjInfo */
-            status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                              "procDataObjForOpenWrite: createEmptyRepl of %s failed",
-                              (*dataObjInfoHead)->objPath);
-                freeAllRescGrpInfo (myRescGrpInfo);
-                return status;
-            }
+
+        /* we don't have a copy, so create an empty dataObjInfo */
+        status = createEmptyRepl (rsComm, dataObjInp, dataObjInfoHead);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+                          "procDataObjForOpenWrite: createEmptyRepl of %s failed",
+                          (*dataObjInfoHead)->objPath);
+            freeAllRescGrpInfo (myRescGrpInfo);
+            return status;
         }
+    
     } else {   /*  The target data object exists */
-        // JMC - legacy resource - status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead, cacheDataObjInfo, compDataObjInfo, compRescInfo);
         status = 0;
     }
 
@@ -642,79 +578,6 @@ procDataObjOpenForWrite (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     return status;
 }
 
-#if 0 // JMC - legacy resource
-/* procDataObjOpenForExistObj - process a dataObj for COMPOUND_CL special
- * situation. The object must be :
- *    read - already exist 
- *    write - already exist in dest Resource
- */
-int
-procDataObjOpenForExistObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                            dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
-                            dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
-{
-    int status = 0;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
-   
-#if 0 // JMC - legacy resource 
-    if (getRescClass ((*dataObjInfoHead)->rescInfo) == COMPOUND_CL) {
-        /* It is a COMPOUND_CL. Save the comp object because it can be
-         * requeued by stageAndRequeDataToCache */
-        *compDataObjInfo = *dataObjInfoHead;
-        status = stageAndRequeDataToCache (rsComm, dataObjInfoHead);
-        if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
-            rodsLogError (LOG_ERROR, status,
-                          "procDataObjOpenForExistObj:stageAndRequeDataToCache of %s failed",
-                          (*dataObjInfoHead)->objPath);
-            return status;
-        }
-        *cacheDataObjInfo = *dataObjInfoHead;
-    } else 
-#endif // JMC - legacy resource 
-        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&strlen ((*dataObjInfoHead)->rescGroupName) > 0) {
-      
-            /* Do purge cache and destResc is a resource group. See if we
-             * a COMPOUND_CL resource in the group */
-            if( getRescInGrpByClass(rsComm, (*dataObjInfoHead)->rescGroupName, COMPOUND_CL, compRescInfo, &myRescGrpInfo) >= 0 ) {
-                /* get cacheDataObjInfo */
-                status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,*dataObjInfoHead, NULL, myRescGrpInfo, NULL,cacheDataObjInfo);
-                if (status < 0) {
-                    rodsLogError (LOG_NOTICE, status,
-                                  "procDataObjOpenForExistObj: getCacheDataInfo of %s failed",
-                                  (*dataObjInfoHead)->objPath);
-                } else {
-                    if (getDataObjByClass (*dataObjInfoHead, COMPOUND_CL,
-                                           compDataObjInfo) >= 0) {
-                        /* we have a compDataObjInfo */
-                        *compRescInfo = NULL;
-                    }
-                }
-            }
-        }
-    freeAllRescGrpInfo (myRescGrpInfo);
-    return status;
-}
-
-int
-procDataObjOpenForRead (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                        dataObjInfo_t **dataObjInfoHead, dataObjInfo_t **cacheDataObjInfo,
-                        dataObjInfo_t **compDataObjInfo, rescInfo_t **compRescInfo)
-{
-    int status = 0;
-
-    status = procDataObjOpenForExistObj (rsComm, dataObjInp, dataObjInfoHead,
-                                         cacheDataObjInfo, compDataObjInfo, compRescInfo);
-
-    if (*compDataObjInfo != NULL) {
-        dequeDataObjInfo (dataObjInfoHead, *compDataObjInfo);
-        freeDataObjInfo (*compDataObjInfo);
-        *compDataObjInfo = NULL;
-    }
-    *compRescInfo = NULL;
-    return status;
-}
-#endif // JMC - legacy resource
-// =-=-=-=-=-=-=-
 
 /// @brief Selects the dataObjInfo in the specified list whose resc hier matches that of the cond input
 eirods::error selectObjInfo(

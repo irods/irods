@@ -15,8 +15,10 @@
 #include "reSysDataObjOpr.h"
 #include "getRemoteZoneResc.h"
 
+// =-=-=-=-=-=-=-
 // eirods includes
 #include "eirods_resource_redirect.h"
+#include "eirods_hierarchy_parser.h"
 
 /* rsDataObjTrim - The Api handler of the rcDataObjTrim call - trim down 
  * the number of replica of a file
@@ -137,19 +139,32 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 }
 
 
-int
-trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) // JMC - backport 4537
-{
+int trimDataObjInfo(
+    rsComm_t*      rsComm, 
+    dataObjInfo_t* dataObjInfo ) {
+
     dataObjInp_t dataObjInp;
     char tmpStr[NAME_LEN];
     int status;
 
-    bzero (&dataObjInp, sizeof (dataObjInp));
-    rstrcpy (dataObjInp.objPath,  dataObjInfo->objPath, MAX_NAME_LEN);
-    snprintf (tmpStr, NAME_LEN, "1");
-    addKeyVal (&dataObjInp.condInput, COPIES_KW, tmpStr);
-    addKeyVal (&dataObjInp.condInput, RESC_NAME_KW,
-               dataObjInfo->rescInfo->rescName);
+    // =-=-=-=-=-=-=-
+    // add the hier to a parser to get the leaf
+    eirods::hierarchy_parser parser;
+    parser.set_string( dataObjInfo->rescHier );
+    std::string cache_resc;
+    parser.last_resc( cache_resc );
+
+    bzero( &dataObjInp, sizeof( dataObjInp ) );
+    rstrcpy( dataObjInp.objPath,  dataObjInfo->objPath, MAX_NAME_LEN );
+    snprintf( tmpStr, NAME_LEN, "1" );
+    addKeyVal( &dataObjInp.condInput, COPIES_KW, tmpStr );
+   
+    // =-=-=-=-=-=-=-
+    // specifiy the cache repl num to trim just the cache
+    std::stringstream str;  
+    str << dataObjInfo->replNum;
+    addKeyVal( &dataObjInp.condInput, REPL_NUM_KW, str.str().c_str() );
+
     status = rsDataObjTrim (rsComm, &dataObjInp);
     clearKeyVal (&dataObjInp.condInput);
     if (status < 0) {
@@ -158,4 +173,6 @@ trimDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) // JMC - backport
     }
     return status;
 }
+
+
 

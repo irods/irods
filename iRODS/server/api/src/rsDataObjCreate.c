@@ -330,9 +330,12 @@ specCollSubCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
  */
 
 int
-_rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-                              rescInfo_t *rescInfo, char *rescGroupName)
-{
+_rsDataObjCreateWithRescInfo(
+    rsComm_t*     rsComm, 
+    dataObjInp_t* dataObjInp,
+    rescInfo_t*   rescInfo, 
+    char*         rescGroupName ) {
+
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     int status;
@@ -343,64 +346,26 @@ _rsDataObjCreateWithRescInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     dataObjInfo = (dataObjInfo_t*)malloc(sizeof (dataObjInfo_t));
     initDataObjInfoWithInp (dataObjInfo, dataObjInp);
 
+    // =-=-=-=-=-=-=-
+    // honor the purge flag
+    if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) { // JMC - backport 4537
+        L1desc[l1descInx].purgeCacheFlag = 1;
+    }
 
-
-#if 0 // JMC - remove legacy resources 
-    if (getRescClass (rescInfo) == COMPOUND_CL) {
-        rescInfo_t *cacheResc = NULL;
-        char myRescGroupName[NAME_LEN];
-
-        rstrcpy (myRescGroupName, rescGroupName, NAME_LEN);
-        status = getCacheRescInGrp (rsComm, myRescGroupName, rescInfo, &cacheResc);
-          
-        if (status < 0 || cacheResc == NULL ) { // JMC cppcheck
-            rodsLog (LOG_ERROR,
-                     "DataObjCreateWithResInfo:getCacheRescInGrp %s err for %s stat=%d",
-                     rescGroupName, dataObjInfo->objPath, status);
-            free (dataObjInfo);
-            freeL1desc (l1descInx);
-            return status;
-        }
-
-        L1desc[l1descInx].replRescInfo = rescInfo;  /* repl to this resc */
-        dataObjInfo->rescInfo = cacheResc;
-        rstrcpy (dataObjInfo->rescName, cacheResc->rescName, NAME_LEN);
-        rstrcpy (dataObjInfo->rescGroupName, myRescGroupName, NAME_LEN);
-        if (getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) { // JMC - backport 4537
-            L1desc[l1descInx].purgeCacheFlag = 1;
-        }
+    dataObjInfo->rescInfo = new rescInfo_t;
+    memcpy( dataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
+    rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
+    rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+    
+    char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    if( resc_hier ) { 
+        rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN);
     
     } else {
-#endif
-        dataObjInfo->rescInfo = new rescInfo_t;
-        memcpy( dataObjInfo->rescInfo, rescInfo, sizeof( rescInfo_t ) );
-        rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
-        rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
-        
-        char* resc_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
-        if( resc_hier ) { 
-            rstrcpy( dataObjInfo->rescHier, resc_hier, MAX_NAME_LEN);
-        
-        } else {
-            rstrcpy(dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
+        rstrcpy(dataObjInfo->rescHier, rescInfo->rescName, MAX_NAME_LEN); // in kw else
 
-        }
-
-#if 0 // JMC - remove legacy resources
-        // =-=-=-=-=-=-=-
-        // JMC - backport 4544
-        if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL &&
-            getRescClass (rescInfo) == CACHE_CL) {
-            rescInfo_t *compResc = NULL;
-            if( getRescInGrpByClass (rsComm, rescGroupName, COMPOUND_CL,
-                                     &compResc, NULL) >= 0) { // JMC - backport 4547
-                L1desc[l1descInx].replRescInfo = compResc;
-                L1desc[l1descInx].purgeCacheFlag = 1;
-            }
-        }
     }
-#endif // JMC - remove legacy resources
-    // =-=-=-=-=-=-=-
+
     dataObjInfo->replStatus = NEWLY_CREATED_COPY; // JMC - backport 4754
     fillL1desc( l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
                 dataObjInp->dataSize );

@@ -991,8 +991,10 @@ sortObjInfoForRepl (
     }
 
     // =-=-=-=-=-=-=-
-    // short circuit sort for the case where a dst resc hier is provided which means the choice for to which repl to update is made
-    // already. However, we have to handle the case where the resc_hier and dst_resc_hier are the same.
+    // short circuit sort for the case where a dst resc hier 
+    // is provided which means the choice for to which repl 
+    // to update is made already. However, we have to handle 
+    // the case where the resc_hier and dst_resc_hier are the same.
     *oldDataObjInfoHead = NULL;
     if( dst_resc_hier && strcmp(dst_resc_hier, resc_hier) != 0) {
         dataObjInfo_t* tmp_info = *dataObjInfoHead;
@@ -1025,7 +1027,7 @@ sortObjInfoForRepl (
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier);
-    
+
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
@@ -1523,6 +1525,8 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                     while (tmpDataObjInfo != NULL) {
                         nextDataObjInfo = tmpDataObjInfo->next;
                         if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
+
+
                             if (prevDataObjInfo != NULL) {
                                 prevDataObjInfo->next = tmpDataObjInfo->next;
                             } else {
@@ -1612,12 +1616,12 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                     int condFlag;
                     int toTrim;
 
-                    // char* resc_hier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
+                    //char* resc_hier     = getValByKey( condInput, RESC_HIER_STR_KW );
+                    //char* dst_resc_hier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
                     sortObjInfoForRepl( dataObjInfoHead, &oldDataObjInfoHead, 0, NULL, NULL );
 
                     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
                                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
-
                     if (status < 0) {
                         freeAllDataObjInfo (*dataObjInfoHead);
                         freeAllDataObjInfo (oldDataObjInfoHead);
