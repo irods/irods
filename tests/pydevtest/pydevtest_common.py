@@ -27,6 +27,16 @@ def get_lan_ip():
                 pass
     return ip
 
+def get_hostname():
+    return socket.gethostname()
+
+def create_local_testfile(filename):
+    filepath = os.path.abspath(filename)
+    f = open(filepath,'wb')
+    f.write("TESTFILE -- ["+filepath+"]")
+    f.close()
+    return filepath
+
 def check_icmd_outputtype(fullcmd,outputtype):
     allowed_outputtypes = ["LIST","EMPTY","ERROR",""]
     if outputtype not in allowed_outputtypes:

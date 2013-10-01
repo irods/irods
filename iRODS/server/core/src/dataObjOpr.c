@@ -806,25 +806,34 @@ requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum)
 }
 
 dataObjInfo_t *
-chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier)
+chkCopyInResc (dataObjInfo_t*& dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
     dataObjInfo_t *tmpDataObjInfo;
 
     tmpDataObjInfo = dataObjInfoHead;
+    dataObjInfo_t* prev = NULL;
     while (tmpDataObjInfo != NULL) {
         tmpRescGrpInfo = myRescGrpInfo;
         while (tmpRescGrpInfo != NULL) {
             tmpRescInfo = tmpRescGrpInfo->rescInfo;
-            // No longer good enough to check if the resource names are the same. We have to verify that the resource hiearchies
+            // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
             // match as well. - hcj
             if (strcmp (tmpDataObjInfo->rescInfo->rescName, tmpRescInfo->rescName) == 0 &&
-                (destRescHier == NULL || strcmp(tmpDataObjInfo->rescHier, destRescHier) == 0)) { 
+                (destRescHier == NULL || strcmp(tmpDataObjInfo->rescHier, destRescHier) == 0)) {
+                dataObjInfo_t *tmp = tmpDataObjInfo;
+                if(prev != NULL) {
+                    prev->next = tmpDataObjInfo->next;
+                } else {
+                    dataObjInfoHead = tmpDataObjInfo->next;
+                }
+                tmpDataObjInfo->next = NULL;
                 return (tmpDataObjInfo);
             }
             tmpRescGrpInfo = tmpRescGrpInfo->next;
         }
+        prev = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
     return (NULL);
