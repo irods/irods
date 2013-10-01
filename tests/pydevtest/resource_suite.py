@@ -516,6 +516,27 @@ class ResourceSuite(ResourceBase):
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
 
+    def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
+        # local setup
+        filename = "iputwithforceanddestination.txt"
+        filepath = create_local_testfile(filename)
+        doublefile = "doublefile.txt"
+        os.system("cat %s %s > %s" % (filename, filename, doublefile))
+        doublesize = str(os.stat(doublefile).st_size)
+        # assertions
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename) # replicate to test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)
+        assertiCmd(s.adminsession,"iput -f -R %s %s %s" % (self.testresc, doublefile, filename) ) # overwrite test repl with different data
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+filename]) # default resource should have dirty copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," "+filename]) # default resource should not have doublesize file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+doublesize+" ","& "+filename]) # targeted resource should have new double clean copy
+        # local cleanup
+        os.remove(filepath)
+        os.remove(doublefile)
+
+
     ###################
     # ireg
     ###################
