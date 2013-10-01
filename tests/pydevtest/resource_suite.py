@@ -594,9 +594,9 @@ class ResourceSuite(ResourceBase):
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
         assertiCmd(s.adminsession,"iput "+filename) # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be listed twice
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only twice
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be trimmed
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
