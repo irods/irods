@@ -3,7 +3,7 @@ if (sys.version_info >= (2,7)):
     import unittest
 else:
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, create_local_testfile, get_hostname
 import pydevtest_sessions as s
 import commands
 import os
@@ -498,7 +498,6 @@ class ResourceSuite(ResourceBase):
 
         assert errorflag == True, "Expected ERRORs did not occur"
 
-
     def test_iput_with_purgec(self):
         # local setup
         filename = "purgecfile.txt"
@@ -581,6 +580,74 @@ class ResourceSuite(ResourceBase):
     ###################
     # irepl
     ###################
+
+    def test_irepl_over_existing_second_replica__ticket_1705(self):
+        # local setup
+        filename = "secondreplicatest.txt"
+        filepath = create_local_testfile(filename)
+        # assertions
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
+        assertiCmd(s.adminsession,"iput -R "+self.testresc+" "+filename)       # put file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmd(s.adminsession,"irepl -R demoResc "+filename)               # replicate to default resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmd(s.adminsession,"irepl -R demoResc "+filename)               # replicate overtop default resource
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should not have a replica 2
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate overtop test resource
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should not have a replica 2
+        # local cleanup
+        os.remove(filepath)
+
+    def test_irepl_over_existing_third_replica__ticket_1705(self):
+        # local setup
+        filename = "thirdreplicatest.txt"
+        filepath = create_local_testfile(filename)
+        hostname = get_hostname()
+        # assertions
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname) # create third resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename)                            # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
+        assertiCmd(s.adminsession,"irepl -R thirdresc "+filename)              # replicate to third resource
+        assertiCmd(s.adminsession,"irepl "+filename)                           # replicate overtop default resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate overtop test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmd(s.adminsession,"irepl -R thirdresc "+filename)              # replicate overtop third resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should not have a replica 3
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," & "+filename]) # should not have a replica 4
+        assertiCmd(s.adminsession,"irm -f "+filename)                          # cleanup file
+        assertiCmd(s.adminsession,"iadmin rmresc thirdresc")                   # remove third resource
+        # local cleanup
+        os.remove(filepath)
+
+    def test_irepl_over_existing_bad_replica__ticket_1705(self):
+        # local setup
+        filename = "reploverwritebad.txt"
+        filepath = create_local_testfile(filename)
+        doublefile = "doublefile.txt"
+        os.system("cat %s %s > %s" % (filename, filename, doublefile))
+        doublesize = str(os.stat(doublefile).st_size)
+        # assertions
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename)                            # put file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
+        assertiCmd(s.adminsession,"iput -f %s %s" % (doublefile, filename) )   # overwrite default repl with different data
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # default resource should have clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," & "+filename]) # default resource should have new double clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 "+self.testresc," "+doublesize+" ","  "+filename]) # test resource should not have doublesize file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate back onto test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "+self.testresc," "+doublesize+" "," & "+filename]) # test resource should have new clean doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should not have a replica 2
+        # local cleanup
+        os.remove(filepath)
+        os.remove(doublefile)
+
+    # repl update ( repave old copies )
+    # walk through command line switches
 
     def test_irepl_with_purgec(self):
         # local setup
