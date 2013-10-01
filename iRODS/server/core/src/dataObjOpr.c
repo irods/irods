@@ -456,7 +456,7 @@ sortObjInfo (
         }
 
         else if(resc_hier != NULL && !hier_match) {
-            queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
+            queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
         }
         
         // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
