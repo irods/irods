@@ -128,7 +128,7 @@ namespace eirods {
             }
 
             // =-=-=-=-=-=-=-
-            // resolve a resc ptr for the given file_object 
+            // resolve a resc ptr for the given file_object
             plugin_ptr ptr;
             error err = file_obj->resolve( RESOURCE_INTERFACE, ptr );
             if( !err.ok() ) {
@@ -143,14 +143,14 @@ namespace eirods {
             std::string resc_name;
             if( 0 == kw_resc_name ) {
                 // =-=-=-=-=-=-=-
-                // this is a 'create' opreation and no resource is specified,
+                // this is a 'create' operation and no resource is specified,
                 // query the server for the default or other resource to use
                 rescGrpInfo_t* grp_info = 0;
-                int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
+                int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info );
                 if( status < 0 || !grp_info || !grp_info->rescInfo ) {
                     return ERROR( status, "failed in getRescGrpForCreate" );
                 }
-                    
+
                 resc_name = grp_info->rescInfo->rescName;
 
                 // =-=-=-=-=-=-=-
@@ -170,7 +170,7 @@ namespace eirods {
                 return PASSMSG( "failed in resc_mgr.resolve", err );
 
             }
-            
+
             // =-=-=-=-=-=-=-
             // if the resource has a parent, bail as this is a grave, terrible error.
             resource_ptr parent;
@@ -181,7 +181,7 @@ namespace eirods {
             }
 
             // =-=-=-=-=-=-=-
-            // set the resc hier given the root resc name 
+            // set the resc hier given the root resc name
             file_obj->resc_hier( resc_name );
 
             free( rodsObjStatOut );

@@ -226,7 +226,7 @@ _rsDataObjRepl (
     char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
     // =-=-=-=-=-=-=-
-    // if a resc is specificied and it has a stale copy then we should just treat this as an update
+    // if a resc is specified and it has a stale copy then we should just treat this as an update
     // also consider the 'update' keyword as that might also have some bearing on updates
     if( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
         if (status < 0) {
