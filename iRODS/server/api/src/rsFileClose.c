@@ -86,8 +86,8 @@ int _rsFileClose(
     // this is a weird case from rsExecCmd using
     // the FD table
     if( 0 == strcmp( 
-            STREAM_FILE_NAME, 
-            FileDesc[ _close_inp->fileInx ].filePath ) ) {
+        STREAM_FILE_NAME, 
+        FileDesc[ _close_inp->fileInx ].fileName ) ) {
         return close( FileDesc[ _close_inp->fileInx ].fd ); 
     }
 
