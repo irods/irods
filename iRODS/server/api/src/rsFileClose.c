@@ -82,6 +82,16 @@ int _rsFileClose(
     rsComm_t*       _comm, 
     fileCloseInp_t* _close_inp ) {
     // =-=-=-=-=-=-=-
+    // trap bound stream case and close directly
+    // this is a weird case from rsExecCmd using
+    // the FD table
+    if( 0 == strcmp( 
+            STREAM_FILE_NAME, 
+            FileDesc[ _close_inp->fileInx ].filePath ) ) {
+        return close( FileDesc[ _close_inp->fileInx ].fd ); 
+    }
+
+    // =-=-=-=-=-=-=-
     // trap for invalid objects
     if( FileDesc[ _close_inp->fileInx ].objPath == NULL ||
         FileDesc[ _close_inp->fileInx ].objPath[0] == '\0') {
