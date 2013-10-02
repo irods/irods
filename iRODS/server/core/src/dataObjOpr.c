@@ -449,29 +449,25 @@ sortObjInfo (
         if(resc_hier != NULL && (strcmp(resc_hier, tmpDataObjInfo->rescHier) == 0)) {
             hier_match = true;
         }
-        
+       
+        // =-=-=-=-=-=-=- 
         // if the resc hierarchy is defined match it
+        // honor the original queue structure given repl status
         if(resc_hier != NULL && hier_match) {
-            queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
-        }
-
-        else if(resc_hier != NULL && !hier_match) {
-            queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
-        }
-        
-        // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
-        else if (tmpDataObjInfo->replStatus > 0) {
-#if 0 // JMC - legacy resource
-            if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
-                queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
-                queDataObjInfo (&currentCompInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
-                queDataObjInfo (&currentBundleInfo, tmpDataObjInfo, 1, topFlag);
+            //queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+            if( tmpDataObjInfo->replStatus > 0 ) {
+                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, topFlag );
             } else {
-                queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
             }
-#else
+        } else if(resc_hier != NULL && !hier_match) {
+            if( tmpDataObjInfo->replStatus > 0 ) {
+                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
+            } else {
+                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, 1 );
+            }
+        } else if (tmpDataObjInfo->replStatus > 0) {
+
             if( "archive" == class_type ) {
                 queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if( "compound" == class_type ) {
@@ -481,19 +477,7 @@ sortObjInfo (
             } else {
                 queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
-#endif // JMC - legacy resource
         } else {
-#if 0 // JMC - legacy resource
-            if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
-                queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
-                queDataObjInfo (&oldCompInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
-                queDataObjInfo (&oldBundleInfo, tmpDataObjInfo, 1, topFlag);
-            } else {
-                queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
-            }
-#else
             if( "archive" == class_type ) {
                 queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if( "compound" == class_type ) {
@@ -503,10 +487,9 @@ sortObjInfo (
             } else {
                 queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
-#endif // JMC - legacy resource
-
         }
         tmpDataObjInfo = nextDataObjInfo;
+    
     } // while
 
     /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */

@@ -74,25 +74,29 @@ namespace eirods {
         // we many need to change the operation from a create to an open depending
         // on the existence of a resource keyword and / or a match with a physical
         // object within the list 
-        if( fac_err.ok() && 
-            EIRODS_CREATE_OPERATION == oper ) {
-            // =-=-=-=-=-=-=-
-            // if this is a create operation, and a data object
-            // already exists, then we should compare the resc
-            // kw to the existing resources, if any match then
-            // we open, otherwise it is a create in keeping with
-            // original irods semantics
-            if( 0 == kw_resc_name ) {
+        if( fac_err.ok() ) {
+            if( EIRODS_CREATE_OPERATION == oper &&
+                0 == kw_resc_name ) {
+                // =-=-=-=-=-=-=-
+                // if this is a create operation, and a data object
+                // already exists, then we should compare the resc
+                // kw to the existing resources, if any match then
+                // we open, otherwise it is a create in keeping with
+                // original irods semantics
                 oper = EIRODS_OPEN_OPERATION;
+            } 
 
-            } else {
+            // =-=-=-=-=-=-=-
+            // regardless we need to resolve the appropriate resource
+            // to do the voting so search the repls for the proper resc
+            if( kw_resc_name ) {
                 // =-=-=-=-=-=-=-
                 // we have a kw present, compare against all the repls for a match
                 std::vector< physical_object > repls = file_obj->replicas();
                 for( size_t i = 0; i < repls.size(); ++i ) {
                     // =-=-=-=-=-=-=-
                     // extract the root resource from the hierarchy
-                    std::string              root_resc;
+                    std::string      root_resc;
                     hierarchy_parser parser;
                     parser.set_string( repls[ i ].resc_hier() );
                     parser.first_resc( root_resc );
@@ -101,14 +105,15 @@ namespace eirods {
                     // if we have a match then set open & break, otherwise continue
                     if( root_resc == kw_resc_name ) {
                         oper = EIRODS_OPEN_OPERATION;
+                        file_obj->resc_hier( repls[ i ].resc_hier() );
                         break; 
                     }
 
                 } // for i
 
-            } // else
+            } // if kw_resc_name
 
-        } // if fac_err ok && open op
+        } // if fac_err ok 
 
         // =-=-=-=-=-=-=-
         // perform an open operation if create is not specificied ( thats all we have for now ) 
@@ -134,80 +139,50 @@ namespace eirods {
         } else {
             // =-=-=-=-=-=-=-
             // handle the create operation
-            #if 0 // i believe this is handled above now
-            std::string orig_path = _data_obj_inp->objPath;
-            std::string path      = _data_obj_inp->objPath;
-            size_t pos = path.find_last_of( '/' );
-            if( pos != std::string::npos ) {
-                path = path.substr( 0, pos );
+            // check for incoming requested destination resource first
+            std::string resc_name;
+            if( 0 == kw_resc_name ) {
+                // =-=-=-=-=-=-=-
+                // this is a 'create' opreation and no resource is specified,
+                // query the server for the default or other resource to use
+                rescGrpInfo_t* grp_info = 0;
+                int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
+                if( status < 0 || !grp_info || !grp_info->rescInfo ) {
+                    return ERROR( status, "failed in getRescGrpForCreate" );
+                }
+                    
+                resc_name = grp_info->rescInfo->rescName;
+
+                // =-=-=-=-=-=-=-
+                // clean up memory
+                delete grp_info->rescInfo;
+                delete grp_info;
+
+            } else {
+                resc_name = kw_resc_name;
+
             }
 
-            strncpy( _data_obj_inp->objPath, path.c_str(), MAX_NAME_LEN );
-            rodsObjStat_t *rodsObjStatOut = NULL;
-            int spec_stat = collStat( _comm, _data_obj_inp, &rodsObjStatOut );
-            strncpy( _data_obj_inp->objPath, orig_path.c_str(), MAX_NAME_LEN );
+            // =-=-=-=-=-=-=-
+            // request the resource by name
+            error err = resc_mgr.resolve( resc_name, resc );
+            if( !err.ok() ) {
+                return PASSMSG( "failed in resc_mgr.resolve", err );
+
+            }
+            
+            // =-=-=-=-=-=-=-
+            // if the resource has a parent, bail as this is a grave, terrible error.
+            resource_ptr parent;
+            error p_err = resc->get_parent( parent );
+            if( p_err.ok() ) {
+                return PASSMSG( "resource has a parent", p_err );
+
+            }
 
             // =-=-=-=-=-=-=-
-            // if this is a spec coll, we need to short circuit the create
-            // as everything needs to be in the same resource for a spec coll
-            file_obj->logical_path( _data_obj_inp->objPath );
-            if( spec_stat >= 0 && rodsObjStatOut->specColl != NULL ) {
-                std::string resc_hier = rodsObjStatOut->specColl->rescHier;
-                file_obj->resc_hier( resc_hier );
-                skip_redir_for_spec_coll = true; 
-
-            } else 
-            #endif 
-            
-            
-            {
-                // =-=-=-=-=-=-=-
-                // check for incoming requested destination resource first
-                std::string resc_name;
-                if( 0 == kw_resc_name ) {
-                    // =-=-=-=-=-=-=-
-                    // this is a 'create' opreation and no resource is specified,
-                    // query the server for the default or other resource to use
-                    rescGrpInfo_t* grp_info = 0;
-                    int status = getRescGrpForCreate( _comm, _data_obj_inp, &grp_info ); 
-                    if( status < 0 || !grp_info || !grp_info->rescInfo ) {
-                        return ERROR( status, "failed in getRescGrpForCreate" );
-                    }
-                        
-                    resc_name = grp_info->rescInfo->rescName;
-
-                    // =-=-=-=-=-=-=-
-                    // clean up memory
-                    delete grp_info->rescInfo;
-                    delete grp_info;
-
-                } else {
-                    resc_name = kw_resc_name;
-
-                }
-
-                // =-=-=-=-=-=-=-
-                // request the resource by name
-                error err = resc_mgr.resolve( resc_name, resc );
-                if( !err.ok() ) {
-                    return PASSMSG( "failed in resc_mgr.resolve", err );
-
-                }
-                
-                // =-=-=-=-=-=-=-
-                // if the resource has a parent, bail as this is a grave, terrible error.
-                resource_ptr parent;
-                error p_err = resc->get_parent( parent );
-                if( p_err.ok() ) {
-                    return PASSMSG( "resource has a parent", p_err );
-
-                }
-
-                // =-=-=-=-=-=-=-
-                // set the resc hier given the root resc name 
-                file_obj->resc_hier( resc_name );
-
-            } // else
+            // set the resc hier given the root resc name 
+            file_obj->resc_hier( resc_name );
 
             free( rodsObjStatOut );
 

@@ -217,10 +217,11 @@ _rsDataObjRepl (
     
     char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
     char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-
-    if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
-        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
-
+    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
+    // =-=-=-=-=-=-=-
+    // if a resc is specificied and it has a stale copy then we should just treat this as an update
+    // also consider the 'update' keyword as that might also have some bearing on updates
+    if( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
         if (status < 0) {
             rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
             return status;
@@ -242,11 +243,11 @@ _rsDataObjRepl (
         freeAllDataObjInfo (oldDataObjInfoHead);
         
         return status;
-    }
+    
+    } // repl update
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, resc_hier, dest_hier );
- 
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
         return status;
@@ -427,7 +428,6 @@ int _rsDataObjReplUpdate(
 
     // =-=-=-=-=-=-=-
     // cache a copy of the dest resc hier if there is one
-
     std::string dst_resc_hier;
     char* dst_resc_hier_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
     if( dst_resc_hier_ptr ) {
