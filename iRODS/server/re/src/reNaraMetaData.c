@@ -48,6 +48,7 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
   char attr[100];
   char value[500];
   modAVUMetadataInp_t modAVUMetadataInp;
+  int status;
   /* specify the location of the metadata file here */
   char metafile[MAX_NAME_LEN];
 
@@ -84,7 +85,7 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
 	   modAVUMetadataInp.arg3 = attr;
 	   modAVUMetadataInp.arg4 = value;
 	   modAVUMetadataInp.arg5 = "";
-           rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+           status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
            rodsLog (LOG_DEBUG, "msiExtractNaraMetadata: %s:%s",attr, value);
          }
          substring = strtok (NULL, "|");

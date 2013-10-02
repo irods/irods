@@ -114,6 +114,9 @@ ExprType *newUnaryType(NodeType nodeType, ExprType *typeArg, Region *r) {
     typeArgs[0] = typeArg;
     return newExprType(nodeType, 1, typeArgs, r);
 }
+/* ExprType *newFlexKind(int arity, ExprType **typeArgs, Region *r) {
+	return newExprType(K_FLEX, arity, typeArgs, r);
+} */
 
 FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r) {
     Res *desc = newRes(r);
@@ -203,14 +206,25 @@ Res* newBoolRes(Region *r, int n) {
         RES_BOOL_VAL_LVAL(res1) = n;
 	return res1;
 }
-Res* newStringRes(Region *r, char *s) {
+Res* newStringBasedRes(Region *r, char *s) {
 	Res *res1 = newRes(r);
-        res1->exprType = newSimpType(T_STRING,r);
         RES_STRING_STR_LEN(res1) = strlen(s);
         int size = (RES_STRING_STR_LEN(res1)+1)*sizeof(char);
         res1->text = (char *)region_alloc(r, size);
         memcpy(res1->text, s, size);
 	return res1;
+}
+Res *newStringRes(Region *r, char *s) {
+	Res *res = newStringBasedRes(r, s);
+    res->exprType = newSimpType(T_STRING,r);
+    return res;
+
+}
+Res *newPathRes(Region *r, char *s) {
+	Res *res = newStringBasedRes(r, s);
+	    res->exprType = newSimpType(T_PATH,r);
+	    return res;
+
 }
 Res* newUnspecifiedRes(Region *r) {
 	Res *res1 = newRes(r);
@@ -271,25 +285,6 @@ Env *newEnv(Hashtable *current, Env *previous, Env *callerEnv, Region *r) {
     }
     free(env);
 }*/
-
-List *newList(Region *r) {
-    List *l = (List *)region_alloc(r, sizeof (List));
-    l->head = l->tail = NULL;
-    return l;
-}
-
-ListNode *newListNodeNoRegion(void *value) {
-    ListNode *l = (ListNode *)malloc(sizeof (ListNode));
-    l->next = NULL;
-    l->value = value;
-    return l;
-}
-ListNode *newListNode(void *value, Region *r) {
-    ListNode *l = (ListNode *)region_alloc(r, sizeof (ListNode));
-    l->next = NULL;
-    l->value = value;
-    return l;
-}
 
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r) {
     TypingConstraint *tc = (TypingConstraint *)region_alloc(r, sizeof (TypingConstraint));

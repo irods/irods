@@ -30,7 +30,7 @@ typedef enum ruleEngineStatus {
     DISABLED*/
 } RuleEngineStatus;
 
-typedef struct {
+typedef struct cache {
     unsigned char *address;
     unsigned char *pointers;
     size_t dataSize;
@@ -64,6 +64,8 @@ typedef struct {
     time_type timestamp;
     time_type updateTS;
     unsigned int version;
+    int logging;
+    char ruleBase[RULE_SET_DEF_LENGTH];
 } Cache;
 
 #define isComponentInitialized(x) ((x)==INITIALIZED || (x)==COMPRESSED)
@@ -151,6 +153,11 @@ void prependAppRule(RuleDesc *rd, Region *r);
 void popExtRuleSet(int checkPoint);
 void clearDelayed();
 int generateFunctionDescriptionTables();
+int readICatUserInfo(char *userName, char *attr, char userInfo[MAX_NAME_LEN], rsComm_t *rsComm);
+int writeICatUserInfo(char *userName, char *attr, char *userInfo, rsComm_t *rsComm);
+int readICatUserLogging(char *userName, int *logging, rsComm_t *rsComm);
+int writeICatUserLogging(char *userName, int logging, rsComm_t *rsComm);
 
+#define RE_LOGGING_ATTR "rulelogging"
 
 #endif /* _CONFIGURATION_H */

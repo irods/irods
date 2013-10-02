@@ -1,8 +1,11 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+/* #define RE_LOG_RULES_TMP */
+#define HAS_MICROSDEF_T
 #include "reGlobals.h"
 #include "initServer.h"
 #include "reHelpers1.h"
+#include "reAction.h"
 #include "apiHeaderAll.h"
 #include "parser.h"
 #include "index.h"
@@ -11,13 +14,6 @@
 #include "locks.h"
 #include "functions.h"
 #include "configuration.h"
-#ifndef USE_EIRODS
-#include "reAction.h"
-#endif
-
-
-/* #define RE_LOG_RULES_TMP */
-
 
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
@@ -25,6 +21,313 @@
 #define free(x) free(x)
 #endif
 
+#if 0
+int
+applyActionCall(char *actionCall,  ruleExecInfo_t *rei, int reiSaveFlag)
+{
+  writeToTmp("entry.log", "applyActionCall: ");
+  writeToTmp("entry.log", action);
+  writeToTmp("entry.log", "(pass on to applyRuleArg)\n");
+
+  char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+  char action[MAX_ACTION_SIZE];
+  int i, argc;
+
+  i = parseAction(actionCall,action,args, &argc);
+  if (i != 0)
+    return(i);
+
+  i  = applyRuleArg(action, args, argc, rei, reiSaveFlag);
+
+  return(i);
+}
+
+
+int
+applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
+	  ruleExecInfo_t *rei, int reiSaveFlag)
+{
+  writeToTmp("entry.log", "applyRule (2.4.1): ");
+  writeToTmp("entry.log", action);
+  writeToTmp("entry.log", "\n");
+  int ruleInx, i, status;
+  char *nextRule;
+  ruleInx = -1; /* new rule */
+  char ruleCondition[MAX_RULE_LENGTH * 3];
+  char ruleAction[MAX_RULE_LENGTH * 3];
+  char ruleRecovery[MAX_RULE_LENGTH * 3];
+  char ruleHead[MAX_RULE_LENGTH * 3];
+  char ruleBase[MAX_RULE_LENGTH * 3];
+  int  first = 0;
+  ruleExecInfo_t  *saveRei;
+  int reTryWithoutRecovery = 0;
+  funcPtr myFunc = NULL;
+  int actionInx;
+  int numOfStrArgs;
+  int ii;
+
+  mapExternalFuncToInternalProc(action);
+
+  i = findNextRule (action,  &ruleInx);
+  if (i != 0) {
+    /* probably a microservice */
+    i = executeMicroService (action,args,argc,rei);
+    if (i < 0) {
+      rodsLog (LOG_NOTICE,"applyRule Failed for action: %s with status %i",action,i);
+    }
+    return(i);
+  }
+
+  while (i == 0) {
+    getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
+
+    i  = initializeMsParam(ruleHead,args,argc, rei);
+    if (i != 0) {
+      rodsLog (LOG_NOTICE,"applyRule Failed in  initializeMsParam for action: %s with status %i",action,i);
+      return(i);
+    }
+    /*****
+    i = checkRuleHead(ruleHead,args,argc);
+    if (i == 0) {
+    ******/
+    if (reTestFlag > 0) {
+	  if (reTestFlag == COMMAND_TEST_1)
+	    fprintf(stdout,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
+	  else if (rei != NULL && rei->rsComm != NULL && rei->rsComm->rError != NULL)
+	    rodsLog(LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	}
+
+      i = checkRuleCondition(action,  ruleCondition, args, argc, rei, reiSaveFlag);
+      if (i == TRUE) {
+	if (reiSaveFlag == SAVE_REI) {
+	  if (first == 0 ) {
+	    saveRei = (ruleExecInfo_t  *) mallocAndZero(sizeof(ruleExecInfo_t));
+	    i = copyRuleExecInfo(rei,saveRei);
+	    first = 1;
+	  }
+	  else if (reTryWithoutRecovery == 0) {
+	    i = copyRuleExecInfo(saveRei,rei);
+	  }
+	}
+	if (reTestFlag > 0) {
+	  if (reTestFlag == COMMAND_TEST_1)
+	    fprintf(stdout,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
+	  else if (rei != NULL && rei->rsComm != NULL && rei->rsComm->rError != NULL)
+	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	}
+	status =
+	   executeRuleBody(action, ruleAction, ruleRecovery, args, argc, rei, reiSaveFlag);
+	if ( status == 0) {
+	  if (reiSaveFlag == SAVE_REI)
+	    freeRuleExecInfoStruct(saveRei, 0);
+	  finalizeMsParam(ruleHead,args,argc, rei,status);
+	  return(status);
+	}
+	else if ( status == CUT_ACTION_PROCESSED_ERR) {
+	  if (reiSaveFlag == SAVE_REI)
+	    freeRuleExecInfoStruct(saveRei, 0);
+	  finalizeMsParam(ruleHead,args,argc, rei,status);
+	  rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, status);
+	  return(status);
+	}
+	if ( status == RETRY_WITHOUT_RECOVERY_ERR)
+	  reTryWithoutRecovery = 1;
+	  finalizeMsParam(ruleHead,args,argc, rei,0);
+      }
+      /*****
+    }
+      *****/
+    i = findNextRule (action,  &ruleInx);
+  }
+  finalizeMsParam(ruleHead,args,argc, rei,status);
+  if (first == 1) {
+    if (reiSaveFlag == SAVE_REI)
+      freeRuleExecInfoStruct(saveRei, 0);
+  }
+  if (i == NO_MORE_RULES_ERR)
+    return(i);
+  return(status);
+
+}
+int
+applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
+	  ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag)
+{
+  int ruleInx, argc,i, status;
+  /*char *nextRule;*/
+  char ruleCondition[MAX_RULE_LENGTH * 3];
+  char ruleAction[MAX_RULE_LENGTH * 3];
+  char ruleRecovery[MAX_RULE_LENGTH * 3];
+  char ruleHead[MAX_RULE_LENGTH * 3];
+  char ruleBase[MAX_RULE_LENGTH * 3];
+  int  first = 0;
+  int  success = 0;
+  ruleExecInfo_t  *saveRei;
+  int reTryWithoutRecovery = 0;
+  /*funcPtr myFunc = NULL;*/
+  /*int actionInx;*/
+  /*int numOfStrArgs;*/
+  /*int ii;*/
+  char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+  char action[MAX_ACTION_SIZE];
+  msParamArray_t *outMsParamArray;
+
+  ruleInx = -1; /* new rule */
+  outMsParamArray =  NULL;
+
+  GlobalAllRuleExecFlag = allRuleExecFlag;
+
+  if (GlobalREAuditFlag) {
+    reDebug(APPLY_ALL_RULES, -1, inAction,inMsParamArray,rei);
+  }
+
+  if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+    return(i);
+  }
+
+  i = parseAction(inAction,action,args, &argc);
+  if (i != 0) {
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+    return(i);
+  }
+
+  mapExternalFuncToInternalProc(action);
+
+  i = findNextRule (action,  &ruleInx);
+  if (i != 0) {
+    /* probably a microservice */
+#if 0
+    i = executeMicroServiceNew(action,inMsParamArray,rei);
+#endif
+    i = executeMicroServiceNew(inAction,inMsParamArray,rei);
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+    return(i);
+  }
+
+  while (i == 0) {
+    getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
+    if (GlobalREAuditFlag) 
+      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
+
+    if (outMsParamArray == NULL) {
+      i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
+      if (i != 0) {
+	if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+	return(i);
+      }
+      outMsParamArray = rei->msParamArray;
+
+    }
+
+    /*****
+    i = checkRuleHead(ruleHead,args,argc);
+    freeRuleArgs (args, argc);
+    if (i == 0) {
+    ******/
+    if (reTestFlag > 0) {
+	  if (reTestFlag == COMMAND_TEST_1)
+	    fprintf(stdout,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
+	  else if (rei != 0 && rei->rsComm != 0 && &(rei->rsComm->rError) != 0)
+	    rodsLog (LOG_NOTICE,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	}
+
+      i = checkRuleConditionNew(action,  ruleCondition, outMsParamArray, rei, reiSaveFlag);
+      if (i == TRUE) {
+	if (reiSaveFlag == SAVE_REI) {
+	  if (first == 0 ) {
+	    saveRei = (ruleExecInfo_t  *) mallocAndZero(sizeof(ruleExecInfo_t));
+	    i = copyRuleExecInfo(rei,saveRei);
+	    first = 1;
+	  }
+	  else if (reTryWithoutRecovery == 0) {
+	    i = copyRuleExecInfo(saveRei,rei);
+	  }
+	}
+	if (reTestFlag > 0) {
+	  if (reTestFlag == COMMAND_TEST_1)
+	    fprintf(stdout,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
+	  else
+	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	}
+	status =
+	   executeRuleBodyNew(action, ruleAction, ruleRecovery, outMsParamArray, rei, reiSaveFlag);
+	if ( status == 0) {
+	  if (reiSaveFlag == SAVE_REI)
+	    freeRuleExecInfoStruct(saveRei, 0);
+	  /**** finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
+		if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+		return(status); ***/
+	  success = 1;
+	}
+	else if ( status == CUT_ACTION_PROCESSED_ERR) {
+	  if (reiSaveFlag == SAVE_REI)
+	    freeRuleExecInfoStruct(saveRei, 0);
+	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
+	  if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+	  return(status);
+	}
+        else if ( status == CUT_ACTION_ON_SUCCESS_PROCESSED_ERR) {
+          if (reiSaveFlag == SAVE_REI)
+            freeRuleExecInfoStruct(saveRei, 0);
+          finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
+          if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+          return(0);
+        }
+	else if ( status == RETRY_WITHOUT_RECOVERY_ERR) {
+	  reTryWithoutRecovery = 1;
+	  /*** finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,0);***/
+	}
+	/***  outMsParamArray = NULL; 	***/ /* set this since finalizeMsParamNew
+					 * freed it.
+					 */
+      }
+      else {/*** ADDED RAJA JUN 20, 2007 ***/
+	/*** finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,0); ***/
+      }
+      /*****
+    }
+      *****/
+    i = findNextRule (action,  &ruleInx);
+  }
+
+  if (first == 1) {
+    if (reiSaveFlag == SAVE_REI)
+      freeRuleExecInfoStruct(saveRei, 0);
+  }
+  if (i == NO_MORE_RULES_ERR) {
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+    if (success == 1) {
+      finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
+      return(0);
+    }
+    else {
+      rodsLog (LOG_NOTICE,"applyRule Failed for action 3: %s with status %i",action, i);
+      return(i);
+    }
+  }
+
+  finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
+
+  if (status < 0) {
+      rodsLog (LOG_NOTICE,"applyRule Failed for action 4: %s with status %i",action, status);
+  }
+  if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+  if (success == 1)
+    return(0);
+  else
+    return(status);
+}
+#endif
 int processReturnRes(Res *res);
 
 int
@@ -143,16 +446,31 @@ int computeExpression(char *inAction, msParamArray_t *inMsParamArray, ruleExecIn
 /* This function computes the expression in inAction using inMsParamArray as the env.
  * It doesn't update inMsParamArray with the new env. */
 int
-applyRule(char *inAction, msParamArray_t *inMsParamArray,
-	  ruleExecInfo_t *rei, int reiSaveFlag)
-{
+applyRule(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag) {
+	return applyRuleBase(inAction, inMsParamArray, 0, rei, reiSaveFlag);
+}
+
+/* This function computes the expression in inAction using inMsParamArray as the env and updates inMsParamArray with the new env. */
+int
+applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag) {
+    return applyRuleBase(inAction, inMsParamArray, 1, rei, reiSaveFlag);
+
+}
+
+int
+applyRuleBase(char *inAction, msParamArray_t *inMsParamArray, int updateInMsParam, ruleExecInfo_t *rei, int reiSaveFlag) {
     #if defined(DEBUG) || defined(RE_LOG_RULES_TMP)
     writeToTmp("entry.log", "applyRule: ");
     writeToTmp("entry.log", inAction);
     writeToTmp("entry.log", "\n");
     #endif
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "", inAction,NULL,NULL,rei);
+    if (GlobalREAuditFlag > 0) {
+  	  RuleEngineEventParam param;
+  	  param.actionName = inAction;
+  	  param.ruleIndex = -1;
+  	  reDebug(APPLY_RULE_BEGIN, -1, &param, NULL, NULL,rei);
+
+    }
 
 	Region *r = make_region(0, NULL);
 
@@ -163,49 +481,24 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     	inActionCopy[strlen(inAction) - 1] = '\0';
     	char *action = (char *) malloc(sizeof(char) * strlen(inAction) + 3);
     	sprintf(action, "{%s}", inActionCopy);
-    	res = parseAndComputeExpressionAdapter(action, inMsParamArray, 0, rei, reiSaveFlag, r);
+    	res = parseAndComputeExpressionAdapter(action, inMsParamArray, updateInMsParam, rei, reiSaveFlag, r);
     	free(action);
     	free(inActionCopy);
     } else {
-    	res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, 0, rei, reiSaveFlag, r);
+    	res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, updateInMsParam, rei, reiSaveFlag, r);
 	}
 	ret = processReturnRes(res);
     region_free(r);
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "Done", inAction,NULL,NULL,rei);
+    if (GlobalREAuditFlag > 0) {
+  	  RuleEngineEventParam param;
+  	  param.actionName = inAction;
+  	  param.ruleIndex = -1;
+      reDebug(APPLY_RULE_END, -1, &param, NULL,NULL,rei);
+    }
 
     return ret;
 
 }
-
-/* This function computes the expression in inAction using inMsParamArray as the env and updates inMsParamArray with the new env. */
-int
-applyRuleUpdateParams(char *inAction, msParamArray_t *inMsParamArray,
-         ruleExecInfo_t *rei, int reiSaveFlag)
-{
-    #ifdef DEBUG
-    writeToTmp("entry.log", "applyRule: ");
-    writeToTmp("entry.log", inAction);
-    writeToTmp("entry.log", "\n");
-    #endif
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "", inAction,NULL,NULL,rei);
-
-    Region *r = make_region(0, NULL);
-
-    int ret;
-    Res *res;
-    res = parseAndComputeExpressionAdapter(inAction, inMsParamArray, 1, rei, reiSaveFlag, r);
-    ret = processReturnRes(res);
-    region_free(r);
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyRule", -1, "Done", inAction,NULL,NULL,rei);
-
-    return ret;
-
-}
-
-
 
 
 
@@ -226,12 +519,21 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     /* set global flag */
     GlobalAllRuleExecFlag = allRuleExecFlag == 1? 2 : 1;
 
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, "", inAction,NULL, NULL,rei);
+    if (GlobalREAuditFlag > 0) {
+    	RuleEngineEventParam param;
+    	param.actionName = inAction;
+    	param.ruleIndex = -1;
+        reDebug(APPLY_ALL_RULES_BEGIN, -1, &param, NULL, NULL,rei);
+    }
 
     int ret = applyRule(inAction, inMsParamArray, rei, reiSaveFlag);
-    if (GlobalREAuditFlag > 0)
-        reDebug("ApplyAllRules", -1, "Done", inAction,NULL,NULL,rei);
+
+    if (GlobalREAuditFlag > 0) {
+    	RuleEngineEventParam param;
+    	param.actionName = inAction;
+    	param.ruleIndex = -1;
+        reDebug(APPLY_ALL_RULES_END, -1, &param, NULL, NULL,rei);
+    }
 
     /* restore global flag */
     GlobalAllRuleExecFlag = tempFlag;
@@ -292,20 +594,55 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
 
 {
     int status;
-    if (GlobalREAuditFlag)
-        reDebug("ExecMyRule", -1, "", ruleDef,NULL, NULL,rei);
+  /*if (strstr(ruleDef,"|") == NULL && strstr(ruleDef,"{") == NULL) {
+    status = applyRule(ruleDef, inMsParamArray, rei,1);
+    return(status);
+  }*/
+
+  /*
+  rodsLog(LOG_NOTICE,"PPP:%s::%s::%s::%s\n",inAction,ruleCondition,ruleAction,ruleRecovery);
+  */
+#if 0
+  if (GlobalREAuditFlag)
+    reDebug("ExecMyRule", -1, inAction,inMsParamArray,rei);
+
+
+  if (reTestFlag > 0) {
+    if (reTestFlag == COMMAND_TEST_1)
+      fprintf(stdout,"+Testing MyRule Rule for Action:%s\n",inAction);
+    else if (reTestFlag == HTML_TEST_1)
+      fprintf(stdout,"+Testing MyRule for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",inAction);
+    else if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
+      rodsLog (LOG_NOTICE,"+Testing MyRule for Action:%s\n",inAction);
+  }
+#endif
+#if 0
+      if (reTestFlag > 0) {
+      if (reTestFlag == COMMAND_TEST_1)
+	fprintf(stdout,"+Executing MyRule  for Action:%s\n",action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Executing MyRule for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",action);
+	  else if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
+	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
+    }
+#endif
+    if (GlobalREAuditFlag) {
+    	RuleEngineEventParam param;
+    	param.actionName = ruleDef;
+    	param.ruleIndex = -1;
+    	reDebug(EXEC_MY_RULE_BEGIN, -1, &param, NULL, NULL,rei);
+    }
+
 
     char *outParamNames[MAX_PARAMS_LEN];
     int n = extractVarNames(outParamNames, outParamsDesc);
     appendOutputToInput(inMsParamArray, outParamNames, n);
-   
-    // =-=-=-=-=-=-=-
-    // mem leak fix from hao 
+
     int i;
     for(i = 0; i < n; i++) {
-        free(outParamNames[i]);
+    	free(outParamNames[i]);
     }
-    
+
     Region *r = make_region(0, NULL);
     status =
 	   parseAndComputeRuleAdapter(ruleDef, inMsParamArray, rei, reiSaveFlag, r);
@@ -314,8 +651,12 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray, char *out
       rodsLog (LOG_NOTICE,"execMyRule %s Failed with status %i",ruleDef, status);
     }
 
-    if (GlobalREAuditFlag)
-        reDebug("ExecMyRule", -1, "Done", ruleDef,NULL, NULL,rei);
+    if (GlobalREAuditFlag) {
+    	RuleEngineEventParam param;
+    	param.actionName = ruleDef;
+    	param.ruleIndex = -1;
+    	reDebug(EXEC_MY_RULE_END, -1, &param, NULL, NULL,rei);
+    }
     return(status);
 }
 
@@ -339,6 +680,10 @@ initRuleStruct(int processType, rsComm_t *svrComm, char *irbSet, char *dvmSet, c
       i = readRuleStructFromFile(processType, irbSet, &coreRuleStrct);
     if (i < 0)
       return(i);
+    /* read logging settings */
+    if(svrComm != NULL) { /* if this is not a process started by a client, then we used the default logging setting */
+    	readICatUserLogging(svrComm->clientUser.userName, &ruleEngineConfig.logging, svrComm);
+    }
     /*strcpy(r2,r3);
   }*/
   strcpy(r2,dvmSet);
@@ -469,18 +814,16 @@ readRuleSetFromDB(char *ruleBaseName, char *versionStr, RuleSet *ruleSet, ruleEx
 	  if(errcode<0) {
 		  /* deleteEnv(env, 3); */
 		  freeGenQueryOut (&genQueryOut);
-		  free( ruleHead ); // JMC cppcheck - leak
-		  free( ruleCondition ); // JMC cppcheck - leak
-		  free( ruleAction ); // JMC cppcheck - leak
-		  free( ruleRecovery ); // JMC cppcheck - leak
+		  free(ruleHead); // cppcheck - Memory leak: ruleHead
+		  free(ruleCondition); // cppcheck - Memory leak: ruleCondition
+		  free(ruleAction); // cppcheck - Memory leak: ruleAction
+		  free(ruleRecovery); // cppcheck - Memory leak: ruleRecovery
 		  return errcode;
 	  }
-	  
-	  free( ruleHead ); // JMC cppcheck - leak
-	  free( ruleCondition ); // JMC cppcheck - leak
-	  free( ruleAction ); // JMC cppcheck - leak
-	  free( ruleRecovery ); // JMC cppcheck - leak
-
+	  free(ruleHead); // cppcheck - Memory leak: ruleHead
+	  free(ruleCondition); // cppcheck - Memory leak: ruleCondition
+	  free(ruleAction); // cppcheck - Memory leak: ruleAction
+	  free(ruleRecovery); // cppcheck - Memory leak: ruleRecovery
     }
     genQueryInp.continueInx =  genQueryOut->continueInx;
     freeGenQueryOut (&genQueryOut);
@@ -805,7 +1148,6 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
      configDir = getConfigDir ();
      snprintf (dvarsFileName,MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir,dvarBaseName);
    }
-
    file = fopen(dvarsFileName, "r");
    if (file == NULL) {
      rodsLog(LOG_NOTICE,
@@ -820,12 +1162,10 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
        continue;
      rSplitStr(buf, l1, MAX_DVAR_LENGTH, l0, MAX_DVAR_LENGTH, '|');
      inRuleVarDef->varName[i] = strdup(l1);  /** varName **/
-
      rSplitStr(l0, l1, MAX_DVAR_LENGTH, l3, MAX_DVAR_LENGTH,'|');
      inRuleVarDef->action[i] = strdup(l1); /** action **/
      rSplitStr(l3, l1, MAX_DVAR_LENGTH, l2, MAX_DVAR_LENGTH,'|');
      inRuleVarDef->var2CMap[i] = strdup(l1);  /** var2CMap **/
-
      if (strlen(l2) > 0)
        inRuleVarDef->varId[i] = atoll(l2);   /** varId **/
      else
@@ -1068,10 +1408,10 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
 		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
 		  p = ruleCondStr;
 		  s = MAX_RULE_LEN;
-		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1], 0 );
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1], 0);
 		  p = ruleActionRecoveryStr;
 		  s = MAX_RULE_LEN;
-		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[2], 0 );
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[2], 0);
 		  avu = lookupAVUFromMetadata(ruleNode->subtrees[4], "id");
 		  if(avu!=NULL) {
 			  rstrcpy(ruleIdStr, avu->subtrees[1]->text, MAX_NAME_LEN);
@@ -1086,7 +1426,7 @@ insertRulesIntoDBNew(char * baseName, RuleSet *ruleSet,
 		  ruleNameToString(&p, &s, 0, ruleNode->subtrees[0]);
 		  p = ruleCondStr;
 		  s = MAX_RULE_LEN;
-		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1], 0 );
+		  termToString(&p, &s, 0, MIN_PREC, ruleNode->subtrees[1], 0);
 		  p = ruleActionRecoveryStr;
 		  s = MAX_RULE_LEN;
 		  actionsToString(&p, &s, 0, ruleNode->subtrees[2], ruleNode->subtrees[3]);
@@ -1495,10 +1835,6 @@ writeMSrvcsIntoFile(char * inFileName, msrvcStruct_t *myMsrvcStruct,
 int
 finalzeRuleEngine(rsComm_t *rsComm)
 {
-  clearDVarStruct( &coreRuleVarDef );
-  clearFuncMapStruct( &coreRuleFuncMapDef );
-  clearRuleStruct( &coreRuleStrct );
-
   if ( GlobalREDebugFlag > 5 ) {
     _writeXMsg(GlobalREDebugFlag, "idbug", "PROCESS END");
   }

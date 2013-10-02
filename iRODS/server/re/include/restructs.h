@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "debug.h"
+#include "reGlobalsExtern.h"
 #ifndef DEBUG
 #include "rodsType.h"
 #include "msParam.h"
@@ -17,6 +17,7 @@
 #include "reconstants.h"
 #include "region.h"
 #include "hashtable.h"
+#include "list.h"
 
 #define TYPE(x) ((x)->exprType->nodeType)
 
@@ -83,9 +84,9 @@
 #define IO_TYPE_ACTIONS 0x1000
 
 #define getVararg(n) ((n)->option & OPTION_VARARG_MASK)
-#define setVararg(n, v) (n)->option &= ~OPTION_VARARG_MASK; (n)->option |= (v);
+#define setVararg(n, v) (n)->option ^= ((n)->option & OPTION_VARARG_MASK) ^ (v);
 #define getIOType(n) ((n)->option & OPTION_IO_TYPE_MASK)
-#define setIOType(n, v) (n)->option &= ~OPTION_IO_TYPE_MASK; (n)->option |= (v);
+#define setIOType(n, v) (n)->option ^= ((n)->option & OPTION_IO_TYPE_MASK) ^ (v);
 
 typedef struct node Node;
 typedef struct node ExprType;
@@ -99,6 +100,7 @@ typedef ExprType *ExprTypePtr;
 typedef struct bucket Bucket;
 typedef Bucket *BucketPtr;
 typedef msParam_t *msParam_tPtr;
+
 
 typedef enum node_type {
     TK_EOS = -1,
@@ -146,6 +148,7 @@ typedef enum node_type {
     N_EXTERN_DEF = 62,
     N_DATA_DEF = 63,
     N_UNPARSED = 64,
+    /* K_FLEX = 90, */
     T_UNSPECED = 100, /* indicates a variable which is not assigned a value is passed in to a microservice */
     T_ERROR = 101,
     T_DYNAMIC = 200,
@@ -183,7 +186,18 @@ typedef enum node_type {
     PI_CASE = 2009,
     PI_DEFAULT = 2010,
     PI_TYPE = 2011,
-    PI_ARRAY_MEMBER = 2012
+    PI_ARRAY_MEMBER = 2012,
+    C_BASE_TYPE = 2020,
+    C_POINTER_TYPE = 2021,
+    C_ARRAY_TYPE = 2022,
+    C_ARRAY_TYPE_DIM = 2023,
+    C_STRUCT_TYPE = 2024,
+    C_STRUCT_MEMBER = 2025,
+    C_STRUCT_DEF = 2026,
+    C_DEF_SET = 2030,
+    C_DEF_SET_SET = 2031,
+    CG_ANNOTATION = 2032,
+    CG_ANNOTATIONS = 2033,
 } NodeType;
 
 typedef struct condIndexVal {
@@ -242,17 +256,6 @@ struct node {
 	msParam_t *param;
 };
 
-typedef struct listNode ListNode;
-struct listNode {
-    ListNode *next;
-    void *value;
-};
-
-typedef struct list {
-    ListNode *head;
-    ListNode *tail;
-} List;
-
 typedef enum ruleType {
     RK_REL,
     RK_FUNC,
@@ -290,6 +293,27 @@ typedef struct token {
     long exprloc;
 } Token;
 
+/* rule engine events */
+typedef enum ruleEngineEvent {
+	EXEC_RULE_BEGIN, /* execute a rule */
+	EXEC_ACTION_BEGIN, /* execute an action */
+	EXEC_MICRO_SERVICE_BEGIN, /* execute a microservice */
+	EXEC_RULE_END, /* execute a rule */
+	EXEC_ACTION_END, /* execute an action */
+	EXEC_MICRO_SERVICE_END, /* execute a microservice */
+	GOT_RULE, /* got a rule from rule index */
+	APPLY_RULE_BEGIN, /* apply a rule */
+	APPLY_RULE_END, /* apply a rule */
+	APPLY_ALL_RULES_BEGIN, /* apply all rules */
+	APPLY_ALL_RULES_END, /* apply all rules */
+	EXEC_MY_RULE_BEGIN, /* execute user submitted rule */
+	EXEC_MY_RULE_END /* execute user submitted rule */
+} RuleEngineEvent;
+
+typedef struct ruleEngineEventParam {
+	int ruleIndex;
+	char *actionName;
+} RuleEngineEventParam;
 
 Node *newNode(NodeType type, char* text, Label * exprloc, Region *r);
 Node *newExprType(NodeType t, int degree, Node **subtrees, Region *r);
@@ -305,6 +329,7 @@ ExprType *newTupleTypeVarArg(int arity, int vararg, ExprType **paramTypes, Regio
 ExprType *newSimpType(NodeType t, Region *r);
 ExprType *newErrorType(int errcode, Region *r);
 ExprType *newIRODSType(char *name, Region *r);
+ExprType *newFlexKind(int arity, ExprType **typeArgs, Region *r);
 FunctionDesc *newFuncSymLink(char *fn , int nArgs, Region *r);
 Node *newPartialApplication(Node *func, Node *arg, int nArgsLeft, Region *r);
 
@@ -316,6 +341,7 @@ Res* newBoolRes(Region *r, int n);
 Res* newErrorRes(Region *r, int errcode);
 Res* newUnspecifiedRes(Region *r);
 Res* newStringRes(Region *r, char *s);
+Res* newPathRes(Region *r, char *s);
 Res* newDatetimeRes(Region *r, long dt);
 Res* newCollRes(int size, ExprType *elemType, Region *r);
 Res* newUninterpretedRes(Region *r, char *typeName, void *ioStruct, bytesBuf_t *ioBuf);
@@ -326,10 +352,6 @@ Env *newEnv(Hashtable *current, Env *previous, Env *lower, Region *r);
 /* void deleteEnv(Env *env, int deleteCurrent); */
 msParamArray_t *newMsParamArray();
 void deleteMsParamArray(msParamArray_t *msParamArray);
-
-List *newList(Region *r);
-ListNode *newListNode(void *value, Region *r);
-ListNode *newListNodeNoRegion(void *value);
 
 TypingConstraint *newTypingConstraint(ExprType *a, ExprType *b, NodeType type, Node *node, Region *r);
 
