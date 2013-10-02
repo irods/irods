@@ -152,13 +152,20 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
 
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
-    if(status < 0) {
+    if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
         rodsLog(LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__);
     }
     
     if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
 
-    return (status);
+    // =-=-=-=-=-=-=-
+    // specifically ignore this error as it should not cause
+    // any issues with replication.   
+    if( status == EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+        return 0;
+    } else {
+        return (status);
+    }
 }
     
 int
@@ -234,7 +241,7 @@ _rsDataObjRepl (
             *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
             outDataObjInfo->next = NULL;
         } else {
-            if(status < 0) {
+            if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
                 rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
             }
         }

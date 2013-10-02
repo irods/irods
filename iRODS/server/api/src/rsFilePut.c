@@ -123,7 +123,7 @@ int _rsFilePut(
             rodsLog (LOG_DEBUG1,
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd);
-        } else {
+        } else if( fd != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
             rodsLog (LOG_NOTICE, 
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd);
