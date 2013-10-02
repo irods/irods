@@ -601,6 +601,53 @@ class ResourceSuite(ResourceBase):
     ###################
     # irepl
     ###################
+    
+    def test_irepl_update_replicas(self):
+        # local setup
+        filename = "updatereplicasfile.txt"
+        filepath = create_local_testfile(filename)
+        hostname = get_hostname()
+        doublefile = "doublefile.txt"
+        os.system("cat %s %s > %s" % (filename, filename, doublefile))
+        doublesize = str(os.stat(doublefile).st_size)
+
+        # assertions
+        assertiCmd(s.adminsession,"iadmin mkresc thirdresc unixfilesystem %s:/tmp/thirdrescVault" % hostname)   # create third resource
+        assertiCmd(s.adminsession,"iadmin mkresc fourthresc unixfilesystem %s:/tmp/fourthrescVault" % hostname) # create fourth resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")              # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename)                                         # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                   # replicate to test resource
+        assertiCmd(s.adminsession,"irepl -R thirdresc "+filename)                           # replicate to third resource
+        assertiCmd(s.adminsession,"irepl -R fourthresc "+filename)                          # replicate to fourth resource
+        assertiCmd(s.adminsession,"iput -f -R "+self.testresc+" "+doublefile+" "+filename)  # repave overtop test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)                       # for debugging
+
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # should have a dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename])     # should have a clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should have a dirty copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should have a dirty copy
+
+        assertiCmd(s.adminsession,"irepl -U "+filename)                                 # update last replica
+
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # should have a dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename])     # should have a clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should have a dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename])     # should have a clean copy
+
+        assertiCmd(s.adminsession,"irepl -aU "+filename)                                # update all replicas
+
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename])     # should have a clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename])     # should have a clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename])     # should have a clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename])     # should have a clean copy
+
+        assertiCmd(s.adminsession,"irm -f "+filename)                                   # cleanup file
+        assertiCmd(s.adminsession,"iadmin rmresc thirdresc")                            # remove third resource
+        assertiCmd(s.adminsession,"iadmin rmresc fourthresc")                           # remove third resource
+
+        # local cleanup
+        os.remove(filepath)
+        os.remove(doublefile)
 
     def test_irepl_over_existing_second_replica__ticket_1705(self):
         # local setup
@@ -610,9 +657,9 @@ class ResourceSuite(ResourceBase):
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput -R "+self.testresc+" "+filename)       # put file
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
-        assertiCmd(s.adminsession,"irepl -R demoResc "+filename)               # replicate to default resource
+        assertiCmd(s.adminsession,"irepl "+filename)               # replicate to default resource
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
-        assertiCmd(s.adminsession,"irepl -R demoResc "+filename)               # replicate overtop default resource
+        assertiCmd(s.adminsession,"irepl "+filename)               # replicate overtop default resource
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should not have a replica 2
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate overtop test resource
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should not have a replica 2
