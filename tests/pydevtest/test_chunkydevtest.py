@@ -551,11 +551,7 @@ class ChunkyDevTest(ResourceBase):
     
     
 
-    @unittest.skip("FIXME - sortObjInfoForOpen - No resource hierarchy specified in keywords")
     def test_irsync_from_devtest(self):
-        # SKIPPING UNTIL THIS ERROR IS FIXED
-        #[-]     iRODS/server/core/src/dataObjOpr.c:517:sortObjInfoForOpen :  status [SYS_INVALID_INPUT_PARAM]  errno [] -- message [sortObjInfoForOpen - No resource hierarchy specified in keywords.]
-
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
@@ -575,7 +571,7 @@ class ChunkyDevTest(ResourceBase):
     
         # testing irsync
         assertiCmd(s.adminsession,"irsync "+progname+" i:"+irodshome+"/icmdtest/foo100" )
-        assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )  # <-- FAILING - REASON FOR SKIPPING
+        assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )
         assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 i:"+irodshome+"/icmdtest/foo200" )
         assertiCmd(s.adminsession,"irm -f "+irodshome+"/icmdtest/foo100 "+irodshome+"/icmdtest/foo200")
         assertiCmd(s.adminsession,"iput -R "+self.testresc+" "+progname+" "+irodshome+"/icmdtest/foo100")
