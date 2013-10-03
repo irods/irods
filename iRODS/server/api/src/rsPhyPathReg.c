@@ -126,7 +126,6 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
         hier = tmp_hier; 
     }
 
-
     // =-=-=-=-=-=-=-
     // coll registration requires the resource hierarchy
     if( coll_type && (strcmp( coll_type, HAAW_STRUCT_FILE_STR) == 0 ||
@@ -262,7 +261,8 @@ _rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
         rodsLog( LOG_NOTICE, "_rsPhyPathReg :: RESC_HIER_STR_KW is NULL" );
         return -1;     
     }
-     
+ 
+    
     if( getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
         (chkType = getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) != NO_CHK_PATH_PERM) { // JMC - backport 4774
                        
@@ -332,17 +332,24 @@ filePathRegRepl (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
     char *rescGroupName = NULL;
     int status;
 
-    status = getDataObjInfo (rsComm, phyPathRegInp, &dataObjInfoHead,
-                             ACCESS_READ_OBJECT, 0);
-
+    status = getDataObjInfo( rsComm, phyPathRegInp, &dataObjInfoHead,
+                             ACCESS_READ_OBJECT, 0 );
     if (status < 0) {
         rodsLog (LOG_ERROR,
                  "filePathRegRepl: getDataObjInfo for %s", phyPathRegInp->objPath);
         return (status);
     }
-    status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, NULL, 0);
-    if (status < 0 || NULL == dataObjInfoHead ) return status; // JMC cppcheck - nullptr
 
+    status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, &phyPathRegInp->condInput, 0);
+    if (status < 0 ) {
+        // =-=-=-=-=-=-=-
+        // we perhaps did not match the hier string but 
+        // we can still continue as we have a good copy
+        // for a read
+        if( NULL == dataObjInfoHead ) {
+            return status; // JMC cppcheck - nullptr
+        }
+    }
     destDataObjInfo = *dataObjInfoHead;
     rstrcpy (destDataObjInfo.filePath, filePath, MAX_NAME_LEN);
     destDataObjInfo.rescInfo = new rescInfo_t;

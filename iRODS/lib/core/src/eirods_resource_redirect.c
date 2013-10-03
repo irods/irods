@@ -59,12 +59,12 @@ namespace eirods {
         // =-=-=-=-=-=-=-
         // extract the resc name keyword from the conditional input
         char* kw_resc_name = 0;
-        if( ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW ) ) == NULL &&
-            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   ) ) == NULL &&
-            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    ) ) == NULL &&
-            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        ) ) == NULL ) {
-            kw_resc_name = 0;
-        }
+        if( ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, BACKUP_RESC_NAME_KW ) ) != NULL ||
+            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, DEST_RESC_NAME_KW   ) ) != NULL ||
+            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, DEF_RESC_NAME_KW    ) ) != NULL ||
+            ( kw_resc_name = getValByKey( &_data_obj_inp->condInput, RESC_NAME_KW        ) ) != NULL ) {
+            // no op, we have a keyword
+        } 
 
         // =-=-=-=-=-=-=-
         // call factory for given obj inp, get a file_object
@@ -110,7 +110,7 @@ namespace eirods {
                     }
 
                 } // for i
-
+                
             } // if kw_resc_name
 
         } // if fac_err ok 

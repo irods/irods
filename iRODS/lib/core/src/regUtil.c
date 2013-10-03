@@ -115,8 +115,10 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
               "initCondForReg: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
-            addKeyVal (&dataObjOprInp->condInput, DEST_RESC_NAME_KW,
-              rodsArgs->resourceString);
+            addKeyVal( 
+                &dataObjOprInp->condInput, 
+                DEST_RESC_NAME_KW,
+                rodsArgs->resourceString );
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
         addKeyVal (&dataObjOprInp->condInput, DEST_RESC_NAME_KW,

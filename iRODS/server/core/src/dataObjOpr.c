@@ -507,10 +507,11 @@ sortObjInfo (
  * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
  * then current cache, current archival, old cache and old archival.
  */ 
-int
-sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
-                    keyValPair_t *condInput, int writeFlag)
-{
+int sortObjInfoForOpen(
+    rsComm_t*       rsComm, 
+    dataObjInfo_t** dataObjInfoHead, 
+    keyValPair_t*   condInput, 
+    int             writeFlag ) {
     int result = 0;
     char* resc_hier = getValByKey(condInput, RESC_HIER_STR_KW);
     if(!resc_hier) {
@@ -532,13 +533,18 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
             }
         }
         if(found_info == NULL) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - No data object found matching resource hierarchy: \"";
-            msg << resc_hier;
-            msg << "\"";
-            eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
-            result = EIRODS_HIERARCHY_ERROR;
+            // =-=-=-=-=-=-=-
+            // according to the below read only semantics
+            // any copy in the head is a good copy.
+            if( 0 != writeFlag ) { 
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - No data object found matching resource hierarchy: \"";
+                msg << resc_hier;
+                msg << "\"";
+                eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
+                result = EIRODS_HIERARCHY_ERROR;
+            }
         } else {
             if(prev_info == NULL) {
                 // our object is at the head of the list. So delete the rest of the list, if any and we are done.
