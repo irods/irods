@@ -955,7 +955,31 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
     @unittest.skip("EMPTY_RESC_PATH - no vault path for coordinating resources")
     def test_ireg_as_rodsuser_in_vault(self):
         pass
-    
+
+    def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
+        # local setup
+        filename = "iputwithforceanddestination.txt"
+        filepath = create_local_testfile(filename)
+        doublefile = "doublefile.txt"
+        os.system("cat %s %s > %s" % (filename, filename, doublefile))
+        doublesize = str(os.stat(doublefile).st_size)
+        # assertions
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
+        assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename) # replicate to test resource
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)
+        assertiCmd(s.adminsession,"iput -f -R %s %s %s" % (self.testresc, doublefile, filename) ) # overwrite test repl with different data
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+filename]) # default resource should have dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+filename]) # default resource should have dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," "+filename]) # default resource should have dirty copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," "+filename]) # default resource should not have doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+doublesize+" "," "+filename]) # default resource should not have doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," "+doublesize+" "," "+filename]) # default resource should not have doublesize file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," "+doublesize+" ","& "+filename]) # targeted resource should have new double clean copy
+        # local cleanup
+        os.remove(filepath)
+        os.remove(doublefile)
+
     def test_irepl_update_replicas(self):
         # local setup
         filename = "updatereplicasfile.txt"
@@ -1008,7 +1032,6 @@ class Test_Replication_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest)
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
-
 
     def test_irepl_over_existing_second_replica__ticket_1705(self):
         # local setup
