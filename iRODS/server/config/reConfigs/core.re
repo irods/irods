@@ -687,3 +687,9 @@ acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*
 #pep_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
 
 
+# =-=-=-=-=-=-=-
+# policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
+#  - the default is to stage when cache is not present ("when_necessary")
+# =-=-=-=-=-=-=-
+# pep_resolve_resource_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
+# pep_resolve_resource_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}
