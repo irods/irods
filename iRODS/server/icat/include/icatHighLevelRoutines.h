@@ -180,7 +180,7 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm, char *userName,
 
 eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
 
-int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newHier);
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier);
 
 // =-=-=-=-=-=-=-
 // typedefs and prototype for query used for rebalancing operation
@@ -197,10 +197,5 @@ int chlResolveResourceHierarchy(
 		const std::string&	zone_name,
 		std::string& hierarchy);
 
-int chlUpdateObjCountForRescAndUp(
-		rsComm_t *rsComm,
-		const std::string& resc_name,
-		const std::string& zone_name,
-		int delta);
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

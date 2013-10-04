@@ -1944,8 +1944,13 @@ chlAddChildResc(
     static const char* func_name = "chlAddChildResc";
     eirods::sql_logger logger(func_name, logSQL);
     std::string new_child_string(rescInfo->rescChildren);
+    std::string hierarchy, child_resc, root_resc;
+    eirods::children_parser parser;
+    eirods::hierarchy_parser hier_parser;
+    rodsLong_t obj_count;
     char resc_id[MAX_NAME_LEN];
-    
+
+
     logger.log();
 
     if(!(result = _canConnectToCatalog(rsComm))) {
@@ -1958,13 +1963,6 @@ chlAddChildResc(
                           "Currently, resources must be in the local zone");
             result = CAT_INVALID_ZONE;
 
-        } else if(_childHasData(new_child_string)) {
-            char errMsg[105];
-            snprintf(errMsg, 100, 
-                     "resource '%s' contains one or more dataObjects",
-                     rescInfo->rescName);
-            addRErrorMsg (&rsComm->rError, 0, errMsg);
-            result = CAT_RESOURCE_NOT_EMPTY;
         } else {
 
             logger.log();
@@ -1982,10 +1980,84 @@ chlAddChildResc(
             } else if((status =_childIsValid(new_child_string)) == 0) {
                 if((status = _updateRescChildren(resc_id, new_child_string)) != 0) {
                     result = status;
-                } else if((status = _updateChildParent(new_child_string, std::string(rescInfo->rescName))) != 0) {
+                } else if((status = _updateChildParent(new_child_string, rescInfo->rescName)) != 0) {
                     result = status;
                 } else {
-                    
+
+                	// IF CHILD HAZ DATA
+                	if(_childHasData(new_child_string)) {
+
+                	    // =-=-=-=-=-=-=-
+                	    // Resolve resource hierarchy
+
+                	    status = chlResolveResourceHierarchy(rescInfo->rescName, localZone, hierarchy);
+                	    if (status < 0) {
+                   			std::stringstream ss;
+                    		ss << func_name << ": chlResolveResourceHierarchy failed, status = " << status;
+                    		eirods::log(LOG_NOTICE, ss.str());
+                    		_rollback(func_name);
+                	    	return status;
+                	    }
+
+
+                	    // =-=-=-=-=-=-=-
+                	    // Update object count for resources up the tree
+
+                	    // Get the resource name from the child string
+                	    parser.set_string(new_child_string);
+                	    parser.first_child(child_resc);
+
+                		if (chlRescObjCount(child_resc, obj_count).ok()) {
+                			status = _updateObjCountOfResources(hierarchy, localZone, obj_count);
+                		} else {
+                			status = CAT_INVALID_OBJ_COUNT;
+                		}
+
+                		if (status < 0) {
+                			// rollback
+                			std::stringstream ss;
+                			ss << func_name << " aborted. Object count update error, status = " << status;
+                			eirods::log(LOG_NOTICE, ss.str());
+                			_rollback(func_name);
+                			return status;
+                		}
+
+
+                	    // =-=-=-=-=-=-=-
+                	    // Update resource hierarchy for objects down the tree
+
+                	    // Add child resource to hierarchy for substitution
+            			hierarchy += eirods::hierarchy_parser::delimiter() + child_resc;
+
+            			// Substitute 'child' with '...;parent;child'
+                		status = chlSubstituteResourceHierarchies(rsComm, child_resc.c_str(), hierarchy.c_str());
+
+
+                	    // =-=-=-=-=-=-=-
+                	    // Update resource name for objects in child
+                		// All objects formerly in child resource must now be in hierarchy's root resource
+
+                		// get root resource
+                		hier_parser.set_string(hierarchy);
+                		hier_parser.first_resc(root_resc);
+
+                		cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
+                		cllBindVars[cllBindVarCount++]=(char*)root_resc.c_str();
+                		cllBindVars[cllBindVarCount++]=(char*)child_resc.c_str();
+                		status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_name = ?", &icss);
+
+                		if (status < 0) {
+                			// rollback
+                			std::stringstream ss;
+                			ss << func_name << " aborted. Resource update error, status = " << status;
+                			eirods::log(LOG_NOTICE, ss.str());
+                			_rollback(func_name);
+                			return status;
+                		}
+
+                	}  // IF CHILD HAZ DATA
+
+
                     /* Audit */
                     char commentStr[1024]; // this prolly should be better sized
                     snprintf(commentStr, sizeof commentStr, "%s %s", rescInfo->rescName, new_child_string.c_str()); 
@@ -2236,6 +2308,7 @@ _removeRescChild(
 /**
  * @brief Returns true if the specified resource already has children
  */
+#if 0 // currently unused
 static bool
 _rescHasChildren(
     const std::string _resc_name) {
@@ -2257,6 +2330,7 @@ _rescHasChildren(
     }
     return result;
 }
+#endif
 
 /**
  * @brief Remove a child from its parent
@@ -2269,23 +2343,18 @@ chlDelChildResc(
     eirods::sql_logger logger("chlDelChildResc", logSQL);
     int result = 0;
     int status;
+    rodsLong_t obj_count;
     char resc_id[MAX_NAME_LEN];
     std::string child_string(rescInfo->rescChildren);
-    std::string child;
+    std::string child, hierarchy, partial_hier;
     eirods::children_parser parser;
+
     parser.set_string(child_string);
     parser.first_child(child);
     
     if(!(result = _canConnectToCatalog(rsComm))) {
         if((status = getLocalZone())) {
             result = status;
-        } else if(_rescHasData(child) || _rescHasChildren(child)) {
-            char errMsg[105];
-            snprintf(errMsg, 100, 
-                     "resource '%s' contains one or more dataObjects",
-                     child.c_str());
-            addRErrorMsg (&rsComm->rError, 0, errMsg);
-            result = CAT_RESOURCE_NOT_EMPTY;
         } else {
             logger.log();
 
@@ -2299,11 +2368,80 @@ chlDelChildResc(
                     _rollback("chlDelChildResc");
                     result = status;
                 }
+
             } else if((status = _updateChildParent(child, std::string(""))) != 0) {
                 result = status;
             } else if((status = _removeRescChild(resc_id, child)) != 0) {
                 result = status;
             } else {
+
+            	// IF CHILD HAZ DATA
+            	if(_childHasData(child_string)) {
+
+            	    // =-=-=-=-=-=-=-
+            	    // Resolve resource hierarchy (of parent)
+
+            	    status = chlResolveResourceHierarchy(rescInfo->rescName, localZone, hierarchy);
+            	    if (status < 0) {
+               			std::stringstream ss;
+                		ss << "chlDelChildResc: chlResolveResourceHierarchy failed, status = " << status;
+                		eirods::log(LOG_NOTICE, ss.str());
+                		_rollback("chlDelChildResc");
+            	    	return status;
+            	    }
+
+            	    // =-=-=-=-=-=-=-
+            	    // Update object count for resources up the tree
+
+            		if (chlRescObjCount(child, obj_count).ok()) {
+            			status = _updateObjCountOfResources(hierarchy, localZone, -obj_count);
+            		} else {
+            			status = CAT_INVALID_OBJ_COUNT;
+            		}
+
+            		if (status < 0) {
+            			// rollback
+            			std::stringstream ss;
+            			ss << "chlDelChildResc aborted. Object count update error, status = " << status;
+            			eirods::log(LOG_NOTICE, ss.str());
+            			_rollback("chlDelChildResc");
+            			return status;
+            		}
+
+
+            	    // =-=-=-=-=-=-=-
+            	    // Update resource hierarchy for objects down the tree
+
+            	    // Add child resource to hierarchy for substitution
+        			hierarchy += eirods::hierarchy_parser::delimiter() + child;
+
+        			// Substitute '...;parent;child' with 'child
+            		status = chlSubstituteResourceHierarchies(rsComm, hierarchy.c_str(), child.c_str());
+
+            	    // =-=-=-=-=-=-=-
+            	    // Update resource name for objects in child
+            		// If B is removed from A, all files whose resc_hier starts with B are now on B
+            		partial_hier = child + eirods::hierarchy_parser::delimiter();
+
+            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+            		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
+            		cllBindVars[cllBindVarCount++]=(char*)partial_hier.c_str();
+            		status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_name = ?, resc_group_name = ? where resc_hier = ? or resc_hier like ?", &icss);
+
+            		if (status < 0) {
+            			// rollback
+            			std::stringstream ss;
+            			ss << "chlDelChildResc" << " aborted. Resource update error, status = " << status;
+            			eirods::log(LOG_NOTICE, ss.str());
+            			_rollback("chlDelChildResc");
+            			return status;
+            		}
+
+            	}  // IF CHILD HAZ DATA
+
+
+
 
                 /* Audit */
                 char commentStr[1024]; // this prolly should be better sized
@@ -10507,9 +10645,9 @@ chlSpecificQuery(specificQueryInp_t specificQueryInp, genQueryOut_t *result) {
  * replaces all r_data_main.resc_hier rows that match the old string with the new one.
  *
  */
-int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newHier) {
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier) {
 	int status = 0;
-	char oldHier_partial[MAX_NAME_LEN];
+	char old_hier_partial[MAX_NAME_LEN];
     eirods::sql_logger logger("chlSubstituteResourceHierarchies", logSQL);
 
     logger.log();
@@ -10519,7 +10657,7 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newH
 	if (!icss.status) {
 		return(CATALOG_NOT_CONNECTED);
 	}
-    if (!rsComm || !oldHier || !newHier) {
+    if (!rsComm || !old_hier || !new_hier) {
     	return(SYS_INTERNAL_NULL_INPUT_ERR);
     }
 	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -10528,14 +10666,14 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newH
 
 	// =-=-=-=-=-=-=-
 	// String to match partial hierarchies
-	snprintf(oldHier_partial, MAX_NAME_LEN, "%s;%%", oldHier);
+	snprintf(old_hier_partial, MAX_NAME_LEN, "%s%s%%", old_hier, eirods::hierarchy_parser::delimiter().c_str());
 
 	// =-=-=-=-=-=-=-
 	// Update r_data_main
-	cllBindVars[cllBindVarCount++]=newHier;
-	cllBindVars[cllBindVarCount++]=oldHier;
-	cllBindVars[cllBindVarCount++]=oldHier;
-	cllBindVars[cllBindVarCount++]=oldHier_partial;
+	cllBindVars[cllBindVarCount++]=(char*)new_hier;
+	cllBindVars[cllBindVarCount++]=(char*)old_hier;
+	cllBindVars[cllBindVarCount++]=(char*)old_hier;
+	cllBindVars[cllBindVarCount++]=old_hier_partial;
 #if ORA_ICAT // Oracle
 	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substr(resc_hier, (length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
 #else // Postgres and MySQL
@@ -10550,12 +10688,10 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newH
 		eirods::log(LOG_NOTICE, ss.str());
 		_rollback("chlSubstituteResourceHierarchies");
 	}
-	else {
-		status =  cmlExecuteNoAnswerSql("commit", &icss);
-	}
 
 	return status;
 }
+
 
 /// =-=-=-=-=-=-=-
 /// @brief return a map of children who do not have a repl count meeting
@@ -10654,14 +10790,14 @@ int chlResolveResourceHierarchy(const std::string& resc_name, const std::string&
 				parent, MAX_NAME_LEN, current_node, zone_name.c_str(), NULL, &icss);
 
 		if (status == CAT_NO_ROWS_FOUND) { // Resource doesn't exist
-			return CAT_INVALID_RESOURCE;
+			return CAT_UNKNOWN_RESOURCE;
 		}
 
 		if (status < 0) { // Other error
 			return status;
 		}
 
-		if (parent && strlen(parent)) {
+		if (strlen(parent)) {
 			hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;	// Add parent to hierarchy string
 			current_node = parent;
 		}
@@ -10674,54 +10810,7 @@ int chlResolveResourceHierarchy(const std::string& resc_name, const std::string&
 }
 
 
-/*
- * @brief Updates object count for resource and its parents
- */
-int chlUpdateObjCountForRescAndUp(rsComm_t *rsComm, const std::string& resc_name, const std::string& zone_name, int delta) {
-	std::string resc_hier;
-	int status;
 
-    eirods::sql_logger logger("chlUpdateObjCountForRescAndUp", logSQL);
-    logger.log();
-
-    // =-=-=-=-=-=-=-
-    // Sanity and permission checks
-	if (!icss.status) {
-		return(CATALOG_NOT_CONNECTED);
-	}
-    if (!rsComm) {
-    	return(SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-	if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH || rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-		return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-	}
-
-    // =-=-=-=-=-=-=-
-    // Resolve resource hierarchy
-    status = chlResolveResourceHierarchy(resc_name, zone_name, resc_hier);
-
-    if (status < 0) {
-    	return status;
-    }
-
-    // =-=-=-=-=-=-=-
-    // Update object count for hierarchy
-    status = _updateObjCountOfResources(resc_hier, zone_name, delta);
-
-	// =-=-=-=-=-=-=-
-	// commit for _updateObjCountOfResources()
-	if (status < 0) {
-		std::stringstream ss;
-		ss << "chlUpdateObjCountForRescAndUp: _updateObjCountOfResources failed " << status;
-		eirods::log(LOG_NOTICE, ss.str());
-		_rollback("chlUpdateObjCountForRescAndUp");
-	}
-	else {
-		status =  cmlExecuteNoAnswerSql("commit", &icss);
-	}
-
-	return status;
-}
 
 
 
