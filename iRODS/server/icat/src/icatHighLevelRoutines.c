@@ -4276,6 +4276,87 @@ static int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
     return(status);
 }
 
+
+// Modifies a given resource name in all resource hierarchies (i.e for all objects)
+// gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
+static int _modRescInHierarchies(const std::string& old_resc, const std::string& new_resc) {
+	char update_sql[MAX_SQL_SIZE];
+	int status;
+	const char *sep = eirods::hierarchy_parser::delimiter().c_str();
+
+#if ORA_ICAT
+	// Should have regexp_update. check syntax
+	return SYS_NOT_IMPLEMENTED;
+#elif MY_ICAT
+	return SYS_NOT_IMPLEMENTED;
+#endif
+
+	// Regex will look in r_data_main.resc_hier
+	// for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
+	// and replace them with new_resc, e.g:
+	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC($|(;.+))', '\1NEW_RESC\3')
+	snprintf(update_sql, MAX_SQL_SIZE,
+			"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
+			sep, old_resc.c_str(), sep, new_resc.c_str());
+
+	// =-=-=-=-=-=-=-
+	// SQL update
+	status = cmlExecuteNoAnswerSql(update_sql, &icss);
+
+	// =-=-=-=-=-=-=-
+	// Roll back if error
+	if (status < 0) {
+		std::stringstream ss;
+		ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		_rollback("_modRescInHierarchies");
+	}
+
+	return status;
+}
+
+
+// Modifies a given resource name in all children lists (i.e for all resources)
+// gets called after a resource has been modified (iadmin modresc <oldname> name <newname>)
+static int _modRescInChildren(const std::string& old_resc, const std::string& new_resc) {
+	char update_sql[MAX_SQL_SIZE];
+	int status;
+	char sep[] = ";";	// might later get it from children parser
+
+#if ORA_ICAT
+	// Should have regexp_update. check syntax
+	return SYS_NOT_IMPLEMENTED;
+#elif MY_ICAT
+	return SYS_NOT_IMPLEMENTED;
+#endif
+
+	// Regex will look in r_resc_main.resc_children
+	// for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
+	// and replace them with new_resc, e.g:
+	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC{}(.+)', '\1NEW_RESC{}\3')
+	// This assumes that '{}' are not valid characters in resource name
+	snprintf(update_sql, MAX_SQL_SIZE,
+			"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
+			sep, old_resc.c_str(), new_resc.c_str());
+
+	// =-=-=-=-=-=-=-
+	// SQL update
+	status = cmlExecuteNoAnswerSql(update_sql, &icss);
+
+	// =-=-=-=-=-=-=-
+	// Roll back if error
+	if (status < 0) {
+		std::stringstream ss;
+		ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		_rollback("_modRescInChildren");
+	}
+
+	return status;
+	return 0;
+}
+
+
 /* Check an authentication response.
  
    Input is the challange, response, and username; the response is checked
@@ -5757,6 +5838,46 @@ int chlModResc(
         if (status != 0) {
             rodsLog(LOG_NOTICE,
                     "chlModResc cmlExecuteNoAnswerSql update failure %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+
+        // Update resource parent strings that are rescName
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 17");
+        cllBindVars[cllBindVarCount++]=optionValue;
+        cllBindVars[cllBindVarCount++]=rescName;
+        status =  cmlExecuteNoAnswerSql(
+                "update R_RESC_MAIN  set resc_parent=? where resc_parent=?",
+                &icss);
+        if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc cmlExecuteNoAnswerSql update failure %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+
+        // Update resource hierarchies that contain rescName
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 18");
+        status = _modRescInHierarchies(rescName, optionValue);
+        if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc: _modRescInHierarchies error, status = %d",
+                    status);
+            _rollback("chlModResc");
+            return(status);
+        }
+
+        // Update resource children lists that contain rescName
+        if (logSQL!=0) rodsLog(LOG_SQL, "chlModResc SQL 19");
+        status = _modRescInChildren(rescName, optionValue);
+        if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+        if (status != 0) {
+            rodsLog(LOG_NOTICE,
+                    "chlModResc: _modRescInChildren error, status = %d",
                     status);
             _rollback("chlModResc");
             return(status);
