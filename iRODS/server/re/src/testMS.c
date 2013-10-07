@@ -177,19 +177,6 @@ msiDoSomething(msParam_t *inParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 	/***************************/
 	/******** YOUR CODE ********/
-	std::string res;
-	int status;
-	char status_str[64];
-
-	status = chlResolveResourceHierarchy("E", "tempZone", res);
-
-
-	//status =  chlUpdateObjCountForRescAndUp(rei->rsComm, "D", "tempZone", 4);
-
-	snprintf(status_str, 64, "%d", status);
-	addKeyVal (myKeyVal, "status", status_str );
-	addKeyVal (myKeyVal, "res", res.c_str());
-
 	/***************************/
 
 	/* Return myKeyVal through outParam */
