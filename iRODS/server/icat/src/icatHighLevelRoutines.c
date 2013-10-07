@@ -2092,6 +2092,28 @@ chlAddChildResc(
     return result;
 }
 
+
+/// @brief function for validating a resource name
+eirods::error validate_resource_name(std::string _resc_name) {
+
+	// Must be between 1 and NAME_LEN-1 characters.
+	// Must start and end with a word character.
+	// May contain non consecutive dashes.
+	boost::regex re("^(?=.{1,63}$)\\w(\\w*(-\\w+)?)*$");
+
+	if (!boost::regex_match(_resc_name, re)) {
+        std::stringstream msg;
+        msg << "validate_resource_name failed for resource [";
+        msg << _resc_name;
+        msg << "]";
+        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+    }
+
+    return SUCCESS();
+
+} // validate_user_name
+
+
 /* register a Resource */
 int chlRegResc(rsComm_t *rsComm, 
                rescInfo_t *rescInfo) {
@@ -2127,6 +2149,17 @@ int chlRegResc(rsComm_t *rsComm,
     if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
         return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
     }
+
+
+    // =-=-=-=-=-=-=-
+    // Validate user name format
+    eirods::error ret = validate_resource_name(rescInfo->rescName);
+    if(!ret.ok()) {
+        eirods::log(ret);
+        return SYS_INVALID_INPUT_PARAM;
+    }
+    // =-=-=-=-=-=-=-
+
 
     if (logSQL!=0) rodsLog(LOG_SQL, "chlRegResc SQL 1 ");
     seqNum = cmlGetNextSeqVal(&icss);
