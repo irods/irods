@@ -30,6 +30,15 @@ def get_lan_ip():
 def get_hostname():
     return socket.gethostname()
 
+
+def create_directory_of_small_files(directory_name_suffix, file_count):
+    if not os.path.exists(directory_name_suffix):
+        os.mkdir(directory_name_suffix)
+    for i in range(file_count):
+        target = open (("%s/%d" % (directory_name_suffix, i)), 'w')
+        target.write("iglkg3fqfhwpwpo-"+"A"*i)
+        target.close()
+
 def create_local_testfile(filename):
     filepath = os.path.abspath(filename)
     f = open(filepath,'wb')

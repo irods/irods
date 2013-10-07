@@ -4,9 +4,11 @@ if (sys.version_info >= (2,7)):
 else:
     import unittest2 as unittest
 from resource_suite import ResourceBase
-from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd
+from pydevtest_common import assertiCmd, assertiCmdFail, interruptiCmd, get_hostname, create_directory_of_small_files
 import pydevtest_sessions as s
 import commands
+import os
+import shutil
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -48,12 +50,179 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
     # RESOURCES
 
+    def test_modify_resource_name(self):
+        h = get_hostname()
+        # tree standup
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt1", h, "pt1")) # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("repl", h, "repl")) # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unix1", h, "unix1")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt2", h, "pt2")) # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unix2", h, "unix2")) # unix
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt1",  "repl"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("repl", "unix1"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("repl", "pt2"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt2",  "unix2"))
+
+        # rename repl node
+        newnodename = "replwithmoreletters"
+        assertiCmd(s.adminsession,"iadmin modresc %s name %s" % ("repl", newnodename), "LIST", "OK, performing the resource rename") # rename
+        
+        # confirm children of pt1 is bananas
+        assertiCmd(s.adminsession,"iadmin lr %s" % "pt1","LIST","resc_children: %s" % newnodename+"{}")
+        # confirm parent of bananas is still pt1
+        assertiCmd(s.adminsession,"iadmin lr %s" % newnodename,"LIST","resc_parent: %s" % "pt1")
+        # confirm children of bananas is unix1 and pt2
+        assertiCmd(s.adminsession,"iadmin lr %s" % newnodename,"LIST","resc_children: %s" % "unix1{};pt2{}")
+        # confirm parent of pt2 is bananas
+        assertiCmd(s.adminsession,"iadmin lr %s" % "pt2","LIST","resc_parent: %s" % newnodename)
+        # confirm parent of unix2 is pt2
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unix2","LIST","resc_parent: %s" % "pt2")
+        # confirm parent of unix1 is bananas
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unix1","LIST","resc_parent: %s" % newnodename)
+
+        # tree teardown
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("pt2", "unix2"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % (newnodename, "unix1"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % (newnodename, "pt2"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("pt1", newnodename))
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unix2")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unix1")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "pt2")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % newnodename)
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "pt1")
+
+    def test_resource_hierarchy_manipulation(self):
+        h = get_hostname()
+        # first tree standup
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt", h, "pt")) # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replA", h, "replA")) # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA1", h, "unixA1")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA2", h, "unixA2")) # unix
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt", "replA"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
+        # second tree standup
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replB", h, "replB")) # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB1", h, "unixB1")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB2", h, "unixB2")) # unix
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
+
+        # create some files
+        dir1 = "for_pt"
+        dir2 = "for_replB"
+        tree1 = 5
+        tree2 = 8
+        doubletree1 = 2 * tree1 # 10
+        doubletree2 = 2 * tree2 # 16
+        totaltree   = doubletree1 + doubletree2 # 26
+        create_directory_of_small_files(dir1,tree1)
+        create_directory_of_small_files(dir2,tree2)
+	os.system("ls -al %s" % dir1)
+        os.system("ls -al %s" % dir2)
+
+        # add files
+        assertiCmd(s.adminsession,"iput -R %s -r %s" % ("pt", dir1))
+        assertiCmd(s.adminsession,"iput -R %s -r %s" % ("replB", dir2))
+
+        # debugging
+        assertiCmd(s.adminsession,"ils -L %s" % dir1,"LIST",dir1)
+        assertiCmd(s.adminsession,"ils -L %s" % dir2,"LIST",dir2)
+
+        # add tree2 to tree1
+        # add replB to replA
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA","replB"))
+
+        # debugging
+        assertiCmd(s.adminsession,"ils -L %s" % dir1,"LIST",dir1)
+        assertiCmd(s.adminsession,"ils -L %s" % dir2,"LIST",dir2)
+
+        # check object_count on pt
+        assertiCmd(s.adminsession,"iadmin lr %s" % "pt","LIST","resc_objcount: %d" % totaltree)
+        # check object_count and children on replA
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replA","LIST","resc_objcount: %d" % totaltree)
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replA","LIST","resc_children: %s" % "unixA1{};unixA2{};replB{}")
+        # check object_count on unixA1
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixA1","LIST","resc_objcount: %d" % tree1)
+        # check object_count on unixA2
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixA2","LIST","resc_objcount: %d" % tree1)
+        # check object_count and parent on replB
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replB","LIST","resc_objcount: %d" % doubletree2)
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replB","LIST","resc_parent: %s" % "replA")
+        # check object_count on unixB1
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixB1","LIST","resc_objcount: %d" % tree2)
+        # check object_count on unixB2
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixB2","LIST","resc_objcount: %d" % tree2)
+        # check resc_hier on replB files, should have full hierarchy, and should NOT start with replB
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "pt;replA;replB", "LIST", "pt")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "replB", "ERROR", "CAT_NO_ROWS_FOUND")
+        # check resc_name on replB files
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt;replA;replB", "LIST", "pt")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "ERROR", "CAT_NO_ROWS_FOUND")
+        # check resc_group_name on replB files
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt;replA;replB", "LIST", "pt")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "ERROR", "CAT_NO_ROWS_FOUND")
+        
+        # remove child
+        # rm replB from replA
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replA","LIST","replB") # debugging
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replA","replB"))
+
+        # check object_count on pt
+        assertiCmd(s.adminsession,"iadmin lr %s" % "pt","LIST","resc_objcount: %d" % doubletree1)
+        # check object_count on replA
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replA","LIST","resc_objcount: %d" % doubletree1)
+        # check object_count on unixA1
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixA1","LIST","resc_objcount: %d" % tree1)
+        # check object_count on unixA2
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixA2","LIST","resc_objcount: %d" % tree1)
+        # check object_count on replB
+        assertiCmd(s.adminsession,"iadmin lr %s" % "replB","LIST","resc_objcount: %d" % doubletree2)
+        # check object_count on unixB1
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixB1","LIST","resc_objcount: %d" % tree2)
+        # check object_count on unixB2
+        assertiCmd(s.adminsession,"iadmin lr %s" % "unixB2","LIST","resc_objcount: %d" % tree2)
+        # check resc_hier on replB files, should start with replB and not have pt anymore
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "replB")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "pt", "ERROR", "CAT_NO_ROWS_FOUND")
+        # check resc_name on replB files
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "replB")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt", "ERROR", "CAT_NO_ROWS_FOUND")
+        # check resc_group_name on replB files
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "replB")
+        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt", "ERROR", "CAT_NO_ROWS_FOUND")
+
+        # delete files
+        assertiCmd(s.adminsession,"irm -rf %s" % dir1)
+        assertiCmd(s.adminsession,"irm -rf %s" % dir2)
+
+        # local cleanup
+        shutil.rmtree(dir1)
+        shutil.rmtree(dir2)
+
+        # second tree teardown
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replB", "unixB2"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replB", "unixB1"))
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixB2")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixB1")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "replB")
+        # first tree teardown
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replA", "unixA2"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replA", "unixA1"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("pt", "replA"))
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixA2")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixA1")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "replA")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "pt")
+
+
+
     def test_create_and_remove_unixfilesystem_resource(self):
         testresc1 = "testResc1"
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unix file system\" "+hostname+":/tmp/pydevtest_"+testresc1) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" unixfilesystem "+hostname+":/tmp/pydevtest_"+testresc1) # unix
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmdFail(s.adminsession,"iadmin rmresc notaresource") # bad remove
         assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
@@ -64,7 +233,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should not be listed
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
-        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" \"unixfilesystem\" "+hostname+":/tmp/pydevtest_"+testresc1) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc "+testresc1+" unixfilesystem "+hostname+":/tmp/pydevtest_"+testresc1) # unix
         assertiCmd(s.adminsession,"iadmin lr","LIST",testresc1) # should be listed
         assertiCmd(s.adminsession,"iadmin rmresc "+testresc1) # good remove
         assertiCmdFail(s.adminsession,"iadmin lr","LIST",testresc1) # should be gone
@@ -155,6 +324,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,r"iadmin mkuser \\\/\!\*\?\|\$ rodsuser","ERROR","SYS_INVALID_INPUT_PARAM") # should be rejected
 
     # REBALANCE
+
     def test_rebalance_for_repl_node(self):
         output = commands.getstatusoutput("hostname")
         hostname = output[1]
