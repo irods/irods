@@ -1,3 +1,0 @@
-acCheckDataType|$ARG[0] == $dataType|nop|nop
-acExtractMetadata|$dataType == fits image|msiExtractMetadataForFitsImage|recover_msiExtractMetadataForFitsImage
-acExtractMetadata|$dataType == dicom image|msiExtractMetadataForDicomData|recover_msiExtractMetadataForDicomData
