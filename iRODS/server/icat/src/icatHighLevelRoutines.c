@@ -6300,7 +6300,8 @@ eirods::error validate_user_name(std::string _user_name) {
 	// Must be between 3 and NAME_LEN-1 characters.
 	// Must start and end with a word character.
 	// May contain non consecutive dashes and dots.
-	boost::regex re("^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$");
+	// No upper case letters.
+	boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
 
 	if (!boost::regex_match(_user_name, re)) {
         std::stringstream msg;
