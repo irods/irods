@@ -10558,29 +10558,60 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newH
 }
 
 /// =-=-=-=-=-=-=-
-/// @brief return a map of children who do not have a repl count meeting
-///        the num_children limit based on object path whose payload is a
-///        vector of the valid repl resource hierarchies
-int chlGetDataObjsOnResourceForLimitAndNumChildren( 
+/// @brief return the distinct object count of a resource in a hierarchy
+int chlGetDistinctDataObjCountOnResource( 
     const std::string&   _resc_name,
-    int                  _num_children,
-    int                  _limit,
-    repl_query_result_t& _results ) {
-    // =-=-=-=-=-=-=-
-    // clear the results
-    _results.clear();
-
+    long long&           _count ) {
     // =-=-=-=-=-=-=-
     // the basic query string
     char query[ MAX_NAME_LEN ];
-    std::string base_query = "select data_name, coll_name, resc_hier, data_mode from r_data_main join r_coll_main using(coll_id) where data_id in (select data_id from r_data_main where resc_hier like '%s;%s;%s' or resc_hier like '%s%s;%s' group by data_id having (count(data_id)<%d)) limit %d";
+    std::string base_query = "select count(distinct data_id) from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s';";
     sprintf( 
         query, 
         base_query.c_str(), 
-        "%", _resc_name.c_str(), 
-        "%", "%", 
-        _resc_name.c_str(), 
-        "%", _num_children, 
+        _resc_name.c_str(), "%",      // root node
+        "%", _resc_name.c_str(), "%", // mid node
+        "%", _resc_name.c_str() );    // leaf node
+
+     // =-=-=-=-=-=-=-
+     // invoke the query
+     int statement_num = 0;
+     int status = cmlGetFirstRowFromSql( 
+                         query, 
+                         &statement_num, 
+                         0, &icss );
+     if( status != 0 ) {
+         return status;
+     }
+
+     _count = atol( icss.stmtPtr[ statement_num ]->resultValue[0] ); 
+
+     return 0;
+
+} // chlGetDistinctDataObjCountOnResource
+
+/// =-=-=-=-=-=-=-
+/// @brief return a map of data object who do not
+///        appear on a given child resource but who are a
+///        member of a given parent resource node
+int chlGetDistinctDataObjsMissingFromChildGivenParent( 
+    const std::string&   _parent,
+    const std::string&   _child,
+    int                  _limit,
+    dist_child_result_t& _results ) {
+    // =-=-=-=-=-=-=-
+    // the basic query string
+    char query[ MAX_NAME_LEN ];
+    std::string base_query = "select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' except ( select distinct data_id from r_data_main where resc_hier like '%s;%s' or resc_hier like '%s;%s;%s' or resc_hier like '%s;%s' ) limit %d;";
+    sprintf( 
+        query, 
+        base_query.c_str(), 
+        _parent.c_str(), "%",      // root
+        "%", _parent.c_str(), "%", // mid tier
+        "%", _parent.c_str(),      // leaf
+        _child.c_str(), "%",       // root
+        "%", _child.c_str(), "%",  // mid tier
+        "%", _child.c_str(),       // leaf
         _limit );
 
     // =-=-=-=-=-=-=-
@@ -10605,20 +10636,8 @@ int chlGetDataObjsOnResourceForLimitAndNumChildren(
         if ( status != 0 ) {
             return status; 
         }
-
-        // =-=-=-=-=-=-=-
-        // extract the results from the row
-        std::string data_name( icss.stmtPtr[ statement_num ]->resultValue[0] );
-        std::string coll_name( icss.stmtPtr[ statement_num ]->resultValue[1] );
-        std::string resc_hier( icss.stmtPtr[ statement_num ]->resultValue[2] );
-        int mode = atoi( icss.stmtPtr[ statement_num ]->resultValue[3] );
-
-        // =-=-=-=-=-=-=-
-        // build the obj path and add to the result set
-        coll_name += "/";
-        coll_name += data_name;
-
-        _results[ coll_name ].push_back( std::make_pair( resc_hier, mode ) );
+        
+        _results.push_back( atoi( icss.stmtPtr[ statement_num ]->resultValue[0] ) );
 
     } // for i
                
@@ -10626,8 +10645,7 @@ int chlGetDataObjsOnResourceForLimitAndNumChildren(
      
     return 0;
      
-} // chlGetDataObjsOnResourceForLimit
-
+} // chlGetDistinctDataObjsMissingFromChildGivenParent
 
 /*
  * @brief Given a resource, resolves the hierarchy down to said resource
@@ -10661,7 +10679,7 @@ int chlResolveResourceHierarchy(const std::string& resc_name, const std::string&
 			return status;
 		}
 
-		if (parent && strlen(parent)) {
+		if( strlen(parent) ) {
 			hierarchy = parent + eirods::hierarchy_parser::delimiter() + hierarchy;	// Add parent to hierarchy string
 			current_node = parent;
 		}

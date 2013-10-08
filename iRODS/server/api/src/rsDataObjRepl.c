@@ -225,6 +225,11 @@ _rsDataObjRepl (
     char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
     char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
+    if (status < 0) {
+        rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
+        return status;
+    }
+
     // =-=-=-=-=-=-=-
     // if a resc is specified and it has a stale copy then we should just treat this as an update
     // also consider the 'update' keyword as that might also have some bearing on updates

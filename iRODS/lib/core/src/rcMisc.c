@@ -960,7 +960,7 @@ addInxIval (inxIvalPair_t *inxIvalPair, int inx, int value)
 }
 
 int
-addInxVal (inxValPair_t *inxValPair, int inx, char *value)
+addInxVal (inxValPair_t *inxValPair, int inx, const char *value)
 {
     int *newInx;
     char **newValue;

@@ -89,7 +89,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_tcp_object.o \
 		$(libCoreObjDir)/eirods_network_factory.o \
 		$(libCoreObjDir)/eirods_network_manager.o \
-        $(libCoreObjDir)/eirods_buffer_encryption.o 
+        $(libCoreObjDir)/eirods_buffer_encryption.o \
+        $(libCoreObjDir)/eirods_virtual_path.o 
 
 ifdef USE_BOOST_ASIO
 LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 

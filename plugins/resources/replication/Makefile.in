@@ -11,10 +11,10 @@ HEADERS = eirods_create_write_replicator.h \
           eirods_object_oper.h \
           eirods_oper_replicator.h \
           eirods_replicator.h \
-	  eirods_repl_types.h \
+          eirods_repl_types.h \
           eirods_unlink_replicator.h \
           eirods_repl_rebalance.h
 
-EXTRALIBS = 
+EXTRALIBS = ../../../iRODS/lib/core/obj/eirods_virtual_path.o
 
 include ../Makefile.base

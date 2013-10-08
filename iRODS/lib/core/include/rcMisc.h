@@ -80,7 +80,7 @@ addKeyVal (keyValPair_t *condInput, const char *keyWord, const char *value);
 int
 addInxIval (inxIvalPair_t *inxIvalPair, int inx, int value);
 int
-addInxVal (inxValPair_t *inxValPair, int inx, char *value);
+addInxVal (inxValPair_t *inxValPair, int inx, const char *value);
 int
 addStrArray (strArray_t *strArray, char *value);
 int
