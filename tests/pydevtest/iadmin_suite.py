@@ -67,17 +67,17 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         newnodename = "replwithmoreletters"
         assertiCmd(s.adminsession,"iadmin modresc %s name %s" % ("repl", newnodename), "LIST", "OK, performing the resource rename") # rename
         
-        # confirm children of pt1 is bananas
+        # confirm children of pt1 is newnodename
         assertiCmd(s.adminsession,"iadmin lr %s" % "pt1","LIST","resc_children: %s" % newnodename+"{}")
-        # confirm parent of bananas is still pt1
+        # confirm parent of newnodename is still pt1
         assertiCmd(s.adminsession,"iadmin lr %s" % newnodename,"LIST","resc_parent: %s" % "pt1")
-        # confirm children of bananas is unix1 and pt2
+        # confirm children of newnodename is unix1 and pt2
         assertiCmd(s.adminsession,"iadmin lr %s" % newnodename,"LIST","resc_children: %s" % "unix1{};pt2{}")
-        # confirm parent of pt2 is bananas
+        # confirm parent of pt2 is newnodename
         assertiCmd(s.adminsession,"iadmin lr %s" % "pt2","LIST","resc_parent: %s" % newnodename)
         # confirm parent of unix2 is pt2
         assertiCmd(s.adminsession,"iadmin lr %s" % "unix2","LIST","resc_parent: %s" % "pt2")
-        # confirm parent of unix1 is bananas
+        # confirm parent of unix1 is newnodename
         assertiCmd(s.adminsession,"iadmin lr %s" % "unix1","LIST","resc_parent: %s" % newnodename)
 
         # tree teardown
