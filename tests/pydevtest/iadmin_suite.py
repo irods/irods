@@ -49,14 +49,6 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lg "+self.testgroup,"LIST","notauser")
 
     # RESOURCES
-        
-    def test_resource_name_restrictions(self):
-        h = get_hostname()
-        oversize_name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" # longer than NAME_LEN
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("?/=*", h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # invalid char
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("replication.B", h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # invalid char
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("replication{", h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # invalid char
-        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % (oversize_name, h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # too long
 
     def test_modify_resource_name(self):
         h = get_hostname()
@@ -307,8 +299,7 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                 '___haysoos___']
 
         invalid = ['bo',
-                '.bob',
-                'bOb', 
+                '.bob', 
                 'bob.',
                 'e--irods', 
                 'jamesbond..007',  
@@ -361,7 +352,11 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         num_children = 11
         for i in range( num_children ):
             assertiCmd(s.adminsession,"iput -R pt README foo%d" % i )
-       
+        
+        # =-=-=-=-=-=-=-
+        # visualize before our pruning
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
+
         # =-=-=-=-=-=-=-
         # surgically trim repls so we can rebalance
         assertiCmd(s.adminsession,"itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8" )
@@ -371,8 +366,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # =-=-=-=-=-=-=-
         # mark resc unixA1 down and dirty up a repl to exercise that functionality
         assertiCmd(s.adminsession,"iadmin modresc unixA1 status down" );
-        assertiCmd(s.adminsession,"iput -fR pt iadmin_suite.py foo10" );
-        assertiCmd(s.adminsession,"iadmin modresc unixA1 status up" );
+        assertiCmd(s.adminsession,"iput -f iadmin_suite.py foo10" );
+        assertiCmd(s.adminsession,"iadmin modresc unixA1 status down" );
         
         # =-=-=-=-=-=-=-
         # visualize our pruning
@@ -381,52 +376,67 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         # =-=-=-=-=-=-=-
         # call rebalance function - the thing were actually testing... finally.
         assertiCmd(s.adminsession,"iadmin modresc pt rebalance" )
+ 
+        # =-=-=-=-=-=-=-
+        # visualize our rebalancing
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
 
         # =-=-=-=-=-=-=-
         # assert that all the appropriate repl numbers exist for all the children
         assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 1 ", " foo0" ] )
         assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 2 ", " foo0" ] )
         assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 3 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 4 ", " foo0" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 0 ", " foo1" ] )
         assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 2 ", " foo1" ] )
         assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 3 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 4 ", " foo1" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 0 ", " foo2" ] )
         assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 1 ", " foo2" ] )
         assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 2 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 4 ", " foo2" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 2 ", " foo3" ] )
         assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 3 ", " foo3" ] )
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 4 ", " foo3" ] )
         assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 4 ", " foo3" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 0 ", " foo4" ] )
         assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 1 ", " foo4" ] )
         assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 2 ", " foo4" ] )
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 4 ", " foo4" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 1 ", " foo5" ] )
         assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 2 ", " foo5" ] )
         assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 3 ", " foo5" ] )
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 4 ", " foo5" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 1 ", " foo6" ] )
         assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 2 ", " foo6" ] )
         assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 3 ", " foo6" ] )
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 4 ", " foo6" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 1 ", " foo7" ] )
         assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 2 ", " foo7" ] )
         assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 3 ", " foo7" ] )
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 4 ", " foo7" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 1 ", " foo8" ] )
         assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 2 ", " foo8" ] )
         assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 3 ", " foo8" ] )
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 4 ", " foo8" ] )
         
         assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 0 ", " foo9" ] )
         assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 2 ", " foo9" ] )
         assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 3 ", " foo9" ] )
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 4 ", " foo9" ] )
         
-        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 0 ", " foo10" ] )
-        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 1 ", " foo10" ] )
-        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 2 ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 0 ", " & ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 1 ", " & ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 2 ", " & ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 4 ", " & ", " foo10" ] )
 
         # =-=-=-=-=-=-=-
         # TEARDOWN
