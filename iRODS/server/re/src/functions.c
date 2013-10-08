@@ -9,6 +9,11 @@
 #ifndef DEBUG
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
+#include "dataObjOpr.h"
+#else
+int
+getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfo);
 #endif
 
 
@@ -40,6 +45,84 @@ _rnew = _rnew2;}
 
 #define RE_BACKWARD_COMPATIBLE
 
+static char globalSessionId[MAX_NAME_LEN] = "Unspecified";
+
+/* todo include proper header files */
+int rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp);
+int rsCloseCollection (rsComm_t *rsComm, int *handleInxInp);
+int rsReadCollection (rsComm_t *rsComm, int *handleInxInp, collEnt_t **collEnt);
+int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
+int msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
+int msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
+
+
+Res *smsi_getGlobalSessionId(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	return newStringRes(r, globalSessionId);
+}
+
+Res *smsi_setGlobalSessionId(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *sid = subtrees[0]->text;
+	rstrcpy(globalSessionId, sid, MAX_NAME_LEN);
+        return newIntRes(r, 0);
+}
+
+void reIterable_genQuery_init(ReIterableData *itrData, Region *r);
+int reIterable_genQuery_hasNext(ReIterableData *itrData, Region *r);
+Res *reIterable_genQuery_next(ReIterableData *itrData, Region *r);
+void reIterable_genQuery_finalize(ReIterableData *itrData, Region *r);
+
+void reIterable_list_init(ReIterableData *itrData, Region *r);
+int reIterable_list_hasNext(ReIterableData *itrData, Region *r);
+Res *reIterable_list_next(ReIterableData *itrData, Region *r);
+void reIterable_list_finalize(ReIterableData *itrData, Region *r);
+
+void reIterable_irods_init(ReIterableData *itrData, Region *r);
+int reIterable_irods_hasNext(ReIterableData *itrData, Region *r);
+Res *reIterable_irods_next(ReIterableData *itrData, Region *r);
+void reIterable_irods_finalize(ReIterableData *itrData, Region *r);
+
+void reIterable_collection_init(ReIterableData *itrData, Region *r);
+int reIterable_collection_hasNext(ReIterableData *itrData, Region *r);
+Res *reIterable_collection_next(ReIterableData *itrData, Region *r);
+void reIterable_collection_finalize(ReIterableData *itrData, Region *r);
+
+#define NUM_RE_ITERABLE 6
+ReIterableTableRow reIterableTable[NUM_RE_ITERABLE] = {
+		{RE_ITERABLE_GEN_QUERY, {reIterable_genQuery_init, reIterable_genQuery_hasNext, reIterable_genQuery_next, reIterable_genQuery_finalize}},
+		{RE_ITERABLE_LIST, {reIterable_list_init, reIterable_list_hasNext, reIterable_list_next, reIterable_list_finalize}},
+		{RE_ITERABLE_GEN_QUERY_OUT, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
+		{RE_ITERABLE_INT_ARRAY, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
+		{RE_ITERABLE_STRING_ARRAY, {reIterable_irods_init, reIterable_irods_hasNext, reIterable_irods_next, reIterable_irods_finalize}},
+		{RE_ITERABLE_COLLECTION, {reIterable_collection_init, reIterable_collection_hasNext, reIterable_collection_next, reIterable_collection_finalize}}
+};
+
+ReIterableData *newReIterableData(
+	char *varName,
+	Res *res,
+	Node **subtrees,
+	Node *node,
+	ruleExecInfo_t *rei,
+	int reiSaveFlag,
+	Env *env,
+	rError_t* errmsg) {
+	ReIterableData *itrData = (ReIterableData *) malloc(sizeof(ReIterableData));
+	itrData->varName = varName;
+	itrData->res = res;
+	itrData->itrSpecData = NULL;
+	itrData->errorRes = NULL;
+	itrData->subtrees = subtrees;
+	itrData->node = node;
+	itrData->rei = rei;
+	itrData->reiSaveFlag = reiSaveFlag;
+	itrData->env = env;
+	itrData->errmsg = errmsg;
+	return itrData;
+
+}
+
+void deleteReIterableData(ReIterableData *itrData) {
+	free(itrData);
+}
 int fileConcatenate(char *file1, char *file2, char *file3);
 
 Node *wrapToActions(Node *node, Region *r) {
@@ -212,204 +295,354 @@ Res *smsi_forExec(Node **params, int n, Node *node, ruleExecInfo_t *rei, int rei
 
 Res *smsi_split(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
 
-Res *collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
-	if(TYPE(coll) != T_STRING &&
-			TYPE(coll) != T_CONS &&
-			(TYPE(coll) != T_TUPLE || coll->degree != 2 ||
-			 TYPE(coll->subtrees[0]) != T_IRODS || strcmp(coll->subtrees[0]->exprType->text, GenQueryInp_MS_T) != 0 ||
-			 TYPE(coll->subtrees[1]) != T_IRODS || strcmp(coll->subtrees[1]->exprType->text, GenQueryOut_MS_T) != 0) &&
-		(TYPE(coll) != T_IRODS || (
-		strcmp(coll->exprType->text, StrArray_MS_T) != 0 &&
-		strcmp(coll->exprType->text, IntArray_MS_T) != 0 &&
-		strcmp(coll->exprType->text, GenQueryOut_MS_T) != 0 &&
-		strcmp(coll->exprType->text, CollInp_MS_T) != 0))) {
-		char errbuf[ERR_MSG_LEN];
-		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(coll));
-		generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
-		return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+Res *smsi_collection(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *collName = subtrees[0]->text;
+
+	/* todo need to find a way to free this buffer */
+	collInp_t *collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
+	memset (collInpCache, 0, sizeof (collInp_t));
+	rstrcpy(collInpCache->collName, collName, MAX_NAME_LEN);
+
+	return newUninterpretedRes(r, CollInp_MS_T, collInpCache, NULL);
+}
+
+ReIterableType collType(Res *coll, Node *node, rError_t *errmsg, Region *r) {
+	if(TYPE(coll) == T_STRING) {
+		return RE_ITERABLE_COMMA_STRING;
+	} else if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
+		return RE_ITERABLE_LIST;
+	} else if(TYPE(coll) == T_TUPLE && coll->degree == 2 &&
+			 TYPE(coll->subtrees[0]) == T_IRODS && strcmp(coll->subtrees[0]->exprType->text, GenQueryInp_MS_T) == 0 &&
+			 TYPE(coll->subtrees[1]) == T_IRODS && strcmp(coll->subtrees[1]->exprType->text, GenQueryOut_MS_T) == 0) {
+		return RE_ITERABLE_GEN_QUERY;
+	} else if(TYPE(coll) == T_PATH) {
+		return RE_ITERABLE_COLLECTION;
+	} else if(TYPE(coll) == T_IRODS) {
+		if(strcmp(coll->exprType->text, StrArray_MS_T) == 0) {
+			return RE_ITERABLE_STRING_ARRAY;
+		} else if(strcmp(coll->exprType->text, IntArray_MS_T) == 0) {
+			return RE_ITERABLE_INT_ARRAY;
+		} else if(strcmp(coll->exprType->text, GenQueryOut_MS_T) == 0) {
+			return RE_ITERABLE_GEN_QUERY_OUT;
+		} else if (strcmp(coll->exprType->text, CollInp_MS_T) == 0) {
+			return RE_ITERABLE_COLLECTION;
 	} else {
-		return coll;
+			return RE_NOT_ITERABLE;
+		}
+	} else {
+		return RE_NOT_ITERABLE;
 	}
 }
 
-Res *collTypeBackwardCompatible(Res *coll, Node *node, rError_t *errmsg, Region *r) {
-	if(TYPE(coll) == T_STRING) { /* backward compatible mode only */
-		Res *paramsr[2];
-		paramsr[0] = coll;
-		paramsr[1] = newStringRes(r, ",");
-		return smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);
-	} else {
-		return collType(coll, node, errmsg, r);
-	}
-}
+/* genQuery iterable */
+typedef struct reIterable_genQuery_data {
+	int i;
+	int cont;
+	int len;
+	msParam_t genQInpParam;
+	msParam_t genQOutParam;
+	genQueryOut_t *genQueryOut;
+} ReIterable_genQuery_data;
 
-int msiCloseGenQuery(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiGetMoreRows(msParam_t* genQueryInpParam, msParam_t* genQueryOutParam, msParam_t *contInxParam, ruleExecInfo_t *rei);
-Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r);
+void reIterable_genQuery_init(ReIterableData *itrData, Region *r) {
+	ReIterable_genQuery_data *data = (ReIterable_genQuery_data *) malloc(sizeof(ReIterable_genQuery_data));
 
-Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
-{
-    Res *res = newRes(r);
-    char* varName = ((Node *)subtrees[0])->text;
-	Res* coll = evaluateExpression3(subtrees[1], 0, 1, rei, reiSaveFlag, env, errmsg, r);
-	CASCADE_N_ERROR(coll = collType(coll, subtrees[1], errmsg, r));
-	res = newIntRes(r, 0);
-	if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
-		int i;
-		Res* elem;
-		for(i=0;i<coll->degree;i++) {
-				elem = coll->subtrees[i];
-				setVariableValue(varName, elem, rei, env, errmsg, r);
-				res = evaluateActions(subtrees[2], subtrees[3], 0, rei,reiSaveFlag, env,errmsg,r);
-				if(getNodeType(res) == N_ERROR) {
-					break;
-				} else
-				if(TYPE(res) == T_BREAK) {
-					break;
-				} else
-				if(TYPE(res) == T_SUCCESS) {
-					break;
+	itrData->itrSpecData = data;
+
+	data->genQueryOut = (genQueryOut_t*)RES_UNINTER_STRUCT(itrData->res->subtrees[1]);
+	data->cont = data->genQueryOut->continueInx > 0;
+	data->len = getCollectionSize(itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r);
+	data->i = 0;
+
+	convertResToMsParam(&(data->genQInpParam), itrData->res->subtrees[0], itrData->errmsg);
+	convertResToMsParam(&(data->genQOutParam), itrData->res->subtrees[1], itrData->errmsg);
+
 				}
-		}
-		if(getNodeType(res) != N_ERROR) {
-			res = newIntRes(r,0);
-		}
-	} else if (TYPE(coll) == T_TUPLE ) {
-		int i;
-		Res* elem;
-		int cont = 1;
-		msParam_t genQInpParam;
-		msParam_t genQOutParam;
+
+int reIterable_genQuery_hasNext(ReIterableData *itrData, Region *r) {
+	ReIterable_genQuery_data *data = (ReIterable_genQuery_data *) itrData->itrSpecData;
+	if(data->i < data->len) {
+		return 1;
+	} else if(!data->cont) {
+		return 0;
+	} else {
+		data->i = 0;
 		msParam_t contInxParam;
-		convertResToMsParam(&genQInpParam, coll->subtrees[0], errmsg);
-		convertResToMsParam(&genQOutParam, coll->subtrees[1], errmsg);
-		GC_BEGIN
-		while(cont) {
-			genQueryOut_t *genQueryOut = (genQueryOut_t*)RES_UNINTER_STRUCT(coll->subtrees[1]);
-			cont = genQueryOut->continueInx > 0;
-			int len = getCollectionSize(coll->subtrees[1]->exprType->text, RES_UNINTER_STRUCT(coll->subtrees[1]), r);
-			for(i=0;i<len;i++) {
-				GC_ON(env);
-				elem = getValueFromCollection(coll->subtrees[1]->exprType->text, RES_UNINTER_STRUCT(coll->subtrees[1]), i, GC_REGION);
-				setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
-				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
+		memset(&contInxParam, 0, sizeof(msParam_t));
+		int status = msiGetMoreRows(&(data->genQInpParam), &(data->genQOutParam), &contInxParam, itrData->rei);
+		clearMsParam(&contInxParam, 1);
+		if(status < 0) {
+			generateAndAddErrMsg("msiGetMoreRows error", itrData->node, status, itrData->errmsg);
+			itrData->errorRes = newErrorRes(r, status);
+			return 0;
+		}
+		data->len = getCollectionSize(itrData->res->subtrees[1]->exprType->text, data->genQueryOut, r);
+		if(data->len > 0) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+}
+Res *reIterable_genQuery_next(ReIterableData *itrData, Region *r) {
+	ReIterable_genQuery_data *data = (ReIterable_genQuery_data *) itrData->itrSpecData;
+	Res *elem = getValueFromCollection(itrData->res->subtrees[1]->exprType->text, data->genQueryOut, data->i++, r);
+	setVariableValue(itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r);
+	Res *res = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei,itrData->reiSaveFlag,  itrData->env,itrData->errmsg,r);
 				clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
 				free(RES_UNINTER_STRUCT(elem));
 
 				if(getNodeType(res) == N_ERROR) {
-					cont = 0;
-					break;
+		itrData->errorRes = res;
+		return NULL;
 				}
-				if(TYPE(res) == T_BREAK) {
-					cont = 0;
-					break;
-				}
-			}
-			if(!cont) {
-				break;
-			}
-			memset(&contInxParam, 0, sizeof(msParam_t));
-			int status = msiGetMoreRows(&genQInpParam, &genQOutParam, &contInxParam, rei);
-			clearMsParam(&contInxParam, 1);
-			if(status < 0) {
-				generateAndAddErrMsg("msiGetMoreRows error", node, status, errmsg);
-				res = newErrorRes(GC_REGION, status);
-				break;
-			}
-		}
-		int status = msiCloseGenQuery(&genQInpParam, &genQOutParam, rei);
-		clearMsParam(&genQInpParam, 0);
-		clearMsParam(&genQOutParam, 0);
-		if(status < 0) {
-			generateAndAddErrMsg("msiCloseGenQuery error", node, status, errmsg);
-		}
-
-		cpEnv(env, r);
-		res = cpRes(res, r);
-		GC_END
-		if(getNodeType(res) != N_ERROR) {
-			res = newIntRes(r,0);
-		}
-
-	} else if (TYPE(coll) == T_STRING || (TYPE(coll) == T_IRODS && strcmp(RES_IRODS_TYPE(coll), CollInp_MS_T) == 0) ) {
-		Node *subtreesNew[4];
-		subtreesNew[0] = subtrees[0]; /* variable */
-		subtreesNew[1] = coll; /* collection */
-		subtreesNew[2] = subtrees[2]; /* actions */
-		subtreesNew[3] = subtrees[3]; /* recovery actions */
-		return smsiCollectionSpider(subtreesNew, n, node, rei, reiSaveFlag, env, errmsg, r);
-
-	} else {
-		int i;
-		Res* elem;
-		int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
-		GC_BEGIN
-		for(i=0;i<len;i++) {
-			GC_ON(env);
-				elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, GC_REGION);
-				setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
-				res = evaluateActions((Node *)subtrees[2], (Node *)subtrees[3], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
-                clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
-                free(RES_UNINTER_STRUCT(elem));
-
-				if(getNodeType(res) == N_ERROR) {
-						break;
-				}
-				if(TYPE(res) == T_BREAK) {
-						break;
-				}
-		}
-		cpEnv(env, r);
-		res = cpRes(res, r);
-		GC_END
-		if(getNodeType(res) != N_ERROR) {
-			res = newIntRes(r,0);
-		}
-
-	}
 	return res;
-}
-Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
-{
-    Res *res = newRes(r);
-    char* varName = ((Node *)subtrees[0])->text;
-        Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
-        Res *coll;
-        CASCADE_N_ERROR(coll = collTypeBackwardCompatible(orig, subtrees[0], errmsg, r));
-        res = newIntRes(r, 0);
-        if(TYPE(coll) == T_CONS && strcmp(coll->exprType->text, LIST) == 0) {
-            int i;
-            Res* elem;
-            for(i=0;i<coll->degree;i++) {
-                    elem = coll->subtrees[i];
-                    setVariableValue(varName, elem, rei, env, errmsg, r);
-                    res = evaluateActions(subtrees[1], subtrees[2], 0, rei,reiSaveFlag, env,errmsg,r);
-                    if(getNodeType(res) == N_ERROR) {
-                        break;
-                    } else
-                    if(TYPE(res) == T_BREAK) {
-                        break;
-                    } else
-                    if(TYPE(res) == T_SUCCESS) {
-                        break;
-                    }
-            }
-            if(getNodeType(res) != N_ERROR) {
-                res = newIntRes(r,0);
-            }
-        } else {
-            int i;
-            Res* elem;
-            int len = getCollectionSize(coll->exprType->text, RES_UNINTER_STRUCT(coll), r);
-            GC_BEGIN
-            for(i=0;i<len;i++) {
-            	GC_ON(env);
-            		elem = getValueFromCollection(coll->exprType->text, RES_UNINTER_STRUCT(coll), i, GC_REGION);
-                    setVariableValue(varName, elem, rei, env, errmsg, GC_REGION);
-                    res = evaluateActions((Node *)subtrees[1], (Node *)subtrees[2], 0, rei,reiSaveFlag,  env,errmsg,GC_REGION);
-                    clearKeyVal((keyValPair_t *)RES_UNINTER_STRUCT(elem));
-                    free(RES_UNINTER_STRUCT(elem));
 
+				}
+void reIterable_genQuery_finalize(ReIterableData *itrData, Region *r) {
+	ReIterable_genQuery_data *data = (ReIterable_genQuery_data *) itrData->itrSpecData;
+	int status = msiCloseGenQuery(&(data->genQInpParam), &(data->genQOutParam), itrData->rei);
+	clearMsParam(&(data->genQInpParam), 0);
+	clearMsParam(&(data->genQOutParam), 0);
+	free(data);
+	if(status < 0) {
+		generateAndAddErrMsg("msiCloseGenQuery error", itrData->node, status, itrData->errmsg);
+		itrData->errorRes = newErrorRes(r, status);
+			}
+
+			}
+
+/* list iterable */
+typedef struct reIterable_list_data {
+	Res **elems;
+	int i;
+	int n;
+} ReIterable_list_data;
+
+void reIterable_list_init(ReIterableData *itrData, Region *r) {
+	ReIterable_list_data *data = (ReIterable_list_data *) malloc(sizeof(ReIterable_list_data));
+
+	itrData->itrSpecData = data;
+	data->i = 0;
+	data->n = itrData->res->degree;
+	data->elems = itrData->res->subtrees;
+			}
+
+int reIterable_list_hasNext(ReIterableData *itrData, Region *r) {
+	ReIterable_list_data *data = (ReIterable_list_data *) itrData->itrSpecData;
+	return data->i < data->n;
+		}
+
+Res *reIterable_list_next(ReIterableData *itrData, Region *r) {
+	ReIterable_list_data *data = (ReIterable_list_data *) itrData->itrSpecData;
+	Res *elem = data->elems[data->i++];
+	setVariableValue(itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r);
+	Res *res = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei,itrData->reiSaveFlag, itrData->env,itrData->errmsg, r);
+	return res;
+		}
+
+void reIterable_list_finalize(ReIterableData *itrData, Region *r) {
+	ReIterable_list_data *data = (ReIterable_list_data *) itrData->itrSpecData;
+	free(data);
+		}
+
+/* intArray strArray genQueryOut iterable */
+typedef struct reIterable_irods_data {
+		int i;
+	int n;
+} ReIterable_irods_data;
+
+void reIterable_irods_init(ReIterableData *itrData, Region *r) {
+	ReIterable_irods_data *data = (ReIterable_irods_data *) malloc(sizeof(ReIterable_irods_data));
+
+	itrData->itrSpecData = data;
+	data->i = 0;
+	data->n = getCollectionSize(itrData->res->exprType->text, RES_UNINTER_STRUCT(itrData->res), r);
+				}
+
+int reIterable_irods_hasNext(ReIterableData *itrData, Region *r) {
+	ReIterable_irods_data *data = (ReIterable_irods_data *) itrData->itrSpecData;
+	return data->i < data->n;
+				}
+
+Res *reIterable_irods_next(ReIterableData *itrData, Region *r) {
+	ReIterable_irods_data *data = (ReIterable_irods_data *) itrData->itrSpecData;
+	Res *elem = getValueFromCollection(itrData->res->exprType->text, RES_UNINTER_STRUCT(itrData->res), data->i++, r);
+	setVariableValue(itrData->varName, elem, itrData->node, itrData->rei, itrData->env, itrData->errmsg, r);
+	Res *res = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei,itrData->reiSaveFlag, itrData->env,itrData->errmsg, r);
+	return res;
+		}
+
+void reIterable_irods_finalize(ReIterableData *itrData, Region *r) {
+	ReIterable_irods_data *data = (ReIterable_irods_data *) itrData->itrSpecData;
+	free(data);
+		}
+
+/* path/collection iterable */
+typedef struct reIterable_collection_data {
+	collInp_t *collInp;		/* input for rsOpenCollection */
+	collEnt_t *collEnt;						/* input for rsReadCollection */
+	int handleInx;							/* collection handler */
+	dataObjInp_t *dataObjInp;				/* will contain pathnames for each object (one at a time) */
+} ReIterable_collection_data;
+
+void reIterable_collection_init(ReIterableData *itrData, Region *r) {
+	ReIterable_collection_data *data = (ReIterable_collection_data *) malloc (sizeof(ReIterable_collection_data));
+
+	itrData->itrSpecData = data;
+
+	/* Sanity test */
+	if (itrData->rei == NULL || itrData->rei->rsComm == NULL) {
+    	generateAndAddErrMsg("msiCollectionSpider: input rei or rsComm is NULL.", itrData->node, SYS_INTERNAL_NULL_INPUT_ERR, itrData->errmsg);
+    	itrData->errorRes = newErrorRes(r, SYS_INTERNAL_NULL_INPUT_ERR);
+    	return;
+	}
+
+	Res *collRes;
+	if(TYPE(itrData->subtrees[1]) == T_PATH) {
+		collRes = smsi_collection(&itrData->subtrees[1], 1, itrData->node->subtrees[1], itrData->rei, itrData->reiSaveFlag, itrData->env, itrData->errmsg, r);
+		if(TYPE(collRes) == T_ERROR) {
+			itrData->errorRes = collRes;
+			return;
+}
+	} else {
+		collRes = itrData->subtrees[1];
+	}
+	data->collInp = (collInp_t *) RES_UNINTER_STRUCT(collRes);
+
+    /* Allocate memory for dataObjInp. Needs to be persistent since will be freed later along with other msParams */
+    data->dataObjInp = (dataObjInp_t *)malloc(sizeof(dataObjInp_t));
+
+	/* Open collection in recursive mode */
+	data->collInp->flags = RECUR_QUERY_FG;
+	data->handleInx = rsOpenCollection (itrData->rei->rsComm, data->collInp);
+	if (data->handleInx < 0)
+{
+		char buf[ERR_MSG_LEN];
+		snprintf(buf, ERR_MSG_LEN, "collectionSpider: rsOpenCollection of %s error. status = %d", data->collInp->collName, data->handleInx);
+    	generateAndAddErrMsg(buf, itrData->node, data->handleInx, itrData->errmsg);
+		itrData->errorRes = newErrorRes(r, data->handleInx);
+		return;
+                    }
+            }
+
+int reIterable_collection_hasNext(ReIterableData *itrData, Region *r) {
+	ReIterable_collection_data *data = (ReIterable_collection_data *) itrData->itrSpecData;
+
+	collEnt_t *collEnt;
+	while((itrData->rei->status = rsReadCollection (itrData->rei->rsComm, &data->handleInx, &collEnt)) >= 0) {
+		if (collEnt != NULL) {
+			if(collEnt->objType == DATA_OBJ_T) {
+				data->collEnt = collEnt;
+				return 1;
+			} else {
+				/* Free collEnt only. Content will be freed by rsCloseCollection() */
+				free(collEnt);
+            }
+		}
+	}
+	return 0;
+}
+Res *reIterable_collection_next(ReIterableData *itrData, Region *r) {
+	ReIterable_collection_data *data = (ReIterable_collection_data *) itrData->itrSpecData;
+
+	/* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
+
+	memset(data->dataObjInp, 0, sizeof(dataObjInp_t));
+	snprintf(data->dataObjInp->objPath, MAX_NAME_LEN, "%s/%s", data->collEnt->collName, data->collEnt->dataName);
+
+	/* Free collEnt only. Content will be freed by rsCloseCollection() */
+	free(data->collEnt);
+
+	/* Set var with name varname in the current environment */
+	updateInEnv(itrData->env, itrData->varName, newUninterpretedRes(r, DataObjInp_MS_T, (void *) data->dataObjInp, NULL));
+
+	/* Run actionStr on our object */
+	Res *ret = evaluateActions(itrData->subtrees[2], itrData->subtrees[3], 0, itrData->rei, itrData->reiSaveFlag, itrData->env, itrData->errmsg, r);
+
+	return ret;
+
+}
+void reIterable_collection_finalize(ReIterableData *itrData, Region *r) {
+	ReIterable_collection_data *data = (ReIterable_collection_data *) itrData->itrSpecData;
+	free(data->dataObjInp);
+	itrData->rei->status = rsCloseCollection(itrData->rei->rsComm, &data->handleInx);
+	if(itrData->rei->status < 0) {
+		itrData->errorRes= newErrorRes(r, itrData->rei->status);
+	}
+
+	if(TYPE(itrData->subtrees[1]) == T_PATH) {
+		/* free automatically generated collInp_t struct */
+		free(data->collInp);
+        } else {
+	}
+}
+ReIterable *getReIterable(ReIterableType nodeType) {
+            int i;
+	for(i=0; i<NUM_RE_ITERABLE; i++) {
+		if(reIterableTable[i].nodeType == nodeType) {
+			return &(reIterableTable[i].reIterable);
+		}
+	}
+	return NULL;
+}
+Res *smsi_forEach2Exec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+	Res *res;
+	ReIterableType ctype = collType(subtrees[1], node->subtrees[1], errmsg, r);
+	ReIterableData *itrData;
+	Res *oldVal;
+	ReIterable* itr;
+	Node *subtreesNew[4];
+	char errbuf[ERR_MSG_LEN];
+
+	switch(ctype) {
+	case RE_NOT_ITERABLE:
+		snprintf(errbuf, ERR_MSG_LEN, "%s is not a collection type.", typeName_Res(subtrees[1]));
+		generateAndAddErrMsg(errbuf, node, RE_DYNAMIC_TYPE_ERROR, errmsg);
+		return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+	case RE_ITERABLE_COMMA_STRING:
+		/* backward compatible mode only */
+		subtreesNew[0] = subtrees[0];
+		Res *paramsr[2];
+		paramsr[0] = subtrees[1];
+		paramsr[1] = newStringRes(r, ",");
+		subtreesNew[1] = smsi_split(paramsr, 2, node, NULL, 0, NULL, errmsg, r);;
+		subtreesNew[2] = subtrees[2];
+		subtreesNew[3] = subtrees[3];
+		subtrees = subtreesNew;
+		ctype = RE_ITERABLE_LIST;
+		/* no break */
+
+	case RE_ITERABLE_COLLECTION:
+	case RE_ITERABLE_GEN_QUERY:
+	case RE_ITERABLE_INT_ARRAY:
+	case RE_ITERABLE_STRING_ARRAY:
+	case RE_ITERABLE_GEN_QUERY_OUT:
+	case RE_ITERABLE_LIST: {
+		res = newIntRes(r,0);
+		itrData = newReIterableData(subtrees[0]->text, subtrees[1], subtrees, node, rei, reiSaveFlag, env, errmsg);
+		/* save the old value of variable in the current env */
+		oldVal = (Res *) lookupFromHashTable(env->current, itrData->varName);
+            GC_BEGIN
+		itr = getReIterable(ctype);
+		itr->init(itrData, GC_REGION);
+		if(itrData->errorRes != NULL) {
+			res = itrData->errorRes;
+		} else {
+			while(itr->hasNext(itrData, GC_REGION)) {
+				if(itrData->errorRes != NULL) {
+					res = itrData->errorRes;
+					break;
+				}
+            	GC_ON(env);
+
+				res = itr->next(itrData, GC_REGION);
+
+				if(itrData->errorRes != NULL) {
+					res = itrData->errorRes;
+					break;
+				}
                     if(getNodeType(res) == N_ERROR) {
                             break;
                     }
@@ -417,15 +650,50 @@ Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, i
                             break;
                     }
             }
+		}
+		itr->finalize(itrData, GC_REGION);
+		if(itrData->errorRes != NULL) {
+			res = itrData->errorRes;
+		}
+
             cpEnv(env, r);
             res = cpRes(res, r);
             GC_END
+		/* restore variable value */
+		if(oldVal == NULL) {
+			deleteFromHashTable(env->current, itrData-> varName);
+		} else {
+			updateInEnv(env, itrData->varName, oldVal);
+		}
+		deleteReIterableData(itrData);
             if(getNodeType(res) != N_ERROR) {
                 res = newIntRes(r,0);
             }
+		return res;
+	}
+	default:
+		snprintf(errbuf, ERR_MSG_LEN, "Error occurred when trying to determine if type %s is iterable.", typeName_Res(subtrees[1]));
+		generateAndAddErrMsg(errbuf, node, RE_RUNTIME_ERROR, errmsg);
+		return newErrorRes(r, RE_RUNTIME_ERROR);
+	}
 
         }
-        setVariableValue(varName, orig, rei, env, errmsg, r);
+Res *smsi_forEachExec(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
+{
+    Res *res;
+    char* varName = ((Node *)subtrees[0])->text;
+	Res* orig = evaluateVar3(varName, ((Node *)subtrees[0]), rei, reiSaveFlag, env, errmsg, r);
+	if(TYPE(orig)==T_ERROR) {
+		return orig;
+	}
+
+	Node *subtreesNew[4];
+	subtreesNew[0] = subtrees[0];
+	subtreesNew[1] = orig;
+	subtreesNew[2] = subtrees[1];
+	subtreesNew[3] = subtrees[2];
+
+	res = smsi_forEach2Exec(subtreesNew, 4, node, rei, reiSaveFlag, env, errmsg, r);
         return res;
 }
 
@@ -440,83 +708,142 @@ void columnToString(Node *n, char **queryStr, int *size) {
 
 }
 
-int
-msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
-int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-
 Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
-	char queryStr[1024];
-	char condStr[1024];
-	int size = 1024;
-	char *p = queryStr;
-	int where = 0;
-	int i;
-	for(i=0;i<n;i++) {
-		switch(getNodeType(subtrees[i])) {
+#ifdef DEBUG
+	return newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
+#else
+	char condStr[MAX_NAME_LEN];
+	char errmsgBuf[ERR_MSG_LEN];
+	int i, k;
+	int column_inx, function_inx, att_inx;
+	Res *res0, *res1;
+	NodeType nodeType0, nodeType1;
+	char *value0, *value1;
+	char *attr;
+	char *p;
+	int size;
+
+	genQueryInp_t *genQueryInp = (genQueryInp_t*)malloc(sizeof(genQueryInp_t));
+	memset(genQueryInp, 0, sizeof(genQueryInp_t));
+	genQueryInp->maxRows = MAX_SQL_ROWS;
+
+	msParam_t genQInpParam;
+	genQInpParam.inOutStruct = (void*)genQueryInp;
+	genQInpParam.type = strdup(GenQueryInp_MS_T);
+
+	Node *queNode = subtrees[0];
+	Node *subQueNode;
+
+	Hashtable *queCondHashTable = newHashTable(1024);
+
+	for(i=0;i<queNode->degree;i++) {
+		subQueNode = queNode->subtrees[i];
+
+		switch(getNodeType(subQueNode)) {
 		case N_ATTR:
-			columnToString(subtrees[i], &p, &size);
-			break;
-		case N_QUERY_COND:
-			where = 1;
-			break;
-		default:
-			generateAndAddErrMsg("unsupported node type", subtrees[i], RE_DYNAMIC_TYPE_ERROR, errmsg);
+
+			/* Parse function and convert to index directly, getSelVal() returns 1 if string is NULL or empty. */
+			function_inx = getSelVal(subQueNode->text);
+
+			/* Get column index */
+			column_inx = getAttrIdFromAttrName(subQueNode->subtrees[0]->text);
+
+			/* Error? */
+			if (column_inx < 0) {
+				snprintf(errmsgBuf, ERR_MSG_LEN, "Unable to get valid ICAT column index for %s.", subQueNode->subtrees[0]->text);
+				generateAndAddErrMsg(errmsgBuf, subQueNode->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg);
 			return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 		}
-		if(where == 1) {
+
+			/* Add column and function to genQueryInput */
+			addInxIval (&genQueryInp->selectInp, column_inx, function_inx);
+
 			break;
+		case N_QUERY_COND_JUNCTION:
+
+			attr = subQueNode->subtrees[0]->subtrees[0]->text;
+			if(lookupFromHashTable(queCondHashTable, attr) != NULL) {
+				deleteHashTable(queCondHashTable, nop);
+				snprintf(errmsgBuf, ERR_MSG_LEN, "Unsupported gen query format: multiple query conditions on one attribute %s.", attr);
+				generateAndAddErrMsg(errmsgBuf, subQueNode, RE_DYNAMIC_TYPE_ERROR, errmsg);
+				return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 		}
-		PRINT(&p, &size, "%s", ",");
-	}
-	if(p != queryStr) {
-		p--;
-		*p = '\0';
+			insertIntoHashTable(queCondHashTable, attr, attr);
+
+			/* Get attribute index */
+			att_inx = getAttrIdFromAttrName(attr);
+
+			/* Error? */
+			if (att_inx < 0) {
+				snprintf(errmsgBuf, ERR_MSG_LEN, "Unable to get valid ICAT column index for %s.", subQueNode->subtrees[0]->text);
+				generateAndAddErrMsg(errmsgBuf, subQueNode->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg);
+				return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 	}
 
+			p = condStr;
+			size = MAX_NAME_LEN;
 
-	if(where == 1) {
-		p = condStr;
-		for(;i<n;i++) {
-			switch(getNodeType(subtrees[i])) {
-		case N_QUERY_COND:
-			columnToString(subtrees[i]->subtrees[0], &p, &size);
-			PRINT(&p, &size, " %s ", subtrees[i]->text);
-			if(strcmp(subtrees[i]->text, "between")==0) {
-				termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[1], 1);
-				PRINT(&p, &size, "%s", " ");
-				termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[2], 1);
+			for(k=1;k<subQueNode->degree;k++) {
+
+				Node *node = subQueNode->subtrees[k];
+
+				/* Make the condition */
+				res0 = evaluateExpression3(node->subtrees[0], 0, 0,rei, reiSaveFlag, env, errmsg, r);
+				if(getNodeType(res0) == N_ERROR) {
+					return res0;
+				}
+				nodeType0 = (NodeType) TYPE(res0);
+				if(nodeType0 != T_DOUBLE && nodeType0 != T_INT && nodeType0 != T_STRING) {
+					generateAndAddErrMsg("dynamic type error", node->subtrees[0], RE_DYNAMIC_TYPE_ERROR, errmsg);
+					return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
+				}
+				value0 = convertResToString(res0);
+				PRINT(&p, &size, "%s", node->text);
+				if(nodeType0 == T_STRING) {
+					PRINT(&p, &size, " '%s'", value0);
 			} else {
-				termToString(&p, &size, 0, MIN_PREC, subtrees[i]->subtrees[1], 1);
+					PRINT(&p, &size, " %s", value0);
 			}
-			break;
-		default:
-			generateAndAddErrMsg("unsupported node type", subtrees[i], RE_DYNAMIC_TYPE_ERROR, errmsg);
+				free(value0);
+
+				if(strcmp(node->text, "between")==0) {
+					res1 = evaluateExpression3(node->subtrees[1], 0, 0,rei, reiSaveFlag, env, errmsg, r);
+					if(getNodeType(res1) == N_ERROR) {
+						return res1;
+					}
+					nodeType1 = (NodeType) TYPE(res1);
+					if(((nodeType0 == T_DOUBLE || nodeType0 == T_INT) && nodeType1 != T_DOUBLE && nodeType1 != T_INT) || (nodeType0 == T_STRING && nodeType1 != T_STRING)) {
+						generateAndAddErrMsg("dynamic type error", node->subtrees[1], RE_DYNAMIC_TYPE_ERROR, errmsg);
 			return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 		}
-		if(i != n - 1) {
-			PRINT(&p, &size, "%s", " AND ");
+					value1 = convertResToString(res1);
+					if(nodeType0 == T_STRING) {
+						PRINT(&p, &size, " '%s'", value1);
+					} else {
+						PRINT(&p, &size, " %s", value1);
 		}
+					free(value1);
+		}
+				if(k<subQueNode->degree-1) {
+					PRINT(&p, &size, " %s ", subQueNode->text);
+	}
+
+			}
+			/* Add condition to genQueryInput */
+			addInxVal (&genQueryInp->sqlCondInp, att_inx, condStr);   /* condStr gets strdup'ed */
+			break;
+		default:
+			generateAndAddErrMsg("unsupported node type", subQueNode, RE_DYNAMIC_TYPE_ERROR, errmsg);
+			return newErrorRes(r, RE_DYNAMIC_TYPE_ERROR);
 		}
 	}
+
+	deleteHashTable(queCondHashTable, nop);
 
 	Region *rNew = make_region(0, NULL);
-	msParam_t condParam;
-	msParam_t selectListParam;
-	msParam_t genQInpParam;
 	msParam_t genQOutParam;
-	memset(&genQInpParam, 0, sizeof(msParam_t));
 	memset(&genQOutParam, 0, sizeof(msParam_t));
-	convertResToMsParam(&condParam, newStringRes(rNew, condStr), errmsg);
-	convertResToMsParam(&selectListParam, newStringRes(rNew, queryStr), errmsg);
-	int status = msiMakeGenQuery(&selectListParam, &condParam, &genQInpParam, rei);
-	clearMsParam(&condParam, 1);
-	clearMsParam(&selectListParam, 1);
-	if(status < 0) {
-		region_free(rNew);
-		generateAndAddErrMsg("msiMakeGenQuery error", node, status, errmsg);
-		return newErrorRes(r, status);
-	}
-	status = msiExecGenQuery(&genQInpParam, &genQOutParam, rei);
+	int status = msiExecGenQuery(&genQInpParam, &genQOutParam, rei);
 	if(status < 0) {
 		region_free(rNew);
 		generateAndAddErrMsg("msiExecGenQuery error", node, status, errmsg);
@@ -533,6 +860,7 @@ Res *smsi_query(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int rei
 	comps[1] = res2;
 
 	return newTupleRes(2, comps, r);
+#endif
 }
 Res *smsi_break(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
@@ -549,7 +877,8 @@ Res *smsi_succeed(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int r
 Res *smsi_fail(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
 	Res *	res = newErrorRes(r, n == 0 ?FAIL_ACTION_ENCOUNTERED_ERR:RES_INT_VAL(subtrees[0]));
-	generateAndAddErrMsg("fail action encountered", node, RES_ERR_CODE(res), errmsg);
+	char *msg = (n == 0 || n == 1) ? (char *) "fail action encountered" : subtrees[1]->text;
+	generateAndAddErrMsg(msg, node, RES_ERR_CODE(res), errmsg);
         return res;
 }
 
@@ -567,6 +896,45 @@ Res *smsi_assign(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int re
     return ret;
 }
 
+/**
+\brief '.'
+\code
+<expr> ::= <expr> '.' ( <iden> | <str> )
+\endcode
+Examples:
+\code
+*kv.A = "a"; # Add key value pair
+*kv.A = "b"; # Update key value pair
+*kv.A == "a" # Get value by key
+*kv."A B" = "a";
+*kv."A B" = "b";
+*kv."A B" == "b"
+\endcode 
+ */
+Res *smsi_getValByKey(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+    char errbuf[ERR_MSG_LEN];
+    keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(params[0]);
+    char *key = NULL;
+    if(getNodeType(params[1])==N_APPLICATION && N_APP_ARITY(params[1]) == 0) {
+        key = N_APP_FUNC(params[1])->text;
+    } else if(getNodeType(params[1])==TK_STRING) {
+	key = params[1]->text;
+    } else {
+	snprintf(errbuf, ERR_MSG_LEN, "malformatted key %s", params[1]->text);
+        generateAndAddErrMsg(errbuf, params[1], UNMATCHED_KEY_OR_INDEX, errmsg);
+        return newErrorRes(r, UNMATCHED_KEY_OR_INDEX);
+    }
+    
+    int i;
+    for(i=0; i<kvp->len; i++) {
+        if(strcmp(kvp->keyWord[i], key)==0) {
+	    return newStringRes(r, kvp->value[i]);
+        } 
+    }
+	snprintf(errbuf, ERR_MSG_LEN, "unmatched key %s", key);
+        generateAndAddErrMsg(errbuf, node, UNMATCHED_KEY_OR_INDEX, errmsg);
+        return newErrorRes(r, UNMATCHED_KEY_OR_INDEX);
+}
 Res *smsi_listvars(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 /*
 		char buf2[MAX_COND_LEN];
@@ -809,12 +1177,8 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
                 Res *res = newRes(r);
 		Res* timestr = params[0];
 		char* format;
-		if(TYPE(params[0])!=T_STRING ||
-			(n == 2 && TYPE(params[1])!=T_STRING)) { /* error not a string */
-                        res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
-                        snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
-                        addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
-		} else {
+		if(TYPE(params[0])==T_STRING && (n == 1 ||
+			(n == 2 && TYPE(params[1])==T_STRING))) {
 			if(n == 2) {
 				format = params[1]->text;
 			} else {
@@ -822,6 +1186,17 @@ Res *smsi_min(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 			}
 			strttime(timestr->text, format, &(RES_TIME_VAL(res)));
                         res->exprType = newSimpType(T_DATETIME,r);
+		} else if(n==1 && (TYPE(params[0])==T_DOUBLE || TYPE(params[0])==T_INT)){
+			if(TYPE(params[0])==T_DOUBLE) {
+				RES_TIME_VAL(res) = (long) RES_DOUBLE_VAL(timestr);
+			} else {
+				RES_TIME_VAL(res) = (long) RES_INT_VAL(timestr);
+			}
+                        res->exprType = newSimpType(T_DATETIME,r);
+		} else {  /* error not a string */
+                        res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
+                        snprintf(errbuf, ERR_MSG_LEN, "error: unsupported operator or type. can not apply datetime to type (%s[,%s]).", typeName_Res((Res *)params[0]), n==2?typeName_Res((Res *)params[1]):"null");
+                        addRErrorMsg(errmsg, RE_UNSUPPORTED_OP_OR_TYPE, errbuf);
 		}
                 return res;
         }
@@ -885,6 +1260,7 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 		|| TYPE(val) == T_BOOL
 		|| TYPE(val) == T_CONS
 		|| TYPE(val) == T_STRING
+		|| TYPE(val) == T_PATH
 		|| TYPE(val) == T_DATETIME) {
                     char *buf = convertResToString(val);
                     if(buf != NULL) {
@@ -897,7 +1273,7 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 
                     }
 		} else if(TYPE(val) == T_IRODS && strcmp(val->exprType->text, BUF_LEN_MS_T) == 0) {
-			bytesBuf_t *buf = (bytesBuf_t *) RES_UNINTER_STRUCT(val);
+			bytesBuf_t *buf = (bytesBuf_t *) RES_UNINTER_BUFFER(val);
 			int len = buf->len;
 			int i;
 			for(i=0;i<len;i++) {
@@ -908,7 +1284,26 @@ Res *smsi_str(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
 			char *tmp = (char *)malloc(len+1);
 			memcpy(tmp, buf->buf, len);
 			tmp[len] = '\0';
-			return newStringRes(r, tmp);
+			res = newStringRes(r, tmp);
+		} else if(TYPE(val) == T_IRODS && strcmp(val->exprType->text, KeyValPair_MS_T) == 0) {
+			int size = 1024;
+			char *buf = (char *) malloc(size);
+			char *p = buf;
+			keyValPair_t *kvp = (keyValPair_t *) RES_UNINTER_STRUCT(val);
+			int i;
+			int kl;
+			int vl;
+			for(i=0;i<kvp->len;i++) {
+				kl = strlen(kvp->keyWord[i]);
+				vl = strlen(kvp->value[i]);
+				if(p + kl + 1 + vl +(i==0?0:4) >= buf+size) {
+					size*=2;
+					buf = (char *) realloc(buf, size);
+				}
+				snprintf(p, size - (p-buf), "%s%s=%s", i==0?"":"++++", kvp->keyWord[i], kvp->value[i]);
+			}
+			res = newStringRes(r, buf);
+			free(buf);
 		} else {
                     res = newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
                     snprintf(errmsgbuf, ERR_MSG_LEN, "error: unsupported type. can not convert %s to string.", typeName_Res(val));
@@ -1214,6 +1609,9 @@ Res *smsi_eq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSaveF
         case T_STRING:
 			return newBoolRes(r, strcmp(params[0]->text, params[1]->text) ==0?1:0);
             break;
+        case T_PATH:
+			return newBoolRes(r, strcmp(params[0]->text, params[1]->text) ==0?1:0);
+            break;
         default:
             break;
     }
@@ -1239,6 +1637,9 @@ Res *smsi_neq(Node **params, int n, Node *node, ruleExecInfo_t *rei, int reiSave
         case T_STRING:
 			return newBoolRes(r, strcmp(params[0]->text, params[1]->text) !=0?1:0);
             break;
+        case T_PATH:
+        	return newBoolRes(r, strcmp(params[0]->text, params[1]->text) !=0?1:0);
+        	break;
         default:
             break;
     }
@@ -1401,6 +1802,10 @@ Res *smsi_delayExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int 
 
 Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
+#ifdef DEBUG
+	return newErrorRes(r, RE_UNSUPPORTED_OP_OR_TYPE);
+#else
+
   int i;
   execMyRuleInp_t execMyRuleInp;
   msParamArray_t *outParamArray = NULL;
@@ -1414,6 +1819,7 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
 
   rstrcpy (tmpStr, params[0]->text, LONG_NAME_LEN);
   parseHostAddrStr (tmpStr, &execMyRuleInp.addr);
+
 
   if(strlen(params[3]->text) == 0) {
       snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec{%s}", params[2]->text);
@@ -1443,6 +1849,7 @@ Res *smsi_remoteExec(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
   } else {
       return newIntRes(r, i);
   }
+#endif
 }
 int writeStringNew(char *writeId, char *writeStr, Env *env, Region *r, ruleExecInfo_t *rei) {
   execCmdOut_t *myExecCmdOut;
@@ -1599,8 +2006,17 @@ Res *smsi_substr(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int rei
     Res *startres = (Res *)paramsr[1];
     Res *finishres = (Res *)paramsr[2];
 
-    char *buf = strdup(strres->text + RES_INT_VAL(startres));
-    buf[RES_INT_VAL(finishres) - RES_INT_VAL(startres)] = '\0';
+    int len = strlen(strres->text);
+    int start = RES_INT_VAL(startres);
+    int finish = RES_INT_VAL(finishres);
+    if(start<0 || start>len || finish<0 || finish>len || start>finish) {
+      generateAndAddErrMsg("invalid substr index error", node, RE_RUNTIME_ERROR, errmsg);
+      return newErrorRes(r, RE_RUNTIME_ERROR);
+
+    }
+
+    char *buf = strdup(strres->text + start);
+    buf[finish - start] = '\0';
 
     Res *retres = newStringRes(r, buf);
     free(buf);
@@ -2027,6 +2443,31 @@ Res * smsi_msiAdmRetrieveRulesFromDBIntoStruct(Node **paramsr, int n, Node *node
   return newIntRes(r, 0);
 }
 
+Res *smsi_getReLogging(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	int logging;
+	char *userName = paramsr[0]->text;
+	int i = readICatUserLogging(userName, &logging, rei->rsComm);
+	if(i<0) {
+		  generateAndAddErrMsg("error reading RE logging settings.", node, i, errmsg);
+		  return newErrorRes(r, i);
+
+	}
+	return newBoolRes(r, logging);
+}
+
+Res *smsi_setReLogging(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *userName = paramsr[0]->text;
+	int logging = RES_BOOL_VAL(paramsr[1]);
+
+	int i = writeICatUserLogging(userName, logging, rei->rsComm);
+	if(i<0) {
+		  generateAndAddErrMsg("error writing RE logging settings.", node, i, errmsg);
+		  return newErrorRes(r, i);
+
+	}
+  return newIntRes(r, 0);
+}
+
 
 Res *smsi_getstdout(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
     Res *res = (Res *)lookupFromEnv(env, "ruleExecOut");
@@ -2089,6 +2530,54 @@ Res *smsi_applyAllRules(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei,
 
 }
 
+
+
+Res *smsi_path(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *pathName = subtrees[0]->text;
+	/* remove excessive slashes */
+	while(pathName[0]=='/' && pathName[1]=='/') {
+		pathName ++;
+	}
+
+	Res *res = newPathRes(r,pathName);
+	return res;
+}
+
+Res *smsi_execCmdArg(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *arg = subtrees[0]->text;
+	char *argNew = (char *) malloc(strlen(arg) * 2 + 4);
+	char *p = arg, *q = argNew;
+	/* this prevent invalid read:
+	 * when msiExecCmd sees a quote it tries to read the previous char to determine whether the quote is escaped
+	 * if the quote is the first char, there will be an invalid read
+	 * leave a space so that the first char is never a quote */
+	*(q++) = ' ';
+	*(q++) = '\"';
+	while(*p != '\0') {
+		if(*p == '\"' || *p == '\'') {
+			*(q++) = '\\';
+		}
+		*(q++) = *(p++);
+	}
+	*(q++) = '\"';
+	*(q++) = '\0';
+	Res *res = newStringRes(r, argNew);
+	free(argNew);
+	return res;
+
+}
+
+int checkStringForSystem(char *s);
+Res *smsi_msiCheckStringForSystem(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
+	char *s = paramsr[0]->text;
+	int ret = checkStringForSystem(s);
+	if(ret<0) {
+		return newErrorRes(r, ret);
+	} else {
+		return newIntRes(r, ret);
+	}
+}
+
 int
 parseResForCollInp (Node *inpParam, collInp_t *collInpCache,
 collInp_t **outCollInp, int outputToCache)
@@ -2140,10 +2629,6 @@ collInp_t **outCollInp, int outputToCache)
     }
 }
 
-int rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp);
-int rsCloseCollection (rsComm_t *rsComm, int *handleInxInp);
-int rsReadCollection (rsComm_t *rsComm, int *handleInxInp, collEnt_t **collEnt);
-
 Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r)
 {
 	collInp_t collInpCache, *collInp;		/* input for rsOpenCollection */
@@ -2186,7 +2671,6 @@ Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *re
 		char buf[ERR_MSG_LEN];
 		snprintf(buf, ERR_MSG_LEN, "msiCollectionSpider: rsOpenCollection of %s error. status = %d", collInp->collName, handleInx);
     	generateAndAddErrMsg(buf, node, handleInx, errmsg);
-        free( dataObjInp );
 		return newErrorRes(r, handleInx);
 	}
 
@@ -2256,7 +2740,6 @@ Res *smsiCollectionSpider(Node **subtrees, int n, Node *node, ruleExecInfo_t *re
 
 }
 
-
 /* utilities */
 int fileConcatenate(char *file1, char *file2, char *file3) {
 	char buf[1024];
@@ -2304,23 +2787,6 @@ Res* eval(char *expr, Env *env, ruleExecInfo_t *rei, int saveREI, rError_t *errm
     return res;
 }
 
-/*FunctionDesc *getFuncDescFromChain(int n, FunctionDesc *fDesc) {
-            ExprType *fTypeCopy = fDesc->type;
-
-            while((T_FUNC_VARARG(fTypeCopy) == ONCE && n != T_FUNC_ARITY(fTypeCopy))
-                    ||(T_FUNC_VARARG(fTypeCopy) == STAR && n < T_FUNC_ARITY(fTypeCopy) - 1)
-                    ||(T_FUNC_VARARG(fTypeCopy) == PLUS && n < T_FUNC_ARITY(fTypeCopy))) {
-                if(fDesc->next == NULL) {
-                    return NULL;
-                }
-                fDesc = fDesc->next;
-                fTypeCopy = fDesc->type;
-            }
-            return fDesc;
-}
-
-*/
-
 Node *construct(char *fn, Node **args, int argc, Node *constype, Region *r) {
     Node *res = newRes(r);
     res->text = cpStringExt(fn, r);
@@ -2336,13 +2802,51 @@ Node *deconstruct(char *fn, Node **args, int argc, int proj, rError_t*errmsg, Re
     return res;
 }
 
+char *matchWholeString(char *buf) {
+    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)+2+1);
+    buf2[0]='^';
+    strcpy(buf2+1, buf);
+    buf2[strlen(buf)+1]='$';
+    buf2[strlen(buf)+2]='\0';
+    return buf2;
+}
+
+char *wildCardToRegex(char *buf) {
+    char *buf2 = (char *)malloc(sizeof(char)*strlen(buf)*3+2+1);
+    char *p = buf2;
+    int i;
+    *(p++)='^';
+    int n = strlen(buf);
+    for(i=0;i<n;i++) {
+    	switch(buf[i]) {
+    		case '*':
+    			*(p++) = '.';
+    			*(p++) = buf[i];
+    			break;
+    		case ']':
+    		case '[':
+    		case '^':
+    			*(p++) = '\\';
+    			*(p++) = buf[i];
+    			break;
+    		default:
+    			*(p++) = '[';
+    			*(p++) = buf[i];
+    			*(p++) = ']';
+    			break;
+    	}
+    }
+    *(p++)='$';
+    *(p++)='\0';
+    return buf2;
+}
+
 Res *smsi_segfault(Node **subtrees, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
 
 	char *a = NULL;
 	putchar(*a);
     return NULL;
 }
-
 
 void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "do", newFunctionFD("e ?->?", smsi_do, r));
@@ -2361,11 +2865,12 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "if", newFunctionFD("e boolean * a ? * a ? * a ? * a ?->?", smsi_ifExec, r));
     insertIntoHashTable(ft, "for", newFunctionFD("e ? * e boolean * e ? * a ? * a ?->?",smsi_forExec, r));
     insertIntoHashTable(ft, "while", newFunctionFD("e boolean * a ? * a ?->?",smsi_whileExec, r));
-    insertIntoHashTable(ft, "foreach", newFunctionFD("e list 0 * a ? * a ?->?", smsi_forEachExec, r));
-    insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * e list X * a ? * a ?->?", smsi_forEach2Exec, r));
+    insertIntoHashTable(ft, "foreach", newFunctionFD("e f list 0 * a ? * a ?->?", smsi_forEachExec, r));
+    insertIntoHashTable(ft, "foreach2", newFunctionFD("forall X, e X * f list X * a ? * a ?->?", smsi_forEach2Exec, r));
     insertIntoHashTable(ft, "break", newFunctionFD("->integer", smsi_break, r));
     insertIntoHashTable(ft, "succeed", newFunctionFD("->integer", smsi_succeed, r));
     insertIntoHashTable(ft, "fail", newFunctionFD("integer ?->integer", smsi_fail, r));
+    insertIntoHashTable(ft, "failmsg", newFunctionFD("integer * string->integer", smsi_fail, r));
     insertIntoHashTable(ft, "assign", newFunctionFD("e 0 * e f 0->integer", smsi_assign, r));
     insertIntoHashTable(ft, "lmsg", newFunctionFD("string->integer", smsi_lmsg, r));
     insertIntoHashTable(ft, "listvars", newFunctionFD("->string", smsi_listvars, r));
@@ -2377,7 +2882,7 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "time", newFunctionFD("->time", smsi_time, r));
     insertIntoHashTable(ft, "timestr", newFunctionFD("time->string", smsi_timestr, r));
     insertIntoHashTable(ft, "str", newFunctionFD("?->string", smsi_str, r));
-    insertIntoHashTable(ft, "datetime", newFunctionFD("string->time", smsi_datetime, r));
+    insertIntoHashTable(ft, "datetime", newFunctionFD("0 { string integer double }->time", smsi_datetime, r));
     insertIntoHashTable(ft, "timestrf", newFunctionFD("time * string->string", smsi_timestr, r));
     insertIntoHashTable(ft, "datetimef", newFunctionFD("string * string->time", smsi_datetime, r));
     insertIntoHashTable(ft, "double", newFunctionFD("f 0{string double time}->double", smsi_double, r));
@@ -2413,14 +2918,15 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "%", newFunctionFD("integer * integer->integer",smsi_modulo, r));
     insertIntoHashTable(ft, "^", newFunctionFD("f double * f double->double",smsi_power, r));
     insertIntoHashTable(ft, "^^", newFunctionFD("f double * f double->double",smsi_root, r));
+    insertIntoHashTable(ft, ".", newFunctionFD("forall X, `KeyValPair_PI` * expression X->string",smsi_getValByKey, r));
     insertIntoHashTable(ft, "log", newFunctionFD("f double->double",smsi_log, r));
     insertIntoHashTable(ft, "exp", newFunctionFD("f double->double",smsi_exp, r));
     insertIntoHashTable(ft, "!", newFunctionFD("boolean->boolean",smsi_not, r));
     insertIntoHashTable(ft, "&&", newFunctionFD("boolean * boolean->boolean",smsi_and, r));
     insertIntoHashTable(ft, "||", newFunctionFD("boolean * boolean->boolean",smsi_or, r));
     insertIntoHashTable(ft, "%%", newFunctionFD("boolean * boolean->boolean",smsi_or, r));
-    insertIntoHashTable(ft, "==", newFunctionFD("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_eq, r));
-    insertIntoHashTable(ft, "!=", newFunctionFD("forall X in {integer double boolean string time}, f X * f X->boolean",smsi_neq, r));
+    insertIntoHashTable(ft, "==", newFunctionFD("forall X in {integer double boolean string time path}, f X * f X->boolean",smsi_eq, r));
+    insertIntoHashTable(ft, "!=", newFunctionFD("forall X in {integer double boolean string time path}, f X * f X->boolean",smsi_neq, r));
     insertIntoHashTable(ft, ">", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_gt, r));
     insertIntoHashTable(ft, "<", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_lt, r));
     insertIntoHashTable(ft, ">=", newFunctionFD("forall X in {integer double string time}, f X * f X->boolean", smsi_ge, r));
@@ -2444,8 +2950,10 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "strlen", newFunctionFD("string->integer", smsi_strlen, r));
     insertIntoHashTable(ft, "substr", newFunctionFD("string * integer * integer->string", smsi_substr, r));
     insertIntoHashTable(ft, "split", newFunctionFD("string * string -> list string", smsi_split, r));
-    insertIntoHashTable(ft, "query", newFunctionFD("expression ? + -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
+    insertIntoHashTable(ft, "execCmdArg", newFunctionFD("f string->string", smsi_execCmdArg, r));
+    insertIntoHashTable(ft, "query", newFunctionFD("expression ? -> `GenQueryInp_PI` * `GenQueryOut_PI`", smsi_query, r));
     insertIntoHashTable(ft, "unspeced", newFunctionFD("-> ?", smsi_undefined, r));
+    insertIntoHashTable(ft, "msiCheckStringForSystem", newFunctionFD("f string->int", smsi_msiCheckStringForSystem, r));
     insertIntoHashTable(ft, "msiAdmShowIRB", newFunctionFD("e ? ?->integer", smsi_msiAdmShowIRB, r));
     insertIntoHashTable(ft, "msiAdmShowCoreRE", newFunctionFD("e ? ?->integer", smsi_msiAdmShowCoreRE, r));
 #ifdef DEBUG
@@ -2460,8 +2968,16 @@ void getSystemFunctions(Hashtable *ft, Region *r) {
     insertIntoHashTable(ft, "msiAdmReadRulesFromFileIntoStruct", newFunctionFD("string * d `RuleSet_PI` -> integer", smsi_msiAdmReadRulesFromFileIntoStruct, r));
     insertIntoHashTable(ft, "msiAdmWriteRulesFromStructIntoFile", newFunctionFD("string * `RuleSet_PI` -> integer", smsi_msiAdmWriteRulesFromStructIntoFile, r));
     insertIntoHashTable(ft, "msiAdmRetrieveRulesFromDBIntoStruct", newFunctionFD("string * string * d `RuleSet_PI` -> integer", smsi_msiAdmRetrieveRulesFromDBIntoStruct, r));
+/*    insertIntoHashTable(ft, "getReLogging", newFunctionFD("string -> boolean", smsi_getReLogging, r));
+    insertIntoHashTable(ft, "setReLogging", newFunctionFD("string * boolean -> integer", smsi_setReLogging, r));*/
     insertIntoHashTable(ft, "collectionSpider", newFunctionFD("forall X in {string `CollInpNew_PI`}, expression ? * X * actions ? * actions ? -> integer", smsiCollectionSpider, r));
-    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double", (SmsiFuncTypePtr) NULL, r));
+    insertIntoHashTable(ft, "path", newFunctionFD("string -> path", smsi_path, r));
+    insertIntoHashTable(ft, "collection", newFunctionFD("path -> `CollInpNew_PI`", smsi_collection, r));
+    insertIntoHashTable(ft, "getGlobalSessionId", newFunctionFD("->string", smsi_getGlobalSessionId, r));
+    insertIntoHashTable(ft, "setGlobalSessionId", newFunctionFD("string->integer", smsi_setGlobalSessionId, r));
+/*    insertIntoHashTable(ft, "msiDataObjInfo", newFunctionFD("input `DataObjInp_PI` * output `DataObjInfo_PI` -> integer", smsi_msiDataObjInfo, r));*/
+    insertIntoHashTable(ft, "rei->doi->dataSize", newFunctionFD("double : 0 {string}", (SmsiFuncTypePtr) NULL, r));
+    insertIntoHashTable(ft, "rei->doi->writeFlag", newFunctionFD("integer : 0 {string}", (SmsiFuncTypePtr) NULL, r));
 
 #ifdef RE_BACKWARD_COMPATIBLE
     insertIntoHashTable(ft, "assignStr", newFunctionFD("e ? * e ?->integer", smsi_assignStr, r));

@@ -30,7 +30,7 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
         monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
     const char *delim1 = "#";
     const char *delim2 = ",";
-    int indx, timestamp, rc1, rc2, rc3, rc4;
+  int indx, timestamp, day, rc1, rc2, rc3, rc4;
     FILE *foutput;
     time_t tps;
     generalRowInsertInp_t generalRowInsertInp;
@@ -65,6 +65,7 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
                 splc[3], spldsk[indx], splc[5], splc[6], splmb[indx]);
         sprintf(suffix, "%d.%d.%d", now->tm_year+1900, now->tm_mon+1, now->tm_mday);
         sprintf(fname, "%s.%s", OUTPUT_MON_PERF, suffix);
+	day = now->tm_mday;
         /* retrieve the system time */
         timestamp = time(&tps);
   
@@ -163,7 +164,7 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
  * their associated server. If config file exist, restrict *
  * the list to serverList                                  *
  ***********************************************************/
-    int i, j, k, index[MAX_NSERVERS], l;
+  int i, j, k, index[MAX_NSERVERS], l, status;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut;
   
@@ -177,7 +178,7 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
     addInxIval(&genQueryInp.selectInp, COL_R_TYPE_NAME, 1);
     addInxIval(&genQueryInp.selectInp, COL_R_VAULT_PATH, 1);
 
-    rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+  status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
     if ( genQueryOut->rowCnt > 0 ) {
         l = 0;
         for (i=0; i<genQueryOut->attriCnt; i++) {
@@ -473,6 +474,7 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
     rc = checkHostAccessControl(username, hostclient, group);
     if ( rc < 0 ) {
         rodsLog (LOG_NOTICE, "Access to user %s from host %s has been refused.\n", username, hostclient);
+    rei->status = rc;
     }
   
     return (rei->status);

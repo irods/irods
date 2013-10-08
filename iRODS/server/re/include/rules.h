@@ -9,6 +9,9 @@
 
 #ifdef USE_EIRODS
 #include "eirods_ms_plugin.h"
+
+extern eirods::ms_table MicrosTable;
+
 #endif
 
 int setLocalVarValue(char* varName, ruleExecInfo_t *rei, Res* res, char* errmsg, Region *r);
@@ -19,7 +22,7 @@ int parseAndComputeRule(char *expr, Env *env, ruleExecInfo_t *rei, int reiSaveFl
 int parseAndComputeRuleNewEnv( char *expr, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *msParamArray, rError_t *errmsg, Region *r);
 int parseAndComputeRuleAdapter(char *rule, msParamArray_t *msParamArray, ruleExecInfo_t *rei, int reiSaveFlag, Region *r);
 Res *parseAndComputeExpression(char * expr,Env *env, ruleExecInfo_t *rei, int reiSaveFlag, rError_t *errmsg, Region *r);
-Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, int retOutParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r); // JMC - backport 4538
+Res *parseAndComputeExpressionAdapter(char *inAction, msParamArray_t *inMsParamArray, int retOutParams, ruleExecInfo_t *rei, int reiSaveFlag, Region *r);
 Res *computeExpressionWithParams(char *actionName, char** params, int paramCount, ruleExecInfo_t *rei, int reiSaveFlag, msParamArray_t *vars, rError_t *errmsg, Region *r);
 Res *computeNode(Node *expr, Node *reco, Env *env, ruleExecInfo_t *rei, int reiSaveFlag , rError_t *errmsg, Region *r);
 
@@ -29,12 +32,6 @@ execCmdOut_t *addCmdExecOutToEnv(Env *global, Region *r);
 void freeCmdExecOut(execCmdOut_t *ruleExecOut);
 RuleDesc *getRuleDesc(int ri);
 int generateRuleTypes(RuleSet *inRuleSet, Hashtable *symbol_type_table, Region *r);
-#ifdef USE_EIRODS
-int actionTableLookUp( eirods::ms_table_entry&, char *action );
-#else
-int actionTableLookUp (char *action);
-#endif
-
 int overflow(char*expr,int len);
 Env *defaultEnv(Region *r);
 

@@ -44,7 +44,7 @@
 	CASCADE_NULL(ecopy->f=fn(buf, p, pointers, ptr->f, objectMap, generatePtrDesc)); \
 	MK_POINTER(&(ecopy->f));
 
-#define TRAVERSE_PTR_GENERIC(fn, f, cpfn) \
+#define TRAVERSE_PTR_TAPP(fn, f, cpfn) \
 	CASCADE_NULL(ecopy->f=fn(buf, p, pointers, ptr->f, cpfn, objectMap, generatePtrDesc)); \
 	MK_POINTER(&(ecopy->f));
 

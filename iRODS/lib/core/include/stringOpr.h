@@ -34,6 +34,9 @@ int
 trimQuotes(char *s);
 int
 checkStringForSystem( char *inString);
+int
+checkStringForEmailAddress( char *inString);
+
 #ifdef  __cplusplus
 }
 #endif

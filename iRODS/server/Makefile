@@ -230,6 +230,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/typing.o \
 		$(svrReObjDir)/utils.o \
 		$(svrReObjDir)/locks.o \
+		$(svrReObjDir)/list.o \
 		$(svrReObjDir)/restructs.o \
 		$(svrReObjDir)/sharedmemory.o \
 		$(svrReObjDir)/filesystem.o \
@@ -240,6 +241,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reStruct.o \
 		$(svrReObjDir)/reSysDataObjOpr.o \
 		$(svrReObjDir)/reVariableMap.o \
+		$(svrReObjDir)/reVariableMap.gen.o \
 		$(svrReObjDir)/nre.ruleAdminMS.o \
 		$(svrReObjDir)/nre.systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \

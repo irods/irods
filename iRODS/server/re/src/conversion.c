@@ -329,10 +329,14 @@ int convertResToMsParam(msParam_t *var, Res *res, rError_t *errmsg) {
             break;
         case T_INT: /* number */
             var->inOutStruct = (int *)malloc(sizeof(int));
-            *((int *)var->inOutStruct) = (int)RES_INT_VAL(res);
+            *((int *)var->inOutStruct) = RES_INT_VAL(res);
             var->type = strdup(INT_MS_T);
             break;
         case T_STRING: /* string */
+            var->inOutStruct = res->text == NULL? NULL : strdup(res->text);
+            var->type = strdup(STR_MS_T);
+            break;
+        case T_PATH: /* path */
             var->inOutStruct = res->text == NULL? NULL : strdup(res->text);
             var->type = strdup(STR_MS_T);
             break;
@@ -440,6 +444,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 		while(b!=NULL && !IS_TVAR_NAME(b->key)) {
 			Res *res = (Res *)b->value;
 			msParam_t *v = NULL;
+			int needToFree = 0;
 			int varindex;
 			int ret;
 			for(varindex=0;varindex<var->len;varindex++) {
@@ -451,6 +456,7 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			}
 			if(v == NULL) {
 				v = (msParam_t *) malloc(sizeof(msParam_t));
+				needToFree = 1;
 				ret = convertResToMsParam(v, res, errmsg);
 				if(var->msParam == NULL) {
 					var->len = 0;
@@ -466,7 +472,9 @@ int convertHashtableToMsParamArray(msParamArray_t *var, Hashtable *env, rError_t
 			if(ret != 0) {
 				/* error */
 				/* todo free msParamArray */
-				free(v);
+				if(needToFree) {
+					free(v);
+				}
 				return ret;
 			}
 
@@ -536,6 +544,13 @@ char* convertResToString(Res *res0) {
 				}
 				return res;
             case T_STRING:
+                if(res0->text == NULL) {
+                    res = strdup("<null>");
+                } else {
+                    res = strdup(res0->text);
+                }
+                return res;
+            case T_PATH:
                 if(res0->text == NULL) {
                     res = strdup("<null>");
                 } else {
