@@ -49,6 +49,14 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmdFail(s.adminsession,"iadmin lg "+self.testgroup,"LIST","notauser")
 
     # RESOURCES
+        
+    def test_resource_name_restrictions(self):
+        h = get_hostname()
+        oversize_name = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" # longer than NAME_LEN
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("?/=*", h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # invalid char
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("replication.B", h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # invalid char
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("replication{", h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # invalid char
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % (oversize_name, h, "junk"), "ERROR", "SYS_INVALID_INPUT_PARAM") # too long
 
     def test_modify_resource_name(self):
         h = get_hostname()
@@ -299,7 +307,8 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
                 '___haysoos___']
 
         invalid = ['bo',
-                '.bob', 
+                '.bob',
+                'bOb', 
                 'bob.',
                 'e--irods', 
                 'jamesbond..007',  
