@@ -4338,7 +4338,7 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 
 	// =-=-=-=-=-=-=-
 	// Log error. Rollback is done in calling function
-	if (status < 0) {
+	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 		std::stringstream ss;
 		ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
 		eirods::log(LOG_NOTICE, ss.str());
@@ -4378,7 +4378,7 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 
 	// =-=-=-=-=-=-=-
 	// Log error. Rollback is done in calling function
-	if (status < 0) {
+	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 		std::stringstream ss;
 		ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
 		eirods::log(LOG_NOTICE, ss.str());
@@ -4386,7 +4386,6 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	}
 
 	return status;
-	return 0;
 }
 
 
@@ -10837,15 +10836,12 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, con
 
 	// Nothing was modified
 	if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
-		std::stringstream ss;
-		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
-		eirods::log(LOG_NOTICE, ss.str());
-		status = 0;
+		return 0;
 	}
 
 	// =-=-=-=-=-=-=-
 	// Roll back if error
-	if (status) {
+	if (status < 0) {
 		std::stringstream ss;
 		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
 		eirods::log(LOG_NOTICE, ss.str());
