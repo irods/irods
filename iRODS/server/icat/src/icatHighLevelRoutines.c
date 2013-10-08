@@ -4337,12 +4337,12 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 	status = cmlExecuteNoAnswerSql(update_sql, &icss);
 
 	// =-=-=-=-=-=-=-
-	// Roll back if error
+	// Log error. Rollback is done in calling function
 	if (status < 0) {
 		std::stringstream ss;
 		ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
 		eirods::log(LOG_NOTICE, ss.str());
-		_rollback("_modRescInHierarchies");
+		// _rollback("_modRescInHierarchies");
 	}
 
 	return status;
@@ -4377,12 +4377,12 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	status = cmlExecuteNoAnswerSql(update_sql, &icss);
 
 	// =-=-=-=-=-=-=-
-	// Roll back if error
+	// Log error. Rollback is done in calling function
 	if (status < 0) {
 		std::stringstream ss;
 		ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
 		eirods::log(LOG_NOTICE, ss.str());
-		_rollback("_modRescInChildren");
+		// _rollback("_modRescInChildren");
 	}
 
 	return status;
@@ -10834,6 +10834,14 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, con
 #else // Postgres and MySQL
 	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
 #endif
+
+	// Nothing was modified
+	if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+		std::stringstream ss;
+		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
+		eirods::log(LOG_NOTICE, ss.str());
+		status = 0;
+	}
 
 	// =-=-=-=-=-=-=-
 	// Roll back if error
