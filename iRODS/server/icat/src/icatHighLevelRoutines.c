@@ -2454,7 +2454,7 @@ chlDelChildResc(
             	    // =-=-=-=-=-=-=-
             	    // Update resource name for objects in child
             		// If B is removed from A, all files whose resc_hier starts with B are now on B
-            		partial_hier = child + eirods::hierarchy_parser::delimiter();
+            		partial_hier = child + eirods::hierarchy_parser::delimiter() + "%";
 
             		cllBindVars[cllBindVarCount++]=(char*)child.c_str();
             		cllBindVars[cllBindVarCount++]=(char*)child.c_str();

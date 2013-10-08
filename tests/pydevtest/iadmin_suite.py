@@ -184,13 +184,10 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin lr %s" % "unixB2","LIST","resc_objcount: %d" % tree2)
         # check resc_hier on replB files, should start with replB and not have pt anymore
         assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "replB")
-        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_HIER where DATA_RESC_HIER like '%s;%%'\"" % "pt", "ERROR", "CAT_NO_ROWS_FOUND")
         # check resc_name on replB files
         assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "replB")
-        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt", "ERROR", "CAT_NO_ROWS_FOUND")
         # check resc_group_name on replB files
         assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "replB", "LIST", "replB")
-        assertiCmd(s.adminsession,"iquest \"select DATA_RESC_GROUP_NAME where DATA_RESC_HIER like '%s;%%'\"" % "pt", "ERROR", "CAT_NO_ROWS_FOUND")
 
         # delete files
         assertiCmd(s.adminsession,"irm -rf %s" % dir1)
