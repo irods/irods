@@ -1377,14 +1377,9 @@ extern "C" {
         it = _redirect_map.begin();
         float vote = it->first;
         eirods::hierarchy_parser parser = it->second;
-        if(vote == 0.0) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - No valid child resource found for file.";
-            result = ERROR(-1, msg.str());
-        } else {
-            *_out_parser = parser;
-            *_out_vote = vote;
+        *_out_parser = parser;
+        *_out_vote = vote;
+        if(vote != 0.0) {
             ret = replCreateChildReplList(_ctx, _redirect_map);
             if(!ret.ok()) {
                 std::stringstream msg;
