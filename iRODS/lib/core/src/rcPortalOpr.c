@@ -16,16 +16,9 @@
 #include "eirods_stacktrace.h"
 #include "eirods_buffer_encryption.h"
 
-#ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-#else
-#ifdef PARA_OPR
-#include <pthread.h>
-#endif
-#endif // BOOST
-
 #include <iomanip>
 int
 sendTranHeader (int sock, int oprType, int flags, rodsLong_t offset,
@@ -131,11 +124,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
     int numThreads; 
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifdef PARA_OPR
-#ifdef USE_BOOST
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#else
-    pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif // BOOST
 #endif
     int retVal = 0;
 
@@ -226,12 +215,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
                 continue;
             }
             fillRcPortalTransferInp (conn, &myInput[i], sock, in_fd, i);
-#ifdef USE_BOOST
             tid[i] = new boost::thread( rcPartialDataPut, &myInput[i] );
-#else
-            pthread_create (&tid[i], pthread_attr_default, 
-                    (void *(*)(void *)) rcPartialDataPut, (void *) &myInput[i]);
-#endif /* BOOST */
         }
         if (retVal < 0)
             return (retVal);
@@ -239,11 +223,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
 
-#ifdef USE_BOOST
                 tid[i]->join();
-#else
-                pthread_join (tid[i], NULL);
-#endif
             }
             totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
@@ -797,13 +777,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
     int i, sock, out_fd;
     int numThreads;
     rcPortalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
-#ifdef USE_BOOST
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#else
-#ifdef PARA_OPR
-    pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif
-#endif // BOOST
     int retVal = 0;
 
     if (portalOprOut == NULL || portalOprOut->numThreads <= 0) {
@@ -897,12 +871,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 		continue;
             }
             fillRcPortalTransferInp (conn, &myInput[i], out_fd, sock, i);
-#ifdef USE_BOOST
 	    tid[i] = new boost::thread( rcPartialDataGet, &myInput[i] );
-#else
-            pthread_create (&tid[i], pthread_attr_default,
-             (void *(*)(void *)) rcPartialDataGet, (void *) &myInput[i]);
-#endif
         }
 
 	if (retVal < 0) {
@@ -911,11 +880,7 @@ char *locFilePath, char *objPath, rodsLong_t dataSize)
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
-#ifdef USE_BOOST
 		tid[i]->join();
-#else
-                pthread_join (tid[i], NULL);
-#endif
             }
             totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
@@ -1471,14 +1436,10 @@ int
 readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
 {
     int status, fd;
-#ifndef USE_BOOST_FS
-    struct stat statbuf;
-#endif
     rodsLong_t mySize;
     char *buf;
 
     *info = NULL;
-#ifdef USE_BOOST_FS
     path p (infoFile);
     if (!exists (p) || !is_regular_file (p)) {
         status = UNIX_FILE_STAT_ERR - errno;
@@ -1490,21 +1451,6 @@ readLfRestartFile (char *infoFile, fileRestartInfo_t **info)
           infoFile);
         return (status);
     }
-#else	/* USE_BOOST_FS */
-    status = stat (infoFile, &statbuf);
-    if (status < 0) {
-        status = UNIX_FILE_STAT_ERR - errno;
-        return (status);
-    }
-    if ( statbuf.st_size == 0) {
-        status = UNIX_FILE_STAT_ERR - errno;
-        rodsLog (LOG_ERROR,
-          "readLfRestartFile restart infoFile size is 0 for %s",
-          infoFile);
-        return (status);
-    }
-    mySize = statbuf.st_size;
-#endif	/* USE_BOOST_FS */
 
     /* read the restart infoFile */
     fd = open (infoFile, O_RDONLY, 0640);
