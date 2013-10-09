@@ -4,16 +4,11 @@
 /* xmsgLib.c - library routines for irodsXmsg
  */
 
-#ifndef windows_platform
-#include <pthread.h>
-#endif
 #include "xmsgLib.h"
 #include "rsApiHandler.h"
 #include "reGlobalsExtern.h"
 #include "miscServerFunct.h"
 
-#ifndef windows_platform
-#ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
@@ -22,13 +17,6 @@ boost::mutex			ReqQueCondMutex;
 boost::condition_variable	ReqQueCond;
 boost::thread*			ProcReqThread[ NUM_XMSG_THR ];
 boost::mutex			MessQueCondMutex;
-#else
-pthread_mutex_t ReqQueCondMutex;
-pthread_cond_t ReqQueCond;
-pthread_t ProcReqThread[NUM_XMSG_THR];
-pthread_mutex_t MessQueCondMutex;  /* RAJA Nov 29 2010 */
-#endif	/* USE_BOOST */
-#endif
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -43,16 +31,7 @@ xmsgQue_t XmsgQue;
 
 static  msParamArray_t XMsgMsParamArray;
 int 
-initThreadEnv ()
-{
-#ifndef windows_platform
-    #ifndef USE_BOOST
-    pthread_mutex_init (&ReqQueCondMutex, NULL);
-    pthread_cond_init (&ReqQueCond, NULL);
-    pthread_mutex_init (&MessQueCondMutex, NULL);  /* RAJA Nov 29 2010 */
-    #endif
-#endif
-
+initThreadEnv () {
     return (0);
 }
 
@@ -62,25 +41,12 @@ addXmsgToQues(irodsXmsg_t *irodsXmsg,  ticketMsgStruct_t *ticketMsgStruct) {
 
   int status;
   
-#ifndef windows_platform
-  #ifdef USE_BOOST
   MessQueCondMutex.lock();
-  #else
-  pthread_mutex_lock (&MessQueCondMutex);
-  #endif
-#endif
      
   addXmsgToXmsgQue (irodsXmsg, &XmsgQue);
   status = addXmsgToTicketMsgStruct (irodsXmsg, ticketMsgStruct);
 
-#ifndef windows_platform
-  #ifdef USE_BOOST
   MessQueCondMutex.unlock();
-  #else
-  pthread_mutex_unlock (&MessQueCondMutex);
-  #endif
-#endif
-
 
   return(status);
 
@@ -269,24 +235,12 @@ int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg)
 
     /* now locate the irodsXmsg_t */
 
-#ifndef windows_platform
-    #ifdef USE_BOOST
     MessQueCondMutex.lock();
-    #else
-    pthread_mutex_lock (&MessQueCondMutex);
-    #endif
-#endif
 
     tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
 
     if (tmpIrodsXmsg == NULL) {
-#ifndef windows_platform
-    #ifdef USE_BOOST
-    MessQueCondMutex.unlock();
-    #else
-    pthread_mutex_unlock (&MessQueCondMutex);
-    #endif
-#endif
+      MessQueCondMutex.unlock();
       return SYS_NO_XMSG_FOR_MSG_NUMBER;
     } 
 
@@ -300,13 +254,7 @@ int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg)
 
     *outIrodsXmsg = tmpIrodsXmsg;
     if (tmpIrodsXmsg == NULL) {
-#ifndef windows_platform
-      #ifdef USE_BOOST
       MessQueCondMutex.unlock();
-      #else
-      pthread_mutex_unlock (&MessQueCondMutex);
-      #endif
-#endif
       return SYS_NO_XMSG_FOR_MSG_NUMBER;
     } else {
       return 0;
@@ -554,13 +502,7 @@ addReqToQue (int sock)
 
     myXmsgReq->sock = sock;
 
-#ifndef windows_platform
-    #ifdef USE_BOOST 
     ReqQueCondMutex.lock();
-    #else
-    pthread_mutex_lock (&ReqQueCondMutex);
-    #endif
-#endif
 
     if (XmsgReqHead == NULL) {
 	XmsgReqHead = myXmsgReq;
@@ -577,15 +519,8 @@ addReqToQue (int sock)
 	XmsgReqTail = myXmsgReq;
     }
 
-#ifndef windows_platform
-    #ifdef USE_BOOST 
     ReqQueCond.notify_all();
     ReqQueCondMutex.unlock();
-    #else
-    pthread_cond_signal (&ReqQueCond);
-    pthread_mutex_unlock (&ReqQueCondMutex);
-    #endif
-#endif
 
     return (0);
 }
@@ -596,55 +531,25 @@ getReqFromQue ()
     xmsgReq_t *myXmsgReq = NULL;
 
     while (myXmsgReq == NULL) {
-#ifndef windows_platform
-	#ifdef USE_BOOST
-	ReqQueCondMutex.lock();
-	#else
-        pthread_mutex_lock (&ReqQueCondMutex);
-	#endif
-#endif
+	    ReqQueCondMutex.lock();
         if (XmsgReqHead != NULL) {
             myXmsgReq = XmsgReqHead;
             XmsgReqHead = XmsgReqHead->next;
-#ifndef windows_platform
-	#ifdef USE_BOOST
-	ReqQueCondMutex.unlock();
-	#else
-            pthread_mutex_unlock (&ReqQueCondMutex);
-	#endif
-#endif
+	        ReqQueCondMutex.unlock();
             break;
-	}
+        }
 
-#ifndef windows_platform
-	#ifdef USE_BOOST
-	boost::unique_lock<boost::mutex> boost_lock( ReqQueCondMutex );
-	ReqQueCond.wait( boost_lock );
-	#else
-	pthread_cond_wait (&ReqQueCond, &ReqQueCondMutex);
-	#endif
-#endif
-        if (XmsgReqHead == NULL) {
-#ifndef windows_platform
-	#ifdef USE_BOOST
-	    boost_lock.unlock();
-	#else
-	    pthread_mutex_unlock (&ReqQueCondMutex);
-	#endif
-#endif
-	    continue;
-	} else {
-            myXmsgReq = XmsgReqHead;
-    	    XmsgReqHead = XmsgReqHead->next;
-#ifndef windows_platform
-	#ifdef USE_BOOST
-	    boost_lock.unlock();
-	#else
-	    pthread_mutex_unlock (&ReqQueCondMutex);
-	#endif
-#endif
-	    break;
-	}
+        boost::unique_lock<boost::mutex> boost_lock( ReqQueCondMutex );
+        ReqQueCond.wait( boost_lock );
+            if (XmsgReqHead == NULL) {
+                boost_lock.unlock();
+                continue;
+        } else {
+                myXmsgReq = XmsgReqHead;
+                XmsgReqHead = XmsgReqHead->next;
+                boost_lock.unlock();
+            break;
+        }
     }
 
     return (myXmsgReq);
@@ -654,17 +559,10 @@ int
 startXmsgThreads ()
 {
     int status = 0;
-#ifndef windows_platform
     int i;
     for (i = 0; i < NUM_XMSG_THR; i++) {
-	#ifdef USE_BOOST
-	ProcReqThread[i] = new boost::thread( procReqRoutine );
-	#else
-        status = pthread_create(&ProcReqThread[i], NULL, 
-          (void *(*)(void *)) procReqRoutine, (void *) NULL);
-	#endif
+	    ProcReqThread[i] = new boost::thread( procReqRoutine );
     }
-#endif
 
     return (status);
 }
@@ -866,13 +764,7 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
     if (irodsXmsg == NULL || rcvXmsgOut == NULL) {
         rodsLog (LOG_ERROR,
           "_rsRcvXmsg: input irodsXmsg or rcvXmsgOut is NULL");
-#ifndef windows_platform
-    #ifdef USE_BOOST
-    MessQueCondMutex.unlock();
-    #else
-    pthread_mutex_unlock (&MessQueCondMutex);
-    #endif
-#endif
+        MessQueCondMutex.unlock();
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
@@ -922,13 +814,7 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
 	rstrcpy (rcvXmsgOut->sendAddr, irodsXmsg->sendAddr,
 		 NAME_LEN);
     }
-#ifndef windows_platform
-    #ifdef USE_BOOST
     MessQueCondMutex.unlock();
-    #else
-    pthread_mutex_unlock (&MessQueCondMutex);
-    #endif
-#endif
     return (0);
 }
 
