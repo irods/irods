@@ -1,5 +1,5 @@
 GCC = g++ 
-INC=-I/usr/include/eirods/ -I/usr/include/openssl/
+INC=-I/usr/include/eirods/
 
 all: msvc_test hello curl_get
 
