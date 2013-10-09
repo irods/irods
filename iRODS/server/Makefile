@@ -313,13 +313,6 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 # MODULE_LDFLAGS string.
 LDFLAGS +=	$(LIBRARY) $(LDADD) 
 
-# Boost libraries. Commented out and added to LIBRARY further down
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_thread.a
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_filesystem.a
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_regex.a
-#LDFLAGS+=$(BOOST_DIR)/stage/lib/libboost_system.a
-
-
 ifdef GSI_AUTH
 
 # GSI_SSL is set to ssl to use the system's SSL library, else use
@@ -497,37 +490,40 @@ $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 
-LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a $(BOOST_DIR)/stage/lib/libboost_filesystem.a $(BOOST_DIR)/stage/lib/libboost_regex.a
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a 
 
 #
 # Servers
 #
 # Agent
-$(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile agent server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link agent server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(LDFLAGS) $(AG_LDADD)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS) $(AG_LDADD)
 
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
 	@echo "Compile rule engine server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link rule engine server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(MODULE_LDFLAGS) $(OBJS) $(BOOST_LIBS) $(LDFLAGS)
 
 # RODS
-$(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+$(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS) $(BOOST_LIBS)
 	@echo "Compile rods server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link rods server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
 
 
 # xmsg server
@@ -535,9 +531,9 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $
 	@echo "Compile xmsg server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS)
+$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_OBJS) $(BOOST_LIBS)
 	@echo "Link xmsg server `basename $@`..."
-	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS) $(LDFLAGS)
+	@$(LDR) -o $@ $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(BOOST_LIBS) $(MODULE_LDFLAGS) $(LDFLAGS)
 
 
 #
