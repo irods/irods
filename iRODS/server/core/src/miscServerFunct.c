@@ -20,11 +20,7 @@
 #include "rcPortalOpr.h"
 #include "initServer.h"
 #ifdef PARA_OPR
-#ifdef USE_BOOST
 #include <boost/thread/thread.hpp>
-#else
-#include <pthread.h>
-#endif	/* USE_BOOST */
 #endif
 #if !defined(solaris_platform)
 char *__loc1;
@@ -303,11 +299,7 @@ svrPortalPutGet (rsComm_t *rsComm)
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifdef PARA_OPR
-	#ifdef USE_BOOST
 	    boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-	#else
-	    pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
-	#endif
 #endif
     int oprType;
     int flags = 0;
@@ -430,12 +422,7 @@ svrPortalPutGet (rsComm_t *rsComm)
                                       portalFd, l3descInx, 0, 
                                       dataOprInp->destRescTypeInx,
                                       i, mySize, myOffset, flags);
-            #ifdef USE_BOOST
-            tid[i] = new boost::thread( partialDataPut, &myInput[i] );
-            #else
-                    pthread_create (&tid[i], pthread_attr_default,
-                     (void *(*)(void *)) partialDataPut, (void *) &myInput[i]);
-                #endif             
+                tid[i] = new boost::thread( partialDataPut, &myInput[i] );
 
             } else {	/* a get */
                     l3descInx = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
@@ -443,40 +430,21 @@ svrPortalPutGet (rsComm_t *rsComm)
                     fillPortalTransferInp (&myInput[i], rsComm,
              l3descInx, portalFd, dataOprInp->srcRescTypeInx, 0,
                       i, mySize, myOffset, flags);
-            #ifdef USE_BOOST
-            tid[i] = new boost::thread( partialDataGet, &myInput[i] );
-            #else
-                    pthread_create (&tid[i], pthread_attr_default,
-                     (void *(*)(void *)) partialDataGet, (void *) &myInput[i]);
-            #endif
+                tid[i] = new boost::thread( partialDataGet, &myInput[i] );
             }
         } // for i
 
             /* spawn the first thread. do this last so the file will not be
          * closed */
         if (oprType == PUT_OPR) {
-            #ifdef USE_BOOST
             tid[0] = new boost::thread( partialDataPut, &myInput[0] );
-                #else
-                pthread_create (&tid[0], pthread_attr_default,
-                 (void *(*)(void *)) partialDataPut, (void *) &myInput[0]);
-            #endif
         } else {
-            #ifdef USE_BOOST
             tid[0] = new boost::thread( partialDataGet, &myInput[0] );
-                #else
-                pthread_create (&tid[0], pthread_attr_default,
-                 (void *(*)(void *)) partialDataGet, (void *) &myInput[0]);
-            #endif
         }
 
         for ( i = 0; i < numThreads; i++) { 
             if (tid[i] != 0)
-            #ifdef USE_BOOST
             tid[i]->join();
-            #else
-                    pthread_join (tid[i], NULL);
-            #endif
             if (myInput[i].status < 0) {
                 retVal = myInput[i].status;
             }
@@ -1224,11 +1192,7 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifndef windows_platform
-#ifdef USE_BOOST
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-#else
-    pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
-#endif
 #endif
     int retVal = 0;
     rodsLong_t dataSize;
@@ -1340,12 +1304,7 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                         sock, myFd, 0, dataOprInp->destRescTypeInx,
                         i, 0, 0, 0 );
 
-#ifdef USE_BOOST
                 tid[i] = new boost::thread( remToLocPartialCopy, &myInput[i] );
-#else
-                pthread_create (&tid[i], pthread_attr_default,
-                        (void *(*)(void *)) remToLocPartialCopy, (void *) &myInput[i]);
-#endif
             } else {
                 myFd = l3OpenByHost (rsComm, dataOprInp->srcRescTypeInx,
                         dataOprInp->srcL3descInx, O_RDONLY);
@@ -1362,29 +1321,14 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                         myFd, sock, dataOprInp->destRescTypeInx, 0,
                         i, 0, 0, 0 );
 
-#ifdef USE_BOOST
                 tid[i] = new boost::thread( locToRemPartialCopy, &myInput[i] );
-#else
-                pthread_create (&tid[i], pthread_attr_default,
-                        (void *(*)(void *)) locToRemPartialCopy, (void *) &myInput[i]);
-#endif
             }
         }
 
         if (oprType == COPY_TO_LOCAL_OPR) {
-#ifdef USE_BOOST
             tid[0] = new boost::thread( remToLocPartialCopy,&myInput[0] );
-#else
-            pthread_create (&tid[0], pthread_attr_default,
-                    (void *(*)(void *)) remToLocPartialCopy, (void *) &myInput[0]);
-#endif
         } else {
-#ifdef USE_BOOST
             tid[0] = new boost::thread( locToRemPartialCopy, &myInput[0] );
-#else
-            pthread_create (&tid[0], pthread_attr_default,
-                    (void *(*)(void *)) locToRemPartialCopy, (void *) &myInput[0]);
-#endif
         }
 
 
@@ -1394,11 +1338,7 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
-#ifdef USE_BOOST
                 tid[i]->join();
-#else
-                pthread_join (tid[i], NULL);
-#endif
             }
             totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
@@ -1431,11 +1371,7 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifndef windows_platform
-    #ifdef USE_BOOST
     boost::thread* tid[MAX_NUM_CONFIG_TRAN_THR];
-    #else
-    pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
-    #endif
 #endif
     int retVal = 0;
     rodsLong_t dataSize;
@@ -1519,10 +1455,6 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                  "sameHostCopy: cannot open src file, status = %d", in_fd);
                 continue;
             }
-            // =-=-=-=-=-=-=- 
-            // JMC :: since this is a local to local xfer and there is no
-            //     :: cookie to share it is set to 0, this may *possibly* be
-            //     :: a security issue.
             fillPortalTransferInp( 
                 &myInput[i], rsComm,
                 in_fd, out_fd, 
@@ -1530,20 +1462,10 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
                 dataOprInp->destRescTypeInx,
                 i, mySize, myOffset, 0 ); 
 
-            #ifdef USE_BOOST
-	    tid[i] = new boost::thread( sameHostPartialCopy, &myInput[i] );
-            #else
-            pthread_create (&tid[i], pthread_attr_default,
-             (void *(*)(void *)) sameHostPartialCopy, (void *) &myInput[i]);
-            #endif
+	        tid[i] = new boost::thread( sameHostPartialCopy, &myInput[i] );
         }
 
-	#ifdef USE_BOOST
-	tid[0] = new boost::thread( sameHostPartialCopy, &myInput[0] );
-	#else
-        pthread_create (&tid[0], pthread_attr_default, 
-         (void *(*)(void *)) sameHostPartialCopy, (void *) &myInput[0]);
-	#endif
+        tid[0] = new boost::thread( sameHostPartialCopy, &myInput[0] );
 
         if (retVal < 0) {
             return (retVal);
@@ -1551,11 +1473,7 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
         for ( i = 0; i < numThreads; i++) {
             if (tid[i] != 0) {
-	    #ifdef USE_BOOST
-		tid[i]->join();
-	    #else
-                pthread_join (tid[i], NULL);
-	    #endif
+		        tid[i]->join();
             }
             totalWritten += myInput[i].bytesWritten;
             if (myInput[i].status < 0) {
@@ -2170,18 +2088,10 @@ reconnManager (rsComm_t *rsComm)
             } else {
                 rodsLog (LOG_ERROR, "reconnManager: select failed, errno = %d",
                   errno);
-                #ifdef USE_BOOST
 		        boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
-                #else
-	            pthread_mutex_lock (&rsComm->lock); // JMC :: FIXME
-                #endif
                 close (rsComm->reconnSock);
                 rsComm->reconnSock = 0;
-                #ifdef USE_BOOST
 		        boost_lock.unlock();
-                #else
-	            pthread_mutex_unlock (&rsComm->lock); // JMC :: FIXME
-                #endif	
                 return;
             
             } // else
@@ -2237,22 +2147,14 @@ reconnManager (rsComm_t *rsComm)
             continue;
         } 
 
-#ifdef USE_BOOST
         boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
-#else
-        pthread_mutex_lock (&rsComm->lock);
-#endif
         rsComm->clientState = reconnMsg->procState;
         rsComm->reconnectedSock = newSock;
         /* need to check agentState */
         while (rsComm->agentState == SENDING_STATE) {
             /* have to wait until the agent stop sending */
             rsComm->reconnThrState = CONN_WAIT_STATE;
-#ifdef USE_BOOST
             rsComm->cond->wait( boost_lock );
-#else
-            pthread_cond_wait (&rsComm->cond, &rsComm->lock);
-#endif
         }
        
         rsComm->reconnThrState = PROCESSING_STATE;
@@ -2264,11 +2166,7 @@ reconnManager (rsComm_t *rsComm)
             eirods::log( PASS( ret ) );          
             close (newSock);
             rsComm->reconnectedSock = 0;
-#ifdef USE_BOOST
             boost_lock.unlock();
-#else
-            pthread_mutex_unlock (&rsComm->lock);
-#endif
                 continue;
             }
         if (rsComm->agentState == PROCESSING_STATE) {
@@ -2277,11 +2175,7 @@ reconnManager (rsComm_t *rsComm)
                   rsComm->clientState, rsComm->agentState);
             svrSwitchConnect (rsComm);
         }
-#ifdef USE_BOOST
         boost_lock.unlock();
-#else
-        pthread_mutex_unlock (&rsComm->lock);
-#endif
     } // while 1
 }
 
@@ -2290,30 +2184,18 @@ svrChkReconnAtSendStart (rsComm_t *rsComm)
 {
     if (rsComm->reconnSock > 0) {
         /* handle reconn */
-#ifdef USE_BOOST
-	boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
-#else
-        pthread_mutex_lock (&rsComm->lock);
-#endif
+	    boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
         if (rsComm->reconnThrState == CONN_WAIT_STATE) {
             /* should not be here */
             rodsLog (LOG_NOTICE,
               "svrChkReconnAtSendStart: ThrState = CONN_WAIT_STATE, agentState=%d",
               rsComm->agentState);
             rsComm->agentState = PROCESSING_STATE;
-#ifdef USE_BOOST
 	    rsComm->cond->notify_all();
-#else
-            pthread_cond_signal (&rsComm->cond);
-#endif
         }
-	svrSwitchConnect (rsComm);
+	    svrSwitchConnect (rsComm);
         rsComm->agentState = SENDING_STATE;
-#ifdef USE_BOOST
-	boost_lock.unlock();
-#else
-        pthread_mutex_unlock (&rsComm->lock);
-#endif
+	    boost_lock.unlock();
     }
     return 0;
 }
@@ -2323,25 +2205,12 @@ svrChkReconnAtSendEnd (rsComm_t *rsComm)
 {
     if (rsComm->reconnSock > 0) {
         /* handle reconn */
-#ifdef USE_BOOST
-	boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
-#else
-        pthread_mutex_lock (&rsComm->lock);
-#endif
+	    boost::unique_lock<boost::mutex> boost_lock( *rsComm->lock );
         rsComm->agentState = PROCESSING_STATE;
         if (rsComm->reconnThrState == CONN_WAIT_STATE) {
-
-#ifdef USE_BOOST
-	    rsComm->cond->wait( boost_lock );
-#else
-            pthread_cond_signal (&rsComm->cond);
-#endif
+	        rsComm->cond->wait( boost_lock );
         }
-#ifdef USE_BOOST
-	boost_lock.unlock();
-#else
-        pthread_mutex_unlock (&rsComm->lock);
-#endif
+	    boost_lock.unlock();
     }
     return 0;
 }
@@ -2351,30 +2220,18 @@ svrChkReconnAtReadStart (rsComm_t *rsComm)
 {
     if (rsComm->reconnSock > 0) {
         /* handle reconn */
-#ifdef USE_BOOST
-	boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
-#else
-        pthread_mutex_lock (&rsComm->lock);
-#endif
+	    boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
         if (rsComm->reconnThrState == CONN_WAIT_STATE) {
             /* should not be here */
             rodsLog (LOG_NOTICE,
               "svrChkReconnAtReadStart: ThrState = CONN_WAIT_STATE, agentState=%d",
               rsComm->agentState);
             rsComm->agentState = PROCESSING_STATE;
-#ifdef USE_BOOST
-	    rsComm->cond->wait( boost_lock );
-#else
-            pthread_cond_signal (&rsComm->cond);
-#endif
+	        rsComm->cond->wait( boost_lock );
         }
-	svrSwitchConnect (rsComm);
+	    svrSwitchConnect (rsComm);
         rsComm->agentState = RECEIVING_STATE;
-#ifdef USE_BOOST
-	boost_lock.unlock();
-#else
-        pthread_mutex_unlock (&rsComm->lock);
-#endif
+	    boost_lock.unlock();
     }
     return 0;
 }
@@ -2384,21 +2241,12 @@ svrChkReconnAtReadEnd (rsComm_t *rsComm)
 {
     if (rsComm->reconnSock > 0) {
         /* handle reconn */
-#ifdef USE_BOOST
         boost::unique_lock< boost::mutex > boost_lock( *rsComm->lock );
         rsComm->agentState = PROCESSING_STATE;
         if (rsComm->reconnThrState == CONN_WAIT_STATE) {
             rsComm->cond->notify_all();
         }
-	boost_lock.unlock();
-#else
-        pthread_mutex_lock (&rsComm->lock);
-        rsComm->agentState = PROCESSING_STATE;
-        if (rsComm->reconnThrState == CONN_WAIT_STATE) {
-            pthread_cond_signal (&rsComm->cond);
-        }
-        pthread_mutex_unlock (&rsComm->lock);
-#endif
+	    boost_lock.unlock();
     }
     return 0;
 }
