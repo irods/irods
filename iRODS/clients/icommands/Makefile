@@ -224,16 +224,16 @@ all:	icommands
 clients: icommands
 	@true
 
-icommands:	print_cflags print_ldflags $(OBJS) $(BINS)
+icommands:	print_cflags print_ldflags $(OBJS) $(BINS) $(BOOST_LIBS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY) $(BOOST_LIBS)
 	@echo "Compile icommand `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(binDir)/%:	$(objDir)/%.o
+$(binDir)/%:	$(objDir)/%.o $(BOOST_LIBS)
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $< $(BOOST_LIBS) $(LDFLAGS) $(BOOST_LIBS)
 
 # Show compile flags
 print_cflags:

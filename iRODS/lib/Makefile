@@ -209,7 +209,7 @@ lib:	libs
 libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
 	@true
 
-$(LIBRARY): $(OBJS)
+$(LIBRARY): $(OBJS) $(BOOST_LIBS)
 #	@rm -f $(LIBRARY)
 #	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS) 
 	@echo "Building lib$(LIBRARY_NAME).a"
