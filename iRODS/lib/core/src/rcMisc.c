@@ -1011,7 +1011,7 @@ addStrArray (strArray_t *strArray, char *value)
 
     if (strArray->size <= 0) {
         if (strArray->len == 0) {
-            /* dafault to NAME_LEN */
+            /* default to NAME_LEN */
 
             strArray->size = NAME_LEN;
         } else {

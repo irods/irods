@@ -3,13 +3,16 @@ if (sys.version_info >= (2,7)):
     import unittest
 else:
     import unittest2 as unittest
-from pydevtest_common import assertiCmd, assertiCmdFail, create_local_testfile, get_hostname
+from pydevtest_common import assertiCmd, assertiCmdFail, getiCmdOutput, create_local_testfile, get_hostname
 import pydevtest_sessions as s
 from resource_suite import ResourceSuite, ShortAndSuite
 from test_chunkydevtest import ChunkyDevTest
 import socket
 import os
 import commands
+import shutil
+import subprocess
+import re
 
 class Test_UnixFileSystem_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
 
@@ -667,6 +670,61 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    def test_iget_prefer_from_archive__ticket_1660(self):
+        # define core.re filepath
+        corefile = "/var/lib/eirods/iRODS/server/config/reConfigs/core.re"
+        backupcorefile = corefile+"--"+self._testMethodName
+        # new file to put and get
+        filename = "archivepolicyfile.txt"
+        filepath = create_local_testfile(filename)
+        # manipulate core.re (leave as 'when_necessary' - default)
+        # put the file
+        assertiCmd(s.adminsession,"iput "+filename)        # put file
+        # manually update the replica in archive vault
+        output = getiCmdOutput(s.adminsession,"ils -L "+filename)
+        archivereplicaphypath = output[0].split()[-1]  # split into tokens, get the last one
+        with open(archivereplicaphypath, "w") as myfile:
+            myfile.write('MANUALLY UPDATED ON ARCHIVE\n')
+
+        # get file
+        retrievedfile = "retrieved.txt"
+        os.system("rm -f %s" % retrievedfile)
+        assertiCmd(s.adminsession,"iget -f %s %s" % (filename, retrievedfile)) # get file from cache
+        # confirm retrieved file is same as original
+        assert 0 == os.system("diff %s %s" % (filepath, retrievedfile))
+
+        # manipulate the core.re to add the new policy
+        shutil.copy(corefile,backupcorefile)
+        with open(corefile, "a") as myfile:
+            myfile.write('pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}\n')
+
+        # restart the server to reread the new core.re
+        os.system("/var/lib/eirods/iRODS/irodsctl restart")
+
+        # manually update the replica in archive vault
+        output = getiCmdOutput(s.adminsession,"ils -L "+filename)
+        archivereplicaphypath = output[0].split()[-1]  # split into tokens, get the last one
+        with open(archivereplicaphypath, "w") as myfile:
+            myfile.write('MANUALLY UPDATED ON ARCHIVE **AGAIN**\n')
+
+        # get the file
+        assertiCmd(s.adminsession,"iget -f %s %s" % (filename, retrievedfile)) # get file from archive
+
+        # confirm this is the new archive file
+        matchfound = False
+        for line in open(retrievedfile):
+            if "**AGAIN**" in line:
+                matchfound = True
+        assert matchfound
+
+        # restore the original core.re
+        shutil.copy(backupcorefile,corefile)
+        os.remove(backupcorefile)
+
+        # local cleanup
+        os.remove(filepath)
+        os.remove(retrievedfile)
+
     def test_local_iput_with_force_and_destination_resource__ticket_1706(self):
         # local setup
         filename = "iputwithforceanddestination.txt"
@@ -678,7 +736,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist")                           # should not be listed
         assertiCmd(s.adminsession,"iput "+filename)                                                      # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                                # replicate to test resource
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)                                    # 
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)                                    # debugging
         assertiCmd(s.adminsession,"iput -f -R %s %s %s" % (self.testresc, doublefile, filename) )        # overwrite test repl with different data
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+filename])                        # default resource cache should have dirty copy
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+filename])                        # default resource archive should have dirty copy

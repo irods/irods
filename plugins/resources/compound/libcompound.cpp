@@ -227,10 +227,10 @@ eirods::error get_cache_resc(
         msg << "\" It is stored in an archive resource which is not directly accessible.";
         result = ERROR(EIRODS_DIRECT_ARCHIVE_ACCESS, msg.str());
     }
-    
+
     return result;
 
-} // get_cache_resc 
+} // get_cache_resc
 
 extern "C" {
     // =-=-=-=-=-=-=-
@@ -243,16 +243,18 @@ extern "C" {
         // tokenize the string based on the key/value pair delim
         std::vector< std::string > toks;
         eirods::string_tokenize( _results, ";", toks );
+        if( toks.empty() ) {
+            toks.push_back( _results );
+        }
 
         // =-=-=-=-=-=-=-
         // iterate over the pairs, find the stage policy
-        std::string policy;
         for( size_t i = 0; i < toks.size(); ++i ) {
             // =-=-=-=-=-=-=-
             // find the policy key in the string
             size_t pos = _results.find( eirods::RESOURCE_STAGE_TO_CACHE_POLICY );
             if( std::string::npos != pos ) {
-                policy = toks[ i ].substr( pos+1 ); 
+                _policy = toks[ i ].substr( pos+eirods::RESOURCE_STAGE_TO_CACHE_POLICY.size()+1 );
                 break;
             }
         }
@@ -264,11 +266,11 @@ extern "C" {
     // =-=-=-=-=-=-=-
     /// @brief start up operation - determine which child is the cache and which is the
     ///        archive.  cache those names in local variables for ease of use
-    eirods::error compound_start_operation( 
+    eirods::error compound_start_operation(
         eirods::plugin_property_map& _prop_map,
         eirods::resource_child_map&  _cmap ) {
         // =-=-=-=-=-=-=-
-        // trap invalid number of children 
+        // trap invalid number of children
         if( _cmap.size() == 0 || _cmap.size() > 2 ) {
             std::stringstream msg;
             msg << "compound resource: invalid number of children [";

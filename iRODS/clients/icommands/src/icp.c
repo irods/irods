@@ -109,7 +109,7 @@ usage ()
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
 "data transfer. rbudpSendRate is used to throttle the send rate in ",
 "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
-"to set the packet size. The dafault rbudpPackSize is 8192.",
+"to set the packet size. The default rbudpPackSize is 8192.",
 " ",
 "The -X option specifies that the restart option is on and the restartFile",
 "input specifies a local file that contains the restart info. If the ",
