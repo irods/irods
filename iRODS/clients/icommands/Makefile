@@ -134,6 +134,10 @@ BINS =		\
 		$(binDir)/genOSAuth \
 		$(binDir)/igroupadmin 
 
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a 
 #
 # Compile and link flags
 #
@@ -220,7 +224,7 @@ all:	icommands
 clients: icommands
 	@true
 
-icommands:	print_cflags print_ldflags $(OBJS) $(BINS)
+icommands:	print_cflags print_ldflags $(OBJS) $(BINS) $(BOOST_LIBS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY) $(BOOST_LIBS)

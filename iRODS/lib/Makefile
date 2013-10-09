@@ -90,10 +90,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_network_manager.o \
         $(libCoreObjDir)/eirods_buffer_encryption.o 
 
-ifdef USE_BOOST_ASIO
-LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
-endif
-
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
 endif
@@ -196,6 +192,11 @@ vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
 		$(libRbudpSrcDir) $(libHasherSrcDir)
 
 
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a 
+
 
 
 
@@ -215,7 +216,6 @@ libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
 	@true
 
 $(LIBRARY): $(OBJS) $(BOOST_LIBS)
-#	@echo "Building lib$(LIBRARY_NAME).so"
 #	@rm -f $(LIBRARY)
 #	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS) 
 	@echo "Building lib$(LIBRARY_NAME).a"
@@ -296,3 +296,15 @@ rodslog:  $(libCoreSrcDir)/rodsLog.c
 
 $(libCoreSrcDir)/rodsLog.c:  $(libCoreIncDir)/rodsErrorTable.h
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
+
+
+
+
+
+
+
+
+
+
+
+

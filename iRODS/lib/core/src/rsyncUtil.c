@@ -642,8 +642,8 @@ dataObjInp_t *dataObjOprInp)
 
 int
 rsyncDirToCollUtil (rcComm_t *conn, rodsPath_t *srcPath, 
-rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjOprInp)
+        rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+        dataObjInp_t *dataObjOprInp)
 {
     int status = 0;
     int savedStatus = 0;
@@ -651,8 +651,8 @@ dataObjInp_t *dataObjOprInp)
     rodsPath_t mySrcPath, myTargPath;
 
     if (srcPath == NULL || targPath == NULL) {
-       rodsLog (LOG_ERROR,
-          "rsyncDirToCollUtil: NULL srcPath or targPath input");
+        rodsLog (LOG_ERROR,
+                "rsyncDirToCollUtil: NULL srcPath or targPath input");
         return (USER__NULL_INPUT_ERR);
     }
 
@@ -663,16 +663,16 @@ dataObjInp_t *dataObjOprInp)
 
     if (rodsArgs->recursive != True) {
         rodsLog (LOG_ERROR,
-        "rsyncDirToCollUtil: -r option must be used for putting %s directory",
-         srcDir);
+                "rsyncDirToCollUtil: -r option must be used for putting %s directory",
+                srcDir);
         return (USER_INPUT_OPTION_ERR);
     }
 
     path srcDirPath (srcDir);
     if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
         rodsLog (LOG_ERROR,
-        "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
-         srcDir, errno);
+                "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
+                srcDir, errno);
         return (USER_INPUT_PATH_ERR);
     }
 
@@ -687,8 +687,8 @@ dataObjInp_t *dataObjOprInp)
 
     directory_iterator end_itr; // default construction yields past-the-end
     for( directory_iterator itr( srcDirPath ); 
-         itr != end_itr;
-         ++itr ) {
+            itr != end_itr;
+            ++itr ) {
         path p = itr->path();
         snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", p.c_str() );
 
@@ -696,67 +696,66 @@ dataObjInp_t *dataObjOprInp)
 
         if (!exists(p)) {
             rodsLog (LOG_ERROR,
-              "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
-              mySrcPath.outPath, errno);
+                    "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
+                    mySrcPath.outPath, errno);
             return (USER_INPUT_PATH_ERR);
         }
 
-        if( is_regular_file( p ) && rodsArgs->age == True) {
+        if( is_regular_file( p ) && 
+                rodsArgs->age == True ) {
             if( ageExceeded( 
-                    rodsArgs->agevalue, 
-                    last_write_time( p ),
-                    rodsArgs->verbose, 
-                    mySrcPath.outPath, 
-                    file_size( p ) ) ) {
+                        rodsArgs->agevalue, 
+                        last_write_time( p ),
+                        rodsArgs->verbose, 
+                        mySrcPath.outPath, 
+                        file_size( p ) ) ) {
                 continue;
             }
         }
 
-	bzero (&myTargPath, sizeof (myTargPath));
-
+        bzero (&myTargPath, sizeof (myTargPath));
         path childPath = p.filename();
         snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
-          targColl, childPath.c_str());
+                targColl, childPath.c_str());
         if (is_symlink (p)) {
             path cp = read_symlink (p);
             snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
-              srcDir, cp.c_str ());
+                    srcDir, cp.c_str ());
             p = path (mySrcPath.outPath);
         }
-	dataObjOprInp->createMode = getPathStMode (p);
-	if (is_regular_file(p)) {
+        dataObjOprInp->createMode = getPathStMode (p);
+        if (is_regular_file(p)) {
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;
-	    mySrcPath.objState = EXIST_ST;
+            mySrcPath.objState = EXIST_ST;
 
-	    mySrcPath.size = file_size (p);
-
-	    getRodsObjType (conn, &myTargPath);
+            mySrcPath.size = file_size (p);
+            getRodsObjType (conn, &myTargPath);
             status = rsyncFileToDataUtil (conn, &mySrcPath, &myTargPath,
-              myRodsEnv, rodsArgs, dataObjOprInp);
-	    /* fix a big mem leak */
+                    myRodsEnv, rodsArgs, dataObjOprInp);
+            /* fix a big mem leak */
             if (myTargPath.rodsObjStat != NULL) {
                 freeRodsObjStat (myTargPath.rodsObjStat);
                 myTargPath.rodsObjStat = NULL;
             }
-	} else if (is_directory(p)) {
-			status = 0;
-			/* only do the sync if no -l option specified */
-			if ( rodsArgs->longOption != True ) {
-            	status = mkCollR (conn, targColl, myTargPath.outPath);
-			}
+        } else if (is_directory(p)) {
+            status = 0;
+            /* only do the sync if no -l option specified */
+            if ( rodsArgs->longOption != True ) {
+                status = mkCollR (conn, targColl, myTargPath.outPath);
+            }
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
-                  "rsyncDirToCollUtil: mkColl error for %s", 
-		  myTargPath.outPath);
+                        "rsyncDirToCollUtil: mkColl error for %s", 
+                        myTargPath.outPath);
             } else {
                 myTargPath.objType = COLL_OBJ_T;
                 mySrcPath.objType = LOCAL_DIR_T;
                 mySrcPath.objState = myTargPath.objState = EXIST_ST;
                 getRodsObjType (conn, &myTargPath);
                 status = rsyncDirToCollUtil (conn, &mySrcPath, &myTargPath,
-                  myRodsEnv, rodsArgs, dataObjOprInp);
-	        /* fix a big mem leak */
+                        myRodsEnv, rodsArgs, dataObjOprInp);
+                /* fix a big mem leak */
                 if (myTargPath.rodsObjStat != NULL) {
                     freeRodsObjStat (myTargPath.rodsObjStat);
                     myTargPath.rodsObjStat = NULL;
@@ -764,23 +763,23 @@ dataObjInp_t *dataObjOprInp)
             }
         } else {
             rodsLog (LOG_ERROR,
-              "rsyncDirToCollUtil: unknown local path %s",
-              mySrcPath.outPath);
+                    "rsyncDirToCollUtil: unknown local path %s",
+                    mySrcPath.outPath);
             status = USER_INPUT_PATH_ERR;
         }
 
         if (status < 0) {
             savedStatus = status;
             rodsLogError (LOG_ERROR, status,
-             "rsyncDirToCollUtil: put %s failed. status = %d",
-              mySrcPath.outPath, status);
+                    "rsyncDirToCollUtil: put %s failed. status = %d",
+                    mySrcPath.outPath, status);
         }
     }
 
     if (savedStatus < 0) {
         return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND || 
-      status == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
+            status == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
         return (0);
     } else {
         return (status);

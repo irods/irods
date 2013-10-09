@@ -3,16 +3,11 @@
 /* irodsXmsgServer.c - The irods xmsg server
  */
 
-#ifndef  USE_BOOST
-#include <pthread.h>
-#endif  /*n USE_BOOST */
 #include "reconstants.h"
 #include "irodsXmsgServer.h"
 #include "xmsgLib.h"
 #include "rsGlobal.h"
-#if defined(USE_BOOST) || defined(RUN_SERVER_AS_ROOT)
 #include "miscServerFunct.h"
-#endif /* USE_BOOST || RUN_SERVER_AS_ROOT */
 
 int loopCnt=-1;  /* make it -1 to run infinitel */
 
