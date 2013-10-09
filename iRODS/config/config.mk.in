@@ -403,7 +403,7 @@ endif
 # the directory where the BOOST directory is located, which is normally
 # the .../iRODS/boost_irods directory.  First run 'buildboost.sh' in the
 # iRODS directory to create boost_irods.
-# USE_BOOST=1
+USE_BOOST=1
 ifdef USE_BOOST
 ifndef BOOST_DIR
 #BOOST_DIR=/home/mwan/myapps/boost/install

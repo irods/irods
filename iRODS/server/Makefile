@@ -458,16 +458,21 @@ clean:
 # Not needed
 # LDFLAGS += /home/jasonc/dev/lib/boost/boost_1_45_0/stage/lib/libboost_thread.a
 
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a
+
 #
 # Compilation Targets
 #
 # Build server API
-$(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.c $(DEPEND)
+$(SVR_API_OBJS):	$(svrApiObjDir)/%.o: $(svrApiSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server core
-$(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND)
+$(SVR_CORE_OBJS):	$(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -475,12 +480,12 @@ $(svrDriversObjDir)/wosFunctPP.o:	$(svrDriversSrcDir)/wosFunctPP.cpp
 	g++ $(CPPFLAGS) -o $(svrDriversObjDir)/wosFunctPP.o $(svrDriversSrcDir)/wosFunctPP.cpp
 
 # Build server drivers
-$(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND)
+$(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile drivers `basename $@`..."
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
-$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND)
+$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 $(extendedICAT.h): 
@@ -492,13 +497,12 @@ $(SVR_DBR_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Builder server rule engine
-$(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)
+$(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile re `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 
-LIBRARY += $(BOOST_DIR)/stage/lib/libboost_system.a $(BOOST_DIR)/stage/lib/libboost_filesystem.a $(BOOST_DIR)/stage/lib/libboost_regex.a
-
+LIBRARY += $(BOOST_LIBS) 
 #
 # Servers
 #

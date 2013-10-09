@@ -14,6 +14,17 @@
 // irods includes
 #include "rodsType.h"
 
+// =-=-=-=-=-=-=-
+// boost assertion handling macro, needed everywhere
+// see http://stackoverflow.com/questions/1067226/c-multi-line-macro-do-while0-vs-scope-block
+// for the WHY!? regarding the while(0) loop
+#ifndef BOOST_ASSERT_MSG
+#define BOOST_ASSERT_MSG( cond, msg ) do \
+{ if (!(cond)) { std::ostringstream str; str << msg; std::cerr << str.str(); std::abort(); } \
+} while(0)
+#endif
+#include <boost/assert.hpp>
+
 namespace eirods {
     /// =-=-=-=-=-=-=-
     /// @brief error stack object which holds error history
