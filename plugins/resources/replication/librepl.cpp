@@ -1149,21 +1149,22 @@ extern "C" {
      // =-=-=-=-=-=-=-
     // interface for POSIX truncate
     eirods::error replFileTruncate(
-        eirods::resource_operation_context* _ctx)
+        eirods::resource_plugin_context& _ctx)
     {
         // =-=-=-=-=-=-=-
         eirods::error result = SUCCESS();
         eirods::error ret;
 
-        ret = replCheckParams(_ctx);
+        ret = replCheckParams<eirods::file_object>(_ctx);
         if(!ret.ok()) {
             std::stringstream msg;
             msg << __FUNCTION__;
             msg << " - bad params.";
             result = PASSMSG(msg.str(), ret);
         } else {
+            eirods::file_object_ptr ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
             eirods::hierarchy_parser parser;
-            parser.set_string(_ctx->fco().resc_hier());
+            parser.set_string(ptr->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
             if(!ret.ok()) {
@@ -1172,7 +1173,7 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;

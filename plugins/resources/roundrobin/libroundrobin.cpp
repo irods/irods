@@ -694,21 +694,18 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
     eirods::error round_robin_file_truncate(
-        eirods::resource_operation_context* _ctx ) {
+        eirods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // get the child resc to call
         eirods::resource_ptr resc;
-        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        eirods::error err = round_robin_get_resc_for_call< eirods::file_object >( _ctx, resc );
         if( !err.ok() ) {
-            std::stringstream msg;
-            msg <<  __FUNCTION__;
-            msg << " - failed.";
-            return PASSMSG( msg.str(), err );
+            return PASS( err );
         }
 
         // =-=-=-=-=-=-=-
         // call truncate on the child
-        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
+        return resc->call( _ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
 
     } // round_robin_file_truncate
 

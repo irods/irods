@@ -521,7 +521,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX truncate
     eirods::error univ_mss_file_truncate(
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
 
     } // univ_mss_file_truncate

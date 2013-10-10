@@ -1619,7 +1619,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
     eirods::error tar_file_truncate_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) { 
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = tar_check_params( _ctx );
@@ -1629,18 +1629,18 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::structured_object& struct_obj = dynamic_cast< eirods::structured_object& >( _ctx->fco() );
+        eirods::structured_object_ptr struct_obj = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // extract and check the special collection pointer
-        specColl_t* spec_coll = struct_obj.spec_coll();
+        specColl_t* spec_coll = struct_obj->spec_coll();
         if( !spec_coll ) {
             return ERROR( -1, "tar_file_truncate_plugin - null spec_coll pointer in structure_object" );
         }
 
         // =-=-=-=-=-=-=-
         // extract and check the comm pointer
-        rsComm_t* comm = struct_obj.comm();
+        rsComm_t* comm = struct_obj->comm();
         if( !comm ) {
             return ERROR( -1, "tar_file_truncate_plugin - null comm pointer in structure_object" );
         }
@@ -1650,7 +1650,7 @@ extern "C" {
         int struct_file_index = 0;
         std::string resc_host;
         eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
-                                                        struct_obj.resc_hier(), resc_host );
+                                                        struct_obj->resc_hier(), resc_host );
         if( !open_err.ok() ) {
             std::stringstream msg;
             msg << "tar_file_truncate_plugin - tar_struct_file_open error for [";
@@ -1678,14 +1678,14 @@ extern "C" {
         fileOpenInp_t fileTruncateInp;
         memset( &fileTruncateInp, 0, sizeof( fileTruncateInp ) );
         strncpy( fileTruncateInp.addr.hostAddr,  resc_host.c_str(), NAME_LEN );
-        strncpy( fileTruncateInp.objPath, struct_obj.logical_path().c_str(), MAX_NAME_LEN );
-        fileTruncateInp.dataSize = struct_obj.offset();
+        strncpy( fileTruncateInp.objPath, struct_obj->logical_path().c_str(), MAX_NAME_LEN );
+        fileTruncateInp.dataSize = struct_obj->offset();
         
         // =-=-=-=-=-=-=-
         // build a physical path name to the cache dir
         eirods::error comp_err = compose_cache_dir_physical_path( fileTruncateInp.fileName, 
                                                                   spec_coll, 
-                                                                  struct_obj.sub_file_path().c_str() );
+                                                                  struct_obj->sub_file_path().c_str() );
         if( !comp_err.ok() ) {
             return PASSMSG(
                          "tar_file_truncate_plugin - compose_cache_dir_physical_path failed.", comp_err );
@@ -1697,11 +1697,11 @@ extern "C" {
         if( status > 0 ) {
             // =-=-=-=-=-=-=-
             // cache has been written 
-            int         struct_idx = PluginTarSubFileDesc[ struct_obj.file_descriptor() ].structFileInx;
+            int         struct_idx = PluginTarSubFileDesc[ struct_obj->file_descriptor() ].structFileInx;
             specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
             if( spec_coll->cacheDirty == 0 ) {
                 spec_coll->cacheDirty = 1;    
-                int status1 = modCollInfo2( struct_obj.comm(), spec_coll, 0 );
+                int status1 = modCollInfo2( struct_obj->comm(), spec_coll, 0 );
                 if( status1 < 0 ) 
                     return CODE( status1 );
             }

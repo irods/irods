@@ -976,7 +976,7 @@ extern "C" {
     // =-=-=-=-=-=-=-
     // interface for POSIX truncate
     eirods::error unix_file_truncate_plugin( 
-        eirods::resource_operation_context* _ctx ) { 
+        eirods::resource_plugin_context& _ctx ) {
         // =-=-=-=-=-=-=-
         // Check the operation parameters and update the physical path
         eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
@@ -988,12 +988,12 @@ extern "C" {
         
         // =-=-=-=-=-=-=-
         // cast down the chain to our understood object type
-        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
 
         // =-=-=-=-=-=-=-
         // make the call to rename
-        int status = truncate( file_obj.physical_path().c_str(), 
-                               file_obj.size() );
+        int status = truncate( file_obj->physical_path().c_str(), 
+                               file_obj->size() );
 
         // =-=-=-=-=-=-=-
         // handle any error cases
@@ -1004,7 +1004,7 @@ extern "C" {
 
             std::stringstream msg;
             msg << "unix_file_truncate_plugin: rename error for ";
-            msg << file_obj.physical_path();
+            msg << file_obj->physical_path();
             msg << ", errno = '";
             msg << strerror( errno );
             msg << "', status = ";
