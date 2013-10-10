@@ -16,11 +16,6 @@
 #define DATA_OBJ_INP_OUT_H
 
 
-#ifdef USE_BOOST_ASIO_FAILED
-#include <boost/asio.hpp>
-// typedef typedef<typename,typename> asio::basic_socket rods_socket_t
-#else
-#endif
 #include "rodsDef.h"
 
 #ifdef PARA_OPR
@@ -40,11 +35,7 @@
 typedef struct {
     int portNum;       /* the port number */
     int cookie;
-#ifdef USE_BOOST_ASIO_FAILED
-    rods_socket_t* sock;
-#else
     int sock;           /* The server's sock number. no meaning for client */
-#endif
     int windowSize;
     char hostAddr[LONG_NAME_LEN];
 } portList_t;

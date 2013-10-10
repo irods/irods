@@ -8,11 +8,9 @@
 #ifndef DEBUG
 #include "rodsType.h"
 #endif
-#if defined(USE_BOOST)
 #include <boost/interprocess/detail/os_file_functions.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
-#endif
 typedef time_t time_type;
 #define time_type_gt(mtim, timestamp) \
 		(mtim > timestamp)

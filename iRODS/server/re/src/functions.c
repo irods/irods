@@ -17,12 +17,7 @@ dataObjInfo_t **dataObjInfo);
 #endif
 
 
-#if defined(USE_BOOST)
 #include <boost/regex.h>
-#elif defined(_POSIX_VERSION)
-#include <regex.h>
-#endif
-
 
 #ifndef DEBUG
 #include "execMyRule.h"
@@ -1654,7 +1649,7 @@ Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 	char *bufstr;
 	pattern = params[1]->text;
 	Res *res;
-#if defined(_POSIX_VERSION) || defined(USE_BOOST)
+
 	bufstr = strdup(params[0]->text);
 	/* make the regexp match whole strings */
 	char *buf2;
@@ -1665,9 +1660,6 @@ Res *smsi_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSa
 	regfree(&regbuf);
 	free(buf2);
 	free(bufstr);
-#else
-	res = newBoolRes(r, match(pattern, param[0]->text)==TRUE?1:0);
-#endif
 	return res;
 }
 Res *smsi_not_like(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
@@ -1683,7 +1675,7 @@ Res *smsi_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
 	char *bufstr;
 	pattern = params[1]->text;
 	Res *res;
-#if defined(_POSIX_VERSION) || defined(USE_BOOST)
+
 	bufstr = strdup(params[0]->text);
 	/* make the regexp match whole strings */
 	pattern = matchWholeString(params[1]->text);
@@ -1693,9 +1685,6 @@ Res *smsi_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int
 	regfree(&regbuf);
 	free(bufstr);
 	free(pattern);
-#else
-	res = newBoolRes(r, match(pattern, param[0]->text)==TRUE?1:0);
-#endif
 	return res;
 }
 Res *smsi_not_like_regex(Node **paramsr, int n, Node *node, ruleExecInfo_t *rei, int reiSaveFlag, Env *env, rError_t *errmsg, Region *r) {
