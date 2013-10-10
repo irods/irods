@@ -9,7 +9,7 @@
 #
 # This shell script runs the 'irodsctl' Perl script.
 #
-IRODS_HOME="/home/jasonc/dev/e-irods/iRODS"
+IRODS_HOME=/var/lib/eirods/iRODS
 
 if [ ! -s $IRODS_HOME ]; then
 	# If configured but not correct now, try logic below
