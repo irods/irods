@@ -121,6 +121,11 @@ endif
 LDFLAGS += $(LIB_KRB_AUTH)
 endif
 
+LDFLAGS += -lrt -ldl -lssl -lcrypto
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a
 
 #
 # Principal Targets
@@ -141,7 +146,7 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS)
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 
 

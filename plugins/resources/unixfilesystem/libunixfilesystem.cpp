@@ -973,6 +973,51 @@ extern "C" {
 
     } // unix_file_rename_plugin
 
+    // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error unix_file_truncate_plugin( 
+        eirods::resource_operation_context* _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        eirods::file_object& file_obj = dynamic_cast< eirods::file_object& >( _ctx->fco() );
+
+        // =-=-=-=-=-=-=-
+        // make the call to rename
+        int status = truncate( file_obj.physical_path().c_str(), 
+                               file_obj.size() );
+
+        // =-=-=-=-=-=-=-
+        // handle any error cases
+        if( status < 0 ) {
+            // =-=-=-=-=-=-=-
+            // cache status in out variable
+            status = UNIX_FILE_TRUNCATE_ERR - errno;
+
+            std::stringstream msg;
+            msg << "unix_file_truncate_plugin: rename error for ";
+            msg << file_obj.physical_path();
+            msg << ", errno = '";
+            msg << strerror( errno );
+            msg << "', status = ";
+            msg << status;
+                        
+            return ERROR( status, msg.str() );
+        }
+
+        return CODE( status );
+
+    } // unix_file_truncate_plugin
+
+
     eirods::error
     unixFileCopyPlugin( int         mode, 
                         const char* srcFileName, 
@@ -1408,6 +1453,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "unix_file_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "unix_file_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "unix_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "unix_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "unix_file_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "unix_file_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "unix_file_synctoarch_plugin" );

@@ -131,4 +131,11 @@
 #include "sslStart.h"
 #include "sslEnd.h"
 
+// =-=-=-=-=-=-=-
+// necessary for FUSE
+#include "dataObjTruncate.h"
+#include "fileTruncate.h"
+#include "subStructFileTruncate.h"
+
+
 #endif	/* API_HEADER_ALL_H */

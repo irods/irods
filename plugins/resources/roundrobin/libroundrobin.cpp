@@ -692,6 +692,27 @@ extern "C" {
     } // round_robin_file_rename
 
     /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX truncate
+    eirods::error round_robin_file_truncate(
+        eirods::resource_operation_context* _ctx ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc;
+        eirods::error err = round_robin_get_resc_for_call( _ctx, resc );
+        if( !err.ok() ) {
+            std::stringstream msg;
+            msg <<  __FUNCTION__;
+            msg << " - failed.";
+            return PASSMSG( msg.str(), err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call truncate on the child
+        return resc->call( _ctx->comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx->fco() );
+
+    } // round_robin_file_truncate
+
+    /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     eirods::error round_robin_file_getfs_freespace(
         eirods::resource_plugin_context& _ctx ) { 
@@ -1178,6 +1199,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "round_robin_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "round_robin_file_readdir" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "round_robin_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "round_robin_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "round_robin_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "round_robin_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "round_robin_file_rmdir" );

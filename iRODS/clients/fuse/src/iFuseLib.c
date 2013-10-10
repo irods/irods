@@ -1268,7 +1268,6 @@ ifuseReconnect (iFuseConn_t *iFuseConn)
     rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
     rcDisconnect (iFuseConn->conn);
     status = ifuseConnect (iFuseConn, &MyRodsEnv);
-	tmpIFuseConn->conn=NULL; // JMC - backport 4589
     return status;
 }
 
@@ -1648,7 +1647,7 @@ int
 renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to)
 {
 	int descInx;
-	int status;
+	int status = 0;
 	pathCache_t *tmpPathCache = NULL;
 
 	if( ( descInx = getNewlyCreatedDescByPath ((char *)fromPathCache->filePath)) >= 3 ) {
@@ -1657,7 +1656,7 @@ renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to)
 		rmPathFromCache( (char *) to, NonExistPathArray);
 		addPathToCache(  (char *) to, PathArray, &fromPathCache->stbuf, &tmpPathCache);
 		if( NULL == tmpPathCache ) {
-			rodsLogError (LOG_ERROR, status,"renmeOpenedIFuseDesc: addPathToCache Failed for path [ %s ]", to);
+			rodsLogError (LOG_ERROR, descInx, "renmeOpenedIFuseDesc: addPathToCache Failed for path [ %s ]", to);
 			return -ENOTDIR;
 		}
 		

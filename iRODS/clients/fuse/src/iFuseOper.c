@@ -890,16 +890,15 @@ struct fuse_file_info *fi)
 int 
 irodsStatfs (const char *path, struct statvfs *stbuf)
 {
-    int status;
 
     rodsLog (LOG_DEBUG, "irodsStatfs: %s", path);
 
     if (stbuf == NULL)
-	return (0);
+	    return (0);
 
     
     /* just fake some number */
-    status = statvfs ("/", stbuf);
+    if( !statvfs ("/", stbuf) ) {}
 
     stbuf->f_bsize = FILE_BLOCK_SZ;
     stbuf->f_blocks = 2000000000;
