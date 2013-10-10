@@ -134,10 +134,6 @@ BINS =		\
 		$(binDir)/genOSAuth \
 		$(binDir)/igroupadmin 
 
-BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
-             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-             $(BOOST_DIR)/stage/lib/libboost_regex.a \
-             $(BOOST_DIR)/stage/lib/libboost_thread.a 
 #
 # Compile and link flags
 #
@@ -209,7 +205,7 @@ ifdef CCMALLOC
 LDFLAGS += -L$(CCMALLOC_DIR)/lib
 endif
 
-
+LDFLAGS += -lrt
 BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
              $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
              $(BOOST_DIR)/stage/lib/libboost_regex.a \
@@ -233,7 +229,7 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY) $(BOOST_LIBS)
 
 $(binDir)/%:	$(objDir)/%.o $(BOOST_LIBS)
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # Show compile flags
 print_cflags:

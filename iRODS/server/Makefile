@@ -553,29 +553,29 @@ $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 # reTest
 $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(BOOST_LIBS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # cll and chl
 $(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(BOOST_LIBS) $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 $(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # genq and genu
 $(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 $(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 $(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS) $(BOOST_LIBS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 
 
