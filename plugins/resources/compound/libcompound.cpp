@@ -871,11 +871,10 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call
-        return resc->call<const char*>( 
+        return resc->call( 
                    _ctx.comm(), 
                    eirods::RESOURCE_OP_FREESPACE, 
-                   _ctx.fco(), 
-                   _new_file_name );
+                   _ctx.fco() );
 
     } // compound_file_getfs_freespace
 
