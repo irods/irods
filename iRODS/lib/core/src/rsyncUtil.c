@@ -1027,7 +1027,6 @@ int
 initCondForRsync (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjInp)
 {
-    char *myResc = NULL;
     char tmpStr[NAME_LEN];
 
 
@@ -1072,12 +1071,10 @@ dataObjInp_t *dataObjInp)
               "initCondForRepl: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
-            myResc = rodsArgs->resourceString;
             addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
               rodsArgs->resourceString);
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
-        myResc = myRodsEnv->rodsDefResource;
         addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
     }
@@ -1093,7 +1090,6 @@ int
 initCondForIrodsToIrodsRsync (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjCopyInp_t *dataObjCopyInp)
 {
-    char *myResc = NULL;
     char tmpStr[NAME_LEN];
 
     if (dataObjCopyInp == NULL) {
@@ -1126,12 +1122,10 @@ dataObjCopyInp_t *dataObjCopyInp)
               "initCondForRepl: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
-            myResc = rodsArgs->resourceString;
             addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, 
 	      DEST_RESC_NAME_KW, rodsArgs->resourceString);
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
-        myResc = myRodsEnv->rodsDefResource;
         addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, 
 	  DEST_RESC_NAME_KW, myRodsEnv->rodsDefResource);
     }

@@ -1859,14 +1859,12 @@ int
 getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 {
 
-    rodsLong_t  it, dt, ct;
+    rodsLong_t  it, dt;
     char *t, *s;
     char u;
     char tstr[200];
     int n;
 
-    ct = atol(currTime); 
-   
     t = delayStr;
     while (isdigit(*t)) t++;
     u = *t;
@@ -2718,8 +2716,6 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                                    char *restartPath, objType_t objType, keyValPair_t *condInput,
                                    int deleteFlag)
             {
-                int status;
-
                 if (restartPath != NULL && deleteFlag > 0) {
                     if (objType == DATA_OBJ_T) {
                         if ((condInput == NULL ||
@@ -2732,13 +2728,13 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
                             memset (&dataObjInp, 0, sizeof (dataObjInp));
                             addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
                             rstrcpy (dataObjInp.objPath, restartPath, MAX_NAME_LEN);
-                            status = rcDataObjUnlink (conn,& dataObjInp);
+                            rcDataObjUnlink (conn,& dataObjInp);
                             clearKeyVal (&dataObjInp.condInput);
                         }
                     } else if (objType == LOCAL_FILE_T) {
                         if (conn->fileRestart.info.status != FILE_RESTARTED ||
                             strcmp (conn->fileRestart.info.fileName, restartPath) != 0) {
-                            status = unlink (restartPath);
+                            unlink (restartPath);
                         }
                     } else {
                         rodsLog (LOG_ERROR,
@@ -4411,11 +4407,11 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
             int
                 writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
             {
-                int toWrite, buflen, nbytes;
+                int toWrite, nbytes;
                 char *bufptr;
 
                 bufptr = (char *)bytesBuf->buf;
-                buflen = toWrite = bytesBuf->len;
+                toWrite = bytesBuf->len;
                 while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
                     toWrite -= nbytes;
                     bufptr += nbytes;

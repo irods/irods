@@ -1868,7 +1868,6 @@ eirods::error chlRescObjCount(
 {
     eirods::error result = SUCCESS();
     rodsLong_t obj_count = 0;
-    char obj_count_string[MAX_NAME_LEN];
     int status;
     
     if((status = cmlGetIntegerValueFromSql("select resc_objcount from R_RESC_MAIN where resc_name=?",
@@ -1894,7 +1893,6 @@ _rescHasData(
     bool result = false;
     eirods::sql_logger logger("_rescHasData", logSQL);
     int status;
-    char obj_count_string[MAX_NAME_LEN];
     static const char* func_name = "_rescHasData";
     rodsLong_t obj_count;
     
