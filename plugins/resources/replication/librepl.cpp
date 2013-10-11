@@ -1233,7 +1233,7 @@ extern "C" {
     // is not used.
     eirods::error replStageToCache(
         eirods::resource_plugin_context& _ctx,
-        const char*                    _cache_file_name )
+        const char*                      _cache_file_name )
     { 
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1256,15 +1256,13 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_FREESPACE, _ctx.fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
+                } 
             }
         }
         return result;
