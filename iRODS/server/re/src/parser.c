@@ -2212,24 +2212,6 @@ void functionApplicationToString(char *buf, int size, char *fn, Node **args, int
 	return;
 }
 
-void printTreeDeref(Node *n, int indent, Hashtable *var_types, Region *r) {
-	printIndent(indent);
-	printf("%s:%d->",n->text, getNodeType(n));
-        printType(n->coercionType, var_types);
-        printf("\n");
-	int i;
-	for(i=0;i<n->degree;i++) {
-		printTreeDeref(n->subtrees[i],indent+1, var_types, r);
-	}
-
-}
-
-void printIndent(int n) {
-	int i;
-	for(i=0;i<n;i++) {
-		printf("\t");
-	}
-}
 
 int eqExprNodeSyntactic(Node *a, Node *b) {
     if(getNodeType(a) == getNodeType(b) &&

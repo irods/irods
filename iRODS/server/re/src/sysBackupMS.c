@@ -175,6 +175,9 @@ char *getDBHomeDir()
 	char *dbPath = NULL;
 	FILE *configFile;
 
+#ifndef RODS_CAT
+       return NULL;
+#endif
 
 	/* Open server configuration file */
 	snprintf (configFilePath, MAX_PATH_ALLOWED, "%s/config/%s", getenv("irodsHomeDir"), "irods.config");
@@ -229,7 +232,7 @@ int getDefaultLocalRescInfo(rescInfo_t **rescInfo)
 	char buf[LONG_NAME_LEN * 5];
 	char *rescName = NULL;
 	FILE *configFile;
-	int status = 0;
+	int status;
 
 
 	/* Open server configuration file */
@@ -372,11 +375,7 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 
 
 	/* Get icat home dir, if applicable */
-#ifdef RODS_CAT
        dbPath = getDBHomeDir();
-#else
-       dbPath = NULL;
-#endif
 
 	/* Get local resource info */
 	status = getDefaultLocalRescInfo(&rescInfo);
@@ -384,7 +383,9 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 	{
 		rodsLog (LOG_ERROR, "msiServerBackup: Could not resolve local resource, status = %d",
 				status);
-        free( dbPath ); // JMC cppcheck - leak
+		if (dbPath) {
+			free(dbPath);
+		}
         return (status);
 	}
 
@@ -393,7 +394,9 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 	if  ((rodsDirPath = getenv("irodsHomeDir")) == NULL)
 	{
 		rodsLog (LOG_ERROR, "msiServerBackup: Cannot find directory to back up.");
-        free( dbPath ); // JMC cppcheck - leak
+		if (dbPath) {
+			free(dbPath);
+		}
         return (USER_INPUT_PATH_ERR);
 	}
 
@@ -429,12 +432,16 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 
 	fileCount = loadDirToLocalResc(rei, rodsDirPath, offset, rescInfo->rescVaultPath, tStr, dbPath);
 
+	/* get some cleanup out of the way */
+	if (dbPath) {
+		free(dbPath);
+	}
+
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiServerBackup: loadDirToLocalResc() error, status = %d",
 				rei->status);
-		free( myKeyVal ); // JMC cppcheck - leak
-        free( dbPath ); // JMC cppcheck - leak
+		free(myKeyVal);
 		return rei->status;
 	}
 
@@ -456,8 +463,7 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 	{
 		rodsLog (LOG_ERROR, "msiServerBackup: rsCollCreate failed for %s, status = %d",
 				collInp.collName, rei->status);
-		free( myKeyVal ); // JMC cppcheck - leak
-        free( dbPath ); // JMC cppcheck - leak
+		free(myKeyVal);
 		return (rei->status);
 	}
 
@@ -488,8 +494,7 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 	if (rei->status < 0)
 	{
 		rodsLog (LOG_ERROR, "msiServerBackup: rsPhyPathReg() failed with status %d", rei->status);
-		free( myKeyVal ); // JMC cppcheck - leak
-        free( dbPath ); // JMC cppcheck - leak
+		free(myKeyVal);
 		return rei->status;
 	}
 
@@ -501,8 +506,6 @@ msiServerBackup(msParam_t *options, msParam_t *keyValOut, ruleExecInfo_t *rei)
 	/* Return myKeyVal through keyValOut */
 	keyValOut->inOutStruct = (void*) myKeyVal;
 
-    free( myKeyVal ); // JMC cppcheck - leak
-    free( dbPath ); // JMC cppcheck - leak
 
 	/* Done! */
 	return 0;

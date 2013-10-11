@@ -302,10 +302,8 @@ _rsDataObjClose (
     int noChkCopyLenFlag;
 
     l1descInx = dataObjCloseInp->l1descInx;
-
     l3descInx = L1desc[l1descInx].l3descInx;
-
-
+        
     if (l3descInx > 2) {
         /* it could be -ive for parallel I/O */
         status = l3Close (rsComm, l1descInx);
@@ -512,6 +510,12 @@ _rsDataObjClose (
                                     IRODS_ADMIN_KW) != NULL) {
                 addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
             }
+
+            char* pdmo_kw = getValByKey(&dataObjCloseInp->condInput, IN_PDMO_KW);
+            if( pdmo_kw ) {
+                addKeyVal( &regReplicaInp.condInput, IN_PDMO_KW, pdmo_kw );
+            }
+
             status = rsRegReplica (rsComm, &regReplicaInp);
             clearKeyVal (&regReplicaInp.condInput);
             /* update quota overrun */
@@ -602,44 +606,6 @@ _rsDataObjClose (
         chksumStr = NULL;
     }
 
-#if 0 // JMC legacy resource 
-    if (L1desc[l1descInx].replRescInfo != NULL && 
-        getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
-        /* repl a new copy */
-        L1desc[l1descInx].dataObjInp->dataSize = 
-            L1desc[l1descInx].dataObjInfo->dataSize;
-        status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp, 
-                                  L1desc[l1descInx].dataObjInfo, L1desc[l1descInx].replRescInfo, 
-                                  L1desc[l1descInx].dataObjInfo->rescGroupName, NULL, 0);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-                     "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
-                     L1desc[l1descInx].dataObjInfo->objPath, status);
-            return status;
-        }
-    } else if (L1desc[l1descInx].replDataObjInfo != NULL &&
-               getRescClass (L1desc[l1descInx].replDataObjInfo->rescInfo) == 
-               COMPOUND_CL) {
-        /* update an existing copy */
-        L1desc[l1descInx].dataObjInp->dataSize = 
-            L1desc[l1descInx].dataObjInfo->dataSize;
-        if (L1desc[l1descInx].bytesWritten > 0)
-            L1desc[l1descInx].dataObjInfo->replStatus |= NEWLY_CREATED_COPY;
-        L1desc[l1descInx].replDataObjInfo->replStatus = 
-            L1desc[l1descInx].dataObjInfo->replStatus;
-        status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp,
-                                  L1desc[l1descInx].dataObjInfo, 
-                                  L1desc[l1descInx].replDataObjInfo->rescInfo,
-                                  L1desc[l1descInx].dataObjInfo->rescGroupName, 
-                                  L1desc[l1descInx].replDataObjInfo, 1);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-                     "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
-                     L1desc[l1descInx].dataObjInfo->objPath, status);
-            return status;
-        }
-    }
-
     // =-=-=-=-=-=-=-
     // JMC - backport 4537
     /* purge the cache copy */
@@ -652,9 +618,7 @@ _rsDataObjClose (
                           L1desc[l1descInx].dataObjInfo->objPath);
         }
     }
-    // =-=-=-=-=-=-=-
-#endif // JMC legacy resource 
-
+    
     /* XXXXXX need to replicate to moreRescGrpInfo */
 
     /* for post processing */
@@ -729,27 +693,11 @@ l3Close (rsComm_t *rsComm, int l1descInx)
         rstrcpy (subStructFileCloseInp.addr.hostAddr, location.c_str(), NAME_LEN);
         status = rsSubStructFileClose (rsComm, &subStructFileCloseInp);
     } else {
+        memset (&fileCloseInp, 0, sizeof (fileCloseInp));
+        fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
+        rstrcpy(fileCloseInp.in_pdmo, L1desc[l1descInx].in_pdmo, MAX_NAME_LEN);
+        status = rsFileClose (rsComm, &fileCloseInp);
 
-#if 0 // JMC - legacy resource 
-        rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-          case FILE_CAT:
-#endif // JMC - legacy resource 
-            memset (&fileCloseInp, 0, sizeof (fileCloseInp));
-            fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
-            fileCloseInp.in_pdmo = L1desc[l1descInx].in_pdmo;
-            status = rsFileClose (rsComm, &fileCloseInp);
-#if 0 // JMC - legacy resource 
-            break;
-
-        default:
-            rodsLog (LOG_NOTICE,
-                     "l3Close: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat);
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-	}
-#endif // JMC - legacy resource 
     }
     return (status);
 }
@@ -760,24 +708,10 @@ _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx)
     fileCloseInp_t fileCloseInp;
     int status;
 
-#if 0 // JMC - legacy resource 
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-#endif // JMC - legacy resource 
-        memset (&fileCloseInp, 0, sizeof (fileCloseInp));
-        fileCloseInp.fileInx = l3descInx;
-        status = rsFileClose (rsComm, &fileCloseInp);
-#if 0 // JMC - legacy resource 
-        break;
+    memset (&fileCloseInp, 0, sizeof (fileCloseInp));
+    fileCloseInp.fileInx = l3descInx;
+    status = rsFileClose (rsComm, &fileCloseInp);
 
-    default:
-        rodsLog (LOG_NOTICE,
-                 "_l3Close: rescCat type %d is not recognized",
-                 RescTypeDef[rescTypeInx].rescCat);
-        status = SYS_INVALID_RESC_TYPE;
-        break;
-    }
-#endif // JMC - legacy resource 
     return (status);
 }
 
@@ -804,32 +738,15 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
         subFile.specColl = dataObjInfo->specColl;
         status = rsSubStructFileStat( rsComm, &subFile, myStat );
     } else {
-#if 0 // JMC - legacy resource 
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-
-        switch (RescTypeDef[rescTypeInx].rescCat) {
-          case FILE_CAT:
-#endif // JMC - legacy resource 
-            memset (&fileStatInp, 0, sizeof (fileStatInp));
-            fileStatInp.fileType = static_cast<fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
-            rstrcpy (fileStatInp.fileName, dataObjInfo->filePath, 
-                     MAX_NAME_LEN);
-            rstrcpy (fileStatInp.addr.hostAddr,  
-                     dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-            rstrcpy(fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
-            rstrcpy(fileStatInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-            status = rsFileStat (rsComm, &fileStatInp, myStat);
-#if 0 // JMC - legacy resource 
-            break;
-
-        default:
-            rodsLog (LOG_NOTICE,
-                     "l3Stat: rescCat type %d is not recognized",
-                     RescTypeDef[rescTypeInx].rescCat);
-            status = SYS_INVALID_RESC_TYPE;
-            break;
-	}
-#endif // JMC - legacy resource 
+        memset (&fileStatInp, 0, sizeof (fileStatInp));
+        fileStatInp.fileType = static_cast<fileDriverType_t>( -1 );//RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileStatInp.fileName, dataObjInfo->filePath, 
+                 MAX_NAME_LEN);
+        rstrcpy (fileStatInp.addr.hostAddr,  
+                 dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+        rstrcpy(fileStatInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
+        rstrcpy(fileStatInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+        status = rsFileStat (rsComm, &fileStatInp, myStat);
     }
     return (status);
 }

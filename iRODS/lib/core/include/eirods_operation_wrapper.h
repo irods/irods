@@ -104,7 +104,7 @@ namespace eirods {
                return op_err;
 
 		   } else {
-			  return ERROR( NULL_VALUE_ERR, "null resource operation." );
+			  return ERROR( NULL_VALUE_ERR,  "null resource operation" );
 		   }
 		   
 		} // operator() - T1

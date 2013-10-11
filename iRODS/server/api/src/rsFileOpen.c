@@ -149,15 +149,18 @@ int _rsFileOpen(
                                     0, 
                                     _open_inp->mode, 
                                     _open_inp->flags ) );
-    if(_open_inp->in_pdmo) {
-        file_obj->in_pdmo(true);
-    }
+    file_obj->in_pdmo(_open_inp->in_pdmo);
     
     eirods::error ret_err = fileOpen( _comm, file_obj );
     
     // =-=-=-=-=-=-=-
-    // log errors, if any    
-    if ( !ret_err.ok() ) {
+    // log errors, if any.
+    // NOTE:: direct archive access is a special case in that we
+    //        need to detect it and then carry on   
+    if( ret_err.code() == EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+        return EIRODS_DIRECT_ARCHIVE_ACCESS;
+
+    } else if ( !ret_err.ok() ) {
         std::stringstream msg;
         msg << "_rsFileOpen: fileOpen for [";
         msg << _open_inp->fileName;

@@ -5,12 +5,11 @@
 #ifndef IRODS_FS_H
 #define IRODS_FS_H
 
-#ifdef USE_BOOST
+// =-=-=-=-=-=-=-
+// boost includes
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#endif
-// =-=-=-=-=-=-=-
 
 
 #define FUSE_USE_VERSION 26
@@ -32,11 +31,7 @@
 
 typedef struct IFuseConn {
     rcComm_t *conn;    
-#ifdef USE_BOOST
     boost::mutex* mutex;
-#else
-    pthread_mutex_t lock;
-#endif
     time_t actTime;	/* the last time the connection is active */
     int inuseCnt;
     int pendingCnt;

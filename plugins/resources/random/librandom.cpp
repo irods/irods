@@ -183,7 +183,6 @@ extern "C" {
 
     } // random_get_next_child_resource
 
-
     /// =-=-=-=-=-=-=-
     /// @brief interface for POSIX create
     eirods::error random_file_create( 
@@ -618,6 +617,68 @@ extern "C" {
         return resc->call( _ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco() );
 
     } // random_file_modified
+ 
+    /// =-=-=-=-=-=-=-
+    /// @brief find the next valid child resource for create operation
+    eirods::error get_next_valid_child_resource( 
+        eirods::resource_child_map&  _cmap,
+        eirods::resource_ptr&        _resc ) {
+        // =-=-=-=-=-=-=-
+        // counter and flag
+        size_t child_ctr   = 0;
+        bool   child_found = false;
+ 
+        // =-=-=-=-=-=-=-
+        // while we have not found a child and have not
+        // exhausted possibly all the children in the map
+        while( !child_found &&
+               child_ctr < ( 10 * _cmap.size() ) ) {
+            // =-=-=-=-=-=-=-
+            // increment child counter
+            child_ctr++;
+
+            // =-=-=-=-=-=-=-
+            // pick a child at random
+            std::string child_name;
+            random_get_next_child_resource( _cmap, child_name );
+            
+            // =-=-=-=-=-=-=-
+            // get the child resource pointer
+            eirods::resource_ptr resc;
+            resc = _cmap[ child_name ].second;
+
+            // =-=-=-=-=-=-=-
+            // get the resource's status
+            int resc_status = 0;
+            eirods::error err = resc->get_property<int>( eirods::RESOURCE_STATUS, resc_status ); 
+            if( !err.ok() ) {
+                return PASSMSG( "failed to get property", err );
+            
+            }
+
+            // =-=-=-=-=-=-=-
+            // determine if the resource is up and available
+            if( INT_RESC_STATUS_DOWN != resc_status ) {
+                // =-=-=-=-=-=-=-
+                // we found a valid child, set out variable
+                _resc = resc;
+                child_found = true;
+
+           } 
+
+        } // while
+
+        // =-=-=-=-=-=-=-
+        // return appropriately
+        if( child_found ) {
+            return SUCCESS();
+        
+        } else {
+            return ERROR( EIRODS_NEXT_RESC_FOUND, "no valid child found" );
+        
+        }
+
+    } // get_next_valid_child_resource
 
     /// =-=-=-=-=-=-=-
     /// @brief used to allow the resource to determine which host
@@ -684,33 +745,30 @@ extern "C" {
         } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
             // =-=-=-=-=-=-=-
             // get the next_child resource for create 
-            std::string next_child;
-            err = random_get_next_child_resource( _ctx.child_map(), next_child );
+            eirods::resource_ptr resc; 
+            err = get_next_valid_child_resource( 
+                      _ctx.child_map(), 
+                      resc );
             if( !err.ok() ) {
-                return PASSMSG( "random_redirect - random_get_next_child_resource failed", err );
+                return PASS( err );
 
             }
 
             // =-=-=-=-=-=-=-
-            // determine if the next child exists
-            if( !_ctx.child_map().has_entry( next_child ) ) {
-                std::stringstream msg;
-                msg << "random_redirect - child map has no child by name [";
-                msg << next_child << "]";
-                return PASSMSG( msg.str(), err );
-                    
-            } 
-
-            // =-=-=-=-=-=-=-
-            // get the next_child resource 
-            eirods::resource_ptr resc = _ctx.child_map()[ next_child ].second;
-
-            // =-=-=-=-=-=-=-
-            // forward the 'put' redirect to the appropriate child
-            err = resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-                               _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), _opr, _curr_host, _out_parser, _out_vote );
+            // forward the 'create' redirect to the appropriate child
+            err = resc->call< const std::string*, 
+                              const std::string*, 
+                              eirods::hierarchy_parser*, 
+                              float* >( 
+                      _ctx.comm(), 
+                      eirods::RESOURCE_OP_RESOLVE_RESC_HIER, 
+                      _ctx.fco(), 
+                      _opr, 
+                      _curr_host, 
+                      _out_parser, 
+                      _out_vote );
             if( !err.ok() ) {
-                return PASSMSG( "random_redirect - forward of put redirect failed", err );
+                return PASS( err );
             
             }
 
@@ -718,7 +776,7 @@ extern "C" {
             _out_parser->str( new_hier );
             
             // =-=-=-=-=-=-=-
-            // update the next_child appropriately as the above succeeded
+            // win!
             return SUCCESS();
         }
       
@@ -732,14 +790,38 @@ extern "C" {
     } // random_redirect
 
     // =-=-=-=-=-=-=-
+    // random_file_rebalance - code which would rebalance the subtree
+    eirods::error random_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        return result;
+
+    } // random_file_rebalancec
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
     class random_resource : public eirods::resource {
     public:
-        random_resource( const std::string& _inst_name, 
-                             const std::string& _context ) : 
+        random_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
             //set_start_operation( "random_start_operation" );
         }
@@ -798,6 +880,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "random_file_modified" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "random_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "random_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

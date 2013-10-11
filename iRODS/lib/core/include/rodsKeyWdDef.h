@@ -232,41 +232,41 @@
 
 // =-=-=-=-=-=-=-
 // eirods data_object keyword definitions
-#define PHYSICAL_PATH_KW             "do_physical_path"
-#define MODE_KW                      "do_mode_kw"
-#define FLAGS_KW                     "do_flags_kw"
+#define PHYSICAL_PATH_KW             "physical_path"
+#define MODE_KW                      "mode_kw"
+#define FLAGS_KW                     "flags_kw"
 // borrowed RESC_HIER_STR_KW
 
 // =-=-=-=-=-=-=-
 // eirods file_object keyword definitions
-#define LOGICAL_PATH_KW              "fo_logical_path"
-#define FILE_DESCRIPTOR_KW           "fo_file_descriptor"
-#define L1_DESC_IDX_KW               "fo_l1_desc_idx"
-#define SIZE_KW                      "fo_size"
-#define REPL_REQUESTED_KW            "fo_repl_requested"
+#define LOGICAL_PATH_KW              "logical_path"
+#define FILE_DESCRIPTOR_KW           "file_descriptor"
+#define L1_DESC_IDX_KW               "l1_desc_idx"
+#define SIZE_KW                      "file_size"
+#define REPL_REQUESTED_KW            "repl_requested"
 // borrowed IN_PDMO_KW
 
 // =-=-=-=-=-=-=-
 // eirods structured_object keyword definitions
-#define HOST_ADDR_KW                 "so_host_addr"
-#define ZONE_NAME_KW                 "so_zone_name"
-#define PORT_NUM_KW                  "so_port_num"
-#define SUB_FILE_PATH_KW             "so_sub_file_path"
+#define HOST_ADDR_KW                 "host_addr"
+#define ZONE_NAME_KW                 "zone_name"
+#define PORT_NUM_KW                  "port_num"
+#define SUB_FILE_PATH_KW             "sub_file_path"
 // borrowed OFFSET_KW
 // borrowed DATA_TYPE_KW 
 // borrowed OPR_TYPE_KW      
 
 // =-=-=-=-=-=-=-
 // eirods spec coll keyword definitions
-#define SPEC_COLL_CLASS_KW           "sc_class"
-#define SPEC_COLL_TYPE_KW            "sc_type"
-#define SPEC_COLL_OBJ_PATH_KW        "sc_obj_path"
-#define SPEC_COLL_RESOURCE_KW        "sc_resource"
-#define SPEC_COLL_RESC_HIER_KW       "sc_resc_hier"
-#define SPEC_COLL_PHY_PATH_KW        "sc_phy_path"
-#define SPEC_COLL_CACHE_DIR_KW       "sc_cache_dir"
-#define SPEC_COLL_CACHE_DIRTY        "sc_cache_dirty"
-#define SPEC_COLL_REPL_NUM           "sc_repl_num"
+#define SPEC_COLL_CLASS_KW           "spec_coll_class"
+#define SPEC_COLL_TYPE_KW            "spec_coll_type"
+#define SPEC_COLL_OBJ_PATH_KW        "spec_coll_obj_path"
+#define SPEC_COLL_RESOURCE_KW        "spec_coll_resource"
+#define SPEC_COLL_RESC_HIER_KW       "spec_coll_resc_hier"
+#define SPEC_COLL_PHY_PATH_KW        "spec_coll_phy_path"
+#define SPEC_COLL_CACHE_DIR_KW       "spec_coll_cache_dir"
+#define SPEC_COLL_CACHE_DIRTY        "spec_coll_cache_dirty"
+#define SPEC_COLL_REPL_NUM           "spec_coll_repl_num"
 
 
 

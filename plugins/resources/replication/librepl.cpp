@@ -11,6 +11,7 @@
 #include "reGlobalsExtern.h"
 #include "rodsLog.h"
 #include "icatHighLevelRoutines.h"
+#include "dataObjRepl.h"
 
 // =-=-=-=-=-=-=-
 // eirods includes
@@ -27,6 +28,9 @@
 #include "eirods_replicator.h"
 #include "eirods_create_write_replicator.h"
 #include "eirods_unlink_replicator.h"
+#include "eirods_hierarchy_parser.h"
+#include "eirods_resource_redirect.h"
+#include "eirods_repl_rebalance.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -36,6 +40,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <boost/lexical_cast.hpp>
 
 // =-=-=-=-=-=-=-
 // system includes
@@ -88,6 +93,10 @@ eirods::error replCheckParams(
 }
 
 extern "C" {
+    /// =-=-=-=-=-=-=-
+    /// @brief limit of the number of repls to operation upon during rebalance
+    const int DEFAULT_LIMIT = 500;
+
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
     //    calls declared in server/driver/include/fileDriver.h
@@ -189,25 +198,17 @@ extern "C" {
                     mismatched = true;
                 }
             }
-            if(mismatched) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Existing object's operation \"" << oper.operation() << "\"";
-                msg << " does not match current operation \"" << _oper << "\"";
-                result = ERROR(-1, msg.str());
-            }
+            result = ASSERT_ERROR(!mismatched, EIRODS_INVALID_OPERATION,
+                                  "Existing object operation: \"%s\" does not match current operation: \"%s\".",
+                                  oper.operation().c_str(), _oper.c_str());
         } else {
             oper.object() = *(file_obj.get());
             oper.operation() = _oper;
-            object_list.push_back(oper);
-            ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to set the object list property on the resource.";
-                result = PASSMSG(msg.str(), ret);
-            }
+            // object_list.push_back(oper);
+            // ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+            // result = ASSERT_PASS(ret, "Failed to set the object list property on the resource.");
         }
+
         return result;
     }
 
@@ -344,28 +345,35 @@ extern "C" {
                     result = PASSMSG(msg.str(), ret);
                 } else if(false) { // We no longer replicate unlink operations. Too dangerous deleting user data. Plus hopefully the
                                    // API handles this. - harry
-                    // create an unlink replicator
-                    eirods::unlink_replicator oper_repl;
-                    
-                    // create a replicator
-                    eirods::replicator replicator(&oper_repl);
-                    
-                    // call replicate
-                    ret = replicator.replicate(_ctx, child_list, object_list);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to replicate the unlink operation to the siblings.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
 
-                        // update the object list in the properties
-                        ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+                    // Get the name of the current resource
+                    std::string current_resc;
+                    ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_resc);
+                    if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
+                    
+                        // create an unlink replicator
+                        eirods::unlink_replicator oper_repl(child, current_resc);
+                    
+                        // create a replicator
+                        eirods::replicator replicator(&oper_repl);
+                    
+                        // call replicate
+                        ret = replicator.replicate(_ctx, child_list, object_list);
                         if(!ret.ok()) {
                             std::stringstream msg;
                             msg << __FUNCTION__;
-                            msg << " - Failed to update the object list in the properties.";
+                            msg << " - Failed to replicate the unlink operation to the siblings.";
                             result = PASSMSG(msg.str(), ret);
+                        } else {
+
+                            // update the object list in the properties
+                            ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+                            if(!ret.ok()) {
+                                std::stringstream msg;
+                                msg << __FUNCTION__;
+                                msg << " - Failed to update the object list in the properties.";
+                                result = PASSMSG(msg.str(), ret);
+                            }
                         }
                     }
                 }
@@ -384,48 +392,16 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         ret = replCheckParams< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Error found checking passed parameters.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
+        if((result = ASSERT_PASS(ret, "Error checking passed paramters.")).ok()) {
+
             eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast<eirods::file_object >( _ctx.fco() );;
             eirods::hierarchy_parser parser;
             parser.set_string(file_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
+            if((result = ASSERT_PASS(ret, "Failed to get the next resource in hierarchy.")).ok()) {
                 ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_REGISTERED, _ctx.fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    if(false && !file_obj->in_pdmo()) {  // don't do this at register only on close - harry
-                        eirods::error ret1 = replReplicateCreateWrite(_ctx);
-                        if(!ret1.ok()) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to replicate create/write operation for object \"";
-                            msg << file_obj->logical_path();
-                            msg << "\"";
-                            eirods::log(LOG_NOTICE, msg.str());
-                            // result = PASSMSG(msg.str(), ret1);
-                            result = CODE(ret.code());
-                        } else {
-                            result = CODE(ret.code());
-                        }
-                    } else {
-                        result = CODE(ret.code());
-                    }
-                }
+                result = ASSERT_PASS(ret, "Failed while calling child operation.");
             }
         }
         return result;
@@ -474,46 +450,29 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
         ret = replCheckParams< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Error found checking passed parameters.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
+        if((result = ASSERT_PASS(ret, "Error checking passed parameters.")).ok()) {
+            
             eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast<eirods::file_object >(_ctx.fco());
             eirods::hierarchy_parser parser;
             parser.set_string(file_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
+            if((result = ASSERT_PASS(ret, "Failed to get the next resource in hierarchy.")).ok()) {
+                
                 ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_MODIFIED, _ctx.fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    if(!file_obj->in_pdmo()) {
-                        eirods::error ret1 = replReplicateCreateWrite(_ctx);
-                        if(!ret1.ok()) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to replicate create/write operation for object \"";
-                            msg << file_obj->logical_path();
-                            msg << "\"";
-                            eirods::log(LOG_NOTICE, msg.str());
-                            // result = PASSMSG(msg.str(), ret1);
-                            result = CODE(ret.code());
-                        } else {
-                            result = CODE(ret.code());
+                if((result = ASSERT_PASS(ret, "Failed while calling child operation.")).ok()) {
+                    
+                    eirods::hierarchy_parser sub_parser;
+                    sub_parser.set_string(file_obj->in_pdmo());
+                    std::string name;
+                    ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
+                    if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
+                        
+                        if(!sub_parser.resc_in_hier(name)) {
+                            ret = replReplicateCreateWrite(_ctx);
+                            result = ASSERT_PASS(ret, "Failed to replicate create/write operation for object: \"%s\".",
+                                                 file_obj->logical_path().c_str());
                         }
-                    } else {
-                        result = CODE(ret.code());
                     }
                 }
             }
@@ -703,48 +662,17 @@ extern "C" {
         eirods::error ret;
         
         ret = replCheckParams< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - bad params.";
-            result = PASSMSG(msg.str(), ret);
-        } else {
+        if((result = ASSERT_PASS(ret, "Bad params.")).ok()) {
+
             eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast<eirods::file_object >(_ctx.fco());
             eirods::hierarchy_parser parser;
             parser.set_string(file_obj->resc_hier());
             eirods::resource_ptr child;
             ret =replGetNextRescInHier(parser, _ctx, child);
-            if(!ret.ok()) {
-                std::stringstream msg;
-                msg << __FUNCTION__;
-                msg << " - Failed to get the next resource in hierarchy.";
-                result = PASSMSG(msg.str(), ret);
-            } else {
+            if((result = ASSERT_PASS(ret, "Failed to get the next resource in hierarchy.")).ok()) {
+
                 ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_CLOSE, _ctx.fco());
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed while calling child operation.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
-                    if(false && !file_obj->in_pdmo()) {
-                        eirods::error ret1 = replReplicateCreateWrite(_ctx);
-                        if(!ret1.ok()) {
-                            std::stringstream msg;
-                            msg << __FUNCTION__;
-                            msg << " - Failed to replicate create/write operation for object \"";
-                            msg << file_obj->logical_path();
-                            msg << "\"";
-                            eirods::log(LOG_NOTICE, msg.str());
-                            // result = PASSMSG(msg.str(), ret1);
-                            result = CODE(ret.code());
-                        } else {
-                            result = CODE(ret.code());
-                        }
-                    } else {
-                        result = CODE(ret.code());
-                    }
-                }
+                result = ASSERT_PASS(ret, "Failed while calling child operation.");
             }
         }
         return result;
@@ -1137,6 +1065,47 @@ extern "C" {
         return result;
     } // replFileRename
 
+     // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error replFileTruncate(
+        eirods::resource_plugin_context& _ctx)
+    {
+        // =-=-=-=-=-=-=-
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+
+        ret = replCheckParams<eirods::file_object>(_ctx);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__;
+            msg << " - bad params.";
+            result = PASSMSG(msg.str(), ret);
+        } else {
+            eirods::file_object_ptr ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            eirods::hierarchy_parser parser;
+            parser.set_string(ptr->resc_hier());
+            eirods::resource_ptr child;
+            ret =replGetNextRescInHier(parser, _ctx, child);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to get the next resource in hierarchy.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco());
+                if(!ret.ok()) {
+                    std::stringstream msg;
+                    msg << __FUNCTION__;
+                    msg << " - Failed while calling child operation.";
+                    result = PASSMSG(msg.str(), ret);
+                } else {
+                    result = CODE(ret.code());
+                }
+            }
+        }
+        return result;
+    } // replFileTruncate
+
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error replFileGetFsFreeSpace(
@@ -1183,7 +1152,7 @@ extern "C" {
     // is not used.
     eirods::error replStageToCache(
         eirods::resource_plugin_context& _ctx,
-        const char*                    _cache_file_name )
+        const char*                      _cache_file_name )
     { 
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1206,15 +1175,13 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_FREESPACE, _ctx.fco());
+                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco());
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
-                } else {
-                    result = CODE(ret.code());
-                }
+                } 
             }
         }
         return result;
@@ -1368,14 +1335,9 @@ extern "C" {
         it = _redirect_map.begin();
         float vote = it->first;
         eirods::hierarchy_parser parser = it->second;
-        if(vote == 0.0) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - No valid child resource found for file.";
-            result = ERROR(-1, msg.str());
-        } else {
-            *_out_parser = parser;
-            *_out_vote = vote;
+        *_out_parser = parser;
+        *_out_vote = vote;
+        if(vote != 0.0) {
             ret = replCreateChildReplList(_ctx, _redirect_map);
             if(!ret.ok()) {
                 std::stringstream msg;
@@ -1484,6 +1446,110 @@ extern "C" {
     }
 
     // =-=-=-=-=-=-=-
+    // replRebalance - code which would rebalance the subtree
+    eirods::error replRebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children first, then
+        // rebalance ourselves.
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        // =-=-=-=-=-=-=-
+        // if our children had errors, then we bail
+        if( !result.ok() ) {
+            return result;
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the property 'name' of this resource
+        std::string resc_name;
+        eirods::error ret = _ctx.prop_map().get< std::string >( 
+                                eirods::RESOURCE_NAME, 
+                                resc_name );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract the number of children -> num replicas
+        int num_children = _ctx.child_map().size();
+
+        // =-=-=-=-=-=-=-
+        // build a set of children for comparison
+        std::vector< std::string > children;
+        eirods::resource_child_map::iterator c_itr = _ctx.child_map().begin();
+        for( c_itr  = _ctx.child_map().begin();
+             c_itr != _ctx.child_map().end();
+             ++c_itr ) {
+            children.push_back( c_itr->first );
+        }
+
+        // =-=-=-=-=-=-=-
+        // determine limit size
+        int limit = DEFAULT_LIMIT;
+        if( !_ctx.rule_results().empty() ) {
+            limit = boost::lexical_cast<int>( _ctx.rule_results() );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // iterate over 'limit' results from icat until none are left
+        int status = 0;
+        while( 0 == status ) {
+            // =-=-=-=-=-=-=-
+            // request the list from the icat
+            repl_query_result_t results;
+            status = chlGetDataObjsOnResourceForLimitAndNumChildren(  
+                             resc_name,
+                             num_children,
+                             limit,
+                             results );
+            repl_query_result_t::iterator r_itr = results.begin();
+            for( ; r_itr != results.end(); ++r_itr ) {
+                // =-=-=-=-=-=-=-
+                // check object results for this entry, if empty continue
+                if( r_itr->second.empty() ) {
+                    // =-=-=-=-=-=-=-
+                    // no copies exist on the resource, error for sure
+                    std::stringstream msg;
+                    msg << "object results is empty for data object [";
+                    msg << r_itr->first << "]";
+                    return ERROR( -1, msg.str() );
+                }
+         
+                // =-=-=-=-=-=-=-
+                // if the results are not empty call our processing function
+                eirods::error ret = eirods::proc_result_for_rebalance(
+                                        _ctx.comm(),     // comm object
+                                        r_itr->first,    // object path
+                                        resc_name,       // this resc name
+                                        children,        // full child list
+                                        r_itr->second ); // obj results with 
+                                                         // hiers + modes
+                if( !ret.ok() ) {
+                    return PASS( ret );
+                }
+
+            } // for r_itr
+
+        } // while 
+
+        return SUCCESS();
+
+    } // replRebalance
+
+    // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
@@ -1492,31 +1558,9 @@ extern "C" {
 
     public:
         repl_resource(
-            const std::string _inst_name,
+            const std::string& _inst_name,
             const std::string& _context ) : 
-            eirods::resource( _inst_name, _context )
-            {
-                // =-=-=-=-=-=-=-
-                // parse context string into property pairs assuming a ; as a separator
-                std::vector< std::string > props;
-                eirods::string_tokenize( _context, ";", props );
-                
-                // =-=-=-=-=-=-=-
-                // parse key/property pairs using = as a separator and
-                // add them to the property list
-                std::vector< std::string >::iterator itr = props.begin();
-                for( ; itr != props.end(); ++itr ) {
-                    // =-=-=-=-=-=-=-
-                    // break up key and value into two strings
-                    std::vector< std::string > vals;
-                    eirods::string_tokenize( *itr, "=", vals );
-                    
-                    // =-=-=-=-=-=-=-
-                    // break up key and value into two strings
-                    properties_[ vals[0] ] = vals[1];
-                        
-                } // for itr 
-
+            eirods::resource( _inst_name, _context ) {
             } // ctor
 
         eirods::error post_disconnect_maintenance_operation(
@@ -1554,27 +1598,29 @@ extern "C" {
         // 4b. map function names to operations.  this map will be used to load
         //     the symbols from the shared object in the delay_load stage of
         //     plugin loading.
-        resc->add_operation( eirods::RESOURCE_OP_CREATE,       "replFileCreate" );
-        resc->add_operation( eirods::RESOURCE_OP_OPEN,         "replFileOpen" );
-        resc->add_operation( eirods::RESOURCE_OP_READ,         "replFileRead" );
-        resc->add_operation( eirods::RESOURCE_OP_WRITE,        "replFileWrite" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSE,        "replFileClose" );
-        resc->add_operation( eirods::RESOURCE_OP_UNLINK,       "replFileUnlink" );
-        resc->add_operation( eirods::RESOURCE_OP_STAT,         "replFileStat" );
-        resc->add_operation( eirods::RESOURCE_OP_MKDIR,        "replFileMkdir" );
-        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "replFileOpendir" );
-        resc->add_operation( eirods::RESOURCE_OP_READDIR,      "replFileReaddir" );
-        resc->add_operation( eirods::RESOURCE_OP_RENAME,       "replFileRename" );
-        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "replFileGetFsFreeSpace" );
-        resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "replFileLseek" );
-        resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "replFileRmdir" );
-        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "replFileClosedir" );
-        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "replStageToCache" );
-        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "replSyncToArch" );
-        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "replRedirect" );
-        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "replFileRegistered" );
-        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "replFileUnregistered" );
-        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "replFileModified" );
+        resc->add_operation( eirods::RESOURCE_OP_CREATE,            "replFileCreate" );
+        resc->add_operation( eirods::RESOURCE_OP_OPEN,              "replFileOpen" );
+        resc->add_operation( eirods::RESOURCE_OP_READ,              "replFileRead" );
+        resc->add_operation( eirods::RESOURCE_OP_WRITE,             "replFileWrite" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSE,             "replFileClose" );
+        resc->add_operation( eirods::RESOURCE_OP_UNLINK,            "replFileUnlink" );
+        resc->add_operation( eirods::RESOURCE_OP_STAT,              "replFileStat" );
+        resc->add_operation( eirods::RESOURCE_OP_MKDIR,             "replFileMkdir" );
+        resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "replFileOpendir" );
+        resc->add_operation( eirods::RESOURCE_OP_READDIR,           "replFileReaddir" );
+        resc->add_operation( eirods::RESOURCE_OP_RENAME,            "replFileRename" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,          "replFileTruncate" );
+        resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "replFileGetFsFreeSpace" );
+        resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "replFileLseek" );
+        resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "replFileRmdir" );
+        resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,          "replFileClosedir" );
+        resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE,      "replStageToCache" );
+        resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,        "replSyncToArch" );
+        resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "replRedirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "replFileRegistered" );
+        resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "replFileUnregistered" );
+        resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "replFileModified" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "replRebalance" );
         
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

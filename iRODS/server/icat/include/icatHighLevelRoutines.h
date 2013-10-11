@@ -15,6 +15,10 @@
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
 
+#include <string>
+#include <vector>
+#include <map>
+
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
 int chlIsConnected();
@@ -176,6 +180,22 @@ int chlUpdateIrodsPamPassword(rsComm_t *rsComm, char *userName,
 
 eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count);
 
-int chlSubstituteResourceHierarchies(rsComm_t *rsComm, char *oldHier, char *newHier);
+int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier);
+
+// =-=-=-=-=-=-=-
+// typedefs and prototype for query used for rebalancing operation
+typedef std::vector< std::pair< std::string, int > > repl_obj_result_t;
+typedef std::map< std::string, repl_obj_result_t >   repl_query_result_t;
+int chlGetDataObjsOnResourceForLimitAndNumChildren( 
+    const std::string&   _resc_name,
+    int                  _num_children,
+    int                  _limit,
+    repl_query_result_t& _results );
+
+int chlResolveResourceHierarchy(
+		const std::string&	resc_name,
+		const std::string&	zone_name,
+		std::string& hierarchy);
+
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

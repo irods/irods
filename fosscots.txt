@@ -16,8 +16,8 @@ c
 c++
 perl
 boost
-libarchive
 doxygen
+libarchive
 restructuredtext
 postgresql
 unixodbc

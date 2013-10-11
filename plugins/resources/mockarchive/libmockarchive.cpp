@@ -588,6 +588,16 @@ extern "C" {
     } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
+    // interface to truncate a given data object
+    eirods::error mock_archive_truncate_plugin( 
+        eirods::resource_plugin_context& _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "truncate not supported" );
+
+    } // mock_archive_truncate_plugin
+
+    // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error mock_archive_get_fsfreespace_plugin( 
         eirods::resource_plugin_context& _ctx ) { 
@@ -987,7 +997,15 @@ extern "C" {
     } // mock_archive_redirect_plugin
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // mock_archive_file_rebalance - code which would rebalance the subtree
+    eirods::error mock_archive_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // mock_archive_file_rebalancec
+
+    // =-=-=-=-=-=-=-
+    // 3. create derived class to handle mock_archive file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
@@ -1024,39 +1042,6 @@ extern "C" {
         mockarchive_resource( const std::string& _inst_name, 
                               const std::string& _context ) : 
             eirods::resource( _inst_name, _context ) {
-
-            if( !context_.empty() ) {
-                // =-=-=-=-=-=-=-
-                // tokenize context string into key/val pairs assuming a ; as a separator
-                std::vector< std::string > key_vals;
-                eirods::string_tokenize( _context, ";", key_vals );
-
-                // =-=-=-=-=-=-=-
-                // tokenize each key/val pair using = as a separator and
-                // add them to the property list
-                std::vector< std::string >::iterator itr = key_vals.begin();
-                for( ; itr != key_vals.end(); ++itr ) {
-
-                    if( !itr->empty() ) {
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        std::vector< std::string > vals;
-                        eirods::string_tokenize( *itr, "=", vals );
-                        
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        if( vals.size() == 2 ) {
-                            properties_[ vals[0] ] = vals[1];
-                        } else {
-                            // this would be an error case  
-                        }
-
-                    } // if key_val not empty
-                
-                } // for itr 
-            
-            } // if context not empty
-
         } // ctor
 
 
@@ -1117,6 +1102,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "mock_archive_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "mock_archive_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "mock_archive_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "mock_archive_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );
@@ -1125,6 +1111,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "mock_archive_modified_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "mock_archive_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "mock_archive_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

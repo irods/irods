@@ -20,6 +20,10 @@ struct Breakpoint {
 
 int breakPointsInx = 0;
 
+int reDebugPCType(RuleEngineEvent label);
+void printRuleEngineEventLabel(char buf[], size_t n, RuleEngineEvent label, RuleEngineEventParam *param);
+
+
 void disableReDebugger(int grdf[2]) {
 	  grdf[0] = GlobalREAuditFlag;
 	  grdf[1] = GlobalREDebugFlag;
@@ -76,9 +80,8 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
     for (i = 0; i < REDEBUG_STACK_SIZE_FULL; i++) 
       reDebugStackFull[i] = NULL;
     for (i = 0; i < REDEBUG_STACK_SIZE_CURR; i++) {
-      reDebugStackCurr[i][0] = NULL;
-      reDebugStackCurr[i][1] = NULL;
-      reDebugStackCurr[i][2] = NULL;
+      reDebugStackCurr[i].label = -1;
+      reDebugStackCurr[i].step = NULL;
     }
     memset(breakPoints, 0, sizeof(struct Breakpoint) * 100);
 
@@ -97,19 +100,19 @@ int initializeReDebug(rsComm_t *svrComm, int flag)
 
 int processXMsg(int streamId, int *msgNum, int *seqNum, 
 		char * readhdr, char *readmsg, 
-		char *callLabel, Node *node,
+		RuleEngineEvent label, RuleEngineEventParam *param, Node *node,
 		Env *env, int curStat, ruleExecInfo_t *rei)
 {
 
   char myhdr[HEADER_TYPE_LEN];
   char mymsg[MAX_NAME_LEN];
   char *outStr = NULL;
-  char *ptr = 0;
-  int i = 0,n = 0;
-  int iLevel = 0, wCnt = 0;
+  char *ptr;
+  int i,n;
+  int iLevel, wCnt;
   int  ruleInx = 0;
-  Region *r = 0;
-    Res *res = 0;
+  Region *r;
+    Res *res;
     rError_t errmsg;
 	errmsg.len = 0;
 	errmsg.errMsg = NULL;
@@ -117,10 +120,11 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 	ParserContext *context = newParserContext(&errmsg, r);
 	Pointer *e = newPointer2(readmsg);
 	int rulegen = 1;
-    int found = 0;
+    int found;
     int grdf[2];
     int cmd = 0;
-    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+    int smallW;
+    snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",param->actionName);
     PARSER_BEGIN(DbgCmd)
 		TRY(DbgCmd)
 			TTEXT2("n", "next");
@@ -222,7 +226,13 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 			END_TRY(Param)
 
 		OR(DbgCmd)
-			TTEXT2("w", "where");
+			TRY(Where)
+				TTEXT2("w", "where");
+				smallW=1;
+			OR(Where)
+				TTEXT2("W", "Where");
+				smallW=0;
+			END_TRY(Where)
 			wCnt = 20;
 			OPTIONAL_BEGIN(Param)
 				TTYPE(TK_INT);
@@ -231,14 +241,15 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 			iLevel = 0;
 
 			i = reDebugStackCurrPtr - 1;
-			while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
-				if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL || strstr(reDebugStackCurr[i][0] , "ExecMicroSrvc") != NULL || strstr(reDebugStackCurr[i][0] , "ExecRule") != NULL) {
+			while (i >=0 && wCnt > 0) {
+				if (!smallW || (reDebugPCType((RuleEngineEvent) reDebugStackCurr[i].label) & 1) != 0) {
 					snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
-					char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
-					sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
+					char msg[HEADER_TYPE_LEN - 1];
+					RuleEngineEventParam param;
+					param.actionName = reDebugStackCurr[i].step;
+					printRuleEngineEventLabel(msg, HEADER_TYPE_LEN - 1, (RuleEngineEvent) reDebugStackCurr[i].label, &param);
 					_writeXMsg(streamId,  myhdr, msg);
-					free(msg);
-					if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
+					if (reDebugStackCurr[i].label != EXEC_ACTION_BEGIN)
 						iLevel++;
 					wCnt--;
 				}
@@ -415,28 +426,6 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 
 			cmd = REDEBUG_WAIT;
 		OR(DbgCmd)
-			TTEXT2("W", "Where");
-			wCnt = 20;
-			OPTIONAL_BEGIN(Param)
-				TTYPE(TK_INT);
-				wCnt = atoi(token->text);
-			OPTIONAL_END(Param)
-			iLevel = 0;
-
-			i = reDebugStackCurrPtr - 1;
-			while (i >=0 && wCnt > 0 && reDebugStackCurr[i][0] != NULL) {
-				snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug: Level %3i",iLevel);
-				char *msg = (char *) malloc(strlen(reDebugStackCurr[i][0]) + strlen(reDebugStackCurr[i][1]) + strlen(reDebugStackCurr[i][2])+4);
-				sprintf(msg, "%s:%s: %s", reDebugStackCurr[i][0], reDebugStackCurr[i][1], reDebugStackCurr[i][2]);
-				_writeXMsg(streamId,  myhdr, msg);
-				free(msg);
-				if (strstr(reDebugStackCurr[i][0] , "ExecAction") != NULL)
-					iLevel++;
-				wCnt--;
-				i--;
-			}
-			cmd = REDEBUG_WAIT;
-		OR(DbgCmd)
 			TTEXT2("d", "discontinue");
 			cmd = REDEBUG_WAIT;
 		OR(DbgCmd)
@@ -453,7 +442,7 @@ int processXMsg(int streamId, int *msgNum, int *seqNum,
 
 int
 processBreakPoint(int streamId, int *msgNum, int *seqNum,
-		  char *callLabel, char *actionStr, Node *node,
+		  RuleEngineEvent label, RuleEngineEventParam *param, Node *node,
 		  Env *env, int curStat, ruleExecInfo_t *rei)
 {
 
@@ -461,7 +450,7 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
   char myhdr[HEADER_TYPE_LEN];
   char mymsg[MAX_NAME_LEN];
 
-  snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+  snprintf(myhdr, HEADER_TYPE_LEN - 1,   "idbug:%s",param->actionName);
 
 
   if (breakPointsInx > 0) {
@@ -469,7 +458,7 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
     	if (breakPoints[i].actionName!=NULL) {
     		int len = strlen(breakPoints[i].actionName);
 
-       if(strncmp(actionStr, breakPoints[i].actionName, len) == 0 && !isalnum(actionStr[len])) {
+       if(strncmp(param->actionName, breakPoints[i].actionName, len) == 0) {
     	  if(breakPoints[i].base != NULL &&
     		  (node == NULL || node->expr < breakPoints[i].start || node->expr >= breakPoints[i].finish ||
     				  strcmp(node->base, breakPoints[i].base)!=0)) {
@@ -479,7 +468,7 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
     	  snprintf(buf,MAX_NAME_LEN, "Breaking at BreakPoint %i:%s\n", i , breakPoints[i].actionName);
     	  generateErrMsg(buf, node->expr, node->base, mymsg);
     	  _writeXMsg(streamId, myhdr, mymsg);
-    	  snprintf(mymsg,MAX_NAME_LEN, "%s\n", actionStr);
+    	  snprintf(mymsg,MAX_NAME_LEN, "%s\n", param->actionName);
     	  _writeXMsg(streamId, myhdr, mymsg);
     	  curStat = REDEBUG_WAIT;
     	  return(curStat);
@@ -491,13 +480,9 @@ processBreakPoint(int streamId, int *msgNum, int *seqNum,
 }
 
 
-int
-storeInStack(char *hdr, char *action, char* step)
-{
   /* char *stackStr;
   char *stackStr2;
   char *s; */
-  int i;
 
 
   /*stackStr = (char *) malloc(strlen(hdr) + strlen(step) + 5);
@@ -515,42 +500,34 @@ storeInStack(char *hdr, char *action, char* step)
     free(reDebugStackFull[i]);
     reDebugStackFull[i] = NULL;
   }*/
+int
+popReStack(RuleEngineEvent label, char* step)
+{
 
-  if (strcmp(action,"Done") == 0) { /* Pop the stack */
+	  int i;
       i = reDebugStackCurrPtr - 1;
-      /* if (i < 0)
-    	  i = REDEBUG_STACK_SIZE_CURR - 1; */
-      while (i >= 0 && reDebugStackCurr[i] != NULL && strcmp(reDebugStackCurr[i][0] , hdr) != 0) {
-    	  free(reDebugStackCurr[i][0]);
-    	  free(reDebugStackCurr[i][1]);
-    	  free(reDebugStackCurr[i][2]);
-    	  reDebugStackCurr[i][0] = NULL;
-    	  reDebugStackCurr[i][1] = NULL;
-    	  reDebugStackCurr[i][2] = NULL;
+      while (i >= 0 && (reDebugStackCurr[i].label != label || strcmp(reDebugStackCurr[i].step, step) != 0)) {
+    	  free(reDebugStackCurr[i].step);
+    	  reDebugStackCurr[i].step = NULL;
+    	  reDebugStackCurr[i].label = -1;
     	  i = i - 1;
-    	  /*if (i < 0)
-    		  i = REDEBUG_STACK_SIZE_CURR - 1; */
       }
-      /*if (reDebugStackCurr[i] != NULL) {
-      free(reDebugStackCurr[i]);
-      reDebugStackCurr[i] = NULL;
-      }*/
       reDebugStackCurrPtr = i;
       return(0);
-  } else {
+}
 
+int
+pushReStack(RuleEngineEvent label, char* step)
+{
+
+	  int i;
 	  i = reDebugStackCurrPtr;
-	  /*if (reDebugStackCurr[i] != NULL) {
-		  free(reDebugStackCurr[i]);
-	  }*/
 	  if(i < REDEBUG_STACK_SIZE_CURR) {
-		  reDebugStackCurr[i][0] = strdup(hdr);
-		  reDebugStackCurr[i][1] = strdup(action);
-		  reDebugStackCurr[i][2] = strdup(step);
+		  reDebugStackCurr[i].label = label;
+		  reDebugStackCurr[i].step = strdup(step);
 		  reDebugStackCurrPtr = i + 1;
 	  }
 	  return(0);
-  }
 }
 
 
@@ -561,13 +538,10 @@ int sendWaitXMsg (int streamId) {
 int cleanUpDebug(int streamId) {
   int i;
   for (i = 0 ; i < REDEBUG_STACK_SIZE_CURR; i++) {
-    if (reDebugStackCurr[i] != NULL) {
-      free(reDebugStackCurr[i][0]);
-      free(reDebugStackCurr[i][1]);
-      free(reDebugStackCurr[i][2]);
-      reDebugStackCurr[i][0] = NULL;
-      reDebugStackCurr[i][1] = NULL;
-      reDebugStackCurr[i][2] = NULL;
+    if (reDebugStackCurr[i].step != NULL) {
+      free(reDebugStackCurr[i].step);
+      reDebugStackCurr[i].step = NULL;
+      reDebugStackCurr[i].label = -1;
     }
   }
   for (i = 0 ; i < REDEBUG_STACK_SIZE_FULL; i++) {
@@ -582,9 +556,84 @@ int cleanUpDebug(int streamId) {
   return(0);
 }
 
+void printRuleEngineEventLabel(char buf[], size_t n, RuleEngineEvent label, RuleEngineEventParam *param) {
+	switch(label) {
+	case EXEC_RULE_BEGIN:
+		snprintf(buf, n, "ExecRule:%s", param->actionName);
+		break;
+	case EXEC_RULE_END:
+		snprintf(buf, n, "ExecRule Done:%s", param->actionName);
+		break;
+	case EXEC_ACTION_BEGIN:
+		snprintf(buf, n, "ExecAction:%s", param->actionName);
+		break;
+	case EXEC_ACTION_END:
+		snprintf(buf, n, "ExecAction Done:%s", param->actionName);
+		break;
+	case EXEC_MICRO_SERVICE_BEGIN:
+		snprintf(buf, n, "ExecMicroSvrc:%s", param->actionName);
+		break;
+	case EXEC_MICRO_SERVICE_END:
+		snprintf(buf, n, "ExecMicroSvrc Done:%s", param->actionName);
+		break;
+	case GOT_RULE:
+		snprintf(buf, n, "GotRule:%s:%d", param->actionName, param->ruleIndex);
+		break;
+	case APPLY_RULE_BEGIN:
+		snprintf(buf, n, "ApplyRule:%s", param->actionName);
+		break;
+	case APPLY_RULE_END:
+		snprintf(buf, n, "ApplyRule Done:%s", param->actionName);
+		break;
+	case APPLY_ALL_RULES_BEGIN:
+		snprintf(buf, n, "ApplyAllRules:%s", param->actionName);
+		break;
+	case APPLY_ALL_RULES_END:
+		snprintf(buf, n, "ApplyAllRules Done:%s", param->actionName);
+		break;
+	case EXEC_MY_RULE_BEGIN:
+		snprintf(buf, n, "ExecMyRule:%s", param->actionName);
+		break;
+	case EXEC_MY_RULE_END:
+		snprintf(buf, n, "ExecMyRule Done:%s", param->actionName);
+		break;
+	}
+}
+int reDebugPCType(RuleEngineEvent label) {
+	switch(label) {
+	case EXEC_RULE_BEGIN:
+	case EXEC_ACTION_BEGIN:
+	case EXEC_MICRO_SERVICE_BEGIN:
+	case APPLY_RULE_BEGIN:
+	case APPLY_ALL_RULES_BEGIN:
+	case EXEC_MY_RULE_BEGIN:
+		return 1;
+	case EXEC_RULE_END:
+	case EXEC_ACTION_END:
+	case EXEC_MICRO_SERVICE_END:
+	case APPLY_RULE_END:
+	case APPLY_ALL_RULES_END:
+	case EXEC_MY_RULE_END:
+		return 2;
+	case GOT_RULE:
+		return 0;
+	}
+	return -1;
+}
+/*
+ * label type of rule engine event
+ * flag -4 log rei
+ *      otherwise do not log rei
+ * action
+ *
+ */
 int
-reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, Env *env, ruleExecInfo_t *rei)
+reDebug(RuleEngineEvent label, int flag, RuleEngineEventParam *param, Node *node, Env *env, ruleExecInfo_t *rei)
 {
+	/* do not log anything if logging is turned off */
+	if(ruleEngineConfig.logging == 0) {
+		return 0;
+	}
   int i, m, s, status, sleepT, j;
   int processedBreakPoint = 0;
   char hdr[HEADER_TYPE_LEN];
@@ -596,7 +645,7 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
   static int sNum = 0;
   static int curStat = 0; 
   static int reDebugStackPtr = -1;
-  static char *reDebugAction = NULL;
+  static int reDebugStopAt = 1;
   char condRead[MAX_NAME_LEN];
   char myActionStr[10][MAX_NAME_LEN + 10];
   int aNum = 0;
@@ -605,19 +654,22 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
   rsComm_t *svrComm;
   int waitCnt = 0;
   sleepT = 1;
+  char buf[HEADER_TYPE_LEN - 1];
+
   svrComm = rei->rsComm;
 
   if (svrComm == NULL) {
     rodsLog(LOG_ERROR, "Empty svrComm in REI structure for actionStr=%s\n",
-	    actionStr);
+	    param->actionName);
     return(0);
   }
 
   generateLogTimestamp(timestamp, TIME_LEN);
-  snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s:%s", timestamp, callLabel);
+  printRuleEngineEventLabel(buf,HEADER_TYPE_LEN - 1, label, param);
+  snprintf(hdr, HEADER_TYPE_LEN - 1,   "iaudit:%s", timestamp);
   condRead[0] = '\0'; 
   /* rodsLog (LOG_NOTICE,"PPP:%s\n",hdr); */
-  snprintf(seActionStr, MAX_NAME_LEN + 10, "%s:%s", action, actionStr);
+  snprintf(seActionStr, MAX_NAME_LEN + 10, "%s", buf);
   if (GlobalREAuditFlag > 0) {
     if (flag == -4) {
       if (rei->uoic != NULL && rei->uoic->userName != NULL && rei->uoic->rodsZone != NULL) {
@@ -670,18 +722,20 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 
     /* Send current position for debugging */
     if ( GlobalREDebugFlag > 5 ) {
-		/* store in stack */
-		storeInStack(callLabel, action, actionStr);
+		/* modify stack */
+    	int pcType = reDebugPCType(label);
+    	if((pcType & 1) != 0) {
+    		pushReStack(label, param->actionName);
+    	} else if ((pcType & 2) != 0) {
+    		popReStack(label, param->actionName);
+    	}
 
-		if (curStat == REDEBUG_CONTINUE && reDebugStackCurrPtr <= reDebugStackPtr && strcmp(action, reDebugAction) == 0) {
+		if (curStat == REDEBUG_CONTINUE && reDebugStackCurrPtr <= reDebugStackPtr && (reDebugPCType(label) & reDebugStopAt) != 0) {
 			curStat = REDEBUG_WAIT;
 		}
 		if (curStat != REDEBUG_CONTINUE) {
-			char *buf = (char *)malloc(strlen(action)+strlen(actionStr)+2);
-			sprintf(buf, "%s:%s", action, actionStr);
-			snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+			snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",param->actionName);
 			i = _writeXMsg(GlobalREDebugFlag, hdr, buf);
-			free(buf);
 		}
 
 		while ( GlobalREDebugFlag > 5 ) {
@@ -703,7 +757,7 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 			if (status  >= 0) {
 				rodsLog (LOG_NOTICE,"Getting XMsg:%i:%s:%s\n", s,readhdr, readmsg);
 				curStat = processXMsg(GlobalREDebugFlag, &m, &s, readhdr, readmsg,
-						callLabel,node,
+						label,param, node,
 						env, curStat, rei);
 				if (readhdr != NULL)
 					free(readhdr);
@@ -721,13 +775,13 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 				} else
 				if(curStat == REDEBUG_STEP_OVER) {
 					reDebugStackPtr = reDebugStackCurrPtr;
-					reDebugAction = "";
+					reDebugStopAt = 1;
 					curStat = REDEBUG_CONTINUE;
 					break;
 				} else
 				if(curStat == REDEBUG_STEP_OUT) {
 					reDebugStackPtr = reDebugStackCurrPtr - 1;
-					reDebugAction = "Done";
+					reDebugStopAt = 2;
 					curStat = REDEBUG_CONTINUE;
 					break;
 				} else
@@ -757,10 +811,8 @@ reDebug(char *callLabel, int flag, char *action, char *actionStr, Node *node, En
 			if (curStat == REDEBUG_CONTINUE || curStat == REDEBUG_CONTINUE_VERBOSE) {
 				if (processedBreakPoint == 1)
 					break;
-				if(strcmp(action, "") != 0 || strstr(callLabel, "ExecAction")==NULL)
-					break;
 				curStat = processBreakPoint(GlobalREDebugFlag, &m, &s,
-					   callLabel, actionStr, node,
+					   label, param, node,
 					   env, curStat, rei);
 				processedBreakPoint = 1;
 				if (curStat == REDEBUG_WAIT) {

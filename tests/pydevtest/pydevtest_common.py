@@ -27,6 +27,25 @@ def get_lan_ip():
                 pass
     return ip
 
+def get_hostname():
+    return socket.gethostname()
+
+
+def create_directory_of_small_files(directory_name_suffix, file_count):
+    if not os.path.exists(directory_name_suffix):
+        os.mkdir(directory_name_suffix)
+    for i in range(file_count):
+        target = open (("%s/%d" % (directory_name_suffix, i)), 'w')
+        target.write("iglkg3fqfhwpwpo-"+"A"*i)
+        target.close()
+
+def create_local_testfile(filename):
+    filepath = os.path.abspath(filename)
+    f = open(filepath,'wb')
+    f.write("TESTFILE -- ["+filepath+"]")
+    f.close()
+    return filepath
+
 def check_icmd_outputtype(fullcmd,outputtype):
     allowed_outputtypes = ["LIST","EMPTY","ERROR",""]
     if outputtype not in allowed_outputtypes:
@@ -35,17 +54,26 @@ def check_icmd_outputtype(fullcmd,outputtype):
         print "  unknown outputtype requested: ["+outputtype+"]"
         assert False, "hard fail, bad icommand output format requested"
 
+def getiCmdOutput(mysession,fullcmd):
+    parameters = shlex.split(fullcmd) # preserves quoted substrings
+    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
+    if parameters[0] == "iadmin":
+        output = mysession.runAdminCmd(parameters[0],parameters[1:])
+    else:
+        output = mysession.runCmd(parameters[0],parameters[1:])
+    # return output array
+    #   [0] is stdout
+    #   [1] is stderr
+    return output
+
 def getiCmdBoolean(mysession,fullcmd,outputtype="",expectedresults=""):
     result = False # should start as failing, then get set to pass
     parameters = shlex.split(fullcmd) # preserves quoted substrings
     # expectedresults needs to be a list
     if isinstance(expectedresults, str): # converts a string to a list
         expectedresults = [expectedresults]
-    print "running icommand: "+mysession.getUserName()+"["+fullcmd+"]"
-    if parameters[0] == "iadmin":
-        output = mysession.runAdminCmd(parameters[0],parameters[1:])
-    else:
-        output = mysession.runCmd(parameters[0],parameters[1:])
+    # get output from icommand
+    output = getiCmdOutput(mysession,fullcmd)
     # check result listing for expected results
     if (outputtype == "LIST" or outputtype == "ERROR"):
         print "  Expecting "+outputtype+": "+str(expectedresults)

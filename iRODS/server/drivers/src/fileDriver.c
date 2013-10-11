@@ -465,6 +465,35 @@ eirods::error fileGetFsFreeSpace(
 } // fileGetFsFreeSpace
 
 // =-=-=-=-=-=-=-
+// Top Level Interface for Resource Plugin truncate
+eirods::error fileTruncate( 
+    rsComm_t*                      _comm, 
+    eirods::first_class_object_ptr _object ) {
+    // =-=-=-=-=-=-=-
+    // retrieve the resource name given the path
+    eirods::plugin_ptr   ptr;
+    eirods::resource_ptr resc;
+    eirods::error ret_err = _object->resolve( eirods::RESOURCE_INTERFACE, ptr ); 
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to resolve resource", ret_err );
+    }
+
+    // =-=-=-=-=-=-=-
+    // make the call to the "truncate" interface
+    resc    = boost::dynamic_pointer_cast< eirods::resource >( ptr );
+    ret_err = resc->call( _comm, eirods::RESOURCE_OP_TRUNCATE, _object );
+
+    // =-=-=-=-=-=-=-
+    // pass along an error from the interface or return SUCCESS
+    if( !ret_err.ok() ) {
+        return PASSMSG( "failed to call 'truncate'", ret_err );
+    } else {
+        return CODE( ret_err.code() );
+    }
+   
+} // fileTruncate
+
+// =-=-=-=-=-=-=-
 // Top Level Interface for Resource Plugin StageToCache
 eirods::error fileStageToCache( 
     rsComm_t*                      _comm, 

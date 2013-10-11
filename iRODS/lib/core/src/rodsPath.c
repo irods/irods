@@ -235,7 +235,6 @@ parseLocalPath (rodsPath_t *rodsPath)
     return (status);
 }
  
-#ifdef USE_BOOST_FS
 int
 getFileType (rodsPath_t *rodsPath)
 {
@@ -256,43 +255,6 @@ getFileType (rodsPath_t *rodsPath)
 
     return (rodsPath->objType);
 }
-#else   /* USE_BOOST_FS */
-int
-getFileType (rodsPath_t *rodsPath)
-{
-#ifndef windows_platform
-    struct stat statbuf;
-#else
-    struct irodsntstat statbuf;
-#endif
-    int status;
-
-    /* XXXX need to use lstat to follow symbolic link. to be done later. 
-     * also needs to call symlink to get the real path */
-#ifndef windows_platform
-    status = stat (rodsPath->outPath, &statbuf);
-#else
-    status = iRODSNt_stat(rodsPath->outPath, &statbuf);
-#endif
-
-    if (status < 0) {
-        rodsPath->objType = UNKNOWN_FILE_T;
-        rodsPath->objState = NOT_EXIST_ST;
-        return (NOT_EXIST_ST);
-    }
-    rodsPath->objMode = statbuf.st_mode;
-    if ((statbuf.st_mode & S_IFREG) != 0) {     /* A file */
-        rodsPath->objType = LOCAL_FILE_T;
-        rodsPath->objState = EXIST_ST;
-        rodsPath->size = statbuf.st_size;
-    } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* A directory */
-        rodsPath->objType = LOCAL_DIR_T;
-        rodsPath->objState = EXIST_ST;
-    }
-
-    return (rodsPath->objType);
-}
-#endif  /* USE_BOOST_FS */
 
 int
 addSrcInPath (rodsPathInp_t *rodsPathInp, char *inPath)

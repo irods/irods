@@ -11,136 +11,90 @@
 int
 scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp, char hostname[LONG_NAME_LEN])
 {
-	char inpPath[LONG_NAME_LEN] = "";
-	char *inpPathO, *lastChar;
-#ifndef USE_BOOST_FS
-	struct stat sbuf;
-#endif
-	int lenInpPath = 0, status = 0; // JMC cppcheck - return uninit var
-	
-	if ( rodsPathInp->numSrc == 1 ) {
-		inpPathO = rodsPathInp->srcPath[0].outPath;
-		if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
-			rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
-#ifdef USE_BOOST_FS
-        		path p (inpPathO);
-			if (exists(p)) {
-			    /* don't do anything if it is symlink */
-			    if (is_symlink (p)) return 0;
-#else
-			status = lstat(inpPathO, &sbuf);
-			if ( status == 0 ) {
-#endif
-				/* remove any trailing "/" from inpPathO */
-				lenInpPath = strlen(inpPathO);
-				lastChar = strrchr(inpPathO, '/');
-				if ( lastChar && strlen(lastChar) == 1 ) {
-					lenInpPath = lenInpPath - 1;
-				}
-				strncpy(inpPath, inpPathO, lenInpPath);
-#ifdef USE_BOOST_FS
-				if (is_directory(p)) {
-#else
-				if ( S_ISDIR(sbuf.st_mode) == 1 ) {   /* check if it is not included into a mounted collection */
-#endif
-					status = checkIsMount(conn, inpPath);
-					if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
-						printf("The directory %s or one of its subdirectories to be scanned is declared as being \
-used for a mounted collection: abort!\n", inpPath);
-						return (status);
-					}
-				}
-				status = scanObjDir(conn, myRodsArgs, inpPath, hostname);
-			}
-			else {
-				status = USER_INPUT_PATH_ERR;
-				rodsLog (LOG_ERROR, "scanObj: %s does not exist", inpPathO);
-			}
-		}
-		else if ( rodsPathInp->srcPath[0].objType == UNKNOWN_OBJ_T || 
-			rodsPathInp->srcPath[0].objType == COLL_OBJ_T ) {
-			status = scanObjCol(conn, myRodsArgs, inpPathO);
-		}
-	}
-	else {
-		rodsLog (LOG_ERROR, "scanObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc);
-		status = USER_INPUT_PATH_ERR;
-	}
-	
-	return (status);
+    char inpPath[LONG_NAME_LEN] = "";
+    char *inpPathO, *lastChar;
+    int lenInpPath = 0, status = 0; // JMC cppcheck - return uninit var
+
+    if ( rodsPathInp->numSrc == 1 ) {
+        inpPathO = rodsPathInp->srcPath[0].outPath;
+        if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
+                rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
+            path p (inpPathO);
+            if (exists(p)) {
+                /* don't do anything if it is symlink */
+                if (is_symlink (p)) return 0;
+                /* remove any trailing "/" from inpPathO */
+                lenInpPath = strlen(inpPathO);
+                lastChar = strrchr(inpPathO, '/');
+                if ( lastChar && strlen(lastChar) == 1 ) {
+                    lenInpPath = lenInpPath - 1;
+                }
+                strncpy(inpPath, inpPathO, lenInpPath);
+                if (is_directory(p)) {
+                    status = checkIsMount(conn, inpPath);
+                    if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
+                        printf("The directory %s or one of its subdirectories to be scanned is declared as being \
+                                used for a mounted collection: abort!\n", inpPath);
+                        return (status);
+                    }
+                }
+                status = scanObjDir(conn, myRodsArgs, inpPath, hostname);
+            }
+            else {
+                status = USER_INPUT_PATH_ERR;
+                rodsLog (LOG_ERROR, "scanObj: %s does not exist", inpPathO);
+            }
+        }
+        else if ( rodsPathInp->srcPath[0].objType == UNKNOWN_OBJ_T || 
+                rodsPathInp->srcPath[0].objType == COLL_OBJ_T ) {
+            status = scanObjCol(conn, myRodsArgs, inpPathO);
+        }
+    }
+    else {
+        rodsLog (LOG_ERROR, "scanObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc);
+        status = USER_INPUT_PATH_ERR;
+    }
+
+    return (status);
 }
 
 int 
 scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *hostname)
 {
-#ifndef USE_BOOST_FS
-	DIR *dirPtr;
-	struct dirent *myDirent;
-	struct stat sbuf;
-#endif
-	int status;
-	char fullPath[LONG_NAME_LEN] = "\0";
-	
-#ifndef USE_BOOST_FS
-	dirPtr = opendir (inpPath);
-#endif
-	/* check if it is a directory */
-#ifdef USE_BOOST_FS
-        path srcDirPath (inpPath);
-        if (is_symlink (srcDirPath)) {
-            /* don't do anything if it is symlink */
-	    return 0;
-	} else if (is_directory(srcDirPath)) {
-#else	/* USE_BOOST_FS */
-	lstat(inpPath, &sbuf);
-	if ( S_ISDIR(sbuf.st_mode) == 1 ) {
-		if ( dirPtr == NULL ) {
-			return (-1);
-		}
-#endif	/* USE_BOOST_FS */
-	}
-	else {
-		status = chkObjExist(conn, inpPath, hostname);
-		return (status);
-	}
-	
-#ifdef USE_BOOST_FS
+    int status;
+    char fullPath[LONG_NAME_LEN] = "\0";
+
+    /* check if it is a directory */
+    path srcDirPath (inpPath);
+    if (is_symlink (srcDirPath)) {
+        /* don't do anything if it is symlink */
+        return 0;
+    } else if (is_directory(srcDirPath)) {
+    }
+    else {
+        status = chkObjExist(conn, inpPath, hostname);
+        return (status);
+    }
+
     directory_iterator end_itr; // default construction yields past-the-end
     for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
         path cp = itr->path();
         snprintf (fullPath, MAX_NAME_LEN, "%s",
-          cp.c_str ());
-#else
-	while ( ( myDirent = readdir(dirPtr) ) != NULL ) {
-        if ( strcmp(myDirent->d_name, ".") == 0 || strcmp(myDirent->d_name, "..") == 0 ) {
-			continue;
-        }
-        strcpy(fullPath, inpPath);
-        strcat(fullPath, "/");
-        strcat(fullPath, myDirent->d_name);
-#endif
-#ifdef USE_BOOST_FS
+                cp.c_str ());
         if (is_symlink (cp)) {
             /* don't do anything if it is symlink */
             continue;
         } else if (is_directory(cp)) {
-#else
-        lstat(fullPath, &sbuf);
-		if ( S_ISDIR(sbuf.st_mode) == 1 ) {
-#endif	/* USE_BOOST_FS */
-			if ( myRodsArgs->recursive == True ) {
-				status = scanObjDir(conn, myRodsArgs, fullPath, hostname);
-			}
+            if ( myRodsArgs->recursive == True ) {
+                status = scanObjDir(conn, myRodsArgs, fullPath, hostname);
+            }
         }
         else {
-			status = chkObjExist(conn, fullPath, hostname);
+            status = chkObjExist(conn, fullPath, hostname);
         }
-	}
-#ifndef USE_BOOST_FS
-   closedir (dirPtr);
-#endif
-   return (status);
-	
+    }
+    return (status);
+
 }
 
 int 

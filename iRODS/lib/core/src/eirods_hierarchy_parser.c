@@ -39,7 +39,9 @@ namespace eirods {
     }
     
     error hierarchy_parser::str(
-        std::string& _ret_string) {
+        std::string& _ret_string,
+        const std::string& _term_resc) const
+    {
 
         error result = SUCCESS();
         _ret_string.clear();
@@ -142,6 +144,16 @@ namespace eirods {
 
     const std::string& hierarchy_parser::delimiter(void) {
         return DELIM;
+    }
+
+    bool hierarchy_parser::resc_in_hier(
+        const std::string& _resc) const
+    {
+        bool result = false;
+        for(resc_list_t::const_iterator itr = resc_list_.begin(); !result && itr != resc_list_.end(); ++itr) {
+            // noop
+        }
+        return result;
     }
 
 }; // namespace eirods

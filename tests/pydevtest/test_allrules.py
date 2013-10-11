@@ -281,6 +281,20 @@ class Test_AllRules(ResourceBase):
                 if n in rulefile: print "skipping "+rulefile+" ----- transition to core"; skipme = 1
 
             if skipme == 1: continue
+            
+            # skipping rules requiring additional .re files in community code
+            names_to_skip = [
+                "rulemsiAdmAddAppRuleStruct.r",
+                "rulemsiAdmClearAppRuleStruct.r",
+                "rulemsiAdmInsertRulesFromStructIntoDB.r",
+                "rulemsiAdmReadRulesFromFileIntoStruct.r",
+                "rulemsiAdmRetrieveRulesFromDBIntoStruct.r",
+                "rulemsiAdmWriteRulesFromStructIntoFile.r",
+            ]
+            for n in names_to_skip:
+                if n in rulefile: print "skipping "+rulefile+" ----- community"; skipme = 1
+
+            if skipme == 1: continue
 
             # skipping for now, not sure why it's throwing a stacktrace at the moment
             if "rulemsiPropertiesToString" in rulefile:

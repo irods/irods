@@ -449,29 +449,25 @@ sortObjInfo (
         if(resc_hier != NULL && (strcmp(resc_hier, tmpDataObjInfo->rescHier) == 0)) {
             hier_match = true;
         }
-        
+       
+        // =-=-=-=-=-=-=- 
         // if the resc hierarchy is defined match it
+        // honor the original queue structure given repl status
         if(resc_hier != NULL && hier_match) {
-            queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
-        }
-
-        else if(resc_hier != NULL && !hier_match) {
-            queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
-        }
-        
-        // rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
-        else if (tmpDataObjInfo->replStatus > 0) {
-#if 0 // JMC - legacy resource
-            if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
-                queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
-                queDataObjInfo (&currentCompInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
-                queDataObjInfo (&currentBundleInfo, tmpDataObjInfo, 1, topFlag);
+            //queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+            if( tmpDataObjInfo->replStatus > 0 ) {
+                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, topFlag );
             } else {
-                queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
             }
-#else
+        } else if(resc_hier != NULL && !hier_match) {
+            if( tmpDataObjInfo->replStatus > 0 ) {
+                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
+            } else {
+                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, 1 );
+            }
+        } else if (tmpDataObjInfo->replStatus > 0) {
+
             if( "archive" == class_type ) {
                 queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if( "compound" == class_type ) {
@@ -481,19 +477,7 @@ sortObjInfo (
             } else {
                 queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
-#endif // JMC - legacy resource
         } else {
-#if 0 // JMC - legacy resource
-            if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
-                queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
-                queDataObjInfo (&oldCompInfo, tmpDataObjInfo, 1, topFlag);
-            } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
-                queDataObjInfo (&oldBundleInfo, tmpDataObjInfo, 1, topFlag);
-            } else {
-                queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
-            }
-#else
             if( "archive" == class_type ) {
                 queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if( "compound" == class_type ) {
@@ -503,10 +487,9 @@ sortObjInfo (
             } else {
                 queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
-#endif // JMC - legacy resource
-
         }
         tmpDataObjInfo = nextDataObjInfo;
+    
     } // while
 
     /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */
@@ -524,10 +507,11 @@ sortObjInfo (
  * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
  * then current cache, current archival, old cache and old archival.
  */ 
-int
-sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
-                    keyValPair_t *condInput, int writeFlag)
-{
+int sortObjInfoForOpen(
+    rsComm_t*       rsComm, 
+    dataObjInfo_t** dataObjInfoHead, 
+    keyValPair_t*   condInput, 
+    int             writeFlag ) {
     int result = 0;
     char* resc_hier = getValByKey(condInput, RESC_HIER_STR_KW);
     if(!resc_hier) {
@@ -549,13 +533,18 @@ sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead,
             }
         }
         if(found_info == NULL) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - No data object found matching resource hierarchy: \"";
-            msg << resc_hier;
-            msg << "\"";
-            eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
-            result = EIRODS_HIERARCHY_ERROR;
+            // =-=-=-=-=-=-=-
+            // according to the below read only semantics
+            // any copy in the head is a good copy.
+            if( 0 != writeFlag ) { 
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - No data object found matching resource hierarchy: \"";
+                msg << resc_hier;
+                msg << "\"";
+                eirods::log(ERROR(EIRODS_HIERARCHY_ERROR, msg.str()));
+                result = EIRODS_HIERARCHY_ERROR;
+            }
         } else {
             if(prev_info == NULL) {
                 // our object is at the head of the list. So delete the rest of the list, if any and we are done.
@@ -806,25 +795,33 @@ requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum)
 }
 
 dataObjInfo_t *
-chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier)
+chkCopyInResc (dataObjInfo_t*& dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo, const char* destRescHier)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
     dataObjInfo_t *tmpDataObjInfo;
 
     tmpDataObjInfo = dataObjInfoHead;
+    dataObjInfo_t* prev = NULL;
     while (tmpDataObjInfo != NULL) {
         tmpRescGrpInfo = myRescGrpInfo;
         while (tmpRescGrpInfo != NULL) {
             tmpRescInfo = tmpRescGrpInfo->rescInfo;
-            // No longer good enough to check if the resource names are the same. We have to verify that the resource hiearchies
+            // No longer good enough to check if the resource names are the same. We have to verify that the resource hierarchies
             // match as well. - hcj
             if (strcmp (tmpDataObjInfo->rescInfo->rescName, tmpRescInfo->rescName) == 0 &&
-                (destRescHier == NULL || strcmp(tmpDataObjInfo->rescHier, destRescHier) == 0)) { 
+                (destRescHier == NULL || strcmp(tmpDataObjInfo->rescHier, destRescHier) == 0)) {
+                if(prev != NULL) {
+                    prev->next = tmpDataObjInfo->next;
+                } else {
+                    dataObjInfoHead = tmpDataObjInfo->next;
+                }
+                tmpDataObjInfo->next = NULL;
                 return (tmpDataObjInfo);
             }
             tmpRescGrpInfo = tmpRescGrpInfo->next;
         }
+        prev = tmpDataObjInfo;
         tmpDataObjInfo = tmpDataObjInfo->next;
     }
     return (NULL);
@@ -991,8 +988,10 @@ sortObjInfoForRepl (
     }
 
     // =-=-=-=-=-=-=-
-    // short circuit sort for the case where a dst resc hier is provided which means the choice for to which repl to update is made
-    // already. However, we have to handle the case where the resc_hier and dst_resc_hier are the same.
+    // short circuit sort for the case where a dst resc hier 
+    // is provided which means the choice for to which repl 
+    // to update is made already. However, we have to handle 
+    // the case where the resc_hier and dst_resc_hier are the same.
     *oldDataObjInfoHead = NULL;
     if( dst_resc_hier && strcmp(dst_resc_hier, resc_hier) != 0) {
         dataObjInfo_t* tmp_info = *dataObjInfoHead;
@@ -1025,7 +1024,7 @@ sortObjInfoForRepl (
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier);
-    
+
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
@@ -1242,82 +1241,41 @@ chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
 int
 chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
 {
-#ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
-    struct stat statbuf;
-#endif
     char subfilePath[MAX_NAME_LEN];
     int savedStatus = 1;
     int status = 0;
 
-#ifdef USE_BOOST_FS
     path srcDirPath (dirPath);
     if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
-#else
-        dirPtr = opendir (dirPath);
-        if (dirPtr == NULL) {
-#endif
             rodsLog (LOG_ERROR,
                      "chkOrphanDir: opendir error for %s, errno = %d",
                      dirPath, errno);
             return (UNIX_FILE_OPENDIR_ERR - errno);
         }
-#ifdef USE_BOOST_FS
         directory_iterator end_itr; // default construction yields past-the-end
         for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
             path p = itr->path();
             snprintf (subfilePath, MAX_NAME_LEN, "%s",
                       p.c_str ());
-#else
-            while ((myDirent = readdir (dirPtr)) != NULL) {
-                if (strcmp (myDirent->d_name, ".") == 0 ||
-                    strcmp (myDirent->d_name, "..") == 0) {
-                    continue;
-                }
-                snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
-                          dirPath, myDirent->d_name);
-#endif
-
-#ifdef USE_BOOST_FS
                 if (!exists (p)) {
-#else
-                    status = stat (subfilePath, &statbuf);
-
-                    if (status != 0) {
-#endif
                         rodsLog (LOG_ERROR,
                                  "chkOrphanDir: stat error for %s, errno = %d",
                                  subfilePath, errno);
                         savedStatus = UNIX_FILE_STAT_ERR - errno;
                         continue;
                     }
-#ifdef USE_BOOST_FS
                     if (is_directory (p)) {
-#else
-                        if ((statbuf.st_mode & S_IFDIR) != 0) {
-#endif
                             status = chkOrphanDir (rsComm, subfilePath, rescName);
-#ifdef USE_BOOST_FS
                         } else if (is_regular_file (p)) {
-#else
-                        } else if ((statbuf.st_mode & S_IFREG) != 0) {
-#endif
                             status = chkOrphanFile (rsComm, subfilePath, rescName, NULL);
                         }
                         if (status == 0) {
                             /* not orphan */
-#ifndef USE_BOOST_FS
-                            closedir (dirPtr);
-#endif
                             return status;    
                         } else if (status < 0) {
                             savedStatus = status;
                         }
                     }
-#ifndef USE_BOOST_FS
-                    closedir (dirPtr);
-#endif
                     return savedStatus;
                 }
 
@@ -1523,6 +1481,8 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                     while (tmpDataObjInfo != NULL) {
                         nextDataObjInfo = tmpDataObjInfo->next;
                         if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
+
+
                             if (prevDataObjInfo != NULL) {
                                 prevDataObjInfo->next = tmpDataObjInfo->next;
                             } else {
@@ -1612,12 +1572,12 @@ chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
                     int condFlag;
                     int toTrim;
 
-                    // char* resc_hier = getValByKey(condInput, DEST_RESC_HIER_STR_KW);
+                    //char* resc_hier     = getValByKey( condInput, RESC_HIER_STR_KW );
+                    //char* dst_resc_hier = getValByKey( condInput, DEST_RESC_HIER_STR_KW );
                     sortObjInfoForRepl( dataObjInfoHead, &oldDataObjInfoHead, 0, NULL, NULL );
 
                     status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
                                                           condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
-
                     if (status < 0) {
                         freeAllDataObjInfo (*dataObjInfoHead);
                         freeAllDataObjInfo (oldDataObjInfoHead);

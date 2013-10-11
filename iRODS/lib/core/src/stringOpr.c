@@ -8,10 +8,6 @@
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
 
-// =-=-=-=-=-=-=-
-// eirods includes
-#include "eirods_assert.h"
-
 char *rmemmove (void *dest, void *src, int strLen, int maxLen)
 {
 
@@ -68,7 +64,6 @@ char *rstrcpy (char *dest, const char *src, int maxLen)
     len = strlen (src);
 
     if( len < 0 || len >= maxLen ) {
-        eirods::assert( false );
         rodsLog( LOG_ERROR, 
 	        "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
 	        len, maxLen );
@@ -79,7 +74,6 @@ char *rstrcpy (char *dest, const char *src, int maxLen)
 	    dest[len] = '\0';
 	    return dest;
     } else {
-        eirods::assert( false );
         rodsLog( LOG_ERROR, 
 	        "rstrcpy not enough space in dest, slen:%d, maxLen:%d",
 	        len, maxLen );
@@ -407,6 +401,32 @@ checkStringForSystem( char *inString) {
 #endif
   return(0);
 }
+
+
+/*
+ * Check if inString is a valid email address.
+ * This function only do a simple check that inString contains only a predefined set of characters.
+ * It does not check the structure.
+ * And this set of characters is a subset of that allowed in the RFCs.
+ */
+int
+checkStringForEmailAddress( char *inString) {
+  char c;
+  if (inString==NULL) return(0);
+  c = *inString;
+  while (c != '\0') {
+     if ( (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+	  (c >= '0' && c <= '9') ||  c == ',' || c == '.' ||
+	  c == '/' || c == '-' || c == '+' || c == '*' || c == '_' || c == '@') {
+     }
+     else {
+	return (USER_INPUT_STRING_ERR);
+     }
+     c = *inString++;
+  }
+  return(0);
+}
+
 
 #ifdef MYMALLOC_H
 #undef malloc

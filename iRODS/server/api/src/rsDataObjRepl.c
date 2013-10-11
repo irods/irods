@@ -152,13 +152,20 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     // =-=-=-=-=-=-=-
 
     status = _rsDataObjRepl (rsComm, dataObjInp, *transStat, NULL); 
-    if(status < 0) {
+    if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
         rodsLog(LOG_NOTICE, "%s - Failed to replicate data object.", __FUNCTION__);
     }
     
     if (lockFd > 0) rsDataObjUnlock (rsComm, dataObjInp, lockFd); // JMC - backport 4609
 
-    return (status);
+    // =-=-=-=-=-=-=-
+    // specifically ignore this error as it should not cause
+    // any issues with replication.   
+    if( status == EIRODS_DIRECT_ARCHIVE_ACCESS ) {
+        return 0;
+    } else {
+        return (status);
+    }
 }
     
 int
@@ -217,10 +224,11 @@ _rsDataObjRepl (
     
     char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
     char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
-
-    if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
-        status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
-
+    status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
+    // =-=-=-=-=-=-=-
+    // if a resc is specified and it has a stale copy then we should just treat this as an update
+    // also consider the 'update' keyword as that might also have some bearing on updates
+    if( ( !multiCopyFlag && oldDataObjInfoHead ) || getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
         if (status < 0) {
             rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication update.", __FUNCTION__);
             return status;
@@ -233,7 +241,7 @@ _rsDataObjRepl (
             *outDataObjInfo = *oldDataObjInfoHead; // JMC - possible double free situation
             outDataObjInfo->next = NULL;
         } else {
-            if(status < 0) {
+            if( status < 0 && status != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
                 rodsLog(LOG_NOTICE, "%s - Failed to update replica.", __FUNCTION__);
             }
         }
@@ -242,12 +250,11 @@ _rsDataObjRepl (
         freeAllDataObjInfo (oldDataObjInfoHead);
         
         return status;
-    }
+    
+    } // repl update
 
     /* if multiCopy allowed, remove old so they won't be overwritten */
-    // char* resc_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag, resc_hier, dest_hier );
- 
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);
         return status;
@@ -428,7 +435,6 @@ int _rsDataObjReplUpdate(
 
     // =-=-=-=-=-=-=-
     // cache a copy of the dest resc hier if there is one
-
     std::string dst_resc_hier;
     char* dst_resc_hier_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
     if( dst_resc_hier_ptr ) {
@@ -658,8 +664,7 @@ _rsDataObjReplNewCopy (
         char* pdmo_kw = getValByKey(&dataObjInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
             addKeyVal(&dataObjCloseInp.condInput, IN_PDMO_KW, pdmo_kw);
-        }
-
+        } 
 
         status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
 
@@ -931,11 +936,9 @@ _rsDataObjReplNewCopy (
             L1desc[srcL1descInx].oprType = REPLICATE_SRC;
         }
 
-        if( L1desc[destL1descInx].stageFlag == SYNC_DEST && // JMC - backport 4549
-            getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL) {
+        if( getValByKey (&dataObjInp->condInput, PURGE_CACHE_KW) != NULL ) {
             L1desc[srcL1descInx].purgeCacheFlag = 1;
         }
-
 
         if( l1DataObjInp->numThreads > 0 &&
             L1desc[destL1descInx].stageFlag == NO_STAGING) {

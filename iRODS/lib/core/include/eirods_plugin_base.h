@@ -89,12 +89,12 @@ namespace eirods {
         double                            interface_version_; // version of the plugin interface supported
 
         /// =-=-=-=-=-=-=-
-        /// @brief Map holding resource operations
-        std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
-
-        /// =-=-=-=-=-=-=-
         /// @brief heterogeneous key value map of plugin data
         plugin_property_map properties_; 
+
+        /// =-=-=-=-=-=-=-
+        /// @brief Map holding resource operations
+        std::vector< std::pair< std::string, std::string > > ops_for_delay_load_;
 
     }; // class plugin_base
 

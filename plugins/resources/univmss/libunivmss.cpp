@@ -438,7 +438,7 @@ extern "C" {
     /// @brief interface for POSIX rename
     eirods::error univ_mss_file_rename(
         eirods::resource_plugin_context& _ctx,
-        const char*                         _new_file_name ) {
+        const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check context
         eirods::error err = univ_mss_check_param< eirods::file_object >( _ctx );
@@ -517,6 +517,14 @@ extern "C" {
         return CODE(status);
 
     } // univ_mss_file_rename
+
+    /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX truncate
+    eirods::error univ_mss_file_truncate(
+        eirods::resource_plugin_context& _ctx ) { 
+        return ERROR( SYS_NOT_SUPPORTED, __FUNCTION__ );
+
+    } // univ_mss_file_truncate
 
     /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
@@ -937,6 +945,15 @@ extern "C" {
 
     } // univ_mss_file_redirect
 
+
+    // =-=-=-=-=-=-=-
+    // univ_mss__file_rebalance - code which would rebalance the subtree
+    eirods::error univ_mss__file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+    
+    } // univ_mss__file_rebalancec
+
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle universal mss resources
     //    context string will hold the script to be called.
@@ -1004,6 +1021,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,           "univ_mss_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,           "univ_mss_file_readdir" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,            "univ_mss_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,          "univ_mss_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,         "univ_mss_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,             "univ_mss_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,             "univ_mss_file_rmdir" );
@@ -1013,7 +1031,9 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,        "univ_mss_file_registered" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED,      "univ_mss_file_unregistered" );
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,          "univ_mss_file_modified" );
+
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER, "univ_mss_file_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,         "univ_mss__file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

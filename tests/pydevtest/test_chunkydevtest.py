@@ -215,6 +215,10 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"irm -f --empty "+bunfile )
     
         # cleanup
+        os.unlink( dir_w+"/testx1.tar" )
+        os.unlink( dir_w+"/testx.tar" )
+        shutil.rmtree( dir_w+"/testx1" )
+        shutil.rmtree( dir_w+"/testx" )
         os.unlink( sfile2 )
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
@@ -225,11 +229,7 @@ class ChunkyDevTest(ResourceBase):
     
     
     
-    @unittest.skip("FIXME - sortObjInfoForOpen - No resource hierarchy specified in keywords")
     def test_ireg_from_devtest(self):
-        # SKIPPING UNTIL THIS ERROR IS FIXED
-        #[-]     iRODS/server/core/src/dataObjOpr.c:517:sortObjInfoForOpen :  status [SYS_INVALID_INPUT_PARAM]  errno [] -- message [sortObjInfoForOpen - No resource hierarchy specified in keywords.]
-
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
@@ -284,10 +284,7 @@ class ChunkyDevTest(ResourceBase):
         # cleanup
         os.unlink( "/tmp/sfile2c" )
         os.unlink( dir_w+"/foo5" )
-        os.unlink( dir_w+"/testx1.tar" )
-        os.unlink( dir_w+"/testx.tar" )
-        shutil.rmtree( dir_w+"/testx1" )
-        shutil.rmtree( dir_w+"/testx" )
+
         if os.path.exists( myldir ):
             shutil.rmtree( myldir )
         if os.path.exists( mysdir ):
@@ -554,11 +551,7 @@ class ChunkyDevTest(ResourceBase):
     
     
 
-    @unittest.skip("FIXME - sortObjInfoForOpen - No resource hierarchy specified in keywords")
     def test_irsync_from_devtest(self):
-        # SKIPPING UNTIL THIS ERROR IS FIXED
-        #[-]     iRODS/server/core/src/dataObjOpr.c:517:sortObjInfoForOpen :  status [SYS_INVALID_INPUT_PARAM]  errno [] -- message [sortObjInfoForOpen - No resource hierarchy specified in keywords.]
-
         # build expected variables with similar devtest names
         progname = __file__
         myssize = str(os.stat(progname).st_size)
@@ -578,7 +571,7 @@ class ChunkyDevTest(ResourceBase):
     
         # testing irsync
         assertiCmd(s.adminsession,"irsync "+progname+" i:"+irodshome+"/icmdtest/foo100" )
-        assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )  # <-- FAILING - REASON FOR SKIPPING
+        assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 "+dir_w+"/foo100" )
         assertiCmd(s.adminsession,"irsync i:"+irodshome+"/icmdtest/foo100 i:"+irodshome+"/icmdtest/foo200" )
         assertiCmd(s.adminsession,"irm -f "+irodshome+"/icmdtest/foo100 "+irodshome+"/icmdtest/foo200")
         assertiCmd(s.adminsession,"iput -R "+self.testresc+" "+progname+" "+irodshome+"/icmdtest/foo100")

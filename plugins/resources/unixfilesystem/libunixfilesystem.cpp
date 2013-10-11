@@ -973,6 +973,51 @@ extern "C" {
 
     } // unix_file_rename_plugin
 
+    // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error unix_file_truncate_plugin( 
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // Check the operation parameters and update the physical path
+        eirods::error ret = unix_check_params_and_path< eirods::file_object >( _ctx );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+
+        // =-=-=-=-=-=-=-
+        // make the call to rename
+        int status = truncate( file_obj->physical_path().c_str(), 
+                               file_obj->size() );
+
+        // =-=-=-=-=-=-=-
+        // handle any error cases
+        if( status < 0 ) {
+            // =-=-=-=-=-=-=-
+            // cache status in out variable
+            status = UNIX_FILE_TRUNCATE_ERR - errno;
+
+            std::stringstream msg;
+            msg << "unix_file_truncate_plugin: rename error for ";
+            msg << file_obj->physical_path();
+            msg << ", errno = '";
+            msg << strerror( errno );
+            msg << "', status = ";
+            msg << status;
+                        
+            return ERROR( status, msg.str() );
+        }
+
+        return CODE( status );
+
+    } // unix_file_truncate_plugin
+
+
     eirods::error
     unixFileCopyPlugin( int         mode, 
                         const char* srcFileName, 
@@ -1035,7 +1080,7 @@ extern "C" {
     // is not used.
     eirods::error unix_file_stagetocache_plugin( 
         eirods::resource_plugin_context& _ctx,
-        const char*                         _cache_file_name )
+        const char*                      _cache_file_name )
     {
         eirods::error result = SUCCESS();
         
@@ -1060,7 +1105,7 @@ extern "C" {
     // is not used.
     eirods::error unix_file_synctoarch_plugin( 
         eirods::resource_plugin_context& _ctx,
-        char*                               _cache_file_name )
+        char*                            _cache_file_name )
     {
         eirods::error result = SUCCESS();
         
@@ -1076,7 +1121,9 @@ extern "C" {
             ret = unixFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
             result = ASSERT_PASS(ret, "Failed");
         }
+
         return result;
+
     } // unix_file_synctoarch_plugin
 
     // =-=-=-=-=-=-=-
@@ -1292,8 +1339,18 @@ extern "C" {
                 }
             }
         }
+
         return result;
+
     } // unix_file_redirect_plugin
+
+    // =-=-=-=-=-=-=-
+    // unix_file_rebalance - code which would rebalance the subtree
+    eirods::error unix_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // unix_file_rebalancec
 
     // =-=-=-=-=-=-=-
     // 3. create derived class to handle unix file system resources
@@ -1330,42 +1387,12 @@ extern "C" {
         }; // class maintenance_operation
 
     public:
-        unixfilesystem_resource( const std::string& _inst_name, 
-                                 const std::string& _context ) : 
-            eirods::resource( _inst_name, _context ) {
-
-            if( !context_.empty() ) {
-                // =-=-=-=-=-=-=-
-                // tokenize context string into key/val pairs assuming a ; as a separator
-                std::vector< std::string > key_vals;
-                eirods::string_tokenize( _context, ";", key_vals );
-
-                // =-=-=-=-=-=-=-
-                // tokenize each key/val pair using = as a separator and
-                // add them to the property list
-                std::vector< std::string >::iterator itr = key_vals.begin();
-                for( ; itr != key_vals.end(); ++itr ) {
-
-                    if( !itr->empty() ) {
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        std::vector< std::string > vals;
-                        eirods::string_tokenize( *itr, "=", vals );
-                        
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        if( vals.size() == 2 ) {
-                            properties_[ vals[0] ] = vals[1];
-                        } else {
-                            // this would be an error case  
-                        }
-
-                    } // if key_val not empty
-                
-                } // for itr 
-            
-            } // if context not empty
-
+        unixfilesystem_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) : 
+            eirods::resource( 
+                _inst_name, 
+                _context ) {
         } // ctor
 
 
@@ -1426,6 +1453,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "unix_file_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "unix_file_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "unix_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "unix_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "unix_file_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "unix_file_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "unix_file_synctoarch_plugin" );
@@ -1434,6 +1462,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "unix_file_modified_plugin" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "unix_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "unix_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

@@ -692,6 +692,24 @@ extern "C" {
     } // round_robin_file_rename
 
     /// =-=-=-=-=-=-=-
+    /// @brief interface for POSIX truncate
+    eirods::error round_robin_file_truncate(
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // get the child resc to call
+        eirods::resource_ptr resc;
+        eirods::error err = round_robin_get_resc_for_call< eirods::file_object >( _ctx, resc );
+        if( !err.ok() ) {
+            return PASS( err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // call truncate on the child
+        return resc->call( _ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco() );
+
+    } // round_robin_file_truncate
+
+    /// =-=-=-=-=-=-=-
     /// @brief interface to determine free space on a device given a path
     eirods::error round_robin_file_getfs_freespace(
         eirods::resource_plugin_context& _ctx ) { 
@@ -1034,7 +1052,31 @@ extern "C" {
     } // round_robin_redirect
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // round_robin_file_rebalance - code which would rebalance the subtree
+    eirods::error round_robin_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // forward request for rebalance to children
+        eirods::error result = SUCCESS();
+        eirods::resource_child_map::iterator itr = _ctx.child_map().begin();
+        for( ; itr != _ctx.child_map().end(); ++itr ) {
+            eirods::error ret = itr->second.second->call( 
+                                    _ctx.comm(), 
+                                    eirods::RESOURCE_OP_REBALANCE, 
+                                    _ctx.fco() );
+            if( !ret.ok() ) {
+                eirods::log( PASS( ret ) );
+                result = ret;
+            }
+        }
+
+        return result;
+
+    } // round_robin_file_rebalancec
+
+
+    // =-=-=-=-=-=-=-
+    // 3. create derived class to handle round_robin file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
@@ -1136,7 +1178,7 @@ extern "C" {
     eirods::resource* plugin_factory( const std::string& _inst_name, 
                                       const std::string& _context  ) {
         // =-=-=-=-=-=-=-
-        // 4a. create unixfilesystem_resource
+        // 4a. create round_robinfilesystem_resource
         roundrobin_resource* resc = new roundrobin_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
@@ -1154,6 +1196,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_OPENDIR,      "round_robin_file_opendir" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "round_robin_file_readdir" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "round_robin_file_rename" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "round_robin_file_truncate" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "round_robin_file_getfs_freespace" );
         resc->add_operation( eirods::RESOURCE_OP_LSEEK,        "round_robin_file_lseek" );
         resc->add_operation( eirods::RESOURCE_OP_RMDIR,        "round_robin_file_rmdir" );
@@ -1165,6 +1208,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "round_robin_file_modified" );
         
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "round_robin_redirect" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "round_robin_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

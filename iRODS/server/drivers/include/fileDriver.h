@@ -37,6 +37,7 @@ eirods::error fileClosedir( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileReaddir ( rsComm_t*, eirods::first_class_object_ptr, struct rodsDirent** );
 eirods::error fileRename  ( rsComm_t*, eirods::first_class_object_ptr, const std::string& );
 eirods::error fileGetFsFreeSpace( rsComm_t*, eirods::first_class_object_ptr );
+eirods::error fileTruncate( rsComm_t*, eirods::first_class_object_ptr );
 eirods::error fileStageToCache( rsComm_t*, eirods::first_class_object_ptr, const std::string& );
 eirods::error fileSyncToArch  ( rsComm_t*, eirods::first_class_object_ptr, const std::string& );
 eirods::error fileRegistered(rsComm_t* _comm, eirods::first_class_object_ptr _object );

@@ -1,6 +1,12 @@
 /* For copyright information please refer to files in the COPYRIGHT directory
  */
 #include "debug.h"
+#ifdef DEBUG
+#include "re.h"
+#else
+#include "reGlobalsExtern.h"
+#include "reHelpers1.h"
+#endif
 #include "rules.h"
 #include "index.h"
 #include "functions.h"
@@ -13,22 +19,6 @@
 #define RE_ERROR(cond) if(cond) { goto error; }
 
 extern int GlobalAllRuleExecFlag;
-
-#ifdef USE_EIRODS
-	#include "reAction.h"
-#else
-	#ifndef DEBUG
-		#include "reGlobalsExtern.h"
-		#include "reHelpers1.h"
-		typedef struct {
-		  char action[MAX_ACTION_SIZE];
-		  int numberOfStringArgs;
-		  funcPtr callAction;
-		} microsdef_t;
-		extern int NumOfAction;
-		extern microsdef_t MicrosTable[];
-	#endif
-#endif // ifdef USE_EIRODS
 
 /**
  * Read a set of rules from files.

@@ -642,26 +642,17 @@ dataObjInp_t *dataObjOprInp)
 
 int
 rsyncDirToCollUtil (rcComm_t *conn, rodsPath_t *srcPath, 
-rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjOprInp)
+        rodsPath_t *targPath, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+        dataObjInp_t *dataObjOprInp)
 {
     int status = 0;
     int savedStatus = 0;
-#ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
-#ifndef windows_platform
-    struct stat statbuf;
-#else
-	struct irodsntstat statbuf;
-#endif
-#endif	/* #ifndef USE_BOOST_FS */
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
 
     if (srcPath == NULL || targPath == NULL) {
-       rodsLog (LOG_ERROR,
-          "rsyncDirToCollUtil: NULL srcPath or targPath input");
+        rodsLog (LOG_ERROR,
+                "rsyncDirToCollUtil: NULL srcPath or targPath input");
         return (USER__NULL_INPUT_ERR);
     }
 
@@ -672,21 +663,16 @@ dataObjInp_t *dataObjOprInp)
 
     if (rodsArgs->recursive != True) {
         rodsLog (LOG_ERROR,
-        "rsyncDirToCollUtil: -r option must be used for putting %s directory",
-         srcDir);
+                "rsyncDirToCollUtil: -r option must be used for putting %s directory",
+                srcDir);
         return (USER_INPUT_OPTION_ERR);
     }
 
-#ifdef USE_BOOST_FS
     path srcDirPath (srcDir);
     if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
-#else
-    dirPtr = opendir (srcDir);
-    if (dirPtr == NULL) {
-#endif  /* USE_BOOST_FS */
         rodsLog (LOG_ERROR,
-        "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
-         srcDir, errno);
+                "rsyncDirToCollUtil: opendir local dir error for %s, errno = %d\n",
+                srcDir, errno);
         return (USER_INPUT_PATH_ERR);
     }
 
@@ -694,152 +680,106 @@ dataObjInp_t *dataObjOprInp)
         fprintf (stdout, "C- %s:\n", targColl);
     }
 
-    memset (&mySrcPath, 0, sizeof (mySrcPath));
-    memset (&myTargPath, 0, sizeof (myTargPath));
+    memset( &mySrcPath,  0, sizeof( mySrcPath  ) );
+    memset( &myTargPath, 0, sizeof( myTargPath ) );
     myTargPath.objType = DATA_OBJ_T;
-    mySrcPath.objType = LOCAL_FILE_T;
+    mySrcPath.objType  = LOCAL_FILE_T;
 
-#ifdef USE_BOOST_FS
     directory_iterator end_itr; // default construction yields past-the-end
-    for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
+    for( directory_iterator itr( srcDirPath ); 
+            itr != end_itr;
+            ++itr ) {
         path p = itr->path();
-        snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s",
-          p.c_str ());
-#else
-    while ((myDirent = readdir (dirPtr)) != NULL) {
-        if (strcmp (myDirent->d_name, ".") == 0 ||
-          strcmp (myDirent->d_name, "..") == 0) {
-            continue;
-        }
-        snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
-          srcDir, myDirent->d_name);
-#endif	/* USE_BOOST_FS */
+        snprintf( mySrcPath.outPath, MAX_NAME_LEN, "%s", p.c_str() );
 
-        if (isPathSymlink (rodsArgs, mySrcPath.outPath) > 0) continue;
-#ifdef USE_BOOST_FS
-#if 0
-        path p (mySrcPath.outPath);
-#endif
-	if (!exists(p)) {
-#else
-#ifndef windows_platform
-        status = stat (mySrcPath.outPath, &statbuf);
-#else
-	status = iRODSNt_stat(mySrcPath.outPath, &statbuf);
-#endif
+        if( isPathSymlink( rodsArgs, mySrcPath.outPath ) > 0) continue;
 
-        if (status != 0) {
-            closedir (dirPtr);
-#endif  /* USE_BOOST_FS */
+        if (!exists(p)) {
             rodsLog (LOG_ERROR,
-              "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
-              mySrcPath.outPath, errno);
+                    "rsyncDirToCollUtil: stat error for %s, errno = %d\n",
+                    mySrcPath.outPath, errno);
             return (USER_INPUT_PATH_ERR);
         }
 
-        if ((statbuf.st_mode & S_IFREG) != 0 && rodsArgs->age == True) {
-            if (ageExceeded (rodsArgs->agevalue, statbuf.st_mtime,
-              rodsArgs->verbose, mySrcPath.outPath, statbuf.st_size))
+        if( is_regular_file( p ) && 
+                rodsArgs->age == True ) {
+            if( ageExceeded( 
+                        rodsArgs->agevalue, 
+                        last_write_time( p ),
+                        rodsArgs->verbose, 
+                        mySrcPath.outPath, 
+                        file_size( p ) ) ) {
                 continue;
+            }
         }
 
-	bzero (&myTargPath, sizeof (myTargPath));
-#ifdef USE_BOOST_FS
+        bzero (&myTargPath, sizeof (myTargPath));
         path childPath = p.filename();
         snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
-          targColl, childPath.c_str());
+                targColl, childPath.c_str());
         if (is_symlink (p)) {
             path cp = read_symlink (p);
             snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
-              srcDir, cp.c_str ());
+                    srcDir, cp.c_str ());
             p = path (mySrcPath.outPath);
         }
-	dataObjOprInp->createMode = getPathStMode (p);
-	if (is_regular_file(p)) {
-#else
-        snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
-          targColl, myDirent->d_name);
-	dataObjOprInp->createMode = statbuf.st_mode;
-        if ((statbuf.st_mode & S_IFREG) != 0) {     /* a file */
-#endif
+        dataObjOprInp->createMode = getPathStMode (p);
+        if (is_regular_file(p)) {
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;
-	    mySrcPath.objState = EXIST_ST;
-#ifdef USE_BOOST_FS
-	    mySrcPath.size = file_size (p);
-#else
-	    mySrcPath.size = statbuf.st_size;
-#endif
-	    getRodsObjType (conn, &myTargPath);
+            mySrcPath.objState = EXIST_ST;
+
+            mySrcPath.size = file_size (p);
+            getRodsObjType (conn, &myTargPath);
             status = rsyncFileToDataUtil (conn, &mySrcPath, &myTargPath,
-              myRodsEnv, rodsArgs, dataObjOprInp);
-	    /* fix a big mem leak */
+                    myRodsEnv, rodsArgs, dataObjOprInp);
+            /* fix a big mem leak */
             if (myTargPath.rodsObjStat != NULL) {
                 freeRodsObjStat (myTargPath.rodsObjStat);
                 myTargPath.rodsObjStat = NULL;
             }
-#if 0
-	    if (myTargPath.objState != NOT_EXIST_ST)
-	        freeRodsObjStat (myTargPath.rodsObjStat);
-#endif
-#ifdef USE_BOOST_FS
-	} else if (is_directory(p)) {
-#else
-        } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* a directory */
-#endif
-			status = 0;
-			/* only do the sync if no -l option specified */
-			if ( rodsArgs->longOption != True ) {
-            	status = mkCollR (conn, targColl, myTargPath.outPath);
-			}
+        } else if (is_directory(p)) {
+            status = 0;
+            /* only do the sync if no -l option specified */
+            if ( rodsArgs->longOption != True ) {
+                status = mkCollR (conn, targColl, myTargPath.outPath);
+            }
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
-                  "rsyncDirToCollUtil: mkColl error for %s", 
-		  myTargPath.outPath);
+                        "rsyncDirToCollUtil: mkColl error for %s", 
+                        myTargPath.outPath);
             } else {
                 myTargPath.objType = COLL_OBJ_T;
                 mySrcPath.objType = LOCAL_DIR_T;
                 mySrcPath.objState = myTargPath.objState = EXIST_ST;
                 getRodsObjType (conn, &myTargPath);
                 status = rsyncDirToCollUtil (conn, &mySrcPath, &myTargPath,
-                  myRodsEnv, rodsArgs, dataObjOprInp);
-	        /* fix a big mem leak */
+                        myRodsEnv, rodsArgs, dataObjOprInp);
+                /* fix a big mem leak */
                 if (myTargPath.rodsObjStat != NULL) {
                     freeRodsObjStat (myTargPath.rodsObjStat);
                     myTargPath.rodsObjStat = NULL;
                 }
-#if 0
-	        if (myTargPath.objState != NOT_EXIST_ST)
-		    freeRodsObjStat (myTargPath.rodsObjStat);
-#endif
             }
         } else {
             rodsLog (LOG_ERROR,
-#ifdef USE_BOOST_FS
-              "rsyncDirToCollUtil: unknown local path %s",
-              mySrcPath.outPath);
-#else
-              "rsyncDirToCollUtil: unknown local path type %d for %s",
-              statbuf.st_mode, mySrcPath.outPath);
-#endif	/* USE_BOOST_FS */
+                    "rsyncDirToCollUtil: unknown local path %s",
+                    mySrcPath.outPath);
             status = USER_INPUT_PATH_ERR;
         }
 
         if (status < 0) {
             savedStatus = status;
             rodsLogError (LOG_ERROR, status,
-             "rsyncDirToCollUtil: put %s failed. status = %d",
-              mySrcPath.outPath, status);
+                    "rsyncDirToCollUtil: put %s failed. status = %d",
+                    mySrcPath.outPath, status);
         }
     }
-#ifndef USE_BOOST_FS
-    closedir (dirPtr);
-#endif
 
     if (savedStatus < 0) {
         return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND || 
-      status == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
+            status == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
         return (0);
     } else {
         return (status);
@@ -856,11 +796,8 @@ dataObjCopyInp_t *dataObjCopyInp)
     int savedStatus = 0;
     char *srcColl, *targColl;
     char targChildPath[MAX_NAME_LEN];
-#if 0
-    int collLen;
-#else
     char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
-#endif
+
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
@@ -884,13 +821,8 @@ dataObjCopyInp_t *dataObjCopyInp)
         return (USER_INPUT_OPTION_ERR);
     }
 
-#if 0
-    status = rclOpenCollection (conn, srcColl,
-      RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle);
-#else
     status = rclOpenCollection (conn, srcColl,
       VERY_LONG_METADATA_FG, &collHandle);
-#endif
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -917,10 +849,6 @@ dataObjCopyInp_t *dataObjCopyInp)
     myTargPath.objType = DATA_OBJ_T;
     mySrcPath.objType = DATA_OBJ_T;
 
-#if 0
-    collLen = strlen (srcColl);
-    collLen = getOpenedCollLen (&collHandle);
-#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             if (rodsArgs->age == True) {
@@ -928,14 +856,10 @@ dataObjCopyInp_t *dataObjCopyInp)
                   atoi (collEnt.modifyTime), rodsArgs->verbose,
                   collEnt.dataName, collEnt.dataSize)) continue;
             }
-#if 0
-            snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
-              targColl, collEnt.collName + collLen,
-              collEnt.dataName);
-#else
+
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
               targColl, collEnt.dataName);
-#endif
+
             snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
               collEnt.collName, collEnt.dataName);
             /* fill in some info for mySrcPath */
@@ -945,11 +869,7 @@ dataObjCopyInp_t *dataObjCopyInp)
             rstrcpy (mySrcPath.chksum, collEnt.chksum, NAME_LEN);
             mySrcPath.objState = EXIST_ST;
 
-#if 0
-            getFileType (&myTargPath);
-#else
 	    getRodsObjType (conn, &myTargPath);
-#endif
 
             status = rsyncDataToDataUtil (conn, &mySrcPath,
              &myTargPath, myRodsEnv, rodsArgs, dataObjCopyInp);
@@ -966,13 +886,6 @@ dataObjCopyInp_t *dataObjCopyInp)
                 status = 0;
             }
         } else if (collEnt.objType == COLL_OBJ_T) {
-#if 0
-            if (strlen (collEnt.collName) <= collLen)
-                continue;
-
-            snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
-              targColl, collEnt.collName + collLen);
-#else
             if ((status = splitPathByKey (
               collEnt.collName, parPath, childPath, '/')) < 0) {
                 rodsLogError (LOG_ERROR, status,
@@ -982,19 +895,14 @@ dataObjCopyInp_t *dataObjCopyInp)
             }
             snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
               targColl, childPath);
-#endif
 
+            if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
+                    mkColl (conn, targChildPath);
+            }
 
-	    if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
-            	mkColl (conn, targChildPath);
-	    }
-
-#if 0
-            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
-#endif
                 /* the child is a spec coll. need to drill down */
-                childDataObjCopyInp = *dataObjCopyInp;
-		if (collEnt.specColl.collClass != NO_SPEC_COLL)
+           childDataObjCopyInp = *dataObjCopyInp;
+		    if (collEnt.specColl.collClass != NO_SPEC_COLL)
                     childDataObjCopyInp.srcDataObjInp.specColl = 
 		      &collEnt.specColl;
                 rstrcpy (myTargPath.outPath, targChildPath, MAX_NAME_LEN);
@@ -1006,10 +914,10 @@ dataObjCopyInp_t *dataObjCopyInp)
                 if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                     return (status);
                 }
-#if 0
-            }
-#endif
-	}
+
+
+
+	    }
     }
     rclCloseCollection (&collHandle);
 
@@ -1127,7 +1035,7 @@ dataObjCopyInp_t *dataObjCopyInp)
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
         addKeyVal (&dataObjCopyInp->destDataObjInp.condInput, 
-	  DEST_RESC_NAME_KW, myRodsEnv->rodsDefResource);
+	               DEST_RESC_NAME_KW, myRodsEnv->rodsDefResource);
     }
 // =-=-=-=-=-=-=-
 // JMC - backport 4865

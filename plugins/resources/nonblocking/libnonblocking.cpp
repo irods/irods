@@ -74,7 +74,7 @@
 
 // =-=-=-=-=-=-=-
 /// @brief Generates a full path name from the partial physical path and the specified resource's vault path
-eirods::error unix_generate_full_path(
+eirods::error nonblocking_generate_full_path(
     eirods::plugin_property_map& _prop_map,
     const std::string&           _phy_path,
     std::string&                 _ret_string )
@@ -101,11 +101,11 @@ eirods::error unix_generate_full_path(
     
     return result;
 
-} // unix_generate_full_path
+} // nonblocking_generate_full_path
 
 // =-=-=-=-=-=-=-
 /// @brief update the physical path in the file object
-eirods::error unix_check_path( 
+eirods::error nonblocking_check_path( 
     eirods::resource_plugin_context& _ctx ) {
     eirods::error ret;
 
@@ -115,7 +115,7 @@ eirods::error unix_check_path(
         // =-=-=-=-=-=-=-
         // NOTE: Must do this for all storage resources
         std::string full_path;
-        ret = unix_generate_full_path( 
+        ret = nonblocking_generate_full_path( 
             _ctx.prop_map(), 
             data_obj->physical_path(),
             full_path );
@@ -133,7 +133,7 @@ eirods::error unix_check_path(
 
     return ret;
 
-} // unix_check_path
+} // nonblocking_check_path
 
 // =-=-=-=-=-=-=-
 /// @brief Checks the basic operation parameters and updates the physical path in the file object
@@ -150,7 +150,7 @@ eirods::error nonblocking_check_params_and_path(
     if( !ret.ok() ) { 
         result = PASSMSG( "resource context is invalid", ret );
     } else {
-        result = unix_check_path( _ctx );
+        result = nonblocking_check_path( _ctx );
     }
 
     return result;
@@ -959,7 +959,7 @@ extern "C" {
         // =-=-=-=-=-=-=- 
         // manufacture a new path from the new file name 
         std::string new_full_path;
-        ret = unix_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
+        ret = nonblocking_generate_full_path( _ctx.prop_map(), _new_file_name, new_full_path );
         if(!ret.ok()) {
             std::stringstream msg;
             msg << "Unable to generate full path for destinate file: \"" << _new_file_name << "\"";
@@ -1012,6 +1012,51 @@ extern "C" {
         return CODE( status );
 
     } // nonblocking_file_rename_plugin
+
+    // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error nonblocking_file_truncate_plugin( 
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        // Check the operation parameters and update the physical path
+        eirods::error ret = nonblocking_check_params_and_path< eirods::file_object >( _ctx );
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << __FUNCTION__ << " - Invalid parameters or physical path.";
+            return PASSMSG(msg.str(), ret);
+        }
+        
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+
+        // =-=-=-=-=-=-=-
+        // make the call to rename
+        int status = truncate( file_obj->physical_path().c_str(), 
+                               file_obj->size() );
+
+        // =-=-=-=-=-=-=-
+        // handle any error cases
+        if( status < 0 ) {
+            // =-=-=-=-=-=-=-
+            // cache status in out variable
+            status = UNIX_FILE_TRUNCATE_ERR - errno;
+
+            std::stringstream msg;
+            msg << "nonblocking_file_truncate_plugin: rename error for ";
+            msg << file_obj->physical_path();
+            msg << ", errno = '";
+            msg << strerror( errno );
+            msg << "', status = ";
+            msg << status;
+                        
+            return ERROR( status, msg.str() );
+        }
+
+        return CODE( status );
+
+    } // nonblocking_file_truncate_plugin
+
 
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
@@ -1092,7 +1137,7 @@ extern "C" {
     } // nonblocking_file_get_fsfreespace_plugin
 
     int
-    unixFileCopyPlugin( int         mode, 
+    nonblockingFileCopyPlugin( int         mode, 
                         const char* srcFileName, 
                         const char* destFileName )
     {
@@ -1109,7 +1154,7 @@ extern "C" {
         if (status < 0) {
             status = UNIX_FILE_STAT_ERR - errno;
             rodsLog (LOG_ERROR, 
-                     "unixFileCopyPlugin: stat of %s error, status = %d",
+                     "nonblockingFileCopyPlugin: stat of %s error, status = %d",
                      srcFileName, status);
             return status;
         }
@@ -1118,7 +1163,7 @@ extern "C" {
         if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLog (LOG_ERROR,
-                     "unixFileCopyPlugin: open error for srcFileName %s, status = %d",
+                     "nonblockingFileCopyPlugin: open error for srcFileName %s, status = %d",
                      srcFileName, status );
             close( inFd ); // JMC cppcheck - resource
             return status;
@@ -1128,7 +1173,7 @@ extern "C" {
         if (outFd < 0) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLog (LOG_ERROR,
-                     "unixFileCopyPlugin: open error for destFileName %s, status = %d",
+                     "nonblockingFileCopyPlugin: open error for destFileName %s, status = %d",
                      destFileName, status);
             close (inFd);
             return status;
@@ -1139,7 +1184,7 @@ extern "C" {
             if (bytesWritten <= 0) {
                 status = UNIX_FILE_WRITE_ERR - errno;
                 rodsLog (LOG_ERROR,
-                         "unixFileCopyPlugin: write error for srcFileName %s, status = %d",
+                         "nonblockingFileCopyPlugin: write error for srcFileName %s, status = %d",
                          destFileName, status);
                 close (inFd);
                 close (outFd);
@@ -1153,7 +1198,7 @@ extern "C" {
 
         if (bytesCopied != statbuf.st_size) {
             rodsLog ( LOG_ERROR,
-                      "unixFileCopyPlugin: Copied size %lld does not match source \
+                      "nonblockingFileCopyPlugin: Copied size %lld does not match source \
                              size %lld of %s",
                       bytesCopied, statbuf.st_size, srcFileName );
             return SYS_COPY_LEN_ERR;
@@ -1163,7 +1208,7 @@ extern "C" {
     }
 
     // =-=-=-=-=-=-=-
-    // unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
+    // nonblockingStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from filename to cacheFilename. optionalInfo info
     // is not used.
     eirods::error nonblocking_file_stagetocache_plugin( 
@@ -1182,7 +1227,7 @@ extern "C" {
         // get ref to fco
         eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
-        int status = unixFileCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
+        int status = nonblockingFileCopyPlugin( fco->mode(), fco->physical_path().c_str(), _cache_file_name );
         if( status < 0 ) {
             return ERROR( status, "nonblocking_file_stagetocache_plugin failed." );
         } else {
@@ -1191,7 +1236,7 @@ extern "C" {
     } // nonblocking_file_stagetocache_plugin
 
     // =-=-=-=-=-=-=-
-    // unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
+    // nonblockingSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
     // Just copy the file from cacheFilename to filename. optionalInfo info
     // is not used.
     eirods::error nonblocking_file_synctoarch_plugin( 
@@ -1210,7 +1255,7 @@ extern "C" {
         // get ref to fco
         eirods::file_object_ptr fco = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
         
-        int status = unixFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
+        int status = nonblockingFileCopyPlugin( fco->mode(), _cache_file_name, fco->physical_path().c_str() );
         if( status < 0 ) {
             return ERROR( status, "nonblocking_file_synctoarch_plugin failed." );
         } else {
@@ -1351,7 +1396,7 @@ extern "C" {
     } // redirect_get
 
     // =-=-=-=-=-=-=-
-    // unix_redirerct_plugin - used to allow the resource to determine which host
+    // nonblocking_redirerct_plugin - used to allow the resource to determine which host
     //                         should provide the requested operation
     eirods::error nonblocking_file_redirect_plugin( 
         eirods::resource_plugin_context& _ctx,
@@ -1423,6 +1468,14 @@ extern "C" {
 
     } // nonblocking_file_redirect_plugin
 
+    // =-=-=-=-=-=-=-
+    // nonblocking_file_rebalance - code which would rebalance the subtree
+    eirods::error nonblocking_file_rebalance(
+        eirods::resource_plugin_context& _ctx ) {
+        return SUCCESS();
+
+    } // nonblocking_file_rebalancec
+
     /// =-=-=-=-=-=-=-
     /// @brief interface to notify of a file registration
     eirods::error nonblocking_file_registered_plugin(
@@ -1470,11 +1523,11 @@ extern "C" {
     
 
     // =-=-=-=-=-=-=-
-    // 3. create derived class to handle unix file system resources
+    // 3. create derived class to handle nonblocking file system resources
     //    necessary to do custom parsing of the context string to place
     //    any useful values into the property map for reference in later
     //    operations.  semicolon is the preferred delimiter
-    class unixfilesystem_resource : public eirods::resource {
+    class non_blocking_resource : public eirods::resource {
         // =-=-=-=-=-=-=-
         // 3a. create a class to provide maintenance operations, this is only for example
         //     and will not be called.
@@ -1493,7 +1546,7 @@ extern "C" {
             }
 
             eirods::error operator()( rcComm_t* ) {
-                rodsLog( LOG_NOTICE, "unixfilesystem_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
+                rodsLog( LOG_NOTICE, "non_blocking_resource::post_disconnect_maintenance_operation - [%s]", name_.c_str() );
                 return SUCCESS();
             }
 
@@ -1503,42 +1556,12 @@ extern "C" {
         }; // class maintenance_operation
 
     public:
-        unixfilesystem_resource( const std::string& _inst_name, 
-                                 const std::string& _context ) : 
-            eirods::resource( _inst_name, _context ) {
-
-            if( !context_.empty() ) {
-                // =-=-=-=-=-=-=-
-                // tokenize context string into key/val pairs assuming a ; as a separator
-                std::vector< std::string > key_vals;
-                eirods::string_tokenize( _context, ";", key_vals );
-
-                // =-=-=-=-=-=-=-
-                // tokenize each key/val pair using = as a separator and
-                // add them to the property list
-                std::vector< std::string >::iterator itr = key_vals.begin();
-                for( ; itr != key_vals.end(); ++itr ) {
-
-                    if( !itr->empty() ) {
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        std::vector< std::string > vals;
-                        eirods::string_tokenize( *itr, "=", vals );
-                        
-                        // =-=-=-=-=-=-=-
-                        // break up key and value into two strings
-                        if( vals.size() == 2 ) {
-                            properties_[ vals[0] ] = vals[1];
-                        } else {
-                            // this would be an error case  
-                        }
-
-                    } // if key_val not empty
-                
-                } // for itr 
-            
-            } // if context not empty
-
+        non_blocking_resource( 
+            const std::string& _inst_name, 
+            const std::string& _context ) : 
+            eirods::resource( 
+                _inst_name, 
+                _context ) {
         } // ctor
 
 
@@ -1552,21 +1575,11 @@ extern "C" {
         // 3b. pass along a functor for maintenance work after
         //     the client disconnects, uncomment the first two lines for effect.
         eirods::error post_disconnect_maintenance_operation( eirods::pdmo_type& _op  ) {
-#if 0
-            std::string name;
-            eirods::error err = get_property< std::string >( "name", name );
-            if( !err.ok() ) {
-                return PASSMSG( "unixfilesystem_resource::post_disconnect_maintenance_operation failed.", err );
-            }
-
-            _op = maintenance_operation( name );
-            return SUCCESS();
-#else
             return ERROR( -1, "nop" );
-#endif
+
         }
 
-    }; // class unixfilesystem_resource
+    }; // class non_blocking_resource
   
     // =-=-=-=-=-=-=-
     // 4. create the plugin factory function which will return a dynamically
@@ -1578,8 +1591,8 @@ extern "C" {
     eirods::resource* plugin_factory( const std::string& _inst_name, const std::string& _context  ) {
 
         // =-=-=-=-=-=-=-
-        // 4a. create unixfilesystem_resource
-        unixfilesystem_resource* resc = new unixfilesystem_resource( _inst_name, _context );
+        // 4a. create non_blocking_resource
+        non_blocking_resource* resc = new non_blocking_resource( _inst_name, _context );
 
         // =-=-=-=-=-=-=-
         // 4b. map function names to operations.  this map will be used to load
@@ -1599,6 +1612,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "nonblocking_file_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "nonblocking_file_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "nonblocking_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "nonblocking_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "nonblocking_file_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "nonblocking_file_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "nonblocking_file_synctoarch_plugin" );
@@ -1607,6 +1621,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_MODIFIED,     "nonblocking_file_modified_plugin" );
 
         resc->add_operation( eirods::RESOURCE_OP_RESOLVE_RESC_HIER,     "nonblocking_file_redirect_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_REBALANCE,             "nonblocking_file_rebalance" );
 
         // =-=-=-=-=-=-=-
         // set some properties necessary for backporting to iRODS legacy code

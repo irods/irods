@@ -123,7 +123,7 @@ int _rsFilePut(
             rodsLog (LOG_DEBUG1,
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd);
-        } else {
+        } else if( fd != EIRODS_DIRECT_ARCHIVE_ACCESS ) {
             rodsLog (LOG_NOTICE, 
                      "_rsFilePut: filePut for %s, status = %d",
                      _put_inp->fileName, fd);
@@ -148,11 +148,8 @@ int _rsFilePut(
                                     _put_inp->fileName, 
                                     _put_inp->resc_hier_, 
                                     fd, 0, 0 ) );
-    if(_put_inp->in_pdmo != 0) {
-        file_obj->in_pdmo(true);
-    } else {
-        file_obj->in_pdmo(false);
-    }
+    file_obj->in_pdmo(_put_inp->in_pdmo);
+
     eirods::error write_err = fileWrite( _comm,
                                          file_obj, 
                                          _put_bbuf->buf, 

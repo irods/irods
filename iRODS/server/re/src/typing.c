@@ -5,13 +5,14 @@
 #include "functions.h"
 #define RE_ERROR(x) if(x) {goto error;}
 #define RE_ERROR2(x,y) if(x) {localErrorMsg=(y);goto error;}
-#define N_BASE_TYPES 6
+#define N_BASE_TYPES 7
 NodeType baseTypes[N_BASE_TYPES] = {
 		T_INT,
 		T_BOOL,
 		T_DOUBLE,
 		T_DATETIME,
 		T_STRING,
+		T_PATH,
 		T_IRODS,
 };
 void doNarrow(Node **l, Node **r, int ln, int rn, int flex, Node **nl, Node **nr, int *nln, int *nrn);
@@ -96,22 +97,24 @@ char *getBaseTypeOrTVarId(ExprType *a, char buf[128]) {
 	return buf;
 }
 int tautologyLtBase(ExprType *a, ExprType *b) {
-	if(getNodeType(a) == getNodeType(b)) {
+	if(getNodeType(a) != T_IRODS && getNodeType(a) == getNodeType(b)) {
 		return 1;
 	}
-        switch(getNodeType(a)) {
-            case T_INT:
-                return getNodeType(b) == T_INT ||
-                        getNodeType(b) == T_DOUBLE;
-            case T_DOUBLE:
-            case T_BOOL:
-            case T_STRING:
-                return getNodeType(a)==getNodeType(b);
-            case T_IRODS:
-            	return getNodeType(b)==T_IRODS && (a->text==NULL || b->text == NULL || strcmp(a->text, b->text) == 0) ? 1 : 0;
-            default:
+	if(getNodeType(a) == T_INT && getNodeType(b) == T_DOUBLE) {
+		return 1;
+	}
+	if(getNodeType(a) == T_IRODS && getNodeType(b)==T_IRODS && (a->text==NULL || b->text == NULL || strcmp(a->text, b->text) == 0)) {
+		return 1;
+	}
+	int i;
+	if(a->exprType != 0 && TYPE(a) == T_VAR) {
+		for(i = 0; i < a->exprType->degree; i++) {
+			if(typeEqSyntatic(a->exprType->subtrees[i], b)) {
+				return 1;
+			}
+		}
+	}
                 return 0;
-        }
 }
 int occursIn(ExprType *var, ExprType *type) {
 	if(getNodeType(type) == T_VAR) {
@@ -285,7 +288,7 @@ void doNarrow(Node **l, Node **r, int ln, int rn, int flex, Node **nl, Node **nr
 	}
 	for(k=0;k<rn;k++) {
 		for(i=0;i<ln;i++) {
-			if(splitBaseType(l[i], r[k], flex) == TAUTOLOGY) {
+			if(applyBaseTypeRule(l[i], r[k], flex) == TAUTOLOGY) {
 				retl[i] = l[i];
 				retr[k] = r[k];
 				if(getNodeType(l[i]) == T_IRODS && l[i]->text == NULL) {
@@ -372,6 +375,18 @@ Satisfiability narrow(ExprType *type, ExprType *expected, int flex, Node *node, 
 		return createSimpleConstraint(type, expected, flex, node, typingEnv, equivalence, simpleTypingConstraints, r);
 	}
 }
+#define logicalAnd(a, b, c) \
+	{ \
+		switch(a) { \
+		case ABSURDITY: \
+			(c) = ABSURDITY; \
+		case CONTINGENCY: \
+			(c) = (b) == ABSURDITY ? ABSURDITY : CONTINGENCY; \
+		case TAUTOLOGY: \
+			(c) = (b); \
+		} \
+	}
+
 Satisfiability splitConsOrTuple(ExprType *a, ExprType *b, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r) {
 /* split composite constraints with same top level type constructor */
 	if((getNodeType(a) == T_CONS && strcmp(T_CONS_TYPE_NAME(a), T_CONS_TYPE_NAME(b)) != 0) ||
@@ -410,41 +425,63 @@ int isBaseType(ExprType *t) {
 	return 0;
 }
 
-Satisfiability splitBaseType(ExprType *tca, ExprType *tcb, int flex)
+int applyBaseTypeRule(ExprType *tca, ExprType *tcb, int flex)
 {
     return (flex && tautologyLtBase(tca, tcb)) ||
     		(!flex && ((getNodeType(tca) == T_IRODS && getNodeType(tcb) == T_IRODS && (tca->text == NULL || tcb->text == NULL)) ||
-    				typeEqSyntatic(tca, tcb))) ? TAUTOLOGY : ABSURDITY;
+    				typeEqSyntatic(tca, tcb)));
+}
+
+int baseRuleApplies(ExprType *ta, ExprType *tb, int flex, ExprType **templa, ExprType **templb, Region *r) {
+	if(isBaseType(ta) && isBaseType(tb) && applyBaseTypeRule(ta, tb, flex)) {
+		*templa = ta;
+		*templb = tb;
+		return 1;
+	} else if(flex && isIterableBaseRuleType(ta, templa, templb, r) && getNodeType(tb) == T_CONS) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 Satisfiability simplifyLocally(ExprType *tca, ExprType *tcb, int flex, Node *node, Hashtable *typingEnv, Hashtable *equivalence, List *simpleTypingConstraints, Region *r) {
 /*
     char buf[1024], buf2[1024], buf3[1024], buf4[ERR_MSG_LEN];
-    generateErrMsg("simplifyLocally: constraint generated from ", NODE_EXPR_POS(TC_NODE(tc)), TC_NODE(tc)->base, buf4);
-    printf(buf4);
+    generateErrMsg("simplifyLocally: constraint generated from ", NODE_EXPR_POS(node), node->base, buf4);
+    printf("%s", buf4);
     snprintf(buf, 1024, "\t%s<%s\n",
-                typeToString(TC_A(tc), NULL, buf2, 1024),
-                typeToString(TC_B(tc), NULL, buf3, 1024));
+                typeToString(tca, NULL, buf2, 1024),
+                typeToString(tcb, NULL, buf3, 1024));
     printf("%s", buf);
     snprintf(buf, 1024, "\tinstantiated: %s<%s\n",
-                typeToString(TC_A(tc), typingEnv, buf2, 1024),
-                typeToString(TC_B(tc), typingEnv, buf3, 1024));
+                typeToString(tca, typingEnv, buf2, 1024),
+                typeToString(tcb, typingEnv, buf3, 1024));
     printf("%s", buf);
 */
+	if(tca == tcb) {
+		return TAUTOLOGY;
+	}
+
     if(getNodeType(tcb) == T_FLEX) {
     	tcb = tcb->subtrees[0];
     	flex = 1;
     } else if(getNodeType(tcb) == T_FIXD) {
     	tcb = tcb->subtrees[0];
     }
+
     tca = dereference(tca, typingEnv, r);
     tcb = dereference(tcb, typingEnv, r);
+
+	ExprType *templa, *templb;
 
 	if(getNodeType(tca) == T_UNSPECED || getNodeType(tca) == T_DYNAMIC || getNodeType(tcb) == T_DYNAMIC) { /* is an undefined variable argument or a parameter with dynamic type */
 		return TAUTOLOGY;
 	}
-	else if(isBaseType(tca) && isBaseType(tcb)) {
-		return splitBaseType(tca, tcb, flex);
+	else if(baseRuleApplies(tca, tcb, flex, &templa, &templb, r)) {
+		Satisfiability c;
+		logicalAnd(simplifyLocally(tca, templa, flex, node, typingEnv, equivalence, simpleTypingConstraints, r),
+						simplifyLocally(templb, tcb, flex, node, typingEnv, equivalence, simpleTypingConstraints, r), c);
+		return c;
 	} else if(getNodeType(tca) == T_VAR && getNodeType(tcb) == T_VAR) {
 		return narrow(tca, tcb, flex, node, typingEnv, equivalence, simpleTypingConstraints, r);
 
@@ -599,6 +636,136 @@ Satisfiability simplify(List *typingConstraints, Hashtable *typingEnv, rError_t 
     return ret;
 }
 
+/* return the elem type of special iterable types
+ * assume that type is a special iterable type */
+ExprType *getElemType(ExprType *type, Region *r) {
+	if(getNodeType(type) == T_STRING) {
+		return newSimpType(T_STRING, r);
+	} else if(getNodeType(type) == T_PATH || strcmp(type->text, CollInp_MS_T) == 0){
+		return newIRODSType(DataObjInp_MS_T, r);
+	} else if(strcmp(type->text, IntArray_MS_T) == 0) {
+		return newSimpType(T_INT, r);
+	} else if(strcmp(type->text, StrArray_MS_T) == 0) {
+		return newSimpType(T_STRING, r);
+	} else if(strcmp(type->text, GenQueryOut_MS_T) == 0) {
+		return newIRODSType(KeyValPair_MS_T, r);
+	}
+	return NULL;
+}
+/*
+ * param templa a template type which this type must conform to in order to be used in a base rule.
+ *       templb a template type which the supertype must conform to in order to be used in a base rule.
+ */
+int isIterableBaseRuleType(ExprType *type, ExprType **templa, ExprType **templb, Region *r) {
+	int nodeType = getNodeType(type);
+	char *typeName = type->text;
+	switch(nodeType) {
+	case T_IRODS:
+		if(strcmp(typeName, CollInp_MS_T) == 0) {
+			*templa = type;
+		} else if(strcmp(typeName, IntArray_MS_T) == 0) {
+			*templa = type;
+		} else if(strcmp(typeName, StrArray_MS_T) == 0) {
+			*templa = type;
+		} else if(strcmp(typeName, GenQueryOut_MS_T) == 0) {
+			*templa = type;
+		} else {
+			return 0;
+		}
+		*templb = newCollType(getElemType(type, r), r);
+		return 1;
+	case T_STRING:
+		*templa = type;
+		*templb = newCollType(newSimpType(T_STRING, r), r);
+		return 1;
+	case T_PATH:
+		*templa = type;
+		*templb = newCollType(getElemType(type, r), r);
+		return 1;
+	case T_TUPLE:
+		if(T_CONS_ARITY(type)==2) {
+			ExprType **compTypes = (ExprType **)region_alloc(r, sizeof(ExprType *) * 2);
+			compTypes[0] = newIRODSType(GenQueryInp_MS_T, r);
+			compTypes[1] = newIRODSType(GenQueryOut_MS_T, r);
+			*templa = newTupleType(2, compTypes, r);
+			*templb = newCollType(newIRODSType(KeyValPair_MS_T, r), r);
+			return 1;
+		} else {
+			return 0;
+		}
+	default:
+    	return 0;
+    }
+}
+/* return the elem type if type is iterable
+ *                 null if type is not iterable
+ * type does not need to be dereferenced
+ */
+ExprType* isIterable(ExprType *type, int dynamictyping, Hashtable* var_type_table, Region *r) {
+	ExprType *derefedType = dereference(type, var_type_table, r);
+	Node *disjuncts[6];
+	Res *unified, *comp0, *comp1;
+    switch(getNodeType(derefedType)) {
+    case T_CONS:
+    	if(strcmp(type->text, LIST) == 0) { /* list */
+			/* dereference element type as only top level vars are dereferenced by the dereference function and we are accessing a subtree of the type */
+    		return dereference(T_CONS_TYPE_ARG(derefedType, 0), var_type_table, r);
+    	} else {
+    		return NULL;
+    	}
+    case T_VAR:
+    	if(T_VAR_NUM_DISJUNCTS(derefedType)==0) { /* not a union type */
+            /* overwrite type of collection variable */
+            unifyTVarL(derefedType, newCollType(newTVar(r), r), var_type_table, r);
+            derefedType = dereference(derefedType, var_type_table, r);
+            return dereference(T_CONS_TYPE_ARG(derefedType, 0), var_type_table, r);
+    	}
+    	/* no break */
+    case T_IRODS:
+    case T_STRING:
+    case T_PATH:
+    		disjuncts[0] = newSimpType(T_STRING, r);
+    		disjuncts[1] = newIRODSType(CollInp_MS_T, r);
+    		disjuncts[2] = newIRODSType(IntArray_MS_T, r);
+    		disjuncts[3] = newIRODSType(StrArray_MS_T, r);
+    		disjuncts[4] = newIRODSType(GenQueryOut_MS_T, r);
+    		disjuncts[5] = newSimpType(T_PATH, r);
+
+    		unified = unifyTVarL(derefedType, newTVar2(6, disjuncts, r), var_type_table, r);
+    		if(getNodeType(unified) == T_ERROR) {
+    			return NULL;
+    		}
+    		if(unified->nodeType == T_VAR) { /* more than one possible types */
+    			Node *disjunctsElem[4];
+    			int i;
+    			for(i=0;i<T_VAR_NUM_DISJUNCTS(unified);i++) {
+    				disjunctsElem[i] = getElemType(T_VAR_DISJUNCT(unified, i), r);
+    			}
+    			return newTVar2(T_VAR_NUM_DISJUNCTS(unified), disjunctsElem, r);
+    		} else {
+    			return getElemType(unified, r);
+    		}
+    case T_TUPLE:
+    	if(T_CONS_ARITY(derefedType)!=2)
+    		return NULL;
+    	comp0 = dereference(T_CONS_TYPE_ARG(derefedType, 0), var_type_table, r);
+    	comp1 = dereference(T_CONS_TYPE_ARG(derefedType, 1), var_type_table, r);
+    	if(getNodeType(comp0) != T_IRODS ||
+    			strcmp(T_CONS_TYPE_NAME(comp0), GenQueryInp_MS_T) !=0 ||
+    			getNodeType(comp1) != T_IRODS ||
+				strcmp(T_CONS_TYPE_NAME(comp1), GenQueryOut_MS_T) !=0) {
+    		return NULL;
+    	}
+		return newIRODSType(KeyValPair_MS_T, r);
+
+    case T_DYNAMIC:
+    	return type;
+    default:
+        return NULL;
+    }
+}
+
+
 ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable* var_type_table, List *typingConstraints, rError_t *errmsg, Node **errnode, Region *r) {
     /*printTree(node, 0); */
     int i;
@@ -609,62 +776,32 @@ ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable*
     /*printVarTypeEnvToStdOut(var_type_table); */
     Node *fn = node->subtrees[0];
     Node *arg = node->subtrees[1];
-
+    char buf[ERR_MSG_LEN];
+	/* char errbuf[ERR_MSG_LEN]; */
+	char typebuf[ERR_MSG_LEN];
+	char typebuf2[ERR_MSG_LEN];
 
     if(getNodeType(fn) == TK_TEXT && strcmp(fn->text, "foreach") == 0) {
         RE_ERROR2(getNodeType(arg) != N_TUPLE || arg->degree != 3,"wrong number of arguments to microservice");
         RE_ERROR2(getNodeType(arg->subtrees[0])!=TK_VAR,"argument form error");
         char* varname = arg->subtrees[0]->text;
-        ExprType *varType = (ExprType *)lookupFromHashTable(var_type_table, varname);
-        ExprType *collType = varType == NULL? NULL:dereference(varType, var_type_table, r);
+        ExprType *varType0 = (ExprType *)lookupFromHashTable(var_type_table, varname);
+        ExprType *varType;
+        ExprType *collType = varType0 == NULL? NULL:dereference(varType0, var_type_table, r);
         if(collType!=NULL) {
-            /* error if res is not a collection type, a type variable (primitive union type excluded), a pair, a CollInp_MS_T, or a string */
-            switch(getNodeType(collType)) {
-            case T_CONS:
-                /* dereference element type as only top level vars are dereferenced by the dereference function and we are accessing a subtree of the type */
-            	updateInHashTable(var_type_table, varname, dereference(T_CONS_TYPE_ARG(collType, 0), var_type_table, r));
-            	break;
-            case T_VAR:
-            	if(T_VAR_NUM_DISJUNCTS(collType)!=0) {
-            		Node *disjuncts[2] = {newSimpType(T_STRING, r), newIRODSType(CollInp_MS_T, r)};
-            		Res *unified = unifyTVarL(collType, newTVar2(2, disjuncts, r), var_type_table, r);
-            		RE_ERROR2(getNodeType(unified) == T_ERROR, "foreach is applied to a non collection type");
-            		collType = dereference(collType, var_type_table, r);
-            		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
-            		break;
-            	} else {
-                    /* overwrite type of collection variable */
-            		/* if this has to be later unified with CollInp_MS_T, we need a special rule to handle it */
-                    unifyTVarL(collType, newCollType(newTVar(r), r), var_type_table, r);
-                    collType = dereference(collType, var_type_table, r);
-                    updateInHashTable(var_type_table, varname, dereference(T_CONS_TYPE_ARG(collType, 0), var_type_table, r));
-                    break;
-            	}
-            case T_TUPLE:
-            	RE_ERROR2(T_CONS_ARITY(collType)!=2 ||
-            			getNodeType(T_CONS_TYPE_ARG(collType, 0)) != T_IRODS ||
-            			strcmp(T_CONS_TYPE_NAME(T_CONS_TYPE_ARG(collType, 0)), GenQueryInp_MS_T) !=0 ||
-            			getNodeType(T_CONS_TYPE_ARG(collType, 1)) != T_IRODS ||
-						strcmp(T_CONS_TYPE_NAME(T_CONS_TYPE_ARG(collType, 0)), GenQueryOut_MS_T) !=0, "foreach is applied to a non collection type");
-            		updateInHashTable(var_type_table, varname, newIRODSType(KeyValPair_MS_T, r));
-            		break;
-            case T_IRODS:
-            	RE_ERROR2(strcmp(T_CONS_TYPE_NAME(collType), CollInp_MS_T)!=0, "foreach is applied to a non collection type");
-        		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
-        		break;
-            case T_STRING:
-        		updateInHashTable(var_type_table, varname, newIRODSType(DataObjInp_MS_T, r));
-        		break;
-            default:
-            	RE_ERROR2(TRUE, "foreach is applied to a non collection type");
-            	break;
+        	varType = isIterable(collType, dynamictyping, var_type_table, r);
+        	if(varType == NULL) {
+            /* error if res is not an iterable type */
+            	RE_ERROR2(1, "foreach is applied to a non collection type");
             }
-
-
+            	} else {
+            varType = newTVar(r);
+            collType = newCollType(varType, r);
+            	}
+        if(varType0 == NULL) {
+            insertIntoHashTable(var_type_table, varname, varType);
         } else {
-            ExprType *elemType;
-            insertIntoHashTable(var_type_table, varname, elemType = newTVar(r));
-            collType = newCollType(elemType, r);
+        	updateInHashTable(var_type_table, varname, varType);
         }
         arg->subtrees[0]->exprType = collType;
         res3 = typeExpression3(arg->subtrees[1], dynamictyping, funcDesc, var_type_table,typingConstraints,errmsg,errnode,r);
@@ -705,14 +842,9 @@ ExprType* typeFunction3(Node* node, int dynamictyping, Env* funcDesc, Hashtable*
 
 /*
             printf("start typing %s\n", fn);
-*/
-/*
             printTreeDeref(node, 0, var_type_table, r);
 */
-        char buf[ERR_MSG_LEN];
-                    /* char errbuf[ERR_MSG_LEN]; */
-                    char typebuf[ERR_MSG_LEN];
-                    char typebuf2[ERR_MSG_LEN];ExprType *t = NULL;
+        ExprType *t = NULL;
 		if(getVararg(fType) != OPTION_VARARG_ONCE) {
 			/* generate instance of vararg tuple so that no vararg tuple goes into typing constraints */
 			int fixParamN = paramType->degree - 1;
@@ -811,78 +943,15 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
     ExprType* t = NULL;
 	int i;
 	expr->option |= OPTION_TYPED;
-	if(dynamictyping) {
-		switch(getNodeType(expr)) {
-		case TK_TEXT:
-			if(strcmp(expr->text,"nop")==0) {
-				return expr->exprType = newFuncType(newTupleType(0, NULL, r), newSimpType(T_INT, r), r);
-			} else {
-				/* not a variable, evaluate as a function */
-				FunctionDesc *fDesc;
-
-				if(funcDesc != NULL && (fDesc = (FunctionDesc*)lookupFromEnv(funcDesc, expr->text))!=NULL && fDesc->exprType!=NULL) {
-					return expr->exprType = dupType(fDesc->exprType, r);
-				} else {
-					ExprType *paramType = newSimpType(T_DYNAMIC, r);
-					setIOType(paramType, IO_TYPE_DYNAMIC);
-					ExprType *fType = newFuncType(newUnaryType(T_TUPLE, paramType, r), newSimpType(T_DYNAMIC, r), r);
-					setVararg(fType, OPTION_VARARG_STAR);
-					return expr->exprType = fType;
-				}
-			}
-		case N_TUPLE:
-			components = (ExprType **) region_alloc(r, sizeof(ExprType *) * expr->degree);
-			for(i=0;i<expr->degree;i++) {
-				components[i] = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-				if(getNodeType(components[i]) == T_ERROR) {
-					return expr->exprType = components[i];
-				}
-			}
-			if(N_TUPLE_CONSTRUCT_TUPLE(expr) || expr->degree != 1) {
-				return expr->exprType = newTupleType(expr->degree, components, r);
-			} else {
-				return expr->exprType = components[0];
-			}
-
-		case N_APPLICATION:
-			/* try to type as a function */
-			/* the exprType is used to store the type of the return value */
-			return expr->exprType = typeFunction3(expr, dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-		case N_ACTIONS:
-			if(expr->degree == 0) {
-				/* type of empty action sequence == T_INT */
-				return expr->exprType = newSimpType(T_INT, r);
-			}
-			for(i=0;i<expr->degree;i++) {
-				/*printf("typing action in actions"); */
-				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
-				/*printVarTypeEnvToStdOut(varTypes); */
-				if(getNodeType(res) == T_ERROR) {
-					return expr->exprType = res;
-				}
-			}
-			return expr->exprType = res;
-		case N_ACTIONS_RECOVERY:
-			res = typeExpression3(expr->subtrees[0], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-			if(getNodeType(res) == T_ERROR) {
-				return expr->exprType = res;
-			}
-			res = typeExpression3(expr->subtrees[1], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode, r);
-			return expr->exprType = res;
-		default:
-			return expr->exprType = newSimpType(T_DYNAMIC, r);
-
-		}
-	} else {
 		switch(getNodeType(expr)) {
 		case TK_BOOL:
-			return expr->exprType = newSimpType(T_BOOL, r);
+			return expr->exprType = dynamictyping?newSimpType(T_DYNAMIC, r):newSimpType(T_BOOL, r);
 		case TK_INT:
-            return expr->exprType = newSimpType(T_INT,r);
+            return expr->exprType = dynamictyping?newSimpType(T_DYNAMIC, r):newSimpType(T_INT,r);
         case TK_DOUBLE:
-            return expr->exprType = newSimpType(T_DOUBLE,r);
+            return expr->exprType = dynamictyping?newSimpType(T_DYNAMIC, r):newSimpType(T_DOUBLE,r);
 		case TK_STRING:
-			return expr->exprType = newSimpType(T_STRING,r);
+			return expr->exprType = dynamictyping?newSimpType(T_DYNAMIC, r):newSimpType(T_STRING,r);
 		case TK_VAR:
 			t = (ExprType *)lookupFromHashTable(varTypes, expr->text);
 			if(t==NULL) {
@@ -897,8 +966,8 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 				return expr->exprType = newFuncType(newTupleType(0, NULL, r), newSimpType(T_INT, r), r);
 			} else {
                 /* not a variable, evaluate as a function */
-			    FunctionDesc *fDesc = (FunctionDesc*)lookupFromEnv(funcDesc, expr->text);
-                if(fDesc!=NULL && fDesc->exprType!=NULL) {
+				FunctionDesc *fDesc;
+				if(funcDesc != NULL && (fDesc = (FunctionDesc*)lookupFromEnv(funcDesc, expr->text))!=NULL && fDesc->exprType!=NULL) {
                     return expr->exprType = dupType(fDesc->exprType, r);
                 } else {
                     ExprType *paramType = newSimpType(T_DYNAMIC, r);
@@ -956,6 +1025,24 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 				}
 			}
 			return expr->exprType = newSimpType(T_DYNAMIC, r);
+		case N_QUERY_COND_JUNCTION:
+			/* todo type */
+			for(i=0;i<expr->degree;i++) {
+				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				if(getNodeType(res) == T_ERROR) {
+					return expr->exprType = res;
+				}
+			}
+			return expr->exprType = newSimpType(T_DYNAMIC, r);
+		case N_QUERY:
+			/* todo type */
+			for(i=0;i<expr->degree;i++) {
+				res = typeExpression3(expr->subtrees[i], dynamictyping, funcDesc, varTypes, typingConstraints, errmsg, errnode,r);
+				if(getNodeType(res) == T_ERROR) {
+					return expr->exprType = res;
+				}
+			}
+			return expr->exprType = newSimpType(T_DYNAMIC, r);
 		case N_QUERY_COND:
 			/* todo type */
 			for(i=0;i<expr->degree;i++) {
@@ -978,7 +1065,7 @@ ExprType* typeExpression3(Node *expr, int dynamictyping, Env *funcDesc, Hashtabl
 		generateErrMsg(errbuf0, NODE_EXPR_POS(expr), expr->base, errbuf);
 		addRErrorMsg(errmsg, RE_TYPE_ERROR, errbuf);
 		return expr->exprType = newSimpType(T_ERROR,r);
-	}
+
 }
 /*
  * This process is based on a few assumptions:

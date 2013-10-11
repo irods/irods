@@ -422,7 +422,7 @@ msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
     } else {
         char *outStr = NULL;
 	rei->status = getSessionVarValue ("", inpVarStr, rei, &outStr);
-	if (rei->status >= 0) {
+	if (rei->status >= 0 && outStr) { // cppcheck - Possible null pointer dereference: outStr
 	    if (strcmp (outputModeStr, "server") == 0 ||
 	      strcmp (outputModeStr, "all") == 0) {
 			if( NULL != outStr ) // JMC cppcheck
@@ -790,4 +790,77 @@ msiExit (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
 
     /* return (rei->status); */
 }
+
+int
+msiStrCat (msParam_t *targParam, msParam_t *srcParam, ruleExecInfo_t *rei)
+{
+    char *targ, *src, *newTarg;
+    int targLen, srcLen;
+
+    RE_TEST_MACRO ("    Calling msiStrCat")
+
+    if (targParam == NULL || srcParam == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (strcmp (targParam->type, STR_MS_T) != 0 ||
+      strcmp (srcParam->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+          "msiStrCat: targParam and srcParam must be STR_MS_T. targ %s, src %s",
+          targParam->type, srcParam->type);
+        return (USER_PARAM_TYPE_ERR);
+    } else {
+        targ = (char*) targParam->inOutStruct;
+        src = (char*) srcParam->inOutStruct;
+    }
+
+    targLen = strlen (targ);
+    srcLen = strlen (src);
+    newTarg = (char *) calloc (1, targLen + srcLen + 10);
+    if (targLen > 0) rstrcpy (newTarg, targ, targLen + 1);
+    if (srcLen > 0) rstrcpy (newTarg + targLen, src, srcLen + 1);
+    free (targParam->inOutStruct);
+    targParam->inOutStruct = newTarg;
+
+    return 0;
+}
+int
+msiSplitPathByKey (msParam_t *inpPath,  msParam_t *inpKey, msParam_t *outParentColl, 
+msParam_t *outChildName, ruleExecInfo_t *rei)
+{
+    char parent[MAX_NAME_LEN], child[MAX_NAME_LEN];
+
+    RE_TEST_MACRO (" Calling msiSplitPathByKey")
+
+    if (rei == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiSplitPathByKey: input rei is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if ( inpPath == NULL ) {
+        rodsLog (LOG_ERROR,
+          "msiSplitPathByKey: input inpPath is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpPath->type, STR_MS_T) == 0) {
+        if ((rei->status = splitPathByKey ((char *) inpPath->inOutStruct,
+          parent, child, *(char *) inpKey->inOutStruct)) < 0) {
+            rodsLog (LOG_ERROR,
+              "msiSplitPathByKey: splitPathByKey for %s error, status = %d",
+              (char *) inpPath->inOutStruct, rei->status);
+        } else {
+          fillStrInMsParam (outParentColl, parent);
+          fillStrInMsParam (outChildName, child);
+        }
+    } else {
+        rodsLog (LOG_ERROR,
+        "msiSplitPathByKey: Unsupported input inpPath types %s",
+        inpPath->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+    }
+    return (rei->status);
+}
+
 

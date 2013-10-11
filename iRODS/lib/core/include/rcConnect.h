@@ -21,23 +21,14 @@
 #include "dataObjInpOut.h"
 #include "irodsGuiProgressCallback.h"
 
-#ifdef USE_BOOST
+
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-#endif
+
 
 #ifdef USE_SSL
 #include <openssl/ssl.h>
-#endif
-
-
-#ifdef USE_BOOST_ASIO
-// =-=-=-=-=-=-=-
-// JMC :: my wrapper around boost::asio tcp & udp sockets
-//     :: we need this since there is no non-template base
-//     :: class
-#include "socket_wrapper.hpp"
 #endif
 
 #ifdef  __cplusplus
@@ -98,45 +89,37 @@ typedef enum {
 /* The client connection handle */
 
 typedef struct {
-    irodsProt_t irodsProt;
-    char host[NAME_LEN];
-    int sock;
-    int portNum;
-    int loggedIn;	/* already logged in ? */
-    struct sockaddr_in  localAddr;   /* local address */
-    struct sockaddr_in  remoteAddr;  /* remote address */
-    userInfo_t proxyUser;
-    userInfo_t clientUser;
-    version_t *svrVersion;	/* the server's version */
-    rError_t *rError;
-    int flag;
-    transferStat_t transStat;
-    int apiInx;
-    int status;
-    int windowSize;
-    int reconnectedSock;
-    time_t reconnTime;
-#ifdef USE_BOOST
-    volatile bool		exit_flg;
-    boost::thread*              reconnThr;
-    boost::mutex*               lock;
-    boost::condition_variable*  cond;
-#else
-#ifndef windows_platform
-    pthread_t reconnThr;
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
-#endif
-#endif
-    procState_t agentState;
-    procState_t clientState;
-    procState_t reconnThrState;
-    operProgress_t operProgress;
-    fileRestart_t fileRestart;
+    irodsProt_t                irodsProt;
+    char                       host[NAME_LEN];
+    int                        sock;
+    int                        portNum;
+    int                        loggedIn;	/* already logged in ? */
+    struct sockaddr_in         localAddr;   /* local address */
+    struct sockaddr_in         remoteAddr;  /* remote address */
+    userInfo_t                 proxyUser;
+    userInfo_t                 clientUser;
+    version_t*                 svrVersion;	/* the server's version */
+    rError_t*                  rError;
+    int                        flag;
+    transferStat_t             transStat;
+    int                        apiInx;
+    int                        status;
+    int                        windowSize;
+    int                        reconnectedSock;
+    time_t                     reconnTime;
+    volatile bool		       exit_flg;
+    boost::thread*             reconnThr;
+    boost::mutex*              lock;
+    boost::condition_variable* cond;
+    procState_t                agentState;
+    procState_t                clientState;
+    procState_t                reconnThrState;
+    operProgress_t             operProgress;
+    fileRestart_t              fileRestart;
 #ifdef USE_SSL
-    int ssl_on;
-    SSL_CTX *ssl_ctx;
-    SSL *ssl;
+    int                        ssl_on;
+    SSL_CTX*                   ssl_ctx;
+    SSL*                       ssl;
 #endif
 
     char negotiation_results[ MAX_NAME_LEN ];
@@ -157,11 +140,7 @@ typedef struct {
 /* the server connection handle. probably should go somewhere else */
 typedef struct {
     irodsProt_t irodsProt;
-#ifdef USE_BOOST_ASIO
-    irods::socket_wrapper* sock;
-#else
     int sock;
-#endif
     int connectCnt;
     struct sockaddr_in  localAddr;   /* local address */
     struct sockaddr_in  remoteAddr;  /* remote address */
@@ -185,17 +164,9 @@ typedef struct {
     char *reconnAddr;
     int cookie;
 
-#ifdef USE_BOOST
     boost::thread*              reconnThr;
     boost::mutex*               lock;
     boost::condition_variable*  cond;
-#else
-#ifndef windows_platform
-    pthread_t reconnThr;
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
-#endif
-#endif
     procState_t agentState;	
     procState_t clientState;
     procState_t reconnThrState;
