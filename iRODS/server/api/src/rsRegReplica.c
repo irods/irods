@@ -73,7 +73,7 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
         
         char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
-            file_obj->in_pdmo(true);
+            file_obj->in_pdmo(pdmo_kw);
         }
 
         eirods::error ret = fileModified(rsComm, file_obj);
@@ -102,7 +102,7 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 
         char* pdmo_kw = getValByKey(&regReplicaInp->condInput, IN_PDMO_KW);
         if(pdmo_kw != NULL) {
-            file_obj->in_pdmo(true);
+            file_obj->in_pdmo(pdmo_kw);
         }
 
 

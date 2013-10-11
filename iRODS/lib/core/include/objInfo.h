@@ -220,7 +220,7 @@ typedef struct RescCacheInfo
         specColl_t *specColl;
         int regUid;                /* the UNIX uid the registering user */
         int otherFlags;    /* not used for now */
-        int in_pdmo;       // If this is set then we are currently in a pdmo call
+        char in_pdmo[MAX_NAME_LEN]; // If this is set then we are currently in a pdmo call at that level of hierarchy
         struct DataObjInfo *next;
     } dataObjInfo_t ;
 

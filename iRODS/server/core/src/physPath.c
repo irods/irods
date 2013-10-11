@@ -477,7 +477,7 @@ _dataObjChksum (
         rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.rescHier, dataObjInfo->rescHier, MAX_NAME_LEN);
         rstrcpy (fileChksumInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-        fileChksumInp.in_pdmo = dataObjInfo->in_pdmo;
+        rstrcpy (fileChksumInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
         status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
         if(status == EIRODS_DIRECT_ARCHIVE_ACCESS) {
             std::stringstream msg;
@@ -525,7 +525,7 @@ dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
     addKeyVal (&regParam, CHKSUM_KW, *chksumStr);
 
     // always set pdmo flag here... total hack - harry
-    addKeyVal(&regParam, IN_PDMO_KW, "");
+    addKeyVal(&regParam, IN_PDMO_KW, dataObjInfo->rescHier);
     
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;

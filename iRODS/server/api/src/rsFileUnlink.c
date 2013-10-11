@@ -98,11 +98,7 @@ int _rsFileUnlink(
                                     _unlink_inp->fileName, 
                                     _unlink_inp->rescHier, 
                                     0, 0, 0 ) );
-    if(_unlink_inp->in_pdmo) {
-        file_obj->in_pdmo(true);
-    } else {
-        file_obj->in_pdmo(false);
-    }
+    file_obj->in_pdmo(_unlink_inp->in_pdmo);
     
     eirods::error unlink_err = fileUnlink( _comm, file_obj );
      

@@ -111,11 +111,7 @@ int _rsFileClose(
                                     FileDesc[ _close_inp->fileInx ].rescHier, 
                                     FileDesc[ _close_inp->fileInx ].fd,
                                     0, 0 ) );
-    if(_close_inp->in_pdmo != 0) {
-        file_obj->in_pdmo(true);
-    } else {
-        file_obj->in_pdmo(false);
-    }
+    file_obj->in_pdmo(_close_inp->in_pdmo);
     
     eirods::error close_err = fileClose( _comm, file_obj );
     // =-=-=-=-=-=-=-
