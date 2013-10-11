@@ -845,32 +845,9 @@ extern "C" {
     /// @brief interface to determine free space on a device given a path
     eirods::error compound_file_getfs_freespace(
         eirods::resource_plugin_context& _ctx ) { 
-        // =-=-=-=-=-=-=-
-        // check the context for validity
-        eirods::error ret = compound_check_param< eirods::file_object >(_ctx);
-        if(!ret.ok()) {
-            return PASSMSG( "invalid resource context", ret);
-        }
 
-        // =-=-=-=-=-=-=-
-        // get the cache resource
-        eirods::resource_ptr resc;
-        ret = get_cache( _ctx, resc );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        }
-
-        // =-=-=-=-=-=-=-
-        // forward the call
-        ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_FREESPACE, _ctx.fco() );
-        if( !ret.ok() ) {
-            return PASS( ret );
-        
-        }
-        
-        return ret;
- 
     } // compound_file_getfs_freespace
+
 
     /// =-=-=-=-=-=-=-
     /// @brief Move data from a the archive leaf node to a local cache leaf node
@@ -898,11 +875,7 @@ extern "C" {
 
         // =-=-=-=-=-=-=-
         // forward the call to the archive
-        return resc->call< const char* >( 
-                   _ctx.comm(), 
-                   eirods::RESOURCE_OP_STAGETOCACHE, 
-                   _ctx.fco(), 
-                   _cache_file_name );
+        return resc->call< const char* >( _ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
 
     } // compound_file_stage_to_cache
 

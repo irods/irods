@@ -681,10 +681,10 @@ acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*
 
 # =-=-=-=-=-=-=-
 # examples of dynamically called rules via the operation_wrapper
-#pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_resource_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_resource_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_resource_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
 
 
 # =-=-=-=-=-=-=-

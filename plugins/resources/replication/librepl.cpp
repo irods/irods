@@ -1233,7 +1233,7 @@ extern "C" {
     // is not used.
     eirods::error replStageToCache(
         eirods::resource_plugin_context& _ctx,
-        const char*                      _cache_file_name )
+        const char*                    _cache_file_name )
     { 
         eirods::error result = SUCCESS();
         eirods::error ret;
@@ -1263,12 +1263,7 @@ extern "C" {
                     msg << " - Failed while calling child operation.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    // use this to determine if result = CODE(ret.code());
-                    result = child->call< const char* >( 
-                                 _ctx.comm(), 
-                                 eirods::RESOURCE_OP_STAGETOCACHE, 
-                                 _ctx.fco(), 
-                                 _cache_file_name );
+                    result = CODE(ret.code());
                 }
             }
         }
