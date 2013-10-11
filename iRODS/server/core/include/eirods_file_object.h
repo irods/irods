@@ -66,7 +66,7 @@ namespace eirods {
         virtual size_t                         size()            const { return size_;            }
         virtual int                            repl_requested()  const { return repl_requested_;  }
         virtual std::vector< physical_object > replicas()        const { return replicas_;        }
-        virtual bool                           in_pdmo()         const { return in_pdmo_;         }
+        virtual const std::string&             in_pdmo()         const { return in_pdmo_;         }
         virtual const keyValPair_t&            cond_input()      const { return cond_input_;      }
         
         // =-=-=-=-=-=-=-
@@ -76,7 +76,7 @@ namespace eirods {
         virtual void comm ( rsComm_t* _c )                   { comm_            = _c;  } 
         virtual void size( size_t _v )                       { size_            = _v;  }
         virtual void repl_requested( int _v )                { repl_requested_  = _v;  }
-        virtual void in_pdmo( bool _v )                      { in_pdmo_         = _v;  }
+        virtual void in_pdmo( const std::string& _v )        { in_pdmo_         = _v;  }
         virtual void replicas( const std::vector< physical_object >& _v ) {
             replicas_ = _v;
         }
@@ -95,9 +95,9 @@ namespace eirods {
         int                            l1_desc_idx_;     // index into irods L1 file decriptor table
         size_t                         size_;            // size of the file in bytes
         int                            repl_requested_;  // requested replica number
-        bool                           in_pdmo_;         // flag indicating the current operations are 
+        std::string                    in_pdmo_;         // hierarchy indicating the current operations are 
                                                          // occurring from within a pdmo
-                                                         // call
+                                                         // call made from within the hierarchy
         std::vector< physical_object > replicas_;        // structures holding replica info initialized 
                                                          // by factory fcn from
                                                          // dataObjInfoHead

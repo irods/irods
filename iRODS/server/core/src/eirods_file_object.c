@@ -25,8 +25,8 @@ namespace eirods {
     file_object::file_object() :
         data_object(),
         size_(0),
-        repl_requested_( -1 ),
-        in_pdmo_(false) {
+        repl_requested_( -1 )
+    {
         memset(&cond_input_, 0, sizeof(keyValPair_t));
     } // file_object
 
@@ -71,8 +71,8 @@ namespace eirods {
         file_descriptor_(_fd),
         l1_desc_idx_( -1 ),
         size_( -1 ),
-        repl_requested_(-1),
-        in_pdmo_(false) {
+        repl_requested_(-1)
+    {
         // =-=-=-=-=-=-=-
         // explicit initialization
         replicas_.empty();
@@ -278,7 +278,7 @@ namespace eirods {
         // handle the case where we are being called as part of a pdmo
         char* in_pdmo = getValByKey(&_data_obj_inp->condInput, IN_PDMO_KW);
         if(in_pdmo) {
-            _file_obj->in_pdmo(true);
+            _file_obj->in_pdmo(in_pdmo);
         }
         
         // =-=-=-=-=-=-=-

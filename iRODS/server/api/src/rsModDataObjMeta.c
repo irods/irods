@@ -113,7 +113,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 
                 char* pdmo_kw = getValByKey(regParam, IN_PDMO_KW);
                 if(pdmo_kw != NULL) {
-                    file_obj->in_pdmo(true);
+                    file_obj->in_pdmo(pdmo_kw);
 
                 }
 
@@ -152,7 +152,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 
             char* pdmo_kw = getValByKey(regParam, IN_PDMO_KW);
             if(pdmo_kw != NULL) {
-                file_obj->in_pdmo(true);
+                file_obj->in_pdmo(pdmo_kw);
             }
             eirods::error ret = fileModified(rsComm, file_obj);
             if(!ret.ok()) {

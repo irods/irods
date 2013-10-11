@@ -398,7 +398,7 @@ _l3Open (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, int mode, int flags)
     rstrcpy (fileOpenInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
     fileOpenInp.mode = mode;
     fileOpenInp.flags = flags;
-    fileOpenInp.in_pdmo = dataObjInfo->in_pdmo;
+    rstrcpy(fileOpenInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
     l3descInx = rsFileOpen (rsComm, &fileOpenInp);
 
     return (l3descInx);

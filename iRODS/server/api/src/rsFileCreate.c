@@ -138,9 +138,7 @@ int _rsFileCreate(
                                 0, 
                                 _create_inp->mode, 
                                 _create_inp->flags ) );
-    if(_create_inp->in_pdmo) {
-        file_obj->in_pdmo(true);
-    }
+    file_obj->in_pdmo(_create_inp->in_pdmo);
     
     eirods::error create_err = fileCreate( _comm, file_obj );
 

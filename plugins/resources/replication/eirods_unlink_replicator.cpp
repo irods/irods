@@ -6,8 +6,12 @@
 
 namespace eirods {
 
-    unlink_replicator::unlink_replicator(void) {
-        // TODO - stub
+    unlink_replicator::unlink_replicator(
+        const std::string& _child,
+        const std::string& _resource)
+    {
+        child_ = _child;
+        resource_ = _resource;
     }
 
     unlink_replicator::~unlink_replicator(void) {
@@ -20,46 +24,37 @@ namespace eirods {
         const object_oper& _object_oper)
     {
         error result = SUCCESS();
-        if(_object_oper.operation() != unlink_oper) {
-            std::stringstream msg;
-            msg << __FUNCTION__;
-            msg << " - Performing replication of unlink operation but specified operation is [";
-            msg << _object_oper.operation();
-            msg << "]";
-            result = ERROR(-1, msg.str());
-        } else {
+        if((result = ASSERT_ERROR(_object_oper.operation() == unlink_oper, EIRODS_INVALID_OPERATION,
+                                  "Performing replication of unlink operation but specified operation is \"%s\".",
+                                  _object_oper.operation().c_str())).ok()) {
+
+            // Generate a sub hier up to and including this resource for the pdmo string
+            hierarchy_parser sub_parser;
+            sub_parser.set_string(child_);
+            std::string sub_hier;
+            sub_parser.str(sub_hier, resource_);
+            
             file_object object = _object_oper.object();
             child_list_t::const_iterator it;
             for(it = _siblings.begin(); result.ok() && it != _siblings.end(); ++it) {
                 hierarchy_parser sibling = *it;
                 std::string hierarchy_string;
                 error ret = sibling.str(hierarchy_string);
-                if(!ret.ok()) {
-                    std::stringstream msg;
-                    msg << __FUNCTION__;
-                    msg << " - Failed to get the hierarchy string from the sibling hierarchy parser.";
-                    result = PASSMSG(msg.str(), ret);
-                } else {
+                if((result = ASSERT_PASS(ret, "Failed to get the hierarchy string from the sibling hierarchy parser.")).ok()) {
+
                     dataObjInp_t dataObjInp;
                     bzero(&dataObjInp, sizeof(dataObjInp));
                     rstrcpy(dataObjInp.objPath, object.logical_path().c_str(), MAX_NAME_LEN);
                     addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, hierarchy_string.c_str());
                     addKeyVal(&dataObjInp.condInput, FORCE_FLAG_KW, "");
-                    addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, "");
+                    addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str());
                     int status = rsDataObjUnlink(_ctx.comm(), &dataObjInp);
                     // CAT_NO_ROWS_FOUND is okay if the file being unlinked is a registered file in which case there are no replicas
-                    if(status < 0 && status != CAT_NO_ROWS_FOUND) {
-                        char* sys_error;
-                        char* rods_error = rodsErrorName(status, &sys_error);
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to unlink the object \"";
-                        msg << object.logical_path();
-                        msg << "\" from the resource \"" << hierarchy_string << "\" ";
-                        msg << rods_error << " " << sys_error;
-                        eirods::log(LOG_ERROR, msg.str());
-                        result = ERROR(status, msg.str());
-                    }
+                    char* sys_error;
+                    char* rods_error = rodsErrorName(status, &sys_error);
+                    result = ASSERT_ERROR(status >= 0 || status == CAT_NO_ROWS_FOUND, status,
+                                          "Failed to unlink the object: \"%s\" from the resource: \"%s\" - %s %s.",
+                                          object.logical_path().c_str(), hierarchy_string.c_str(), rods_error, sys_error);
                 }
             }
         }
