@@ -1042,6 +1042,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     fi
 
     # =-=-=-=-=-=-=-
+    # build fuse bindary
+	cd $BUILDDIR/iRODS/clients/fuse/
+	make
+	cd $BUILDDIR
+
+    # =-=-=-=-=-=-=-
     # build resource plugins
 	cd $BUILDDIR/plugins/resources/
 	make
