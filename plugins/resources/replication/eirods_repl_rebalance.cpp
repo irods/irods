@@ -444,7 +444,11 @@ namespace eirods {
                                        0 ) );
             // =-=-=-=-=-=-=-
             // short circuit the magic re-repl
-            f_ptr->in_pdmo( true );
+            hierarchy_parser sub_parser;
+            sub_parser.set_string( src_hier );
+            std::string sub_hier;
+            sub_parser.str( sub_hier, _parent_resc_name );
+            f_ptr->in_pdmo( sub_hier );
 
             // =-=-=-=-=-=-=-
             // init the parser with the fragment of the 
@@ -516,6 +520,7 @@ namespace eirods {
             r_err = repl_for_rebalance(
                         _comm,
                         obj_path,
+                        _parent_resc_name,
                         src_hier,
                         dst_hier,
                         root_resc,
