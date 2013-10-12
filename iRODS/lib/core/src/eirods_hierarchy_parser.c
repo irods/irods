@@ -151,7 +151,9 @@ namespace eirods {
     {
         bool result = false;
         for(resc_list_t::const_iterator itr = resc_list_.begin(); !result && itr != resc_list_.end(); ++itr) {
-            // noop
+            if( *itr == _resc ) {
+                result = true;
+            }
         }
         return result;
     }

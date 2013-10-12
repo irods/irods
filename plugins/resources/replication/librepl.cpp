@@ -204,9 +204,9 @@ extern "C" {
         } else {
             oper.object() = *(file_obj.get());
             oper.operation() = _oper;
-            // object_list.push_back(oper);
-            // ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
-            // result = ASSERT_PASS(ret, "Failed to set the object list property on the resource.");
+            object_list.push_back(oper);
+            ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+            result = ASSERT_PASS(ret, "Failed to set the object list property on the resource.");
         }
 
         return result;
@@ -251,7 +251,6 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        
         // get the list of objects that need to be replicated
         object_list_t object_list;
         ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
@@ -285,7 +284,6 @@ extern "C" {
                     
                     // create a replicator
                     eirods::replicator replicator(&oper_repl);
-                    
                     // call replicate
                     ret = replicator.replicate(_ctx, child_list, object_list);
                     if(!ret.ok()) {
@@ -306,6 +304,8 @@ extern "C" {
                     }
                 }
             }
+        } else {
+
         }
         return result;
     }
@@ -467,12 +467,11 @@ extern "C" {
                     std::string name;
                     ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
                     if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-                        
                         if(!sub_parser.resc_in_hier(name)) {
                             ret = replReplicateCreateWrite(_ctx);
                             result = ASSERT_PASS(ret, "Failed to replicate create/write operation for object: \"%s\".",
                                                  file_obj->logical_path().c_str());
-                        }
+                        } 
                     }
                 }
             }
