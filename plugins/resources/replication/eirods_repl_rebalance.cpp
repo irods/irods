@@ -22,18 +22,19 @@ namespace eirods {
     error repl_for_rebalance (
         rsComm_t*          _comm,
         const std::string& _obj_path,
-	const std::string& _current_resc,
+	    const std::string& _current_resc,
         const std::string& _src_hier,
         const std::string& _dst_hier,
         const std::string& _src_resc,
         const std::string& _dst_resc,
         int                _mode )
     {
-	// generate a resource hierachy that ends at this resource for pdmo
-	hierarchy_parser parser;
-	parser.set_string(_src_hier);
-	std::string sub_hier;
-	parser.str(sub_hier, _current_resc);
+        // =-=-=-=-=-=-=-
+        // generate a resource hierachy that ends at this resource for pdmo
+        hierarchy_parser parser;
+        parser.set_string(_src_hier);
+        std::string sub_hier;
+        parser.str(sub_hier, _current_resc);
 	
         // =-=-=-=-=-=-=-
         // create a data obj input struct to call rsDataObjRepl which given
