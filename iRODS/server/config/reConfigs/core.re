@@ -681,15 +681,15 @@ acConvertToInt(*R) {assign(*A,$sysUidClient); assign($sysUidClient,*R); assign(*
 
 # =-=-=-=-=-=-=-
 # examples of dynamically called rules via the operation_wrapper
-#pep_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
-#pep_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_open_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_open_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_open_post(*OUT) { writeLine('serverLog','RULECALL :: pep_open_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_read_pre(*OUT)  { writeLine('serverLog','RULECALL :: pep_read_pre  [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
+#pep_resource_read_post(*OUT) { writeLine('serverLog','RULECALL :: pep_read_post [$pluginInstanceName] [*OUT]'); *OUT="CHANGED_VALUE"; }
 
 
 # =-=-=-=-=-=-=-
 # policy controlling when a dataObject is staged to cache from archive in a compound coordinating resource
 #  - the default is to stage when cache is not present ("when_necessary")
 # =-=-=-=-=-=-=-
-# pep_resolve_resource_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
-# pep_resolve_resource_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}
+# pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=when_necessary";}  # default
+# pep_resource_resolve_hierarchy_pre(*OUT){*OUT="compound_resource_cache_refresh_policy=always";}
