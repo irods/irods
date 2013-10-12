@@ -69,7 +69,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/fsckUtil.o \
 		$(libCoreObjDir)/osauth.o \
 		$(libCoreObjDir)/sslSockComm.o \
-        $(libCoreObjDir)/eirods_assert.o \
 		$(libCoreObjDir)/eirods_operation_wrapper.o \
 		$(libCoreObjDir)/eirods_string_tokenize.o \
 		$(libCoreObjDir)/eirods_plugin_base.o \
@@ -91,10 +90,6 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_network_manager.o \
         $(libCoreObjDir)/eirods_buffer_encryption.o \
         $(libCoreObjDir)/eirods_virtual_path.o 
-
-ifdef USE_BOOST_ASIO
-LIB_CORE_OBJS += $(libCoreObjDir)/socket_wrapper.o 
-endif
 
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
@@ -154,9 +149,16 @@ INCLUDES +=	-I$(libApiIncDir)
 
 
 # All objects
-OBJS =		$(LIB_CORE_OBJS) $(LIB_API_OBJS) $(LIB_MD5_OBJS)	\
-		$(LIB_RBUDP_OBJS) $(LIB_HASHER_OBJS)
+OBJS =	$(LIB_CORE_OBJS) \
+        $(LIB_API_OBJS) \
+        $(LIB_MD5_OBJS)	\
+		$(LIB_RBUDP_OBJS) \
+        $(LIB_HASHER_OBJS) 
 
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a
 
 # Server configuration
 CONFIG =	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
@@ -191,6 +193,11 @@ vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
 		$(libRbudpSrcDir) $(libHasherSrcDir)
 
 
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a 
+
 
 
 
@@ -209,8 +216,7 @@ lib:	libs
 libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
 	@true
 
-$(LIBRARY): $(OBJS)
-	@echo "Building lib$(LIBRARY_NAME).a"
+$(LIBRARY): $(OBJS) $(BOOST_LIBS)
 #	@rm -f $(LIBRARY)
 #	$(CC) -D${OS_platform} -fPIC "-Wl,-E" -shared -o $(LIBRARY) $(OBJS) 
 	@echo "Building lib$(LIBRARY_NAME).a"
@@ -257,14 +263,14 @@ clean:
 # Compilation Targets
 #
 # Build core
-$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(extendedICAT.h) $(DEPEND)
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(extendedICAT.h) $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 $(extendedICAT.h): 
 	@touch $(extendedICAT.h)
 
 # Build API
-$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND)
+$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND) $(BOOST_LIBS)
 	@echo "Compile api `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -291,3 +297,15 @@ rodslog:  $(libCoreSrcDir)/rodsLog.c
 
 $(libCoreSrcDir)/rodsLog.c:  $(libCoreIncDir)/rodsErrorTable.h
 	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
+
+
+
+
+
+
+
+
+
+
+
+

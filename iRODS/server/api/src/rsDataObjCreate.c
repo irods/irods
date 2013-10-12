@@ -534,7 +534,7 @@ l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
     } else if (chkType == NO_CHK_PATH_PERM) {
         fileCreateInp.otherFlags |= NO_CHK_PERM_FLAG;  // JMC - backport 4758
     }
-    fileCreateInp.in_pdmo = dataObjInfo->in_pdmo;
+    rstrcpy(fileCreateInp.in_pdmo, dataObjInfo->in_pdmo, MAX_NAME_LEN);
     
     // =-=-=-=-=-=-=-
     std::string prev_resc_hier = fileCreateInp.resc_hier_;

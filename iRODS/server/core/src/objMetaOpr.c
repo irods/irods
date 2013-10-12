@@ -4,11 +4,6 @@
 
 #ifndef windows_platform
 
-#ifdef USE_BOOST
-#else
-// JMC	#include <pthread.h>
-#endif
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif

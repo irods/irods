@@ -191,9 +191,9 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
     condInput = &dataObjInp->condInput;
     char* in_pdmo = getValByKey(condInput, IN_PDMO_KW);
     if(in_pdmo != NULL) {
-        L1desc[l1descInx].in_pdmo = 1;
+        rstrcpy(L1desc[l1descInx].in_pdmo, in_pdmo, MAX_NAME_LEN);
     } else {
-        L1desc[l1descInx].in_pdmo = 0;
+        rstrcpy(L1desc[l1descInx].in_pdmo, "", MAX_NAME_LEN);
     }
     
     if (dataObjInp != NULL) { 

@@ -412,6 +412,23 @@ else
     GREPCMD="grep"
 fi
 
+LIBFUSEDEV=`find /usr/include -name fuse.h 2> /dev/null | grep -v linux`
+if [ "$LIBFUSEDEV" == "" ] ; then
+    if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
+        PREFLIGHT="$PREFLIGHT libfuse-dev"
+    elif [ "$DETECTEDOS" == "RedHatCompatible" ] ; then
+        PREFLIGHT="$PREFLIGHT fuse-devel"
+    elif [ "$DETECTEDOS" == "SuSE" ] ; then
+        PREFLIGHT="$PREFLIGHT fuse-devel"
+#    elif [ "$DETECTEDOS" == "Solaris" ] ; then
+#        No libfuse packages in pkgutil
+    else
+        PREFLIGHTDOWNLOAD=$'\n'"$PREFLIGHTDOWNLOAD      :: download from: http://sourceforge.net/projects/fuse/files/fuse-2.X/"
+    fi
+else
+    echo "Detected libfuse library [$LIBFUSEDEV]"
+fi
+
 LIBCURLDEV=`find /usr -name curl.h 2> /dev/null`
 if [ "$LIBCURLDEV" == "" ] ; then
     if [ "$DETECTEDOS" == "Ubuntu" -o "$DETECTEDOS" == "Debian" ] ; then
@@ -1040,6 +1057,12 @@ if [ "$BUILDEIRODS" == "1" ] ; then
     if [ "$?" != "0" ] ; then
         exit 1
     fi
+
+    # =-=-=-=-=-=-=-
+    # build fuse bindary
+	cd $BUILDDIR/iRODS/clients/fuse/
+	make
+	cd $BUILDDIR
 
     # =-=-=-=-=-=-=-
     # build resource plugins

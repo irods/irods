@@ -205,11 +205,11 @@ ifdef CCMALLOC
 LDFLAGS += -L$(CCMALLOC_DIR)/lib
 endif
 
-
-# JMC :: BOOST	Not needed MW
-# LDFLAGS += -L/home/jasonc/dev/lib/boost/boost_1_45_0/stage/lib -lboost_thread
-
-
+LDFLAGS += -lrt
+BOOST_LIBS = $(BOOST_DIR)/stage/lib/libboost_system.a \
+             $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
+             $(BOOST_DIR)/stage/lib/libboost_regex.a \
+             $(BOOST_DIR)/stage/lib/libboost_thread.a
 #
 # Principal Targets
 #
@@ -220,22 +220,16 @@ all:	icommands
 clients: icommands
 	@true
 
-icommands:	print_cflags print_ldflags $(OBJS) $(BINS)
+icommands:	print_cflags print_ldflags $(OBJS) $(BINS) $(BOOST_LIBS)
 	@true
 
-$(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
+$(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY) $(BOOST_LIBS)
 	@echo "Compile icommand `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(binDir)/%:	$(objDir)/%.o
+$(binDir)/%:	$(objDir)/%.o $(BOOST_LIBS)
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_DIR)/stage/lib/libboost_filesystem.a \
-                $(BOOST_DIR)/stage/lib/libboost_system.a \
-
-
-
-
-
+	@$(LDR) -o $@ $< $(LDFLAGS) $(BOOST_LIBS) -lrt
 
 # Show compile flags
 print_cflags:

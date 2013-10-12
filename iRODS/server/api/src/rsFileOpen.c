@@ -149,9 +149,7 @@ int _rsFileOpen(
                                     0, 
                                     _open_inp->mode, 
                                     _open_inp->flags ) );
-    if(_open_inp->in_pdmo) {
-        file_obj->in_pdmo(true);
-    }
+    file_obj->in_pdmo(_open_inp->in_pdmo);
     
     eirods::error ret_err = fileOpen( _comm, file_obj );
     

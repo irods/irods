@@ -32,8 +32,11 @@ namespace eirods {
         /// @brief Parses the specified hierarchy string
         error set_string(const std::string& _resc_hier);
 
-        /// @brief Returns the resource hierarchy string
-        error str(std::string& _ret_string);
+        /** @brief Returns the resource hierarchy string.
+         * This method returns a properly formatted hierarchy string, terminating
+         * the string at the _term_resc resource if non-empty.
+         */
+        error str(std::string& _ret_string, const std::string& _term_resc = std::string("")) const;
 
         /// @brief Adds another level of hierarchy by adding the specified child resource
         error add_child(const std::string& _resc);
@@ -58,6 +61,9 @@ namespace eirods {
 
         /// @brief Returns the delimiter used for hierarchy strings.
         static const std::string& delimiter(void);
+
+        /// @brief Returns true if the specified resource is in the hierarchy.
+        bool resc_in_hier(const std::string& _resc) const;
 
     private:
         resc_list_t resc_list_;

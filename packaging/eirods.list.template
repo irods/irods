@@ -516,6 +516,8 @@ f 755 root root /usr/bin/itrim                ./iRODS/clients/icommands/bin/itri
 f 755 root root /usr/bin/iuserinfo            ./iRODS/clients/icommands/bin/iuserinfo
 f 755 root root /usr/bin/ixmsg                ./iRODS/clients/icommands/bin/ixmsg
 
+f 755 root root /usr/bin/irodsFs               ./iRODS/clients/fuse/bin/irodsFs
+
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/testallrules.pl ./iRODS/clients/icommands/test/testallrules.pl
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/clients/icommands/test/icommand_test1.sh ./iRODS/clients/icommands/test/icommand_test1.sh

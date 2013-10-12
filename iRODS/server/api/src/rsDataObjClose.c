@@ -695,7 +695,7 @@ l3Close (rsComm_t *rsComm, int l1descInx)
     } else {
         memset (&fileCloseInp, 0, sizeof (fileCloseInp));
         fileCloseInp.fileInx = L1desc[l1descInx].l3descInx;
-        fileCloseInp.in_pdmo = L1desc[l1descInx].in_pdmo;
+        rstrcpy(fileCloseInp.in_pdmo, L1desc[l1descInx].in_pdmo, MAX_NAME_LEN);
         status = rsFileClose (rsComm, &fileCloseInp);
 
     }

@@ -450,6 +450,30 @@ extern "C" {
         }
         return result;
     } // pass_thru_file_rename_plugin
+    
+    // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error pass_thru_file_truncate_plugin(  
+        eirods::resource_plugin_context& _ctx ) {
+        // =-=-=-=-=-=-=-
+        eirods::error result = SUCCESS();
+        eirods::error ret;
+        
+        ret = pass_thru_check_params( _ctx );
+        if(!ret.ok()) {
+            result = PASSMSG( "pass_thru_file_truncate_plugin - bad params.", ret);
+        } else {
+            eirods::resource_ptr resc;
+            ret = pass_thru_get_first_chid_resc(_ctx.child_map(), resc);
+            if(!ret.ok()) {
+                result = PASSMSG( "pass_thru_file_truncate_plugin - failed getting the first child resource pointer.", ret);
+            } else {
+                ret = resc->call( _ctx.comm(), eirods::RESOURCE_OP_TRUNCATE, _ctx.fco());
+                result = PASSMSG("pass_thru_file_truncate_plugin - failed calling child truncate.", ret);
+            }
+        }
+        return result;
+    } // pass_thru_file_truncate_plugin
 
     // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path

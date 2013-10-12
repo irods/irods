@@ -25,10 +25,10 @@ typedef struct FileChksumInp {
     char rescHier[MAX_NAME_LEN];
     char objPath[MAX_NAME_LEN];
     int flag;   /* not used for now */
-    int in_pdmo;                // Flag indicating if we are being executed from a pdmo
+    char in_pdmo[MAX_NAME_LEN]; // Flag indicating if we are being executed from a pdmo
 } fileChksumInp_t;
     
-#define fileChksumInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; int in_pdmo;"
+#define fileChksumInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; str rescHier[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; int flags; str in_pdmo[MAX_NAME_LEN];"
 
 #define fileChksumOut_PI "str chksumStr[NAME_LEN];"
 

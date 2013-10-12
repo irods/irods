@@ -374,4 +374,13 @@ LIB_API_OBJS += $(libApiObjDir)/rcSslStart.o
 SVR_API_OBJS += $(svrApiObjDir)/rsSslEnd.o
 LIB_API_OBJS += $(libApiObjDir)/rcSslEnd.o
 
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjTruncate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileTruncate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileTruncate.o
+
 

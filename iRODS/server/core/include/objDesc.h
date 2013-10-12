@@ -61,7 +61,7 @@ typedef struct l1desc {
     dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
                                      * on close */
     rodsServerHost_t *remoteZoneHost;
-    int in_pdmo;
+    char in_pdmo[MAX_NAME_LEN];
 } l1desc_t;
 
 #ifdef  __cplusplus

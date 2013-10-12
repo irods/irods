@@ -1520,7 +1520,7 @@ extern "C" {
     // interface for POSIX rename
     eirods::error tar_file_rename_plugin( 
         eirods::resource_plugin_context& _ctx,
-        const char*                         _new_file_name ) {
+        const char*                      _new_file_name ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         eirods::error chk_err = tar_check_params( _ctx );
@@ -1615,6 +1615,101 @@ extern "C" {
         return CODE( status );
 
     } // tar_file_rename_plugin
+
+    // =-=-=-=-=-=-=-
+    // interface for POSIX truncate
+    eirods::error tar_file_truncate_plugin( 
+        eirods::resource_plugin_context& _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // check incoming parameters
+        eirods::error chk_err = tar_check_params( _ctx );
+        if( !chk_err.ok() ) {
+            return PASSMSG( "tar_file_truncate_plugin", chk_err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // cast down the chain to our understood object type
+        eirods::structured_object_ptr struct_obj = boost::dynamic_pointer_cast< eirods::structured_object >( _ctx.fco() );
+
+        // =-=-=-=-=-=-=-
+        // extract and check the special collection pointer
+        specColl_t* spec_coll = struct_obj->spec_coll();
+        if( !spec_coll ) {
+            return ERROR( -1, "tar_file_truncate_plugin - null spec_coll pointer in structure_object" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // extract and check the comm pointer
+        rsComm_t* comm = struct_obj->comm();
+        if( !comm ) {
+            return ERROR( -1, "tar_file_truncate_plugin - null comm pointer in structure_object" );
+        }
+
+        // =-=-=-=-=-=-=-
+        // open and stage the tar file, get its index
+        int struct_file_index = 0;
+        std::string resc_host;
+        eirods::error open_err =  tar_struct_file_open( comm, spec_coll, struct_file_index, 
+                                                        struct_obj->resc_hier(), resc_host );
+        if( !open_err.ok() ) {
+            std::stringstream msg;
+            msg << "tar_file_truncate_plugin - tar_struct_file_open error for [";
+            msg << spec_coll->objPath; 
+            return PASSMSG( msg.str(), open_err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // use the cached specColl. specColl may have changed 
+        spec_coll = PluginStructFileDesc[ struct_file_index ].specColl;
+
+        // =-=-=-=-=-=-=-
+        // allocate yet another index into another table
+        int sub_index = alloc_tar_sub_file_desc();
+        if( sub_index < 0 ) {
+            return ERROR( sub_index, "tar_file_truncate_plugin - alloc_tar_sub_file_desc failed." );
+        }
+
+        // =-=-=-=-=-=-=-
+        // cache struct file index into sub file index
+        PluginTarSubFileDesc[ sub_index ].structFileInx = struct_file_index;
+        
+        // =-=-=-=-=-=-=-
+        // build a file create structure to pass off to the server api call
+        fileOpenInp_t fileTruncateInp;
+        memset( &fileTruncateInp, 0, sizeof( fileTruncateInp ) );
+        strncpy( fileTruncateInp.addr.hostAddr,  resc_host.c_str(), NAME_LEN );
+        strncpy( fileTruncateInp.objPath, struct_obj->logical_path().c_str(), MAX_NAME_LEN );
+        fileTruncateInp.dataSize = struct_obj->offset();
+        
+        // =-=-=-=-=-=-=-
+        // build a physical path name to the cache dir
+        eirods::error comp_err = compose_cache_dir_physical_path( fileTruncateInp.fileName, 
+                                                                  spec_coll, 
+                                                                  struct_obj->sub_file_path().c_str() );
+        if( !comp_err.ok() ) {
+            return PASSMSG(
+                         "tar_file_truncate_plugin - compose_cache_dir_physical_path failed.", comp_err );
+        }
+
+        // =-=-=-=-=-=-=-
+        // make the truncate api call
+        int status = rsFileTruncate( comm, &fileTruncateInp );
+        if( status > 0 ) {
+            // =-=-=-=-=-=-=-
+            // cache has been written 
+            int         struct_idx = PluginTarSubFileDesc[ struct_obj->file_descriptor() ].structFileInx;
+            specColl_t* spec_coll   = PluginStructFileDesc[ struct_idx ].specColl;
+            if( spec_coll->cacheDirty == 0 ) {
+                spec_coll->cacheDirty = 1;    
+                int status1 = modCollInfo2( struct_obj->comm(), spec_coll, 0 );
+                if( status1 < 0 ) 
+                    return CODE( status1 );
+            }
+        }
+
+        return CODE( status );
+
+    } // tar_file_truncate_plugin
 
     // =-=-=-=-=-=-=-
     // interface to extract a tar file
@@ -2310,6 +2405,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "tar_file_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "tar_file_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "tar_file_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "tar_file_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "tar_file_getfsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_REGISTERED,   "tar_file_registered_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_UNREGISTERED, "tar_file_unregistered_plugin" );

@@ -20,10 +20,10 @@
 
 typedef struct FileCloseInp {
     int fileInx;
-    int in_pdmo;
+    char in_pdmo[MAX_NAME_LEN];
 } fileCloseInp_t;
     
-#define fileCloseInp_PI "int fileInx; int in_pdmo;"
+#define fileCloseInp_PI "int fileInx; str in_pdmo[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_CLOSE rsFileClose

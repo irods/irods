@@ -113,7 +113,7 @@ genQueryOut_t **procStatOut)
 
 int
 _rsProcStatAll (rsComm_t *rsComm, procStatInp_t *procStatInp,
-genQueryOut_t **procStatOut)
+        genQueryOut_t **procStatOut)
 {
     rodsServerHost_t *tmpRodsServerHost;
     procStatInp_t myProcStatInp;
@@ -124,19 +124,18 @@ genQueryOut_t **procStatOut)
     bzero (&myProcStatInp, sizeof (myProcStatInp));
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
-        // JMC - legacy code - if (getHostStatusByRescInfo (tmpRodsServerHost) == INT_RESC_STATUS_UP) {		/* don't do down resc */
         eirods::error err = eirods::get_host_status_by_host_info( tmpRodsServerHost );
         if( err.ok() && err.code() == INT_RESC_STATUS_UP ) {
-	        if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
-		        setLocalSrvAddr (myProcStatInp.addr);
-	            status = localProcStat (rsComm, &myProcStatInp, &singleProcStatOut);
-	        } else {
-		        rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name, NAME_LEN);
+            if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+                setLocalSrvAddr (myProcStatInp.addr);
+                status = localProcStat (rsComm, &myProcStatInp, &singleProcStatOut);
+            } else {
+                rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name, NAME_LEN);
                 addKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW, "");
                 status = remoteProcStat (rsComm, &myProcStatInp, &singleProcStatOut, tmpRodsServerHost);
                 rmKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW);
-	        }
-           
+            }
+
             if (status < 0) {
                 savedStatus = status;
             }
@@ -150,7 +149,7 @@ genQueryOut_t **procStatOut)
                 }
                 singleProcStatOut = NULL;
             }
-        
+
         } // if up
 
         tmpRodsServerHost = tmpRodsServerHost->next;
@@ -160,20 +159,11 @@ genQueryOut_t **procStatOut)
 
 int
 localProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
-genQueryOut_t **procStatOut)
+        genQueryOut_t **procStatOut)
 {
     int numProc, status;
     procLog_t procLog;
     char childPath[MAX_NAME_LEN];
-#ifndef USE_BOOST_FS
-    DIR *dirPtr;
-    struct dirent *myDirent;
-#ifndef windows_platform
-    struct stat statbuf;
-#else
-    struct irodsntstat statbuf;
-#endif
-#endif
     int count = 0;
 
     numProc = getNumFilesInDir (ProcLogDir) + 2; /* add 2 to give some room */
@@ -183,88 +173,52 @@ genQueryOut_t **procStatOut)
     if (*procStatInp->addr != '\0') {   /* given input addr */
         rstrcpy (procLog.serverAddr, procStatInp->addr, NAME_LEN);
     } else {
-	setLocalSrvAddr (procLog.serverAddr);
+        setLocalSrvAddr (procLog.serverAddr);
     }
     if (numProc <= 0) {
         /* add an empty entry with only serverAddr */
         initProcStatOut (procStatOut, 1);
-	addProcToProcStatOut (&procLog, *procStatOut);
+        addProcToProcStatOut (&procLog, *procStatOut);
         return numProc;
     } else {
         initProcStatOut (procStatOut, numProc);
     }
 
     /* loop through the directory */
-#ifdef USE_BOOST_FS
     path srcDirPath (ProcLogDir);
     if (!exists(srcDirPath) || !is_directory(srcDirPath)) {
-#else
-    dirPtr = opendir (ProcLogDir);
-    if (dirPtr == NULL) {
-#endif
         status = USER_INPUT_PATH_ERR - errno;
         rodsLogError (LOG_ERROR, status,
-        "localProcStat: opendir local dir error for %s", ProcLogDir);
+                "localProcStat: opendir local dir error for %s", ProcLogDir);
         return status;
     }
-#ifdef USE_BOOST_FS
     directory_iterator end_itr; // default construction yields past-the-end
     for (directory_iterator itr(srcDirPath); itr != end_itr;++itr) {
         path p = itr->path();
-	path cp = p.filename();
-	if (!isdigit (*cp.c_str())) continue;   /* not a pid */
+        path cp = p.filename();
+        if (!isdigit (*cp.c_str())) continue;   /* not a pid */
         snprintf (childPath, MAX_NAME_LEN, "%s",
-          p.c_str ());
-#else
-    while ((myDirent = readdir (dirPtr)) != NULL) {
-        if (strcmp (myDirent->d_name, ".") == 0 ||
-          strcmp (myDirent->d_name, "..") == 0) {
-            continue;
-        }
-	if (!isdigit (*myDirent->d_name)) continue;   /* not a pid */
-        snprintf (childPath, MAX_NAME_LEN, "%s/%s", ProcLogDir, 
-	  myDirent->d_name);
-#endif
-#ifdef USE_BOOST_FS
-	if (!exists (p)) {
-#else
-#ifndef windows_platform
-        status = stat (childPath, &statbuf);
-#else
-        status = iRODSNt_stat(childPath, &statbuf);
-#endif
-        if (status != 0) {
-#endif  /* USE_BOOST_FS */
+                p.c_str ());
+        if (!exists (p)) {
             rodsLogError (LOG_ERROR, status,
-              "localProcStat: stat error for %s", childPath);
+                    "localProcStat: stat error for %s", childPath);
             continue;
         }
-#ifdef USE_BOOST_FS
-	if (is_regular_file(p)) {
-#else
-        if (statbuf.st_mode & S_IFREG) {
-#endif
-	    if (count >= numProc) {
+        if (is_regular_file(p)) {
+            if (count >= numProc) {
                 rodsLog (LOG_ERROR, 
-                  "localProcStat: proc count %d exceeded", numProc);
-		break;
-	    }
-#ifdef USE_BOOST_FS
-	    procLog.pid = atoi (cp.c_str());
-#else
-	    procLog.pid = atoi (myDirent->d_name);
-#endif
-	    if (readProcLog (procLog.pid, &procLog) < 0) continue;
-	    status = addProcToProcStatOut (&procLog, *procStatOut);
-	    if (status < 0) continue;
+                        "localProcStat: proc count %d exceeded", numProc);
+                break;
+            }
+            procLog.pid = atoi (cp.c_str());
+            if (readProcLog (procLog.pid, &procLog) < 0) continue;
+            status = addProcToProcStatOut (&procLog, *procStatOut);
+            if (status < 0) continue;
             count++;
         } else {
             continue;
         }
     }
-#ifndef USE_BOOST_FS
-    closedir (dirPtr);
-#endif
     return 0;
 }
 

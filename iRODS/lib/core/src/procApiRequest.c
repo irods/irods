@@ -24,13 +24,6 @@
 // boost includes
 #include <boost/shared_ptr.hpp>
 
-#ifdef USE_BOOST
-#else
-//#ifndef windows_platform
-#include <pthread.h>
-//#endif
-#endif
-
 /* procApiRequest - This is the main function used by the client API
  * function to issue API requests and recieve output returned from 
  * the server.
@@ -126,15 +119,11 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
     bytesBuf_t *inputStructBBuf = NULL;
     bytesBuf_t *myInputStructBBuf;
 
-//#ifndef windows_platform
     cliChkReconnAtSendStart (conn);
-//#endif
 
     if (RcApiTable[apiInx].inPackInstruct != NULL) {
         if (inputStruct == NULL) {
-//#ifndef windows_platform
             cliChkReconnAtSendEnd (conn);
-//#endif
             return (USER_API_INPUT_ERR);
         }
         status = packStruct ((void *) inputStruct, &inputStructBBuf,
@@ -143,9 +132,7 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
                           "sendApiRequest: packStruct error, status = %d", status);
-//#ifndef windows_platform
             cliChkReconnAtSendEnd (conn);
-//#endif
             return status;
         }
 
@@ -158,17 +145,6 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
     if (RcApiTable[apiInx].inBsFlag <= 0) {
         inputBsBBuf = NULL;
     }
-#if 0 // JMC - network interface
-#ifdef USE_SSL
-    if (conn->ssl_on)
-        status = sslSendRodsMsg (conn->sock, RODS_API_REQ_T, myInputStructBBuf,
-                              inputBsBBuf, NULL, RcApiTable[apiInx].apiNumber, 
-                              conn->irodsProt, conn->ssl);
-    else
-#endif
-        status = sendRodsMsg( conn->sock, RODS_API_REQ_T, myInputStructBBuf,
-                              inputBsBBuf, NULL, RcApiTable[apiInx].apiNumber, conn->irodsProt);
-#endif
 
     eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
@@ -187,42 +163,20 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
               conn->irodsProt );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) ); 
-//#ifndef windows_platform
         if( conn->svrVersion != NULL && 
             conn->svrVersion->reconnPort > 0 ) {
             int status1;
             int savedStatus = ret.code() ;
-#ifdef USE_BOOST
             conn->lock->lock();
-#else
-            pthread_mutex_lock (&conn->lock);
-#endif
             status1 = cliSwitchConnect (conn);
             rodsLog (LOG_DEBUG,
                      "sendApiRequest: svrSwitchConnect. cliState = %d,agState=%d",
                      conn->clientState, conn->agentState);
-#ifdef USE_BOOST
             conn->lock->unlock();
-#else
-            pthread_mutex_unlock (&conn->lock);
-#endif
             if (status1 > 0) {
                 /* should not be here */
                 rodsLog (LOG_NOTICE,
                          "sendApiRequest: Switch connection and retry sendRodsMsg");
-#if 0 // JMC - network interface
-#ifdef USE_SSL
-                if (conn->ssl_on) 
-                    status = sslSendRodsMsg (conn->sock, RODS_API_REQ_T, 
-                                          myInputStructBBuf, inputBsBBuf, NULL, 
-                                             RcApiTable[apiInx].apiNumber, conn->irodsProt,
-                                             conn->ssl);
-                else
-#endif
-                    status = sendRodsMsg( conn->sock, RODS_API_REQ_T, 
-                                          myInputStructBBuf, inputBsBBuf, NULL, 
-                                          RcApiTable[apiInx].apiNumber, conn->irodsProt);
-#endif
                 ret = sendRodsMsg( 
                           net_obj, 
                           RODS_API_REQ_T, 
@@ -240,7 +194,6 @@ sendApiRequest (rcComm_t *conn, int apiInx, void *inputStruct,
             } // if status1 > 0
 
         } // if svrVersion != NULL ...
-//#endif
 
     } else {
         // =-=-=-=-=-=-=-
@@ -264,9 +217,7 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
     /* bytesBuf_t outStructBBuf, errorBBuf, myOutBsBBuf; */
     bytesBuf_t outStructBBuf, errorBBuf;
 
-#ifndef windows_platform
     cliChkReconnAtReadStart (conn);
-#endif
 
     memset (&outStructBBuf, 0, sizeof (bytesBuf_t));
     memset (&outStructBBuf, 0, sizeof (bytesBuf_t));
@@ -278,9 +229,7 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
         rodsLog (LOG_ERROR,
                  "readAndProcApiReply: outStruct error for A apiNumber %d", 
                  RcApiTable[apiInx].apiNumber);
-#ifndef windows_platform
         cliChkReconnAtReadEnd (conn);
-#endif
         return (USER_API_INPUT_ERR);
     }
 
@@ -288,20 +237,9 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
         rodsLog (LOG_ERROR,
                  "readAndProcApiReply: outBsBBuf error for B apiNumber %d",
                  RcApiTable[apiInx].apiNumber);
-#ifndef windows_platform
         cliChkReconnAtReadEnd (conn);
-#endif
         return (USER_API_INPUT_ERR);
     }
-
-#if 0 // JMC - network interface
-#ifdef USE_SSL
-    if (conn->ssl_on) 
-        status = sslReadMsgHeader (conn->sock, &myHeader, NULL, conn->ssl);
-    else
-#endif
-        status = readMsgHeader( conn->sock, &myHeader, NULL );
-#endif
 
     eirods::network_object_ptr net_obj;
     eirods::error ret = eirods::network_factory( conn, net_obj );
@@ -313,37 +251,16 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
     ret = readMsgHeader( net_obj, &myHeader, NULL );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
-        //rodsLogError (LOG_ERROR, status,
-        //              "readAndProcApiReply: readMsgHeader error. status = %d", status);
-#ifndef windows_platform
-        //rodsLog (LOG_DEBUG,
-        //         "readAndProcClientMsg: readMsgHeader error. status = %d", ret.code() );
         if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
             int savedStatus = ret.code();
             /* try again. the socket might have changed */
-#ifdef USE_BOOST
             conn->lock->lock();
-#else
-            pthread_mutex_lock (&conn->lock);
-#endif
             rodsLog (LOG_DEBUG,
                      "readAndProcClientMsg:svrSwitchConnect.cliState = %d,agState=%d",
                      conn->clientState, conn->agentState);
             cliSwitchConnect (conn);
-#ifdef USE_BOOST
             conn->lock->unlock();
-#else
-            pthread_mutex_unlock (&conn->lock);
-#endif
-#if 0 // JMC - network interface
-#ifdef USE_SSL
-            if (conn->ssl_on)
-                status = sslReadMsgHeader (conn->sock, &myHeader, NULL, conn->ssl);
-            else
-#endif
-                status = readMsgHeader (conn->sock, &myHeader, NULL);
-#endif
-                eirods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
+            eirods::error ret = readMsgHeader( net_obj, &myHeader, NULL );
 
             if( !ret.ok() ) {
                 cliChkReconnAtReadEnd (conn);
@@ -353,37 +270,18 @@ readAndProcApiReply (rcComm_t *conn, int apiInx, void **outStruct,
             cliChkReconnAtReadEnd (conn);
             return ( ret.code() );
         }
-#else
-        return ( ret.code() );
-#endif
-    } // if !ret.ok
 
-#if 0 // JMC - network interface
-#ifdef USE_SSL
-    if (conn->ssl_on)
-        status = sslReadMsgBody (conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
-                              &errorBBuf, conn->irodsProt, NULL, conn->ssl);
-    else
-#endif
-        status = readMsgBody( conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
-                              &errorBBuf, conn->irodsProt, NULL);
-#endif
+    } // if !ret.ok
 
     ret = readMsgBody( net_obj, &myHeader, &outStructBBuf, outBsBBuf,
                        &errorBBuf, conn->irodsProt, NULL );
     if( !ret.ok() ) {
         eirods::log( PASS( ret ) );
-        //rodsLogError(LOG_ERROR, status,
-        //              "readAndProcApiReply: readMsgBody error. status = %d", status);
-#ifndef windows_platform
         cliChkReconnAtReadEnd (conn);
-#endif
         return (status);
     } // if !ret.ok
 
-#ifndef windows_platform
     cliChkReconnAtReadEnd (conn);
-#endif
 
     if (strcmp (myHeader.type, RODS_API_REPLY_T) == 0) {
         status = procApiReply (conn, apiInx, outStruct, outBsBBuf,

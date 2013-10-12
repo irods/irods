@@ -4337,12 +4337,12 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 	status = cmlExecuteNoAnswerSql(update_sql, &icss);
 
 	// =-=-=-=-=-=-=-
-	// Roll back if error
-	if (status < 0) {
+	// Log error. Rollback is done in calling function
+	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 		std::stringstream ss;
 		ss << "_modRescInHierarchies: cmlExecuteNoAnswerSql update failure, status = " << status;
 		eirods::log(LOG_NOTICE, ss.str());
-		_rollback("_modRescInHierarchies");
+		// _rollback("_modRescInHierarchies");
 	}
 
 	return status;
@@ -4377,16 +4377,15 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	status = cmlExecuteNoAnswerSql(update_sql, &icss);
 
 	// =-=-=-=-=-=-=-
-	// Roll back if error
-	if (status < 0) {
+	// Log error. Rollback is done in calling function
+	if (status < 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 		std::stringstream ss;
 		ss << "_modRescInChildren: cmlExecuteNoAnswerSql update failure, status = " << status;
 		eirods::log(LOG_NOTICE, ss.str());
-		_rollback("_modRescInChildren");
+		// _rollback("_modRescInChildren");
 	}
 
 	return status;
-	return 0;
 }
 
 
@@ -6333,8 +6332,10 @@ eirods::error validate_user_name(std::string _user_name) {
 	// Must be between 3 and NAME_LEN-1 characters.
 	// Must start and end with a word character.
 	// May contain non consecutive dashes and dots.
-	// No upper case letters.
-	boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
+        boost::regex re("^(?=.{3,63}$)\\w(\\w*([.-]\\w+)?)*$");
+
+	// No upper case letters. (TODO: more discussion, group names also affected by this change)
+	// boost::regex re("^(?=.{3,63}$)[a-z_0-9]([a-z_0-9]*([.-][a-z_0-9]+)?)*$");
 
 	if (!boost::regex_match(_user_name, re)) {
         std::stringstream msg;
@@ -10835,9 +10836,14 @@ int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, con
 	status = cmlExecuteNoAnswerSql("update R_DATA_MAIN set resc_hier = ? || substring(resc_hier from (char_length(?)+1)) where resc_hier = ? or resc_hier like ?", &icss);
 #endif
 
+	// Nothing was modified
+	if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+		return 0;
+	}
+
 	// =-=-=-=-=-=-=-
 	// Roll back if error
-	if (status) {
+	if (status < 0) {
 		std::stringstream ss;
 		ss << "chlSubstituteResourceHierarchies: cmlExecuteNoAnswerSql update failure " << status;
 		eirods::log(LOG_NOTICE, ss.str());

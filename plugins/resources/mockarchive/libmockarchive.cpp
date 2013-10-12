@@ -588,6 +588,16 @@ extern "C" {
     } // mock_archive_rename_plugin
 
     // =-=-=-=-=-=-=-
+    // interface to truncate a given data object
+    eirods::error mock_archive_truncate_plugin( 
+        eirods::resource_plugin_context& _ctx ) { 
+        // =-=-=-=-=-=-=-
+        // operation not supported
+        return ERROR( SYS_NOT_SUPPORTED, "truncate not supported" );
+
+    } // mock_archive_truncate_plugin
+
+    // =-=-=-=-=-=-=-
     // interface to determine free space on a device given a path
     eirods::error mock_archive_get_fsfreespace_plugin( 
         eirods::resource_plugin_context& _ctx ) { 
@@ -1092,6 +1102,7 @@ extern "C" {
         resc->add_operation( eirods::RESOURCE_OP_CLOSEDIR,     "mock_archive_closedir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_READDIR,      "mock_archive_readdir_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_RENAME,       "mock_archive_rename_plugin" );
+        resc->add_operation( eirods::RESOURCE_OP_TRUNCATE,     "mock_archive_truncate_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_FREESPACE,    "mock_archive_get_fsfreespace_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_STAGETOCACHE, "mock_archive_stagetocache_plugin" );
         resc->add_operation( eirods::RESOURCE_OP_SYNCTOARCH,   "mock_archive_synctoarch_plugin" );

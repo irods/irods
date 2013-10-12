@@ -19,25 +19,11 @@
 
 #include "eirods_resource_backport.h"
 
-#ifdef USE_BOOST
 #include <boost/thread/mutex.hpp>
 boost::mutex ExecCmdMutex;
 int initExecCmdMutex () {
     return (0);
 }
-#else
-#ifndef windows_platform
-#include <pthread.h>
-pthread_mutex_t ExecCmdMutex;
-
-int
-initExecCmdMutex ()
-{
-    pthread_mutex_init (&ExecCmdMutex, NULL);
-    return (0);
-}
-#endif	/* windows_platform */
-#endif
 
 int
 rsExecCmd241 (rsComm_t *rsComm, execCmd241_t *execCmd241Inp, 
@@ -197,11 +183,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 #endif
     
 #ifndef windows_platform    /* UNIX */
-    #ifdef USE_BOOST
     ExecCmdMutex.lock();
-    #else
-    pthread_mutex_lock (&ExecCmdMutex);
-    #endif
     if (pipe (stdoutFd) < 0) 
 #else
 	if(_pipe(stdoutFd, pipe_buf_size, O_BINARY) < 0)
@@ -238,11 +220,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     /* use fork instead of vfork to handle mylti-thread */
     childPid = fork ();
 
-    #ifdef USE_BOOST
     ExecCmdMutex.unlock();
-    #else
-    pthread_mutex_unlock (&ExecCmdMutex);
-    #endif
     if (childPid == 0) {
 	char *tmpStr;
 	/* Indicate that the call came from internal rule */
