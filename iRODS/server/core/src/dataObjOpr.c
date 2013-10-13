@@ -1005,7 +1005,7 @@ sortObjInfoForRepl (
                 // we need to check the status of the resource
                 // to determine if it is up or down before
                 // queue-ing it up
-                if( INT_RESC_STATUS_DOWN == tmp_info->rescInfo->rescStatus ) {
+                if( INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus ) {
                     if(prev_info == NULL) {
                         *dataObjInfoHead = tmp_info->next;
                     } else {
