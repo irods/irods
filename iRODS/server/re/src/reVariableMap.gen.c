@@ -2197,7 +2197,10 @@ int getValFromRuleExecInfo(char *varMap, ruleExecInfo_t *rei, Res **varValue, Re
   if (i != 0)
     return(i);
 
-	
+      if (strcmp(varName, "pluginInstanceName") == 0) {
+           i = getStrLeafValue(varValue, rei->pluginInstanceName, r);
+           return i;
+      }
 
 	  if (strcmp(varName, "status") == 0) {
 		
@@ -2356,7 +2359,10 @@ int setValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei, Res *newVarValu
   i = getVarNameFromVarMap(varMap, varName, &varMapCPtr);
   if (i != 0)
     return(i);
-
+       if (strcmp(varName, "pluginInstanceName") == 0) {
+           i = setStrLeafValue( rei->pluginInstanceName, MAX_NAME_LEN, newVarValue );
+           return i;
+       }
 	
 	  if (strcmp(varName, "status") == 0) {
 	  	
