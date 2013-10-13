@@ -31,6 +31,7 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_resource_redirect.h"
 #include "eirods_repl_rebalance.h"
+#include "eirods_kvp_string_parser.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -96,6 +97,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief limit of the number of repls to operation upon during rebalance
     const int DEFAULT_LIMIT = 500;
+    const std::string REPL_LIMIT_KEY( "replication_rebalance_limit" );
 
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
@@ -1500,9 +1502,31 @@ extern "C" {
         // determine limit size
         int limit = DEFAULT_LIMIT;
         if( !_ctx.rule_results().empty() ) {
-            limit = boost::lexical_cast<int>( _ctx.rule_results() );
+            eirods::kvp_map_t kvp;
+            eirods::error kvp_err = eirods::parse_kvp_string( 
+                                        _ctx.rule_results(),
+                                        kvp );
+            if( !kvp_err.ok() ) {
+                return PASS( kvp_err );
+            }
 
-        }
+            std::string limit_str = kvp[ REPL_LIMIT_KEY ];
+            if( !limit_str.empty() ) {
+                try {
+                    limit = boost::lexical_cast<int>( limit_str );
+
+                } catch( boost::bad_lexical_cast e ) {
+                    std::stringstream msg;
+                    msg << "failed to cast value ["
+                        << limit_str 
+                        << "] to an integer";
+                    return ERROR( 
+                               SYS_INVALID_INPUT_PARAM,
+                               msg.str() );
+                }
+            }
+
+        } // if rule results not empty
         
         // =-=-=-=-=-=-=-
         // determine distinct root count

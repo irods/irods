@@ -18,6 +18,7 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_resource_redirect.h"
 #include "eirods_stacktrace.h"
+#include "eirods_kvp_string_parser.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -240,24 +241,22 @@ extern "C" {
         const std::string& _results,
         std::string& _policy ) {
         // =-=-=-=-=-=-=-
-        // tokenize the string based on the key/value pair delim
-        std::vector< std::string > toks;
-        eirods::string_tokenize( _results, ";", toks );
-        if( toks.empty() ) {
-            toks.push_back( _results );
+        // get a map of the key value pairs
+        eirods::kvp_map_t kvp;
+        eirods::error kvp_err = eirods::parse_kvp_string( 
+                                    _results,
+                                    kvp );
+        if( !kvp_err.ok() ) {
+            return PASS( kvp_err );
         }
 
-        // =-=-=-=-=-=-=-
-        // iterate over the pairs, find the stage policy
-        for( size_t i = 0; i < toks.size(); ++i ) {
-            // =-=-=-=-=-=-=-
-            // find the policy key in the string
-            size_t pos = _results.find( eirods::RESOURCE_STAGE_TO_CACHE_POLICY );
-            if( std::string::npos != pos ) {
-                _policy = toks[ i ].substr( pos+eirods::RESOURCE_STAGE_TO_CACHE_POLICY.size()+1 );
-                break;
-            }
+        std::string value = kvp[ eirods::RESOURCE_STAGE_TO_CACHE_POLICY ];
+        if( value.empty() ) {
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "stage policy value not found" );
         }
+        _policy = value;
 
         return SUCCESS();
 
