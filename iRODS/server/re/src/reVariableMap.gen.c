@@ -2500,8 +2500,10 @@ ExprType *getVarTypeFromRuleExecInfo(char *varMap, Region *r)
   if (i != 0)
     return newErrorType(i, r);
 
-	
-	  	
+	  if( strcmp( varName, "pluginInstanceName" ) == 0 ) {
+          return newSimpType( T_STRING, r );
+      }
+
 	  if (strcmp(varName, "status") == 0) {
 		
 			    return newSimpType(T_INT, r);
