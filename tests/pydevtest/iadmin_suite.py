@@ -9,6 +9,7 @@ import pydevtest_sessions as s
 import commands
 import os
 import shutil
+import time
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -580,9 +581,67 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmresc %s" % "replA")
         assertiCmd(s.adminsession,"iadmin rmresc %s" % "pt")
 
+    
+    def test_irodsFs(self):
+        # =-=-=-=-=-=-=-
+        # set up a fuse mount
+        mount_point = "fuse_mount_point" 
 
+        if not os.path.isdir( mount_point ):
+            os.mkdir( mount_point )
+        os.system( "irodsFs "+mount_point )
 
+        # =-=-=-=-=-=-=-
+        # put some test data
+        cmd = "iput README foo0"
+        output = commands.getstatusoutput( cmd )
 
+        # =-=-=-=-=-=-=-
+        # see if the data object is actually in the mount point
+        # using the system ls
+        cmd = "ls -l "+mount_point
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "mount ls results ["+out_str+"]" )
+        assert( -1 != out_str.find( "foo0" ) )
+
+        # =-=-=-=-=-=-=-
+        # use system copy to put some data into the mount mount
+        # and verify that it shows up in the ils
+        cmd = "cp README "+mount_point+"/baz ; ils -l baz"
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 !=  out_str.find( "baz" ) )
+
+        # =-=-=-=-=-=-=-
+        # now irm the file and verify that it is not visible
+        # via the fuse mount
+        cmd = "irm -f baz ; ils -l baz"
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 != out_str.find( "baz does not exist" ) )
+        
+        output = commands.getstatusoutput("ls -l "+mount_point )
+        out_str = str( output )
+        print( "mount ls results ["+out_str+"]" )
+        assert( -1 !=  out_str.find( "foo0" ) )
+
+        # =-=-=-=-=-=-=-
+        # now rm the foo0 file and then verify it doesnt show
+        # up in the ils
+        cmd = "rm "+mount_point+"/foo0; ils -l foo0"
+        print( "cmd: ["+cmd+"]" )
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 != out_str.find( "foo0 does not exist" ) )
+
+        # tear down the fuse mount
+        os.system( "fusermount -uz "+mount_point )
+        if os.path.isdir( mount_point ):
+            os.rmdir( mount_point )
 
 
 
