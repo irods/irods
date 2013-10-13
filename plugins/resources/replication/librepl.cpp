@@ -1302,8 +1302,12 @@ extern "C" {
             // loop over all of the children in the map except the first (selected) and add them to a vector
             redirect_map_t::const_iterator it = _redirect_map.begin();
             for(++it; it != _redirect_map.end(); ++it) {
-                eirods::hierarchy_parser parser = it->second;
-                repl_vector.push_back(parser);
+                // JMC - need to consider the vote here as if it is 0 the child
+                //       is down and should not get a replica
+                if( it->first > 0 ) {
+                    eirods::hierarchy_parser parser = it->second;
+                    repl_vector.push_back(parser);
+                }
             }
         
             // add the resulting vector as a property of the resource

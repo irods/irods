@@ -484,9 +484,9 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         
         # =-=-=-=-=-=-=-
         # dirty up a foo10 repl to ensure that code path is tested also
-        assertiCmd(s.adminsession,"iadmin modresc unixA1 status down" );
+        assertiCmd(s.adminsession,"iadmin modresc unixA2 status down" );
         assertiCmd(s.adminsession,"iput -fR pt test_allrules.py foo10" )
-        assertiCmd(s.adminsession,"iadmin modresc unixA1 status up" );
+        assertiCmd(s.adminsession,"iadmin modresc unixA2 status up" );
         
         # =-=-=-=-=-=-=-
         # visualize our pruning
