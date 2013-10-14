@@ -644,14 +644,26 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
             os.rmdir( mount_point )
 
     def test_iexecmd(self):
-        assertiCmd( s.adminsession, "iput README foo" );
-        assertiCmd( s.adminsession, "iexecmd -p /tempZone/home/rods/"+s.adminsession.sessionId+"/foo hello", "LIST", "Hello world  from irods" );
-        assertiCmd( s.adminsession, "irm -f foo" );
+        assertiCmd( s.adminsession, "iput README foo" )
+        assertiCmd( s.adminsession, "iexecmd -p /tempZone/home/rods/"+s.adminsession.sessionId+"/foo hello", "LIST", "Hello world  from irods" )
+        assertiCmd( s.adminsession, "irm -f foo" )
 
+    def test_ibun(self):
+        cmd = "tar cf somefile.tar ./README"
+        output = commands.getstatusoutput( cmd )
 
+        tar_path = "/tempZone/home/rods/"+s.adminsession.sessionId+"/somefile.tar"
+        dir_path = "/tempZone/home/rods/"+s.adminsession.sessionId+"/somedir"
+       
+        assertiCmd( s.adminsession, "iput somefile.tar" )
+        assertiCmd( s.adminsession, "imkdir "+dir_path )
+        assertiCmd( s.adminsession, "iput README "+dir_path+"/foo0" )
+        assertiCmd( s.adminsession, "iput README "+dir_path+"/foo1" )
 
+        assertiCmd( s.adminsession, "ibun -cD tar "+tar_path+" "+dir_path, "ERROR", "OVERWRITE_WITHOUT_FORCE_FLAG" )
 
-
+        assertiCmd( s.adminsession, "irm -rf "+dir_path )
+        assertiCmd( s.adminsession, "irm -rf "+tar_path )
 
 
 

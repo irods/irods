@@ -167,7 +167,6 @@ int _rsStructFileBundle( rsComm_t*                 rsComm,
         l1descInx = rsDataObjOpen( rsComm, &dataObjInp );
 
     } else {
-        addKeyVal( &dataObjInp.condInput, FORCE_FLAG_KW, "" );
         l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
 
     }
