@@ -88,10 +88,11 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/eirods_tcp_object.o \
 		$(libCoreObjDir)/eirods_network_factory.o \
 		$(libCoreObjDir)/eirods_network_manager.o \
-        $(libCoreObjDir)/eirods_buffer_encryption.o \
-	$(libCoreObjDir)/eirods_auth_object.o \
-	$(libCoreObjDir)/eirods_auth_plugin.o \
-	$(libCoreObjDir)/eirods_auth_manager.o
+	        $(libCoreObjDir)/eirods_buffer_encryption.o \
+		$(libCoreObjDir)/eirods_auth_object.o \
+		$(libCoreObjDir)/eirods_auth_plugin.o \
+		$(libCoreObjDir)/eirods_auth_manager.o \
+		$(libCoreObjDir)/eirods_virtual_path.o
 
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o

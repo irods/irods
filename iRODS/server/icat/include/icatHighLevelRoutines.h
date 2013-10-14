@@ -19,6 +19,8 @@
 #include <vector>
 #include <map>
 
+#include <boost/tuple/tuple.hpp>
+
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
 int chlIsConnected();
@@ -182,15 +184,24 @@ eirods::error chlRescObjCount(const std::string& _resc_name, int& _rtn_obj_count
 
 int chlSubstituteResourceHierarchies(rsComm_t *rsComm, const char *old_hier, const char *new_hier);
 
-// =-=-=-=-=-=-=-
-// typedefs and prototype for query used for rebalancing operation
-typedef std::vector< std::pair< std::string, int > > repl_obj_result_t;
-typedef std::map< std::string, repl_obj_result_t >   repl_query_result_t;
-int chlGetDataObjsOnResourceForLimitAndNumChildren( 
-    const std::string&   _resc_name,
-    int                  _num_children,
+/// =-=-=-=-=-=-=-
+/// @brief typedefs and prototype for query used for rebalancing operation
+typedef std::vector< int > dist_child_result_t;
+
+/// =-=-=-=-=-=-=-
+/// @brief query which distinct data objects do not existin on a
+///        given child resource which do exist on the parent
+int chlGetDistinctDataObjsMissingFromChildGivenParent( 
+    const std::string&   _parent,
+    const std::string&   _child,
     int                  _limit,
-    repl_query_result_t& _results );
+    dist_child_result_t& _results );
+
+/// =-=-=-=-=-=-=-
+/// @brief the the distinct data object count for a resource
+int chlGetDistinctDataObjCountOnResource( 
+    const std::string&   _resc_name,
+    long long&           _count );
 
 int chlResolveResourceHierarchy(
 		const std::string&	resc_name,

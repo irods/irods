@@ -892,8 +892,8 @@ addInxIval (inxIvalPair_t *inxIvalPair, int inx, int value)
     return (0);
 }
 
-    int
-addInxVal (inxValPair_t *inxValPair, int inx, char *value)
+int
+addInxVal (inxValPair_t *inxValPair, int inx, const char *value)
 {
     int *newInx;
     char **newValue;

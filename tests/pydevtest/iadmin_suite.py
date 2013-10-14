@@ -9,6 +9,7 @@ import pydevtest_sessions as s
 import commands
 import os
 import shutil
+import time
 
 class Test_iAdminSuite(unittest.TestCase, ResourceBase):
 
@@ -443,7 +444,204 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         assertiCmd(s.adminsession,"iadmin rmresc repl" )
         assertiCmd(s.adminsession,"iadmin rmresc pt" )
 
+    def test_rebalance_for_repl_in_repl_node(self):
+        output = commands.getstatusoutput("hostname")
+        # =-=-=-=-=-=-=-
+        # STANDUP
+        h = get_hostname()
+        # first tree standup
+        assertiCmd(s.adminsession,"iadmin mkresc %s passthru %s:/tmp/pydevtest_%s" % ("pt", h, "pt")) # passthru
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replA", h, "replA")) # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA1", h, "unixA1")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixA2", h, "unixA2")) # unix
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("pt", "replA"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA1"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "unixA2"))
+        # second tree standup
+        assertiCmd(s.adminsession,"iadmin mkresc %s replication %s:/tmp/pydevtest_%s" % ("replB", h, "replB")) # replication
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB1", h, "unixB1")) # unix
+        assertiCmd(s.adminsession,"iadmin mkresc %s unixfilesystem %s:/tmp/pydevtest_%s" % ("unixB2", h, "unixB2")) # unix
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB1"))
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replB", "unixB2"))
 
+        # wire the repls together
+        assertiCmd(s.adminsession,"iadmin addchildtoresc %s %s" % ("replA", "replB"))
+
+        # =-=-=-=-=-=-=-
+        # place data into the resource
+        num_children = 11
+        for i in range( num_children ):
+            assertiCmd(s.adminsession,"iput -R pt README foo%d" % i )
+
+        # =-=-=-=-=-=-=-
+        # visualize our replication
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
+       
+        # =-=-=-=-=-=-=-
+        # surgically trim repls so we can rebalance
+        assertiCmd(s.adminsession,"itrim -N1 -n 0 foo0 foo3 foo5 foo6 foo7 foo8" )
+        assertiCmd(s.adminsession,"itrim -N1 -n 1 foo1 foo3 foo4 foo9" )
+        assertiCmd(s.adminsession,"itrim -N1 -n 2 foo2 foo4 foo5" )
+        
+        # =-=-=-=-=-=-=-
+        # dirty up a foo10 repl to ensure that code path is tested also
+        assertiCmd(s.adminsession,"iadmin modresc unixA2 status down" );
+        assertiCmd(s.adminsession,"iput -fR pt test_allrules.py foo10" )
+        assertiCmd(s.adminsession,"iadmin modresc unixA2 status up" );
+        
+        # =-=-=-=-=-=-=-
+        # visualize our pruning
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
+
+        # =-=-=-=-=-=-=-
+        # call rebalance function - the thing were actually testing... finally.
+        assertiCmd(s.adminsession,"iadmin modresc pt rebalance" )
+
+        # =-=-=-=-=-=-=-
+        # visualize our rebalance
+        assertiCmd(s.adminsession,"ils -AL", "LIST", "foo" )
+
+        # =-=-=-=-=-=-=-
+        # assert that all the appropriate repl numbers exist for all the children
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 1 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 2 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 3 ", " foo0" ] )
+        assertiCmd(s.adminsession,"ils -AL foo0", "LIST", [" 4 ", " foo0" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 0 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 2 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 3 ", " foo1" ] )
+        assertiCmd(s.adminsession,"ils -AL foo1", "LIST", [" 4 ", " foo1" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 0 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 1 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 3 ", " foo2" ] )
+        assertiCmd(s.adminsession,"ils -AL foo2", "LIST", [" 4 ", " foo2" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 2 ", " foo3" ] )
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 3 ", " foo3" ] )
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 4 ", " foo3" ] )
+        assertiCmd(s.adminsession,"ils -AL foo3", "LIST", [" 5 ", " foo3" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 0 ", " foo4" ] )
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 3 ", " foo4" ] )
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 4 ", " foo4" ] )
+        assertiCmd(s.adminsession,"ils -AL foo4", "LIST", [" 5 ", " foo4" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 1 ", " foo5" ] )
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 3 ", " foo5" ] )
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 4 ", " foo5" ] )
+        assertiCmd(s.adminsession,"ils -AL foo5", "LIST", [" 5 ", " foo5" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 1 ", " foo6" ] )
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 2 ", " foo6" ] )
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 3 ", " foo6" ] )
+        assertiCmd(s.adminsession,"ils -AL foo6", "LIST", [" 4 ", " foo6" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 1 ", " foo7" ] )
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 2 ", " foo7" ] )
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 3 ", " foo7" ] )
+        assertiCmd(s.adminsession,"ils -AL foo7", "LIST", [" 4 ", " foo7" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 1 ", " foo8" ] )
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 2 ", " foo8" ] )
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 3 ", " foo8" ] )
+        assertiCmd(s.adminsession,"ils -AL foo8", "LIST", [" 4 ", " foo8" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 0 ", " foo9" ] )
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 2 ", " foo9" ] )
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 3 ", " foo9" ] )
+        assertiCmd(s.adminsession,"ils -AL foo9", "LIST", [" 4 ", " foo9" ] )
+        
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 0 ", " & ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 1 ", " & ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 2 ", " & ", " foo10" ] )
+        assertiCmd(s.adminsession,"ils -AL foo10", "LIST", [" 3 ", " & ", " foo10" ] )
+
+        # =-=-=-=-=-=-=-
+        # TEARDOWN
+        for i in range( num_children ):
+            assertiCmd(s.adminsession,"irm -f foo%d" % i )
+
+        # unwire repl nods
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replA", "replB"))
+
+        # second tree teardown
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replB", "unixB2"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replB", "unixB1"))
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixB2")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixB1")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "replB")
+        # first tree teardown
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replA", "unixA2"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("replA", "unixA1"))
+        assertiCmd(s.adminsession,"iadmin rmchildfromresc %s %s" % ("pt", "replA"))
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixA2")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "unixA1")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "replA")
+        assertiCmd(s.adminsession,"iadmin rmresc %s" % "pt")
+
+    
+    def test_irodsFs(self):
+        # =-=-=-=-=-=-=-
+        # set up a fuse mount
+        mount_point = "fuse_mount_point" 
+
+        if not os.path.isdir( mount_point ):
+            os.mkdir( mount_point )
+        os.system( "irodsFs "+mount_point )
+
+        # =-=-=-=-=-=-=-
+        # put some test data
+        cmd = "iput README foo0"
+        output = commands.getstatusoutput( cmd )
+
+        # =-=-=-=-=-=-=-
+        # see if the data object is actually in the mount point
+        # using the system ls
+        cmd = "ls -l "+mount_point
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "mount ls results ["+out_str+"]" )
+        assert( -1 != out_str.find( "foo0" ) )
+
+        # =-=-=-=-=-=-=-
+        # use system copy to put some data into the mount mount
+        # and verify that it shows up in the ils
+        cmd = "cp README "+mount_point+"/baz ; ils -l baz"
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 !=  out_str.find( "baz" ) )
+
+        # =-=-=-=-=-=-=-
+        # now irm the file and verify that it is not visible
+        # via the fuse mount
+        cmd = "irm -f baz ; ils -l baz"
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 != out_str.find( "baz does not exist" ) )
+        
+        output = commands.getstatusoutput("ls -l "+mount_point )
+        out_str = str( output )
+        print( "mount ls results ["+out_str+"]" )
+        assert( -1 !=  out_str.find( "foo0" ) )
+
+        # =-=-=-=-=-=-=-
+        # now rm the foo0 file and then verify it doesnt show
+        # up in the ils
+        cmd = "rm "+mount_point+"/foo0; ils -l foo0"
+        print( "cmd: ["+cmd+"]" )
+        output = commands.getstatusoutput( cmd )
+        out_str = str( output )
+        print( "results["+out_str+"]" )
+        assert( -1 != out_str.find( "foo0 does not exist" ) )
+
+        # tear down the fuse mount
+        os.system( "fusermount -uz "+mount_point )
+        if os.path.isdir( mount_point ):
+            os.rmdir( mount_point )
 
 
 

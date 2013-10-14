@@ -5,6 +5,7 @@
 #include "eirods_resource_plugin.h"
 #include "eirods_load_plugin.h"
 #include "eirods_resources_home.h"
+#include "eirods_operation_rule_execution_manager_base.h"
 
 // =-=-=-=-=-=-=-
 // STL Includes
@@ -158,8 +159,14 @@ namespace eirods {
 
             // =-=-=-=-=-=-=-
             // add the operation via a wrapper to the operation map
-            operations_[ key ] = operation_wrapper( instance_name_, key, res_op_ptr );
-
+            oper_rule_exec_mgr_ptr rex_mgr( 
+                                      new operation_rule_execution_manager( 
+                                              instance_name_, key ) );
+            operations_[ key ] = operation_wrapper( 
+                                     rex_mgr,
+                                     instance_name_, 
+                                     key, 
+                                     res_op_ptr );
         } // for itr
 
 

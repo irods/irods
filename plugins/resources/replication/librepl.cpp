@@ -31,6 +31,7 @@
 #include "eirods_hierarchy_parser.h"
 #include "eirods_resource_redirect.h"
 #include "eirods_repl_rebalance.h"
+#include "eirods_kvp_string_parser.h"
 
 // =-=-=-=-=-=-=-
 // stl includes
@@ -96,6 +97,7 @@ extern "C" {
     /// =-=-=-=-=-=-=-
     /// @brief limit of the number of repls to operation upon during rebalance
     const int DEFAULT_LIMIT = 500;
+    const std::string REPL_LIMIT_KEY( "replication_rebalance_limit" );
 
     // =-=-=-=-=-=-=-
     // 2. Define operations which will be called by the file*
@@ -204,9 +206,9 @@ extern "C" {
         } else {
             oper.object() = *(file_obj.get());
             oper.operation() = _oper;
-            // object_list.push_back(oper);
-            // ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
-            // result = ASSERT_PASS(ret, "Failed to set the object list property on the resource.");
+            object_list.push_back(oper);
+            ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+            result = ASSERT_PASS(ret, "Failed to set the object list property on the resource.");
         }
 
         return result;
@@ -251,7 +253,6 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
-        
         // get the list of objects that need to be replicated
         object_list_t object_list;
         ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
@@ -285,7 +286,6 @@ extern "C" {
                     
                     // create a replicator
                     eirods::replicator replicator(&oper_repl);
-                    
                     // call replicate
                     ret = replicator.replicate(_ctx, child_list, object_list);
                     if(!ret.ok()) {
@@ -306,6 +306,8 @@ extern "C" {
                     }
                 }
             }
+        } else {
+
         }
         return result;
     }
@@ -467,12 +469,11 @@ extern "C" {
                     std::string name;
                     ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
                     if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-                        
                         if(!sub_parser.resc_in_hier(name)) {
                             ret = replReplicateCreateWrite(_ctx);
                             result = ASSERT_PASS(ret, "Failed to replicate create/write operation for object: \"%s\".",
                                                  file_obj->logical_path().c_str());
-                        }
+                        } 
                     }
                 }
             }
@@ -1303,8 +1304,12 @@ extern "C" {
             // loop over all of the children in the map except the first (selected) and add them to a vector
             redirect_map_t::const_iterator it = _redirect_map.begin();
             for(++it; it != _redirect_map.end(); ++it) {
-                eirods::hierarchy_parser parser = it->second;
-                repl_vector.push_back(parser);
+                // JMC - need to consider the vote here as if it is 0 the child
+                //       is down and should not get a replica
+                if( it->first > 0 ) {
+                    eirods::hierarchy_parser parser = it->second;
+                    repl_vector.push_back(parser);
+                }
             }
         
             // add the resulting vector as a property of the resource
@@ -1330,7 +1335,6 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
 
-        // pluck the first entry out of the map. if its vote is non-zero then ship it
         redirect_map_t::const_iterator it;
         it = _redirect_map.begin();
         float vote = it->first;
@@ -1468,7 +1472,7 @@ extern "C" {
         // =-=-=-=-=-=-=-
         // if our children had errors, then we bail
         if( !result.ok() ) {
-            return result;
+            return PASS( result );
         }
 
         // =-=-=-=-=-=-=-
@@ -1486,64 +1490,91 @@ extern "C" {
         int num_children = _ctx.child_map().size();
 
         // =-=-=-=-=-=-=-
-        // build a set of children for comparison
-        std::vector< std::string > children;
-        eirods::resource_child_map::iterator c_itr = _ctx.child_map().begin();
-        for( c_itr  = _ctx.child_map().begin();
-             c_itr != _ctx.child_map().end();
-             ++c_itr ) {
-            children.push_back( c_itr->first );
-        }
-
-        // =-=-=-=-=-=-=-
         // determine limit size
         int limit = DEFAULT_LIMIT;
         if( !_ctx.rule_results().empty() ) {
-            limit = boost::lexical_cast<int>( _ctx.rule_results() );
+            eirods::kvp_map_t kvp;
+            eirods::error kvp_err = eirods::parse_kvp_string( 
+                                        _ctx.rule_results(),
+                                        kvp );
+            if( !kvp_err.ok() ) {
+                return PASS( kvp_err );
+            }
 
+            std::string limit_str = kvp[ REPL_LIMIT_KEY ];
+            if( !limit_str.empty() ) {
+                try {
+                    limit = boost::lexical_cast<int>( limit_str );
+
+                } catch( boost::bad_lexical_cast e ) {
+                    std::stringstream msg;
+                    msg << "failed to cast value ["
+                        << limit_str 
+                        << "] to an integer";
+                    return ERROR( 
+                               SYS_INVALID_INPUT_PARAM,
+                               msg.str() );
+                }
+            }
+
+        } // if rule results not empty
+        
+        // =-=-=-=-=-=-=-
+        // determine distinct root count
+        int status = 0;
+        long long root_count = 0;
+        status = chlGetDistinctDataObjCountOnResource( 
+                     resc_name.c_str(),
+                     root_count );
+        if( status < 0 ) {
+            std::stringstream msg;
+            msg << "failed to get distinct cound for ["
+                << resc_name
+                << "]";
+            return ERROR( status, msg.str().c_str() );
         }
 
         // =-=-=-=-=-=-=-
-        // iterate over 'limit' results from icat until none are left
-        int status = 0;
-        while( 0 == status ) {
+        // iterate over the children, if one does not have a matching
+        // distinct count then we need to rebalance
+        eirods::resource_child_map::iterator c_itr;
+        for( c_itr  = _ctx.child_map().begin();
+             c_itr != _ctx.child_map().end();
+             ++c_itr ) {
             // =-=-=-=-=-=-=-
-            // request the list from the icat
-            repl_query_result_t results;
-            status = chlGetDataObjsOnResourceForLimitAndNumChildren(  
-                             resc_name,
-                             num_children,
-                             limit,
-                             results );
-            repl_query_result_t::iterator r_itr = results.begin();
-            for( ; r_itr != results.end(); ++r_itr ) {
-                // =-=-=-=-=-=-=-
-                // check object results for this entry, if empty continue
-                if( r_itr->second.empty() ) {
-                    // =-=-=-=-=-=-=-
-                    // no copies exist on the resource, error for sure
-                    std::stringstream msg;
-                    msg << "object results is empty for data object [";
-                    msg << r_itr->first << "]";
-                    return ERROR( -1, msg.str() );
-                }
-         
-                // =-=-=-=-=-=-=-
-                // if the results are not empty call our processing function
-                eirods::error ret = eirods::proc_result_for_rebalance(
-                                        _ctx.comm(),     // comm object
-                                        r_itr->first,    // object path
-                                        resc_name,       // this resc name
-                                        children,        // full child list
-                                        r_itr->second ); // obj results with 
-                                                         // hiers + modes
-                if( !ret.ok() ) {
-                    return PASS( ret );
+            // get list of distinct missing data ids or dirty repls, iterate
+            // until query fails - no more repls necessary for child
+            dist_child_result_t results(1);
+            while( !results.empty() ) {
+                eirods::error ga_ret = eirods::gather_data_objects_for_rebalance(
+                                        _ctx.comm(), 
+                                        resc_name,
+                                        c_itr->first,
+                                        limit,
+                                        results );
+                if( ga_ret.ok() ) {
+                    if( !results.empty() ) {
+                        // =-=-=-=-=-=-=-
+                        // if the results are not empty call our processing function
+                        eirods::error proc_ret = eirods::proc_results_for_rebalance(
+                                                    _ctx.comm(),  // comm ptr
+                                                    resc_name,    // parent resc name
+                                                    c_itr->first, // child resc name
+                                                    results );    // result set
+                        if( !proc_ret.ok() ) {
+                            return PASS( proc_ret );
+                        }
+
+                    } // if results
+
+                } else {
+                    return PASS( ga_ret );
+
                 }
 
-            } // for r_itr
+            } // while 
 
-        } // while 
+        } // for c_itr
 
         return SUCCESS();
 

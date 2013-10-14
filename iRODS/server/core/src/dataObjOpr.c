@@ -1001,14 +1001,27 @@ sortObjInfoForRepl (
             // compare resc hier strings, if its a match this is our 
             // choice so queue it up on the oldDataObjInfoHead
             if( 0 == strcmp( dst_resc_hier, tmp_info->rescHier ) ) {
-                if(prev_info == NULL) {
-                    *dataObjInfoHead = tmp_info->next;
+                // =-=-=-=-=-=-=-
+                // we need to check the status of the resource
+                // to determine if it is up or down before
+                // queue-ing it up
+                if( INT_RESC_STATUS_DOWN != tmp_info->rescInfo->rescStatus ) {
+                    if(prev_info == NULL) {
+                        *dataObjInfoHead = tmp_info->next;
+                    } else {
+                        prev_info->next = tmp_info->next;
+                    }
+                    tmp_info->next = NULL;
+                    queDataObjInfo( oldDataObjInfoHead, tmp_info, 1, 1 );
+                    tmp_info = 0;
                 } else {
-                    prev_info->next = tmp_info->next;
+                    rodsLog( 
+                        LOG_ERROR, 
+                        "sortObjInfoForRepl - destination resource is down [%s]", 
+                        dst_resc_hier );
+                    return -1;
                 }
-                tmp_info->next = NULL;
-                queDataObjInfo( oldDataObjInfoHead, tmp_info, 1, 1 );
-                tmp_info = 0;
+
             } else {
                 prev_info = tmp_info;
                 tmp_info = tmp_info->next;

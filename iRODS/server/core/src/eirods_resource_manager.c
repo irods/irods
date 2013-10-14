@@ -442,7 +442,7 @@ namespace eirods {
             resc->set_property<std::string>( RESOURCE_PARENT,    tmpRescParent );
             resc->set_property<std::string>( RESOURCE_CONTEXT,   tmpRescContext );
             
-            if( tmpRescStatus ==  std::string( RESC_DOWN ) ) {
+            if( tmpRescStatus == std::string( RESC_DOWN ) ) {
                 resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_DOWN );
             } else {
                 resc->set_property<int>( RESOURCE_STATUS, INT_RESC_STATUS_UP );

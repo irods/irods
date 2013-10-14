@@ -44,9 +44,10 @@ namespace eirods {
 		/// @brief constructors
 		operation_wrapper(  );
 		operation_wrapper( 
-            const std::string&, // instance name
-            const std::string&, // operation name
-            plugin_operation );  // fcn ptr to loaded operation
+            oper_rule_exec_mgr_ptr, // rule exec mgr
+            const std::string&,     // instance name
+            const std::string&,     // operation name
+            plugin_operation );     // fcn ptr to loaded operation
 		
         // =-=-=-=-=-=-=-
 		/// @brief destructor
@@ -61,9 +62,10 @@ namespace eirods {
 		operation_wrapper& operator=( const operation_wrapper& _rhs );
 
 		// =-=-=-=-=-=-=-
-		// operator call that will git 'er done. this clearly must match the plugin_operation type signature
-		// NOTE :: we are taking the old, long route to handle multiple template params.  when we can use C++11
-		//         this will be MUCH cleaner.
+		// operator call that will git 'er done. this clearly must match the 
+        // plugin_operation type signature
+		// NOTE :: we are taking the old, long route to handle multiple template 
+        //         params.  when we can use C++11 this will be MUCH cleaner.
 		
 		// =-=-=-=-=-=-=-
 		// public - single parameter template, there will be more...
@@ -77,15 +79,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -94,8 +90,8 @@ namespace eirods {
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
             
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -124,15 +120,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -141,8 +131,8 @@ namespace eirods {
                
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
  
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -171,15 +161,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -188,8 +172,8 @@ namespace eirods {
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
  
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -219,16 +203,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation
@@ -237,8 +214,8 @@ namespace eirods {
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
  
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -269,15 +246,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -286,8 +257,8 @@ namespace eirods {
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
  
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -320,15 +291,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -337,8 +302,8 @@ namespace eirods {
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
  
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -371,15 +336,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation		  
@@ -388,8 +347,8 @@ namespace eirods {
  
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
  
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -423,15 +382,9 @@ namespace eirods {
                 _ctx.fco()->get_re_vars( kvp );
 
                 // =-=-=-=-=-=-=-
-                // instantiate a rule executor
-                oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                       instance_name_, 
-                                                       operation_name_,
-                                                       kvp );
-                // =-=-=-=-=-=-=-
                 // call the pre-rule for this op
                 std::string pre_results;
-                rule_exec->exec_pre_op( pre_results );
+                rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                 // =-=-=-=-=-=-=-
                 // call the actual operation		  
@@ -440,8 +393,8 @@ namespace eirods {
 
                 // =-=-=-=-=-=-=-
                 // call the poste-rule for this op
-                std::string post_results;
-                rule_exec->exec_post_op( post_results );
+                std::string rule_results =  _ctx.rule_results();
+                rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
                 // =-=-=-=-=-=-=-
                 // clean up kvp struct
@@ -477,15 +430,9 @@ namespace eirods {
                _ctx.fco()->get_re_vars( kvp );
 
                // =-=-=-=-=-=-=-
-               // instantiate a rule executor
-               oper_rule_exec_mgr_ptr rule_exec = operation_rule_execution_manager_factory( 
-                                                      instance_name_, 
-                                                      operation_name_,
-                                                      kvp );
-               // =-=-=-=-=-=-=-
                // call the pre-rule for this op
                std::string pre_results;
-               rule_exec->exec_pre_op( pre_results );
+               rule_exec_mgr_->exec_pre_op( kvp, pre_results );
 
                // =-=-=-=-=-=-=-
                // call the actual operation	
@@ -494,8 +441,8 @@ namespace eirods {
                                                 
                // =-=-=-=-=-=-=-
                // call the poste-rule for this op
-               std::string post_results;
-               rule_exec->exec_post_op( post_results );
+               std::string rule_results =  _ctx.rule_results();
+               rule_exec_mgr_->exec_post_op( kvp, rule_results );
 
                // =-=-=-=-=-=-=-
                // clean up kvp struct
@@ -510,18 +457,22 @@ namespace eirods {
 		} // operator() - T1, T2, T3, T4, T5, T6, T7, T8
 
     private:
-		// =-=-=-=-=-=-=-
+		/// =-=-=-=-=-=-=-
 		/// @brief function pointer to actual operation
 		plugin_operation operation_;
 		
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
 		/// @brief instance name used for calling rules
 	    std::string instance_name_;
         
-        // =-=-=-=-=-=-=-
+        /// =-=-=-=-=-=-=-
 		/// @brief name of this operation, use for calling rules
 	    std::string operation_name_;
         	
+        /// =-=-=-=-=-=-=-
+		/// @brief rule execution context
+        oper_rule_exec_mgr_ptr rule_exec_mgr_;
+
 	}; // class operation_wrapper 
 
 }; // namespace eirods
