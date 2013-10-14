@@ -643,7 +643,10 @@ class Test_iAdminSuite(unittest.TestCase, ResourceBase):
         if os.path.isdir( mount_point ):
             os.rmdir( mount_point )
 
-
+    def test_iexecmd(self):
+        assertiCmd( s.adminsession, "iput README foo" );
+        assertiCmd( s.adminsession, "iexecmd -p /tempZone/home/rods/"+s.adminsession.sessionId+"/foo hello", "LIST", "Hello world  from irods" );
+        assertiCmd( s.adminsession, "irm -f foo" );
 
 
 
