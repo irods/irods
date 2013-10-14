@@ -47,7 +47,7 @@
 
 extern int get64RandomBytes(char *buf);
 
-static char prevChalSig[200]; /* a 'signiture' of the previous
+static char prevChalSig[200]; /* a 'signature' of the previous
                                  challenge.  This is used as a sessionSigniture on the ICAT server
                                  side.  Also see getSessionSignitureClientside function. */
 
