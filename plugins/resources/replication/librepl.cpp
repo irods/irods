@@ -1335,38 +1335,29 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
 
-        // pluck the first entry out of the map that is non-zero and ship it
-        bool child_found = false;
         redirect_map_t::const_iterator it;
         it = _redirect_map.begin();
-        for( ; it != _redirect_map.end(); ++it ) {
-            float vote = it->first;
-            eirods::hierarchy_parser parser = it->second;
-            *_out_parser = parser;
-            *_out_vote = vote;
-            if(vote != 0.0) {
-                ret = replCreateChildReplList(_ctx, _redirect_map);
+        float vote = it->first;
+        eirods::hierarchy_parser parser = it->second;
+        *_out_parser = parser;
+        *_out_vote = vote;
+        if(vote != 0.0) {
+            ret = replCreateChildReplList(_ctx, _redirect_map);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to add unselected children to the replication list.";
+                result = PASSMSG(msg.str(), ret);
+            } else {
+                ret = _ctx.prop_map().set<eirods::hierarchy_parser>(hierarchy_prop, parser);
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
-                    msg << " - Failed to add unselected children to the replication list.";
+                    msg << " - Failed to add hierarchy property to resource.";
                     result = PASSMSG(msg.str(), ret);
-                } else {
-                    ret = _ctx.prop_map().set<eirods::hierarchy_parser>(hierarchy_prop, parser);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to add hierarchy property to resource.";
-                        result = PASSMSG(msg.str(), ret);
-                    }
                 }
-
-                // NOTE :: there seems to be some dependency on the repl code and the first resource
-                //         being selected... an order of operations issue feels like it is lurking...
-                break; 
             }
-
-        } // for it
+        }
         
         return result;
     }
