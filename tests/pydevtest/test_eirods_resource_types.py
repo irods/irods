@@ -1102,11 +1102,15 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)                                # replicate to test resource
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)                                    # debugging
         assertiCmd(s.adminsession,"iput -f -R %s %s %s" % (self.testresc, doublefile, filename) )        # overwrite test repl with different data
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+filename])                        # default resource cache should have dirty copy
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+filename])                        # default resource archive should have dirty copy
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," "+filename]) # default resource cache should not have doublesize file
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+doublesize+" "," "+filename]) # default resource archive should not have doublesize file
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," "+doublesize+" ","& "+filename])    # targeted resource should have new double clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+filename])                        # default resource cache   1 should have dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+filename])                        # default resource archive 1 should have dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," "+filename])                        # default resource cache   2 should have dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," "+filename])                        # default resource archive 2 should have dirty copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," "+filename]) # default resource cache   1 should not have doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+doublesize+" "," "+filename]) # default resource archive 1 should not have doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," "+doublesize+" "," "+filename]) # default resource cache   2 should not have doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," "+doublesize+" "," "+filename]) # default resource archive 2 should not have doublesize file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," "+doublesize+" ","& "+filename])    # targeted resource should have new double clean copy
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1137,17 +1141,21 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
 
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # should have a dirty copy
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename]) # should have a dirty copy
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename])     # should have a clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should have a dirty copy
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should have a dirty copy
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," & "+filename]) # should have a dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," & "+filename])     # should have a clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename]) # should have a dirty copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 6 "," & "+filename]) # should have a dirty copy
 
         assertiCmd(s.adminsession,"irepl -U "+filename)                                 # update last replica
 
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # should have a dirty copy
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename]) # should have a dirty copy
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename])     # should have a clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # should have a dirty copy
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should have a dirty copy
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," & "+filename])     # should have a clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename]) # should have a dirty copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 6 "," & "+filename])     # should have a clean copy
 
         assertiCmd(s.adminsession,"irepl -aU "+filename)                                # update all replicas
 
@@ -1156,6 +1164,8 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename])     # should have a clean copy
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename])     # should have a clean copy
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," & "+filename])     # should have a clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename])     # should have a clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 6 "," & "+filename])     # should have a clean copy
 
         assertiCmd(s.adminsession,"irm -f "+filename)                                   # cleanup file
         assertiCmd(s.adminsession,"iadmin rmresc thirdresc")                            # remove third resource
@@ -1177,9 +1187,9 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"irepl "+filename)                                    # replicate to default resource
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)                   # for debugging
         assertiCmd(s.adminsession,"irepl "+filename)                                    # replicate overtop default resource
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should not have a replica 3
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename]) # should not have a replica 5
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)               # replicate overtop test resource
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should not have a replica 3
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename]) # should not have a replica 5
         # local cleanup
         os.remove(filepath)
 
@@ -1200,8 +1210,8 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
         assertiCmd(s.adminsession,"irepl -R thirdresc "+filename)              # replicate overtop third resource
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 4 "," & "+filename]) # should not have a replica 4
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename]) # should not have a replica 5
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 6 "," & "+filename]) # should not have a replica 6
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 7 "," & "+filename]) # should not have a replica 7
         assertiCmd(s.adminsession,"irm -f "+filename)                          # cleanup file
         assertiCmd(s.adminsession,"iadmin rmresc thirdresc")                   # remove third resource
         # local cleanup
@@ -1221,14 +1231,18 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate to test resource
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename)          # for debugging
         assertiCmd(s.adminsession,"iput -f %s %s" % (doublefile, filename) )   # overwrite default repl with different data
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # default resource cache should have clean copy
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," & "+filename]) # default resource cache should have new double clean copy
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename]) # default resource archive should have clean copy
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+doublesize+" "," & "+filename]) # default resource archive should have new double clean copy
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 "+self.testresc," "+doublesize+" ","  "+filename]) # test resource should not have doublesize file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," & "+filename]) # default resource cache 1 should have clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 "," "+doublesize+" "," & "+filename]) # default resource cache 1 should have new double clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," & "+filename]) # default resource archive 1 should have clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 "," "+doublesize+" "," & "+filename]) # default resource archive 1 should have new double clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," & "+filename]) # default resource cache 2 should have clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "," "+doublesize+" "," & "+filename]) # default resource cache 2 should have new double clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # default resource archive 2 should have clean copy
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," "+doublesize+" "," & "+filename]) # default resource archive 2 should have new double clean copy
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 4 "+self.testresc," "+doublesize+" ","  "+filename]) # test resource should not have doublesize file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+filename)      # replicate back onto test resource
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 "+self.testresc," "+doublesize+" "," & "+filename]) # test resource should have new clean doublesize file
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 3 "," & "+filename]) # should not have a replica 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 4 "+self.testresc," "+doublesize+" "," & "+filename]) # test resource should have new clean doublesize file
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 "," & "+filename]) # should not have a replica 5
         # local cleanup
         os.remove(filepath)
         os.remove(doublefile)
@@ -1242,11 +1256,13 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         f.close()
 
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput --purgec "+filename) # put file
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once - replica 1
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed only once
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed 3x - replica 1
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed 3x - replica 2
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 ",filename]) # should be listed 3x - replica 3
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 4 ",filename]) # should not have any extra replicas
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
@@ -1260,12 +1276,14 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         f.close()
 
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename) # put file
         assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file and purge 'cached' replica
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed 3x - replica 1
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed 3x - replica 2
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 ",filename]) # should be listed 3x - replica 3
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 4 ",filename]) # should not have any extra replicas
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
@@ -1283,8 +1301,11 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"iput "+filename) # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed twice - 2 of 3
-        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed twice - 1 of 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed 4x - replica 1
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 2 ",filename]) # should be listed 4x - replica 2
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 3 ",filename]) # should be listed 4x - replica 3
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 4 ",filename]) # should be listed 4x - replica 4
+        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 5 ",filename]) # should not have any extra replicas
 
         # local cleanup
         output = commands.getstatusoutput( 'rm '+filepath )
