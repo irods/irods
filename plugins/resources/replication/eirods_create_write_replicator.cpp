@@ -34,6 +34,19 @@ namespace eirods {
             std::string sub_hier;
             child_parser.str(sub_hier, resource_);
             
+
+            if(true) {
+                std::stringstream msg;
+                msg << "qqq - Resource: \"";
+                msg << resource_;
+                msg << "\"\tChild: \"";
+                msg << child_;
+                msg << "\"\tSub: \"";
+                msg << sub_hier;
+                msg << "\"";
+                DEBUGMSG(msg.str());
+            }
+
             file_object object = _object_oper.object();
             child_list_t::const_iterator it;
             int sibling_count = 0;

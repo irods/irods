@@ -428,7 +428,20 @@ extern "C" {
                         std::string sub_hier;
                         parser.str(sub_hier, current_resc);
                
-rodsLog(LOG_NOTICE,"XXXX - sub_hier = [%s]",sub_hier.c_str());
+
+                        if(true) {
+                            std::stringstream msg;
+                            msg << "qqq - Resource: \"";
+                            msg << current_resc;
+                            msg << "\"\tSrc hier: \"";
+                            msg << src_hier;
+                            msg << "\"\tSub hier: \"";
+                            msg << sub_hier;
+                            msg << "\"";
+                            DEBUGMSG(msg.str());
+                        }
+
+                        rodsLog(LOG_NOTICE,"XXXX - sub_hier = [%s]",sub_hier.c_str());
 
                         // =-=-=-=-=-=-=-
                         // create a data obj input struct to call rsDataObjRepl which given
