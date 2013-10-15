@@ -1176,7 +1176,11 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco());
+                ret = child->call< const char* >(
+                          _ctx.comm(), 
+                          eirods::RESOURCE_OP_STAGETOCACHE, 
+                          _ctx.fco(), 
+                          _cache_file_name );
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;

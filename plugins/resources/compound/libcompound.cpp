@@ -378,108 +378,117 @@ extern "C" {
 
             std::string resource;
             parser.first_resc( resource );
-        
             // =-=-=-=-=-=-=-
-            // get the cache name
-            std::string cache_name;
-            eirods::error ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
-            if((result = ASSERT_PASS(ret, "Failed to get the cache name.")).ok() ) {
-
+            // get the parent name
+            std::string parent_name;
+            eirods::error ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_PARENT, parent_name );
+            if((result = ASSERT_PASS(ret, "Failed to get the parent name.")).ok() ) {
+                 
                 // =-=-=-=-=-=-=-
-                // get the archive name
-                std::string arch_name;
-                ret = _ctx.prop_map().get< std::string >( ARCHIVE_CONTEXT_TYPE, arch_name );
-                if((result = ASSERT_PASS(ret, "Failed to get the archive name.")).ok() ) {
+                // get the cache name
+                std::string cache_name;
+                eirods::error ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
+                if((result = ASSERT_PASS(ret, "Failed to get the cache name.")).ok() ) {
 
                     // =-=-=-=-=-=-=-
-                    // manufacture a resc hier to either the archive or the cache resc
-                    std::string keyword  = _stage_sync_kw;
-                    std::string inp_hier = obj->resc_hier();
-                    std::string tgt_name, src_name;
-
-                    if( keyword == STAGE_OBJ_KW ) {
-                        tgt_name = cache_name;
-                        src_name = arch_name;
-                    } else if( keyword == SYNC_OBJ_KW ) {
-                        tgt_name = arch_name;
-                        src_name = cache_name;
-                    } else {
-                        std::stringstream msg;
-                        msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
-                        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-                    }
-
-                    size_t pos = inp_hier.find( cache_name );
-                    if( std::string::npos == pos ) {
-                        pos = inp_hier.find( arch_name );
-                    }
-
-                    std::string dst_hier = inp_hier.substr( 0, pos );
-                    dst_hier += tgt_name;
-                    std::string src_hier = inp_hier.substr( 0, pos );
-                    src_hier += src_name;
-
-                    // Generate sub hier to use for pdmo
-                    std::string current_resc;
-                    ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_resc);
-                    if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-                    
-                        parser.set_string(src_hier);
-                        std::string sub_hier;
-                        parser.str(sub_hier, current_resc);
-               
-
-                        if(true) {
-                            std::stringstream msg;
-                            msg << "qqq - Resource: \"";
-                            msg << current_resc;
-                            msg << "\"\tSrc hier: \"";
-                            msg << src_hier;
-                            msg << "\"\tSub hier: \"";
-                            msg << sub_hier;
-                            msg << "\"";
-                            DEBUGMSG(msg.str());
-                        }
-
-                        rodsLog(LOG_NOTICE,"XXXX - sub_hier = [%s]",sub_hier.c_str());
+                    // get the archive name
+                    std::string arch_name;
+                    ret = _ctx.prop_map().get< std::string >( ARCHIVE_CONTEXT_TYPE, arch_name );
+                    if((result = ASSERT_PASS(ret, "Failed to get the archive name.")).ok() ) {
 
                         // =-=-=-=-=-=-=-
-                        // create a data obj input struct to call rsDataObjRepl which given
-                        // the _stage_sync_kw will either stage or sync the data object 
-                        dataObjInp_t data_obj_inp;
-                        bzero( &data_obj_inp, sizeof( data_obj_inp ) );
-                        rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
-                        data_obj_inp.createMode = obj->mode();
-                        addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            sub_hier.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
-                        if( _update_flg ) {
-                            addKeyVal( &data_obj_inp.condInput, UPDATE_REPL_KW, "" );
+                        // manufacture a resc hier to either the archive or the cache resc
+                        std::string keyword  = _stage_sync_kw;
+                        std::string inp_hier = obj->resc_hier();
+                        
+                        std::string tgt_name, src_name;
+                        if( keyword == STAGE_OBJ_KW ) {
+                            tgt_name = cache_name;
+                            src_name = arch_name;
+                        } else if( keyword == SYNC_OBJ_KW ) {
+                            tgt_name = arch_name;
+                            src_name = cache_name;
+                        } else {
+                            std::stringstream msg;
+                            msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
+                            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
                         }
 
-                        transferStat_t* trans_stat = NULL;
-                        int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
-                        if( status < 0 ) {
-                            char* sys_error;
-                            char* rods_error = rodsErrorName(status, &sys_error);
-                            std::stringstream msg;
-                            msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
-                            msg << "for operation [" << _stage_sync_kw << "]";
-                            return ERROR( status, msg.str() );
-                        }
-         
-                        // =-=-=-=-=-=-=-
-                        // zero out the flag as the modified operation can be called
-                        // many times and we dont want it to get confused
-                        _ctx.prop_map()[ SYNC_FLAG ] = SYNC_NONE;
-                    }
-                }
-            }
-        }
-        
+    rodsLog( LOG_NOTICE, "XXXX - inp_hier [%s]", inp_hier.c_str() );
+    rodsLog( LOG_NOTICE, "XXXX - tgt_name [%s]", tgt_name.c_str() );
+    rodsLog( LOG_NOTICE, "XXXX - src_name [%s]", src_name.c_str() );
+                        std::string current_name;
+                        ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_name);
+                        if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
+                            size_t pos = inp_hier.find( parent_name );
+                            if( std::string::npos == pos ) {
+                                return ERROR( 
+                                           SYS_INVALID_INPUT_PARAM,
+                                           "parent resc not in fco resc hier" ); 
+                            }
+
+                            // =-=-=-=-=-=-=- 
+                            // Generate src and tgt hiers
+                            std::string dst_hier = inp_hier.substr( 0, pos+parent_name.size() );
+                            dst_hier += ";" + current_name + ";" + tgt_name;
+                            
+                            std::string src_hier = inp_hier.substr( 0, pos+parent_name.size() );
+                            src_hier += ";" + current_name + ";" + src_name;
+                            
+                            // =-=-=-=-=-=-=- 
+                            // Generate sub hier to use for pdmo
+                            parser.set_string(src_hier);
+                            std::string sub_hier;
+                            parser.str(sub_hier, current_name);
+
+    rodsLog( LOG_NOTICE, "XXXX - dst_hier [%s]", dst_hier.c_str() );
+    rodsLog( LOG_NOTICE, "XXXX - src_hier [%s]", src_hier.c_str() );
+                   
+    rodsLog( LOG_NOTICE, "XXXX - current_name [%s]", current_name.c_str() );
+    rodsLog( LOG_NOTICE, "XXXX - sub_hier = [%s]",sub_hier.c_str());
+
+                            // =-=-=-=-=-=-=-
+                            // create a data obj input struct to call rsDataObjRepl which given
+                            // the _stage_sync_kw will either stage or sync the data object 
+                            dataObjInp_t data_obj_inp;
+                            bzero( &data_obj_inp, sizeof( data_obj_inp ) );
+                            rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
+                            data_obj_inp.createMode = obj->mode();
+                            addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            sub_hier.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
+                            if( _update_flg ) {
+                                addKeyVal( &data_obj_inp.condInput, UPDATE_REPL_KW, "" );
+                            }
+
+                            transferStat_t* trans_stat = NULL;
+                            int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
+                            if( status < 0 ) {
+                                char* sys_error;
+                                char* rods_error = rodsErrorName(status, &sys_error);
+                                std::stringstream msg;
+                                msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
+                                msg << "for operation [" << _stage_sync_kw << "]";
+                                return ERROR( status, msg.str() );
+                            }
+             
+                            // =-=-=-=-=-=-=-
+                            // zero out the flag as the modified operation can be called
+                            // many times and we dont want it to get confused
+                            _ctx.prop_map()[ SYNC_FLAG ] = SYNC_NONE;
+                        
+                        } // if current_name
+
+                    } // if arch_name
+
+                } // if cache_name
+            
+            } // if parent name
+
+        } // if stage_sync_kw 
         return result;
 
     } // repl_object
@@ -917,6 +926,8 @@ extern "C" {
             return PASS( ret );
         }
 
+        eirods::file_object_ptr ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+rodsLog( LOG_NOTICE, "XXXX - compound_file_stage_to_cache :: calling stage from [%s] for [%s]", ptr->resc_hier().c_str(), _cache_file_name );
         // =-=-=-=-=-=-=-
         // forward the call to the archive
         return resc->call< const char* >( _ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );

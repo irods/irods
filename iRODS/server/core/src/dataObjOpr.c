@@ -456,7 +456,7 @@ sortObjInfo (
         if(resc_hier != NULL && hier_match) {
             //queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
             if( tmpDataObjInfo->replStatus > 0 ) {
-                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, topFlag );
+                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 1 );
             } else {
                 queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
             }
@@ -1037,7 +1037,6 @@ sortObjInfoForRepl (
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier);
-
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);

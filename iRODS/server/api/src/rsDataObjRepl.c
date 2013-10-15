@@ -429,7 +429,7 @@ int _rsDataObjReplUpdate(
     int allFlag = 0;
     int savedStatus = 0;
     int replCnt = 0;
-
+    
     // =-=-=-=-=-=-=-
     // set all or single flag
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
@@ -437,16 +437,16 @@ int _rsDataObjReplUpdate(
     } else {
         allFlag = 0;
     }
-
+    
     // =-=-=-=-=-=-=-
     // cache a copy of the dest resc hier if there is one
     std::string dst_resc_hier;
     char* dst_resc_hier_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_HIER_STR_KW );
     if( dst_resc_hier_ptr ) {
-        dst_resc_hier = dst_resc_hier;
+        dst_resc_hier = dst_resc_hier_ptr;
             
     }    
-
+    
     // =-=-=-=-=-=-=-
     // loop over all the dest data obj info structs
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
@@ -646,7 +646,7 @@ _rsDataObjReplNewCopy (
         if (l1descInx < 0) {
             return (l1descInx);
         }
-
+        
         if (L1desc[l1descInx].stageFlag != NO_STAGING) {
             status = l3DataStageSync (rsComm, l1descInx);
         } else if( L1desc[l1descInx].dataObjInp->numThreads == 0 && 
@@ -770,7 +770,7 @@ _rsDataObjReplNewCopy (
         } else {
             srcDataObjInfo = cacheDataObjInfo;
         }
-
+        
         if( NULL == srcDataObjInfo ) { // JMC cppcheck - nullptr
             rodsLog( LOG_ERROR, "dataObjOpenForRepl - srcDataObjInfo is NULL" );
             return -1;      
@@ -844,12 +844,12 @@ _rsDataObjReplNewCopy (
         } else {
             hier = dst_hier_str;  
         }
-
+        
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
 //        rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
-        addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() );
+//        addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() ); // <===============
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
 
         l1DataObjInp = L1desc[destL1descInx].dataObjInp;
@@ -885,8 +885,6 @@ _rsDataObjReplNewCopy (
         }
 
 #endif // JMC - legacy resource
-
-
 
         char* src_hier_str = 0;
         if (srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL) {
@@ -930,6 +928,7 @@ _rsDataObjReplNewCopy (
 
         /* open the src */
         rstrcpy(srcDataObjInfo->rescHier, inpSrcDataObjInfo->rescHier, MAX_NAME_LEN);
+
         srcL1descInx = allocL1desc ();
         if (srcL1descInx < 0) return srcL1descInx;
         fillL1desc (srcL1descInx, &myDataObjInp, srcDataObjInfo, srcDataObjInfo->replStatus, srcDataObjInfo->dataSize);
