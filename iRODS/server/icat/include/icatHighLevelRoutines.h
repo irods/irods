@@ -11,6 +11,7 @@
 #include "objInfo.h"
 #include "ruleExecSubmit.h"
 #include "rcConnect.h"
+#include "icatStructs.h"
 #include "rodsGeneralUpdate.h"
 #include "specificQuery.h" 
 #include "phyBundleColl.h"
@@ -20,6 +21,8 @@
 #include <map>
 
 #include <boost/tuple/tuple.hpp>
+
+extern icatSessionStruct icss;
 
 int chlOpen(char *DBUser, char *DBpasswd);
 int chlClose();
