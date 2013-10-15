@@ -427,7 +427,9 @@ extern "C" {
                         parser.set_string(src_hier);
                         std::string sub_hier;
                         parser.str(sub_hier, current_resc);
-                    
+               
+rodsLog(LOG_NOTICE,"XXXX - sub_hier = [%s]",sub_hier.c_str());
+
                         // =-=-=-=-=-=-=-
                         // create a data obj input struct to call rsDataObjRepl which given
                         // the _stage_sync_kw will either stage or sync the data object 
@@ -1256,6 +1258,7 @@ extern "C" {
         std::string policy;
         ret = get_stage_policy( _ctx.rule_results(), policy );
 
+rodsLog(LOG_NOTICE,"XXXX - archive policy = [%s]", policy.c_str());
         // =-=-=-=-=-=-=-
         // if the policy is prefer cache then if the cache has the object 
         // return an upvote
