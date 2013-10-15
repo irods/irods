@@ -46,14 +46,18 @@ namespace eirods {
         error result = SUCCESS();
         _ret_string.clear();
         bool first = true;
+        bool done = false;
         for(resc_list_t::const_iterator itr = resc_list_.begin();
-            itr != resc_list_.end(); ++itr) {
+            !done && itr != resc_list_.end(); ++itr) {
             if(first) {
                 first = false;
             } else {
                 _ret_string += DELIM;
             }
             _ret_string += *itr;
+            if(*itr == _term_resc) {
+                done = true;
+            }
         }
         return result;
     }
