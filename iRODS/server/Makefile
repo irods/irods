@@ -102,6 +102,7 @@ INCLUDES +=	-I$(svrIcatIncDir)
 ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
 SVR_ICAT_OBJS =	\
+		$(svrIcatObjDir)/eirods_catalog_properties.o \
 		$(svrIcatObjDir)/icatMidLevelHelpers.o \
 		$(svrIcatObjDir)/icatMidLevelRoutines.o \
 		$(svrIcatObjDir)/icatHighLevelRoutines.o \
