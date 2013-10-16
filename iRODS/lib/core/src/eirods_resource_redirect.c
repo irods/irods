@@ -208,17 +208,18 @@ namespace eirods {
             first_class_object_ptr ptr = boost::dynamic_pointer_cast< first_class_object >( file_obj );
             error err = resc->call< const std::string*, const std::string*, hierarchy_parser*, float* >( 
                 _comm, RESOURCE_OP_RESOLVE_RESC_HIER, ptr, &oper, &host_name, &parser, &vote );
-            
-            // =-=-=-=-=-=-=-
-            // extract the hier string from the parser, politely.
-            parser.str( _out_resc_hier ); 
             if( !err.ok() || 0.0 == vote ) {
                 std::stringstream msg;
                 msg << "resolve_resource_hierarchy :: failed in resc.call( redirect ) ";
                 msg << "host [" << host_name      << "] ";
                 msg << "hier [" << _out_resc_hier << "]";
+                err.status( false );
                 return PASSMSG( msg.str(), err );
             }
+            
+            // =-=-=-=-=-=-=-
+            // extract the hier string from the parser, politely.
+            parser.str( _out_resc_hier ); 
         
         //} else {
         //    _out_resc_hier = file_obj->resc_hier();
