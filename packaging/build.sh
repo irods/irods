@@ -207,6 +207,9 @@ if [ "$1" == "clean" ] ; then
     rm -rf libarchive*
     rm -rf boost*
     rm -rf hpssclient/
+    echo "Cleaning iRODS fuse residuals..."
+    cd $DETECTEDDIR/../iRODS/clients/fuse/
+    make clean > /dev/null 2>&1
     echo "Cleaning iRODS residuals..."
     cd $DETECTEDDIR/../iRODS
     make clean > /dev/null 2>&1

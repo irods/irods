@@ -1216,16 +1216,10 @@ extern "C" {
             }
 
             // =-=-=-=-=-=-=-
-            // now that the file is staged we will once again get the vote 
-            // from the cache resouce
-            ret = cache_resc->call< const std::string*, const std::string*, 
-                eirods::hierarchy_parser*, float* >( 
-                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                    _out_parser, _out_vote );
-            if( !ret.ok() ) {
-                return PASS( ret );    
-            }
+            // now that the repl happend, we will assume that the
+            // object is in the cache as to not hit the DB again
+            (*_out_parser) = cache_check_parser;
+            (*_out_vote  ) = 1.0;
 
         } else {
             // =-=-=-=-=-=-=-
