@@ -427,14 +427,18 @@ extern "C" {
                             // =-=-=-=-=-=-=- 
                             // Generate src and tgt hiers
                             std::string dst_hier = inp_hier.substr( 0, pos+parent_name.size() );
-                            dst_hier += eirods::hierarchy_parser::delimiter() + 
-                                        current_name + 
+                            if( !dst_hier.empty() ) {
+                                dst_hier += eirods::hierarchy_parser::delimiter();
+                            }
+                            dst_hier += current_name + 
                                         eirods::hierarchy_parser::delimiter() + 
                                         tgt_name;
                             
                             std::string src_hier = inp_hier.substr( 0, pos+parent_name.size() );
-                            src_hier += eirods::hierarchy_parser::delimiter() + 
-                                        current_name + 
+                            if( !src_hier.empty() ) {
+                                src_hier += eirods::hierarchy_parser::delimiter();
+                            }
+                            src_hier += current_name + 
                                         eirods::hierarchy_parser::delimiter() + 
                                         src_name;
                             
