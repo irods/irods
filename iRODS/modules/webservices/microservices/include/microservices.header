@@ -1,8 +1,0 @@
-// MicroServices module microservices
-#include "ip2locationMS.h"
-#include "stockQuoteMS.h"
-#include "currencyConvertorMS.h"
-#include "nedMS.h"
-#include "sdssImgCutoutMS.h"
-
-
