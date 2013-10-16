@@ -4349,7 +4349,7 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 	} else {
 		// Older versions
 		snprintf(update_sql, MAX_SQL_SIZE,
-				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\1%s\\\3');",
+				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\\1%s\\\\3');",
 				sep, old_resc.c_str(), sep, new_resc.c_str());
 	}
 
@@ -4405,7 +4405,7 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	} else {
 		// Older Postgres
 		snprintf(update_sql, MAX_SQL_SIZE,
-				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\1%s{}\\\3');",
+				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\\1%s{}\\\\3');",
 				sep, old_resc.c_str(), new_resc.c_str());
 	}
 
