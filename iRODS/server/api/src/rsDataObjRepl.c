@@ -847,9 +847,12 @@ _rsDataObjReplNewCopy (
         
         // =-=-=-=-=-=-=- 
         // expected by fillL1desc 
-//        rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
+        //rstrcpy(myDestDataObjInfo->filePath, srcDataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy(myDestDataObjInfo->rescHier, hier.c_str(), MAX_NAME_LEN);
-//        addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() ); // <===============
+        // =-=-=-=-=-=-=-
+        // JMC :: [ ticket 1746 ] this should always be set - this was overwriting the KW 
+        //     :: in the incoming dataObjInp leaving this here for future consideration if issues arise 
+        // addKeyVal( &(myDataObjInp.condInput), RESC_HIER_STR_KW, hier.c_str() ); // <===============
         fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, replStatus, srcDataObjInfo->dataSize);
 
         l1DataObjInp = L1desc[destL1descInx].dataObjInp;
@@ -860,15 +863,6 @@ _rsDataObjReplNewCopy (
         } else {
             L1desc[destL1descInx].oprType = REPLICATE_DEST;
         }
-
-#if 0 // JMC - legacy resource
-        if (destRescClass == COMPOUND_CL) {
-            L1desc[destL1descInx].stageFlag = SYNC_DEST;
-        }
-        else if (srcRescClass == COMPOUND_CL) {
-            L1desc[destL1descInx].stageFlag = STAGE_SRC;
-        }
-#else // JMC - legacy resource
 
         // =-=-=-=-=-=-=-
         // reproduce the stage / sync behavior using keywords rather
@@ -883,8 +877,6 @@ _rsDataObjReplNewCopy (
 
 
         }
-
-#endif // JMC - legacy resource
 
         char* src_hier_str = 0;
         if (srcDataObjInfo != NULL && srcDataObjInfo->rescHier != NULL) {

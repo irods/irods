@@ -414,9 +414,6 @@ extern "C" {
                             return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
                         }
 
-    rodsLog( LOG_NOTICE, "XXXX - inp_hier [%s]", inp_hier.c_str() );
-    rodsLog( LOG_NOTICE, "XXXX - tgt_name [%s]", tgt_name.c_str() );
-    rodsLog( LOG_NOTICE, "XXXX - src_name [%s]", src_name.c_str() );
                         std::string current_name;
                         ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_name);
                         if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
@@ -430,22 +427,22 @@ extern "C" {
                             // =-=-=-=-=-=-=- 
                             // Generate src and tgt hiers
                             std::string dst_hier = inp_hier.substr( 0, pos+parent_name.size() );
-                            dst_hier += ";" + current_name + ";" + tgt_name;
+                            dst_hier += eirods::hierarchy_parser::delimiter() + 
+                                        current_name + 
+                                        eirods::hierarchy_parser::delimiter() + 
+                                        tgt_name;
                             
                             std::string src_hier = inp_hier.substr( 0, pos+parent_name.size() );
-                            src_hier += ";" + current_name + ";" + src_name;
+                            src_hier += eirods::hierarchy_parser::delimiter() + 
+                                        current_name + 
+                                        eirods::hierarchy_parser::delimiter() + 
+                                        src_name;
                             
                             // =-=-=-=-=-=-=- 
                             // Generate sub hier to use for pdmo
                             parser.set_string(src_hier);
                             std::string sub_hier;
                             parser.str(sub_hier, current_name);
-
-    rodsLog( LOG_NOTICE, "XXXX - dst_hier [%s]", dst_hier.c_str() );
-    rodsLog( LOG_NOTICE, "XXXX - src_hier [%s]", src_hier.c_str() );
-                   
-    rodsLog( LOG_NOTICE, "XXXX - current_name [%s]", current_name.c_str() );
-    rodsLog( LOG_NOTICE, "XXXX - sub_hier = [%s]",sub_hier.c_str());
 
                             // =-=-=-=-=-=-=-
                             // create a data obj input struct to call rsDataObjRepl which given
@@ -927,7 +924,7 @@ extern "C" {
         }
 
         eirods::file_object_ptr ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-rodsLog( LOG_NOTICE, "XXXX - compound_file_stage_to_cache :: calling stage from [%s] for [%s]", ptr->resc_hier().c_str(), _cache_file_name );
+
         // =-=-=-=-=-=-=-
         // forward the call to the archive
         return resc->call< const char* >( _ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
@@ -1282,7 +1279,6 @@ rodsLog( LOG_NOTICE, "XXXX - compound_file_stage_to_cache :: calling stage from 
         std::string policy;
         ret = get_stage_policy( _ctx.rule_results(), policy );
 
-rodsLog(LOG_NOTICE,"XXXX - archive policy = [%s]", policy.c_str());
         // =-=-=-=-=-=-=-
         // if the policy is prefer cache then if the cache has the object 
         // return an upvote
