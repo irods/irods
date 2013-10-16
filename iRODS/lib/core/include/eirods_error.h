@@ -67,7 +67,8 @@ namespace eirods {
 
         // =-=-=-=-=-=-=-
         // Mutators
-        void code(long long _code) { code_ = _code; }
+        void code  ( long long _code   ) { code_   = _code;   }
+        void status( bool      _status ) { status_ = _status; }
         
     private:
         // =-=-=-=-=-=-=-
