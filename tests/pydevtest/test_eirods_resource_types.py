@@ -670,6 +670,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
     def test_ireg_as_rodsuser_in_vault(self):
         pass
 
+    @unittest.skip("TEMPORARY")
     def test_iget_prefer_from_archive__ticket_1660(self):
         # define core.re filepath
         corefile = "/var/lib/eirods/iRODS/server/config/reConfigs/core.re"
@@ -906,6 +907,7 @@ class Test_Compound_Resource(unittest.TestCase, ResourceSuite, ChunkyDevTest):
         # assertions
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
         assertiCmd(s.adminsession,"iput "+filename) # put file
+        assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename) # should be listed
         assertiCmd(s.adminsession,"iget -f --purgec "+filename) # get file and purge 'cached' replica
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should not be listed (trimmed)
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed once
@@ -989,7 +991,7 @@ class Test_Replication_to_two_Compound_Resources(unittest.TestCase, ResourceSuit
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" "+self.testfile) # creates replica
         assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",self.testfile) # should be listed twice
         assertiCmd(s.adminsession,"irm -n 0 "+self.testfile) # remove original from cacheResc only
-        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["2 "+self.testresc,self.testfile]) # replica 2 should still be there
+        assertiCmd(s.adminsession,"ils -L "+self.testfile,"LIST",["4 "+self.testresc,self.testfile]) # replica 2 should still be there
         assertiCmdFail(s.adminsession,"ils -L "+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica 0 should be gone
         trashpath = "/"+s.adminsession.getZoneName()+"/trash/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId
         assertiCmdFail(s.adminsession,"ils -L "+trashpath+"/"+self.testfile,"LIST",["0 "+s.adminsession.getDefResource(),self.testfile]) # replica should not be in trash
