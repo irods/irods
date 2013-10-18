@@ -11,6 +11,7 @@
 #include "icatHighLevelRoutines.h"
 
 #include "eirods_stacktrace.h"
+#include "eirods_file_object.h"
 
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
@@ -184,6 +185,27 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
         }
         if (status >= 0) {
             snprintf (tmpObjId, NAME_LEN, "%lld", dataObjInfo.dataId);
+           
+            // =-=-=-=-=-=-=-
+            // added due to lack of notificaiton of new data object
+            // to resource hiers during operation.  ticket 1753 
+            eirods::file_object_ptr file_obj(
+                                        new eirods::file_object(
+                                        rsComm,
+                                        &dataObjInfo ) );
+
+            eirods::error ret = fileModified(rsComm, file_obj);
+            if(!ret.ok()) {
+                std::stringstream msg;
+                msg << __FUNCTION__;
+                msg << " - Failed to signal resource that the data object \"";
+                msg << dataObjInfo.objPath;
+                msg << "\" was registered";
+                ret = PASSMSG(msg.str(), ret);
+                eirods::log(ret);
+                status = ret.code();
+            }
+
         } else {
             rodsLog (LOG_ERROR,
                      "rsBulkDataObjReg: RegDataObj or ModDataObj failed for %s,stat=%d",
