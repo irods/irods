@@ -164,6 +164,7 @@ int trimDataObjInfo(
     std::stringstream str;  
     str << dataObjInfo->replNum;
     addKeyVal( &dataObjInp.condInput, REPL_NUM_KW, str.str().c_str() );
+    addKeyVal( &dataObjInp.condInput, RESC_HIER_STR_KW, dataObjInfo->rescHier );
 
     status = rsDataObjTrim (rsComm, &dataObjInp);
     clearKeyVal (&dataObjInp.condInput);

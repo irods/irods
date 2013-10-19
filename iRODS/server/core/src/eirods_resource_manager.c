@@ -275,7 +275,7 @@ namespace eirods {
     /// @brief call shutdown on resources before destruction
     error resource_manager::shut_down_resources(  ) {
         // =-=-=-=-=-=-=-
-        // iterate over all resources in the vector 
+        // iterate over all resources in the table 
         lookup_table< boost::shared_ptr< resource > >::iterator itr;
         for( itr =  resources_.begin();
              itr != resources_.end();
@@ -287,6 +287,36 @@ namespace eirods {
         return SUCCESS();
                 
     } // shut_down_resources
+
+    // =-=-=-=-=-=-=-
+    /// @brief create a list of resources who do not have parents ( roots )
+    error resource_manager::get_root_resources( 
+        std::vector< std::string >& _list ) {
+        // =-=-=-=-=-=-=-
+        // iterate over all resources in the table 
+        lookup_table< boost::shared_ptr< resource > >::iterator itr;
+        for( itr =  resources_.begin();
+             itr != resources_.end();
+             ++itr ) {
+            resource_ptr resc = itr->second;
+            resource_ptr parent_ptr;
+            error ret = itr->second->get_parent( parent_ptr );
+            if( !ret.ok() ) {
+                std::string resc_name;
+                ret = resc->get_property< std::string >( RESOURCE_NAME, resc_name );
+                if( !ret.ok() ) {
+                    return PASS( ret );
+                }
+
+                _list.push_back( resc_name );
+
+            }
+
+        } // for itr
+
+        return SUCCESS();
+
+    } // get_root_resources
 
     // =-=-=-=-=-=-=-
     // public - take results from genQuery, extract values and create resources

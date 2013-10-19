@@ -184,74 +184,82 @@ getPhyPath (
         return status;
 
     } else {
+        eirods::log( PASS( ret ) );
         return -1;
-    
     }
-#if 0
-    genQueryOut_t* gen_out = NULL;
-    char tmp_str                [ MAX_NAME_LEN ];
-    char logical_end_name       [ MAX_NAME_LEN ];
-    char logical_parent_dir_name[ MAX_NAME_LEN ];
-
-    // =-=-=-=-=-=-=-
-    // split the object path by the last delimiter /
-    int status = splitPathByKey( 
-                     _obj_name,
-                     logical_parent_dir_name, 
-                     logical_end_name, '/' );
-
-    genQueryInp_t  gen_inp;
-    memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
     
-    // =-=-=-=-=-=-=-
-    // add query to the struct for the data object name
-    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_end_name );
-    addInxVal( &gen_inp.sqlCondInp, COL_DATA_NAME, tmp_str );
-   
-    // =-=-=-=-=-=-=-
-    // add query to the struct for the collection name
-    snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_parent_name );
-    addInxVal( &gen_inp.sqlCondInp, COL_COLL_NAME, tmp_str );
+    #if 0    
+    else {
+        eirods::log( PASS( ret ) );
 
-    // =-=-=-=-=-=-=-
-    // include requests for data path and resource hierarchy
-    addInxIval( &gen_inp.selectInp, COL_D_DATA_PATH, 1 );
-    addInxIval( &gen_inp.selectInp, COL_D_RESC_HIER, 1 );
+        genQueryOut_t* gen_out = NULL;
+        char tmp_str                [ MAX_NAME_LEN ];
+        char logical_end_name       [ MAX_NAME_LEN ];
+        char logical_parent_dir_name[ MAX_NAME_LEN ];
 
-    // =-=-=-=-=-=-=-
-    // request only 2 results in the set
-    gen_inp.maxRows = 2;
-    status = rsGenQuery( _comm, &gen_inp, &gen_out );
-    if( status >= 0 ) {
+        // =-=-=-=-=-=-=-
+        // split the object path by the last delimiter /
+        int status = splitPathByKey( 
+                         _obj_name,
+                         logical_parent_dir_name, 
+                         logical_end_name, '/' );
+        genQueryInp_t  gen_inp;
+        memset( &gen_inp, 0, sizeof( genQueryInp_t ) );
         
         // =-=-=-=-=-=-=-
-        //  
-        sqlResult_t *phyPathRes = NULL;
-        if ((phyPathRes = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH)) ==
-	    NULL) {
-            rodsLog (LOG_ERROR,
-		     "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if (phyPath != NULL) {
-            rstrcpy (phyPath, phyPathRes->value, MAX_NAME_LEN);
-        }
-        sqlResult_t *rescHierRes = NULL;
-        if ((rescHierRes = getSqlResultByInx (genQueryOut, COL_D_RESC_HIER)) ==
-	    NULL) {
-            rodsLog (LOG_ERROR,
-		     "getPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if (rescHier != NULL) {
-            rstrcpy (rescHier, rescHierRes->value, MAX_NAME_LEN);
+        // add query to the struct for the data object name
+        snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_end_name );
+        addInxVal( &gen_inp.sqlCondInp, COL_DATA_NAME, tmp_str );
+       
+        // =-=-=-=-=-=-=-
+        // add query to the struct for the collection name
+        snprintf( tmp_str, MAX_NAME_LEN, "='%s'", logical_parent_dir_name );
+        addInxVal( &gen_inp.sqlCondInp, COL_COLL_NAME, tmp_str );
 
+        // =-=-=-=-=-=-=-
+        // include requests for data path and resource hierarchy
+        addInxIval( &gen_inp.selectInp, COL_D_DATA_PATH, 1 );
+        addInxIval( &gen_inp.selectInp, COL_D_RESC_HIER, 1 );
+
+        // =-=-=-=-=-=-=-
+        // request only 2 results in the set
+        gen_inp.maxRows = 2;
+        status = rsGenQuery( _comm, &gen_inp, &gen_out );
+        if( status >= 0 ) {
+            // =-=-=-=-=-=-=-
+            // iterate over results and extract values 
+            sqlResult_t * phy_path_res = NULL;
+            if (( phy_path_res = getSqlResultByInx ( gen_out, COL_D_DATA_PATH)) ==
+            NULL) {
+                rodsLog (LOG_ERROR,
+                 "getPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
+                return (UNMATCHED_KEY_OR_INDEX);
+            }
+            if ( _phy_path != NULL) {
+                rstrcpy ( _phy_path,  phy_path_res->value, MAX_NAME_LEN );
+            }
+            sqlResult_t *resc_hier_resc = NULL;
+            if ((resc_hier_resc = getSqlResultByInx ( gen_out, COL_D_RESC_HIER)) ==
+            NULL) {
+                rodsLog (LOG_ERROR,
+                 "getPhyPath: getSqlResultByInx for COL_D_RESC_HIER failed");
+                return (UNMATCHED_KEY_OR_INDEX);
+            }
+            if ( _resc_hier != NULL) {
+                rstrcpy (_resc_hier, resc_hier_resc->value, MAX_NAME_LEN);
+
+            }
+            freeGenQueryOut (&gen_out);
+        } else {
+                rodsLog (LOG_ERROR,
+                 "getPhyPath: genQuery Failed" );
         }
-        freeGenQueryOut (&genQueryOut);
-    }
-    clearGenQueryInp (&genQueryInp);
-    return(status);
-#endif
+        
+        clearGenQueryInp (&gen_inp);
+        return(status);
+
+    } // else
+    #endif
 }
 
 int

@@ -1,8 +1,0 @@
-Name:         Z3950
-Brief:        Microservice to query a Z3950 server
-Description:
-Dependencies:
-Enabled:      no
-Creator:      Rahul Deshmukh and Terrell Russell, SILS at UNC-Chapel Hill
-Created:      09-09-2010
-License:      BSD

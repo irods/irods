@@ -7,10 +7,12 @@
 namespace eirods {
 
     create_write_replicator::create_write_replicator(
-        const std::string& _resource,
+        const std::string& _root_resource,
+        const std::string& _current_resource,
         const std::string& _child)
     {
-        resource_ = _resource;
+        root_resource_ = _root_resource;
+        current_resource_ = _current_resource;
         child_ = _child;
     }
 
@@ -32,7 +34,7 @@ namespace eirods {
             hierarchy_parser child_parser;
             child_parser.set_string(child_);
             std::string sub_hier;
-            child_parser.str(sub_hier, resource_);
+            child_parser.str(sub_hier, current_resource_);
             
             file_object object = _object_oper.object();
             child_list_t::const_iterator it;
@@ -50,8 +52,8 @@ namespace eirods {
                     dataObjInp.createMode = object.mode();
                     addKeyVal(&dataObjInp.condInput, RESC_HIER_STR_KW, child_.c_str());
                     addKeyVal(&dataObjInp.condInput, DEST_RESC_HIER_STR_KW, hierarchy_string.c_str());
-                    addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, resource_.c_str());
-                    addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, resource_.c_str());
+                    addKeyVal(&dataObjInp.condInput, RESC_NAME_KW, root_resource_.c_str());
+                    addKeyVal(&dataObjInp.condInput, DEST_RESC_NAME_KW, root_resource_.c_str());
                     addKeyVal(&dataObjInp.condInput, IN_PDMO_KW, sub_hier.c_str());
                     if(_object_oper.operation() == write_oper) {
                         addKeyVal(&dataObjInp.condInput, UPDATE_REPL_KW, "");

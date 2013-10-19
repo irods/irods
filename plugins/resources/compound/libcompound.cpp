@@ -34,13 +34,6 @@
 #include <boost/any.hpp>
 
 // =-=-=-=-=-=-=-
-// constants for property map flags to signal a sync or stage
-const std::string SYNC_FLAG  ( "sync_flag" );   // property map key for sync to arch
-const std::string SYNC_UPDATE( "sync_update" ); // property map value for sync with update
-const std::string SYNC_CREATE( "sync_create" ); // property map value for sync with create
-const std::string SYNC_NONE  ( "sync_none" );   // property map value for no operation ( ex: open with read )
- 
-// =-=-=-=-=-=-=-
 /// @ brief constant to index the cache child resource
 const std::string CACHE_CONTEXT_TYPE( "cache" );
 
@@ -358,9 +351,7 @@ extern "C" {
     /// @brief replicate a given object for either a sync or a stage
     eirods::error repl_object(
         eirods::resource_plugin_context& _ctx,
-        const char*                      _stage_sync_kw,
-        bool                             _update_flg )
-    {
+        const char*                      _stage_sync_kw ) {
         eirods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=-
@@ -378,93 +369,116 @@ extern "C" {
 
             std::string resource;
             parser.first_resc( resource );
-        
             // =-=-=-=-=-=-=-
-            // get the cache name
-            std::string cache_name;
-            eirods::error ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
-            if((result = ASSERT_PASS(ret, "Failed to get the cache name.")).ok() ) {
-
+            // get the parent name
+            std::string parent_name;
+            eirods::error ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_PARENT, parent_name );
+            if((result = ASSERT_PASS(ret, "Failed to get the parent name.")).ok() ) {
+                 
                 // =-=-=-=-=-=-=-
-                // get the archive name
-                std::string arch_name;
-                ret = _ctx.prop_map().get< std::string >( ARCHIVE_CONTEXT_TYPE, arch_name );
-                if((result = ASSERT_PASS(ret, "Failed to get the archive name.")).ok() ) {
+                // get the cache name
+                std::string cache_name;
+                eirods::error ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
+                if((result = ASSERT_PASS(ret, "Failed to get the cache name.")).ok() ) {
 
                     // =-=-=-=-=-=-=-
-                    // manufacture a resc hier to either the archive or the cache resc
-                    std::string keyword  = _stage_sync_kw;
-                    std::string inp_hier = obj->resc_hier();
-                    std::string tgt_name, src_name;
+                    // get the archive name
+                    std::string arch_name;
+                    ret = _ctx.prop_map().get< std::string >( ARCHIVE_CONTEXT_TYPE, arch_name );
+                    if((result = ASSERT_PASS(ret, "Failed to get the archive name.")).ok() ) {
 
-                    if( keyword == STAGE_OBJ_KW ) {
-                        tgt_name = cache_name;
-                        src_name = arch_name;
-                    } else if( keyword == SYNC_OBJ_KW ) {
-                        tgt_name = arch_name;
-                        src_name = cache_name;
-                    } else {
-                        std::stringstream msg;
-                        msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
-                        return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
-                    }
-
-                    size_t pos = inp_hier.find( cache_name );
-                    if( std::string::npos == pos ) {
-                        pos = inp_hier.find( arch_name );
-                    }
-
-                    std::string dst_hier = inp_hier.substr( 0, pos );
-                    dst_hier += tgt_name;
-                    std::string src_hier = inp_hier.substr( 0, pos );
-                    src_hier += src_name;
-
-                    // Generate sub hier to use for pdmo
-                    std::string current_resc;
-                    ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_resc);
-                    if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-                    
-                        parser.set_string(src_hier);
-                        std::string sub_hier;
-                        parser.str(sub_hier, current_resc);
-                    
                         // =-=-=-=-=-=-=-
-                        // create a data obj input struct to call rsDataObjRepl which given
-                        // the _stage_sync_kw will either stage or sync the data object 
-                        dataObjInp_t data_obj_inp;
-                        bzero( &data_obj_inp, sizeof( data_obj_inp ) );
-                        rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
-                        data_obj_inp.createMode = obj->mode();
-                        addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            sub_hier.c_str() );
-                        addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
-                        if( _update_flg ) {
-                            addKeyVal( &data_obj_inp.condInput, UPDATE_REPL_KW, "" );
-                        }
-
-                        transferStat_t* trans_stat = NULL;
-                        int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
-                        if( status < 0 ) {
-                            char* sys_error;
-                            char* rods_error = rodsErrorName(status, &sys_error);
+                        // manufacture a resc hier to either the archive or the cache resc
+                        std::string keyword  = _stage_sync_kw;
+                        std::string inp_hier = obj->resc_hier();
+                        
+                        std::string tgt_name, src_name;
+                        if( keyword == STAGE_OBJ_KW ) {
+                            tgt_name = cache_name;
+                            src_name = arch_name;
+                        } else if( keyword == SYNC_OBJ_KW ) {
+                            tgt_name = arch_name;
+                            src_name = cache_name;
+                        } else {
                             std::stringstream msg;
-                            msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
-                            msg << "for operation [" << _stage_sync_kw << "]";
-                            return ERROR( status, msg.str() );
+                            msg << "stage_sync_kw value is unexpected [" << _stage_sync_kw << "]";
+                            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
                         }
-         
-                        // =-=-=-=-=-=-=-
-                        // zero out the flag as the modified operation can be called
-                        // many times and we dont want it to get confused
-                        _ctx.prop_map()[ SYNC_FLAG ] = SYNC_NONE;
-                    }
-                }
-            }
-        }
-        
+
+                        std::string current_name;
+                        ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_name);
+                        if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
+                            size_t pos = inp_hier.find( parent_name );
+                            if( std::string::npos == pos ) {
+                                std::stringstream msg;
+                                msg << "parent resc ["
+                                    << parent_name
+                                    << "] not in fco resc hier ["
+                                    << inp_hier
+                                    << "]";
+                                return ERROR( 
+                                           SYS_INVALID_INPUT_PARAM,
+                                           msg.str() ); 
+                            }
+
+                            // =-=-=-=-=-=-=- 
+                            // Generate src and tgt hiers
+                            std::string dst_hier = inp_hier.substr( 0, pos+parent_name.size() );
+                            if( !dst_hier.empty() ) {
+                                dst_hier += eirods::hierarchy_parser::delimiter();
+                            }
+                            dst_hier += current_name + 
+                                        eirods::hierarchy_parser::delimiter() + 
+                                        tgt_name;
+                            
+                            std::string src_hier = inp_hier.substr( 0, pos+parent_name.size() );
+                            if( !src_hier.empty() ) {
+                                src_hier += eirods::hierarchy_parser::delimiter();
+                            }
+                            src_hier += current_name + 
+                                        eirods::hierarchy_parser::delimiter() + 
+                                        src_name;
+                            
+                            // =-=-=-=-=-=-=- 
+                            // Generate sub hier to use for pdmo
+                            parser.set_string(src_hier);
+                            std::string sub_hier;
+                            parser.str(sub_hier, current_name);
+
+                            // =-=-=-=-=-=-=-
+                            // create a data obj input struct to call rsDataObjRepl which given
+                            // the _stage_sync_kw will either stage or sync the data object 
+                            dataObjInp_t data_obj_inp;
+                            bzero( &data_obj_inp, sizeof( data_obj_inp ) );
+                            rstrcpy( data_obj_inp.objPath, obj->logical_path().c_str(), MAX_NAME_LEN );
+                            data_obj_inp.createMode = obj->mode();
+                            addKeyVal( &data_obj_inp.condInput, RESC_HIER_STR_KW,      src_hier.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, DEST_RESC_HIER_STR_KW, dst_hier.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, RESC_NAME_KW,          resource.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, DEST_RESC_NAME_KW,     resource.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, IN_PDMO_KW,            sub_hier.c_str() );
+                            addKeyVal( &data_obj_inp.condInput, _stage_sync_kw,        "1" );
+
+                            transferStat_t* trans_stat = NULL;
+                            int status = rsDataObjRepl( _ctx.comm(), &data_obj_inp, &trans_stat );
+                            if( status < 0 ) {
+                                char* sys_error;
+                                char* rods_error = rodsErrorName(status, &sys_error);
+                                std::stringstream msg;
+                                msg << "Failed to replicate the data object [" << obj->logical_path() << "] ";
+                                msg << "for operation [" << _stage_sync_kw << "]";
+                                return ERROR( status, msg.str() );
+                            }
+             
+                        } // if current_name
+
+                    } // if arch_name
+
+                } // if cache_name
+            
+            } // if parent name
+
+        } // if stage_sync_kw 
         return result;
 
     } // repl_object
@@ -568,20 +582,6 @@ extern "C" {
             return PASS( ret );
         }
 
-        // =-=-=-=-=-=-=-
-        // set the update flag in the property map as this changes the cache
-        std::string flag; 
-        ret = _ctx.prop_map().get< std::string >( SYNC_FLAG, flag );
-        if( ret.ok() ) {
-            if( SYNC_NONE == flag ) {
-                _ctx.prop_map().set( SYNC_FLAG, SYNC_UPDATE );
-            }
-
-        } else {
-            _ctx.prop_map().set( SYNC_FLAG, SYNC_UPDATE );
-            
-        }
-             
         // =-=-=-=-=-=-=-
         // forward the call
         return resc->call< void*, int >( _ctx.comm(), eirods::RESOURCE_OP_WRITE, _ctx.fco(), _buf, _len );
@@ -902,6 +902,8 @@ extern "C" {
             return PASS( ret );
         }
 
+        eirods::file_object_ptr ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+
         // =-=-=-=-=-=-=-
         // forward the call to the archive
         return resc->call< const char* >( _ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco(), _cache_file_name );
@@ -978,34 +980,22 @@ extern "C" {
     eirods::error compound_file_modified(
         eirods::resource_plugin_context& _ctx )
     {
-        eirods::error result = SUCCESS();
+       eirods::error result = SUCCESS();
         
         // =-=-=-=-=-=-=- 
         // Check the operation parameters and update the physical path
         eirods::error ret = compound_check_param< eirods::file_object >( _ctx );
         if(( result = ASSERT_PASS(ret, "Invalid resource context.")).ok()) {
-
-            // =-=-=-=-=-=-=- 
-            // extract the sync flag, update or repl if necessary
-            std::string flag;
-            ret = _ctx.prop_map().get< std::string >( SYNC_FLAG, flag );
-            if( ret.ok() ) {
-                std::string name;
-                ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
-                if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-                    eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
-                    eirods::hierarchy_parser sub_parser;
-                    sub_parser.set_string(file_obj->in_pdmo());
-                    if(!sub_parser.resc_in_hier(name)) {
-                        if( SYNC_CREATE == flag ) {
-                            result = repl_object( _ctx, SYNC_OBJ_KW, false );
-                        } else if( SYNC_UPDATE == flag ) {
-                            result = repl_object( _ctx, SYNC_OBJ_KW, true );
-                        }
-                    }
+            std::string name;
+            ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
+            if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
+                eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+                eirods::hierarchy_parser sub_parser;
+                sub_parser.set_string(file_obj->in_pdmo());
+                if(!sub_parser.resc_in_hier(name)) {
+                    result = repl_object( _ctx, SYNC_OBJ_KW );
                 }
-
-            } // if ret.ok
+            }
         }
         
         return result;
@@ -1044,10 +1034,6 @@ extern "C" {
         }
 
         // =-=-=-=-=-=-=-
-        // set the sync flag in the prop map
-        _ctx.prop_map().set( SYNC_FLAG, SYNC_CREATE );
-
-        // =-=-=-=-=-=-=-
         // ask the cache if it is willing to accept a new file, politely
         ret = resc->call< const std::string*, const std::string*, 
             eirods::hierarchy_parser*, float* >( 
@@ -1079,42 +1065,138 @@ extern "C" {
         }
  
         // =-=-=-=-=-=-=-
-        // get the cache resource
-        eirods::resource_ptr cache_resc;
-        eirods::error ret = get_cache( _ctx, cache_resc );
+        // get the archive resource
+        eirods::resource_ptr arch_resc;
+        eirods::error ret = get_archive( _ctx, arch_resc );
         if( !ret.ok() ) {
             return PASS( ret );
         }
-
+  
         // =-=-=-=-=-=-=-
-        // ask the cache if it has the data object in question, politely
-        float                    cache_check_vote   = 0.0;
-        eirods::hierarchy_parser cache_check_parser = (*_out_parser);
-        ret = cache_resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-            _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-            &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-            &cache_check_parser, &cache_check_vote );
+        // get the archive resource
+        eirods::resource_ptr cache_resc;
+        ret = get_cache( _ctx, cache_resc );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // repave the repl requested temporarily
+        eirods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        int repl_requested = f_ptr->repl_requested();
+        f_ptr->repl_requested( -1 );
+       
+        // =-=-=-=-=-=-=-
+        // ask the archive if it has the data object in question, politely
+        float                    arch_check_vote   = 0.0;
+        eirods::hierarchy_parser arch_check_parser = (*_out_parser);
+        ret = arch_resc->call< const std::string*, const std::string*, 
+            eirods::hierarchy_parser*, float* >( 
+                _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                &arch_check_parser, &arch_check_vote );
+        if( !ret.ok() || 0.0 == arch_check_vote ) {
+            rodsLog( 
+                LOG_NOTICE, 
+                "replica not found in archive for [%s]",
+                f_ptr->logical_path().c_str() );
+            // =-=-=-=-=-=-=-
+            // the archive query redirect failed, something terrible happened
+            // or mounted collection hijinks are afoot.  ask the cache if it
+            // has the data object in question, politely as a fallback
+            float                    cache_check_vote   = 0.0;
+            eirods::hierarchy_parser cache_check_parser = (*_out_parser);
+            ret = cache_resc->call< const std::string*, const std::string*, 
+                eirods::hierarchy_parser*, float* >( 
+                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                    &cache_check_parser, &cache_check_vote );
+            if( !ret.ok() || 0.0 == cache_check_vote ) {
+                return PASS( ret );
+            }
+            
+            // =-=-=-=-=-=-=-
+            // set the vote and hier parser
+            (*_out_parser) = cache_check_parser;
+            (*_out_vote)   = cache_check_vote;
+
+            return SUCCESS();
+
+        }
+            
+        // =-=-=-=-=-=-=-
+        // repave the resc hier with the archive hier which guarantees that
+        // we are in the hier for the repl to do its magic. this is a hack,
+        // and will need refactored later with an improved object model
+        std::string arch_hier;
+        arch_check_parser.str( arch_hier );
+        f_ptr->resc_hier( arch_hier );
 
         // =-=-=-=-=-=-=-
         // if the vote is 0 then we do a wholesale stage, not an update
         // otherwise it is an update operation for the stage to cache
-        bool update_flg = ( 0.0 != cache_check_vote );
-        ret = repl_object( _ctx, STAGE_OBJ_KW, update_flg );
+        ret = repl_object( _ctx, STAGE_OBJ_KW );
         if( !ret.ok() ) {
             return PASS( ret );    
         }
-
+       
         // =-=-=-=-=-=-=-
-        // now that the file is staged we will once again get the vote 
-        // from the cache
-        ret = cache_resc->call< const std::string*, const std::string*, eirods::hierarchy_parser*, float* >( 
-            _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-            &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-            _out_parser, _out_vote );
-
+        // restore repl requested
+        f_ptr->repl_requested( repl_requested );
+ 
+        // =-=-=-=-=-=-=-
+        // get the parent name
+        std::string parent_name;
+        ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_PARENT, parent_name );
         if( !ret.ok() ) {
             return PASS( ret );
         }
+
+        // =-=-=-=-=-=-=-
+        // get this resc name
+        std::string current_name;
+        ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, current_name);
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+
+        // =-=-=-=-=-=-=-
+        // get the cache name
+        std::string cache_name;
+        ret = _ctx.prop_map().get< std::string >( CACHE_CONTEXT_TYPE, cache_name );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+                        
+                        
+        // =-=-=-=-=-=-=-
+        // get the current hier
+        eirods::file_object_ptr obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        std::string inp_hier = obj->resc_hier();
+        
+        // =-=-=-=-=-=-=-
+        // find the parent in the hier
+        size_t pos = inp_hier.find( parent_name );
+        if( std::string::npos == pos ) {
+            return ERROR( 
+                SYS_INVALID_INPUT_PARAM,
+                "parent resc not in fco resc hier" ); 
+        }
+
+        // =-=-=-=-=-=-=-
+        // create the new resc hier
+        std::string dst_hier = inp_hier.substr( 0, pos+parent_name.size() );
+        if( !dst_hier.empty() ) {
+            dst_hier += eirods::hierarchy_parser::delimiter();
+        }
+        dst_hier += current_name + 
+                    eirods::hierarchy_parser::delimiter() + 
+                    cache_name;
+
+        // =-=-=-=-=-=-=-
+        // set the vote and hier parser
+        _out_parser->set_string( dst_hier );
+        (*_out_vote) = arch_check_vote;
 
         return SUCCESS();
 
@@ -1124,9 +1206,9 @@ extern "C" {
     /// @brief - handler for prefer cache policy
     eirods::error open_for_prefer_cache_policy( 
         eirods::resource_plugin_context& _ctx,
-        const std::string*                  _curr_host, 
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
+        const std::string*               _curr_host, 
+        eirods::hierarchy_parser*        _out_parser,
+        float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_curr_host ) {
@@ -1169,6 +1251,12 @@ extern "C" {
         // if the vote is 0 then the cache doesnt have it so it will need be staged
         if( 0.0 == cache_check_vote ) {
             // =-=-=-=-=-=-=-
+            // repave the repl requested temporarily
+            eirods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            int repl_requested = f_ptr->repl_requested();
+            f_ptr->repl_requested( -1 );
+
+            // =-=-=-=-=-=-=-
             // ask the archive if it has the data object in question, politely
             float                    arch_check_vote   = 0.0;
             eirods::hierarchy_parser arch_check_parser = (*_out_parser);
@@ -1180,25 +1268,31 @@ extern "C" {
             if( !ret.ok() || 0.0 == arch_check_vote ) {
                 return PASS( ret );    
             }
+            
+            // =-=-=-=-=-=-=-
+            // repave the resc hier with the archive hier which guarantees that
+            // we are in the hier for the repl to do its magic. this is a hack,
+            // and will need refactored later with an improved object model
+            std::string arch_hier;
+            arch_check_parser.str( arch_hier );
+            f_ptr->resc_hier( arch_hier );
 
             // =-=-=-=-=-=-=-
             // if the archive has it, then replicate
-            ret = repl_object( _ctx, STAGE_OBJ_KW, false );
+            ret = repl_object( _ctx, STAGE_OBJ_KW );
             if( !ret.ok() ) {
                 return PASS( ret );    
             }
 
             // =-=-=-=-=-=-=-
-            // now that the file is staged we will once again get the vote 
-            // from the cache resouce
-            ret = cache_resc->call< const std::string*, const std::string*, 
-                eirods::hierarchy_parser*, float* >( 
-                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
-                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
-                    _out_parser, _out_vote );
-            if( !ret.ok() ) {
-                return PASS( ret );    
-            }
+            // restore repl requested
+            f_ptr->repl_requested( repl_requested );
+
+            // =-=-=-=-=-=-=-
+            // now that the repl happend, we will assume that the
+            // object is in the cache as to not hit the DB again
+            (*_out_parser) = cache_check_parser;
+            (*_out_vote  ) = arch_check_vote;
 
         } else {
             // =-=-=-=-=-=-=-
@@ -1217,9 +1311,9 @@ extern "C" {
     ///          otherwise the default is to compare checsum
     eirods::error compound_file_redirect_open( 
         eirods::resource_plugin_context& _ctx,
-        const std::string*                  _curr_host, 
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
+        const std::string*               _curr_host, 
+        eirods::hierarchy_parser*        _out_parser,
+        float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_curr_host ) {
@@ -1247,10 +1341,6 @@ extern "C" {
             return SUCCESS(); 
         }
         
-        // =-=-=-=-=-=-=-
-        // set the default no op open flag in the property map
-        _ctx.prop_map().set( SYNC_FLAG, SYNC_NONE );
-
         // =-=-=-=-=-=-=-
         // acquire the value of the stage policy from the results string
         std::string policy;

@@ -27,6 +27,7 @@
 #include "eirods_children_parser.h"
 #include "eirods_stacktrace.h"
 #include "eirods_hierarchy_parser.h"
+#include "eirods_catalog_properties.h"
 
 // =-=-=-=-=-=-=-
 // irods includes
@@ -47,7 +48,7 @@
 
 extern int get64RandomBytes(char *buf);
 
-static char prevChalSig[200]; /* a 'signiture' of the previous
+static char prevChalSig[200]; /* a 'signature' of the previous
                                  challenge.  This is used as a sessionSigniture on the ICAT server
                                  side.  Also see getSessionSignitureClientside function. */
 
@@ -222,7 +223,11 @@ int chlOpen(char *DBUser, char *DBpasswd) {
     }
     else {
         icss.status=1;
+
+        // Capture ICAT properties
+        eirods::catalog_properties::getInstance().capture();
     }
+
     return(i);
 }
 
@@ -4316,6 +4321,7 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 	char update_sql[MAX_SQL_SIZE];
 	int status;
 	const char *sep = eirods::hierarchy_parser::delimiter().c_str();
+	std::string std_conf_str;	// to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
 	// Should have regexp_update. check syntax
@@ -4324,13 +4330,28 @@ static int _modRescInHierarchies(const std::string& old_resc, const std::string&
 	return SYS_NOT_IMPLEMENTED;
 #endif
 
+
+	// Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
+	eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+
+
 	// Regex will look in r_data_main.resc_hier
 	// for occurrences of old_resc with either nothing or the separator (and some stuff) on each side
 	// and replace them with new_resc, e.g:
 	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC($|(;.+))', '\1NEW_RESC\3')
-	snprintf(update_sql, MAX_SQL_SIZE,
-			"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
-			sep, old_resc.c_str(), sep, new_resc.c_str());
+	// Backslashes must be escaped in older versions of Postgres
+
+	if (std_conf_str == "on") {
+		// Default since Postgres 9.1
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\1%s\\3');",
+				sep, old_resc.c_str(), sep, new_resc.c_str());
+	} else {
+		// Older versions
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_data_main set resc_hier = regexp_replace(resc_hier, '(^|(.+%s))%s($|(%s.+))', '\\\\1%s\\\\3');",
+				sep, old_resc.c_str(), sep, new_resc.c_str());
+	}
 
 	// =-=-=-=-=-=-=-
 	// SQL update
@@ -4355,6 +4376,7 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	char update_sql[MAX_SQL_SIZE];
 	int status;
 	char sep[] = ";";	// might later get it from children parser
+	std::string std_conf_str;	// to store value of STANDARD_CONFORMING_STRINGS
 
 #if ORA_ICAT
 	// Should have regexp_update. check syntax
@@ -4363,14 +4385,29 @@ static int _modRescInChildren(const std::string& old_resc, const std::string& ne
 	return SYS_NOT_IMPLEMENTED;
 #endif
 
+
+	// Get STANDARD_CONFORMING_STRINGS setting to determine if backslashes in regex must be escaped
+	eirods::catalog_properties::getInstance().get_property<std::string>(eirods::STANDARD_CONFORMING_STRINGS, std_conf_str);
+
+
 	// Regex will look in r_resc_main.resc_children
 	// for occurrences of old_resc preceded by either nothing or the separator and followed with '{}'
 	// and replace them with new_resc, e.g:
 	// regexp_replace(resc_hier, '(^|(.+;))OLD_RESC{}(.+)', '\1NEW_RESC{}\3')
 	// This assumes that '{}' are not valid characters in resource name
-	snprintf(update_sql, MAX_SQL_SIZE,
-			"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
-			sep, old_resc.c_str(), new_resc.c_str());
+	// Backslashes must be escaped in older versions of Postgres
+
+	if (std_conf_str == "on") {
+		// Default since Postgres 9.1
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\1%s{}\\3');",
+				sep, old_resc.c_str(), new_resc.c_str());
+	} else {
+		// Older Postgres
+		snprintf(update_sql, MAX_SQL_SIZE,
+				"update r_resc_main set resc_children = regexp_replace(resc_children, '(^|(.+%s))%s{}(.*)', '\\\\1%s{}\\\\3');",
+				sep, old_resc.c_str(), new_resc.c_str());
+	}
 
 	// =-=-=-=-=-=-=-
 	// SQL update

@@ -24,6 +24,7 @@
 #include "eirods_resource_redirect.h"
 #include "eirods_stacktrace.h"
 #include "eirods_resource_backport.h"
+#include "eirods_file_object.h"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,
@@ -359,6 +360,7 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
     memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
     dataObjInfo.dataSize = dataSize;
+    dataObjInfo.replStatus = 1;
 
     status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
     if (status < 0) {
@@ -421,6 +423,25 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
 
     if (modFlag == 0) {
         status = svrRegDataObj (rsComm, &dataObjInfo);
+        // =-=-=-=-=-=-=-
+        // need to call modified under the covers for unbundle
+        // otherwise the resource hier is not properly notified 
+        eirods::file_object_ptr file_obj(
+                                    new eirods::file_object( 
+                                        rsComm, 
+                                        &dataObjInfo ) );
+
+        eirods::error ret = fileModified(rsComm, file_obj);
+        if(!ret.ok()) {
+            std::stringstream msg;
+            msg << " Failed to signal resource that the data object \"";
+            msg << dataObjInfo.objPath;
+            msg << " was modified.";
+            ret = PASSMSG(msg.str(), ret);
+            eirods::log(ret);
+            status = ret.code();
+        }
+
     } else {
         char tmpStr[MAX_NAME_LEN];
         modDataObjMeta_t modDataObjMetaInp;
@@ -437,6 +458,8 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
         modDataObjMetaInp.dataObjInfo = &dataObjInfo;
         modDataObjMetaInp.regParam = &regParam;
 
+        // =-=-=-=-=-=-=-
+        // this path does call fileModified
         status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
 
         clearKeyVal (&regParam);

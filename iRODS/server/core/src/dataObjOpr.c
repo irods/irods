@@ -395,7 +395,6 @@ sortObjInfo (
     dataObjInfo_t **downOldInfo,
     const char* resc_hier)
 {
-
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
     // int rescClassInx;
     int topFlag;
@@ -455,11 +454,14 @@ sortObjInfo (
         // honor the original queue structure given repl status
         if(resc_hier != NULL && hier_match) {
             //queDataObjInfo(currentCacheInfo, tmpDataObjInfo, 1, topFlag);
-            if( tmpDataObjInfo->replStatus > 0 ) {
-                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, topFlag );
-            } else {
-                queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
-            }
+            // =-=-=-=-=-=-=-
+            // even if the repl is dirty we will want to select it here as
+            // the resources make these decisions
+            //if( tmpDataObjInfo->replStatus > 0 ) {
+                queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 1 );
+            //} else {
+            //    queDataObjInfo( oldCacheInfo, tmpDataObjInfo, 1, topFlag );
+            //}
         } else if(resc_hier != NULL && !hier_match) {
             if( tmpDataObjInfo->replStatus > 0 ) {
                 queDataObjInfo( currentCacheInfo, tmpDataObjInfo, 1, 0 );
@@ -1037,7 +1039,6 @@ sortObjInfoForRepl (
 
     sortObjInfo( dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
                  &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo, resc_hier);
-
     freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);

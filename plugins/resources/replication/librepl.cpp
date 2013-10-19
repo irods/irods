@@ -253,6 +253,7 @@ extern "C" {
     {
         eirods::error result = SUCCESS();
         eirods::error ret;
+
         // get the list of objects that need to be replicated
         object_list_t object_list;
         ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
@@ -281,27 +282,32 @@ extern "C" {
                     msg << " - Failed to determine the root resource and selected hierarchy.";
                     result = PASSMSG(msg.str(), ret);
                 } else {
-                    // create a create/write replicator
-                    eirods::create_write_replicator oper_repl(root_resc, child);
+                    std::string name;
+                    ret = _ctx.prop_map().get<std::string>(eirods::RESOURCE_NAME, name);
+                    if((result = ASSERT_PASS(ret, "Could not determine resource name.")).ok()) {
+                        
+                        // create a create/write replicator
+                        eirods::create_write_replicator oper_repl(root_resc, name, child);
                     
-                    // create a replicator
-                    eirods::replicator replicator(&oper_repl);
-                    // call replicate
-                    ret = replicator.replicate(_ctx, child_list, object_list);
-                    if(!ret.ok()) {
-                        std::stringstream msg;
-                        msg << __FUNCTION__;
-                        msg << " - Failed to replicate the create/write operation to the siblings.";
-                        result = PASSMSG(msg.str(), ret);
-                    } else {
-
-                        // update the object list in the properties
-                        ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+                        // create a replicator
+                        eirods::replicator replicator(&oper_repl);
+                        // call replicate
+                        ret = replicator.replicate(_ctx, child_list, object_list);
                         if(!ret.ok()) {
                             std::stringstream msg;
                             msg << __FUNCTION__;
-                            msg << " - Failed to update the object list in the properties.";
+                            msg << " - Failed to replicate the create/write operation to the siblings.";
                             result = PASSMSG(msg.str(), ret);
+                        } else {
+
+                            // update the object list in the properties
+                            ret = _ctx.prop_map().set<object_list_t>(object_list_prop, object_list);
+                            if(!ret.ok()) {
+                                std::stringstream msg;
+                                msg << __FUNCTION__;
+                                msg << " - Failed to update the object list in the properties.";
+                                result = PASSMSG(msg.str(), ret);
+                            }
                         }
                     }
                 }
@@ -1176,7 +1182,11 @@ extern "C" {
                 msg << " - Failed to get the next resource in hierarchy.";
                 result = PASSMSG(msg.str(), ret);
             } else {
-                ret = child->call(_ctx.comm(), eirods::RESOURCE_OP_STAGETOCACHE, _ctx.fco());
+                ret = child->call< const char* >(
+                          _ctx.comm(), 
+                          eirods::RESOURCE_OP_STAGETOCACHE, 
+                          _ctx.fco(), 
+                          _cache_file_name );
                 if(!ret.ok()) {
                     std::stringstream msg;
                     msg << __FUNCTION__;
