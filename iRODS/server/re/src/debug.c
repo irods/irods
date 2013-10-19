@@ -622,7 +622,7 @@ clearMsParam (msParam_t *msParam, int freeStruct)
 
     if (msParam->label != NULL)
 	free (msParam->label);
-    /* XXXXXX - need to free their internal struct too */
+    /* XXXXXX : need to free their internal struct too */
     /* free STR_MS_T too 7/8/10 mw */
     if (msParam->inOutStruct != NULL && (freeStruct > 0 ||
       (msParam->type != NULL && strcmp (msParam->type, STR_MS_T) == 0))) {
