@@ -410,9 +410,15 @@ extern "C" {
                         if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
                             size_t pos = inp_hier.find( parent_name );
                             if( std::string::npos == pos ) {
+                                std::stringstream msg;
+                                msg << "parent resc ["
+                                    << parent_name
+                                    << "] not in fco resc hier ["
+                                    << inp_hier
+                                    << "]";
                                 return ERROR( 
                                            SYS_INVALID_INPUT_PARAM,
-                                           "parent resc not in fco resc hier" ); 
+                                           msg.str() ); 
                             }
 
                             // =-=-=-=-=-=-=- 
@@ -1065,7 +1071,21 @@ extern "C" {
         if( !ret.ok() ) {
             return PASS( ret );
         }
-        
+  
+        // =-=-=-=-=-=-=-
+        // get the archive resource
+        eirods::resource_ptr cache_resc;
+        ret = get_cache( _ctx, cache_resc );
+        if( !ret.ok() ) {
+            return PASS( ret );
+        }
+       
+        // =-=-=-=-=-=-=-
+        // repave the repl requested temporarily
+        eirods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+        int repl_requested = f_ptr->repl_requested();
+        f_ptr->repl_requested( -1 );
+       
         // =-=-=-=-=-=-=-
         // ask the archive if it has the data object in question, politely
         float                    arch_check_vote   = 0.0;
@@ -1076,8 +1096,41 @@ extern "C" {
                 &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
                 &arch_check_parser, &arch_check_vote );
         if( !ret.ok() || 0.0 == arch_check_vote ) {
-            return PASS( ret );    
+            rodsLog( 
+                LOG_NOTICE, 
+                "replica not found in archive for [%s]",
+                f_ptr->logical_path().c_str() );
+            // =-=-=-=-=-=-=-
+            // the archive query redirect failed, something terrible happened
+            // or mounted collection hijinks are afoot.  ask the cache if it
+            // has the data object in question, politely as a fallback
+            float                    cache_check_vote   = 0.0;
+            eirods::hierarchy_parser cache_check_parser = (*_out_parser);
+            ret = cache_resc->call< const std::string*, const std::string*, 
+                eirods::hierarchy_parser*, float* >( 
+                    _ctx.comm(), eirods::RESOURCE_OP_RESOLVE_RESC_HIER, _ctx.fco(), 
+                    &eirods::EIRODS_OPEN_OPERATION, _curr_host, 
+                    &cache_check_parser, &cache_check_vote );
+            if( !ret.ok() || 0.0 == cache_check_vote ) {
+                return PASS( ret );
+            }
+            
+            // =-=-=-=-=-=-=-
+            // set the vote and hier parser
+            (*_out_parser) = cache_check_parser;
+            (*_out_vote)   = cache_check_vote;
+
+            return SUCCESS();
+
         }
+            
+        // =-=-=-=-=-=-=-
+        // repave the resc hier with the archive hier which guarantees that
+        // we are in the hier for the repl to do its magic. this is a hack,
+        // and will need refactored later with an improved object model
+        std::string arch_hier;
+        arch_check_parser.str( arch_hier );
+        f_ptr->resc_hier( arch_hier );
 
         // =-=-=-=-=-=-=-
         // if the vote is 0 then we do a wholesale stage, not an update
@@ -1086,7 +1139,11 @@ extern "C" {
         if( !ret.ok() ) {
             return PASS( ret );    
         }
-        
+       
+        // =-=-=-=-=-=-=-
+        // restore repl requested
+        f_ptr->repl_requested( repl_requested );
+ 
         // =-=-=-=-=-=-=-
         // get the parent name
         std::string parent_name;
@@ -1136,12 +1193,10 @@ extern "C" {
                     eirods::hierarchy_parser::delimiter() + 
                     cache_name;
 
-rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_archive_policy :: cache hier [%s]", dst_hier.c_str() );
-
         // =-=-=-=-=-=-=-
         // set the vote and hier parser
         _out_parser->set_string( dst_hier );
-        (*_out_vote) = 1.0;
+        (*_out_vote) = arch_check_vote;
 
         return SUCCESS();
 
@@ -1151,9 +1206,9 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_archive_policy :: cache hier [%s]",
     /// @brief - handler for prefer cache policy
     eirods::error open_for_prefer_cache_policy( 
         eirods::resource_plugin_context& _ctx,
-        const std::string*                  _curr_host, 
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
+        const std::string*               _curr_host, 
+        eirods::hierarchy_parser*        _out_parser,
+        float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_curr_host ) {
@@ -1196,6 +1251,12 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_archive_policy :: cache hier [%s]",
         // if the vote is 0 then the cache doesnt have it so it will need be staged
         if( 0.0 == cache_check_vote ) {
             // =-=-=-=-=-=-=-
+            // repave the repl requested temporarily
+            eirods::file_object_ptr f_ptr = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
+            int repl_requested = f_ptr->repl_requested();
+            f_ptr->repl_requested( -1 );
+
+            // =-=-=-=-=-=-=-
             // ask the archive if it has the data object in question, politely
             float                    arch_check_vote   = 0.0;
             eirods::hierarchy_parser arch_check_parser = (*_out_parser);
@@ -1207,6 +1268,14 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_archive_policy :: cache hier [%s]",
             if( !ret.ok() || 0.0 == arch_check_vote ) {
                 return PASS( ret );    
             }
+            
+            // =-=-=-=-=-=-=-
+            // repave the resc hier with the archive hier which guarantees that
+            // we are in the hier for the repl to do its magic. this is a hack,
+            // and will need refactored later with an improved object model
+            std::string arch_hier;
+            arch_check_parser.str( arch_hier );
+            f_ptr->resc_hier( arch_hier );
 
             // =-=-=-=-=-=-=-
             // if the archive has it, then replicate
@@ -1216,10 +1285,14 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_archive_policy :: cache hier [%s]",
             }
 
             // =-=-=-=-=-=-=-
+            // restore repl requested
+            f_ptr->repl_requested( repl_requested );
+
+            // =-=-=-=-=-=-=-
             // now that the repl happend, we will assume that the
             // object is in the cache as to not hit the DB again
             (*_out_parser) = cache_check_parser;
-            (*_out_vote  ) = 1.0;
+            (*_out_vote  ) = arch_check_vote;
 
         } else {
             // =-=-=-=-=-=-=-
@@ -1238,9 +1311,9 @@ rodsLog( LOG_NOTICE, "XXXX - open_for_prefer_archive_policy :: cache hier [%s]",
     ///          otherwise the default is to compare checsum
     eirods::error compound_file_redirect_open( 
         eirods::resource_plugin_context& _ctx,
-        const std::string*                  _curr_host, 
-        eirods::hierarchy_parser*           _out_parser,
-        float*                              _out_vote ) {
+        const std::string*               _curr_host, 
+        eirods::hierarchy_parser*        _out_parser,
+        float*                           _out_vote ) {
         // =-=-=-=-=-=-=-
         // check incoming parameters
         if( !_curr_host ) {

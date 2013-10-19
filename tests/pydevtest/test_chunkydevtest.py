@@ -373,27 +373,27 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestm" )
         assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestm" )
         shutil.rmtree( dir_w+"/testm" )
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_mcol" )
         assertiCmd(s.adminsession,"ibun -c "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtest" ) # added so icmdtestx.tar exists
-        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt", "LIST", ["foo2"] )
-        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt", "LIST", ["foo1"] )
+        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt_mcol" )
+        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt_mcol", "LIST", ["foo2"] )
+        assertiCmd(s.adminsession,"ils -lr "+irodshome+"/icmdtestt_mcol", "LIST", ["foo1"] )
         if os.path.exists(dir_w+"/testt"):
             shutil.rmtree( dir_w+"/testt" )
         if os.path.exists(dir_w+"/testx"):
             shutil.rmtree( dir_w+"/testx" )
         assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtest  "+dir_w+"/testx", "LIST", "testx" )
-        assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtestt/icmdtest  "+dir_w+"/testt", "LIST", "testt" )
+        assertiCmd(s.adminsession,"iget -vr "+irodshome+"/icmdtestt_mcol/icmdtest  "+dir_w+"/testt", "LIST", "testt" )
         output = commands.getstatusoutput("diff -r  "+dir_w+"/testx "+dir_w+"/testt" )
         print "output is ["+str(output)+"]"
         assert output[0] == 0
         assert output[1] == "", "diff output was not empty..."
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt/mydirtt" )
-        assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestt/mydirtt/foo1mt" )
-        assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestt/mydirtt/foo1mt "+irodshome+"/icmdtestt/mydirtt/foo1mtx" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_mcol/mydirtt" )
+        assertiCmd(s.adminsession,"iput "+progname+" "+irodshome+"/icmdtestt_mcol/mydirtt/foo1mt" )
+        assertiCmd(s.adminsession,"imv "+irodshome+"/icmdtestt_mcol/mydirtt/foo1mt "+irodshome+"/icmdtestt_mcol/mydirtt/foo1mtx" )
     
         # unlink
-        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
+        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt_mcol" )
     
     
         # cleanup
@@ -436,9 +436,9 @@ class ChunkyDevTest(ResourceBase):
         assertiCmd(s.adminsession,"icp -K -R "+self.testresc+" "+irodshome+"/icmdtest/foo1 "+irodshome+"/icmdtest/foo2" )
     
         assertiCmd(s.adminsession,"ibun -c "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtest" ) # added so icmdtestx.tar exists
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt/mydirtt" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imcoll -m tar "+irodshome+"/icmdtestx.tar "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imkdir "+irodshome+"/icmdtestt_large/mydirtt" )
     
     
         # make a directory of 2 large files and 2 small files
@@ -459,13 +459,13 @@ class ChunkyDevTest(ResourceBase):
             shutil.copyfile( progname, mysfile )
     
         # test adding a large file to a mounted collection
-        assertiCmd(s.adminsession,"iput "+myldir+"/lfile1 "+irodshome+"/icmdtestt/mydirtt" )
-        assertiCmd(s.adminsession,"iget "+irodshome+"/icmdtestt/mydirtt/lfile1 "+dir_w+"/testt" )
-        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt/mydirtt" )
-        assertiCmd(s.adminsession,"imcoll -s "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imcoll -p "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt" )
-        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt" )
+        assertiCmd(s.adminsession,"iput "+myldir+"/lfile1 "+irodshome+"/icmdtestt_large/mydirtt" )
+        assertiCmd(s.adminsession,"iget "+irodshome+"/icmdtestt_large/mydirtt/lfile1 "+dir_w+"/testt" )
+        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt_large/mydirtt" )
+        assertiCmd(s.adminsession,"imcoll -s "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imcoll -p "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"imcoll -U "+irodshome+"/icmdtestt_large" )
+        assertiCmd(s.adminsession,"irm -rf "+irodshome+"/icmdtestt_large" )
         os.unlink( dir_w+"/testt" )
     
         # cleanup

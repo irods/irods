@@ -238,6 +238,15 @@ namespace eirods {
                                dataObjInp_t*    _data_obj_inp,
                                file_object_ptr  _file_obj ) {
         // =-=-=-=-=-=-=-
+        // if a repl is requested, cache that fact
+        char* repl_num_ptr = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
+        std::string repl_num;
+        if( repl_num_ptr ) {
+            repl_num = repl_num_ptr;
+            rmKeyVal( &_data_obj_inp->condInput, REPL_NUM_KW );
+        }
+
+        // =-=-=-=-=-=-=-
         // make a call to build the linked list 
         dataObjInfo_t* head_ptr = 0;
         
@@ -260,6 +269,15 @@ namespace eirods {
             msg << rods_error << " " << sys_error;
             return ERROR( status, msg.str() );    
         }
+        
+        // =-=-=-=-=-=-=-
+        // replace the keyword
+        if( !repl_num.empty() ) {
+            addKeyVal( 
+                &_data_obj_inp->condInput, 
+                REPL_NUM_KW, 
+                repl_num.c_str() );
+        }
 
         // =-=-=-=-=-=-=-
         // start populating file_object
@@ -270,9 +288,8 @@ namespace eirods {
         
         // =-=-=-=-=-=-=-
         // handle requested repl number
-        char* repl_num = getValByKey( &_data_obj_inp->condInput, REPL_NUM_KW );
-        if( repl_num ) {
-            _file_obj->repl_requested( atoi( repl_num ) );
+        if( !repl_num.empty() ) {
+            _file_obj->repl_requested( atoi( repl_num.c_str() ) );
         }
 
         // handle the case where we are being called as part of a pdmo
@@ -313,7 +330,6 @@ namespace eirods {
             obj.resc_hier( info_ptr->rescHier );
      
             objects.push_back( obj );
-
             info_ptr = info_ptr->next;
 
         } // while

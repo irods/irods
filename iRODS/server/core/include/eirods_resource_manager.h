@@ -58,6 +58,10 @@ namespace eirods {
                               resource_ptr& ); // resource out variable
 
         // =-=-=-=-=-=-=-
+        /// @brief create a list of resources who do not have parents ( roots )
+        error get_root_resources( std::vector< std::string >& );
+
+        // =-=-=-=-=-=-=-
         /// @brief print the list of local resources out to stderr
         void print_local_resources();
 

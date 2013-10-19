@@ -106,15 +106,27 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
                                  transStat);
         return status;
     }
+   
+    // =-=-=-=-=-=-=-
+    // if the dest resc name key is set then we will resolve that key as our hier
+    // if a resc name key word is not also set in which case we inadvertently resolve
+    // the DESTINATION resource, not a valid source.  unset it before resolve hier
+    // and replace it afterwards to get intended behavior 
+    char* dest_resc_ptr = getValByKey( &dataObjInp->condInput, DEST_RESC_NAME_KW );
+    std::string tmp_dest_resc;
+    if( dest_resc_ptr ) {
+        tmp_dest_resc = dest_resc_ptr;
+        rmKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW );
+    }
 
     // =-=-=-=-=-=-=-
     // call redirect for our operation of choice to request the hier string appropriately 
     std::string hier;
-    char*       tmp_hier = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+    char*       tmp_hier  = getValByKey( &dataObjInp->condInput, RESC_HIER_STR_KW );
+
     if( 0 == tmp_hier ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
-        
         eirods::error ret = eirods::resolve_resource_hierarchy( eirods::EIRODS_OPEN_OPERATION, 
                                                                 rsComm, dataObjInp, hier );
         if( !ret.ok() ) { 
@@ -126,8 +138,15 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
         }
         
         addKeyVal( &dataObjInp->condInput, RESC_HIER_STR_KW, hier.c_str() );
+
     } else {
         hier = tmp_hier;
+    }
+        
+    // =-=-=-=-=-=-=-
+    // reset dest resc name if it was set to begin with
+    if( !tmp_dest_resc.empty() ) {
+        addKeyVal( &dataObjInp->condInput, DEST_RESC_NAME_KW, tmp_dest_resc.c_str() );
     }
 
     // =-=-=-=-=-=-=-
@@ -224,6 +243,7 @@ _rsDataObjRepl (
     
     char* resc_hier = getValByKey(&dataObjInp->condInput, RESC_HIER_STR_KW);
     char* dest_hier = getValByKey(&dataObjInp->condInput, DEST_RESC_HIER_STR_KW);
+
     status = sortObjInfoForRepl( &dataObjInfoHead, &oldDataObjInfoHead, 0, resc_hier, dest_hier );
     if (status < 0) {
         rodsLog(LOG_NOTICE, "%s - Failed to sort objects for replication.", __FUNCTION__);

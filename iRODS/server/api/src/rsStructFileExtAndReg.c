@@ -324,7 +324,6 @@ regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, 
             }
         } else if (is_regular_file (p)) {
             st_size = file_size (p);
-rodsLog( LOG_NOTICE, "XXXX - regUnbunSubfiles :: file size %d", st_size );
             status = regSubfile (rsComm, rescInfo, rescHier, rescGroupName,
                     subObjPath, subfilePath, st_size, flags);
             unlink (subfilePath);
@@ -361,6 +360,7 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, const char* rescHier, char *
     memcpy( dataObjInfo.rescInfo, rescInfo, sizeof( rescInfo_t ) );
     rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
     dataObjInfo.dataSize = dataSize;
+    dataObjInfo.replStatus = 1;
 
     status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
     if (status < 0) {
