@@ -67,7 +67,6 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if( hier_char == NULL ) {
         // set a repl keyword here so resources can respond accordingly
         addKeyVal(&dataObjInp->condInput, IN_REPL_KW, "");
-        
         eirods::error ret = eirods::resource_redirect( eirods::EIRODS_CREATE_OPERATION, rsComm, 
                                                        dataObjInp, hier, host, local );
         if( !ret.ok() ) { 

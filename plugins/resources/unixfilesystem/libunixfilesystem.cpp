@@ -1147,6 +1147,8 @@ extern "C" {
             // if the status is down, vote no.
             if( INT_RESC_STATUS_DOWN == resc_status ) {
                 _out_vote = 0.0;
+                result.code( SYS_RESC_IS_DOWN );
+                result = PASS( result );
             }
             else {
                 
@@ -1216,7 +1218,6 @@ extern "C" {
                     std::vector< eirods::physical_object > objs = _file_obj->replicas();
                     std::vector< eirods::physical_object >::iterator itr = objs.begin();
 
-rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: obj [%s], hier [%s], repl_requested [%d]", _file_obj->logical_path().c_str(), _file_obj->resc_hier().c_str(), _file_obj->repl_requested() );
                     // =-=-=-=-=-=-=-
                     // check to see if the replica is in this resource, if one is requested
                     for( ; itr != objs.end(); ++itr ) {
@@ -1227,7 +1228,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: obj [%s], hier [%s], rep
                         eirods::hierarchy_parser parser;
                         parser.set_string( itr->resc_hier() );
                         parser.last_resc( last_resc ); 
-rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: resc_name [%s], last_resc [%s], repl_num [%d]", _resc_name.c_str(), last_resc.c_str(), itr->repl_num() );
           
                         // =-=-=-=-=-=-=-
                         // more flags to simplify decision making
@@ -1269,7 +1269,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: resc_name [%s], last_res
                                     }
                                 }
                             }
-rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: resc_us - vote %f", _out_vote );
            
                             found = true;
                             break;
@@ -1278,8 +1277,12 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: resc_us - vote %f", _out
 
                     } // for itr
                 }
+            } else {
+                result.code( SYS_RESC_IS_DOWN );
+                result = PASS( result );
             }
         }                             
+        
         return result;
 
     } // unix_file_redirect_open
@@ -1304,7 +1307,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: resc_us - vote %f", _out
             // =-=-=-=-=-=-=-
             // check incoming parameters
             if((result = ASSERT_ERROR(_opr && _curr_host && _out_parser && _out_vote, SYS_INVALID_INPUT_PARAM, "Invalid input parameter.")).ok()) {
-        
                 // =-=-=-=-=-=-=-
                 // cast down the chain to our understood object type
                 eirods::file_object_ptr file_obj = boost::dynamic_pointer_cast< eirods::file_object >( _ctx.fco() );
@@ -1314,7 +1316,6 @@ rodsLog( LOG_NOTICE, "XXXX - unix_file_redirect_open :: resc_us - vote %f", _out
                 std::string resc_name;
                 ret = _ctx.prop_map().get< std::string >( eirods::RESOURCE_NAME, resc_name );
                 if((result = ASSERT_PASS(ret, "Failed in get property for name." )).ok()) {
-
                     // =-=-=-=-=-=-=-
                     // add ourselves to the hierarchy parser by default
                     _out_parser->add_child( resc_name );

@@ -70,6 +70,9 @@ namespace eirods {
             msg << "host [" << host_name      << "] ";
             msg << "hier [" << _out_hier << "]";
             err.status( false );
+            if( err.code() == 0 ) {
+                err.code( -1 );
+            }
             return PASSMSG( msg.str(), err );
         }
         
@@ -210,6 +213,9 @@ namespace eirods {
                                     _out_hier,
                                     vote );
                     if( 0.0 == vote ) {
+                        if( ret.code() == 0 ) {
+                            ret.code( -1 );
+                        }
                         ret.status( false );
                     }
 
@@ -238,14 +244,14 @@ namespace eirods {
     error resolve_hier_for_create(
         rsComm_t*                _comm,
         eirods::file_object_ptr  _file_obj,
-        const std::string&       _key_word,
+        const char*              _key_word,
         dataObjInp_t*            _data_obj_inp, 
         std::string&             _out_hier ) {
         // =-=-=-=-=-=-=-
         // handle the create operation
         // check for incoming requested destination resource first
         std::string resc_name;
-        if( !_key_word.empty() ) {
+        if( !_key_word ) {
             // =-=-=-=-=-=-=-
             // this is a 'create' operation and no resource is specified,
             // query the server for the default or other resource to use
@@ -286,6 +292,9 @@ namespace eirods {
                         _out_hier,
                         vote );
         if( 0.0 == vote ) {
+            if( ret.code() == 0 ) {
+                ret.code( -1 );
+            }
             ret.status( false );
         }
 
@@ -307,7 +316,6 @@ namespace eirods {
             // regardless we need to resolve the appropriate resource
             // to do the voting so search the repls for the proper resc
             std::vector< physical_object > repls = _file_obj->replicas();
-
             bool kw_match_found = false;
             if( _key_word ) {
                 // =-=-=-=-=-=-=-
@@ -342,6 +350,9 @@ namespace eirods {
                                     _out_hier,
                                     vote );
                     if( 0.0 == vote ) {
+                        if( ret.code() == 0 ) {
+                            ret.code( -1 );
+                        }
                         ret.status( false );
                     }
 
@@ -374,6 +385,18 @@ namespace eirods {
         dataObjInp_t*        _data_obj_inp, 
         std::string&         _out_hier ) {
         // =-=-=-=-=-=-=-
+        // validate incoming parameters
+        if( !_comm ) {
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "null comm pointer" );
+        } else if( !_data_obj_inp ) {
+            return ERROR(
+                       SYS_INVALID_INPUT_PARAM,
+                       "null data obj inp pointer" );
+        }
+
+        // =-=-=-=-=-=-=-
         // cache the operation, as we may need to modify it
         std::string oper = _oper;
 
@@ -382,7 +405,6 @@ namespace eirods {
         resource_ptr resc;
         file_object_ptr file_obj( 
                             new file_object( ) );
-
         // =-=-=-=-=-=-=-
         // if this is a special collection then we need to get the hier
         // pass that along and bail as it is not a data object, or if
@@ -399,8 +421,9 @@ namespace eirods {
             }
 
         } else {
-            free( rodsObjStatOut );
-
+            if( rodsObjStatOut ) {
+                free( rodsObjStatOut );
+            }
         }
 
         // =-=-=-=-=-=-=-
