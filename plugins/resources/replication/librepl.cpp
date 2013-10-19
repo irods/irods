@@ -254,12 +254,6 @@ extern "C" {
         eirods::error result = SUCCESS();
         eirods::error ret;
 
-        if(true) {
-            std::stringstream msg;
-            msg << "qqq - Here.";
-            DEBUGMSG(msg.str());
-        }
-
         // get the list of objects that need to be replicated
         object_list_t object_list;
         ret = _ctx.prop_map().get<object_list_t>(object_list_prop, object_list);
@@ -481,17 +475,6 @@ extern "C" {
                     std::string name;
                     ret = _ctx.prop_map().get<std::string>( eirods::RESOURCE_NAME, name);
                     if((result = ASSERT_PASS(ret, "Failed to get the resource name.")).ok()) {
-
-                        if(true) {
-                            std::stringstream msg;
-                            msg << "qqq - File obj in_pdmo: \"";
-                            msg << file_obj->in_pdmo();
-                            msg << "\"\tResource name: \"";
-                            msg << name;
-                            msg << "\"";
-                            DEBUGMSG(msg.str());
-                        }
-
                         if(!sub_parser.resc_in_hier(name)) {
                             ret = replReplicateCreateWrite(_ctx);
                             result = ASSERT_PASS(ret, "Failed to replicate create/write operation for object: \"%s\".",
