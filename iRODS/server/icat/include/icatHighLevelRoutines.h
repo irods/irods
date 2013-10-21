@@ -206,7 +206,7 @@ int chlGetDistinctDataObjCountOnResource(
     const std::string&   _resc_name,
     long long&           _count );
 
-int chlResolveResourceHierarchy(
+int chlGetHierarchyForResc(
 		const std::string&	resc_name,
 		const std::string&	zone_name,
 		std::string& hierarchy);
