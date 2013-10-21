@@ -174,6 +174,7 @@ namespace eirods {
         eirods::file_object_ptr  _file_obj,
         const char*              _key_word,
         std::string&             _out_hier ) {
+rodsLog( LOG_NOTICE, "XXXX - resolve_hier_for_open :: key word [%s]", _key_word );
             // =-=-=-=-=-=-=-
             // regardless we need to resolve the appropriate resource
             // to do the voting so search the repls for the proper resc
@@ -443,6 +444,7 @@ namespace eirods {
         } else if( back_up_resc_name ) {
              key_word = back_up_resc_name;
         }
+rodsLog( LOG_NOTICE, "XXXX - resolve_resource_hierarchy :: key word [%s] - op [%s]", key_word, _oper.c_str() );
 
         // =-=-=-=-=-=-=-
         // call factory for given obj inp, get a file_object
@@ -458,6 +460,15 @@ namespace eirods {
                 std::stringstream msg;
                 msg << "resolve_resource_hierarchy :: failed in file_object_factory";
                 return PASSMSG( msg.str(), fac_err );
+            }
+
+            // =-=-=-=-=-=-=-
+            // consider fore flag - we need to consider the default resc if -f 
+            // is specified
+            char* force_flag = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
+            if( force_flag &&
+                !key_word ) {
+                key_word = default_resc_name;
             }
 
             // =-=-=-=-=-=-=-

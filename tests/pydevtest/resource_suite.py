@@ -507,7 +507,7 @@ class ResourceSuite(ResourceBase):
         f.close()
 
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput --purgec "+filename) # put file
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be listed once
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 1 ",filename]) # should be listed only once
@@ -550,7 +550,7 @@ class ResourceSuite(ResourceBase):
         f.close()
 
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"ireg "+filepath+" /"+s.adminsession.getZoneName()+"/home/"+s.adminsession.getUserName()+"/"+s.adminsession.sessionId+"/"+filename) # ireg
         assertiCmd(s.adminsession,"ils -L "+filename,"LIST",filename) # should be listed
 
@@ -566,7 +566,7 @@ class ResourceSuite(ResourceBase):
         f.close()
 
         # assertions
-        assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
         assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
 
@@ -591,7 +591,7 @@ class ResourceSuite(ResourceBase):
         f.close()
 
         # assertions
-        assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.sessions[1],"ireg "+filepath+" /"+s.sessions[1].getZoneName()+"/home/"+s.sessions[1].getUserName()+"/"+s.sessions[1].sessionId+"/"+filename, "ERROR","SYS_NO_PATH_PERMISSION") # ireg
         assertiCmdFail(s.sessions[1],"ils -L "+filename,"LIST",filename) # should not be listed
 
@@ -726,7 +726,7 @@ class ResourceSuite(ResourceBase):
         f.close()
 
         # assertions
-        assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",filename) # should not be listed
+        assertiCmd(s.adminsession,"ils -L "+filename,"ERROR","does not exist") # should not be listed
         assertiCmd(s.adminsession,"iput "+filename) # put file
         assertiCmd(s.adminsession,"irepl -R "+self.testresc+" --purgec "+filename) # replicate to test resource
         assertiCmdFail(s.adminsession,"ils -L "+filename,"LIST",[" 0 ",filename]) # should be trimmed
