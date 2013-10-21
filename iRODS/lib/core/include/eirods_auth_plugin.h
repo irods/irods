@@ -6,6 +6,7 @@
 #include "eirods_error.h"
 #include "eirods_operation_wrapper.h"
 #include "eirods_auth_types.h"
+#include "eirods_auth_plugin_context.h"
 
 namespace eirods {
 
@@ -65,11 +66,11 @@ namespace eirods {
         static error default_stop_operation(plugin_property_map& _map) {return SUCCESS();}
 
         // =-=-=-=-=-=-=-
-        /// @brief delegate the call to the operation in question to the operation wrapper, with 1 param
+        /// @brief delegate the call to the operation in question to the operation wrapper, with 0 param
         error call( 
             const std::string& _op, 
             eirods::first_class_object_ptr _obj ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call( ctx );
         
         } // call - 
@@ -81,7 +82,7 @@ namespace eirods {
             const std::string& _op, 
             eirods::first_class_object_ptr _obj, 
             T1 _t1 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1 >( ctx, _t1 );
         
         } // call - T1
@@ -94,9 +95,8 @@ namespace eirods {
             eirods::first_class_object_ptr _obj, 
             T1 _t1, 
             T2 _t2 ) {
-            plugin_context ctx( properties_, _obj, "" );
-            return operations_[ _op ].call< T1, T2 >( 
-                ctx, _t1, _t2 );
+            auth_plugin_context ctx( properties_, _obj, "" );
+                return operations_[ _op ].call< T1, T2 >( ctx, _t1, _t2 );
         
         } // call - T1, T2
 
@@ -109,9 +109,9 @@ namespace eirods {
             T1 _t1, 
             T2 _t2, 
             T3 _t3 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1, T2, T3 >( 
-                ctx, _t1, _t2, _t3 );
+                       ctx, _t1, _t2, _t3 );
             
         } // call - T1, T2, T3
 
@@ -125,9 +125,9 @@ namespace eirods {
             T2 _t2, 
             T3 _t3, 
             T4 _t4 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return  operations_[ _op ].call< T1, T2, T3, T4 >( 
-                ctx, _t1, _t2, _t3, _t4 );
+                        ctx, _t1, _t2, _t3, _t4 );
             
         } // call - T1, T2, T3, T4
 
@@ -142,9 +142,9 @@ namespace eirods {
             T3 _t3, 
             T4 _t4, 
             T5 _t5 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1, T2, T3, T4, T5 >( 
-                ctx, _t1, _t2, _t3, _t4, _t5 );
+                       ctx, _t1, _t2, _t3, _t4, _t5 );
             
         } // call - T1, T2, T3, T4, T5
 
@@ -160,9 +160,9 @@ namespace eirods {
             T4 _t4, 
             T5 _t5, 
             T6 _t6 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1, T2, T3, T4, T5, T6 >( 
-                ctx, _t1, _t2, _t3, _t4, _t5, _t6 );
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6 );
                                                                           
         } // call - T1, T2, T3, T4, T5, T6
  
@@ -179,9 +179,9 @@ namespace eirods {
             T5 _t5, 
             T6 _t6, 
             T7 _t7 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7 >( 
-                ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7 );
                                                                               
         } // call - T1, T2, T3, T4, T5, T6, T7
 
@@ -199,11 +199,12 @@ namespace eirods {
             T6 _t6, 
             T7 _t7, 
             T8 _t8 ) {
-            plugin_context ctx( properties_, _obj, "" );
+            auth_plugin_context ctx( properties_, _obj, "" );
             return operations_[ _op ].call< T1, T2, T3, T4, T5, T6, T7, T8 >( 
-                ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
+                       ctx, _t1, _t2, _t3, _t4, _t5, _t6, _t7, _t8 );
 
         } // call - T1, T2, T3, T4, T5, T6, T7, T8
+
 
     protected:
 

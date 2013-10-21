@@ -8,8 +8,19 @@
  * authenticate.
  */
 
+// =-=-=-=-=-=-=-
+// irods includs
 #include "rodsClient.h"
 #include "sslSockComm.h"
+
+// =-=-=-=-=-=-=-
+// eirods includs
+#include "eirods_auth_object.h"
+#include "eirods_auth_factory.h"
+#include "eirods_auth_plugin.h"
+#include "eirods_auth_manager.h"
+#include "eirods_auth_constants.h"
+#include "eirods_kvp_string_parser.h"
 
 static char prevChallengeSignitureClient[200];
 
@@ -234,9 +245,185 @@ int clientLoginPam( rcComm_t* Conn,
 
     }
 
+/// =-=-=-=-=-=-=-
+/// @brief clientLogin provides the interface for authenticaion
+///        plugins as well as defining the protocol or template
+///        authenticaion will follow
+int clientLogin(
+    rcComm_t* _conn ) {
+printf( "XXXX - clientLogin :: START" );
+fflush( stdout );
+    // =-=-=-=-=-=-=-
+    // check out conn pointer
+    if( !_conn ) {
+        return SYS_INVALID_INPUT_PARAM;
+    }
 
-int 
-clientLogin(rcComm_t *Conn) 
+    // =-=-=-=-=-=-=-
+    // get the rods environment so we can determine the
+    // flavor of authenticaiton desired by the user -
+    // check the environment vairable first then the rods
+    // env if that was null
+    std::string auth_scheme=eirods::AUTH_NATIVE_SCHEME;
+    if( ProcessType == CLIENT_PT ) {
+        // =-=-=-=-=-=-=-
+        // check the environment variable first
+        char* auth_env_var = getenv("irodsAuthScheme");
+        if( !auth_env_var ) {
+            rodsEnv rods_env;
+            int status = getRodsEnv( &rods_env );
+            if( !status ) {
+                printf( "failed to acquire rods environment" );
+                return SYS_INVALID_INPUT_PARAM;
+            }
+
+            if( strlen( rods_env.rodsAuthScheme ) > 0 ) {
+                auth_scheme = rods_env.rodsAuthScheme;
+           
+            }
+             
+        } else {
+            auth_scheme = auth_env_var;
+        
+        }
+         
+    } // if client side auth
+
+printf( "XXXX - clientLogin :: auth scheme [%s]\n", auth_scheme.c_str() );
+fflush( stdout );
+
+    // =-=-=-=-=-=-=-
+    // construct an auth object given the scheme
+    eirods::auth_object_ptr auth_obj;
+    eirods::error ret = eirods::auth_factory( 
+                            auth_scheme, 
+                            _conn->rError,
+                            auth_obj );
+    if( !ret.ok() ){
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+
+printf( "XXXX - clientLogin :: created auth object\n" );
+fflush( stdout );
+    // =-=-=-=-=-=-=-
+    // resolve an auth plugin given the auth object
+    eirods::plugin_ptr ptr;
+    ret = auth_obj->resolve( 
+              eirods::AUTH_INTERFACE,
+              ptr );
+    if( !ret.ok() ){
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+    eirods::auth_ptr auth_plugin = boost::dynamic_pointer_cast< eirods::auth >( ptr );
+
+printf( "XXXX - clientLogin :: resolved auth plugin\n" );
+fflush( stdout );
+
+    // =-=-=-=-=-=-=-
+    // call client side init - 'establish creds'
+    ret = auth_plugin->call( 
+              eirods::AUTH_CLIENT_START, 
+              auth_obj );
+    if( !ret.ok() ){
+        eirods::log( PASS( ret ) );
+        return ret.code();
+    }
+    
+    // =-=-=-=-=-=-=-
+    // send an authentication request to the server
+    // we overload the challenge variable in order
+    // to not change the interface which would break
+    // federation.  we will check the scheme if the
+    // challenge is not null on the server side to 
+    // load the correct plugin
+    authRequestOut_t* auth_request = new authRequestOut_t;
+    auth_request->challenge = new char[ CHALLENGE_LEN+2 ];
+    strncpy( 
+        auth_request->challenge, 
+        auth_scheme.c_str(), 
+        CHALLENGE_LEN );
+printf( "XXXX - clientLogin :: auth challenge ( scheme ) [%s]\n", auth_request->challenge );
+fflush( stdout );
+    int status = rcAuthRequest(
+                 _conn, 
+                 &auth_request );
+    if( status ) {
+        printError( 
+            _conn, 
+            status, 
+            "rcAuthRequest" );
+        delete [] auth_request->challenge;
+        delete [] auth_request;
+        return status;
+    }
+
+
+    // =-=-=-=-=-=-=-
+    // establish auth context client side
+printf( "XXXX - clientLogin :: calling est ctx" );
+fflush( stdout );
+    authResponseInp_t auth_response;
+    auth_response.response = new char[ RESPONSE_LEN+2 ];
+    auth_response.username = new char[ LONG_NAME_LEN ];
+    ret = auth_plugin->call< 
+              const char*,
+              const char*,
+              authRequestOut_t*,
+              authResponseInp_t*,
+              char* >( 
+                  eirods::AUTH_ESTABLISH_CONTEXT, 
+                  auth_obj,
+                  _conn->proxyUser.userName,
+                  _conn->proxyUser.rodsZone,
+                  auth_request,
+                  &auth_response,
+                  prevChallengeSignitureClient );
+    if( !ret.ok() ){
+        eirods::log( PASS( ret ) );
+        delete [] auth_response.response;
+        delete [] auth_response.username; 
+        delete [] auth_request->challenge;
+        delete auth_request;
+        return ret.code();
+    }
+printf( "XXXX - clientLogin :: calling auth response - username [%s]", auth_response.username );
+fflush( stdout );
+
+    // =-=-=-=-=-=-=-
+    // send the auth response to the agent
+    status = rcAuthResponse( 
+                 _conn, 
+                 &auth_response );
+    if( status ) {
+        printError( 
+            _conn, 
+            status, 
+            "rcAuthResponse" );
+        delete [] auth_response.response;
+        delete [] auth_response.username; 
+        delete [] auth_request->challenge;
+        delete auth_request;
+        return status;
+    }
+
+    // =-=-=-=-=-=-=-
+    // set the flag stating we are logged in
+    _conn->loggedIn = 1;
+
+    // =-=-=-=-=-=-=-
+    // win!
+    delete [] auth_response.response;
+    delete [] auth_response.username; 
+    delete [] auth_request->challenge;
+    delete auth_request;
+    return 0;
+
+} // clientLogin
+
+static 
+int OLD_clientLogin(rcComm_t *Conn) 
 {   
     int status, len, i;
     authRequestOut_t *authReqOut;
@@ -373,35 +560,33 @@ clientLogin(rcComm_t *Conn)
     }
 
     /* free the array and structure allocated by the rcAuthRequest */
-    //if (authReqOut != NULL) { // JMC cppcheck - redundant nullptr check
     if (authReqOut->challenge != NULL) {
         free(authReqOut->challenge);
-        //   }
-    free(authReqOut);
-}
+        free(authReqOut);
+    }
 
-authRespIn.response=digest;
-/* the authentication is always for the proxyUser. */
-strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
-strncat(userNameAndZone, "#", NAME_LEN);
-strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
+    authRespIn.response=digest;
+    /* the authentication is always for the proxyUser. */
+    strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
+    strncat(userNameAndZone, "#", NAME_LEN);
+    strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
 #ifdef OS_AUTH
-/* here we attach a special string to the username
-   so that the server knows to do OS authentication */
-if (doOsAuthentication) {
-    strncat(userNameAndZone, OS_AUTH_FLAG, NAME_LEN);
-}
+    /* here we attach a special string to the username
+       so that the server knows to do OS authentication */
+    if (doOsAuthentication) {
+        strncat(userNameAndZone, OS_AUTH_FLAG, NAME_LEN);
+    }
 #endif
-authRespIn.username = userNameAndZone;
-status = rcAuthResponse(Conn, &authRespIn);
+    authRespIn.username = userNameAndZone;
+    status = rcAuthResponse(Conn, &authRespIn);
 
-if (status) {
-    printError(Conn, status, "rcAuthResponse");
-    return(status);
-}
-Conn->loggedIn = 1;
+    if (status) {
+        printError(Conn, status, "rcAuthResponse");
+        return(status);
+    }
+    Conn->loggedIn = 1;
 
-return(0);
+    return(0);
 }
 
 int 

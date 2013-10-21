@@ -13,6 +13,10 @@
 
 namespace eirods {
 
+    // =-=-=-=-=-=-=-
+    // constants for kvp string encoding
+    const std::string AUTH_USER_KEY( "auth_user" );
+    const std::string AUTH_SCHEME_KEY( "auth_scheme" );
 /**
  * @brief Class for representing authorization scheme objects
  */
@@ -33,9 +37,10 @@ namespace eirods {
 
         /// @brief Plugin resolution operation
         virtual error resolve(const std::string& _plugin_name, plugin_ptr& _plugin) = 0;
+        virtual error get_re_vars(keyValPair_t&) = 0; 
         
-    private:
-        rError_t* r_error_;
+    protected:
+        rError_t*   r_error_;
     };
 
     /// @brief Helpful typedef

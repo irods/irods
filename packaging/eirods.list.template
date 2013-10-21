@@ -255,6 +255,8 @@ d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/resources -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/resources/ ./plugins/resources/*.so
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/network -
 f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/network/ ./plugins/network/*.so
+d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/auth -
+f 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${EIRODS_HOME_DIR}/plugins/auth/ ./plugins/auth/*.so
 
 
 d 755 $OS_EIRODS_ACCT $OS_EIRODS_ACCT ${IRODS_HOME}/doc -

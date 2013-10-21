@@ -5,6 +5,9 @@
 #include "eirods_auth_plugin.h"
 
 namespace eirods {
+    // =-=-=-=-=-=-=-
+    // globally available auth manager
+    auth_manager auth_mgr;
 
     auth_manager::auth_manager(void) {
         // TODO - stub

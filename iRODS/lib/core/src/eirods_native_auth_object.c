@@ -1,0 +1,113 @@
+/* -*- mode: c++; fill-column: 132; c-basic-offset: 4; indent-tabs-mode: nil -*- */
+
+// =-=-=-=-=-=-=-
+// eirods includes
+#include "eirods_native_auth_object.h"
+#include "eirods_auth_manager.h"
+#include "eirods_auth_plugin.h"
+
+// =-=-=-=-=-=-=-
+// irods includes
+#include "rcMisc.h"
+
+namespace eirods {
+
+    // =-=-=-=-=-=-=-
+    // public - ctor
+    native_auth_object::native_auth_object(
+        rError_t* _r_error) : 
+            auth_object(_r_error) {
+    } // ctor
+
+    // =-=-=-=-=-=-=-
+    // public - dtor
+    native_auth_object::~native_auth_object() {
+    } // dtor
+
+    // =-=-=-=-=-=-=-
+    // public - assignment operator
+    native_auth_object& native_auth_object::operator=(
+        const native_auth_object& _rhs) {
+        r_error_ = _rhs.r_error();
+        return *this;
+    }
+
+    // =-=-=-=-=-=-=-
+    // public - equality operator
+    bool native_auth_object::operator==(
+        const native_auth_object& _rhs) const {
+        return false;
+    }
+        
+    // =-=-=-=-=-=-=-
+    // public - resolve a plugin given an interface
+    error native_auth_object::resolve(
+        const std::string& _interface, 
+        plugin_ptr&        _ptr ) {
+        // =-=-=-=-=-=-=-
+        // check the interface type and error out if it
+        // isnt a auth interface
+        if( AUTH_INTERFACE != _interface ) {
+            std::stringstream msg;
+            msg << "native_auth_object does not support a [";
+            msg << _interface;
+            msg << "] plugin interface";
+            return ERROR( SYS_INVALID_INPUT_PARAM, msg.str() );
+
+        }
+
+        // =-=-=-=-=-=-=-
+        // ask the auth manager for a native auth plugin
+        auth_ptr a_ptr;
+        error ret = auth_mgr.resolve( 
+                        AUTH_NATIVE_SCHEME, 
+                        a_ptr );
+        if( !ret.ok() ) {
+            // =-=-=-=-=-=-=-
+            // attempt to load the plugin, in this case the type,
+            // instance name, key etc are all native as there is only
+            // the need for one instance of a native object, etc.
+            std::string empty_context( "" );
+            ret = auth_mgr.init_from_type( 
+                      AUTH_NATIVE_SCHEME,
+                      AUTH_NATIVE_SCHEME,
+                      AUTH_NATIVE_SCHEME,
+                      empty_context,
+                      a_ptr );
+            if( !ret.ok() ) {
+                return PASS( ret );
+
+            } else {
+                // =-=-=-=-=-=-=-
+                // upcast for out variable
+                _ptr = boost::dynamic_pointer_cast< plugin_base >( a_ptr );
+                return SUCCESS();
+
+            }
+
+        } // if !ok
+
+        // =-=-=-=-=-=-=-
+        // upcast for out variable
+        _ptr = boost::dynamic_pointer_cast< plugin_base >( a_ptr );
+
+        return SUCCESS();
+
+    } // resolve
+
+    // =-=-=-=-=-=-=-
+    // public - serialize object to kvp
+    error native_auth_object::get_re_vars(
+              keyValPair_t& _kvp ) {
+        // =-=-=-=-=-=-=-
+        // all we have in this object is the auth results
+        addKeyVal( 
+            &_kvp, 
+            "auth_results", 
+            auth_results_.c_str() );
+
+        return SUCCESS();
+
+    } // get_re_vars
+
+}; // namespace eirods
