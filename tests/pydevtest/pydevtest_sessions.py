@@ -31,7 +31,8 @@ def admin_up():
 
     # set up admin session
     admin = users[0]
-    sessionid      = "session-"+datetime.datetime.now().strftime("%Y%m%dT%H%M%S.%f")
+    rightnow       = datetime.datetime.now()
+    sessionid      = "session-"+rightnow.strftime("%Y%m%dT%H%M%S")+"."+str(rightnow.microsecond)
     myenv          = icommands.RodsEnv( admin['host'],
                                         admin['port'],
                                         admin['resc'],
