@@ -463,7 +463,7 @@ rodsLog( LOG_NOTICE, "XXXX - resolve_resource_hierarchy :: key word [%s] - op [%
             }
 
             // =-=-=-=-=-=-=-
-            // consider fore flag - we need to consider the default resc if -f 
+            // consider force flag - we need to consider the default resc if -f 
             // is specified
             char* force_flag = getValByKey( &_data_obj_inp->condInput, FORCE_FLAG_KW );
             if( force_flag &&
