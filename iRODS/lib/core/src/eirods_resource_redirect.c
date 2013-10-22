@@ -67,8 +67,8 @@ namespace eirods {
         if( !err.ok() || 0.0 == vote ) {
             std::stringstream msg;
             msg << "failed in call to redirect";
-            msg << "host [" << host_name      << "] ";
-            msg << "hier [" << _out_hier << "]";
+            msg << "\thost [" << host_name      << "] ";
+            msg << "\thier [" << _out_hier << "]";
             err.status( false );
             if( err.code() == 0 ) {
                 err.code( -1 );
