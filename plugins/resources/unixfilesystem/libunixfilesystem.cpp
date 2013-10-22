@@ -1148,7 +1148,7 @@ extern "C" {
             if( INT_RESC_STATUS_DOWN == resc_status ) {
                 _out_vote = 0.0;
                 result.code( SYS_RESC_IS_DOWN );
-                result = PASS( result );
+                // result = PASS( result );
             }
             else {
                 
@@ -1326,13 +1326,13 @@ extern "C" {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'get' operation
                         ret = unix_file_redirect_open( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote) );
-                        result = ASSERT_PASS(ret, "Failed redirecting for open.");
+                        result = ASSERT_PASS_MSG(ret, "Failed redirecting for open.");
 
                     } else if( eirods::EIRODS_CREATE_OPERATION == (*_opr) ) {
                         // =-=-=-=-=-=-=-
                         // call redirect determination for 'create' operation
                         ret = unix_file_redirect_create( _ctx.prop_map(), file_obj, resc_name, (*_curr_host), (*_out_vote)  );
-                        result = ASSERT_PASS(ret, "Failed redirecting for create.");
+                        result = ASSERT_PASS_MSG(ret, "Failed redirecting for create.");
                     }
 
                     else {

@@ -2474,7 +2474,6 @@ unpackChildStruct (void **inPtr, packedOutput_t *unpackedOutput,
     int i, status;
     packItem_t *unpackItemHead, *tmpItem;
     int skipLen;
-    int doubleInStruct;
 #if defined(solaris_platform)
     void *outPtr1, *outPtr2;
 #endif
@@ -2526,8 +2525,6 @@ unpackChildStruct (void **inPtr, packedOutput_t *unpackedOutput,
         }
 
         /* now unpack each child item */
-
-        doubleInStruct = 0;
         tmpItem = unpackItemHead;
         while (tmpItem != NULL) {
 #if defined(solaris_platform) && !defined(i86_hardware)
@@ -2866,7 +2863,6 @@ unpackXmlStringToOutPtr (void **inPtr, void **outPtr, int maxStrLen,
     int myStrlen;
     int endTagLen;      /* the length of end tag */
     char *myStrPtr;
-    char *myOutPtr;
     int origStrLen;
 
     if (inPtr == NULL || *inPtr == NULL) {
@@ -2887,7 +2883,6 @@ unpackXmlStringToOutPtr (void **inPtr, void **outPtr, int maxStrLen,
         return (USER_PACKSTRUCT_INPUT_ERR);
     }
 
-    myOutPtr = (char *) outPtr;
     if (myStrlen == 0) { 
         memset (*outPtr, 0, 1);
     } else {
